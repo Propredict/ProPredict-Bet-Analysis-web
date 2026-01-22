@@ -145,6 +145,7 @@ export type Database = {
           created_at_ts: string
           created_by: string | null
           id: string
+          result: Database["public"]["Enums"]["ticket_result"]
           status: Database["public"]["Enums"]["content_status"]
           tier: Database["public"]["Enums"]["content_tier"]
           title: string
@@ -156,6 +157,7 @@ export type Database = {
           created_at_ts?: string
           created_by?: string | null
           id?: string
+          result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
           title: string
@@ -167,6 +169,7 @@ export type Database = {
           created_at_ts?: string
           created_by?: string | null
           id?: string
+          result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
           title?: string
@@ -318,6 +321,7 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       content_status: "draft" | "published"
       content_tier: "free" | "daily" | "exclusive" | "premium"
+      ticket_result: "pending" | "won" | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -448,6 +452,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       content_status: ["draft", "published"],
       content_tier: ["free", "daily", "exclusive", "premium"],
+      ticket_result: ["pending", "won", "lost"],
     },
   },
 } as const
