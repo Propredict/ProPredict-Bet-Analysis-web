@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, Chrome } from "lucide-react";
+import { Loader2, Mail, Lock, Chrome, ArrowRight } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -170,7 +170,7 @@ const Login = () => {
           </Button>
         </CardContent>
 
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground text-center w-full">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
@@ -182,6 +182,16 @@ const Login = () => {
               {isSignUp ? "Sign in" : "Sign up"}
             </button>
           </p>
+          
+          <Button
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-foreground"
+            onClick={() => navigate("/")}
+            disabled={isLoading}
+          >
+            Continue as guest
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </CardFooter>
       </Card>
     </div>
