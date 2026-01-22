@@ -28,6 +28,9 @@ interface TipCardProps {
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
+    }
     if (unlockMethod.type === "upgrade_premium") {
       return "bg-warning hover:bg-warning/90 text-warning-foreground";
     }
