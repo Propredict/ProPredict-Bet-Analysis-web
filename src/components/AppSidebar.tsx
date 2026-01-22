@@ -42,7 +42,7 @@ const tipsAndTickets = [
   { title: "Exclusive Tickets", url: "/exclusive-tickets", icon: Ticket },
   { title: "Premium Tips", url: "/premium-tips", icon: Crown },
   { title: "Premium Tickets", url: "/premium-tickets", icon: Crown },
-  { title: "Get Premium", url: "/premium", icon: Sparkles },
+  { title: "Get Premium", url: "/get-premium", icon: Sparkles, highlight: true },
 ];
 
 const tools = [
@@ -116,8 +116,12 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/20 text-primary"
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        item.highlight 
+                          ? "bg-gradient-to-r from-accent to-primary text-white hover:opacity-90" 
+                          : "hover:bg-sidebar-accent"
+                      }`}
+                      activeClassName={item.highlight ? "" : "bg-primary/20 text-primary"}
                     >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
