@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const tipsAndTickets = [
-  { title: "All Tickets", url: "/tickets", icon: Ticket },
+  { title: "All Tickets", url: "/all-tickets", icon: Ticket },
   { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
   { title: "Daily Tips", url: "/daily-tips", icon: Lightbulb },
   { title: "Exclusive Tips", url: "/exclusive-tips", icon: Star },
