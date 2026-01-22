@@ -278,4 +278,3 @@ function TicketCard({
 ======================= */
 
 export default TicketCard;
-export type { BettingTicket };
