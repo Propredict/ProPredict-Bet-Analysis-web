@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type UserPlan } from "@/hooks/useUserPlan";
+import { useNavigate } from "react-router-dom";
 
 interface PricingModalProps {
   open: boolean;
@@ -72,16 +73,11 @@ const plans = [
 
 export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
   const { plan: currentPlan } = useUserPlan();
+  const navigate = useNavigate();
 
   const handleSelectPlan = (planId: UserPlan) => {
-    // Real payment integration would go here
-    // For now, just close the modal and show a message
-    if (planId === "basic") {
-      window.open("https://example.com/checkout/basic", "_blank");
-    } else if (planId === "premium") {
-      window.open("https://example.com/checkout/premium", "_blank");
-    }
     onOpenChange(false);
+    navigate("/get-premium");
   };
 
   return (
