@@ -14,6 +14,14 @@ import TicketDetails from "./pages/TicketDetails";
 import GetPremium from "./pages/GetPremium";
 import NotFound from "./pages/NotFound";
 
+// Tier-specific pages
+import DailyTips from "./pages/DailyTips";
+import DailyTickets from "./pages/DailyTickets";
+import ExclusiveTips from "./pages/ExclusiveTips";
+import ExclusiveTickets from "./pages/ExclusiveTickets";
+import PremiumTips from "./pages/PremiumTips";
+import PremiumTickets from "./pages/PremiumTickets";
+
 import ManageTips from "./pages/admin/ManageTips";
 import ManageTickets from "./pages/admin/ManageTickets";
 
@@ -38,6 +46,14 @@ const App = () => (
             <Route path="/favorites" element={<MyFavorites />} />
             <Route path="/all-tickets" element={<AllTickets />} />
             <Route path="/get-premium" element={<GetPremium />} />
+
+            {/* Tier-specific pages */}
+            <Route path="/daily-tips" element={<DailyTips />} />
+            <Route path="/daily-tickets" element={<DailyTickets />} />
+            <Route path="/exclusive-tips" element={<ExclusiveTips />} />
+            <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
+            <Route path="/premium-tips" element={<PremiumTips />} />
+            <Route path="/premium-tickets" element={<PremiumTickets />} />
 
             {/* Ticket Details */}
             <Route path="/tickets/:id" element={<TicketDetails />} />
