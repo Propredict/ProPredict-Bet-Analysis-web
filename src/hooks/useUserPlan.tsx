@@ -200,15 +200,19 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
     switch (tier) {
       case "daily":
-      case "exclusive":
-        // Free users can watch ads for daily/exclusive content
+        // Free users can watch ads for daily content
         if (plan === "free") {
           return { type: "watch_ad", message: "Watch an ad to unlock" };
         }
-        // Basic users need upgrade for exclusive (shouldn't reach here normally)
-        return { type: "upgrade_basic", message: "Upgrade to Basic" };
+        return null;
+      case "exclusive":
+        // Exclusive content requires Basic or higher - NO ads
+        if (plan === "free") {
+          return { type: "upgrade_basic", message: "Upgrade to Basic" };
+        }
+        return null;
       case "premium":
-        // Premium content always requires upgrade - NO ads allowed
+        // Premium content always requires Premium upgrade - NO ads allowed
         return { type: "upgrade_premium", message: "Upgrade to Premium" };
       default:
         return null;
