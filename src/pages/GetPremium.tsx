@@ -354,7 +354,7 @@ export default function GetPremium() {
             </p>
             <Button
               className="bg-gradient-to-r from-accent to-primary hover:opacity-90 px-8"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/login?redirect=/get-premium")}
             >
               Sign in to Subscribe
             </Button>
