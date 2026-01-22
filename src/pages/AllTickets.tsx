@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTickets, type TicketWithMatches } from "@/hooks/useTickets";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
@@ -20,10 +21,19 @@ export default function AllTickets() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
   
   const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler({
+    onUpgradeBasic: () => {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    },
+    onUpgradePremium: () => {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    },
+  });
 
   // Count tickets by tier
   const dailyCount = tickets.filter((t) => t.tier === "daily").length;
@@ -36,47 +46,9 @@ export default function AllTickets() {
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Calendar, count: dailyCount },
-    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, count: exclusiveCount },
+    { id: "exclusive" as TabType, label: "Pro", icon: Star, count: exclusiveCount },
     { id: "premium" as TabType, label: "Premium", icon: Crown, count: premiumCount },
   ];
-
-  const handleUnlockClick = async (ticket: TicketWithMatches) => {
-    const method = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-    if (!method || method.type === "unlocked") return;
-
-    if (method.type === "login_required") {
-      toast.info("Please sign in to unlock this content");
-      navigate("/login");
-      return;
-    }
-
-    if (method.type === "watch_ad") {
-      setUnlockingId(ticket.id);
-      toast.info("Playing rewarded ad...", { duration: 2000 });
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      const success = await unlockContent("ticket", ticket.id);
-      
-      if (success) {
-        toast.success("Ticket unlocked! Valid until midnight UTC.");
-      } else {
-        toast.error("Failed to unlock. Please try again.");
-      }
-      
-      setUnlockingId(null);
-    } else if (method.type === "upgrade_basic") {
-      setHighlightPlan("basic");
-      setShowPricingModal(true);
-    } else if (method.type === "upgrade_premium") {
-      setHighlightPlan("premium");
-      setShowPricingModal(true);
-    }
-  };
-
-  const handleProClick = () => {
-    setHighlightPlan("premium");
-    setShowPricingModal(true);
-  };
 
   const handleRefresh = () => {
     refetch();
@@ -122,7 +94,7 @@ export default function AllTickets() {
           <AllTicketsStatCard
             icon={Star}
             count={exclusiveCount}
-            label="Exclusive"
+            label="Pro"
             accentColor="accent"
           />
           <AllTicketsStatCard
@@ -181,8 +153,7 @@ export default function AllTickets() {
                   ticket={ticket}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => handleUnlockClick(ticket)}
-                  onProClick={handleProClick}
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)}
                   isUnlocking={isUnlocking}
                 />
               );

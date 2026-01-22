@@ -6,12 +6,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();
   const { tickets, isLoading, refetch } = useTickets(false);
   const { canAccess, getUnlockMethod, plan } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tickets to only show premium tier
   const premiumTickets = tickets.filter((ticket) => ticket.tier === "premium");
@@ -132,6 +134,7 @@ export default function PremiumTickets() {
             premiumTickets.map((ticket) => {
               const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
+              const isUnlocking = unlockingId === ticket.id;
 
               return (
                 <TicketCard
@@ -151,9 +154,9 @@ export default function PremiumTickets() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => navigate("/get-premium")}
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
-                  isUnlocking={false}
+                  isUnlocking={isUnlocking}
                 />
               );
             })

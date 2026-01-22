@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Ticket, RefreshCw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,28 +6,17 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
   const { tickets, isLoading, refetch } = useTickets(false);
-  const { getUnlockMethod, unlockContent } = useUserPlan();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tickets to only show daily tier
   const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily");
-
-  const handleUnlock = async (ticketId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
-    if (unlockMethod?.type === "login_required") {
-      navigate("/login");
-      return;
-    }
-    if (unlockMethod?.type === "watch_ad") {
-      setUnlockingId(ticketId);
-      await unlockContent("ticket", ticketId);
-      setUnlockingId(null);
-    }
-  };
 
   return (
     <DashboardLayout>
@@ -94,7 +82,7 @@ export default function DailyTickets() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => handleUnlock(ticket.id, unlockMethod)}
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                   isUnlocking={isUnlocking}
                 />

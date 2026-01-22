@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,13 +6,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
   const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod, unlockContent, plan } = useUserPlan();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { canAccess, getUnlockMethod, plan } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tickets to only show exclusive tier
   const exclusiveTickets = tickets.filter((ticket) => ticket.tier === "exclusive");
@@ -21,18 +21,6 @@ export default function ExclusiveTickets() {
   const unlockedCount = exclusiveTickets.filter((ticket) =>
     canAccess("exclusive", "ticket", ticket.id)
   ).length;
-
-  const handleUnlock = async (ticketId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
-    if (unlockMethod?.type === "login_required") {
-      navigate("/login");
-      return;
-    }
-    if (unlockMethod?.type === "watch_ad") {
-      setUnlockingId(ticketId);
-      await unlockContent("ticket", ticketId);
-      setUnlockingId(null);
-    }
-  };
 
   const showUpgradeBanner = plan === "free";
 
@@ -44,14 +32,14 @@ export default function ExclusiveTickets() {
           <div>
             <div className="flex items-center gap-3">
               <Star className="h-7 w-7 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Exclusive Tickets</h1>
+              <h1 className="text-2xl font-bold text-foreground">Pro Tickets</h1>
             </div>
             <p className="text-muted-foreground mt-1">Curated multi-bet combinations for members</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
               <Star className="h-3 w-3 mr-1" />
-              Exclusive
+              Pro
             </Badge>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -133,7 +121,7 @@ export default function ExclusiveTickets() {
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <Ticket className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-primary mb-1">No exclusive tickets available</p>
+                <p className="text-primary mb-1">No pro tickets available</p>
                 <p className="text-sm">Check back later for new picks</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -165,7 +153,7 @@ export default function ExclusiveTickets() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => handleUnlock(ticket.id, unlockMethod)}
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                   isUnlocking={isUnlocking}
                 />

@@ -6,12 +6,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { TipCard } from "@/components/dashboard/TipCard";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
   const { tips, isLoading, refetch } = useTips(false);
   const { canAccess, getUnlockMethod, plan } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tips to only show premium tier
   const premiumTips = tips.filter((tip) => tip.tier === "premium");
@@ -141,6 +143,7 @@ export default function PremiumTips() {
             premiumTips.map((tip) => {
               const unlockMethod = getUnlockMethod("premium", "tip", tip.id);
               const isLocked = unlockMethod?.type !== "unlocked";
+              const isUnlocking = unlockingId === tip.id;
 
               return (
                 <TipCard
@@ -164,8 +167,8 @@ export default function PremiumTips() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => navigate("/get-premium")}
-                  isUnlocking={false}
+                  onUnlockClick={() => handleUnlock("tip", tip.id, "premium")}
+                  isUnlocking={isUnlocking}
                 />
               );
             })

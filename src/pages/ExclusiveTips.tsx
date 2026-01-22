@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,13 +6,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { TipCard } from "@/components/dashboard/TipCard";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 
 export default function ExclusiveTips() {
   const navigate = useNavigate();
   const { tips, isLoading, refetch } = useTips(false);
-  const { canAccess, getUnlockMethod, unlockContent, plan } = useUserPlan();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { canAccess, getUnlockMethod, plan } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tips to only show exclusive tier
   const exclusiveTips = tips.filter((tip) => tip.tier === "exclusive");
@@ -21,18 +21,6 @@ export default function ExclusiveTips() {
   const unlockedCount = exclusiveTips.filter((tip) =>
     canAccess("exclusive", "tip", tip.id)
   ).length;
-
-  const handleUnlock = async (tipId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
-    if (unlockMethod?.type === "login_required") {
-      navigate("/login");
-      return;
-    }
-    if (unlockMethod?.type === "watch_ad") {
-      setUnlockingId(tipId);
-      await unlockContent("tip", tipId);
-      setUnlockingId(null);
-    }
-  };
 
   const showUpgradeBanner = plan === "free";
 
@@ -44,14 +32,14 @@ export default function ExclusiveTips() {
           <div>
             <div className="flex items-center gap-3">
               <Star className="h-7 w-7 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Exclusive Tips</h1>
+              <h1 className="text-2xl font-bold text-foreground">Pro Tips</h1>
             </div>
             <p className="text-muted-foreground mt-1">Premium predictions with higher confidence</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
               <Star className="h-3 w-3 mr-1" />
-              Exclusive
+              Pro
             </Badge>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -133,7 +121,7 @@ export default function ExclusiveTips() {
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <Target className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-primary mb-1">No exclusive tips available</p>
+                <p className="text-primary mb-1">No pro tips available</p>
                 <p className="text-sm">Check back later for new predictions</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -169,7 +157,7 @@ export default function ExclusiveTips() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => handleUnlock(tip.id, unlockMethod)}
+                  onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
                   isUnlocking={isUnlocking}
                 />
               );

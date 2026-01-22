@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,13 +6,12 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { TipCard } from "@/components/dashboard/TipCard";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { useNavigate } from "react-router-dom";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 export default function DailyTips() {
-  const navigate = useNavigate();
   const { tips, isLoading, refetch } = useTips(false);
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   // Filter tips to only show daily tier
   const dailyTips = tips.filter((tip) => tip.tier === "daily");
@@ -21,18 +19,6 @@ export default function DailyTips() {
   const unlockedCount = dailyTips.filter((tip) =>
     canAccess("daily", "tip", tip.id)
   ).length;
-
-  const handleUnlock = async (tipId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
-    if (unlockMethod?.type === "login_required") {
-      navigate("/login");
-      return;
-    }
-    if (unlockMethod?.type === "watch_ad") {
-      setUnlockingId(tipId);
-      await unlockContent("tip", tipId);
-      setUnlockingId(null);
-    }
-  };
 
   return (
     <DashboardLayout>
@@ -144,7 +130,7 @@ export default function DailyTips() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => handleUnlock(tip.id, unlockMethod)}
+                  onUnlockClick={() => handleUnlock("tip", tip.id, "daily")}
                   isUnlocking={isUnlocking}
                 />
               );
