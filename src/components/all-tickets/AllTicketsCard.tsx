@@ -165,57 +165,67 @@ export function AllTicketsCard({
         </>
       ) : (
         /* Unlocked State - show all matches like tips design */
-        <div className="space-y-4 p-4">
-          {ticket.matches.map((match, idx) => (
-            <div key={match.id || idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
-              {/* Match Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-xs">⚽</span>
-                  </div>
-                  <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                    {ticket.title}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{ticketDate}</span>
-                  <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Unlocked
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Match Name */}
-              <h3 className="font-semibold text-primary mb-4">{match.match_name}</h3>
-
-              {/* Prediction Row */}
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-border/50">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Prediction</p>
-                  <p className="font-medium text-foreground">{match.prediction}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Odds</p>
-                  <p className="font-medium text-success">@{match.odds.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-                  <div className="flex items-center justify-end gap-2">
-                    <div className="h-2 w-12 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-success to-primary rounded-full" 
-                        style={{ width: '70%' }} 
-                      />
-                    </div>
-                    <span className="text-sm text-success">70%</span>
-                  </div>
-                </div>
+        <>
+          {/* Header */}
+          <div className="p-4 border-b border-border/50">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold text-foreground">{ticket.title}</h3>
+              <div className="flex items-center gap-2">
+                <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Unlocked
+                </Badge>
+                {getTierBadge(ticket.tier)}
               </div>
             </div>
-          ))}
-        </div>
+            <span className="text-xs text-muted-foreground">{ticketDate}</span>
+          </div>
+
+          {/* Matches */}
+          <div className="p-4 space-y-3">
+            {ticket.matches && ticket.matches.length > 0 ? (
+              ticket.matches.map((match, idx) => (
+                <div key={match.id || idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
+                  {/* Match Name */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                      <span className="text-xs">⚽</span>
+                    </div>
+                    <h4 className="font-medium text-foreground">{match.match_name}</h4>
+                  </div>
+
+                  {/* Prediction Row */}
+                  <div className="grid grid-cols-3 gap-4 pt-3 border-t border-border/50">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Prediction</p>
+                      <p className="font-medium text-primary">{match.prediction}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Odds</p>
+                      <p className="font-medium text-success">@{match.odds.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground mb-1">Confidence</p>
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="h-2 w-12 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-success to-primary rounded-full" 
+                            style={{ width: '70%' }} 
+                          />
+                        </div>
+                        <span className="text-sm text-success">70%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-4">
+                No matches in this ticket
+              </div>
+            )}
+          </div>
+        </>
       )}
     </Card>
   );
