@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 
 type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 type DateFilter = "yesterday" | "today" | "tomorrow";
@@ -76,6 +77,7 @@ export default function LiveScores() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { toast } = useToast();
 
   const currentTime = new Date().toLocaleTimeString("en-US", { 
@@ -352,22 +354,27 @@ export default function LiveScores() {
                   {matches.map((match) => (
                     <div
                       key={match.id}
+                      onClick={() => setSelectedMatch(match)}
                       className={cn(
-                        "px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors",
-                        (match.status === "live" || match.status === "halftime") && "bg-primary/5"
+                        "px-4 py-3 flex items-center gap-4 transition-all cursor-pointer",
+                        "hover:bg-muted/50 active:bg-muted/70 active:scale-[0.995]",
+                        (match.status === "live" || match.status === "halftime") && "bg-primary/5 hover:bg-primary/10"
                       )}
                     >
                       {/* Favorite */}
                       <button
-                        onClick={() => toggleFavorite(match.id)}
-                        className="shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(match.id);
+                        }}
+                        className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors"
                       >
                         <Star
                           className={cn(
-                            "h-4 w-4 transition-colors",
+                            "h-4 w-4 transition-all duration-200",
                             favorites.includes(match.id)
-                              ? "fill-accent text-accent"
-                              : "text-muted-foreground hover:text-accent"
+                              ? "fill-accent text-accent scale-110"
+                              : "text-muted-foreground hover:text-accent hover:scale-110"
                           )}
                         />
                       </button>
@@ -446,6 +453,11 @@ export default function LiveScores() {
             </div>
           </Card>
         )}
+        {/* Match Detail Modal */}
+        <MatchDetailModal 
+          match={selectedMatch} 
+          onClose={() => setSelectedMatch(null)} 
+        />
       </div>
     </DashboardLayout>
   );
