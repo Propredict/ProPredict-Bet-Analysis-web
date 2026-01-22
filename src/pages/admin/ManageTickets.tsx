@@ -60,7 +60,9 @@ export default function ManageTickets() {
   // Match selection state
   const [matchSearch, setMatchSearch] = useState("");
   const [matchTab, setMatchTab] = useState<"today" | "custom">("today");
-  const [customMatchName, setCustomMatchName] = useState("");
+  const [customHomeTeam, setCustomHomeTeam] = useState("");
+  const [customAwayTeam, setCustomAwayTeam] = useState("");
+  const [customLeague, setCustomLeague] = useState("");
   const [customPrediction, setCustomPrediction] = useState("");
   const [customOdds, setCustomOdds] = useState("1.50");
 
@@ -86,7 +88,9 @@ export default function ManageTickets() {
     setResult("pending");
     setMatches([]);
     setMatchSearch("");
-    setCustomMatchName("");
+    setCustomHomeTeam("");
+    setCustomAwayTeam("");
+    setCustomLeague("");
     setCustomPrediction("");
     setCustomOdds("1.50");
   };
@@ -161,16 +165,21 @@ export default function ManageTickets() {
   };
 
   const addCustomMatch = () => {
-    if (customMatchName && customPrediction) {
+    if (customHomeTeam && customAwayTeam && customPrediction) {
+      const matchName = customLeague 
+        ? `${customHomeTeam} vs ${customAwayTeam} - ${customLeague}`
+        : `${customHomeTeam} vs ${customAwayTeam}`;
       setMatches([
         ...matches,
         {
-          match_name: customMatchName,
+          match_name: matchName,
           prediction: customPrediction,
           odds: parseFloat(customOdds) || 1.5,
         },
       ]);
-      setCustomMatchName("");
+      setCustomHomeTeam("");
+      setCustomAwayTeam("");
+      setCustomLeague("");
       setCustomPrediction("");
       setCustomOdds("1.50");
     }
@@ -433,13 +442,34 @@ export default function ManageTickets() {
                       </TabsContent>
 
                       <TabsContent value="custom" className="space-y-3 mt-4">
-                        <div className="space-y-3">
+                        <div className="space-y-3 p-4 bg-muted/20 rounded-lg border border-primary/30">
+                          <p className="text-sm font-medium text-primary">Create Custom Match</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Home Team *</Label>
+                              <Input
+                                placeholder="Home team name"
+                                value={customHomeTeam}
+                                onChange={(e) => setCustomHomeTeam(e.target.value)}
+                                className="bg-background"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Away Team *</Label>
+                              <Input
+                                placeholder="Away team name"
+                                value={customAwayTeam}
+                                onChange={(e) => setCustomAwayTeam(e.target.value)}
+                                className="bg-background"
+                              />
+                            </div>
+                          </div>
                           <div className="space-y-2">
-                            <Label>Match Name *</Label>
+                            <Label>League (optional)</Label>
                             <Input
-                              placeholder="e.g., Real Madrid vs Barcelona - La Liga"
-                              value={customMatchName}
-                              onChange={(e) => setCustomMatchName(e.target.value)}
+                              placeholder="League name"
+                              value={customLeague}
+                              onChange={(e) => setCustomLeague(e.target.value)}
                               className="bg-background"
                             />
                           </div>
@@ -469,11 +499,11 @@ export default function ManageTickets() {
                           <Button
                             type="button"
                             onClick={addCustomMatch}
-                            disabled={!customMatchName || !customPrediction}
-                            className="w-full"
+                            disabled={!customHomeTeam || !customAwayTeam || !customPrediction}
+                            className="w-full bg-primary hover:bg-primary/90"
                           >
                             <Plus className="h-4 w-4 mr-2" />
-                            Add Match
+                            Add Custom Match
                           </Button>
                         </div>
                       </TabsContent>
