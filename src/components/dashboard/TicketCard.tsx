@@ -1,9 +1,26 @@
-import { Ticket, Clock, Lock, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2, LogIn, Sparkles, Gift } from "lucide-react";
+import {
+  Ticket,
+  Clock,
+  Lock,
+  Unlock,
+  Star,
+  Crown,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  LogIn,
+  Sparkles,
+  Gift,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
+
+/* =====================
+   Types
+===================== */
 
 export interface TicketMatch {
   name: string;
@@ -15,7 +32,7 @@ export interface BettingTicket {
   id: string;
   title: string;
   matchCount: number;
-  status: "pending" | "won" | "lost";
+  status: "pending" | "won" | "lost"; // ✅ RESULT
   totalOdds: number;
   tier: ContentTier;
   matches: TicketMatch[];
@@ -28,6 +45,10 @@ interface TicketCardProps {
   onUnlockClick: () => void;
   isUnlocking?: boolean;
 }
+
+/* =====================
+   Helpers
+===================== */
 
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
@@ -64,8 +85,34 @@ function getTierBadge(tier: ContentTier) {
   }
 }
 
+function getResultBadge(status: "pending" | "won" | "lost") {
+  if (status === "won") {
+    return (
+      <Badge className="bg-success/20 text-success border-success/30 gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        Won
+      </Badge>
+    );
+  }
+
+  if (status === "lost") {
+    return (
+      <Badge className="bg-destructive/20 text-destructive border-destructive/30 gap-1">
+        <XCircle className="h-3 w-3" />
+        Lost
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge variant="outline" className="gap-1">
+      <Clock className="h-3 w-3" />
+      Pending
+    </Badge>
+  );
+}
+
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
-  if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
   if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
@@ -73,58 +120,29 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   return "";
 }
 
+/* =====================
+   Component
+===================== */
+
 export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TicketCardProps) {
   const moreMatches = ticket.matchCount - ticket.matches.length;
-
-  const getStatusBadge = () => {
-    switch (ticket.status) {
-      case "won":
-        return (
-          <Badge className="bg-success/20 text-success border-success/30">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Won
-          </Badge>
-        );
-      case "lost":
-        return (
-          <Badge className="bg-destructive/20 text-destructive border-destructive/30">
-            <XCircle className="h-3 w-3 mr-1" />
-            Lost
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        );
-    }
-  };
 
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
 
-    const Icon = unlockMethod.type === "login_required" ? LogIn :
-                 unlockMethod.type === "watch_ad" ? Sparkles : 
-                 unlockMethod.type === "upgrade_basic" ? Star : Crown;
-    
-    const buttonClass = unlockMethod.type === "watch_ad"
-      ? "bg-accent hover:bg-accent/90 text-accent-foreground border-accent"
-      : unlockMethod.type === "upgrade_basic"
-        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-        : unlockMethod.type === "upgrade_premium" 
-          ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
-          : "";
-
-    const buttonVariant = unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" 
-      ? "outline" 
-      : "default";
+    const Icon =
+      unlockMethod.type === "login_required"
+        ? LogIn
+        : unlockMethod.type === "watch_ad"
+          ? Sparkles
+          : unlockMethod.type === "upgrade_basic"
+            ? Star
+            : Crown;
 
     return (
-      <Button 
-        variant={buttonVariant}
-        className={cn("w-full gap-2", buttonClass)}
+      <Button
+        variant="outline"
+        className="w-full gap-2"
         disabled={isUnlocking}
         onClick={(e) => {
           e.stopPropagation();
@@ -134,7 +152,7 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
         {isUnlocking ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Watching ad...
+            Unlocking...
           </>
         ) : (
           <>
@@ -147,87 +165,56 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
   };
 
   return (
-    <Card 
+    <Card
       className={cn(
         "bg-card border-border overflow-hidden transition-all",
-        isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
+        isLocked && "cursor-pointer hover:border-primary/50",
       )}
-      onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
+      onClick={isLocked ? onUnlockClick : undefined}
     >
-      {/* Header */}
+      {/* HEADER */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {getTierBadge(ticket.tier)}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Ticket className="h-3 w-3" />
-              {ticket.matchCount} Matches
-            </span>
+            {getResultBadge(ticket.status)}
           </div>
-          {getStatusBadge()}
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Ticket className="h-3 w-3" />
+            {ticket.matchCount} matches
+          </span>
         </div>
+
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-          <span className={cn(
-            "font-bold",
-            isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary"
-          )}>
+          <span className={cn("font-bold", isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary")}>
             @{ticket.totalOdds.toFixed(2)}
           </span>
         </div>
       </div>
 
-      {/* Matches */}
+      {/* MATCHES */}
       <div className="p-4 space-y-2">
         {isLocked ? (
-          <>
-            {[1, 2, 3].map((idx) => (
-              <div key={idx} className="flex items-center justify-between text-sm">
-                <div className="h-4 w-32 bg-muted rounded blur-sm" />
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-14 bg-muted rounded blur-sm" />
-                  <div className="h-5 w-10 bg-primary/30 rounded blur-sm" />
-                </div>
-              </div>
-            ))}
-            <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
-              <Lock className="h-4 w-4" />
-              <span className="text-xs">Locked</span>
-            </div>
-          </>
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Lock className="h-4 w-4" />
+            <span className="text-xs">Locked</span>
+          </div>
         ) : (
           <>
-            {ticket.matches.map((match, idx) => (
+            {ticket.matches.map((m, idx) => (
               <div key={idx} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{match.name}</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {match.prediction}
-                  </Badge>
-                  <span className="text-primary font-medium">@{match.odds.toFixed(2)}</span>
-                </div>
+                <span className="text-muted-foreground">{m.name}</span>
+                <span className="text-primary font-medium">@{m.odds.toFixed(2)}</span>
               </div>
             ))}
-            {moreMatches > 0 && (
-              <p className="text-xs text-muted-foreground text-center pt-2">
-                +{moreMatches} more
-              </p>
-            )}
+            {moreMatches > 0 && <p className="text-xs text-muted-foreground text-center">+{moreMatches} more</p>}
           </>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-muted-foreground">Total Odds</span>
-          <span className={cn(
-            "font-bold text-lg",
-            isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary"
-          )}>
-            @{ticket.totalOdds.toFixed(2)}
-          </span>
-        </div>
+      {/* FOOTER */}
+      <div className="p-4 border-t border-border space-y-2">
         {getUnlockButton()}
         {!isLocked && (
           <Button variant="outline" className="w-full gap-2">
