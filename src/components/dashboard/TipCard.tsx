@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,58 @@ interface TipCardProps {
   isUnlocking?: boolean;
 }
 
+function getTierBadge(tier: ContentTier) {
+  switch (tier) {
+    case "free":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-muted text-muted-foreground">
+          <Gift className="h-3 w-3" />
+          Free
+        </Badge>
+      );
+    case "daily":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+          <Sparkles className="h-3 w-3" />
+          Daily
+        </Badge>
+      );
+    case "exclusive":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
+          <Star className="h-3 w-3" />
+          Exclusive
+        </Badge>
+      );
+    case "premium":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-warning/20 text-warning border-warning/30">
+          <Crown className="h-3 w-3" />
+          Premium
+        </Badge>
+      );
+    default:
+      return null;
+  }
+}
+
+function getUnlockButtonText(unlockMethod: UnlockMethod): string {
+  if (unlockMethod.type === "unlocked") return "";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
+  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
+  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "login_required") return "Sign in to Unlock";
+  return "";
+}
+
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "watch_ad") {
       return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
+    }
+    if (unlockMethod.type === "upgrade_basic") {
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
       return "bg-warning hover:bg-warning/90 text-warning-foreground";
@@ -48,7 +95,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       <div className="flex items-start justify-between gap-4">
         {/* Match Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-muted-foreground mb-1">{tip.league}</p>
+          <div className="flex items-center gap-2 mb-1">
+            {getTierBadge(tip.tier)}
+            <p className="text-xs text-muted-foreground">{tip.league}</p>
+          </div>
           <p className="font-medium text-foreground truncate">
             {tip.homeTeam} vs {tip.awayTeam}
           </p>
@@ -65,9 +115,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               </div>
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Lock className="h-3 w-3" />
-                <span className="text-xs">
-                  {unlockMethod && unlockMethod.type !== "unlocked" ? unlockMethod.message : "Locked"}
-                </span>
+                <span className="text-xs">Locked</span>
               </div>
             </>
           ) : (
@@ -95,7 +143,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       {/* Unlock Button for locked content */}
       {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
         <Button
-          variant={unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" ? "outline" : "default"}
+          variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
           size="sm"
           className={cn("w-full mt-3 gap-2", getUnlockButtonStyle())}
           disabled={isUnlocking}
@@ -112,10 +160,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
           ) : unlockMethod.type === "login_required" ? (
             <>
               <LogIn className="h-4 w-4" />
-              {unlockMethod.message}
+              {getUnlockButtonText(unlockMethod)}
             </>
           ) : (
-            unlockMethod.message
+            getUnlockButtonText(unlockMethod)
           )}
         </Button>
       )}
