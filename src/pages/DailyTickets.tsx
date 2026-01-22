@@ -1,27 +1,33 @@
 import { useState } from "react";
-import { Ticket, RefreshCw, Eye, Play, Loader2 } from "lucide-react";
+import { Ticket, RefreshCw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
   const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { getUnlockMethod, unlockContent } = useUserPlan();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
 
   // Filter tickets to only show daily tier
   const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily");
 
-  const handleUnlock = async (ticketId: string) => {
-    setUnlockingId(ticketId);
-    await unlockContent("ticket", ticketId);
-    setUnlockingId(null);
+  const handleUnlock = async (ticketId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
+    if (unlockMethod?.type === "login_required") {
+      navigate("/login");
+      return;
+    }
+    if (unlockMethod?.type === "watch_ad") {
+      setUnlockingId(ticketId);
+      await unlockContent("ticket", ticketId);
+      setUnlockingId(null);
+    }
   };
 
   return (
@@ -69,83 +75,29 @@ export default function DailyTickets() {
               const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const isUnlocking = unlockingId === ticket.id;
-              const matchesToShow = ticket.matches?.slice(0, 3) ?? [];
 
               return (
-                <Card key={ticket.id} className="bg-card border-border overflow-hidden">
-                  {/* Header */}
-                  <div className="p-4 border-b border-border">
-                    <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">Check</p>
-                  </div>
-
-                  {/* Matches */}
-                  <div className="p-4 space-y-3">
-                    {matchesToShow.map((match, idx) => (
-                      <div
-                        key={idx}
-                        className={cn(
-                          "flex items-center justify-between text-sm py-2 border-b border-border/50 last:border-0",
-                          isLocked && "blur-sm select-none"
-                        )}
-                      >
-                        <span className="text-muted-foreground">{match.match_name}</span>
-                        <span className="text-muted-foreground">@</span>
-                      </div>
-                    ))}
-                    {(ticket.matches?.length ?? 0) > 3 && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        +{(ticket.matches?.length ?? 0) - 3} more matches
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Footer with unlock */}
-                  {isLocked && unlockMethod && (
-                    <div className="p-4 border-t border-border flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Eye className="h-4 w-4" />
-                        <span>Watch ad to unlock predictions</span>
-                      </div>
-                      <Button
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-                        disabled={isUnlocking}
-                        onClick={() => {
-                          if (unlockMethod.type === "login_required") {
-                            navigate("/login");
-                          } else if (unlockMethod.type === "watch_ad") {
-                            handleUnlock(ticket.id);
-                          }
-                        }}
-                      >
-                        {isUnlocking ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Watching...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4" />
-                            Watch Ad
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* View Full Ticket when unlocked */}
-                  {!isLocked && (
-                    <div className="p-4 border-t border-border">
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => navigate(`/tickets/${ticket.id}`)}
-                      >
-                        View Full Ticket
-                      </Button>
-                    </div>
-                  )}
-                </Card>
+                <TicketCard
+                  key={ticket.id}
+                  ticket={{
+                    id: ticket.id,
+                    title: ticket.title,
+                    matchCount: ticket.matches?.length ?? 0,
+                    status: ticket.result ?? "pending",
+                    totalOdds: ticket.total_odds ?? 0,
+                    tier: ticket.tier,
+                    matches: (ticket.matches ?? []).slice(0, 3).map((m) => ({
+                      name: m.match_name,
+                      prediction: m.prediction,
+                      odds: m.odds,
+                    })),
+                  }}
+                  isLocked={isLocked}
+                  unlockMethod={unlockMethod}
+                  onUnlockClick={() => handleUnlock(ticket.id, unlockMethod)}
+                  onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
+                  isUnlocking={isUnlocking}
+                />
               );
             })
           )}

@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Lock, LogIn, Loader2 } from "lucide-react";
+import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import TicketCard from "@/components/dashboard/TicketCard";
 
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
@@ -23,10 +22,16 @@ export default function ExclusiveTickets() {
     canAccess("exclusive", "ticket", ticket.id)
   ).length;
 
-  const handleUnlock = async (ticketId: string) => {
-    setUnlockingId(ticketId);
-    await unlockContent("ticket", ticketId);
-    setUnlockingId(null);
+  const handleUnlock = async (ticketId: string, unlockMethod: ReturnType<typeof getUnlockMethod>) => {
+    if (unlockMethod?.type === "login_required") {
+      navigate("/login");
+      return;
+    }
+    if (unlockMethod?.type === "watch_ad") {
+      setUnlockingId(ticketId);
+      await unlockContent("ticket", ticketId);
+      setUnlockingId(null);
+    }
   };
 
   const showUpgradeBanner = plan === "free";
@@ -160,15 +165,7 @@ export default function ExclusiveTickets() {
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
-                  onUnlockClick={() => {
-                    if (unlockMethod?.type === "login_required") {
-                      navigate("/login");
-                    } else if (unlockMethod?.type === "watch_ad") {
-                      handleUnlock(ticket.id);
-                    } else if (unlockMethod?.type === "upgrade_basic") {
-                      navigate("/get-premium");
-                    }
-                  }}
+                  onUnlockClick={() => handleUnlock(ticket.id, unlockMethod)}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                   isUnlocking={isUnlocking}
                 />

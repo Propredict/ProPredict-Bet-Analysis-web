@@ -1,13 +1,12 @@
-import { useState } from "react";
-import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Lock, Loader2 } from "lucide-react";
+import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { TipCard } from "@/components/dashboard/TipCard";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
@@ -144,83 +143,30 @@ export default function PremiumTips() {
               const isLocked = unlockMethod?.type !== "unlocked";
 
               return (
-                <Card key={tip.id} className="bg-card border-border overflow-hidden">
-                  {/* Match Header */}
-                  <div className="p-4 bg-muted/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                        <span className="text-xs">⚽</span>
-                      </div>
-                      <Badge variant="outline" className="bg-muted text-foreground">
-                        {tip.league}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+                <TipCard
+                  key={tip.id}
+                  tip={{
+                    id: tip.id,
+                    homeTeam: tip.home_team,
+                    awayTeam: tip.away_team,
+                    league: tip.league,
+                    prediction: tip.prediction,
+                    odds: tip.odds,
+                    confidence: tip.confidence ?? 0,
+                    kickoff: tip.created_at_ts
+                      ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
                           weekday: "short",
                           month: "short",
-                          day: "numeric"
-                        }) : ""}
-                      </span>
-                      <Badge className="bg-warning/20 text-warning border-warning/30">
-                        <Crown className="h-3 w-3 mr-1" />
-                        Premium
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Match Title */}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground mb-4">
-                      {tip.home_team} vs {tip.away_team} - {tip.league}
-                    </h3>
-
-                    {/* Prediction/Odds/Confidence row */}
-                    <div className="grid grid-cols-3 gap-4 p-3 bg-muted/30 rounded-lg mb-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Prediction</p>
-                        {isLocked ? (
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Lock className="h-3 w-3" />
-                            <span className="text-sm">Locked</span>
-                          </div>
-                        ) : (
-                          <p className="text-sm font-medium text-foreground">{tip.prediction}</p>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">Odds</p>
-                        <p className={cn("text-sm font-medium", isLocked ? "text-muted-foreground" : "text-foreground")}>
-                          {isLocked ? "--" : `@${tip.odds.toFixed(2)}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-warning to-accent rounded-full"
-                              style={{ width: `${tip.confidence ?? 0}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium text-warning">{tip.confidence ?? 0}%</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Subscribe Button for locked premium content */}
-                    {isLocked && (
-                      <Button
-                        className="w-full gap-2 bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0"
-                        onClick={() => navigate("/get-premium")}
-                      >
-                        <Crown className="h-4 w-4" />
-                        Subscribe to Unlock
-                      </Button>
-                    )}
-                  </div>
-                </Card>
+                          day: "numeric",
+                        })
+                      : "",
+                    tier: tip.tier,
+                  }}
+                  isLocked={isLocked}
+                  unlockMethod={unlockMethod}
+                  onUnlockClick={() => navigate("/get-premium")}
+                  isUnlocking={false}
+                />
               );
             })
           )}
