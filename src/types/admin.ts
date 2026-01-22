@@ -8,12 +8,14 @@ export interface Tip {
   league: string;
   prediction: string;
   odds: number;
-  confidence: number;
-  kickoff: string;
-  ai_prediction?: string;
+  confidence?: number | null;
+  ai_prediction?: string | null;
   tier: ContentTier;
   status: ContentStatus;
   created_at?: string;
+  created_at_ts?: string;
+  updated_at?: string;
+  created_by?: string | null;
 }
 
 export interface TicketMatch {
@@ -39,7 +41,7 @@ export interface Ticket {
   matches?: TicketMatch[];
 }
 
-export type TipInsert = Omit<Tip, "id">;
+export type TipInsert = Omit<Tip, "id" | "created_at" | "created_at_ts" | "updated_at" | "created_by">;
 export type TipUpdate = Partial<TipInsert>;
 
 export type TicketInsert = Omit<Ticket, "id" | "created_at_ts" | "updated_at" | "created_by" | "matches">;

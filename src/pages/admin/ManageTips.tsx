@@ -32,73 +32,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tip, TipInsert, ContentTier, ContentStatus } from "@/types/admin";
+import { useTips } from "@/hooks/useTips";
 
-const defaultTip: Omit<TipInsert, "created_at"> = {
+const defaultTip: TipInsert = {
   home_team: "",
   away_team: "",
   league: "",
   prediction: "",
   odds: 1.5,
   confidence: 70,
-  kickoff: "15:00",
   ai_prediction: "",
   tier: "daily",
   status: "draft",
 };
 
-// Mock data for development
-const mockTips: Tip[] = [
-  {
-    id: "1",
-    home_team: "Liverpool",
-    away_team: "Manchester City",
-    league: "Premier League",
-    prediction: "Over 2.5 Goals",
-    odds: 1.85,
-    confidence: 78,
-    kickoff: "15:00",
-    ai_prediction: "Based on recent form and head-to-head statistics, both teams have been scoring consistently. Liverpool averages 2.1 goals at home while City scores 2.3 away. Expect an open game with multiple goals.",
-    tier: "premium",
-    status: "published",
-    created_at: new Date().toISOString().split("T")[0],
-  },
-  {
-    id: "2",
-    home_team: "Barcelona",
-    away_team: "Real Madrid",
-    league: "La Liga",
-    prediction: "Both Teams to Score",
-    odds: 1.65,
-    confidence: 85,
-    kickoff: "20:00",
-    ai_prediction: "El Clasico matches historically feature goals from both sides. In the last 10 meetings, BTTS hit 8 times. Both teams have strong attacking options available.",
-    tier: "exclusive",
-    status: "published",
-    created_at: new Date().toISOString().split("T")[0],
-  },
-  {
-    id: "3",
-    home_team: "Bayern Munich",
-    away_team: "Dortmund",
-    league: "Bundesliga",
-    prediction: "Bayern Win",
-    odds: 1.55,
-    confidence: 72,
-    kickoff: "17:30",
-    ai_prediction: "",
-    tier: "daily",
-    status: "draft",
-    created_at: new Date().toISOString().split("T")[0],
-  },
-];
-
 export default function ManageTips() {
-  const [tips, setTips] = useState<Tip[]>(mockTips);
+  const { tips, isLoading, createTip, updateTip, deleteTip } = useTips(true); // adminView = true
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTip, setEditingTip] = useState<Tip | null>(null);
-  const [formData, setFormData] = useState<Omit<TipInsert, "created_at">>(defaultTip);
+  const [formData, setFormData] = useState<TipInsert>(defaultTip);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = () => {
     setEditingTip(null);
@@ -114,8 +67,7 @@ export default function ManageTips() {
       league: tip.league,
       prediction: tip.prediction,
       odds: tip.odds,
-      confidence: tip.confidence,
-      kickoff: tip.kickoff,
+      confidence: tip.confidence ?? 70,
       ai_prediction: tip.ai_prediction || "",
       tier: tip.tier,
       status: tip.status,
@@ -124,35 +76,41 @@ export default function ManageTips() {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const today = new Date().toISOString().split("T")[0];
-    
     if (editingTip) {
-      setTips(prev => prev.map(tip => 
-        tip.id === editingTip.id 
-          ? { ...tip, ...formData }
-          : tip
-      ));
+      await updateTip.mutateAsync({
+        id: editingTip.id,
+        updates: {
+          home_team: formData.home_team,
+          away_team: formData.away_team,
+          league: formData.league,
+          prediction: formData.prediction,
+          odds: formData.odds,
+          confidence: formData.confidence,
+          ai_prediction: formData.ai_prediction || null,
+          tier: formData.tier,
+          status: formData.status,
+        },
+      });
     } else {
-      const newTip: Tip = {
-        id: crypto.randomUUID(),
-        ...formData,
-        created_at: today,
-      };
-      setTips(prev => [newTip, ...prev]);
+      await createTip.mutateAsync({
+        home_team: formData.home_team,
+        away_team: formData.away_team,
+        league: formData.league,
+        prediction: formData.prediction,
+        odds: formData.odds,
+        confidence: formData.confidence,
+        ai_prediction: formData.ai_prediction || null,
+        tier: formData.tier,
+        status: formData.status,
+      });
     }
     
-    setIsSubmitting(false);
     setIsDialogOpen(false);
   };
 
   const handleDelete = async () => {
     if (deleteId) {
-      setTips(prev => prev.filter(tip => tip.id !== deleteId));
+      await deleteTip.mutateAsync(deleteId);
       setDeleteId(null);
     }
   };
@@ -180,6 +138,9 @@ export default function ManageTips() {
     );
   };
 
+  const isSubmitting = createTip.isPending || updateTip.isPending;
+  const isDeleting = deleteTip.isPending;
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto space-y-6">
@@ -194,7 +155,12 @@ export default function ManageTips() {
           </Button>
         </div>
 
-        {tips.length === 0 ? (
+        {isLoading ? (
+          <Card className="p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-muted-foreground mt-2">Loading tips...</p>
+          </Card>
+        ) : tips.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">No tips yet. Create your first tip!</p>
           </Card>
@@ -290,7 +256,7 @@ export default function ManageTips() {
                   placeholder="e.g., Over 2.5 Goals"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Odds</Label>
                   <Input
@@ -307,16 +273,8 @@ export default function ManageTips() {
                     type="number"
                     min="0"
                     max="100"
-                    value={formData.confidence}
+                    value={formData.confidence ?? 70}
                     onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Kickoff</Label>
-                  <Input
-                    type="time"
-                    value={formData.kickoff}
-                    onChange={(e) => setFormData({ ...formData, kickoff: e.target.value })}
                   />
                 </div>
               </div>
@@ -389,8 +347,10 @@ export default function ManageTips() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
+                disabled={isDeleting}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
+                {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
