@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Check } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,7 +31,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useTips } from "@/hooks/useTips";
 import { Tip, TipInsert, ContentTier, ContentStatus } from "@/types/admin";
 
 const defaultTip: Omit<TipInsert, "created_at"> = {
@@ -40,17 +40,61 @@ const defaultTip: Omit<TipInsert, "created_at"> = {
   prediction: "",
   odds: 1.5,
   confidence: 70,
-  kickoff: "Today",
+  ai_prediction: "",
   tier: "daily",
   status: "draft",
 };
 
+// Mock data for development
+const mockTips: Tip[] = [
+  {
+    id: "1",
+    home_team: "Liverpool",
+    away_team: "Manchester City",
+    league: "Premier League",
+    prediction: "Over 2.5 Goals",
+    odds: 1.85,
+    confidence: 78,
+    ai_prediction: "Based on recent form and head-to-head statistics, both teams have been scoring consistently. Liverpool averages 2.1 goals at home while City scores 2.3 away. Expect an open game with multiple goals.",
+    tier: "premium",
+    status: "published",
+    created_at: new Date().toISOString().split("T")[0],
+  },
+  {
+    id: "2",
+    home_team: "Barcelona",
+    away_team: "Real Madrid",
+    league: "La Liga",
+    prediction: "Both Teams to Score",
+    odds: 1.65,
+    confidence: 85,
+    ai_prediction: "El Clasico matches historically feature goals from both sides. In the last 10 meetings, BTTS hit 8 times. Both teams have strong attacking options available.",
+    tier: "exclusive",
+    status: "published",
+    created_at: new Date().toISOString().split("T")[0],
+  },
+  {
+    id: "3",
+    home_team: "Bayern Munich",
+    away_team: "Dortmund",
+    league: "Bundesliga",
+    prediction: "Bayern Win",
+    odds: 1.55,
+    confidence: 72,
+    ai_prediction: "",
+    tier: "daily",
+    status: "draft",
+    created_at: new Date().toISOString().split("T")[0],
+  },
+];
+
 export default function ManageTips() {
-  const { tips, isLoading, createTip, updateTip, deleteTip } = useTips(true);
+  const [tips, setTips] = useState<Tip[]>(mockTips);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTip, setEditingTip] = useState<Tip | null>(null);
   const [formData, setFormData] = useState<Omit<TipInsert, "created_at">>(defaultTip);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = () => {
     setEditingTip(null);
@@ -67,7 +111,7 @@ export default function ManageTips() {
       prediction: tip.prediction,
       odds: tip.odds,
       confidence: tip.confidence,
-      kickoff: tip.kickoff,
+      ai_prediction: tip.ai_prediction,
       tier: tip.tier,
       status: tip.status,
     });
@@ -75,25 +119,35 @@ export default function ManageTips() {
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     const today = new Date().toISOString().split("T")[0];
     
     if (editingTip) {
-      await updateTip.mutateAsync({ 
-        id: editingTip.id, 
-        updates: formData 
-      });
+      setTips(prev => prev.map(tip => 
+        tip.id === editingTip.id 
+          ? { ...tip, ...formData }
+          : tip
+      ));
     } else {
-      await createTip.mutateAsync({ 
-        ...formData, 
-        created_at: today 
-      });
+      const newTip: Tip = {
+        id: crypto.randomUUID(),
+        ...formData,
+        created_at: today,
+      };
+      setTips(prev => [newTip, ...prev]);
     }
+    
+    setIsSubmitting(false);
     setIsDialogOpen(false);
   };
 
   const handleDelete = async () => {
     if (deleteId) {
-      await deleteTip.mutateAsync(deleteId);
+      setTips(prev => prev.filter(tip => tip.id !== deleteId));
       setDeleteId(null);
     }
   };
@@ -121,15 +175,13 @@ export default function ManageTips() {
     );
   };
 
-  const isPending = createTip.isPending || updateTip.isPending;
-
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Manage Tips</h1>
-            <p className="text-muted-foreground">Create and manage betting tips</p>
+            <p className="text-muted-foreground">Create and manage single match betting tips with AI predictions</p>
           </div>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -137,11 +189,7 @@ export default function ManageTips() {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : tips.length === 0 ? (
+        {tips.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">No tips yet. Create your first tip!</p>
           </Card>
@@ -171,6 +219,11 @@ export default function ManageTips() {
                         {tip.confidence}% confidence
                       </span>
                     </div>
+                    {tip.ai_prediction && (
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                        <strong>AI:</strong> {tip.ai_prediction}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(tip)}>
@@ -193,7 +246,7 @@ export default function ManageTips() {
 
         {/* Create/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
             </DialogHeader>
@@ -232,7 +285,7 @@ export default function ManageTips() {
                   placeholder="e.g., Over 2.5 Goals"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Odds</Label>
                   <Input
@@ -253,14 +306,15 @@ export default function ManageTips() {
                     onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) || 0 })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Kickoff</Label>
-                  <Input
-                    value={formData.kickoff}
-                    onChange={(e) => setFormData({ ...formData, kickoff: e.target.value })}
-                    placeholder="Today, 20:00"
-                  />
-                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>AI Prediction</Label>
+                <Textarea
+                  value={formData.ai_prediction}
+                  onChange={(e) => setFormData({ ...formData, ai_prediction: e.target.value })}
+                  placeholder="Enter AI analysis and prediction rationale..."
+                  rows={4}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -301,8 +355,8 @@ export default function ManageTips() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={isPending}>
-                {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingTip ? "Update" : "Create"}
               </Button>
             </DialogFooter>
@@ -324,7 +378,6 @@ export default function ManageTips() {
                 onClick={handleDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteTip.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
