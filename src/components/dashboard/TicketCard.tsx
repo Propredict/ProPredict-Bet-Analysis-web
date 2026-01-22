@@ -208,8 +208,8 @@ function TicketCard({
   return (
     <Card className={cn("bg-card border-border overflow-hidden transition-all", "hover:border-primary/50")}>
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-1">
           <h3 className="font-semibold text-foreground">{ticket.title}</h3>
           <div className="flex items-center gap-2">
             {isUnlocked ? (
@@ -218,7 +218,7 @@ function TicketCard({
                   <CheckCircle2 className="h-3 w-3" />
                   Unlocked
                 </Badge>
-                <Badge variant="outline" className="text-muted-foreground border-border">
+                <Badge variant="outline" className="text-muted-foreground border-border bg-muted/50">
                   Total Odds: {ticket.totalOdds.toFixed(2)}
                 </Badge>
               </>
@@ -231,16 +231,18 @@ function TicketCard({
       </div>
 
       {/* Matches */}
-      <div className="p-4 space-y-3">
+      <div className="px-4 pb-4 space-y-2">
         {isLocked ? (
           <>
             {[1, 2, 3].map((idx) => (
-              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">↗</span>
-                  <div className="h-4 w-40 bg-muted rounded blur-sm" />
+              <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">↗</span>
+                    <div className="h-4 w-40 bg-muted rounded blur-sm" />
+                  </div>
+                  <div className="h-4 w-12 bg-muted rounded blur-sm" />
                 </div>
-                <div className="h-4 w-12 bg-muted rounded blur-sm" />
               </div>
             ))}
             <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
@@ -251,17 +253,19 @@ function TicketCard({
         ) : (
           <>
             {ticket.matches.map((match, idx) => (
-              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                <div className="flex items-start gap-2">
-                  <span className="text-success mt-0.5">↗</span>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-foreground text-sm">{match.name}</span>
-                    <Badge className="w-fit text-xs bg-success/20 text-success border-success/30 rounded-full px-2 py-0.5">
-                      {match.prediction}
-                    </Badge>
+              <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-2">
+                    <span className="text-success mt-0.5">↗</span>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-foreground text-sm">{match.name}</span>
+                      <Badge className="w-fit text-xs bg-success text-success-foreground rounded-full px-2 py-0.5">
+                        {match.prediction}
+                      </Badge>
+                    </div>
                   </div>
+                  <span className="text-success font-medium text-sm">@{match.odds.toFixed(2)}</span>
                 </div>
-                <span className="text-success font-medium text-sm">@{match.odds.toFixed(2)}</span>
               </div>
             ))}
             {moreMatches > 0 && <p className="text-xs text-muted-foreground text-center pt-2">+{moreMatches} more</p>}
