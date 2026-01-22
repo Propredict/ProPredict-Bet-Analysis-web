@@ -416,7 +416,7 @@ export default function ManageTickets() {
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {fixture.league} •{" "}
-                                      {fixture.startTime
+                                      {fixture.startTime && !isNaN(new Date(fixture.startTime).getTime())
                                         ? format(new Date(fixture.startTime), "HH:mm")
                                         : "TBD"}
                                     </p>
