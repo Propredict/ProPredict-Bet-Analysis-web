@@ -28,7 +28,17 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Clear local state first to ensure UI updates even if server call fails
+    setSession(null);
+    setUser(null);
+    
+    try {
+      // Try to sign out from Supabase (may fail if session expired)
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (error) {
+      // Ignore errors - local state is already cleared
+      console.log("Sign out completed (session may have been expired)");
+    }
   };
 
   return {
