@@ -54,8 +54,11 @@ export default function LiveScores() {
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   
-  // Fetch fixtures based on date filter
-  const { matches, isLoading, error, refetch } = useFixtures(dateFilter);
+  // Determine if we should fetch live only (Today + Live Now filter)
+  const fetchLiveOnly = dateFilter === "today" && statusFilter === "live";
+  
+  // Fetch fixtures based on date filter and live mode
+  const { matches, isLoading, error, refetch } = useFixtures(dateFilter, fetchLiveOnly);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const formatLastUpdated = (date: Date) => {
@@ -82,8 +85,6 @@ export default function LiveScores() {
   }, [refetch, toast]);
 
   const getDateLabel = (filter: DateFilter) => {
-    if (filter === "live") return "Now";
-    
     const today = new Date();
     const date = new Date(today);
     
@@ -92,6 +93,18 @@ export default function LiveScores() {
     
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
+
+  // Reset status filter to "all" when switching away from Today
+  const handleDateFilterChange = (filter: DateFilter) => {
+    setDateFilter(filter);
+    // Disable live filter when not on Today
+    if (filter !== "today" && statusFilter === "live") {
+      setStatusFilter("all");
+    }
+  };
+
+  // Check if live filter should be disabled
+  const isLiveFilterDisabled = dateFilter !== "today";
 
   // Filter matches based on UI filters
   const filteredMatches = useMemo(() => {
@@ -238,10 +251,10 @@ export default function LiveScores() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-                {(["live", "yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
+                {(["yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
                   <button
                     key={filter}
-                    onClick={() => setDateFilter(filter)}
+                    onClick={() => handleDateFilterChange(filter)}
                     className={cn(
                       "px-4 py-2 rounded-md transition-all flex flex-col items-center min-w-[70px]",
                       dateFilter === filter
@@ -249,10 +262,7 @@ export default function LiveScores() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    <span className="text-sm font-medium capitalize flex items-center gap-1">
-                      {filter === "live" && <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />}
-                      {filter}
-                    </span>
+                    <span className="text-sm font-medium capitalize">{filter}</span>
                     <span className="text-xs opacity-70">{getDateLabel(filter)}</span>
                   </button>
                 ))}
@@ -280,25 +290,30 @@ export default function LiveScores() {
                 { key: "live", label: "Live Now", badge: true },
                 { key: "upcoming", label: "Upcoming" },
                 { key: "finished", label: "Finished" },
-              ] as { key: StatusFilter; label: string; badge?: boolean }[]).map((filter) => (
-                <Button
-                  key={filter.key}
-                  variant={statusFilter === filter.key ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter(filter.key)}
-                  className={cn(
-                    "gap-2",
-                    statusFilter === filter.key 
-                      ? "bg-primary text-primary-foreground" 
-                      : "border-border hover:bg-muted"
-                  )}
-                >
-                  {filter.label}
-                  {filter.badge && (
-                    <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                  )}
-                </Button>
-              ))}
+              ] as { key: StatusFilter; label: string; badge?: boolean }[]).map((filter) => {
+                const isDisabled = filter.key === "live" && isLiveFilterDisabled;
+                return (
+                  <Button
+                    key={filter.key}
+                    variant={statusFilter === filter.key ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => !isDisabled && setStatusFilter(filter.key)}
+                    disabled={isDisabled}
+                    className={cn(
+                      "gap-2",
+                      statusFilter === filter.key 
+                        ? "bg-primary text-primary-foreground" 
+                        : "border-border hover:bg-muted",
+                      isDisabled && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    {filter.label}
+                    {filter.badge && !isDisabled && (
+                      <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                    )}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -463,11 +478,11 @@ export default function LiveScores() {
               </div>
               <div>
                 <p className="text-lg font-medium text-foreground">
-                  {dateFilter === "live" ? "No live matches right now" : "No matches found"}
+                  {fetchLiveOnly ? "No live matches right now" : "No matches found"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {dateFilter === "live" 
-                    ? "Check back soon or switch to Today for scheduled matches" 
+                  {fetchLiveOnly 
+                    ? "Check back soon or view all Today's matches" 
                     : "Try a different date or adjust your filters"}
                 </p>
               </div>
