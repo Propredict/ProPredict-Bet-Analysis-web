@@ -2,9 +2,26 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+/* =====================
+   Types
+===================== */
+
 export type UserPlan = "free" | "basic" | "premium";
 export type ContentTier = "free" | "daily" | "exclusive" | "premium";
 export type ContentType = "tip" | "ticket";
+
+export type UnlockMethod =
+  | { type: "unlocked" }
+  | { type: "login_required"; message: "Sign in to unlock" }
+  | { type: "watch_ad"; message: "Watch an ad to unlock" }
+  | { type: "upgrade_basic"; message: "Upgrade to Basic" }
+  | { type: "upgrade_premium"; message: "Upgrade to Premium" };
+
+interface UnlockedContent {
+  contentType: ContentType;
+  contentId: string;
+  expiresAt: Date;
+}
 
 interface UserPlanContextType {
   plan: UserPlan;
@@ -18,27 +35,27 @@ interface UserPlanContextType {
   refetch: () => Promise<void>;
 }
 
-export type UnlockMethod = 
-  | { type: "unlocked" }
-  | { type: "login_required"; message: string }
-  | { type: "watch_ad"; message: string }
-  | { type: "upgrade_basic"; message: string }
-  | { type: "upgrade_premium"; message: string };
-
-interface UnlockedContent {
-  contentType: ContentType;
-  contentId: string;
-  expiresAt: Date;
-}
+/* =====================
+   Context
+===================== */
 
 const UserPlanContext = createContext<UserPlanContextType | undefined>(undefined);
 
+/* =====================
+   Provider
+===================== */
+
 export function UserPlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+
   const [plan, setPlan] = useState<UserPlan>("free");
-  const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
+
+  /* =====================
+     Fetch User Data
+  ===================== */
 
   const fetchUserData = useCallback(async () => {
     if (!user) {
@@ -50,27 +67,20 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Fetch profile role, subscription, and unlocks in parallel
-      const [profileResult, subscriptionResult, unlocksResult] = await Promise.all([
-        (supabase as any)
-          .from("profiles")
-          .select("role")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        (supabase as any)
-          .from("user_subscriptions")
-          .select("plan, expires_at")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        (supabase as any)
+      const [profileRes, subRes, unlocksRes] = await Promise.all([
+        supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
+
+        supabase.from("user_subscriptions").select("plan, expires_at").eq("user_id", user.id).maybeSingle(),
+
+        supabase
           .from("user_unlocks")
-          .select("content_type, content_id, unlocked_date")
+          .select("content_type, content_id, expires_at")
           .eq("user_id", user.id)
-          .eq("unlocked_date", new Date().toISOString().split('T')[0])
+          .gte("expires_at", new Date().toISOString()),
       ]);
 
-      // Check admin status
-      if (profileResult.data?.role === "admin") {
+      /* ===== ADMIN OVERRIDE ===== */
+      if (profileRes.data?.role === "admin") {
         setIsAdmin(true);
         setPlan("premium");
         setUnlockedContent([]);
@@ -80,54 +90,38 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       setIsAdmin(false);
 
-      // Handle unlocks - expires at end of UTC day
-      if (unlocksResult.data && Array.isArray(unlocksResult.data)) {
-        const now = new Date();
-        const endOfDay = new Date(Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate() + 1,
-          0, 0, 0, 0
-        ));
+      /* ===== UNLOCKED CONTENT ===== */
+      if (Array.isArray(unlocksRes.data)) {
         setUnlockedContent(
-          unlocksResult.data.map((unlock: any) => ({
-            contentType: unlock.content_type as ContentType,
-            contentId: unlock.content_id,
-            expiresAt: endOfDay,
-          }))
+          unlocksRes.data.map((u: any) => ({
+            contentType: u.content_type,
+            contentId: u.content_id,
+            expiresAt: new Date(u.expires_at),
+          })),
         );
       } else {
         setUnlockedContent([]);
       }
 
-      // Handle subscription for non-admin users
-      if (subscriptionResult.error) {
-        console.error("Error fetching subscription:", subscriptionResult.error);
+      /* ===== SUBSCRIPTION ===== */
+      if (!subRes.data) {
         setPlan("free");
         setIsLoading(false);
         return;
       }
 
-      if (!subscriptionResult.data) {
-        setPlan("free");
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if subscription has expired
-      if (subscriptionResult.data.expires_at) {
-        const expiresAt = new Date(subscriptionResult.data.expires_at);
-        const now = new Date();
-        if (expiresAt < now) {
+      if (subRes.data.expires_at) {
+        const exp = new Date(subRes.data.expires_at);
+        if (exp < new Date()) {
           setPlan("free");
           setIsLoading(false);
           return;
         }
       }
 
-      setPlan(subscriptionResult.data.plan as UserPlan);
+      setPlan(subRes.data.plan as UserPlan);
     } catch (err) {
-      console.error("Error in fetchUserData:", err);
+      console.error("UserPlan error:", err);
       setPlan("free");
       setIsAdmin(false);
       setUnlockedContent([]);
@@ -140,145 +134,120 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     fetchUserData();
   }, [fetchUserData]);
 
-  const isContentUnlocked = useCallback((contentType: ContentType, contentId: string): boolean => {
-    const now = new Date();
-    return unlockedContent.some(
-      (unlock) =>
-        unlock.contentType === contentType &&
-        unlock.contentId === contentId &&
-        unlock.expiresAt > now
-    );
-  }, [unlockedContent]);
+  /* =====================
+     Helpers
+  ===================== */
 
-  const canAccess = useCallback((tier: ContentTier, contentType?: ContentType, contentId?: string): boolean => {
-    // Admins have full access to everything
-    if (isAdmin) {
-      return true;
-    }
-
-    switch (tier) {
-      case "free":
-        return true;
-      case "daily":
-        // Basic and Premium users have full access
-        if (plan === "basic" || plan === "premium") {
-          return true;
-        }
-        // Free users need per-content unlock
-        if (contentType && contentId) {
-          return isContentUnlocked(contentType, contentId);
-        }
-        return false;
-      case "exclusive":
-        // Basic and Premium users have full access
-        if (plan === "basic" || plan === "premium") {
-          return true;
-        }
-        // Free users need per-content unlock
-        if (contentType && contentId) {
-          return isContentUnlocked(contentType, contentId);
-        }
-        return false;
-      case "premium":
-        return plan === "premium";
-      default:
-        return false;
-    }
-  }, [isAdmin, plan, isContentUnlocked]);
-
-  const getUnlockMethod = useCallback((tier: ContentTier, contentType?: ContentType, contentId?: string): UnlockMethod | null => {
-    // Admins always see content as unlocked
-    if (isAdmin) {
-      return { type: "unlocked" };
-    }
-
-    // Check if already accessible
-    if (canAccess(tier, contentType, contentId)) {
-      return { type: "unlocked" };
-    }
-
-    // Guests need to sign in first for any gated content
-    if (!user) {
-      if (tier === "premium") {
-        return { type: "upgrade_premium", message: "Upgrade to Premium" };
-      }
-      return { type: "login_required", message: "Sign in to unlock" };
-    }
-
-    switch (tier) {
-      case "daily":
-        // Free users can watch ads for daily content
-        if (plan === "free") {
-          return { type: "watch_ad", message: "Watch an ad to unlock" };
-        }
-        return null;
-      case "exclusive":
-        // Exclusive content requires Basic or higher - NO ads
-        if (plan === "free") {
-          return { type: "upgrade_basic", message: "Upgrade to Basic" };
-        }
-        return null;
-      case "premium":
-        // Premium content always requires Premium upgrade - NO ads allowed
-        return { type: "upgrade_premium", message: "Upgrade to Premium" };
-      default:
-        return null;
-    }
-  }, [isAdmin, user, plan, canAccess]);
-
-  const unlockContent = useCallback(async (contentType: ContentType, contentId: string): Promise<boolean> => {
-    if (!user) {
-      console.error("User must be logged in to unlock content");
-      return false;
-    }
-
-    // Simulate watching an ad (in real app, integrate with ad SDK)
-    console.log("Simulating ad playback for:", contentType, contentId);
-
-    try {
-      const { error } = await (supabase as any)
-        .from("user_unlocks")
-        .insert({
-          user_id: user.id,
-          content_type: contentType,
-          content_id: contentId,
-          unlocked_date: new Date().toISOString().split('T')[0],
-        });
-
-      if (error) {
-        // If duplicate, content is already unlocked for today
-        if (error.code === "23505") {
-          console.log("Content already unlocked for today");
-          return true;
-        }
-        console.error("Error unlocking content:", error);
-        return false;
-      }
-
-      // Add to local state immediately for instant UI update
+  const isContentUnlocked = useCallback(
+    (contentType: ContentType, contentId: string) => {
       const now = new Date();
-      const endOfDay = new Date(Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate() + 1,
-        0, 0, 0, 0
-      ));
-      
-      setUnlockedContent((prev) => [
-        ...prev,
-        {
-          contentType,
-          contentId,
-          expiresAt: endOfDay,
-        },
-      ]);
+      return unlockedContent.some(
+        (u) => u.contentType === contentType && u.contentId === contentId && u.expiresAt > now,
+      );
+    },
+    [unlockedContent],
+  );
+
+  /* =====================
+     ACCESS RULES
+  ===================== */
+
+  const canAccess = useCallback(
+    (tier: ContentTier, contentType?: ContentType, contentId?: string) => {
+      if (isAdmin) return true;
+
+      if (tier === "free") return true;
+
+      if (tier === "daily" || tier === "exclusive") {
+        if (plan === "basic" || plan === "premium") return true;
+        if (contentType && contentId) {
+          return isContentUnlocked(contentType, contentId);
+        }
+        return false;
+      }
+
+      if (tier === "premium") {
+        return plan === "premium";
+      }
+
+      return false;
+    },
+    [isAdmin, plan, isContentUnlocked],
+  );
+
+  /* =====================
+     UNLOCK METHOD (UI)
+  ===================== */
+
+  const getUnlockMethod = useCallback(
+    (tier: ContentTier, contentType?: ContentType, contentId?: string): UnlockMethod | null => {
+      if (isAdmin) return { type: "unlocked" };
+
+      if (canAccess(tier, contentType, contentId)) {
+        return { type: "unlocked" };
+      }
+
+      // GUEST
+      if (!user) {
+        return { type: "login_required", message: "Sign in to unlock" };
+      }
+
+      // DAILY + EXCLUSIVE → ADS for FREE users
+      if ((tier === "daily" || tier === "exclusive") && plan === "free") {
+        return { type: "watch_ad", message: "Watch an ad to unlock" };
+      }
+
+      // EXCLUSIVE → upgrade to basic (no ads)
+      if (tier === "exclusive" && plan === "free") {
+        return { type: "upgrade_basic", message: "Upgrade to Basic" };
+      }
+
+      // PREMIUM → ONLY premium
+      if (tier === "premium") {
+        return {
+          type: "upgrade_premium",
+          message: "Upgrade to Premium",
+        };
+      }
+
+      return null;
+    },
+    [isAdmin, user, plan, canAccess],
+  );
+
+  /* =====================
+     UNLOCK CONTENT (ADS)
+  ===================== */
+
+  const unlockContent = useCallback(
+    async (contentType: ContentType, contentId: string) => {
+      if (!user) return false;
+
+      const now = new Date();
+      const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+
+      const { error } = await supabase.from("user_unlocks").insert({
+        user_id: user.id,
+        content_type: contentType,
+        content_id: contentId,
+        expires_at: endOfDay.toISOString(),
+      });
+
+      if (error && error.code !== "23505") {
+        console.error("Unlock error:", error);
+        return false;
+      }
+
+      setUnlockedContent((prev) => [...prev, { contentType, contentId, expiresAt: endOfDay }]);
 
       return true;
-    } catch (err) {
-      console.error("Error in unlockContent:", err);
-      return false;
-    }
-  }, [user]);
+    },
+    [user],
+  );
+
+  /* =====================
+     Provider
+  ===================== */
 
   return (
     <UserPlanContext.Provider
@@ -299,10 +268,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* =====================
+   Hook
+===================== */
+
 export function useUserPlan() {
-  const context = useContext(UserPlanContext);
-  if (context === undefined) {
-    throw new Error("useUserPlan must be used within a UserPlanProvider");
+  const ctx = useContext(UserPlanContext);
+  if (!ctx) {
+    throw new Error("useUserPlan must be used inside UserPlanProvider");
   }
-  return context;
+  return ctx;
 }
