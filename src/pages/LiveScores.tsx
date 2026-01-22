@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { 
   Zap, 
@@ -26,41 +26,9 @@ import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
 import { useMatchAlerts } from "@/hooks/useMatchAlerts";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useFixtures, type DateFilter, type Match } from "@/hooks/useFixtures";
 
-type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
-type DateFilter = "yesterday" | "today" | "tomorrow";
 type StatusFilter = "all" | "live" | "upcoming" | "finished";
-
-interface Match {
-  id: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  status: MatchStatus;
-  minute?: number;
-  startTime?: string;
-  league: string;
-  leagueCountry: string;
-}
-
-const mockMatches: Match[] = [
-  // Premier League
-  { id: "1", homeTeam: "Manchester United", awayTeam: "Liverpool", homeScore: 2, awayScore: 1, status: "live", minute: 67, league: "Premier League", leagueCountry: "England" },
-  { id: "2", homeTeam: "Arsenal", awayTeam: "Chelsea", homeScore: 1, awayScore: 1, status: "halftime", league: "Premier League", leagueCountry: "England" },
-  { id: "3", homeTeam: "Manchester City", awayTeam: "Tottenham", homeScore: null, awayScore: null, status: "upcoming", startTime: "15:00", league: "Premier League", leagueCountry: "England" },
-  // La Liga
-  { id: "4", homeTeam: "Real Madrid", awayTeam: "Barcelona", homeScore: 3, awayScore: 2, status: "live", minute: 82, league: "La Liga", leagueCountry: "Spain" },
-  { id: "5", homeTeam: "Atletico Madrid", awayTeam: "Sevilla", homeScore: 2, awayScore: 0, status: "finished", league: "La Liga", leagueCountry: "Spain" },
-  // Bundesliga
-  { id: "6", homeTeam: "Bayern Munich", awayTeam: "Borussia Dortmund", homeScore: 1, awayScore: 0, status: "live", minute: 34, league: "Bundesliga", leagueCountry: "Germany" },
-  { id: "7", homeTeam: "RB Leipzig", awayTeam: "Bayer Leverkusen", homeScore: null, awayScore: null, status: "upcoming", startTime: "17:30", league: "Bundesliga", leagueCountry: "Germany" },
-  // Serie A
-  { id: "8", homeTeam: "AC Milan", awayTeam: "Inter Milan", homeScore: 0, awayScore: 0, status: "live", minute: 12, league: "Serie A", leagueCountry: "Italy" },
-  { id: "9", homeTeam: "Juventus", awayTeam: "Napoli", homeScore: 1, awayScore: 2, status: "finished", league: "Serie A", leagueCountry: "Italy" },
-  // Champions League
-  { id: "10", homeTeam: "PSG", awayTeam: "Man City", homeScore: null, awayScore: null, status: "upcoming", startTime: "20:00", league: "Champions League", leagueCountry: "Europe" },
-];
 
 const leagues = [
   "All Leagues",
@@ -73,25 +41,22 @@ const leagues = [
   "Europa League",
 ];
 
+
 export default function LiveScores() {
   const [activeLeague, setActiveLeague] = useState("All Leagues");
   const [dateFilter, setDateFilter] = useState<DateFilter>("today");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [alertMatch, setAlertMatch] = useState<Match | null>(null);
   const { toast } = useToast();
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
-
-  const currentTime = new Date().toLocaleTimeString("en-US", { 
-    hour: "2-digit", 
-    minute: "2-digit",
-    hour12: false 
-  });
+  
+  // Fetch fixtures based on date filter
+  const { matches, isLoading, error, refetch } = useFixtures(dateFilter);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const formatLastUpdated = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
@@ -102,14 +67,9 @@ export default function LiveScores() {
   };
 
   const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
     setShowSuccess(false);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await refetch();
     setLastUpdated(new Date());
-    setIsRefreshing(false);
     setShowSuccess(true);
     
     toast({
@@ -119,9 +79,11 @@ export default function LiveScores() {
     
     // Hide success indicator after 2 seconds
     setTimeout(() => setShowSuccess(false), 2000);
-  }, [toast]);
+  }, [refetch, toast]);
 
   const getDateLabel = (filter: DateFilter) => {
+    if (filter === "live") return "Now";
+    
     const today = new Date();
     const date = new Date(today);
     
@@ -131,32 +93,37 @@ export default function LiveScores() {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const filteredMatches = mockMatches.filter((match) => {
-    if (activeLeague !== "All Leagues" && match.league !== activeLeague) return false;
-    if (statusFilter === "live" && match.status !== "live" && match.status !== "halftime") return false;
-    if (statusFilter === "upcoming" && match.status !== "upcoming") return false;
-    if (statusFilter === "finished" && match.status !== "finished") return false;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        match.homeTeam.toLowerCase().includes(query) ||
-        match.awayTeam.toLowerCase().includes(query) ||
-        match.league.toLowerCase().includes(query) ||
-        match.leagueCountry.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
+  // Filter matches based on UI filters
+  const filteredMatches = useMemo(() => {
+    return matches.filter((match) => {
+      if (activeLeague !== "All Leagues" && match.league !== activeLeague) return false;
+      if (statusFilter === "live" && match.status !== "live" && match.status !== "halftime") return false;
+      if (statusFilter === "upcoming" && match.status !== "upcoming") return false;
+      if (statusFilter === "finished" && match.status !== "finished") return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          match.homeTeam.toLowerCase().includes(query) ||
+          match.awayTeam.toLowerCase().includes(query) ||
+          match.league.toLowerCase().includes(query) ||
+          match.leagueCountry.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    });
+  }, [matches, activeLeague, statusFilter, searchQuery]);
 
-  const groupedMatches = filteredMatches.reduce((acc, match) => {
-    if (!acc[match.league]) acc[match.league] = [];
-    acc[match.league].push(match);
-    return acc;
-  }, {} as Record<string, Match[]>);
+  const groupedMatches = useMemo(() => {
+    return filteredMatches.reduce((acc, match) => {
+      if (!acc[match.league]) acc[match.league] = [];
+      acc[match.league].push(match);
+      return acc;
+    }, {} as Record<string, Match[]>);
+  }, [filteredMatches]);
 
-  const liveCount = mockMatches.filter(m => m.status === "live" || m.status === "halftime").length;
-  const totalCount = mockMatches.length;
-  const leagueCount = new Set(mockMatches.map(m => m.league)).size;
+  const liveCount = matches.filter(m => m.status === "live" || m.status === "halftime").length;
+  const totalCount = matches.length;
+  const leagueCount = new Set(matches.map(m => m.league)).size;
 
 
   const getStatusBadge = (match: Match) => {
@@ -224,15 +191,15 @@ export default function LiveScores() {
                   size="icon" 
                   className={cn(
                     "h-9 w-9 transition-all duration-200",
-                    isRefreshing && "bg-primary/10 border-primary"
+                    isLoading && "bg-primary/10 border-primary"
                   )}
                   onClick={handleRefresh}
-                  disabled={isRefreshing}
+                  disabled={isLoading}
                 >
                   <RefreshCw 
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      isRefreshing && "animate-spin text-primary"
+                      isLoading && "animate-spin text-primary"
                     )} 
                   />
                 </Button>
@@ -267,27 +234,30 @@ export default function LiveScores() {
 
             {/* Date Selector */}
             <div className="flex items-center justify-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-                {(["yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
+                {(["live", "yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setDateFilter(filter)}
                     className={cn(
-                      "px-4 py-2 rounded-md transition-all flex flex-col items-center min-w-[80px]",
+                      "px-4 py-2 rounded-md transition-all flex flex-col items-center min-w-[70px]",
                       dateFilter === filter
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    <span className="text-sm font-medium capitalize">{filter}</span>
+                    <span className="text-sm font-medium capitalize flex items-center gap-1">
+                      {filter === "live" && <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />}
+                      {filter}
+                    </span>
                     <span className="text-xs opacity-70">{getDateLabel(filter)}</span>
                   </button>
                 ))}
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -333,8 +303,37 @@ export default function LiveScores() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <Card className="p-12 bg-card border-border text-center">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading fixtures...</p>
+            </div>
+          </Card>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <Card className="p-12 bg-card border-destructive/50 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                <Zap className="h-8 w-8 text-destructive" />
+              </div>
+              <div>
+                <p className="text-lg font-medium text-foreground">Failed to load fixtures</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+              <Button variant="outline" onClick={handleRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Match List */}
-        {Object.keys(groupedMatches).length > 0 ? (
+        {!isLoading && !error && Object.keys(groupedMatches).length > 0 ? (
           <div className="space-y-4">
             {Object.entries(groupedMatches).map(([league, matches]) => (
               <Card key={league} className="bg-card border-border overflow-hidden">
@@ -455,7 +454,7 @@ export default function LiveScores() {
               </Card>
             ))}
           </div>
-        ) : (
+        ) : !isLoading && !error ? (
           /* Empty State */
           <Card className="p-12 bg-card border-border text-center">
             <div className="flex flex-col items-center gap-4">
@@ -463,16 +462,22 @@ export default function LiveScores() {
                 <Zap className="h-8 w-8 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-lg font-medium text-foreground">No live matches available</p>
-                <p className="text-sm text-muted-foreground">Check back soon for upcoming games</p>
+                <p className="text-lg font-medium text-foreground">
+                  {dateFilter === "live" ? "No live matches right now" : "No matches found"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {dateFilter === "live" 
+                    ? "Check back soon or switch to Today for scheduled matches" 
+                    : "Try a different date or adjust your filters"}
+                </p>
               </div>
-              <Button variant="outline" className="mt-2">
+              <Button variant="outline" className="mt-2" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
             </div>
           </Card>
-        )}
+        ) : null}
         {/* Match Detail Modal */}
         <MatchDetailModal 
           match={selectedMatch} 

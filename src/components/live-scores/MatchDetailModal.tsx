@@ -20,7 +20,7 @@ interface Match {
   homeScore: number | null;
   awayScore: number | null;
   status: MatchStatus;
-  minute?: number;
+  minute?: number | null;
   startTime?: string;
   league: string;
   leagueCountry: string;
