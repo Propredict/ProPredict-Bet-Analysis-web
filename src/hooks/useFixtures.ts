@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
-export type DateFilter = "live" | "yesterday" | "today" | "tomorrow";
+export type DateFilter = "yesterday" | "today" | "tomorrow";
 
 export interface Match {
   id: string;
@@ -27,7 +27,7 @@ interface UseFixturesResult {
   refetch: () => Promise<void>;
 }
 
-export function useFixtures(dateFilter: DateFilter): UseFixturesResult {
+export function useFixtures(dateFilter: DateFilter, fetchLiveOnly: boolean = false): UseFixturesResult {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +37,9 @@ export function useFixtures(dateFilter: DateFilter): UseFixturesResult {
     setError(null);
 
     try {
-      // Map the filter to the API mode
-      const mode = dateFilter;
+      // If today + live filter is active, use live mode; otherwise use date mode
+      const mode = fetchLiveOnly ? "live" : dateFilter;
 
-      const { data, error: fnError } = await supabase.functions.invoke("get-fixtures", {
-        body: null,
-        method: "GET",
-      });
-
-      // Since we can't pass query params directly with invoke, we'll use a workaround
-      // by calling the function URL directly
       const supabaseUrl = "https://tczettddxmlcmhdhgebw.supabase.co";
       const response = await fetch(
         `${supabaseUrl}/functions/v1/get-fixtures?mode=${mode}`,
@@ -76,7 +69,7 @@ export function useFixtures(dateFilter: DateFilter): UseFixturesResult {
     } finally {
       setIsLoading(false);
     }
-  }, [dateFilter]);
+  }, [dateFilter, fetchLiveOnly]);
 
   useEffect(() => {
     fetchFixtures();
