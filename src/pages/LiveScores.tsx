@@ -167,26 +167,29 @@ export default function LiveScores() {
     switch (match.status) {
       case "live":
         return (
-          <Badge className="bg-destructive text-destructive-foreground animate-pulse gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {match.minute}'
+          <Badge className="bg-destructive text-destructive-foreground gap-1.5 font-semibold shadow-lg shadow-destructive/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-current" />
+            </span>
+            LIVE {match.minute}'
           </Badge>
         );
       case "halftime":
         return (
-          <Badge variant="secondary" className="bg-accent/20 text-accent">
+          <Badge className="bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 font-semibold">
             HT
           </Badge>
         );
       case "finished":
         return (
-          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+          <Badge variant="secondary" className="bg-muted/50 text-muted-foreground font-medium">
             FT
           </Badge>
         );
       case "upcoming":
         return (
-          <Badge variant="outline" className="border-border text-muted-foreground">
+          <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-medium">
             {match.startTime}
           </Badge>
         );
@@ -396,7 +399,9 @@ export default function LiveScores() {
                       className={cn(
                         "px-4 py-3 flex items-center gap-4 transition-all cursor-pointer",
                         "hover:bg-muted/50 active:bg-muted/70 active:scale-[0.995]",
-                        (match.status === "live" || match.status === "halftime") && "bg-primary/5 hover:bg-primary/10"
+                        match.status === "live" && "bg-destructive/5 hover:bg-destructive/10 border-l-2 border-l-destructive",
+                        match.status === "halftime" && "bg-yellow-500/5 hover:bg-yellow-500/10 border-l-2 border-l-yellow-500",
+                        match.status === "finished" && "opacity-60 hover:opacity-80"
                       )}
                     >
                       {/* Favorite */}
@@ -426,7 +431,10 @@ export default function LiveScores() {
                       <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-w-0">
                         {/* Home Team */}
                         <div className="text-right">
-                          <span className="font-medium text-foreground truncate block">
+                          <span className={cn(
+                            "font-medium truncate block",
+                            match.status === "finished" ? "text-muted-foreground" : "text-foreground"
+                          )}>
                             {match.homeTeam}
                           </span>
                         </div>
@@ -434,25 +442,25 @@ export default function LiveScores() {
                         {/* Score / Time */}
                         <div className="flex flex-col items-center px-3">
                           {match.status === "upcoming" ? (
-                            <span className="text-sm text-muted-foreground">
-                              {match.startTime}
+                            <span className="text-lg font-bold text-muted-foreground">
+                              – : –
                             </span>
                           ) : (
                             <div className="flex items-center gap-2">
                               <span className={cn(
                                 "text-lg font-bold",
-                                match.status === "live" || match.status === "halftime"
-                                  ? "text-primary"
-                                  : "text-foreground"
+                                match.status === "live" ? "text-destructive" :
+                                match.status === "halftime" ? "text-yellow-500" :
+                                match.status === "finished" ? "text-muted-foreground" : "text-foreground"
                               )}>
                                 {match.homeScore}
                               </span>
                               <span className="text-muted-foreground">-</span>
                               <span className={cn(
                                 "text-lg font-bold",
-                                match.status === "live" || match.status === "halftime"
-                                  ? "text-primary"
-                                  : "text-foreground"
+                                match.status === "live" ? "text-destructive" :
+                                match.status === "halftime" ? "text-yellow-500" :
+                                match.status === "finished" ? "text-muted-foreground" : "text-foreground"
                               )}>
                                 {match.awayScore}
                               </span>
@@ -462,7 +470,10 @@ export default function LiveScores() {
 
                         {/* Away Team */}
                         <div className="text-left">
-                          <span className="font-medium text-foreground truncate block">
+                          <span className={cn(
+                            "font-medium truncate block",
+                            match.status === "finished" ? "text-muted-foreground" : "text-foreground"
+                          )}>
                             {match.awayTeam}
                           </span>
                         </div>
