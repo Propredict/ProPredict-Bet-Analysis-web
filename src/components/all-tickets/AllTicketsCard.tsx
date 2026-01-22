@@ -35,7 +35,7 @@ function getTierBadge(tier: string) {
       return (
         <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
           <Star className="h-3 w-3" />
-          Exclusive
+          Pro
         </Badge>
       );
     case "premium":
@@ -222,18 +222,6 @@ export function AllTicketsCard({
         {isLocked && unlockMethod && unlockMethod.type !== "unlocked" ? (
           <div className="flex items-center gap-2">
             {getUnlockButton()}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onProClick();
-              }}
-              className="border-warning/50 text-warning hover:bg-warning/10"
-            >
-              <Crown className="h-4 w-4 mr-1" />
-              Pro
-            </Button>
           </div>
         ) : !isLocked ? (
           <Button variant="outline" className="w-full gap-2">
