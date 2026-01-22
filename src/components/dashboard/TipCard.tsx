@@ -46,7 +46,7 @@ function getTierBadge(tier: ContentTier) {
       return (
         <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
           <Star className="h-3 w-3" />
-          Exclusive
+          Pro
         </Badge>
       );
     case "premium":
