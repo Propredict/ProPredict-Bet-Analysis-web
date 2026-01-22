@@ -84,6 +84,7 @@ export default function DailyTickets() {
                       prediction: m.prediction,
                       odds: m.odds,
                     })),
+                    createdAt: ticket.created_at_ts,
                   }}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
