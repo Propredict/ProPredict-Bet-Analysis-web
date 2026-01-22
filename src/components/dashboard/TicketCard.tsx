@@ -1,4 +1,4 @@
-import { Ticket, Clock, Lock, Play, Unlock, Star, Crown, CheckCircle2, XCircle } from "lucide-react";
+import { Ticket, Clock, Lock, Play, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,10 @@ interface TicketCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
+  isUnlocking?: boolean;
 }
 
-export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: TicketCardProps) {
+export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TicketCardProps) {
   const moreMatches = ticket.matchCount - ticket.matches.length;
 
   const getStatusBadge = () => {
@@ -66,7 +67,7 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: Ti
           </Badge>
         );
       case "daily":
-        return null; // No special badge for daily
+        return null;
       case "exclusive":
         return (
           <Badge className="bg-primary text-primary-foreground text-xs">
@@ -100,10 +101,23 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: Ti
       <Button 
         variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
         className={cn("w-full gap-2", buttonClass)}
-        onClick={onUnlockClick}
+        disabled={isUnlocking}
+        onClick={(e) => {
+          e.stopPropagation();
+          onUnlockClick();
+        }}
       >
-        <Icon className="h-4 w-4" />
-        {unlockMethod.message}
+        {isUnlocking ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Watching ad...
+          </>
+        ) : (
+          <>
+            <Icon className="h-4 w-4" />
+            {unlockMethod.message}
+          </>
+        )}
       </Button>
     );
   };
@@ -112,9 +126,9 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: Ti
     <Card 
       className={cn(
         "bg-card border-border overflow-hidden transition-all",
-        isLocked && "cursor-pointer hover:border-primary/50"
+        isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
       )}
-      onClick={isLocked ? onUnlockClick : undefined}
+      onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
     >
       {/* Header */}
       <div className="p-4 border-b border-border">
@@ -142,7 +156,6 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: Ti
       {/* Matches */}
       <div className="p-4 space-y-2">
         {isLocked ? (
-          // Locked state: show placeholders
           <>
             {[1, 2, 3].map((idx) => (
               <div key={idx} className="flex items-center justify-between text-sm">
@@ -161,7 +174,6 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick }: Ti
             </div>
           </>
         ) : (
-          // Unlocked state: show actual matches
           <>
             {ticket.matches.map((match, idx) => (
               <div key={idx} className="flex items-center justify-between text-sm">
