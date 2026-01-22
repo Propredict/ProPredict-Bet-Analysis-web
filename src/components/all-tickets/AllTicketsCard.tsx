@@ -145,37 +145,37 @@ export function AllTicketsCard({
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {getTierBadge(ticket.tier)}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Ticket className="h-3 w-3" />
-              {matchCount} Matches
-            </span>
-          </div>
-          {getStatusBadge()}
-        </div>
-        <div className="flex items-center justify-between">
           <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-          <span className={cn(
-            "font-bold",
-            isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary"
-          )}>
-            @{ticket.total_odds?.toFixed(2) || "0.00"}
-          </span>
+          <div className="flex items-center gap-2">
+            {!isLocked ? (
+              <>
+                <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Unlocked
+                </Badge>
+                <Badge variant="outline" className="text-muted-foreground border-border">
+                  Total Odds: {ticket.total_odds?.toFixed(2) || "0.00"}
+                </Badge>
+              </>
+            ) : (
+              getTierBadge(ticket.tier)
+            )}
+          </div>
         </div>
+        <span className="text-xs text-muted-foreground">{ticket.result === "pending" ? "Check" : ticket.result}</span>
       </div>
 
       {/* Matches */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-3">
         {isLocked ? (
           <>
             {[1, 2, 3].map((idx) => (
-              <div key={idx} className="flex items-center justify-between text-sm">
-                <div className="h-4 w-32 bg-muted rounded blur-sm" />
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                 <div className="flex items-center gap-2">
-                  <div className="h-5 w-14 bg-muted rounded blur-sm" />
-                  <div className="h-5 w-10 bg-primary/30 rounded blur-sm" />
+                  <span className="text-muted-foreground">↗</span>
+                  <div className="h-4 w-40 bg-muted rounded blur-sm" />
                 </div>
+                <div className="h-4 w-12 bg-muted rounded blur-sm" />
               </div>
             ))}
             <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
@@ -185,49 +185,36 @@ export function AllTicketsCard({
           </>
         ) : (
           <>
-            {visibleMatches.map((match, idx) => (
-              <div key={match.id || idx} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{match.match_name}</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {match.prediction}
-                  </Badge>
-                  <span className="text-primary font-medium">@{match.odds.toFixed(2)}</span>
+            {ticket.matches.map((match, idx) => (
+              <div key={match.id || idx} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <div className="flex items-start gap-2">
+                  <span className="text-success mt-0.5">↗</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-foreground text-sm">{match.match_name}</span>
+                    <Badge className="w-fit text-xs bg-success/20 text-success border-success/30 rounded-full px-2 py-0.5">
+                      {match.prediction}
+                    </Badge>
+                  </div>
                 </div>
+                <span className="text-success font-medium text-sm">@{match.odds.toFixed(2)}</span>
               </div>
             ))}
-            {hiddenCount > 0 && (
-              <p className="text-xs text-muted-foreground text-center pt-2">
-                +{hiddenCount} more
-              </p>
-            )}
           </>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-muted-foreground">Total Odds</span>
-          <span className={cn(
-            "font-bold text-lg",
-            isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary"
-          )}>
-            @{ticket.total_odds?.toFixed(2) || "0.00"}
-          </span>
-        </div>
-        
-        {isLocked && unlockMethod && unlockMethod.type !== "unlocked" ? (
-          <div className="flex items-center gap-2">
+      {/* Footer - only show for locked state */}
+      {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Sparkles className="h-4 w-4" />
+              <span>Watch ad to unlock predictions</span>
+            </div>
             {getUnlockButton()}
           </div>
-        ) : !isLocked ? (
-          <Button variant="outline" className="w-full gap-2">
-            <Unlock className="h-4 w-4" />
-            View Full Ticket
-          </Button>
-        ) : null}
-      </div>
+        </div>
+      )}
     </Card>
   );
 }
