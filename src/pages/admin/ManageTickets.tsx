@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ticket, ContentTier, ContentStatus } from "@/types/admin";
+import { useTickets } from "@/hooks/useTickets";
 
 interface MatchFormData {
   match_name: string;
@@ -49,7 +50,7 @@ interface TodayMatch {
   minute?: number;
 }
 
-// Mock today's matches (simulating Live Scores data)
+// Mock today's matches (simulating Live Scores data - keep for match picker)
 const mockTodayMatches: TodayMatch[] = [
   { id: "m1", homeTeam: "Liverpool", awayTeam: "Manchester City", league: "Premier League", startTime: "15:00", isLive: true, minute: 67 },
   { id: "m2", homeTeam: "Arsenal", awayTeam: "Chelsea", league: "Premier League", startTime: "17:30" },
@@ -61,39 +62,6 @@ const mockTodayMatches: TodayMatch[] = [
   { id: "m8", homeTeam: "Atletico Madrid", awayTeam: "Sevilla", league: "La Liga", startTime: "16:15" },
 ];
 
-// Mock tickets data
-const mockTickets: Ticket[] = [
-  {
-    id: "1",
-    title: "Weekend Accumulator",
-    total_odds: 12.45,
-    tier: "premium",
-    status: "published",
-    created_at: new Date().toISOString().split("T")[0],
-    created_at_ts: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    matches: [
-      { id: "tm1", ticket_id: "1", match_name: "Liverpool vs Manchester City", prediction: "Over 2.5 Goals", odds: 1.85, sort_order: 1, created_at: "" },
-      { id: "tm2", ticket_id: "1", match_name: "Barcelona vs Real Madrid", prediction: "BTTS", odds: 1.65, sort_order: 2, created_at: "" },
-      { id: "tm3", ticket_id: "1", match_name: "Bayern Munich vs Dortmund", prediction: "Bayern Win", odds: 1.55, sort_order: 3, created_at: "" },
-    ],
-  },
-  {
-    id: "2",
-    title: "Safe Bets",
-    total_odds: 3.25,
-    tier: "daily",
-    status: "published",
-    created_at: new Date().toISOString().split("T")[0],
-    created_at_ts: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    matches: [
-      { id: "tm4", ticket_id: "2", match_name: "PSG vs Marseille", prediction: "PSG Win", odds: 1.45, sort_order: 1, created_at: "" },
-      { id: "tm5", ticket_id: "2", match_name: "Juventus vs AC Milan", prediction: "Under 3.5 Goals", odds: 1.55, sort_order: 2, created_at: "" },
-    ],
-  },
-];
-
 const defaultMatch: MatchFormData = {
   match_name: "",
   prediction: "",
@@ -101,15 +69,14 @@ const defaultMatch: MatchFormData = {
 };
 
 export default function ManageTickets() {
-  // Local state for tickets
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  // Use Supabase hook with adminView = true
+  const { tickets, isLoading, createTicket, updateTicket, deleteTicket } = useTickets(true);
   
   // Dialog states
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMatchPickerOpen, setIsMatchPickerOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form state
   const [title, setTitle] = useState("");
@@ -196,68 +163,42 @@ export default function ManageTickets() {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    
-    const today = new Date().toISOString().split("T")[0];
-    const calculatedTotalOdds = matches.reduce((acc, m) => acc * (m.odds || 1), 1);
-
     if (editingTicket) {
-      setTickets((prev) =>
-        prev.map((t) =>
-          t.id === editingTicket.id
-            ? {
-                ...t,
-                title,
-                tier,
-                status,
-                total_odds: calculatedTotalOdds,
-                matches: matches.map((m, idx) => ({
-                  id: `tm-${Date.now()}-${idx}`,
-                  ticket_id: editingTicket.id,
-                  match_name: m.match_name,
-                  prediction: m.prediction,
-                  odds: m.odds,
-                  sort_order: idx + 1,
-                  created_at: "",
-                })),
-              }
-            : t
-        )
-      );
-    } else {
-      const newId = crypto.randomUUID();
-      const newTicket: Ticket = {
-        id: newId,
-        title,
-        tier,
-        status,
-        total_odds: calculatedTotalOdds,
-        created_at: today,
-        created_at_ts: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        matches: matches.map((m, idx) => ({
-          id: `tm-${Date.now()}-${idx}`,
-          ticket_id: newId,
+      await updateTicket.mutateAsync({
+        id: editingTicket.id,
+        updates: {
+          title,
+          tier,
+          status,
+        },
+        matches: matches.map((m) => ({
           match_name: m.match_name,
           prediction: m.prediction,
           odds: m.odds,
-          sort_order: idx + 1,
-          created_at: "",
         })),
-      };
-      setTickets((prev) => [newTicket, ...prev]);
+      });
+    } else {
+      await createTicket.mutateAsync({
+        ticket: {
+          title,
+          tier,
+          status,
+          total_odds: totalOdds,
+        },
+        matches: matches.map((m) => ({
+          match_name: m.match_name,
+          prediction: m.prediction,
+          odds: m.odds,
+        })),
+      });
     }
 
-    setIsSubmitting(false);
     setIsDialogOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteId) {
-      setTickets((prev) => prev.filter((t) => t.id !== deleteId));
+      await deleteTicket.mutateAsync(deleteId);
       setDeleteId(null);
     }
   };
@@ -285,6 +226,9 @@ export default function ManageTickets() {
     );
   };
 
+  const isSubmitting = createTicket.isPending || updateTicket.isPending;
+  const isDeleting = deleteTicket.isPending;
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto space-y-6">
@@ -299,7 +243,12 @@ export default function ManageTickets() {
           </Button>
         </div>
 
-        {tickets.length === 0 ? (
+        {isLoading ? (
+          <Card className="p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-muted-foreground mt-2">Loading tickets...</p>
+          </Card>
+        ) : tickets.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">No tickets yet. Create your first ticket!</p>
           </Card>
@@ -552,8 +501,10 @@ export default function ManageTickets() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
+                disabled={isDeleting}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
+                {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
