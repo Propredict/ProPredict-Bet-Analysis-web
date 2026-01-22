@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { 
   Zap, 
@@ -30,6 +30,8 @@ import { useFixtures, type DateFilter, type Match } from "@/hooks/useFixtures";
 
 type StatusFilter = "all" | "live" | "upcoming" | "finished";
 
+const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+
 const leagues = [
   "All Leagues",
   "Premier League",
@@ -50,6 +52,7 @@ export default function LiveScores() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [alertMatch, setAlertMatch] = useState<Match | null>(null);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
   const { toast } = useToast();
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
@@ -58,8 +61,29 @@ export default function LiveScores() {
   const fetchLiveOnly = dateFilter === "today" && statusFilter === "live";
   
   // Fetch fixtures based on date filter and live mode
-  const { matches, isLoading, error, refetch } = useFixtures(dateFilter, fetchLiveOnly);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const { matches, isLoading, error, refetch, silentRefetch } = useFixtures(dateFilter, fetchLiveOnly);
+  
+  // Auto-refresh interval ref
+  const autoRefreshRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-refresh logic: only when fetchLiveOnly is true and no modal is open
+  useEffect(() => {
+    const shouldAutoRefresh = fetchLiveOnly && !selectedMatch;
+
+    if (shouldAutoRefresh) {
+      autoRefreshRef.current = setInterval(async () => {
+        await silentRefetch();
+        setLastUpdated(new Date());
+      }, AUTO_REFRESH_INTERVAL);
+    }
+
+    return () => {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+    };
+  }, [fetchLiveOnly, selectedMatch, silentRefetch]);
 
   const formatLastUpdated = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
