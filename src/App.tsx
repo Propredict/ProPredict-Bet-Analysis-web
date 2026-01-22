@@ -21,6 +21,8 @@ import ExclusiveTips from "./pages/ExclusiveTips";
 import ExclusiveTickets from "./pages/ExclusiveTickets";
 import PremiumTips from "./pages/PremiumTips";
 import PremiumTickets from "./pages/PremiumTickets";
+import AIPredictions from "./pages/AIPredictions";
+import BettingTips from "./pages/BettingTips";
 
 import ManageTips from "./pages/admin/ManageTips";
 import ManageTickets from "./pages/admin/ManageTickets";
@@ -54,6 +56,8 @@ const App = () => (
             <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
             <Route path="/premium-tips" element={<PremiumTips />} />
             <Route path="/premium-tickets" element={<PremiumTickets />} />
+            <Route path="/ai-predictions" element={<AIPredictions />} />
+            <Route path="/betting-tips" element={<BettingTips />} />
 
             {/* Ticket Details */}
             <Route path="/tickets/:id" element={<TicketDetails />} />
