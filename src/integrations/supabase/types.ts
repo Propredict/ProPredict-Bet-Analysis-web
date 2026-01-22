@@ -101,6 +101,152 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_matches: {
+        Row: {
+          created_at: string
+          id: string
+          match_name: string
+          odds: number
+          prediction: string
+          sort_order: number | null
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_name: string
+          odds?: number
+          prediction: string
+          sort_order?: number | null
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_name?: string
+          odds?: number
+          prediction?: string
+          sort_order?: number | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_matches_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          created_at_ts: string
+          created_by: string | null
+          id: string
+          status: Database["public"]["Enums"]["content_status"]
+          tier: Database["public"]["Enums"]["content_tier"]
+          title: string
+          total_odds: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_at_ts?: string
+          created_by?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          tier?: Database["public"]["Enums"]["content_tier"]
+          title: string
+          total_odds?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_at_ts?: string
+          created_by?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          tier?: Database["public"]["Enums"]["content_tier"]
+          title?: string
+          total_odds?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tips: {
+        Row: {
+          ai_prediction: string | null
+          away_team: string
+          confidence: number | null
+          created_at: string
+          created_at_ts: string
+          created_by: string | null
+          home_team: string
+          id: string
+          league: string
+          odds: number
+          prediction: string
+          status: Database["public"]["Enums"]["content_status"]
+          tier: Database["public"]["Enums"]["content_tier"]
+          updated_at: string
+        }
+        Insert: {
+          ai_prediction?: string | null
+          away_team: string
+          confidence?: number | null
+          created_at?: string
+          created_at_ts?: string
+          created_by?: string | null
+          home_team: string
+          id?: string
+          league: string
+          odds?: number
+          prediction: string
+          status?: Database["public"]["Enums"]["content_status"]
+          tier?: Database["public"]["Enums"]["content_tier"]
+          updated_at?: string
+        }
+        Update: {
+          ai_prediction?: string | null
+          away_team?: string
+          confidence?: number | null
+          created_at?: string
+          created_at_ts?: string
+          created_by?: string | null
+          home_team?: string
+          id?: string
+          league?: string
+          odds?: number
+          prediction?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          tier?: Database["public"]["Enums"]["content_tier"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           created_at: string
@@ -160,10 +306,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      content_status: "draft" | "published"
+      content_tier: "free" | "daily" | "exclusive" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -290,6 +444,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      content_status: ["draft", "published"],
+      content_tier: ["free", "daily", "exclusive", "premium"],
+    },
   },
 } as const
