@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { 
   Zap, 
@@ -10,7 +10,8 @@ import {
   Search,
   Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 type DateFilter = "yesterday" | "today" | "tomorrow";
@@ -71,12 +73,44 @@ export default function LiveScores() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [showSuccess, setShowSuccess] = useState(false);
+  const { toast } = useToast();
 
   const currentTime = new Date().toLocaleTimeString("en-US", { 
     hour: "2-digit", 
     minute: "2-digit",
     hour12: false 
   });
+
+  const formatLastUpdated = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+  };
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    setShowSuccess(false);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setLastUpdated(new Date());
+    setIsRefreshing(false);
+    setShowSuccess(true);
+    
+    toast({
+      title: "Scores Updated",
+      description: "Live scores have been refreshed successfully.",
+    });
+    
+    // Hide success indicator after 2 seconds
+    setTimeout(() => setShowSuccess(false), 2000);
+  }, [toast]);
 
   const getDateLabel = (filter: DateFilter) => {
     const today = new Date();
@@ -166,12 +200,36 @@ export default function LiveScores() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 border-border">
-              <Clock className="h-3 w-3" />
-              {currentTime}
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "gap-1.5 border-border transition-all duration-300",
+                showSuccess && "border-primary bg-primary/10 text-primary"
+              )}
+            >
+              {showSuccess ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <Clock className="h-3 w-3" />
+              )}
+              {showSuccess ? "Updated!" : `Updated ${formatLastUpdated(lastUpdated)}`}
             </Badge>
-            <Button variant="outline" size="icon" className="h-9 w-9">
-              <RefreshCw className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className={cn(
+                "h-9 w-9 transition-all duration-200",
+                isRefreshing && "bg-primary/10 border-primary"
+              )}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw 
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  isRefreshing && "animate-spin text-primary"
+                )} 
+              />
             </Button>
             <Button variant="outline" size="icon" className="h-9 w-9">
               <Bell className="h-4 w-4" />
