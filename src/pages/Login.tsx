@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,10 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +51,7 @@ const Login = () => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate("/");
+        navigate(redirectTo);
       }
     } catch (error: any) {
       toast({
@@ -67,7 +70,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}${redirectTo}`,
         },
       });
 
