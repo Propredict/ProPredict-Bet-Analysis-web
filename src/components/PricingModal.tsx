@@ -1,4 +1,4 @@
-import { Check, Crown, Star, Sparkles, X } from "lucide-react";
+import { Check, Crown, Star, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -71,12 +71,16 @@ const plans = [
 ];
 
 export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
-  const { plan: currentPlan, setPlan } = useUserPlan();
+  const { plan: currentPlan } = useUserPlan();
 
   const handleSelectPlan = (planId: UserPlan) => {
-    // In a real app, this would open a payment flow
-    // For now, we just mock the plan change
-    setPlan(planId);
+    // Real payment integration would go here
+    // For now, just close the modal and show a message
+    if (planId === "basic") {
+      window.open("https://example.com/checkout/basic", "_blank");
+    } else if (planId === "premium") {
+      window.open("https://example.com/checkout/premium", "_blank");
+    }
     onOpenChange(false);
   };
 
@@ -148,7 +152,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                     "w-full",
                     planItem.id === "premium" && !isCurrentPlan && "bg-warning hover:bg-warning/90 text-warning-foreground"
                   )}
-                  disabled={isCurrentPlan}
+                  disabled={isCurrentPlan || planItem.id === "free"}
                   onClick={() => handleSelectPlan(planItem.id)}
                 >
                   {isCurrentPlan ? "Current Plan" : planItem.buttonText}
@@ -159,7 +163,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-4">
-          Demo mode: Selecting a plan will immediately activate it (no real payment)
+          Payment integration coming soon. Contact support for early access.
         </p>
       </DialogContent>
     </Dialog>
