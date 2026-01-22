@@ -286,14 +286,14 @@ export default function ManageTickets() {
 
         {/* Create/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
               <DialogTitle className="text-xl">
                 {editingTicket ? "Edit Ticket" : "Create Ticket"}
               </DialogTitle>
             </DialogHeader>
 
-            <ScrollArea className="flex-1 pr-4">
+            <ScrollArea className="flex-1 px-6 overflow-y-auto">
               <div className="space-y-6 py-4">
                 {/* Basic Info Section */}
                 <div className="space-y-4">
@@ -543,13 +543,14 @@ export default function ManageTickets() {
               </div>
             </ScrollArea>
 
-            <DialogFooter className="border-t pt-4">
+            <DialogFooter className="px-6 py-4 border-t border-border shrink-0 bg-card">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={!title || matches.length === 0 || matches.some((m) => !m.prediction)}
+                className="bg-primary hover:bg-primary/90"
               >
                 {editingTicket ? "Update Ticket" : "Create Ticket"}
               </Button>
