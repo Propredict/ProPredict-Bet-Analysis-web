@@ -190,180 +190,145 @@ export default function LiveScores() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Zap className="h-6 w-6 text-primary" />
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">Live Scores</h1>
-              <p className="text-sm text-muted-foreground">Real-time match updates · Pull down to refresh</p>
+        {/* Sticky Header Container */}
+        <div className="sticky top-0 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-lg shadow-background/20">
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Zap className="h-6 w-6 text-primary" />
+                <div>
+                  <h1 className="text-xl font-semibold text-foreground">Live Scores</h1>
+                  <p className="text-sm text-muted-foreground">Real-time match updates · Pull down to refresh</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "gap-1.5 border-border transition-all duration-300",
+                    showSuccess && "border-primary bg-primary/10 text-primary"
+                  )}
+                >
+                  {showSuccess ? (
+                    <Check className="h-3 w-3" />
+                  ) : (
+                    <Clock className="h-3 w-3" />
+                  )}
+                  {showSuccess ? "Updated!" : `Updated ${formatLastUpdated(lastUpdated)}`}
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className={cn(
+                    "h-9 w-9 transition-all duration-200",
+                    isRefreshing && "bg-primary/10 border-primary"
+                  )}
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw 
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      isRefreshing && "animate-spin text-primary"
+                    )} 
+                  />
+                </Button>
+                <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Bell className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant="outline" 
-              className={cn(
-                "gap-1.5 border-border transition-all duration-300",
-                showSuccess && "border-primary bg-primary/10 text-primary"
-              )}
-            >
-              {showSuccess ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <Clock className="h-3 w-3" />
-              )}
-              {showSuccess ? "Updated!" : `Updated ${formatLastUpdated(lastUpdated)}`}
-            </Badge>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className={cn(
-                "h-9 w-9 transition-all duration-200",
-                isRefreshing && "bg-primary/10 border-primary"
-              )}
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
-              <RefreshCw 
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  isRefreshing && "animate-spin text-primary"
-                )} 
-              />
-            </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9">
-              <Bell className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4 bg-card border-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
-            <div className="relative flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-                <Zap className="h-5 w-5 text-primary" />
+            {/* League Filter Tabs */}
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2 pb-2">
+                {leagues.map((league) => (
+                  <Button
+                    key={league}
+                    variant={activeLeague === league ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveLeague(league)}
+                    className={cn(
+                      "rounded-full shrink-0",
+                      activeLeague === league 
+                        ? "bg-primary text-primary-foreground" 
+                        : "border-border hover:bg-muted"
+                    )}
+                  >
+                    {league}
+                  </Button>
+                ))}
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{liveCount}</p>
-                <p className="text-xs text-muted-foreground">Live Now</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent" />
-            <div className="relative flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
-                <Calendar className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{totalCount}</p>
-                <p className="text-xs text-muted-foreground">Total Matches</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent" />
-            <div className="relative flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/30">
-                <Trophy className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{leagueCount}</p>
-                <p className="text-xs text-muted-foreground">Leagues</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
 
-        {/* League Filter Tabs */}
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-2 pb-2">
-            {leagues.map((league) => (
-              <Button
-                key={league}
-                variant={activeLeague === league ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveLeague(league)}
-                className={cn(
-                  "rounded-full shrink-0",
-                  activeLeague === league 
-                    ? "bg-primary text-primary-foreground" 
-                    : "border-border hover:bg-muted"
-                )}
-              >
-                {league}
+            {/* Date Selector */}
+            <div className="flex items-center justify-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-            ))}
+              <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+                {(["yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setDateFilter(filter)}
+                    className={cn(
+                      "px-4 py-2 rounded-md transition-all flex flex-col items-center min-w-[80px]",
+                      dateFilter === filter
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span className="text-sm font-medium capitalize">{filter}</span>
+                    <span className="text-xs opacity-70">{getDateLabel(filter)}</span>
+                  </button>
+                ))}
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search teams, leagues, countries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-card border-border"
+              />
+            </div>
+
+            {/* Match Status Filter */}
+            <div className="flex gap-2 flex-wrap">
+              {([
+                { key: "all", label: "All Matches" },
+                { key: "live", label: "Live Now", badge: true },
+                { key: "upcoming", label: "Upcoming" },
+                { key: "finished", label: "Finished" },
+              ] as { key: StatusFilter; label: string; badge?: boolean }[]).map((filter) => (
+                <Button
+                  key={filter.key}
+                  variant={statusFilter === filter.key ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter(filter.key)}
+                  className={cn(
+                    "gap-2",
+                    statusFilter === filter.key 
+                      ? "bg-primary text-primary-foreground" 
+                      : "border-border hover:bg-muted"
+                  )}
+                >
+                  {filter.label}
+                  {filter.badge && (
+                    <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                  )}
+                </Button>
+              ))}
+            </div>
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-
-        {/* Date Selector */}
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-            {(["yesterday", "today", "tomorrow"] as DateFilter[]).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setDateFilter(filter)}
-                className={cn(
-                  "px-4 py-2 rounded-md transition-all flex flex-col items-center min-w-[80px]",
-                  dateFilter === filter
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <span className="text-sm font-medium capitalize">{filter}</span>
-                <span className="text-xs opacity-70">{getDateLabel(filter)}</span>
-              </button>
-            ))}
-          </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search teams, leagues, countries..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-card border-border"
-          />
-        </div>
-
-        {/* Match Status Filter */}
-        <div className="flex gap-2 flex-wrap">
-          {([
-            { key: "all", label: "All Matches" },
-            { key: "live", label: "Live Now", badge: true },
-            { key: "upcoming", label: "Upcoming" },
-            { key: "finished", label: "Finished" },
-          ] as { key: StatusFilter; label: string; badge?: boolean }[]).map((filter) => (
-            <Button
-              key={filter.key}
-              variant={statusFilter === filter.key ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter(filter.key)}
-              className={cn(
-                "gap-2",
-                statusFilter === filter.key 
-                  ? "bg-primary text-primary-foreground" 
-                  : "border-border hover:bg-muted"
-              )}
-            >
-              {filter.label}
-              {filter.badge && (
-                <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-              )}
-            </Button>
-          ))}
         </div>
 
         {/* Match List */}
