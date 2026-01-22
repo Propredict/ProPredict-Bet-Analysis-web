@@ -143,54 +143,62 @@ export default function TicketDetails() {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-foreground">{ticket.title}</h1>
             <div className="flex items-center gap-2">
-              {!isLocked && (
-                <Badge className="bg-success/20 text-success border-success/30">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Unlocked
-                </Badge>
-              )}
-              {getTierBadge()}
-            </div>
-          </div>
-
-          {/* Matches */}
-          <div className="space-y-2">
-            {ticket.matches.map((match, idx) => (
-              <div 
-                key={idx} 
-                className={cn(
-                  "flex items-center justify-between border-b border-border pb-2",
-                  isLocked && "blur-sm select-none"
-                )}
-              >
-                <span className="text-foreground">{match.match_name}</span>
-                <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="text-xs">
-                    {match.prediction}
+              {!isLocked ? (
+                <>
+                  <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Unlocked
                   </Badge>
-                  <span className="font-semibold text-primary">@{match.odds.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Locked indicator */}
-          {isLocked && (
-            <div className="flex items-center justify-center gap-2 py-2 text-muted-foreground">
-              <Lock className="h-4 w-4" />
-              <span className="text-sm">Content Locked</span>
+                  <Badge variant="outline" className="text-muted-foreground border-border">
+                    Total Odds: {ticket.total_odds?.toFixed(2)}
+                  </Badge>
+                </>
+              ) : (
+                getTierBadge()
+              )}
             </div>
+          </div>
+          
+          {!isLocked && (
+            <span className="text-xs text-muted-foreground">Check</span>
           )}
 
-          {/* Total Odds */}
-          <div className="flex justify-between pt-4 border-t border-border">
-            <span className="text-muted-foreground">Total Odds</span>
-            <span className={cn(
-              "text-xl font-bold",
-              isLocked ? "text-muted-foreground blur-sm select-none" : "text-primary"
-            )}>
-              @{ticket.total_odds.toFixed(2)}
-            </span>
+          {/* Matches */}
+          <div className="space-y-3">
+            {isLocked ? (
+              <>
+                {ticket.matches.map((match, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">↗</span>
+                      <div className="h-4 w-48 bg-muted rounded blur-sm" />
+                    </div>
+                    <div className="h-4 w-12 bg-muted rounded blur-sm" />
+                  </div>
+                ))}
+                <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                  <span className="text-sm">Content Locked</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {ticket.matches.map((match, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+                    <div className="flex items-start gap-2">
+                      <span className="text-success mt-0.5">↗</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-foreground">{match.match_name}</span>
+                        <Badge className="w-fit text-xs bg-success/20 text-success border-success/30 rounded-full px-2 py-0.5">
+                          {match.prediction}
+                        </Badge>
+                      </div>
+                    </div>
+                    <span className="text-success font-medium">@{match.odds.toFixed(2)}</span>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
 
           {/* Unlock Button */}
