@@ -1,10 +1,11 @@
-import { Clock, Calendar, Star, Crown, Loader2, Ticket, Lock, Sparkles, Gift, CheckCircle2, XCircle, LogIn, Unlock } from "lucide-react";
+import { Clock, Calendar, Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, XCircle, LogIn } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TicketWithMatches } from "@/hooks/useTickets";
-import type { UnlockMethod, ContentTier } from "@/hooks/useUserPlan";
+import type { UnlockMethod } from "@/hooks/useUserPlan";
+import { format } from "date-fns";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -65,35 +66,8 @@ export function AllTicketsCard({
   onUnlockClick,
   isUnlocking,
 }: AllTicketsCardProps) {
-  const matchCount = ticket.matches?.length || 0;
-  const visibleMatches = ticket.matches?.slice(0, 3) || [];
-  const hiddenCount = matchCount > 3 ? matchCount - 3 : 0;
-
-  const getStatusBadge = () => {
-    switch (ticket.result) {
-      case "won":
-        return (
-          <Badge className="bg-success/20 text-success border-success/30">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Won
-          </Badge>
-        );
-      case "lost":
-        return (
-          <Badge className="bg-destructive/20 text-destructive border-destructive/30">
-            <XCircle className="h-3 w-3 mr-1" />
-            Lost
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="text-accent border-accent/30 bg-accent/10">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        );
-    }
-  };
+  const isUnlocked = !isLocked;
+  const ticketDate = ticket.created_at_ts ? format(new Date(ticket.created_at_ts), "EEE, MMM d") : "";
 
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
@@ -134,8 +108,6 @@ export function AllTicketsCard({
     );
   };
 
-  const isUnlocked = !isLocked;
-
   return (
     <Card 
       className={cn(
@@ -145,33 +117,22 @@ export function AllTicketsCard({
       )}
       onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
     >
-      {/* Header */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-          <div className="flex items-center gap-2">
-            {isUnlocked ? (
-              <>
-                <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Unlocked
-                </Badge>
-                <Badge variant="outline" className="text-muted-foreground border-border bg-muted/50">
-                  Total Odds: {ticket.total_odds?.toFixed(2) || "0.00"}
-                </Badge>
-              </>
-            ) : (
-              getTierBadge(ticket.tier)
-            )}
+      {/* Locked State */}
+      {isLocked ? (
+        <>
+          {/* Header */}
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold text-foreground">{ticket.title}</h3>
+              <div className="flex items-center gap-2">
+                {getTierBadge(ticket.tier)}
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">Check</span>
           </div>
-        </div>
-        <span className="text-xs text-muted-foreground">{ticket.result === "pending" ? "Check" : ticket.result}</span>
-      </div>
 
-      {/* Matches */}
-      <div className="px-4 pb-4 space-y-2">
-        {isLocked ? (
-          <>
+          {/* Locked Matches Placeholder */}
+          <div className="px-4 pb-4 space-y-2">
             {[1, 2, 3].map((idx) => (
               <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between">
@@ -187,39 +148,73 @@ export function AllTicketsCard({
               <Lock className="h-4 w-4" />
               <span className="text-xs">Locked</span>
             </div>
-          </>
-        ) : (
-          <>
-            {ticket.matches.map((match, idx) => (
-              <div key={match.id || idx} className="p-3 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-2">
-                    <span className="text-success mt-0.5">↗</span>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-foreground text-sm">{match.match_name}</span>
-                      <Badge className="w-fit text-xs bg-success text-success-foreground rounded-full px-2 py-0.5">
-                        {match.prediction}
-                      </Badge>
-                    </div>
+          </div>
+
+          {/* Footer - unlock CTA */}
+          {unlockMethod && unlockMethod.type !== "unlocked" && (
+            <div className="p-4 border-t border-border">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Watch ad to unlock predictions</span>
+                </div>
+                {getUnlockButton()}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Unlocked State - show all matches like tips design */
+        <div className="space-y-4 p-4">
+          {ticket.matches.map((match, idx) => (
+            <div key={match.id || idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
+              {/* Match Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-xs">⚽</span>
                   </div>
-                  <span className="text-success font-medium text-sm">@{match.odds.toFixed(2)}</span>
+                  <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                    {ticket.title}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{ticketDate}</span>
+                  <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Unlocked
+                  </Badge>
                 </div>
               </div>
-            ))}
-          </>
-        )}
-      </div>
 
-      {/* Footer - only show for locked state */}
-      {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Sparkles className="h-4 w-4" />
-              <span>Watch ad to unlock predictions</span>
+              {/* Match Name */}
+              <h3 className="font-semibold text-primary mb-4">{match.match_name}</h3>
+
+              {/* Prediction Row */}
+              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-border/50">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Prediction</p>
+                  <p className="font-medium text-foreground">{match.prediction}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Odds</p>
+                  <p className="font-medium text-success">@{match.odds.toFixed(2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground mb-1">Confidence</p>
+                  <div className="flex items-center justify-end gap-2">
+                    <div className="h-2 w-12 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-success to-primary rounded-full" 
+                        style={{ width: '70%' }} 
+                      />
+                    </div>
+                    <span className="text-sm text-success">70%</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            {getUnlockButton()}
-          </div>
+          ))}
         </div>
       )}
     </Card>
