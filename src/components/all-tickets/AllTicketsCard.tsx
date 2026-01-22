@@ -11,7 +11,6 @@ interface AllTicketsCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
-  onProClick: () => void;
   isUnlocking: boolean;
 }
 
@@ -53,7 +52,7 @@ function getTierBadge(tier: string) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
+  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
   if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
@@ -64,7 +63,6 @@ export function AllTicketsCard({
   isLocked,
   unlockMethod,
   onUnlockClick,
-  onProClick,
   isUnlocking,
 }: AllTicketsCardProps) {
   const matchCount = ticket.matches?.length || 0;
@@ -105,11 +103,11 @@ export function AllTicketsCard({
                  unlockMethod.type === "upgrade_basic" ? Star : Crown;
     
     const buttonClass = unlockMethod.type === "watch_ad"
-      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+      ? "bg-accent hover:bg-accent/90 text-accent-foreground"
       : unlockMethod.type === "upgrade_basic"
-        ? "bg-accent hover:bg-accent/90 text-accent-foreground"
+        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
         : unlockMethod.type === "upgrade_premium" 
-          ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
+          ? "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0" 
           : "";
 
     return (
