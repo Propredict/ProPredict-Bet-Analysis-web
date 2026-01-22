@@ -13,10 +13,12 @@ import {
   FileText,
   BarChart3,
   Settings,
-  AlertTriangle
+  AlertTriangle,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 import {
   Sidebar,
@@ -52,11 +54,17 @@ const tools = [
   { title: "League Stats", url: "/league-stats", icon: BarChart3 },
 ];
 
+const adminItems = [
+  { title: "Manage Tips", url: "/admin/tips", icon: Lightbulb },
+  { title: "Manage Tickets", url: "/admin/tickets", icon: Ticket },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
+  const { isAdmin } = useAdminAccess();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -145,6 +153,33 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin Section - Only visible to admins */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs uppercase text-muted-foreground px-3 py-2">
+              {!collapsed && "Admin"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={item.url} 
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-sidebar-accent"
+                        activeClassName="bg-warning/20 text-warning"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">

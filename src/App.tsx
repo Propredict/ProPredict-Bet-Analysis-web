@@ -9,7 +9,10 @@ import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
 import MyFavorites from "./pages/MyFavorites";
 import NotFound from "./pages/NotFound";
+import ManageTips from "./pages/admin/ManageTips";
+import ManageTickets from "./pages/admin/ManageTickets";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/AdminRoute";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,23 @@ const App = () => (
             />
             <Route path="/live-scores" element={<LiveScores />} />
             <Route path="/favorites" element={<MyFavorites />} />
+            {/* Admin Routes */}
+            <Route
+              path="/admin/tips"
+              element={
+                <AdminRoute>
+                  <ManageTips />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/tickets"
+              element={
+                <AdminRoute>
+                  <ManageTickets />
+                </AdminRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
