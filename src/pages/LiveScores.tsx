@@ -12,7 +12,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
 import { useMatchAlerts } from "@/hooks/useMatchAlerts";
+import { useFavorites } from "@/hooks/useFavorites";
 
 type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 type DateFilter = "yesterday" | "today" | "tomorrow";
@@ -76,7 +78,6 @@ export default function LiveScores() {
   const [dateFilter, setDateFilter] = useState<DateFilter>("today");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [showSuccess, setShowSuccess] = useState(false);
@@ -84,6 +85,7 @@ export default function LiveScores() {
   const [alertMatch, setAlertMatch] = useState<Match | null>(null);
   const { toast } = useToast();
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
+  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
 
   const currentTime = new Date().toLocaleTimeString("en-US", { 
     hour: "2-digit", 
@@ -156,13 +158,6 @@ export default function LiveScores() {
   const totalCount = mockMatches.length;
   const leagueCount = new Set(mockMatches.map(m => m.league)).size;
 
-  const toggleFavorite = (matchId: string) => {
-    setFavorites(prev => 
-      prev.includes(matchId) 
-        ? prev.filter(id => id !== matchId)
-        : [...prev, matchId]
-    );
-  };
 
   const getStatusBadge = (match: Match) => {
     switch (match.status) {
@@ -372,16 +367,21 @@ export default function LiveScores() {
                           e.stopPropagation();
                           toggleFavorite(match.id);
                         }}
-                        className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors"
+                        disabled={isSaving(match.id)}
+                        className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
-                        <Star
-                          className={cn(
-                            "h-4 w-4 transition-all duration-200",
-                            favorites.includes(match.id)
-                              ? "fill-accent text-accent scale-110"
-                              : "text-muted-foreground hover:text-accent hover:scale-110"
-                          )}
-                        />
+                        {isSaving(match.id) ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                        ) : (
+                          <Star
+                            className={cn(
+                              "h-4 w-4 transition-all duration-200",
+                              isFavorite(match.id)
+                                ? "fill-accent text-accent scale-110"
+                                : "text-muted-foreground hover:text-accent hover:scale-110"
+                            )}
+                          />
+                        )}
                       </button>
 
                       {/* Match Info */}

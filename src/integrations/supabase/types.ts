@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      match_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          notify_goals: boolean
+          notify_red_cards: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          notify_goals?: boolean
+          notify_red_cards?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          notify_goals?: boolean
+          notify_red_cards?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

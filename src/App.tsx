@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
+import MyFavorites from "./pages/MyFavorites";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -41,6 +42,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <LiveScores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <MyFavorites />
               </ProtectedRoute>
             }
           />
