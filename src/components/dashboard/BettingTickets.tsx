@@ -1,96 +1,32 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Sparkles, Star, Crown, Users } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { TicketCard, type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
 import { toast } from "sonner";
+import { useTickets } from "@/hooks/useTickets";
 
 type TabType = "daily" | "exclusive" | "premium";
 
-// Sample tickets data
-const sampleTickets: BettingTicket[] = [
-  {
-    id: "1",
-    title: "Daily Ticket Champions League #1",
-    matchCount: 5,
+// Map database tickets to the display format
+function mapDbTicketToTicket(dbTicket: any): BettingTicket {
+  return {
+    id: dbTicket.id,
+    title: dbTicket.title,
+    matchCount: dbTicket.matches?.length || 0,
     status: "pending",
-    totalOdds: 3.41,
-    tier: "daily",
-    matches: [
-      { name: "Liverpool vs Man City", prediction: "Over 1.5", odds: 1.20 },
-      { name: "Real Madrid vs Barcelona", prediction: "BTTS", odds: 1.41 },
-      { name: "Bayern vs Dortmund", prediction: "Home Win", odds: 1.40 },
-    ],
-  },
-  {
-    id: "2",
-    title: "Daily Ticket Premier League",
-    matchCount: 4,
-    status: "pending",
-    totalOdds: 4.25,
-    tier: "daily",
-    matches: [
-      { name: "Arsenal vs Chelsea", prediction: "Over 2.5", odds: 1.65 },
-      { name: "Man Utd vs Tottenham", prediction: "BTTS", odds: 1.55 },
-      { name: "Newcastle vs Brighton", prediction: "Home Win", odds: 1.66 },
-    ],
-  },
-  {
-    id: "3",
-    title: "Exclusive Weekend Accumulator",
-    matchCount: 6,
-    status: "pending",
-    totalOdds: 8.75,
-    tier: "exclusive",
-    matches: [
-      { name: "PSG vs Marseille", prediction: "Home -1.5", odds: 1.85 },
-      { name: "Inter vs AC Milan", prediction: "Under 3.5", odds: 1.45 },
-      { name: "Atletico vs Sevilla", prediction: "Home Win", odds: 1.70 },
-    ],
-  },
-  {
-    id: "4",
-    title: "Exclusive High Odds Special",
-    matchCount: 5,
-    status: "won",
-    totalOdds: 12.50,
-    tier: "exclusive",
-    matches: [
-      { name: "Ajax vs PSV", prediction: "Over 3.5", odds: 2.10 },
-      { name: "Celtic vs Rangers", prediction: "BTTS", odds: 1.50 },
-      { name: "Benfica vs Porto", prediction: "Draw", odds: 3.40 },
-    ],
-  },
-  {
-    id: "5",
-    title: "Premium VIP Ticket",
-    matchCount: 7,
-    status: "pending",
-    totalOdds: 25.00,
-    tier: "premium",
-    matches: [
-      { name: "Confidential Match 1", prediction: "Expert Pick", odds: 2.00 },
-      { name: "Confidential Match 2", prediction: "Expert Pick", odds: 1.80 },
-      { name: "Confidential Match 3", prediction: "Expert Pick", odds: 2.20 },
-    ],
-  },
-  {
-    id: "6",
-    title: "Premium Safe Banker",
-    matchCount: 4,
-    status: "pending",
-    totalOdds: 5.50,
-    tier: "premium",
-    matches: [
-      { name: "Top Match 1", prediction: "Safe Pick", odds: 1.35 },
-      { name: "Top Match 2", prediction: "Safe Pick", odds: 1.40 },
-      { name: "Top Match 3", prediction: "Safe Pick", odds: 1.30 },
-    ],
-  },
-];
+    totalOdds: dbTicket.total_odds,
+    tier: dbTicket.tier as ContentTier,
+    matches: (dbTicket.matches || []).map((m: any) => ({
+      name: m.match_name,
+      prediction: m.prediction,
+      odds: m.odds,
+    })),
+  };
+}
 
 export function BettingTickets() {
   const navigate = useNavigate();
@@ -98,7 +34,10 @@ export function BettingTickets() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const { canAccess, getUnlockMethod, unlockContent, isAuthenticated } = useUserPlan();
+  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { tickets: dbTickets, isLoading } = useTickets(false);
+
+  const tickets = dbTickets.map(mapDbTicketToTicket);
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
@@ -106,7 +45,7 @@ export function BettingTickets() {
     { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
   ];
 
-  const filteredTickets = sampleTickets.filter((ticket) => ticket.tier === activeTab);
+  const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
 
   const handleUnlockClick = async (ticket: BettingTicket) => {
     const method = getUnlockMethod(ticket.tier, "ticket", ticket.id);
@@ -154,7 +93,7 @@ export function BettingTickets() {
       <Card className="p-1 bg-card border-border">
         <div className="grid grid-cols-3 gap-1">
           {tabs.map((tab) => {
-            const ticketCount = sampleTickets.filter((t) => t.tier === tab.id).length;
+            const ticketCount = tickets.filter((t) => t.tier === tab.id).length;
             return (
               <button
                 key={tab.id}
@@ -192,7 +131,11 @@ export function BettingTickets() {
       </div>
 
       {/* Tickets Grid */}
-      {filteredTickets.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredTickets.length > 0 ? (
         <div className="grid md:grid-cols-2 gap-4">
           {filteredTickets.map((ticket) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
