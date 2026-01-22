@@ -98,7 +98,7 @@ const Profile = () => {
     setSigningOut(true);
     try {
       await signOut();
-      navigate("/login");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error signing out",
