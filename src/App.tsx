@@ -10,7 +10,8 @@ import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
 import MyFavorites from "./pages/MyFavorites";
 import AllTickets from "./pages/AllTickets";
-import TicketDetails from "./pages/TicketDetails"; // ✅ DODATO
+import TicketDetails from "./pages/TicketDetails";
+import GetPremium from "./pages/GetPremium";
 import NotFound from "./pages/NotFound";
 
 import ManageTips from "./pages/admin/ManageTips";
@@ -36,8 +37,9 @@ const App = () => (
             <Route path="/live-scores" element={<LiveScores />} />
             <Route path="/favorites" element={<MyFavorites />} />
             <Route path="/all-tickets" element={<AllTickets />} />
+            <Route path="/get-premium" element={<GetPremium />} />
 
-            {/* ✅ Ticket Details */}
+            {/* Ticket Details */}
             <Route path="/tickets/:id" element={<TicketDetails />} />
 
             {/* Protected */}

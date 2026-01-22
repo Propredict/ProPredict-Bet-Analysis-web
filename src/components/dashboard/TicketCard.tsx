@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
+import { useNavigate } from "react-router-dom";
 
 /* =======================
    Types
@@ -90,7 +91,7 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
-  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Unlock";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -107,7 +108,17 @@ function TicketCard({
   onViewTicket,
   isUnlocking = false,
 }: TicketCardProps) {
+  const navigate = useNavigate();
   const moreMatches = ticket.matchCount - ticket.matches.length;
+  const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
+
+  const handleUnlockClick = () => {
+    if (isPremiumLocked) {
+      navigate("/get-premium");
+    } else {
+      onUnlockClick();
+    }
+  };
 
   const getStatusBadge = () => {
     switch (ticket.status) {
@@ -135,6 +146,20 @@ function TicketCard({
     }
   };
 
+  const getUnlockButtonStyle = () => {
+    if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
+    }
+    if (unlockMethod.type === "upgrade_basic") {
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
+    }
+    if (unlockMethod.type === "upgrade_premium") {
+      return "bg-gradient-to-r from-accent to-primary hover:opacity-90 text-white border-0";
+    }
+    return "";
+  };
+
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
 
@@ -147,26 +172,15 @@ function TicketCard({
             ? Star
             : Crown;
 
-    const buttonClass =
-      unlockMethod.type === "watch_ad"
-        ? "bg-accent hover:bg-accent/90 text-accent-foreground border-accent"
-        : unlockMethod.type === "upgrade_basic"
-          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-          : unlockMethod.type === "upgrade_premium"
-            ? "bg-warning hover:bg-warning/90 text-warning-foreground"
-            : "";
-
-    const buttonVariant =
-      unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" ? "outline" : "default";
-
     return (
       <Button
-        variant={buttonVariant}
-        className={cn("w-full gap-2", buttonClass)}
+        variant="default"
+        size="lg"
+        className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
         disabled={isUnlocking}
         onClick={(e) => {
           e.stopPropagation();
-          onUnlockClick();
+          handleUnlockClick();
         }}
       >
         {isUnlocking ? (
