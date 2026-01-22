@@ -11,13 +11,15 @@ import { useTickets } from "@/hooks/useTickets";
 
 type TabType = "daily" | "exclusive" | "premium";
 
-// Map database tickets to the display format
+/* =====================
+   MAP DB → UI
+===================== */
 function mapDbTicketToTicket(dbTicket: any): BettingTicket {
   return {
     id: dbTicket.id,
     title: dbTicket.title,
     matchCount: dbTicket.matches?.length || 0,
-    status: "pending",
+    status: dbTicket.result ?? "pending", // ✅ FIX
     totalOdds: dbTicket.total_odds,
     tier: dbTicket.tier as ContentTier,
     matches: (dbTicket.matches || []).map((m: any) => ({
@@ -34,15 +36,16 @@ export function BettingTickets() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
+
   const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
   const { tickets: dbTickets, isLoading } = useTickets(false);
 
   const tickets = dbTickets.map(mapDbTicketToTicket);
 
   const tabs = [
-    { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
-    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, sublabel: "Basic+ Members" },
-    { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
+    { id: "daily" as TabType, label: "Daily", icon: Sparkles },
+    { id: "exclusive" as TabType, label: "Exclusive", icon: Star },
+    { id: "premium" as TabType, label: "Premium", icon: Crown },
   ];
 
   const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
@@ -59,25 +62,18 @@ export function BettingTickets() {
 
     if (method.type === "watch_ad") {
       setUnlockingId(ticket.id);
-      
-      // Simulate ad playback delay
-      toast.info("Playing rewarded ad...", { duration: 2000 });
-      
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      const success = await unlockContent("ticket", ticket.id);
-      
-      if (success) {
-        toast.success("Ticket unlocked! Valid until midnight UTC.");
-      } else {
-        toast.error("Failed to unlock. Please try again.");
-      }
-      
+      await new Promise((r) => setTimeout(r, 2000));
+      await unlockContent("ticket", ticket.id);
       setUnlockingId(null);
-    } else if (method.type === "upgrade_basic") {
+      return;
+    }
+
+    if (method.type === "upgrade_basic") {
       setHighlightPlan("basic");
       setShowPricingModal(true);
-    } else if (method.type === "upgrade_premium") {
+    }
+
+    if (method.type === "upgrade_premium") {
       setHighlightPlan("premium");
       setShowPricingModal(true);
     }
@@ -87,89 +83,52 @@ export function BettingTickets() {
     <section className="space-y-4">
       <div className="flex items-center gap-3">
         <Ticket className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Betting Tickets</h2>
+        <h2 className="text-lg font-semibold">Betting Tickets</h2>
       </div>
 
-      <Card className="p-1 bg-card border-border">
+      <Card className="p-1">
         <div className="grid grid-cols-3 gap-1">
-          {tabs.map((tab) => {
-            const ticketCount = tickets.filter((t) => t.tier === tab.id).length;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <tab.icon className="h-4 w-4" />
-                  <span className="font-medium">{tab.label}</span>
-                  <span className={cn(
-                    "text-xs px-1.5 py-0.5 rounded-full",
-                    activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted"
-                  )}>
-                    {ticketCount}
-                  </span>
-                </div>
-                <span className="text-xs opacity-80">{tab.sublabel}</span>
-              </button>
-            );
-          })}
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "py-3 rounded-lg",
+                activeTab === tab.id ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+              )}
+            >
+              <tab.icon className="mx-auto h-4 w-4" />
+              <span className="text-sm">{tab.label}</span>
+            </button>
+          ))}
         </div>
       </Card>
 
-      {/* Users unlocked banner */}
-      <div className="bg-primary/10 border border-primary/20 rounded-lg py-2 px-4 text-center">
-        <div className="flex items-center justify-center gap-2 text-sm text-primary">
-          <Users className="h-4 w-4" />
-          <span>210 users unlocked daily tips today</span>
-        </div>
-      </div>
-
-      {/* Tickets Grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : filteredTickets.length > 0 ? (
+        <Loader2 className="mx-auto animate-spin" />
+      ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {filteredTickets.map((ticket) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
-            const isUnlocking = unlockingId === ticket.id;
+
             return (
               <TicketCard
                 key={ticket.id}
                 ticket={ticket}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlockClick(ticket)}
-                isUnlocking={isUnlocking}
+                isUnlocking={unlockingId === ticket.id}
+                onUnlockClick={
+                  () => (isLocked ? handleUnlockClick(ticket) : navigate(`/tickets/${ticket.id}`)) // ✅ VIEW PAGE
+                }
               />
             );
           })}
         </div>
-      ) : (
-        <Card className="p-8 bg-card border-border text-center">
-          <div className="flex flex-col items-center gap-4">
-            <Ticket className="h-12 w-12 text-primary opacity-50" />
-            <div>
-              <p className="text-muted-foreground">No {activeTab} tickets available</p>
-              <p className="text-sm text-muted-foreground">Check back soon for new tickets!</p>
-            </div>
-          </div>
-        </Card>
       )}
 
-      <PricingModal 
-        open={showPricingModal} 
-        onOpenChange={setShowPricingModal}
-        highlightPlan={highlightPlan}
-      />
+      <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
     </section>
   );
 }
