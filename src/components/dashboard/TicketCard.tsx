@@ -260,77 +260,75 @@ function TicketCard({
     );
   }
 
-  // Unlocked state - tips-style design
+  // Unlocked state - rich card design like reference
+  const displayedMatches = ticket.matches.slice(0, 3);
+  const remainingCount = ticket.matches.length > 3 ? ticket.matches.length - 3 : 0;
+
   return (
-    <Card className="bg-card overflow-hidden transition-all border-success/30">
-      <div className="space-y-4 p-4">
-        {ticket.matches.length > 0 ? (
-          ticket.matches.map((match, idx) => (
-            <div key={idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
-              {/* Match Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-xs">⚽</span>
-                  </div>
-                  <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                    {ticket.title}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
-                  <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Unlocked
-                  </Badge>
-                </div>
-              </div>
+    <Card className="bg-card overflow-hidden transition-all border-primary/30 hover:border-primary/50">
+      {/* Header with tier badge and status */}
+      <div className="p-4 pb-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {getTierBadge(ticket.tier)}
+            <span className="text-xs text-muted-foreground">
+              {ticket.matchCount} Matches
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {getStatusBadge()}
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+              @{ticket.totalOdds.toFixed(2)}
+            </Badge>
+          </div>
+        </div>
+      </div>
 
-              {/* Match Name */}
-              <h3 className="font-semibold text-primary mb-4">{match.name}</h3>
+      {/* Title */}
+      <div className="px-4 pb-3">
+        <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
+      </div>
 
-              {/* Prediction Row */}
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-border/50">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Prediction</p>
-                  <p className="font-medium text-foreground">{match.prediction}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Odds</p>
-                  <p className="font-medium text-success">@{match.odds.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-                  <div className="flex items-center justify-end gap-2">
-                    <div className="h-2 w-12 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-success to-primary rounded-full" 
-                        style={{ width: '70%' }} 
-                      />
-                    </div>
-                    <span className="text-sm text-success">70%</span>
-                  </div>
-                </div>
+      {/* Match list with predictions */}
+      <div className="px-4 pb-3 space-y-2">
+        {displayedMatches.length > 0 ? (
+          displayedMatches.map((match, idx) => (
+            <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+              <span className="text-sm text-foreground truncate flex-1 mr-4">{match.name}</span>
+              <div className="flex items-center gap-3 shrink-0">
+                <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                  {match.prediction}
+                </Badge>
+                <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
               </div>
             </div>
           ))
         ) : (
-          <div className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-              <div className="flex items-center gap-2">
-                <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Unlocked
-                </Badge>
-                <Badge variant="outline" className="text-muted-foreground border-border bg-muted/50">
-                  Total Odds: {ticket.totalOdds.toFixed(2)}
-                </Badge>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">No matches in this ticket</p>
+          <p className="text-sm text-muted-foreground py-2">No matches in this ticket</p>
+        )}
+        
+        {/* +X more indicator */}
+        {remainingCount > 0 && (
+          <div className="text-center pt-1">
+            <span className="text-xs text-muted-foreground">+{remainingCount} more</span>
           </div>
         )}
+      </div>
+
+      {/* Total Odds footer */}
+      <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Total Odds</span>
+          <span className="font-bold text-lg text-primary">@{ticket.totalOdds.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Unlocked badge footer */}
+      <div className="px-4 py-3 border-t border-border/50">
+        <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
+          <CheckCircle2 className="h-4 w-4" />
+          Ticket Unlocked
+        </Badge>
       </div>
     </Card>
   );
