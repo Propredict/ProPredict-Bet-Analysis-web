@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -53,15 +54,17 @@ export function useFavorites() {
     return () => subscription.unsubscribe();
   }, [fetchFavorites]);
 
-  const toggleFavorite = useCallback(async (matchId: string) => {
+  const toggleFavorite = useCallback(async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "Please log in to save favorites.",
-        variant: "destructive",
+        title: "Sign in required",
+        description: "Please sign in to save favorites.",
       });
+      if (navigate) {
+        navigate("/login");
+      }
       return;
     }
 

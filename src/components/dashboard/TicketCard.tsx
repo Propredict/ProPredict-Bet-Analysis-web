@@ -1,4 +1,4 @@
-import { Ticket, Clock, Lock, Play, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Ticket, Clock, Lock, Play, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2, LogIn } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,16 +90,21 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
 
-    const Icon = unlockMethod.type === "watch_ad" ? Play : 
+    const Icon = unlockMethod.type === "login_required" ? LogIn :
+                 unlockMethod.type === "watch_ad" ? Play : 
                  unlockMethod.type === "upgrade_basic" ? Star : Crown;
     
     const buttonClass = unlockMethod.type === "upgrade_premium" 
       ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
       : "";
 
+    const buttonVariant = unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" 
+      ? "outline" 
+      : "default";
+
     return (
       <Button 
-        variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
+        variant={buttonVariant}
         className={cn("w-full gap-2", buttonClass)}
         disabled={isUnlocking}
         onClick={(e) => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Ticket, Sparkles, Star, Crown, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -92,11 +93,12 @@ const sampleTickets: BettingTicket[] = [
 ];
 
 export function BettingTickets() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { canAccess, getUnlockMethod, unlockContent, isAuthenticated } = useUserPlan();
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
@@ -109,6 +111,12 @@ export function BettingTickets() {
   const handleUnlockClick = async (ticket: BettingTicket) => {
     const method = getUnlockMethod(ticket.tier, "ticket", ticket.id);
     if (!method || method.type === "unlocked") return;
+
+    if (method.type === "login_required") {
+      toast.info("Please sign in to unlock this content");
+      navigate("/login");
+      return;
+    }
 
     if (method.type === "watch_ad") {
       setUnlockingId(ticket.id);
