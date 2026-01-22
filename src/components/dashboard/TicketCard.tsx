@@ -1,4 +1,4 @@
-import { Ticket, Clock, Lock, Play, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2, LogIn } from "lucide-react";
+import { Ticket, Clock, Lock, Unlock, Star, Crown, CheckCircle2, XCircle, Loader2, LogIn, Sparkles, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,50 @@ interface TicketCardProps {
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
   isUnlocking?: boolean;
+}
+
+function getTierBadge(tier: ContentTier) {
+  switch (tier) {
+    case "free":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-muted text-muted-foreground">
+          <Gift className="h-3 w-3" />
+          Free
+        </Badge>
+      );
+    case "daily":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+          <Sparkles className="h-3 w-3" />
+          Daily
+        </Badge>
+      );
+    case "exclusive":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
+          <Star className="h-3 w-3" />
+          Exclusive
+        </Badge>
+      );
+    case "premium":
+      return (
+        <Badge variant="secondary" className="gap-1 bg-warning/20 text-warning border-warning/30">
+          <Crown className="h-3 w-3" />
+          Premium
+        </Badge>
+      );
+    default:
+      return null;
+  }
+}
+
+function getUnlockButtonText(unlockMethod: UnlockMethod): string {
+  if (unlockMethod.type === "unlocked") return "";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
+  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
+  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "login_required") return "Sign in to Unlock";
+  return "";
 }
 
 export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TicketCardProps) {
@@ -58,47 +102,20 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
     }
   };
 
-  const getTierBadge = () => {
-    switch (ticket.tier) {
-      case "free":
-        return (
-          <Badge className="bg-success text-success-foreground text-xs">
-            FREE
-          </Badge>
-        );
-      case "daily":
-        return null;
-      case "exclusive":
-        return (
-          <Badge className="bg-primary text-primary-foreground text-xs">
-            <Star className="h-3 w-3 mr-1" />
-            EXCLUSIVE
-          </Badge>
-        );
-      case "premium":
-        return (
-          <Badge className="bg-warning text-warning-foreground text-xs">
-            <Crown className="h-3 w-3 mr-1" />
-            PREMIUM
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
 
     const Icon = unlockMethod.type === "login_required" ? LogIn :
-                 unlockMethod.type === "watch_ad" ? Play : 
+                 unlockMethod.type === "watch_ad" ? Sparkles : 
                  unlockMethod.type === "upgrade_basic" ? Star : Crown;
     
     const buttonClass = unlockMethod.type === "watch_ad"
       ? "bg-accent hover:bg-accent/90 text-accent-foreground border-accent"
-      : unlockMethod.type === "upgrade_premium" 
-        ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
-        : "";
+      : unlockMethod.type === "upgrade_basic"
+        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+        : unlockMethod.type === "upgrade_premium" 
+          ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
+          : "";
 
     const buttonVariant = unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" 
       ? "outline" 
@@ -122,7 +139,7 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
         ) : (
           <>
             <Icon className="h-4 w-4" />
-            {unlockMethod.message}
+            {getUnlockButtonText(unlockMethod)}
           </>
         )}
       </Button>
@@ -141,7 +158,7 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            {getTierBadge()}
+            {getTierBadge(ticket.tier)}
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Ticket className="h-3 w-3" />
               {ticket.matchCount} Matches
@@ -175,9 +192,7 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
             ))}
             <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
               <Lock className="h-4 w-4" />
-              <span className="text-xs">
-                {unlockMethod && unlockMethod.type !== "unlocked" ? unlockMethod.message : "Locked"}
-              </span>
+              <span className="text-xs">Locked</span>
             </div>
           </>
         ) : (
