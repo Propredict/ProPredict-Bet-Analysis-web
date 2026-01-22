@@ -63,6 +63,11 @@ export default function DailyTickets() {
               const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const isUnlocking = unlockingId === ticket.id;
+              
+              // Show all matches when unlocked, only 3 when locked
+              const matchesToShow = isLocked 
+                ? (ticket.matches ?? []).slice(0, 3) 
+                : (ticket.matches ?? []);
 
               return (
                 <TicketCard
@@ -74,7 +79,7 @@ export default function DailyTickets() {
                     status: ticket.result ?? "pending",
                     totalOdds: ticket.total_odds ?? 0,
                     tier: ticket.tier,
-                    matches: (ticket.matches ?? []).slice(0, 3).map((m) => ({
+                    matches: matchesToShow.map((m) => ({
                       name: m.match_name,
                       prediction: m.prediction,
                       odds: m.odds,
