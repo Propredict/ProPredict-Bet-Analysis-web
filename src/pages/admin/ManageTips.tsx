@@ -40,6 +40,7 @@ const defaultTip: Omit<TipInsert, "created_at"> = {
   prediction: "",
   odds: 1.5,
   confidence: 70,
+  kickoff: "15:00",
   ai_prediction: "",
   tier: "daily",
   status: "draft",
@@ -55,6 +56,7 @@ const mockTips: Tip[] = [
     prediction: "Over 2.5 Goals",
     odds: 1.85,
     confidence: 78,
+    kickoff: "15:00",
     ai_prediction: "Based on recent form and head-to-head statistics, both teams have been scoring consistently. Liverpool averages 2.1 goals at home while City scores 2.3 away. Expect an open game with multiple goals.",
     tier: "premium",
     status: "published",
@@ -68,6 +70,7 @@ const mockTips: Tip[] = [
     prediction: "Both Teams to Score",
     odds: 1.65,
     confidence: 85,
+    kickoff: "20:00",
     ai_prediction: "El Clasico matches historically feature goals from both sides. In the last 10 meetings, BTTS hit 8 times. Both teams have strong attacking options available.",
     tier: "exclusive",
     status: "published",
@@ -81,6 +84,7 @@ const mockTips: Tip[] = [
     prediction: "Bayern Win",
     odds: 1.55,
     confidence: 72,
+    kickoff: "17:30",
     ai_prediction: "",
     tier: "daily",
     status: "draft",
@@ -111,7 +115,8 @@ export default function ManageTips() {
       prediction: tip.prediction,
       odds: tip.odds,
       confidence: tip.confidence,
-      ai_prediction: tip.ai_prediction,
+      kickoff: tip.kickoff,
+      ai_prediction: tip.ai_prediction || "",
       tier: tip.tier,
       status: tip.status,
     });
@@ -285,7 +290,7 @@ export default function ManageTips() {
                   placeholder="e.g., Over 2.5 Goals"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Odds</Label>
                   <Input
@@ -304,6 +309,14 @@ export default function ManageTips() {
                     max="100"
                     value={formData.confidence}
                     onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Kickoff</Label>
+                  <Input
+                    type="time"
+                    value={formData.kickoff}
+                    onChange={(e) => setFormData({ ...formData, kickoff: e.target.value })}
                   />
                 </div>
               </div>

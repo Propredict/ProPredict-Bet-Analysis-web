@@ -9,10 +9,11 @@ export interface Tip {
   prediction: string;
   odds: number;
   confidence: number;
-  ai_prediction: string;
+  kickoff: string;
+  ai_prediction?: string;
   tier: ContentTier;
   status: ContentStatus;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface TicketMatch {
@@ -22,7 +23,7 @@ export interface TicketMatch {
   prediction: string;
   odds: number;
   sort_order: number;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Ticket {
@@ -31,9 +32,9 @@ export interface Ticket {
   total_odds: number;
   tier: ContentTier;
   status: ContentStatus;
-  created_at: string;
-  created_at_ts: string;
-  updated_at: string;
+  created_at?: string;
+  created_at_ts?: string;
+  updated_at?: string;
   created_by?: string;
   matches?: TicketMatch[];
 }
