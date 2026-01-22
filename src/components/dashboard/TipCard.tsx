@@ -143,7 +143,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       {/* Unlock Button for locked content */}
       {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
         <Button
-          variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
+          variant={unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" ? "outline" : "default"}
           size="sm"
           className={cn("w-full mt-3 gap-2", getUnlockButtonStyle())}
           disabled={isUnlocking}
@@ -157,13 +157,14 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               <Loader2 className="h-4 w-4 animate-spin" />
               Watching ad...
             </>
-          ) : unlockMethod.type === "login_required" ? (
+          ) : (
             <>
-              <LogIn className="h-4 w-4" />
+              {unlockMethod.type === "login_required" && <LogIn className="h-4 w-4" />}
+              {unlockMethod.type === "watch_ad" && <Sparkles className="h-4 w-4" />}
+              {unlockMethod.type === "upgrade_basic" && <Star className="h-4 w-4" />}
+              {unlockMethod.type === "upgrade_premium" && <Crown className="h-4 w-4" />}
               {getUnlockButtonText(unlockMethod)}
             </>
-          ) : (
-            getUnlockButtonText(unlockMethod)
           )}
         </Button>
       )}
