@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { TicketCard, type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
+import { toast } from "sonner";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -94,7 +95,8 @@ export function BettingTickets() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  const { canAccess, getUnlockMethod } = useUserPlan();
+  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
@@ -104,13 +106,27 @@ export function BettingTickets() {
 
   const filteredTickets = sampleTickets.filter((ticket) => ticket.tier === activeTab);
 
-  const handleUnlockClick = (tier: ContentTier) => {
-    const method = getUnlockMethod(tier);
+  const handleUnlockClick = async (ticket: BettingTicket) => {
+    const method = getUnlockMethod(ticket.tier, "ticket", ticket.id);
     if (!method || method.type === "unlocked") return;
 
     if (method.type === "watch_ad") {
-      // Simulate watching an ad - in real app, integrate with ad SDK
-      alert("Simulating ad playback... Content would be unlocked after watching.");
+      setUnlockingId(ticket.id);
+      
+      // Simulate ad playback delay
+      toast.info("Playing rewarded ad...", { duration: 2000 });
+      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      const success = await unlockContent("ticket", ticket.id);
+      
+      if (success) {
+        toast.success("Ticket unlocked! Valid until midnight UTC.");
+      } else {
+        toast.error("Failed to unlock. Please try again.");
+      }
+      
+      setUnlockingId(null);
     } else if (method.type === "upgrade_basic") {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -171,15 +187,17 @@ export function BettingTickets() {
       {filteredTickets.length > 0 ? (
         <div className="grid md:grid-cols-2 gap-4">
           {filteredTickets.map((ticket) => {
-            const isLocked = !canAccess(ticket.tier);
-            const unlockMethod = getUnlockMethod(ticket.tier);
+            const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
+            const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+            const isUnlocking = unlockingId === ticket.id;
             return (
               <TicketCard
                 key={ticket.id}
                 ticket={ticket}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlockClick(ticket.tier)}
+                onUnlockClick={() => handleUnlockClick(ticket)}
+                isUnlocking={isUnlocking}
               />
             );
           })}

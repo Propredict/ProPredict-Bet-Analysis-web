@@ -1,4 +1,4 @@
-import { Lock } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,10 @@ interface TipCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
+  isUnlocking?: boolean;
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "upgrade_premium") {
@@ -37,9 +38,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick }: TipCardP
     <Card 
       className={cn(
         "p-4 bg-card border-border transition-all",
-        isLocked && "cursor-pointer hover:border-primary/50"
+        isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
       )}
-      onClick={isLocked ? onUnlockClick : undefined}
+      onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
     >
       <div className="flex items-start justify-between gap-4">
         {/* Match Info */}
@@ -94,12 +95,20 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick }: TipCardP
           variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
           size="sm"
           className={cn("w-full mt-3 gap-2", getUnlockButtonStyle())}
+          disabled={isUnlocking}
           onClick={(e) => {
             e.stopPropagation();
             onUnlockClick();
           }}
         >
-          {unlockMethod.message}
+          {isUnlocking ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Watching ad...
+            </>
+          ) : (
+            unlockMethod.message
+          )}
         </Button>
       )}
     </Card>

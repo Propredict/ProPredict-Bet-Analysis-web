@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
+import { toast } from "sonner";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -82,7 +83,8 @@ export function MatchPredictions() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  const { plan, canAccess, getUnlockMethod } = useUserPlan();
+  const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const { plan, canAccess, getUnlockMethod, unlockContent } = useUserPlan();
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
@@ -92,13 +94,27 @@ export function MatchPredictions() {
 
   const filteredTips = sampleTips.filter((tip) => tip.tier === activeTab);
 
-  const handleUnlockClick = (tier: ContentTier) => {
-    const method = getUnlockMethod(tier);
+  const handleUnlockClick = async (tip: Tip) => {
+    const method = getUnlockMethod(tip.tier, "tip", tip.id);
     if (!method || method.type === "unlocked") return;
 
     if (method.type === "watch_ad") {
-      // Simulate watching an ad - in real app, integrate with ad SDK
-      alert("Simulating ad playback... Content would be unlocked after watching.");
+      setUnlockingId(tip.id);
+      
+      // Simulate ad playback delay
+      toast.info("Playing rewarded ad...", { duration: 2000 });
+      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      const success = await unlockContent("tip", tip.id);
+      
+      if (success) {
+        toast.success("Tip unlocked! Valid until midnight UTC.");
+      } else {
+        toast.error("Failed to unlock. Please try again.");
+      }
+      
+      setUnlockingId(null);
     } else if (method.type === "upgrade_basic") {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -159,15 +175,17 @@ export function MatchPredictions() {
       {filteredTips.length > 0 ? (
         <div className="space-y-3">
           {filteredTips.map((tip) => {
-            const isLocked = !canAccess(tip.tier);
-            const unlockMethod = getUnlockMethod(tip.tier);
+            const isLocked = !canAccess(tip.tier, "tip", tip.id);
+            const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
+            const isUnlocking = unlockingId === tip.id;
             return (
               <TipCard
                 key={tip.id}
                 tip={tip}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlockClick(tip.tier)}
+                onUnlockClick={() => handleUnlockClick(tip)}
+                isUnlocking={isUnlocking}
               />
             );
           })}
