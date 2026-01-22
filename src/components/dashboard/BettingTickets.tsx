@@ -1,29 +1,14 @@
 import { useState } from "react";
-import { Ticket, Sparkles, Star, Crown, Users, Clock, Play, Unlock } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { TicketCard, type BettingTicket } from "./TicketCard";
+import { PricingModal } from "@/components/PricingModal";
 
 type TabType = "daily" | "exclusive" | "premium";
 
-interface TicketMatch {
-  name: string;
-  prediction: string;
-  odds: number;
-  blurred?: boolean;
-}
-
-interface BettingTicket {
-  id: string;
-  title: string;
-  matchCount: number;
-  status: "pending" | "won" | "lost";
-  totalOdds: number;
-  isFree: boolean;
-  matches: TicketMatch[];
-}
-
+// Sample tickets data
 const sampleTickets: BettingTicket[] = [
   {
     id: "1",
@@ -31,132 +16,109 @@ const sampleTickets: BettingTicket[] = [
     matchCount: 5,
     status: "pending",
     totalOdds: 3.41,
-    isFree: true,
+    tier: "daily",
     matches: [
-      { name: "Match 1", prediction: "Over 1.5", odds: 1.2 },
-      { name: "Match 2", prediction: "Away Win", odds: 1.41 },
-      { name: "Match 3", prediction: "Over 2.5", odds: 1.4 },
+      { name: "Liverpool vs Man City", prediction: "Over 1.5", odds: 1.20 },
+      { name: "Real Madrid vs Barcelona", prediction: "BTTS", odds: 1.41 },
+      { name: "Bayern vs Dortmund", prediction: "Home Win", odds: 1.40 },
     ],
   },
   {
     id: "2",
-    title: "Daily Ticket Champions League #2",
+    title: "Daily Ticket Premier League",
     matchCount: 4,
     status: "pending",
-    totalOdds: 3.41,
-    isFree: false,
+    totalOdds: 4.25,
+    tier: "daily",
     matches: [
-      { name: "Match 1", prediction: "", odds: 0, blurred: true },
-      { name: "Match 2", prediction: "", odds: 0, blurred: true },
-      { name: "Match 3", prediction: "", odds: 0, blurred: true },
+      { name: "Arsenal vs Chelsea", prediction: "Over 2.5", odds: 1.65 },
+      { name: "Man Utd vs Tottenham", prediction: "BTTS", odds: 1.55 },
+      { name: "Newcastle vs Brighton", prediction: "Home Win", odds: 1.66 },
+    ],
+  },
+  {
+    id: "3",
+    title: "Exclusive Weekend Accumulator",
+    matchCount: 6,
+    status: "pending",
+    totalOdds: 8.75,
+    tier: "exclusive",
+    matches: [
+      { name: "PSG vs Marseille", prediction: "Home -1.5", odds: 1.85 },
+      { name: "Inter vs AC Milan", prediction: "Under 3.5", odds: 1.45 },
+      { name: "Atletico vs Sevilla", prediction: "Home Win", odds: 1.70 },
+    ],
+  },
+  {
+    id: "4",
+    title: "Exclusive High Odds Special",
+    matchCount: 5,
+    status: "won",
+    totalOdds: 12.50,
+    tier: "exclusive",
+    matches: [
+      { name: "Ajax vs PSV", prediction: "Over 3.5", odds: 2.10 },
+      { name: "Celtic vs Rangers", prediction: "BTTS", odds: 1.50 },
+      { name: "Benfica vs Porto", prediction: "Draw", odds: 3.40 },
+    ],
+  },
+  {
+    id: "5",
+    title: "Premium VIP Ticket",
+    matchCount: 7,
+    status: "pending",
+    totalOdds: 25.00,
+    tier: "premium",
+    matches: [
+      { name: "Confidential Match 1", prediction: "Expert Pick", odds: 2.00 },
+      { name: "Confidential Match 2", prediction: "Expert Pick", odds: 1.80 },
+      { name: "Confidential Match 3", prediction: "Expert Pick", odds: 2.20 },
+    ],
+  },
+  {
+    id: "6",
+    title: "Premium Safe Banker",
+    matchCount: 4,
+    status: "pending",
+    totalOdds: 5.50,
+    tier: "premium",
+    matches: [
+      { name: "Top Match 1", prediction: "Safe Pick", odds: 1.35 },
+      { name: "Top Match 2", prediction: "Safe Pick", odds: 1.40 },
+      { name: "Top Match 3", prediction: "Safe Pick", odds: 1.30 },
     ],
   },
 ];
 
-function TicketCard({ ticket }: { ticket: BettingTicket }) {
-  const moreMatches = ticket.matchCount - ticket.matches.length;
-
-  return (
-    <Card className="bg-card border-border overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {ticket.isFree && (
-              <Badge className="bg-primary text-primary-foreground text-xs">
-                <Sparkles className="h-3 w-3 mr-1" />
-                FREE TODAY
-              </Badge>
-            )}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Ticket className="h-3 w-3" />
-              {ticket.matchCount} Matches
-            </span>
-          </div>
-          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        </div>
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-          <span className="text-primary font-bold">@{ticket.totalOdds}</span>
-        </div>
-      </div>
-
-      {/* Matches */}
-      <div className="p-4 space-y-2">
-        {ticket.matches.map((match, idx) => (
-          <div key={idx} className="flex items-center justify-between text-sm">
-            <span className={cn(
-              "text-muted-foreground",
-              match.blurred && "blur-sm select-none"
-            )}>
-              {match.name}
-            </span>
-            <div className={cn(
-              "flex items-center gap-2",
-              match.blurred && "blur-sm select-none"
-            )}>
-              {match.prediction && (
-                <Badge variant="secondary" className="text-xs">
-                  {match.prediction}
-                </Badge>
-              )}
-              {match.odds > 0 && (
-                <span className="text-primary font-medium">@{match.odds}</span>
-              )}
-              {match.blurred && (
-                <div className="flex gap-1">
-                  <div className="h-4 w-12 bg-primary/30 rounded" />
-                  <div className="h-4 w-8 bg-primary rounded" />
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-        {moreMatches > 0 && (
-          <p className="text-xs text-muted-foreground text-center pt-2">
-            +{moreMatches} more
-          </p>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-muted-foreground">Total Odds</span>
-          <span className="text-primary font-bold text-lg">@{ticket.totalOdds}</span>
-        </div>
-        <Button 
-          variant={ticket.isFree ? "outline" : "secondary"} 
-          className="w-full gap-2"
-        >
-          {ticket.isFree ? (
-            <>
-              <Unlock className="h-4 w-4" />
-              Free Daily Unlock
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4" />
-              Watch Ad to Unlock Ticket
-            </>
-          )}
-        </Button>
-      </div>
-    </Card>
-  );
-}
-
 export function BettingTickets() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
+  const { canAccess, getUnlockMethod } = useUserPlan();
 
   const tabs = [
-    { id: "daily" as TabType, label: "Daily", count: 2, icon: Sparkles, sublabel: "Free with Ads" },
-    { id: "exclusive" as TabType, label: "Exclusive", count: 0, icon: Star, sublabel: "Higher Confidence" },
-    { id: "premium" as TabType, label: "Premium", count: 0, icon: Crown, sublabel: "Members Only" },
+    { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
+    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, sublabel: "Basic+ Members" },
+    { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
   ];
+
+  const filteredTickets = sampleTickets.filter((ticket) => ticket.tier === activeTab);
+
+  const handleUnlockClick = (tier: ContentTier) => {
+    const method = getUnlockMethod(tier);
+    if (!method || method.type === "unlocked") return;
+
+    if (method.type === "watch_ad") {
+      // Simulate watching an ad - in real app, integrate with ad SDK
+      alert("Simulating ad playback... Content would be unlocked after watching.");
+    } else if (method.type === "upgrade_basic") {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    } else if (method.type === "upgrade_premium") {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    }
+  };
 
   return (
     <section className="space-y-4">
@@ -167,30 +129,33 @@ export function BettingTickets() {
 
       <Card className="p-1 bg-card border-border">
         <div className="grid grid-cols-3 gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <tab.icon className="h-4 w-4" />
-                <span className="font-medium">{tab.label}</span>
-                <span className={cn(
-                  "text-xs px-1.5 py-0.5 rounded-full",
-                  activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted"
-                )}>
-                  {tab.count}
-                </span>
-              </div>
-              <span className="text-xs opacity-80">{tab.sublabel}</span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const ticketCount = sampleTickets.filter((t) => t.tier === tab.id).length;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <tab.icon className="h-4 w-4" />
+                  <span className="font-medium">{tab.label}</span>
+                  <span className={cn(
+                    "text-xs px-1.5 py-0.5 rounded-full",
+                    activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted"
+                  )}>
+                    {ticketCount}
+                  </span>
+                </div>
+                <span className="text-xs opacity-80">{tab.sublabel}</span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 
@@ -203,11 +168,39 @@ export function BettingTickets() {
       </div>
 
       {/* Tickets Grid */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {sampleTickets.map((ticket) => (
-          <TicketCard key={ticket.id} ticket={ticket} />
-        ))}
-      </div>
+      {filteredTickets.length > 0 ? (
+        <div className="grid md:grid-cols-2 gap-4">
+          {filteredTickets.map((ticket) => {
+            const isLocked = !canAccess(ticket.tier);
+            const unlockMethod = getUnlockMethod(ticket.tier);
+            return (
+              <TicketCard
+                key={ticket.id}
+                ticket={ticket}
+                isLocked={isLocked}
+                unlockMethod={unlockMethod}
+                onUnlockClick={() => handleUnlockClick(ticket.tier)}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="p-8 bg-card border-border text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Ticket className="h-12 w-12 text-primary opacity-50" />
+            <div>
+              <p className="text-muted-foreground">No {activeTab} tickets available</p>
+              <p className="text-sm text-muted-foreground">Check back soon for new tickets!</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <PricingModal 
+        open={showPricingModal} 
+        onOpenChange={setShowPricingModal}
+        highlightPlan={highlightPlan}
+      />
     </section>
   );
 }
