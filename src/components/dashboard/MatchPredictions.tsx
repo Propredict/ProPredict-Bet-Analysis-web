@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { TrendingUp, Sparkles, Star, Crown, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
-import { toast } from "sonner";
 import { useTips } from "@/hooks/useTips";
 
 type TabType = "daily" | "exclusive" | "premium";
@@ -33,12 +32,21 @@ function mapDbTipToTip(dbTip: any): Tip {
 }
 
 export function MatchPredictions() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const { canAccess, getUnlockMethod, unlockContent, isAuthenticated } = useUserPlan();
+  
+  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler({
+    onUpgradeBasic: () => {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    },
+    onUpgradePremium: () => {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    },
+  });
   const { tips: dbTips, isLoading } = useTips(false);
 
   // Map database tips to display format
@@ -46,47 +54,11 @@ export function MatchPredictions() {
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
-    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, sublabel: "Basic+ Members" },
+    { id: "exclusive" as TabType, label: "Pro", icon: Star, sublabel: "Pro Members" },
     { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
   ];
 
   const filteredTips = tips.filter((tip) => tip.tier === activeTab);
-
-  const handleUnlockClick = async (tip: Tip) => {
-    const method = getUnlockMethod(tip.tier, "tip", tip.id);
-    if (!method || method.type === "unlocked") return;
-
-    if (method.type === "login_required") {
-      toast.info("Please sign in to unlock this content");
-      navigate("/login");
-      return;
-    }
-
-    if (method.type === "watch_ad") {
-      setUnlockingId(tip.id);
-      
-      // Simulate ad playback delay
-      toast.info("Playing rewarded ad...", { duration: 2000 });
-      
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      const success = await unlockContent("tip", tip.id);
-      
-      if (success) {
-        toast.success("Tip unlocked! Valid until midnight UTC.");
-      } else {
-        toast.error("Failed to unlock. Please try again.");
-      }
-      
-      setUnlockingId(null);
-    } else if (method.type === "upgrade_basic") {
-      setHighlightPlan("basic");
-      setShowPricingModal(true);
-    } else if (method.type === "upgrade_premium") {
-      setHighlightPlan("premium");
-      setShowPricingModal(true);
-    }
-  };
 
   return (
     <section className="space-y-4">
@@ -152,7 +124,7 @@ export function MatchPredictions() {
                 tip={tip}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlockClick(tip)}
+                onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
                 isUnlocking={isUnlocking}
               />
             );

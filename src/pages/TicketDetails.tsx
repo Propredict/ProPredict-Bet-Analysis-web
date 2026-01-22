@@ -5,20 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { toast } from "sonner";
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isUnlocking, setIsUnlocking] = useState(false);
 
   const { tickets, isLoading } = useTickets(false);
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   const ticket = tickets.find((t) => t.id === id);
+  const isUnlocking = unlockingId === id;
 
   if (isLoading) {
     return (
@@ -46,33 +46,6 @@ export default function TicketDetails() {
   const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
   const isLocked = unlockMethod?.type !== "unlocked";
 
-  const handleUnlock = async () => {
-    if (!unlockMethod) return;
-
-    if (unlockMethod.type === "login_required") {
-      navigate("/login");
-      return;
-    }
-
-    if (unlockMethod.type === "watch_ad") {
-      setIsUnlocking(true);
-      toast.info("Playing rewarded ad...", { duration: 2000 });
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const success = await unlockContent("ticket", ticket.id);
-      if (success) {
-        toast.success("Ticket unlocked! Valid until midnight UTC.");
-      } else {
-        toast.error("Failed to unlock. Please try again.");
-      }
-      setIsUnlocking(false);
-      return;
-    }
-
-    if (unlockMethod.type === "upgrade_basic" || unlockMethod.type === "upgrade_premium") {
-      navigate("/get-premium");
-    }
-  };
-
   const getTierBadge = () => {
     switch (ticket.tier) {
       case "daily":
@@ -86,7 +59,7 @@ export default function TicketDetails() {
         return (
           <Badge className="bg-primary/20 text-primary border-primary/30">
             <Star className="h-3 w-3 mr-1" />
-            Exclusive
+            Pro
           </Badge>
         );
       case "premium":
@@ -140,7 +113,7 @@ export default function TicketDetails() {
         size="lg"
         className={cn("w-full gap-2 h-12", config.className)}
         disabled={isUnlocking}
-        onClick={handleUnlock}
+        onClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
       >
         {isUnlocking ? (
           <>

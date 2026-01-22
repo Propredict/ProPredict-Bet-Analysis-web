@@ -4,9 +4,9 @@ import { Ticket, Sparkles, Star, Crown, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
-import { toast } from "sonner";
 import { useTickets } from "@/hooks/useTickets";
 
 type TabType = "daily" | "exclusive" | "premium";
@@ -35,62 +35,29 @@ export function BettingTickets() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  const [unlockingId, setUnlockingId] = useState<string | null>(null);
 
-  const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
+  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler({
+    onUpgradeBasic: () => {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    },
+    onUpgradePremium: () => {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    },
+  });
   const { tickets: dbTickets, isLoading } = useTickets(false);
 
   const tickets = dbTickets.map(mapDbTicketToTicket);
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
-    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, sublabel: "Basic+ Members" },
+    { id: "exclusive" as TabType, label: "Pro", icon: Star, sublabel: "Pro Members" },
     { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
   ];
 
   const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
-
-  /* =======================
-     Unlock logic
-  ======================= */
-  const handleUnlockClick = async (ticket: BettingTicket) => {
-    const method = getUnlockMethod(ticket.tier, "ticket", ticket.id);
-    if (!method || method.type === "unlocked") return;
-
-    if (method.type === "login_required") {
-      toast.info("Please sign in to unlock this ticket");
-      navigate("/login");
-      return;
-    }
-
-    if (method.type === "watch_ad") {
-      setUnlockingId(ticket.id);
-      toast.info("Playing rewarded ad...", { duration: 2000 });
-
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const success = await unlockContent("ticket", ticket.id);
-
-      if (success) {
-        toast.success("Ticket unlocked! Valid until midnight UTC.");
-      } else {
-        toast.error("Failed to unlock. Please try again.");
-      }
-
-      setUnlockingId(null);
-      return;
-    }
-
-    if (method.type === "upgrade_basic") {
-      setHighlightPlan("basic");
-      setShowPricingModal(true);
-    }
-
-    if (method.type === "upgrade_premium") {
-      setHighlightPlan("premium");
-      setShowPricingModal(true);
-    }
-  };
 
   return (
     <section className="space-y-4">
@@ -159,8 +126,8 @@ export function BettingTickets() {
                 ticket={ticket}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlockClick(ticket)}
-                onViewTicket={() => navigate(`/tickets/${ticket.id}`)} // ✅ OVO JE BITNO
+                onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
+                onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                 isUnlocking={isUnlocking}
               />
             );
