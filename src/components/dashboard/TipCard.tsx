@@ -104,106 +104,150 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
 
   const isUnlocked = unlockMethod?.type === "unlocked";
 
-  return (
-    <Card 
-      className={cn(
-        "p-4 bg-card border-border transition-all overflow-hidden",
-        isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
-      )}
-      onClick={isLocked && !isUnlocking ? handleUnlockClick : undefined}
-    >
-      {/* Header with league and tier badge */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-xs">⚽</span>
+  // Locked state
+  if (isLocked) {
+    return (
+      <Card 
+        className={cn(
+          "bg-card border-border transition-all overflow-hidden",
+          !isUnlocking && "cursor-pointer hover:border-primary/50"
+        )}
+        onClick={!isUnlocking ? handleUnlockClick : undefined}
+      >
+        {/* Header with tier badge */}
+        <div className="p-4 pb-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {getTierBadge(tip.tier)}
+              <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-xs">
+                {tip.league}
+              </Badge>
+            </div>
+            <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
           </div>
-          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-xs">
-            {tip.league}
-          </Badge>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
-          {isUnlocked ? (
+
+        {/* Match title */}
+        <div className="px-4 pb-3">
+          <h3 className="font-bold text-lg text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
+        </div>
+
+        {/* Locked content placeholder */}
+        <div className="px-4 pb-3">
+          <div className="grid grid-cols-3 gap-4 p-3 bg-muted/20 rounded-lg border border-border/50">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Prediction</p>
+              <div className="h-4 w-20 bg-muted rounded blur-sm" />
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-1">Odds</p>
+              <div className="h-4 w-12 bg-muted rounded blur-sm mx-auto" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground mb-1">Confidence</p>
+              <div className="h-4 w-16 bg-muted rounded blur-sm ml-auto" />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 pt-3 text-muted-foreground">
+            <Lock className="h-4 w-4" />
+            <span className="text-xs">Locked</span>
+          </div>
+        </div>
+
+        {/* Unlock button */}
+        {unlockMethod && unlockMethod.type !== "unlocked" && (
+          <div className="p-4 border-t border-border">
+            <Button
+              variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+              size="lg"
+              className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
+              disabled={isUnlocking}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUnlockClick();
+              }}
+            >
+              {isUnlocking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Watching ad...
+                </>
+              ) : (
+                <>
+                  {unlockMethod.type === "login_required" && <LogIn className="h-4 w-4" />}
+                  {unlockMethod.type === "watch_ad" && <Sparkles className="h-4 w-4" />}
+                  {unlockMethod.type === "upgrade_basic" && <Star className="h-4 w-4" />}
+                  {unlockMethod.type === "upgrade_premium" && <Crown className="h-4 w-4" />}
+                  {getUnlockButtonText(unlockMethod)}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </Card>
+    );
+  }
+
+  // Unlocked state - rich card design
+  return (
+    <Card className="bg-card border-primary/30 transition-all overflow-hidden hover:border-primary/50">
+      {/* Header with tier badge and unlocked status */}
+      <div className="p-4 pb-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {getTierBadge(tip.tier)}
+            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-xs">
+              {tip.league}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
             <Badge className="gap-1 bg-success/20 text-success border-success/30">
               <CheckCircle2 className="h-3 w-3" />
               Unlocked
             </Badge>
-          ) : (
-            getTierBadge(tip.tier)
-          )}
-        </div>
-      </div>
-
-      {/* Match title */}
-      <h3 className="font-medium text-foreground mb-3">
-        {tip.homeTeam} vs {tip.awayTeam} - {tip.league}
-      </h3>
-
-      {/* Prediction/Odds/Confidence row */}
-      <div className="grid grid-cols-3 gap-4 p-3 bg-muted/30 rounded-lg mb-3">
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">Prediction</p>
-          {isLocked ? (
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Lock className="h-3 w-3" />
-              <span className="text-sm">Locked</span>
-            </div>
-          ) : (
-            <p className="text-sm font-medium text-foreground">{tip.prediction}</p>
-          )}
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-1">Odds</p>
-          <p className={cn(
-            "text-sm font-medium",
-            isLocked ? "text-muted-foreground" : "text-foreground"
-          )}>
-            {isLocked ? "--" : `@${tip.odds.toFixed(2)}`}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-          <div className="flex items-center justify-end gap-2">
-            <div className="w-12 h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
-                style={{ width: `${tip.confidence}%` }}
-              />
-            </div>
-            <span className="text-sm font-medium text-accent">{tip.confidence}%</span>
           </div>
         </div>
       </div>
 
-      {/* Unlock button */}
-      {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
-        <Button
-          variant={unlockMethod.type === "login_required" ? "outline" : "default"}
-          size="lg"
-          className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
-          disabled={isUnlocking}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleUnlockClick();
-          }}
-        >
-          {isUnlocking ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Watching ad...
-            </>
-          ) : (
-            <>
-              {unlockMethod.type === "login_required" && <LogIn className="h-4 w-4" />}
-              {unlockMethod.type === "watch_ad" && <Sparkles className="h-4 w-4" />}
-              {unlockMethod.type === "upgrade_basic" && <Star className="h-4 w-4" />}
-              {unlockMethod.type === "upgrade_premium" && <Crown className="h-4 w-4" />}
-              {getUnlockButtonText(unlockMethod)}
-            </>
-          )}
-        </Button>
-      )}
+      {/* Match title */}
+      <div className="px-4 pb-3">
+        <h3 className="font-bold text-lg text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
+      </div>
+
+      {/* Prediction details */}
+      <div className="px-4 pb-3">
+        <div className="flex items-center justify-between py-2 border-b border-border/30">
+          <span className="text-sm text-muted-foreground">Prediction</span>
+          <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+            {tip.prediction}
+          </Badge>
+        </div>
+        <div className="flex items-center justify-between py-2 border-b border-border/30">
+          <span className="text-sm text-muted-foreground">Odds</span>
+          <span className="font-bold text-primary">@{tip.odds.toFixed(2)}</span>
+        </div>
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm text-muted-foreground">Confidence</span>
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-success to-primary rounded-full"
+                style={{ width: `${tip.confidence}%` }}
+              />
+            </div>
+            <span className="font-bold text-success">{tip.confidence}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Unlocked badge footer */}
+      <div className="px-4 py-3 border-t border-border/50">
+        <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
+          <CheckCircle2 className="h-4 w-4" />
+          Tip Unlocked
+        </Badge>
+      </div>
     </Card>
   );
 }
