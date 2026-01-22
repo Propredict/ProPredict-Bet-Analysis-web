@@ -11,13 +11,15 @@ import { useTickets } from "@/hooks/useTickets";
 
 type TabType = "daily" | "exclusive" | "premium";
 
-// Map database tickets to the display format
+/* =======================
+   Map DB → UI model
+======================= */
 function mapDbTicketToTicket(dbTicket: any): BettingTicket {
   return {
     id: dbTicket.id,
     title: dbTicket.title,
     matchCount: dbTicket.matches?.length || 0,
-    status: "pending",
+    status: dbTicket.result ?? "pending",
     totalOdds: dbTicket.total_odds,
     tier: dbTicket.tier as ContentTier,
     matches: (dbTicket.matches || []).map((m: any) => ({
@@ -34,6 +36,7 @@ export function BettingTickets() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
+
   const { canAccess, getUnlockMethod, unlockContent } = useUserPlan();
   const { tickets: dbTickets, isLoading } = useTickets(false);
 
@@ -47,20 +50,21 @@ export function BettingTickets() {
 
   const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
 
+  /* =======================
+     Unlock logic
+  ======================= */
   const handleUnlockClick = async (ticket: BettingTicket) => {
     const method = getUnlockMethod(ticket.tier, "ticket", ticket.id);
     if (!method || method.type === "unlocked") return;
 
     if (method.type === "login_required") {
-      toast.info("Please sign in to unlock this content");
+      toast.info("Please sign in to unlock this ticket");
       navigate("/login");
       return;
     }
 
     if (method.type === "watch_ad") {
       setUnlockingId(ticket.id);
-
-      // Simulate ad playback delay
       toast.info("Playing rewarded ad...", { duration: 2000 });
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -74,10 +78,15 @@ export function BettingTickets() {
       }
 
       setUnlockingId(null);
-    } else if (method.type === "upgrade_basic") {
+      return;
+    }
+
+    if (method.type === "upgrade_basic") {
       setHighlightPlan("basic");
       setShowPricingModal(true);
-    } else if (method.type === "upgrade_premium") {
+    }
+
+    if (method.type === "upgrade_premium") {
       setHighlightPlan("premium");
       setShowPricingModal(true);
     }
@@ -85,15 +94,17 @@ export function BettingTickets() {
 
   return (
     <section className="space-y-4">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <Ticket className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold text-foreground">Betting Tickets</h2>
       </div>
 
+      {/* Tabs */}
       <Card className="p-1 bg-card border-border">
         <div className="grid grid-cols-3 gap-1">
           {tabs.map((tab) => {
-            const ticketCount = tickets.filter((t) => t.tier === tab.id).length;
+            const count = tickets.filter((t) => t.tier === tab.id).length;
             return (
               <button
                 key={tab.id}
@@ -112,7 +123,7 @@ export function BettingTickets() {
                       activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted",
                     )}
                   >
-                    {ticketCount}
+                    {count}
                   </span>
                 </div>
                 <span className="text-xs opacity-80">{tab.sublabel}</span>
@@ -122,17 +133,17 @@ export function BettingTickets() {
         </div>
       </Card>
 
-      {/* Users unlocked banner */}
+      {/* Banner */}
       <div className="bg-primary/10 border border-primary/20 rounded-lg py-2 px-4 text-center">
         <div className="flex items-center justify-center gap-2 text-sm text-primary">
           <Users className="h-4 w-4" />
-          <span>210 users unlocked daily tips today</span>
+          <span>210 users unlocked daily tickets today</span>
         </div>
       </div>
 
-      {/* Tickets Grid */}
+      {/* Tickets */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : filteredTickets.length > 0 ? (
@@ -141,6 +152,7 @@ export function BettingTickets() {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
             const isUnlocking = unlockingId === ticket.id;
+
             return (
               <TicketCard
                 key={ticket.id}
@@ -148,20 +160,15 @@ export function BettingTickets() {
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
                 onUnlockClick={() => handleUnlockClick(ticket)}
+                onViewTicket={() => navigate(`/tickets/${ticket.id}`)} // ✅ OVO JE BITNO
                 isUnlocking={isUnlocking}
               />
             );
           })}
         </div>
       ) : (
-        <Card className="p-8 bg-card border-border text-center">
-          <div className="flex flex-col items-center gap-4">
-            <Ticket className="h-12 w-12 text-primary opacity-50" />
-            <div>
-              <p className="text-muted-foreground">No {activeTab} tickets available</p>
-              <p className="text-sm text-muted-foreground">Check back soon for new tickets!</p>
-            </div>
-          </div>
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">No {activeTab} tickets available</p>
         </Card>
       )}
 
