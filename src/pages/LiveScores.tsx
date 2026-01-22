@@ -4,6 +4,7 @@ import {
   Zap, 
   RefreshCw, 
   Bell, 
+  BellRing,
   Clock, 
   Trophy, 
   Star, 
@@ -21,6 +22,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
+import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
+import { useMatchAlerts } from "@/hooks/useMatchAlerts";
 
 type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 type DateFilter = "yesterday" | "today" | "tomorrow";
@@ -78,7 +81,9 @@ export default function LiveScores() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [alertMatch, setAlertMatch] = useState<Match | null>(null);
   const { toast } = useToast();
+  const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
 
   const currentTime = new Date().toLocaleTimeString("en-US", { 
     hour: "2-digit", 
@@ -425,6 +430,21 @@ export default function LiveScores() {
                         </div>
                       </div>
 
+                      {/* Alert Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAlertMatch(match);
+                        }}
+                        className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors"
+                      >
+                        {hasAlert(match.id) ? (
+                          <BellRing className="h-4 w-4 text-primary" />
+                        ) : (
+                          <Bell className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                        )}
+                      </button>
+
                       {/* Status Badge */}
                       <div className="shrink-0">
                         {getStatusBadge(match)}
@@ -457,6 +477,15 @@ export default function LiveScores() {
         <MatchDetailModal 
           match={selectedMatch} 
           onClose={() => setSelectedMatch(null)} 
+        />
+
+        {/* Match Alerts Modal */}
+        <MatchAlertsModal 
+          match={alertMatch} 
+          onClose={() => {
+            setAlertMatch(null);
+            refetchAlerts();
+          }} 
         />
       </div>
     </DashboardLayout>
