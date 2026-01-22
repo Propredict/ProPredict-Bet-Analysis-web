@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
+import { useNavigate } from "react-router-dom";
 
 export interface Tip {
   id: string;
@@ -64,12 +65,23 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
-  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Unlock";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
 
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
+  const navigate = useNavigate();
+  const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
+
+  const handleUnlockClick = () => {
+    if (isPremiumLocked) {
+      navigate("/get-premium");
+    } else {
+      onUnlockClick();
+    }
+  };
+
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "watch_ad") {
@@ -79,7 +91,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-warning hover:bg-warning/90 text-warning-foreground";
+      return "bg-gradient-to-r from-accent to-primary hover:opacity-90 text-white border-0";
     }
     return "";
   };
@@ -87,69 +99,78 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
   return (
     <Card 
       className={cn(
-        "p-4 bg-card border-border transition-all",
+        "p-4 bg-card border-border transition-all overflow-hidden",
         isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
       )}
-      onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
+      onClick={isLocked && !isUnlocking ? handleUnlockClick : undefined}
     >
-      <div className="flex items-start justify-between gap-4">
-        {/* Match Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            {getTierBadge(tip.tier)}
-            <p className="text-xs text-muted-foreground">{tip.league}</p>
+      {/* Header with league and tier badge */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-xs">⚽</span>
           </div>
-          <p className="font-medium text-foreground truncate">
-            {tip.homeTeam} vs {tip.awayTeam}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">{tip.kickoff}</p>
+          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-xs">
+            {tip.league}
+          </Badge>
         </div>
-
-        {/* Prediction & Odds */}
-        <div className="flex flex-col items-end gap-2">
-          {isLocked ? (
-            <>
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-16 bg-muted rounded blur-sm" />
-                <div className="h-6 w-12 bg-primary/30 rounded blur-sm" />
-              </div>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Lock className="h-3 w-3" />
-                <span className="text-xs">Locked</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <Badge variant="secondary" className="text-sm">
-                {tip.prediction}
-              </Badge>
-              <span className="text-primary font-bold">@{tip.odds.toFixed(2)}</span>
-              <div className="flex items-center gap-1">
-                <div 
-                  className="h-1.5 w-16 bg-muted rounded-full overflow-hidden"
-                >
-                  <div 
-                    className="h-full bg-success rounded-full"
-                    style={{ width: `${tip.confidence}%` }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground">{tip.confidence}%</span>
-              </div>
-            </>
-          )}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
+          {getTierBadge(tip.tier)}
         </div>
       </div>
 
-      {/* Unlock Button for locked content */}
+      {/* Match title */}
+      <h3 className="font-medium text-foreground mb-3">
+        {tip.homeTeam} vs {tip.awayTeam} - {tip.league}
+      </h3>
+
+      {/* Prediction/Odds/Confidence row */}
+      <div className="grid grid-cols-3 gap-4 p-3 bg-muted/30 rounded-lg mb-3">
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Prediction</p>
+          {isLocked ? (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              <span className="text-sm">Locked</span>
+            </div>
+          ) : (
+            <p className="text-sm font-medium text-foreground">{tip.prediction}</p>
+          )}
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Odds</p>
+          <p className={cn(
+            "text-sm font-medium",
+            isLocked ? "text-muted-foreground" : "text-foreground"
+          )}>
+            {isLocked ? "--" : `@${tip.odds.toFixed(2)}`}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-muted-foreground mb-1">Confidence</p>
+          <div className="flex items-center justify-end gap-2">
+            <div className="w-12 h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
+                style={{ width: `${tip.confidence}%` }}
+              />
+            </div>
+            <span className="text-sm font-medium text-accent">{tip.confidence}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium unlock button with gradient */}
       {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
         <Button
-          variant={unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" ? "outline" : "default"}
-          size="sm"
-          className={cn("w-full mt-3 gap-2", getUnlockButtonStyle())}
+          variant="default"
+          size="lg"
+          className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
           disabled={isUnlocking}
           onClick={(e) => {
             e.stopPropagation();
-            onUnlockClick();
+            handleUnlockClick();
           }}
         >
           {isUnlocking ? (
