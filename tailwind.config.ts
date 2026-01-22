@@ -58,7 +58,10 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         success: "hsl(var(--success))",
-        warning: "hsl(var(--warning))",
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         pending: "hsl(var(--pending))",
       },
       borderRadius: {

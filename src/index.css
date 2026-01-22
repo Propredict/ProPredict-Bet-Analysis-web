@@ -38,8 +38,9 @@
 
     /* Custom ProPredict colors */
     --success: 142 76% 36%;
-    --warning: 25 95% 53%;
-    --pending: 45 93% 47%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 222 47% 6%;
+    --pending: 25 95% 53%;
     
     /* Sidebar */
     --sidebar-background: 222 47% 5%;
