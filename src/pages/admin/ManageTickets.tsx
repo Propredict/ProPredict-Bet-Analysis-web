@@ -45,14 +45,16 @@ interface TodayMatch {
   awayTeam: string;
   league: string;
   startTime: string;
+  isLive?: boolean;
+  minute?: number;
 }
 
 // Mock today's matches (simulating Live Scores data)
 const mockTodayMatches: TodayMatch[] = [
-  { id: "m1", homeTeam: "Liverpool", awayTeam: "Manchester City", league: "Premier League", startTime: "15:00" },
+  { id: "m1", homeTeam: "Liverpool", awayTeam: "Manchester City", league: "Premier League", startTime: "15:00", isLive: true, minute: 67 },
   { id: "m2", homeTeam: "Arsenal", awayTeam: "Chelsea", league: "Premier League", startTime: "17:30" },
   { id: "m3", homeTeam: "Barcelona", awayTeam: "Real Madrid", league: "La Liga", startTime: "21:00" },
-  { id: "m4", homeTeam: "Bayern Munich", awayTeam: "Borussia Dortmund", league: "Bundesliga", startTime: "18:30" },
+  { id: "m4", homeTeam: "Bayern Munich", awayTeam: "Borussia Dortmund", league: "Bundesliga", startTime: "18:30", isLive: true, minute: 34 },
   { id: "m5", homeTeam: "PSG", awayTeam: "Marseille", league: "Ligue 1", startTime: "20:45" },
   { id: "m6", homeTeam: "Juventus", awayTeam: "AC Milan", league: "Serie A", startTime: "20:00" },
   { id: "m7", homeTeam: "Inter Milan", awayTeam: "Napoli", league: "Serie A", startTime: "18:00" },
@@ -127,6 +129,15 @@ export default function ManageTickets() {
       m.awayTeam.toLowerCase().includes(matchSearchQuery.toLowerCase()) ||
       m.league.toLowerCase().includes(matchSearchQuery.toLowerCase())
   );
+
+  // Group matches by league
+  const matchesByLeague = filteredTodayMatches.reduce<Record<string, TodayMatch[]>>((acc, match) => {
+    if (!acc[match.league]) {
+      acc[match.league] = [];
+    }
+    acc[match.league].push(match);
+    return acc;
+  }, {});
 
   const handleCreate = () => {
     setEditingTicket(null);
@@ -473,7 +484,7 @@ export default function ManageTickets() {
         <Dialog open={isMatchPickerOpen} onOpenChange={setIsMatchPickerOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Choose Match</DialogTitle>
+              <DialogTitle>Select Match (Today)</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="relative">
@@ -485,27 +496,41 @@ export default function ManageTickets() {
                   className="pl-9"
                 />
               </div>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2 pr-4">
-                  {filteredTodayMatches.length === 0 ? (
+              <ScrollArea className="h-[350px]">
+                <div className="space-y-4 pr-4">
+                  {Object.keys(matchesByLeague).length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">No matches found</p>
                   ) : (
-                    filteredTodayMatches.map((m) => (
-                      <Card
-                        key={m.id}
-                        className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => selectMatch(m)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {m.homeTeam} vs {m.awayTeam}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{m.league}</p>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{m.startTime}</span>
+                    Object.entries(matchesByLeague).map(([league, leagueMatches]) => (
+                      <div key={league} className="space-y-2">
+                        <div className="sticky top-0 bg-background/95 backdrop-blur-sm py-1">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {league}
+                          </p>
                         </div>
-                      </Card>
+                        {leagueMatches.map((m) => (
+                          <Card
+                            key={m.id}
+                            className="p-3 cursor-pointer hover:bg-muted/50 transition-colors border-l-2 border-l-transparent hover:border-l-primary"
+                            onClick={() => selectMatch(m)}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="font-medium text-foreground text-sm">
+                                {m.homeTeam} vs {m.awayTeam}
+                              </p>
+                              {m.isLive ? (
+                                <Badge className="bg-destructive/20 text-destructive shrink-0 animate-pulse">
+                                  {m.minute}'
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-muted-foreground shrink-0">
+                                  {m.startTime}
+                                </span>
+                              )}
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
                     ))
                   )}
                 </div>
