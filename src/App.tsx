@@ -23,14 +23,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<Index />} />
             <Route
               path="/profile"
               element={
@@ -39,22 +32,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/live-scores"
-              element={
-                <ProtectedRoute>
-                  <LiveScores />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/favorites"
-              element={
-                <ProtectedRoute>
-                  <MyFavorites />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/live-scores" element={<LiveScores />} />
+            <Route path="/favorites" element={<MyFavorites />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { 
   Zap, 
@@ -45,6 +46,7 @@ const leagues = [
 
 
 export default function LiveScores() {
+  const navigate = useNavigate();
   const [activeLeague, setActiveLeague] = useState("All Leagues");
   const [dateFilter, setDateFilter] = useState<DateFilter>("today");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -408,7 +410,7 @@ export default function LiveScores() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(match.id);
+                          toggleFavorite(match.id, navigate);
                         }}
                         disabled={isSaving(match.id)}
                         className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors disabled:opacity-50"

@@ -1,4 +1,4 @@
-import { Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2, LogIn } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,7 +92,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       {/* Unlock Button for locked content */}
       {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
         <Button
-          variant={unlockMethod.type === "watch_ad" ? "outline" : "default"}
+          variant={unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" ? "outline" : "default"}
           size="sm"
           className={cn("w-full mt-3 gap-2", getUnlockButtonStyle())}
           disabled={isUnlocking}
@@ -105,6 +105,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
               Watching ad...
+            </>
+          ) : unlockMethod.type === "login_required" ? (
+            <>
+              <LogIn className="h-4 w-4" />
+              {unlockMethod.message}
             </>
           ) : (
             unlockMethod.message

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Star, Trophy, Zap, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -38,6 +39,7 @@ const allMatches: Record<string, Match> = {
 };
 
 export default function MyFavorites() {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading } = useFavorites();
@@ -182,7 +184,7 @@ export default function MyFavorites() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(match.id);
+                          toggleFavorite(match.id, navigate);
                         }}
                         disabled={isSaving(match.id)}
                         className="shrink-0 p-1 -m-1 rounded-full hover:bg-muted/50 transition-colors disabled:opacity-50"

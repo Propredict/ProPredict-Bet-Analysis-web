@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Bell, BellRing, Goal, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,12 +25,14 @@ interface AlertSettings {
 }
 
 export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<AlertSettings>({
     notifyGoals: false,
     notifyRedCards: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { toast } = useToast();
 
   const handleEscape = useCallback(
@@ -43,13 +46,23 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
     if (match) {
       document.addEventListener("keydown", handleEscape);
       document.body.style.overflow = "hidden";
-      fetchAlertSettings();
+      checkAuthAndFetch();
     }
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
     };
   }, [match, handleEscape]);
+
+  const checkAuthAndFetch = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsAuthenticated(false);
+    } else {
+      setIsAuthenticated(true);
+      fetchAlertSettings();
+    }
+  };
 
   const fetchAlertSettings = async () => {
     if (!match) return;
@@ -95,10 +108,11 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Authentication required",
-          description: "Please log in to set match alerts.",
-          variant: "destructive",
+          title: "Sign in required",
+          description: "Please sign in to set match alerts.",
         });
+        onClose();
+        navigate("/login");
         return;
       }
 
@@ -197,7 +211,26 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
               <span className="text-foreground font-medium">{match.awayTeam}</span>
             </div>
 
-            {isLoading ? (
+            {isAuthenticated === false ? (
+              <div className="text-center py-6 space-y-4">
+                <Bell className="h-12 w-12 text-muted-foreground mx-auto" />
+                <div className="space-y-2">
+                  <p className="text-foreground font-medium">Sign in required</p>
+                  <p className="text-sm text-muted-foreground">
+                    Please sign in to set up match alerts
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    onClose();
+                    navigate("/login");
+                  }}
+                  className="w-full"
+                >
+                  Sign in
+                </Button>
+              </div>
+            ) : isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
@@ -254,22 +287,24 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex gap-2 p-4 border-t border-border bg-muted/20">
-            <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} className="flex-1" disabled={isLoading || isSaving}>
-              {isSaving ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </span>
-              ) : (
-                "Save Alerts"
-              )}
-            </Button>
-          </div>
+          {/* Footer - only show for authenticated users */}
+          {isAuthenticated && (
+            <div className="flex gap-2 p-4 border-t border-border bg-muted/20">
+              <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} className="flex-1" disabled={isLoading || isSaving}>
+                {isSaving ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  "Save Alerts"
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </>

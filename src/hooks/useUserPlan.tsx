@@ -10,6 +10,7 @@ interface UserPlanContextType {
   plan: UserPlan;
   isLoading: boolean;
   isAdmin: boolean;
+  isAuthenticated: boolean;
   canAccess: (tier: ContentTier, contentType?: ContentType, contentId?: string) => boolean;
   getUnlockMethod: (tier: ContentTier, contentType?: ContentType, contentId?: string) => UnlockMethod | null;
   unlockContent: (contentType: ContentType, contentId: string) => Promise<boolean>;
@@ -19,6 +20,7 @@ interface UserPlanContextType {
 
 export type UnlockMethod = 
   | { type: "unlocked" }
+  | { type: "login_required"; message: "Sign in to unlock" }
   | { type: "watch_ad"; message: "Watch an ad to unlock" }
   | { type: "upgrade_basic"; message: "Upgrade to Basic" }
   | { type: "upgrade_premium"; message: "Upgrade to Premium" };
@@ -188,6 +190,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       return { type: "unlocked" };
     }
 
+    // Guests need to sign in first for any gated content
+    if (!user) {
+      if (tier === "premium") {
+        return { type: "upgrade_premium", message: "Upgrade to Premium" };
+      }
+      return { type: "login_required", message: "Sign in to unlock" };
+    }
+
     switch (tier) {
       case "daily":
       case "exclusive":
@@ -203,7 +213,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       default:
         return null;
     }
-  }, [isAdmin, plan, canAccess]);
+  }, [isAdmin, user, plan, canAccess]);
 
   const unlockContent = useCallback(async (contentType: ContentType, contentId: string): Promise<boolean> => {
     if (!user) {
@@ -266,6 +276,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         plan,
         isLoading,
         isAdmin,
+        isAuthenticated: !!user,
         canAccess,
         getUnlockMethod,
         unlockContent,
