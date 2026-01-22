@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
 import MyFavorites from "./pages/MyFavorites";
+import AllTickets from "./pages/AllTickets";
 import NotFound from "./pages/NotFound";
 import ManageTips from "./pages/admin/ManageTips";
 import ManageTickets from "./pages/admin/ManageTickets";
@@ -37,6 +38,7 @@ const App = () => (
             />
             <Route path="/live-scores" element={<LiveScores />} />
             <Route path="/favorites" element={<MyFavorites />} />
+            <Route path="/all-tickets" element={<AllTickets />} />
             {/* Admin Routes */}
             <Route
               path="/admin/tips"
