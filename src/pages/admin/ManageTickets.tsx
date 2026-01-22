@@ -19,10 +19,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Ticket, ContentTier, ContentStatus } from "@/types/admin";
 import { useTickets } from "@/hooks/useTickets";
+import type { Ticket, ContentTier, ContentStatus } from "@/types/admin";
 
-/* ---------------- TYPES ---------------- */
+/* =====================
+   Types
+===================== */
+
+type TicketResult = "pending" | "won" | "lost";
 
 interface MatchFormData {
   match_name: string;
@@ -30,64 +34,41 @@ interface MatchFormData {
   odds: number;
 }
 
-interface TodayMatch {
-  id: string;
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  startTime: string;
-  isLive?: boolean;
-  minute?: number;
-}
-
-/* ---------------- MOCK MATCHES ---------------- */
-
-const mockTodayMatches: TodayMatch[] = [
-  { id: "m1", homeTeam: "Liverpool", awayTeam: "Man City", league: "Premier League", startTime: "15:00" },
-  { id: "m2", homeTeam: "Barcelona", awayTeam: "Real Madrid", league: "La Liga", startTime: "21:00" },
-];
-
-const defaultMatch: MatchFormData = {
-  match_name: "",
-  prediction: "",
-  odds: 1.5,
-};
-
-/* ================= COMPONENT ================= */
+/* =====================
+   Component
+===================== */
 
 export default function ManageTickets() {
   const { tickets, isLoading, createTicket, updateTicket, deleteTicket } = useTickets(true);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isMatchPickerOpen, setIsMatchPickerOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // form state
   const [title, setTitle] = useState("");
   const [tier, setTier] = useState<ContentTier>("daily");
   const [status, setStatus] = useState<ContentStatus>("draft");
-  const [result, setResult] = useState<"pending" | "won" | "lost">("pending");
-  const [matches, setMatches] = useState<MatchFormData[]>([{ ...defaultMatch }]);
+  const [result, setResult] = useState<TicketResult>("pending");
+  const [matches, setMatches] = useState<MatchFormData[]>([{ match_name: "", prediction: "", odds: 1.5 }]);
 
-  const totalOdds = matches.reduce((acc, m) => acc * (m.odds || 1), 1);
+  const totalOdds = matches.reduce((acc, m) => acc * m.odds, 1);
 
-  /* ---------------- HELPERS ---------------- */
+  /* =====================
+     Helpers
+  ===================== */
 
-  const getResultBadge = (r?: string) => {
-    if (r === "won") return <Badge className="bg-success/20 text-success">Won</Badge>;
-    if (r === "lost") return <Badge className="bg-destructive/20 text-destructive">Lost</Badge>;
-    return <Badge className="bg-warning/20 text-warning">Pending</Badge>;
-  };
-
-  /* ---------------- ACTIONS ---------------- */
-
-  const handleCreate = () => {
-    setEditingTicket(null);
+  const resetForm = () => {
     setTitle("");
     setTier("daily");
     setStatus("draft");
     setResult("pending");
-    setMatches([{ ...defaultMatch }]);
+    setMatches([{ match_name: "", prediction: "", odds: 1.5 }]);
+  };
+
+  const handleCreate = () => {
+    setEditingTicket(null);
+    resetForm();
     setIsDialogOpen(true);
   };
 
@@ -102,7 +83,7 @@ export default function ManageTickets() {
         match_name: m.match_name,
         prediction: m.prediction,
         odds: m.odds,
-      })) || [{ ...defaultMatch }],
+      })) ?? [{ match_name: "", prediction: "", odds: 1.5 }],
     );
     setIsDialogOpen(true);
   };
@@ -111,15 +92,28 @@ export default function ManageTickets() {
     if (editingTicket) {
       await updateTicket.mutateAsync({
         id: editingTicket.id,
-        updates: { title, tier, status, result },
+        updates: {
+          title,
+          tier,
+          status,
+          result,
+          total_odds: totalOdds,
+        },
         matches,
       });
     } else {
       await createTicket.mutateAsync({
-        ticket: { title, tier, status, result, total_odds: totalOdds },
+        ticket: {
+          title,
+          tier,
+          status,
+          result,
+          total_odds: totalOdds,
+        } as any,
         matches,
       });
     }
+
     setIsDialogOpen(false);
   };
 
@@ -130,113 +124,127 @@ export default function ManageTickets() {
     }
   };
 
-  /* ================= UI ================= */
+  /* =====================
+     Badges
+  ===================== */
+
+  const resultBadge = (r: TicketResult) => {
+    if (r === "won") return <Badge className="bg-success/20 text-success">WON</Badge>;
+    if (r === "lost") return <Badge className="bg-destructive/20 text-destructive">LOST</Badge>;
+    return <Badge variant="outline">PENDING</Badge>;
+  };
+
+  /* =====================
+     Render
+  ===================== */
 
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Manage Tickets</h1>
           <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" /> Add Ticket
+            <Plus className="h-4 w-4 mr-2" />
+            Add Ticket
           </Button>
         </div>
 
         {isLoading ? (
           <Loader2 className="animate-spin" />
         ) : (
-          tickets.map((ticket) => (
-            <Card key={ticket.id} className="p-4">
-              <div className="flex justify-between">
-                <div>
-                  <div className="flex gap-2 mb-1">
-                    <Badge>{ticket.tier}</Badge>
-                    <Badge>{ticket.status}</Badge>
-                    {getResultBadge((ticket as any).result)}
+          <div className="grid gap-4">
+            {tickets.map((t) => (
+              <Card key={t.id} className="p-4">
+                <div className="flex justify-between">
+                  <div>
+                    <div className="flex gap-2 mb-1">
+                      {resultBadge((t as any).result ?? "pending")}
+                      <Badge>{t.tier.toUpperCase()}</Badge>
+                      <Badge>{t.status}</Badge>
+                    </div>
+                    <p className="font-medium">{t.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      @{t.total_odds.toFixed(2)} • {t.matches?.length || 0} matches
+                    </p>
                   </div>
-                  <p className="font-semibold">{ticket.title}</p>
-                  <p>Total odds: @{ticket.total_odds}</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(t)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => setDeleteId(t.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(ticket)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setDeleteId(ticket.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
-
-      {/* DIALOG */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingTicket ? "Edit Ticket" : "Create Ticket"}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-
-            <Label>Tier</Label>
-            <Select value={tier} onValueChange={(v) => setTier(v as ContentTier)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="exclusive">Exclusive</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Label>Status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Label>Result</Label>
-            <Select value={result} onValueChange={(v) => setResult(v as any)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="won">Won</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
-              </SelectContent>
-            </Select>
+              </Card>
+            ))}
           </div>
+        )}
 
-          <DialogFooter>
-            <Button onClick={handleSubmit}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingTicket ? "Edit Ticket" : "Create Ticket"}</DialogTitle>
+            </DialogHeader>
 
-      {/* DELETE */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Ticket</AlertDialogTitle>
-            <AlertDialogDescription>Are you sure?</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            <div className="space-y-3">
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+
+              <Select value={tier} onValueChange={(v) => setTier(v as ContentTier)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="exclusive">Exclusive</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* RESULT SELECTOR */}
+              <Select value={result} onValueChange={(v) => setResult(v as TicketResult)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="won">Won</SelectItem>
+                  <SelectItem value="lost">Lost</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button onClick={handleSubmit}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete */}
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Ticket?</AlertDialogTitle>
+              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </DashboardLayout>
   );
 }
