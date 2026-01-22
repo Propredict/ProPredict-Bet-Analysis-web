@@ -138,7 +138,10 @@ export default function TicketDetails() {
           Back
         </Button>
 
-        <Card className="p-6 space-y-4 bg-card border-border">
+        <Card className={cn(
+          "p-6 space-y-4 bg-card",
+          !isLocked ? "border-success/30" : "border-border"
+        )}>
           {/* Header */}
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -167,7 +170,7 @@ export default function TicketDetails() {
             {isLocked ? (
               <>
                 {ticket.matches.map((_, idx) => (
-                  <div key={idx} className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <div key={idx} className="p-4 bg-muted/20 rounded-lg border border-border/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">↗</span>
@@ -185,7 +188,7 @@ export default function TicketDetails() {
             ) : (
               <>
                 {ticket.matches.map((match, idx) => (
-                  <div key={idx} className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <div key={idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-2">
                         <span className="text-success mt-0.5">↗</span>

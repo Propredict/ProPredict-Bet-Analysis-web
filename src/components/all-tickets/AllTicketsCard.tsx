@@ -134,10 +134,13 @@ export function AllTicketsCard({
     );
   };
 
+  const isUnlocked = !isLocked;
+
   return (
     <Card 
       className={cn(
-        "bg-card border-border overflow-hidden transition-all",
+        "bg-card overflow-hidden transition-all",
+        isUnlocked ? "border-success/30" : "border-border",
         isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
       )}
       onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
@@ -147,7 +150,7 @@ export function AllTicketsCard({
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-semibold text-foreground">{ticket.title}</h3>
           <div className="flex items-center gap-2">
-            {!isLocked ? (
+            {isUnlocked ? (
               <>
                 <Badge className="gap-1 bg-success/20 text-success border-success/30">
                   <CheckCircle2 className="h-3 w-3" />
@@ -170,7 +173,7 @@ export function AllTicketsCard({
         {isLocked ? (
           <>
             {[1, 2, 3].map((idx) => (
-              <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+              <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">↗</span>
@@ -188,7 +191,7 @@ export function AllTicketsCard({
         ) : (
           <>
             {ticket.matches.map((match, idx) => (
-              <div key={match.id || idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+              <div key={match.id || idx} className="p-3 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-2">
                     <span className="text-success mt-0.5">↗</span>

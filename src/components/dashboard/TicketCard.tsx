@@ -206,7 +206,10 @@ function TicketCard({
   };
 
   return (
-    <Card className={cn("bg-card border-border overflow-hidden transition-all", "hover:border-primary/50")}>
+    <Card className={cn(
+      "bg-card overflow-hidden transition-all",
+      isUnlocked ? "border-success/30" : "border-border hover:border-primary/50"
+    )}>
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-1">
@@ -235,7 +238,7 @@ function TicketCard({
         {isLocked ? (
           <>
             {[1, 2, 3].map((idx) => (
-              <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+              <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">↗</span>
@@ -253,7 +256,7 @@ function TicketCard({
         ) : (
           <>
             {ticket.matches.map((match, idx) => (
-              <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+              <div key={idx} className="p-3 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-2">
                     <span className="text-success mt-0.5">↗</span>
