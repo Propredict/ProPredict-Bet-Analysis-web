@@ -90,8 +90,8 @@ function getTierBadge(tier: ContentTier) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
-  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Unlock";
+  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
+  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -111,10 +111,14 @@ function TicketCard({
   const navigate = useNavigate();
   const moreMatches = ticket.matchCount - ticket.matches.length;
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
+  const isBasicLocked = unlockMethod?.type === "upgrade_basic";
+  const isUnlocked = unlockMethod?.type === "unlocked";
 
   const handleUnlockClick = () => {
-    if (isPremiumLocked) {
+    if (isPremiumLocked || isBasicLocked) {
       navigate("/get-premium");
+    } else if (unlockMethod?.type === "login_required") {
+      navigate("/login");
     } else {
       onUnlockClick();
     }
@@ -148,6 +152,9 @@ function TicketCard({
 
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "login_required") {
+      return ""; // Uses variant="outline"
+    }
     if (unlockMethod.type === "watch_ad") {
       return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
     }
@@ -155,7 +162,7 @@ function TicketCard({
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0";
     }
     return "";
   };
@@ -174,7 +181,7 @@ function TicketCard({
 
     return (
       <Button
-        variant="default"
+        variant={unlockMethod.type === "login_required" ? "outline" : "default"}
         size="lg"
         className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
         disabled={isUnlocking}
@@ -204,7 +211,14 @@ function TicketCard({
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            {getTierBadge(ticket.tier)}
+            {isUnlocked ? (
+              <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                <CheckCircle2 className="h-3 w-3" />
+                Unlocked
+              </Badge>
+            ) : (
+              getTierBadge(ticket.tier)
+            )}
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Ticket className="h-3 w-3" />
               {ticket.matchCount} Matches
@@ -269,6 +283,7 @@ function TicketCard({
 
         {getUnlockButton()}
 
+        {/* View Full Ticket button - ONLY when unlocked */}
         {!isLocked && onViewTicket && (
           <Button
             variant="outline"

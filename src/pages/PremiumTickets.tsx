@@ -1,14 +1,12 @@
-import { useState } from "react";
 import { Ticket, Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Lock, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import TicketCard from "@/components/dashboard/TicketCard";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import TicketCard from "@/components/dashboard/TicketCard";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();

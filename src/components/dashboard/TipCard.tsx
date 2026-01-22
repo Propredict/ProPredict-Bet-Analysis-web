@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,8 +64,8 @@ function getTierBadge(tier: ContentTier) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Basic";
-  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Unlock";
+  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
+  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -73,10 +73,13 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
+  const isBasicLocked = unlockMethod?.type === "upgrade_basic";
 
   const handleUnlockClick = () => {
-    if (isPremiumLocked) {
+    if (isPremiumLocked || isBasicLocked) {
       navigate("/get-premium");
+    } else if (unlockMethod?.type === "login_required") {
+      navigate("/login");
     } else {
       onUnlockClick();
     }
@@ -84,6 +87,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
 
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "login_required") {
+      return ""; // Uses variant="outline"
+    }
     if (unlockMethod.type === "watch_ad") {
       return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
     }
@@ -91,10 +97,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0";
     }
     return "";
   };
+
+  const isUnlocked = unlockMethod?.type === "unlocked";
 
   return (
     <Card 
@@ -116,7 +124,14 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
-          {getTierBadge(tip.tier)}
+          {isUnlocked ? (
+            <Badge className="gap-1 bg-success/20 text-success border-success/30">
+              <CheckCircle2 className="h-3 w-3" />
+              Unlocked
+            </Badge>
+          ) : (
+            getTierBadge(tip.tier)
+          )}
         </div>
       </div>
 
@@ -161,10 +176,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
         </div>
       </div>
 
-      {/* Premium unlock button with gradient */}
+      {/* Unlock button */}
       {isLocked && unlockMethod && unlockMethod.type !== "unlocked" && (
         <Button
-          variant="default"
+          variant={unlockMethod.type === "login_required" ? "outline" : "default"}
           size="lg"
           className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
           disabled={isUnlocking}

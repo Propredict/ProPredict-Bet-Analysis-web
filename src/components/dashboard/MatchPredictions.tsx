@@ -20,8 +20,14 @@ function mapDbTipToTip(dbTip: any): Tip {
     league: dbTip.league,
     prediction: dbTip.prediction,
     odds: dbTip.odds,
-    confidence: dbTip.confidence,
-    kickoff: dbTip.kickoff,
+    confidence: dbTip.confidence ?? 0,
+    kickoff: dbTip.created_at_ts
+      ? new Date(dbTip.created_at_ts).toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        })
+      : "",
     tier: dbTip.tier as ContentTier,
   };
 }
