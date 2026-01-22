@@ -475,13 +475,34 @@ export default function ManageTickets() {
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                              <Label>Prediction *</Label>
-                              <Input
-                                placeholder="e.g., Home Win, Over 2.5"
-                                value={customPrediction}
-                                onChange={(e) => setCustomPrediction(e.target.value)}
-                                className="bg-background"
-                              />
+                              <Label>Betting Option *</Label>
+                              <Select value={customPrediction} onValueChange={setCustomPrediction}>
+                                <SelectTrigger className="bg-background">
+                                  <SelectValue placeholder="Select bet type" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover border-border z-50">
+                                  <SelectItem value="Home Win">Home Win (1)</SelectItem>
+                                  <SelectItem value="Draw">Draw (X)</SelectItem>
+                                  <SelectItem value="Away Win">Away Win (2)</SelectItem>
+                                  <SelectItem value="1X">Home or Draw (1X)</SelectItem>
+                                  <SelectItem value="X2">Draw or Away (X2)</SelectItem>
+                                  <SelectItem value="12">Home or Away (12)</SelectItem>
+                                  <SelectItem value="Over 0.5">Over 0.5 Goals</SelectItem>
+                                  <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
+                                  <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
+                                  <SelectItem value="Over 3.5">Over 3.5 Goals</SelectItem>
+                                  <SelectItem value="Under 0.5">Under 0.5 Goals</SelectItem>
+                                  <SelectItem value="Under 1.5">Under 1.5 Goals</SelectItem>
+                                  <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
+                                  <SelectItem value="Under 3.5">Under 3.5 Goals</SelectItem>
+                                  <SelectItem value="BTTS Yes">Both Teams to Score - Yes</SelectItem>
+                                  <SelectItem value="BTTS No">Both Teams to Score - No</SelectItem>
+                                  <SelectItem value="Home -1">Home -1 Handicap</SelectItem>
+                                  <SelectItem value="Away -1">Away -1 Handicap</SelectItem>
+                                  <SelectItem value="Home +1">Home +1 Handicap</SelectItem>
+                                  <SelectItem value="Away +1">Away +1 Handicap</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                             <div className="space-y-2">
                               <Label>Odds *</Label>
