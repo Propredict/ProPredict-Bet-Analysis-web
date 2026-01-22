@@ -94,9 +94,11 @@ export function TicketCard({ ticket, isLocked, unlockMethod, onUnlockClick, isUn
                  unlockMethod.type === "watch_ad" ? Play : 
                  unlockMethod.type === "upgrade_basic" ? Star : Crown;
     
-    const buttonClass = unlockMethod.type === "upgrade_premium" 
-      ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
-      : "";
+    const buttonClass = unlockMethod.type === "watch_ad"
+      ? "bg-accent hover:bg-accent/90 text-accent-foreground border-accent"
+      : unlockMethod.type === "upgrade_premium" 
+        ? "bg-warning hover:bg-warning/90 text-warning-foreground" 
+        : "";
 
     const buttonVariant = unlockMethod.type === "watch_ad" || unlockMethod.type === "login_required" 
       ? "outline" 

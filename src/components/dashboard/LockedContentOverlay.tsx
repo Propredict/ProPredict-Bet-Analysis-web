@@ -47,6 +47,9 @@ export function LockedContentOverlay({
   };
 
   const getButtonClassName = () => {
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
+    }
     if (unlockMethod.type === "upgrade_premium") {
       return "bg-warning hover:bg-warning/90 text-warning-foreground";
     }
