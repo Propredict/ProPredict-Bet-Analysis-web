@@ -2,17 +2,111 @@ import { useState } from "react";
 import { TrendingUp, Sparkles, Star, Crown, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { TipCard, type Tip } from "./TipCard";
+import { PricingModal } from "@/components/PricingModal";
 
 type TabType = "daily" | "exclusive" | "premium";
 
+// Sample tips data
+const sampleTips: Tip[] = [
+  {
+    id: "1",
+    homeTeam: "Liverpool",
+    awayTeam: "Manchester City",
+    league: "Premier League",
+    prediction: "Over 2.5 Goals",
+    odds: 1.85,
+    confidence: 78,
+    kickoff: "Today, 20:00",
+    tier: "daily",
+  },
+  {
+    id: "2",
+    homeTeam: "Real Madrid",
+    awayTeam: "Barcelona",
+    league: "La Liga",
+    prediction: "Both Teams Score",
+    odds: 1.72,
+    confidence: 82,
+    kickoff: "Today, 21:00",
+    tier: "daily",
+  },
+  {
+    id: "3",
+    homeTeam: "Bayern Munich",
+    awayTeam: "Dortmund",
+    league: "Bundesliga",
+    prediction: "Home Win",
+    odds: 1.65,
+    confidence: 85,
+    kickoff: "Tomorrow, 18:30",
+    tier: "exclusive",
+  },
+  {
+    id: "4",
+    homeTeam: "PSG",
+    awayTeam: "Marseille",
+    league: "Ligue 1",
+    prediction: "Over 3.5 Goals",
+    odds: 2.10,
+    confidence: 71,
+    kickoff: "Tomorrow, 21:00",
+    tier: "exclusive",
+  },
+  {
+    id: "5",
+    homeTeam: "Inter Milan",
+    awayTeam: "AC Milan",
+    league: "Serie A",
+    prediction: "Draw",
+    odds: 3.40,
+    confidence: 68,
+    kickoff: "Saturday, 20:45",
+    tier: "premium",
+  },
+  {
+    id: "6",
+    homeTeam: "Chelsea",
+    awayTeam: "Arsenal",
+    league: "Premier League",
+    prediction: "Away Win & Over 1.5",
+    odds: 2.85,
+    confidence: 74,
+    kickoff: "Sunday, 16:30",
+    tier: "premium",
+  },
+];
+
 export function MatchPredictions() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
+  const { plan, canAccess, getUnlockMethod } = useUserPlan();
 
   const tabs = [
-    { id: "daily" as TabType, label: "Daily", count: 0, icon: Sparkles, sublabel: "Free with Ads" },
-    { id: "exclusive" as TabType, label: "Exclusive", count: 0, icon: Star, sublabel: "Higher Confidence" },
-    { id: "premium" as TabType, label: "Premium", count: 0, icon: Crown, sublabel: "Members Only" },
+    { id: "daily" as TabType, label: "Daily", icon: Sparkles, sublabel: "Free with Ads" },
+    { id: "exclusive" as TabType, label: "Exclusive", icon: Star, sublabel: "Basic+ Members" },
+    { id: "premium" as TabType, label: "Premium", icon: Crown, sublabel: "Premium Only" },
   ];
+
+  const filteredTips = sampleTips.filter((tip) => tip.tier === activeTab);
+
+  const handleUnlockClick = (tier: ContentTier) => {
+    const method = getUnlockMethod(tier);
+    if (!method || method.type === "unlocked") return;
+
+    if (method.type === "watch_ad") {
+      // Simulate watching an ad - in real app, integrate with ad SDK
+      alert("Simulating ad playback... Content would be unlocked after watching.");
+    } else if (method.type === "upgrade_basic") {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    } else if (method.type === "upgrade_premium") {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    }
+  };
 
   return (
     <section className="space-y-4">
@@ -23,30 +117,33 @@ export function MatchPredictions() {
 
       <Card className="p-1 bg-card border-border">
         <div className="grid grid-cols-3 gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <tab.icon className="h-4 w-4" />
-                <span className="font-medium">{tab.label}</span>
-                <span className={cn(
-                  "text-xs px-1.5 py-0.5 rounded-full",
-                  activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted"
-                )}>
-                  {tab.count}
-                </span>
-              </div>
-              <span className="text-xs opacity-80">{tab.sublabel}</span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const tipCount = sampleTips.filter((t) => t.tier === tab.id).length;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <tab.icon className="h-4 w-4" />
+                  <span className="font-medium">{tab.label}</span>
+                  <span className={cn(
+                    "text-xs px-1.5 py-0.5 rounded-full",
+                    activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted"
+                  )}>
+                    {tipCount}
+                  </span>
+                </div>
+                <span className="text-xs opacity-80">{tab.sublabel}</span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 
@@ -58,16 +155,40 @@ export function MatchPredictions() {
         </div>
       </div>
 
-      {/* Empty state */}
-      <Card className="p-8 bg-card border-border text-center">
-        <div className="flex flex-col items-center gap-4">
-          <Sparkles className="h-12 w-12 text-primary opacity-50" />
-          <div>
-            <p className="text-muted-foreground">No daily predictions available</p>
-            <p className="text-sm text-muted-foreground">Check back soon for new picks!</p>
-          </div>
+      {/* Tips List */}
+      {filteredTips.length > 0 ? (
+        <div className="space-y-3">
+          {filteredTips.map((tip) => {
+            const isLocked = !canAccess(tip.tier);
+            const unlockMethod = getUnlockMethod(tip.tier);
+            return (
+              <TipCard
+                key={tip.id}
+                tip={tip}
+                isLocked={isLocked}
+                unlockMethod={unlockMethod}
+                onUnlockClick={() => handleUnlockClick(tip.tier)}
+              />
+            );
+          })}
         </div>
-      </Card>
+      ) : (
+        <Card className="p-8 bg-card border-border text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Sparkles className="h-12 w-12 text-primary opacity-50" />
+            <div>
+              <p className="text-muted-foreground">No {activeTab} predictions available</p>
+              <p className="text-sm text-muted-foreground">Check back soon for new picks!</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <PricingModal 
+        open={showPricingModal} 
+        onOpenChange={setShowPricingModal}
+        highlightPlan={highlightPlan}
+      />
     </section>
   );
 }
