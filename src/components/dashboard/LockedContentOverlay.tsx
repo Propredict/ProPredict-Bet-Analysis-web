@@ -1,4 +1,4 @@
-import { Lock, Play, Star, Crown } from "lucide-react";
+import { Lock, Play, Star, Crown, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type UnlockMethod } from "@/hooks/useUserPlan";
@@ -28,6 +28,8 @@ export function LockedContentOverlay({
         return Star;
       case "upgrade_premium":
         return Crown;
+      case "login_required":
+        return LogIn;
       default:
         return Lock;
     }
@@ -56,6 +58,10 @@ export function LockedContentOverlay({
     return "";
   };
 
+  const getMessage = (): string => {
+    return unlockMethod.message;
+  };
+
   const Icon = getIcon();
 
   if (compact) {
@@ -67,7 +73,7 @@ export function LockedContentOverlay({
         onClick={onUnlockClick}
       >
         <Icon className="h-4 w-4" />
-        {unlockMethod.message}
+        {getMessage()}
       </Button>
     );
   }
@@ -87,7 +93,7 @@ export function LockedContentOverlay({
         onClick={onUnlockClick}
       >
         <Icon className="h-4 w-4" />
-        {unlockMethod.message}
+        {getMessage()}
       </Button>
     </div>
   );
