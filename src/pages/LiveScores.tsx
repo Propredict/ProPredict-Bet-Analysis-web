@@ -1,5 +1,5 @@
 import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle } from "lucide-react";
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,11 +51,11 @@ export default function LiveScores() {
   /* -------------------- CLOCK -------------------- */
 
   useEffect(() => {
-    const i = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(i);
+    const t = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
-  /* -------------------- STATUS TAB RULES -------------------- */
+  /* -------------------- STATUS RULES -------------------- */
 
   const allowedStatusTabs: StatusTab[] = useMemo(() => {
     if (dateMode === "yesterday") return ["all", "finished"];
@@ -96,8 +96,6 @@ export default function LiveScores() {
     );
   }, [filtered]);
 
-  /* -------------------- HELPERS -------------------- */
-
   const getDateLabel = (d: DateMode) => {
     const now = new Date();
     if (d === "yesterday") return format(subDays(now, 1), "MMM d");
@@ -117,7 +115,6 @@ export default function LiveScores() {
               <Zap className="text-primary" />
               <h1 className="text-xl font-bold">Live Scores</h1>
             </div>
-
             <div className="flex gap-2 items-center">
               <Badge variant="outline" className="font-mono">
                 {format(currentTime, "HH:mm")}
@@ -214,7 +211,7 @@ export default function LiveScores() {
                 <div
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
-                  className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-white/5"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer"
                 >
                   <button
                     onClick={(e) => {
@@ -230,23 +227,24 @@ export default function LiveScores() {
                     />
                   </button>
 
-                  {/* TEAMS + CENTER PILL */}
-                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
-                    <span className={cn(isUpcoming && "text-muted-foreground")}>{m.homeTeam}</span>
+                  {/* FIXED CENTER LAYOUT */}
+                  <div className="flex-1 grid grid-cols-[1fr_96px_1fr] items-center">
+                    <span className="text-right pr-3 truncate">{m.homeTeam}</span>
 
-                    {/* CENTER SCORE / VS / TIME */}
-                    <span
-                      className={cn(
-                        "px-4 py-1 rounded-full font-semibold text-sm min-w-[70px] text-center",
-                        isLive && "text-red-500 bg-red-500/10",
-                        isFinished && "text-white bg-white/10",
-                        isUpcoming && "text-muted-foreground bg-white/5",
-                      )}
-                    >
-                      {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                    </span>
+                    <div className="flex justify-center">
+                      <span
+                        className={cn(
+                          "w-[72px] text-center px-3 py-1 rounded-full text-sm font-semibold",
+                          isLive && "text-red-500 bg-red-500/10",
+                          isFinished && "text-white bg-white/10",
+                          isUpcoming && "text-muted-foreground bg-white/5",
+                        )}
+                      >
+                        {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                      </span>
+                    </div>
 
-                    <span className={cn(isUpcoming && "text-muted-foreground")}>{m.awayTeam}</span>
+                    <span className="text-left pl-3 truncate">{m.awayTeam}</span>
                   </div>
 
                   <StatusBadge match={m} />
@@ -271,15 +269,12 @@ function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
     return <Badge className="bg-red-500/10 text-red-500 border border-red-500/30">LIVE</Badge>;
   }
-
   if (match.status === "halftime") {
     return <Badge className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">HT</Badge>;
   }
-
   if (match.status === "finished") {
     return <Badge className="bg-white/5 text-muted-foreground border border-white/10">FT</Badge>;
   }
-
   return (
     <Badge variant="outline" className="text-muted-foreground border-white/10">
       {match.startTime}
