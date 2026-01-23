@@ -1,24 +1,16 @@
 import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import AIPredictionCard from "@/components/ai-predictions/AIPredictionCard";
+import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AIPredictions() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const [query, setQuery] = useState("");
-  const { predictions, loading } = useAIPredictions();
-
-  // Compute stats from predictions
-  const stats = useMemo(() => {
-    const won = predictions.filter((p) => p.status === "won").length;
-    const lost = predictions.filter((p) => p.status === "lost").length;
-    const pending = predictions.filter((p) => p.status === "pending").length;
-    const total = won + lost;
-    const accuracy = total > 0 ? Math.round((won / total) * 100) : 0;
-    return { won, lost, pending, accuracy, streak: 0 };
-  }, [predictions]);
+  const { predictions, stats } = useAIPredictions(day);
+  const navigate = useNavigate();
 
   /* SEARCH FILTER */
   const filteredPredictions = useMemo(() => {
@@ -26,24 +18,12 @@ export default function AIPredictions() {
     const q = query.toLowerCase();
     return predictions.filter(
       (p) =>
-        p.home?.toLowerCase().includes(q) ||
-        p.away?.toLowerCase().includes(q) ||
-        p.league?.toLowerCase().includes(q)
+        p.home?.toLowerCase().includes(q) || p.away?.toLowerCase().includes(q) || p.league?.toLowerCase().includes(q),
     );
   }, [query, predictions]);
 
   const featured = filteredPredictions.slice(0, 2);
   const rest = filteredPredictions.slice(2);
-
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading predictions...</div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout>
@@ -111,7 +91,12 @@ export default function AIPredictions() {
           <h2 className="mb-4 font-semibold">Featured Predictions</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {featured.map((p) => (
-              <AIPredictionCard key={p.id} prediction={p} />
+              <AIPredictionCard
+                key={p.id}
+                prediction={p}
+                onWatchAd={() => console.log("SHOW AD")}
+                onGoPremium={() => navigate("/get-premium")}
+              />
             ))}
           </div>
         </div>
@@ -122,7 +107,12 @@ export default function AIPredictions() {
         <h2 className="mb-4 font-semibold">All Daily Predictions ({rest.length})</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((p) => (
-            <AIPredictionCard key={p.id} prediction={p} />
+            <AIPredictionCard
+              key={p.id}
+              prediction={p}
+              onWatchAd={() => console.log("SHOW AD")}
+              onGoPremium={() => navigate("/get-premium")}
+            />
           ))}
         </div>
       </div>
