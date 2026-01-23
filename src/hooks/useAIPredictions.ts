@@ -19,33 +19,7 @@ export function useAIPredictions(day: MatchDay) {
         .order("match_time", { ascending: true });
 
       if (!error && data && isMounted) {
-        setPredictions(
-          data.map((m: any) => ({
-            id: m.match_id,
-            league: m.league,
-            homeTeam: m.home_team,
-            awayTeam: m.away_team,
-
-            matchDate: m.match_date,
-            matchTime: m.match_time,
-            matchDay: m.match_day,
-
-            homeWinProbability: m.home_win,
-            drawProbability: m.draw,
-            awayWinProbability: m.away_win,
-
-            predictedOutcome: m.prediction,
-            predictedScore: m.predicted_score,
-            confidence: m.confidence,
-
-            riskLevel: m.risk_level,
-            analysis: m.analysis,
-            keyFactors: m.key_factors ?? [],
-
-            isPremium: m.is_premium,
-            isLocked: m.is_locked,
-          })),
-        );
+        setPredictions(data as AIPrediction[]);
       }
 
       if (isMounted) {

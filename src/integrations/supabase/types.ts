@@ -26,12 +26,18 @@ export type Database = {
           home_win: number
           id: string
           is_live: boolean | null
+          is_locked: boolean | null
+          is_premium: boolean | null
+          key_factors: string[] | null
           league: string | null
           match_date: string | null
+          match_day: string | null
           match_id: string
           match_time: string | null
+          match_timestamp: string | null
           predicted_score: string | null
           prediction: string
+          result_status: string | null
           risk_level: string | null
           updated_at: string | null
         }
@@ -46,12 +52,18 @@ export type Database = {
           home_win: number
           id?: string
           is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: string[] | null
           league?: string | null
           match_date?: string | null
+          match_day?: string | null
           match_id: string
           match_time?: string | null
+          match_timestamp?: string | null
           predicted_score?: string | null
           prediction: string
+          result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
         }
@@ -66,12 +78,18 @@ export type Database = {
           home_win?: number
           id?: string
           is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: string[] | null
           league?: string | null
           match_date?: string | null
+          match_day?: string | null
           match_id?: string
           match_time?: string | null
+          match_timestamp?: string | null
           predicted_score?: string | null
           prediction?: string
+          result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
         }
@@ -417,7 +435,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      ai_prediction_stats: {
+        Row: {
+          lost: number | null
+          pending: number | null
+          won: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
