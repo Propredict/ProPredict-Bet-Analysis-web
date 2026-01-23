@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_predictions: {
+        Row: {
+          analysis: string | null
+          away_team: string
+          away_win: number
+          confidence: number
+          created_at: string | null
+          draw: number
+          home_team: string
+          home_win: number
+          id: string
+          is_live: boolean | null
+          league: string | null
+          match_date: string | null
+          match_id: string
+          match_time: string | null
+          predicted_score: string | null
+          prediction: string
+          risk_level: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis?: string | null
+          away_team: string
+          away_win: number
+          confidence: number
+          created_at?: string | null
+          draw: number
+          home_team: string
+          home_win: number
+          id?: string
+          is_live?: boolean | null
+          league?: string | null
+          match_date?: string | null
+          match_id: string
+          match_time?: string | null
+          predicted_score?: string | null
+          prediction: string
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis?: string | null
+          away_team?: string
+          away_win?: number
+          confidence?: number
+          created_at?: string | null
+          draw?: number
+          home_team?: string
+          home_win?: number
+          id?: string
+          is_live?: boolean | null
+          league?: string | null
+          match_date?: string | null
+          match_id?: string
+          match_time?: string | null
+          predicted_score?: string | null
+          prediction?: string
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
