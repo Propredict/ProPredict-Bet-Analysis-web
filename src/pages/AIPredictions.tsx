@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2, Activity } from "lucide-react";
+import { Brain, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2, Activity, LineChart, GitBranch, Calculator } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,30 @@ import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIStatsCard } from "@/components/ai-predictions/AIStatsCard";
 import { mockAIPredictions, mockStats } from "@/components/ai-predictions/mockData";
 import type { AIPrediction } from "@/components/ai-predictions/types";
+
+const howItWorksData = [
+  {
+    icon: LineChart,
+    title: "Data Analysis",
+    description: "Analyzes 50+ data points per match",
+    iconColor: "text-primary",
+    bgColor: "bg-primary/20",
+  },
+  {
+    icon: GitBranch,
+    title: "Pattern Recognition",
+    description: "Identifies winning patterns from history",
+    iconColor: "text-accent",
+    bgColor: "bg-accent/20",
+  },
+  {
+    icon: Calculator,
+    title: "Probability Engine",
+    description: "Calculates accurate win probabilities",
+    iconColor: "text-primary",
+    bgColor: "bg-primary/20",
+  },
+];
 
 export default function AIPredictions() {
   const [predictions, setPredictions] = useState<AIPrediction[]>(mockAIPredictions);
@@ -107,6 +131,29 @@ export default function AIPredictions() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* How Our AI Works */}
+        <section className="space-y-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">How Our AI Works</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {howItWorksData.map((item, index) => (
+              <Card 
+                key={index} 
+                className="p-6 bg-card border-border hover:border-primary/30 transition-all duration-300 text-center"
+              >
+                <div className={`w-14 h-14 rounded-2xl ${item.bgColor} flex items-center justify-center mx-auto mb-4`}>
+                  <item.icon className={`h-7 w-7 ${item.iconColor}`} />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </Card>
+            ))}
+          </div>
         </section>
       </div>
     </DashboardLayout>
