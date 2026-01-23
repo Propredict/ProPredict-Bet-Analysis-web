@@ -1,102 +1,90 @@
-import { useState } from "react";
-import { Brain, ChevronDown, ChevronUp, TrendingUp, AlertTriangle, Target, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Lock, Crown, Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "./types";
 
-export function AIPredictionCard({ prediction }: { prediction: AIPrediction }) {
-  const [open, setOpen] = useState(false);
+interface Props {
+  prediction: AIPrediction;
+  isPremiumUser: boolean;
+  onWatchAd: () => void;
+  onBuyPremium: () => void;
+}
 
-  const riskColor = {
-    low: "text-success bg-success/20 border-success/30",
-    medium: "text-warning bg-warning/20 border-warning/30",
-    high: "text-destructive bg-destructive/20 border-destructive/30",
-  }[prediction.riskLevel];
-
-  const riskIcon = {
-    low: <TrendingUp className="h-3 w-3" />,
-    medium: <Target className="h-3 w-3" />,
-    high: <AlertTriangle className="h-3 w-3" />,
-  }[prediction.riskLevel];
+export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPremium }: Props) {
+  const locked = (!isPremiumUser && prediction.is_premium) || (!isPremiumUser && !prediction.is_premium);
 
   return (
-    <Card className="overflow-hidden border-border hover:border-primary/30 transition">
+    <Card className="relative bg-card border-border overflow-hidden">
       {/* HEADER */}
-      <div className="p-4 border-b bg-muted/30 flex justify-between items-center">
-        <span className="text-xs text-muted-foreground">{prediction.league}</span>
-        <Badge variant="outline">
-          {prediction.matchDate} • {prediction.matchTime}
-        </Badge>
+      <div className="p-3 flex justify-between text-xs text-muted-foreground">
+        <span>{prediction.league}</span>
+        <span>
+          {prediction.match_day === "today" ? "Today" : "Tomorrow"} ·{" "}
+          {new Date(prediction.match_time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
       </div>
 
       {/* TEAMS */}
-      <div className="p-4 text-center">
-        <p className="font-semibold">{prediction.homeTeam}</p>
-        <span className="text-xs text-muted-foreground">VS</span>
-        <p className="font-semibold">{prediction.awayTeam}</p>
+      <div className="p-4 text-center font-semibold">
+        {prediction.home_team}
+        <div className="text-xs text-muted-foreground my-1">VS</div>
+        {prediction.away_team}
       </div>
 
-      {/* AI DATA */}
-      <div className="p-4 space-y-3">
+      {/* AI SECTION */}
+      <div className={cn("p-4 space-y-3", locked && "blur-sm")}>
         {[
-          { l: "1", v: prediction.homeWinProbability },
-          { l: "X", v: prediction.drawProbability },
-          { l: "2", v: prediction.awayWinProbability },
-        ].map((i) => (
-          <div key={i.l} className="flex items-center gap-2">
-            <span className="w-6 text-xs">{i.l}</span>
-            <div className="flex-1 h-2 bg-muted rounded-full">
-              <div className="h-full bg-primary" style={{ width: `${i.v}%` }} />
+          { label: "1", value: prediction.home_win },
+          { label: "X", value: prediction.draw },
+          { label: "2", value: prediction.away_win },
+        ].map((p) => (
+          <div key={p.label} className="flex items-center gap-2">
+            <span className="w-4 text-xs">{p.label}</span>
+            <div className="flex-1 h-2 bg-muted rounded">
+              <div className="h-full bg-primary" style={{ width: `${p.value}%` }} />
             </div>
-            <span className="w-10 text-xs text-right">{i.v}%</span>
+            <span className="w-8 text-xs text-right">{p.value}%</span>
           </div>
         ))}
 
-        <div className="grid grid-cols-4 gap-2 bg-muted/50 p-3 rounded-lg">
-          <div className="text-center">
-            <p className="text-xs">Outcome</p>
-            <Badge variant="outline">{prediction.predictedOutcome}</Badge>
+        <div className="grid grid-cols-4 text-center text-xs bg-muted/50 p-2 rounded">
+          <div>
+            <div>Outcome</div>
+            <strong>{prediction.prediction}</strong>
           </div>
-          <div className="text-center">
-            <p className="text-xs">Score</p>
-            <p className="font-bold">{prediction.predictedScore}</p>
+          <div>
+            <div>Score</div>
+            <strong>{prediction.predicted_score}</strong>
           </div>
-          <div className="text-center">
-            <p className="text-xs">Conf</p>
-            <p className="font-bold text-primary">{prediction.confidence}%</p>
+          <div>
+            <div>Conf</div>
+            <strong>{prediction.confidence}%</strong>
           </div>
-          <div className="text-center">
-            <p className="text-xs">Risk</p>
-            <Badge className={cn("text-xs", riskColor)}>
-              {riskIcon}
-              <span className="ml-1 capitalize">{prediction.riskLevel}</span>
-            </Badge>
+          <div>
+            <div>Risk</div>
+            <Badge>{prediction.risk_level}</Badge>
           </div>
         </div>
       </div>
 
-      {/* ANALYSIS */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full px-4 py-2 flex justify-between text-sm text-muted-foreground hover:bg-muted/40"
-      >
-        <span className="flex gap-2 items-center">
-          <Brain className="h-4 w-4 text-primary" /> AI Analysis
-        </span>
-        {open ? <ChevronUp /> : <ChevronDown />}
-      </button>
-
-      {open && (
-        <div className="p-4 text-sm text-muted-foreground">
-          <p className="mb-2">{prediction.analysis}</p>
-          <div className="flex gap-2 flex-wrap">
-            {prediction.keyFactors.map((f, i) => (
-              <Badge key={i} variant="outline" className="text-xs">
-                <Zap className="h-3 w-3 mr-1" /> {f}
-              </Badge>
-            ))}
-          </div>
+      {/* LOCK OVERLAY */}
+      {locked && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-3">
+          <Lock />
+          {prediction.is_premium ? (
+            <Button onClick={onBuyPremium}>
+              <Crown className="h-4 w-4 mr-2" /> Premium Only
+            </Button>
+          ) : (
+            <Button onClick={onWatchAd}>
+              <Play className="h-4 w-4 mr-2" /> Watch Ad to Unlock
+            </Button>
+          )}
         </div>
       )}
     </Card>
