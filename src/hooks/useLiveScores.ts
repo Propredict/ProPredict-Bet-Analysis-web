@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
-export type DateMode = "yesterday" | "today" | "tomorrow";
-export type StatusFilter = "all" | "live" | "upcoming" | "finished";
 
 export interface Match {
   id: string;
@@ -26,19 +24,22 @@ interface ApiResponse {
 }
 
 const AUTO_REFRESH_MS = 30_000;
-const SUPABASE_URL = "https://tczettddxmlcmhdhgebw.supabase.co";
 
-export function useLiveScores(
-  statusFilter: StatusFilter = "all",
-  dateMode: DateMode = "today"
-) {
+// 🔴 OVDJE UPISI TVOJ SUPABASE PROJECT URL
+const SUPABASE_FUNCTIONS_URL = "https://YOUR_PROJECT_ID.supabase.co/functions/v1/get-fixtures";
+
+export function useLiveScores({
+  dateMode = "today", // today | yesterday | tomorrow | live
+  statusFilter = "all", // all | live | upcoming | finished
+}: {
+  dateMode?: "today" | "yesterday" | "tomorrow" | "live";
+  statusFilter?: "all" | "live" | "upcoming" | "finished";
+}) {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [previousMatches, setPreviousMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const controllerRef = useRef<AbortController | null>(null);
-  const matchesRef = useRef<Match[]>([]);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -49,23 +50,10 @@ export function useLiveScores(
       setIsLoading(true);
       setError(null);
 
-      // Determine API mode based on statusFilter and dateMode
-      let apiMode: string;
-      if (statusFilter === "live") {
-        apiMode = "live";
-      } else {
-        apiMode = dateMode; // yesterday, today, or tomorrow
-      }
-
       const params = new URLSearchParams();
-      params.set("mode", apiMode);
+      params.set("mode", dateMode);
 
-      const res = await fetch(
-        `${SUPABASE_URL}/functions/v1/get-fixtures?${params.toString()}`,
-        {
-          signal: controller.signal,
-        }
-      );
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}?${params.toString()}`, { signal: controller.signal });
 
       if (!res.ok) {
         throw new Error(`Request failed: ${res.status}`);
@@ -75,31 +63,20 @@ export function useLiveScores(
 
       let filtered = data.fixtures;
 
-      // Apply client-side status filtering
-      if (statusFilter === "upcoming") {
-        filtered = filtered.filter((m) => m.status === "upcoming");
-      }
-      if (statusFilter === "finished") {
-        filtered = filtered.filter((m) => m.status === "finished");
-      }
-      if (statusFilter === "live") {
-        filtered = filtered.filter(
-          (m) => m.status === "live" || m.status === "halftime"
-        );
+      // 🔹 frontend status filter
+      if (statusFilter !== "all") {
+        filtered = filtered.filter((m) => m.status === statusFilter);
       }
 
-      // Store previous matches for comparison (use ref to avoid dependency issues)
-      setPreviousMatches(matchesRef.current);
-      matchesRef.current = filtered;
       setMatches(filtered);
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        setError(err.message ?? "Failed to load live scores");
+        setError(err?.message ?? "Failed to load live scores");
       }
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, dateMode]);
+  }, [dateMode, statusFilter]);
 
   useEffect(() => {
     fetchMatches();
@@ -114,7 +91,6 @@ export function useLiveScores(
 
   return {
     matches,
-    previousMatches,
     isLoading,
     error,
     refetch: fetchMatches,
