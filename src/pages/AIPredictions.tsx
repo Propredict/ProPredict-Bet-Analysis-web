@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import AIPredictionCard from "@/components/ai-predictions/AIPredictionCard";
+import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { Input } from "@/components/ui/input";
 import { Search, Activity, Target, TrendingUp, BarChart3, CheckCircle2, XCircle, Clock, Flame, Cpu } from "lucide-react";

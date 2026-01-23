@@ -1,219 +1,220 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, Crown, Eye, ChevronDown, ChevronUp, Clock, Star, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Crown, Sparkles, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
-interface Match {
+interface Prediction {
   id: string;
-  home_team_name: string;
-  away_team_name: string;
-  league_name: string | null;
-  match_date: string; // YYYY-MM-DD
-  match_time: string | null; // HH:mm
-  is_pro: boolean;
+  home_team?: string;
+  away_team?: string;
+  home?: string;
+  away?: string;
+  league?: string;
+  match_date?: string;
+  match_time?: string;
+  time?: string;
+  home_win?: number;
+  draw?: number;
+  away_win?: number;
+  home_pct?: number;
+  draw_pct?: number;
+  away_pct?: number;
+  prediction?: string;
+  pick?: string;
+  predicted_score?: string;
+  confidence?: number;
+  is_premium?: boolean;
+  is_locked?: boolean;
+  result_status?: string;
 }
 
 interface Props {
-  match: Match;
-  isPremium: boolean; // premium OR admin
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
-  onGoPremium: () => void;
+  prediction: Prediction;
 }
 
-/* =========================
-   Helpers
-========================= */
+export function AIPredictionCard({ prediction }: Props) {
+  const { isAdmin, canAccess, getUnlockMethod, isAuthenticated } = useUserPlan();
+  const { handleUnlock, unlockingId } = useUnlockHandler();
+  const navigate = useNavigate();
+  const isUnlocking = unlockingId === prediction.id;
+  const { user } = useAuth();
 
-const getLocalDateLabel = (date: string, time?: string | null) => {
-  const d = new Date(`${date}T${time || "12:00"}`);
-  return d.toLocaleDateString(undefined, {
-    day: "2-digit",
-    month: "short",
-  });
-};
+  const home = prediction.home || prediction.home_team || "Home";
+  const away = prediction.away || prediction.away_team || "Away";
+  const league = prediction.league || "Unknown League";
+  const time = prediction.time || prediction.match_time || "TBD";
+  const date = prediction.match_date ? new Date(prediction.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today";
 
-const getCountdown = (date: string, time?: string | null) => {
-  if (!time) return null;
-  const now = new Date();
-  const start = new Date(`${date}T${time}`);
-  const diff = start.getTime() - now.getTime();
-  if (diff <= 0) return null;
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  return `Starts in ${h}h ${m}m`;
-};
+  const homePct = prediction.home_pct || prediction.home_win || 33;
+  const drawPct = prediction.draw_pct || prediction.draw || 33;
+  const awayPct = prediction.away_pct || prediction.away_win || 33;
+  const confidence = prediction.confidence || 0;
+  const predictedScore = prediction.predicted_score || "? - ?";
 
-/* =========================
-   Component
-========================= */
+  const isPremium = prediction.is_premium ?? false;
+  const tier = isPremium ? "premium" : "daily";
 
-export function AIPredictionCard({ match, isPremium, isFavorite, onToggleFavorite, onGoPremium }: Props) {
-  const { fetchPrediction, loading } = useAIPredictions();
+  // Admin always has access
+  const hasAccess = isAdmin || canAccess(tier as any, "tip", prediction.id);
+  const unlockMethod = !hasAccess ? getUnlockMethod(tier as any, "tip", prediction.id) : null;
 
-  const [ai, setAi] = useState<any | null>(null);
-  const [showAI, setShowAI] = useState(false);
-  const [unlocked, setUnlocked] = useState(false);
-
-  const isProMatch = match.is_pro;
-  const canView = isPremium || (!isProMatch && unlocked);
-
-  /* =========================
-     Fetch AI from Supabase
-  ========================= */
-
-  useEffect(() => {
-    fetchPrediction(
-      match.id,
-      {
-        homeTeam: match.home_team_name,
-        awayTeam: match.away_team_name,
-        league: match.league_name || "",
-        matchDate: match.match_date,
-        matchTime: match.match_time || undefined,
-      },
-      "default",
-    ).then((res) => {
-      if (res) setAi(res);
-    });
-  }, [match.id]);
-
-  /* =========================
-     Derived UI flags
-  ========================= */
-
-  const predictionText = ai?.prediction || "—";
-  const confidence = ai?.confidence || 0;
-
-  const isOver = predictionText.toLowerCase().includes("over");
-  const isBTTS = predictionText.toLowerCase().includes("btts");
-  const isValue = ai?.recommendation?.toLowerCase().includes("value");
-  const isHighRisk = ai?.recommendation?.toLowerCase().includes("risk");
-
-  /* =========================
-     Render
-  ========================= */
+  const handleAction = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    if (unlockMethod?.type === "watch_ad") {
+      handleUnlock("tip", prediction.id, tier as any);
+    } else if (unlockMethod?.type === "upgrade_basic" || unlockMethod?.type === "upgrade_premium") {
+      navigate("/get-premium");
+    }
+  };
 
   return (
-    <Card className="bg-card border-border/50 hover:border-primary/30 transition">
+    <Card className="bg-[#0a1628]/80 border-white/5 hover:border-white/10 transition-colors overflow-hidden">
       <CardContent className="p-4">
-        {/* HEADER */}
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex flex-wrap gap-2 items-center">
-            <Badge variant="outline" className="bg-primary/10 text-primary">
-              <Brain className="w-3 h-3 mr-1" />
-              AI Prediction
-            </Badge>
-
-            {isProMatch && (
-              <Badge className="bg-amber-500/20 text-amber-400">
-                <Crown className="w-3 h-3 mr-1" />
-                PRO
-              </Badge>
-            )}
-
-            {isOver && <Badge className="bg-indigo-500/20 text-indigo-300">Over 2.5</Badge>}
-
-            {isBTTS && <Badge className="bg-cyan-500/20 text-cyan-300">BTTS</Badge>}
-
-            {isValue && <Badge className="bg-emerald-500/20 text-emerald-300">Value</Badge>}
-
-            {isHighRisk && (
-              <Badge className="bg-red-500/20 text-red-400">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                High Risk
-              </Badge>
-            )}
+        {/* HEADER: League + Date + Time + Badge */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="truncate max-w-[140px]">{league}</span>
+            <span>•</span>
+            <span>{date}, {time}</span>
           </div>
-
-          <Star
-            onClick={onToggleFavorite}
-            className={cn("w-4 h-4 cursor-pointer", isFavorite ? "text-primary fill-primary" : "text-muted-foreground")}
-          />
-        </div>
-
-        {/* MATCH INFO */}
-        <div className="mb-3">
-          <h3 className="font-semibold text-sm">
-            {match.home_team_name} vs {match.away_team_name}
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            {match.league_name} · {getLocalDateLabel(match.match_date, match.match_time)} · {match.match_time || "TBD"}
-          </p>
-
-          {getCountdown(match.match_date, match.match_time) && (
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {getCountdown(match.match_date, match.match_time)}
-            </p>
+          {isPremium && (
+            <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[10px] px-2">
+              AI PRO
+            </Badge>
           )}
         </div>
 
-        {/* CONFIDENCE */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs mb-1">
-            <span>Confidence</span>
-            <span>{confidence}%</span>
-          </div>
-          <div className="h-2 bg-muted rounded">
-            <div className="h-full bg-primary rounded transition-all" style={{ width: `${confidence}%` }} />
-          </div>
+        {/* MATCH TITLE */}
+        <h3 className="text-sm font-semibold text-foreground mb-4">
+          {home} vs {away}
+        </h3>
+
+        {/* PROBABILITY BARS */}
+        <div className="space-y-2.5 mb-4">
+          <ProbabilityBar label={home} value={homePct} color="bg-primary" locked={!hasAccess} />
+          <ProbabilityBar label="Draw" value={drawPct} color="bg-muted-foreground" locked={!hasAccess} />
+          <ProbabilityBar label={away} value={awayPct} color="bg-orange-500" locked={!hasAccess} />
         </div>
 
-        {/* PREDICTION */}
-        <div className="mb-4">
-          <div className="text-xs text-muted-foreground mb-1">AI Pick</div>
-          <div className={cn("text-lg font-bold", !canView && "blur-sm select-none")}>{predictionText}</div>
-        </div>
-
-        {/* ACTIONS */}
-        {!canView && isProMatch && (
-          <Button className="w-full bg-amber-500" onClick={onGoPremium}>
-            <Crown className="w-4 h-4 mr-2" />
-            Get AI Pro
-          </Button>
-        )}
-
-        {!canView && !isProMatch && (
-          <Button variant="outline" className="w-full" onClick={() => setUnlocked(true)}>
-            <Eye className="w-4 h-4 mr-2" />
-            Watch Ad to Unlock
-          </Button>
-        )}
-
-        {/* AI ANALYSIS */}
-        {canView && ai && (
-          <>
-            <button
-              onClick={() => setShowAI(!showAI)}
-              className="w-full mt-3 text-sm flex justify-between items-center"
-            >
-              <span className="flex items-center gap-2">
-                <Brain className="w-4 h-4" />
-                AI Analysis
-              </span>
-              {showAI ? <ChevronUp /> : <ChevronDown />}
-            </button>
-
-            {showAI && (
-              <div className="mt-3 text-sm text-muted-foreground space-y-2">
-                <p>{ai.reasoning}</p>
-
-                {ai.keyFactors?.length > 0 && (
-                  <ul className="list-disc pl-4">
-                    {ai.keyFactors.map((f: string, i: number) => (
-                      <li key={i}>{f}</li>
-                    ))}
-                  </ul>
-                )}
+        {/* PREDICTED SCORE + CONFIDENCE */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Predicted Score</p>
+            <p className={cn(
+              "text-sm font-semibold text-foreground flex items-center gap-1",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              <span className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center text-xs text-primary">⚽</span>
+              {hasAccess ? predictedScore : "? - ?"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">AI Confidence</p>
+            <div className={cn(
+              "flex items-center gap-1",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all" 
+                  style={{ width: hasAccess ? `${confidence}%` : "50%" }} 
+                />
               </div>
+              <span className="text-xs font-medium text-foreground">
+                {hasAccess ? `${confidence}%` : "??%"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ACTION BUTTON */}
+        {!hasAccess && (
+          <div>
+            {isPremium && (
+              <p className="text-xs text-muted-foreground text-center mb-2">
+                Unlock full AI analysis and predictions
+              </p>
             )}
-          </>
+            <Button 
+              onClick={handleAction}
+              disabled={isUnlocking}
+              className={cn(
+                "w-full h-9 text-sm font-medium",
+                !isAuthenticated && "bg-transparent border border-white/20 hover:bg-white/5 text-foreground",
+                isAuthenticated && !isPremium && "bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30",
+                isAuthenticated && isPremium && "bg-orange-500 hover:bg-orange-600 text-white"
+              )}
+            >
+              {!isAuthenticated ? (
+                <>
+                  <LogIn className="w-3.5 h-3.5 mr-2" />
+                  Sign in to Unlock
+                </>
+              ) : isPremium ? (
+                <>
+                  <Crown className="w-3.5 h-3.5 mr-2" />
+                  Get AI Pro Access
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 mr-2" />
+                  Watch Ad to Unlock Prediction
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* UNLOCKED STATE */}
+        {hasAccess && (
+          <div className="flex items-center justify-center gap-1.5 text-xs text-primary">
+            <span className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">✓</span>
+            <span>Full prediction available</span>
+          </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+/* PROBABILITY BAR */
+function ProbabilityBar({ 
+  label, 
+  value, 
+  color, 
+  locked 
+}: { 
+  label: string; 
+  value: number; 
+  color: string; 
+  locked: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground w-24 truncate">{label}</span>
+      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+        <div 
+          className={cn("h-full rounded-full transition-all", color)} 
+          style={{ width: `${value}%` }} 
+        />
+      </div>
+      <span className={cn(
+        "text-xs font-medium w-8 text-right",
+        locked ? "text-muted-foreground" : "text-foreground"
+      )}>
+        {locked ? "??" : `${value}`}
+      </span>
+    </div>
+  );
+}
+
+export default AIPredictionCard;
