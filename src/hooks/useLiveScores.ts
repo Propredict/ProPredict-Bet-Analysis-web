@@ -1,131 +1,114 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export type LiveMatchStatus = "live" | "halftime" | "finished";
+export type MatchStatus = "live" | "halftime" | "finished" | "upcoming";
 
-export interface LiveMatch {
-  id: string;
+export type Match = {
+  id: number;
   league: string;
-  leagueLogo: string | null;
+  leagueCountry: string;
   homeTeam: string;
   awayTeam: string;
-  homeGoals: number | null;
-  awayGoals: number | null;
-  elapsed: number | null;
-  status: LiveMatchStatus;
-}
+  homeScore: number | null;
+  awayScore: number | null;
+  status: MatchStatus;
+  minute?: number;
+  startTime?: string;
+};
 
-interface UseLiveScoresResult {
-  matches: LiveMatch[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
+const API_URL = "https://v3.football.api-sports.io/fixtures?live=all";
+const REFRESH_INTERVAL = 30000; // 30s
 
-const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+export function useLiveScores() {
+  const API_KEY = import.meta.env.VITE_API_FOOTBALL_KEY;
 
-export function useLiveScores(): UseLiveScoresResult {
-  const [matches, setMatches] = useState<LiveMatch[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchLiveScores = useCallback(async () => {
-    // Cancel any in-flight request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
+  const intervalRef = useRef<number | null>(null);
 
-    try {
-      setIsLoading(true);
-      setError(null);
+  const fetchMatches = useCallback(
+    async (silent = false) => {
+      if (!API_KEY) {
+        console.error("API Football key is missing");
+        setError("Missing API key");
+        setIsLoading(false);
+        return;
+      }
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+      if (!silent) setIsLoading(true);
 
-      const response = await fetch(
-        `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-fixtures?mode=live`,
-        {
-          method: "GET",
+      try {
+        const res = await fetch(API_URL, {
           headers: {
-            "Content-Type": "application/json",
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA",
-            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+            "x-apisports-key": API_KEY,
           },
-          signal: abortControllerRef.current.signal,
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch live matches");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const json = await res.json();
+
+        const mapped: Match[] = (json.response ?? []).map((item: any) => {
+          const statusShort = item.fixture.status.short;
+
+          let status: MatchStatus = "upcoming";
+          if (statusShort === "1H" || statusShort === "2H") status = "live";
+          if (statusShort === "HT") status = "halftime";
+          if (statusShort === "FT") status = "finished";
+
+          return {
+            id: item.fixture.id,
+            league: item.league.name,
+            leagueCountry: item.league.country,
+            homeTeam: item.teams.home.name,
+            awayTeam: item.teams.away.name,
+            homeScore: item.goals.home,
+            awayScore: item.goals.away,
+            status,
+            minute: item.fixture.status.elapsed ?? undefined,
+            startTime: item.fixture.date
+              ? new Date(item.fixture.date).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : undefined,
+          };
+        });
+
+        setMatches(mapped);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || "Unknown error");
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [API_KEY],
+  );
 
-      const data = await response.json();
-
-      // Handle empty response safely
-      const fixtures = data?.fixtures ?? [];
-
-      // Map to LiveMatch interface
-      const liveMatches: LiveMatch[] = fixtures.map((fixture: any) => ({
-        id: String(fixture.id),
-        league: fixture.league ?? "",
-        leagueLogo: fixture.leagueLogo ?? null,
-        homeTeam: fixture.homeTeam ?? "",
-        awayTeam: fixture.awayTeam ?? "",
-        homeGoals: fixture.homeScore ?? null,
-        awayGoals: fixture.awayScore ?? null,
-        elapsed: fixture.minute ?? null,
-        status: mapStatus(fixture.status),
-      }));
-
-      setMatches(liveMatches);
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        return; // Ignore abort errors
-      }
-      console.error("Failed to fetch live scores:", err);
-      setError(err.message ?? "Failed to fetch live scores");
-      setMatches([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Map status to LiveMatchStatus
-  function mapStatus(status: string | undefined): LiveMatchStatus {
-    if (!status) return "live";
-    if (status === "halftime") return "halftime";
-    if (status === "finished") return "finished";
-    return "live";
-  }
-
-  // Initial fetch
+  // Initial fetch + auto refresh
   useEffect(() => {
-    fetchLiveScores();
+    fetchMatches();
+
+    intervalRef.current = window.setInterval(() => {
+      fetchMatches(true);
+    }, REFRESH_INTERVAL);
 
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
-  }, [fetchLiveScores]);
-
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchLiveScores();
-    }, AUTO_REFRESH_INTERVAL);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [fetchLiveScores]);
+  }, [fetchMatches]);
 
   return {
     matches,
     isLoading,
     error,
-    refetch: fetchLiveScores,
+    refetch: () => fetchMatches(false),
+    silentRefetch: () => fetchMatches(true),
   };
 }
