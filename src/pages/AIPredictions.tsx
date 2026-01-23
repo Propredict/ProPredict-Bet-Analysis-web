@@ -12,7 +12,7 @@ export default function AIPredictionsPage() {
   // TEMP – kasnije vežeš na user subscription
   const isPremiumUser = false;
 
-  // 🟢 AI ACCURACY STATS
+  // AI ACCURACY STATS
   const [stats, setStats] = useState<{
     won: number;
     lost: number;
@@ -40,9 +40,9 @@ export default function AIPredictionsPage() {
           <p className="text-muted-foreground">AI predictions for today & tomorrow matches</p>
         </div>
 
-        {/* 🟢 AI ACCURACY BAR */}
+        {/* AI ACCURACY */}
         {stats && (
-          <div className="rounded-lg border p-4 space-y-2">
+          <div className="rounded-lg border p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-medium">AI Accuracy</span>
               <span className="font-bold">{accuracy}%</span>
@@ -52,7 +52,7 @@ export default function AIPredictionsPage() {
               <div className="bg-primary h-2 rounded" style={{ width: `${accuracy}%` }} />
             </div>
 
-            <div className="text-sm text-muted-foreground flex gap-4">
+            <div className="text-sm text-muted-foreground flex gap-6">
               <span>✔ Won: {stats.won}</span>
               <span>❌ Lost: {stats.lost}</span>
               <span>⏳ Pending: {stats.pending}</span>
@@ -60,13 +60,22 @@ export default function AIPredictionsPage() {
           </div>
         )}
 
+        {/* TOTAL MATCHES */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Total matches ({day === "today" ? "Today" : "Tomorrow"}): <strong>{predictions.length}</strong>
+          </span>
+        </div>
+
         {/* TABS */}
         <div className="flex gap-2">
           {["today", "tomorrow"].map((d) => (
             <button
               key={d}
-              onClick={() => setDay(d as any)}
-              className={`px-4 py-2 rounded ${day === d ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
+              onClick={() => setDay(d as "today" | "tomorrow")}
+              className={`px-4 py-2 rounded text-sm font-medium ${
+                day === d ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+              }`}
             >
               {d === "today" ? "Today" : "Tomorrow"}
             </button>
@@ -75,13 +84,12 @@ export default function AIPredictionsPage() {
 
         {/* CONTENT */}
         {loading ? (
-          <p>Loading...</p>
+          <div className="text-muted-foreground">Loading AI predictions…</div>
         ) : predictions.length === 0 ? (
-          // 🟢 EMPTY STATE (OBAVEZNO)
           <div className="rounded-lg border p-6 text-center text-muted-foreground">
             No AI predictions available yet.
             <br />
-            Matches are currently being analyzed. Please check back soon.
+            Matches are currently being analyzed.
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
