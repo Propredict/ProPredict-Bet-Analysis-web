@@ -1,46 +1,31 @@
 export type MatchDay = "today" | "tomorrow";
-export type RiskLevel = "low" | "medium" | "high";
-export type ResultStatus = "pending" | "won" | "lost";
 
 export interface AIPrediction {
+  // CORE
   id: string;
-  match_id: string;
-  league: string | null;
+  league: string;
+  homeTeam: string;
+  awayTeam: string;
 
-  home_team: string;
-  away_team: string;
+  matchDate: string;
+  matchTime: string;
+  matchDay: MatchDay;
 
-  match_date: string | null;
-  match_time: string | null;
-  match_day: MatchDay | null;
+  // PROBABILITIES
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
 
-  home_win: number;
-  draw: number;
-  away_win: number;
-
-  prediction: string;
-  predicted_score: string | null;
+  // AI OUTPUT
+  predictedOutcome: "1" | "X" | "2";
+  predictedScore: string;
   confidence: number;
+  riskLevel: "low" | "medium" | "high";
 
-  risk_level: RiskLevel | null;
+  analysis?: string;
+  keyFactors?: string[];
 
-  analysis: string | null;
-  key_factors: string[] | null;
-
-  is_premium: boolean | null;
-  is_live: boolean | null;
-  is_locked: boolean | null;
-
-  result_status: ResultStatus | null;
-
-  // Live match fields (optional)
-  live_minute?: number;
-  home_score?: number;
-  away_score?: number;
-}
-
-export interface AIStats {
-  won: number;
-  lost: number;
-  pending: number;
+  // ACCESS
+  isPremium: boolean;
+  isLocked: boolean;
 }
