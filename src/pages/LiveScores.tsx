@@ -1,4 +1,4 @@
-import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle } from "lucide-react";
+import { Zap, RefreshCw, Bell, BellRing, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
-import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
+import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
+import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useMatchAlerts } from "@/hooks/useMatchAlerts";
+import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
+import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -37,7 +39,7 @@ export default function LiveScores() {
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
   const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [alertsMatch, setAlertsMatch] = useState<Match | null>(null);
+  const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const { matches, isLoading, error, refetch } = useLiveScores({
@@ -46,7 +48,8 @@ export default function LiveScores() {
   });
 
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { refetch: refetchAlerts } = useMatchAlerts();
+  const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
+  const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
 
   /* -------------------- CLOCK -------------------- */
 
@@ -130,14 +133,23 @@ export default function LiveScores() {
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
               </Button>
               <Button
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  const m = matches.find((m) => m.status === "live");
-                  if (m) setAlertsMatch(m);
-                }}
+                className={cn(
+                  "transition-all duration-300",
+                  alertSettings.enabled 
+                    ? "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30" 
+                    : "bg-[#1a1f2e] hover:bg-[#252b3d] border border-white/10"
+                )}
+                onClick={() => setShowGlobalAlerts(true)}
               >
-                <Bell className="h-4 w-4 mr-1" />
+                {alertSettings.enabled ? (
+                  <BellRing className="h-4 w-4 mr-2 animate-pulse" />
+                ) : (
+                  <Bell className="h-4 w-4 mr-2" />
+                )}
                 Alerts
+                {alertSettings.enabled && (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-white animate-pulse" />
+                )}
               </Button>
             </div>
           </div>
@@ -234,19 +246,34 @@ export default function LiveScores() {
                   onClick={() => setSelectedMatch(m)}
                   className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer"
                 >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(m.id);
-                    }}
-                  >
-                    <Star
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(m.id);
+                      }}
                       className={cn(
-                        "h-4 w-4",
-                        isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
+                        isFavorite(m.id) 
+                          ? "bg-primary/20 shadow-lg shadow-primary/30" 
+                          : "bg-white/5 hover:bg-white/10"
                       )}
+                    >
+                      <Star
+                        className={cn(
+                          "h-4 w-4 transition-colors",
+                          isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
+                        )}
+                      />
+                    </button>
+                    <MatchAlertButton
+                      hasAlert={hasAlert(m.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMatchAlert(m.id);
+                      }}
                     />
-                  </button>
+                  </div>
 
                   {/* CENTERED SCORE */}
                   <div className="flex-1 grid grid-cols-[1fr_96px_1fr] items-center">
@@ -279,7 +306,12 @@ export default function LiveScores() {
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-      <MatchAlertsModal match={alertsMatch} onClose={() => setAlertsMatch(null)} />
+      <GlobalAlertsModal 
+        isOpen={showGlobalAlerts} 
+        onClose={() => setShowGlobalAlerts(false)} 
+        settings={alertSettings}
+        onToggle={toggleAlertSetting}
+      />
     </DashboardLayout>
   );
 }
