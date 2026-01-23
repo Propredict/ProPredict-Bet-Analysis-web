@@ -264,6 +264,7 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
                     onCheckedChange={(checked) =>
                       setSettings((s) => ({ ...s, notifyGoals: !!checked }))
                     }
+                    onClick={(e) => e.stopPropagation()}
                   />
                   <div className="flex items-center gap-2 flex-1">
                     <Goal className="h-4 w-4 text-primary" />
@@ -288,6 +289,7 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
                     onCheckedChange={(checked) =>
                       setSettings((s) => ({ ...s, notifyRedCards: !!checked }))
                     }
+                    onClick={(e) => e.stopPropagation()}
                   />
                   <div className="flex items-center gap-2 flex-1">
                     <AlertTriangle className="h-4 w-4 text-destructive" />
