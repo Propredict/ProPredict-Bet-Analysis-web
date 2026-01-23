@@ -103,8 +103,12 @@ export type Database = {
       }
       ticket_matches: {
         Row: {
+          away_team: string | null
           created_at: string
+          home_team: string | null
           id: string
+          league: string | null
+          match_date: string | null
           match_name: string
           odds: number
           prediction: string
@@ -112,8 +116,12 @@ export type Database = {
           ticket_id: string
         }
         Insert: {
+          away_team?: string | null
           created_at?: string
+          home_team?: string | null
           id?: string
+          league?: string | null
+          match_date?: string | null
           match_name: string
           odds?: number
           prediction: string
@@ -121,8 +129,12 @@ export type Database = {
           ticket_id: string
         }
         Update: {
+          away_team?: string | null
           created_at?: string
+          home_team?: string | null
           id?: string
+          league?: string | null
+          match_date?: string | null
           match_name?: string
           odds?: number
           prediction?: string
@@ -141,9 +153,11 @@ export type Database = {
       }
       tickets: {
         Row: {
+          ai_analysis: string | null
           created_at: string
           created_at_ts: string
           created_by: string | null
+          description: string | null
           id: string
           result: Database["public"]["Enums"]["ticket_result"]
           status: Database["public"]["Enums"]["content_status"]
@@ -153,9 +167,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analysis?: string | null
           created_at?: string
           created_at_ts?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
@@ -165,9 +181,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analysis?: string | null
           created_at?: string
           created_at_ts?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]

@@ -290,338 +290,388 @@ export default function ManageTickets() {
 
         {/* Create/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-              <DialogTitle className="text-xl">
-                {editingTicket ? "Edit Ticket" : "Create Ticket"}
+          <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0">
+            <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
+              <DialogTitle className="text-xl font-semibold">
+                {editingTicket ? "Edit Ticket" : "Create New Ticket"}
               </DialogTitle>
             </DialogHeader>
 
-            <ScrollArea className="flex-1 px-6 overflow-y-auto">
-              <div className="space-y-6 py-4">
-                {/* Section 1: Basic Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">1</span>
-                    Basic Information
-                  </h3>
+            <ScrollArea className="flex-1 overflow-y-auto">
+              <div className="p-6 space-y-6">
+                {/* ========== SECTION 1: TICKET INFO ========== */}
+                <Card className="p-5 bg-card border-border">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+                      1
+                    </div>
+                    <h3 className="font-semibold text-lg text-foreground">Ticket Info</h3>
+                  </div>
 
-                  <div className="grid gap-4 pl-8">
+                  <div className="space-y-5">
+                    {/* Title */}
                     <div className="space-y-2">
-                      <Label htmlFor="title">Ticket Title *</Label>
+                      <Label htmlFor="title" className="text-sm font-medium">
+                        Title <span className="text-destructive">*</span>
+                      </Label>
                       <Input
                         id="title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g., Weekend Accumulator"
-                        className="bg-background"
+                        className="bg-background h-11"
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    {/* Tier / Status / Result Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>Tier *</Label>
+                        <Label className="text-sm font-medium">
+                          Tier <span className="text-destructive">*</span>
+                        </Label>
                         <Select value={tier} onValueChange={(v) => setTier(v as ContentTier)}>
-                          <SelectTrigger className="bg-background">
+                          <SelectTrigger className="bg-background h-11">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="exclusive">Pro (Exclusive)</SelectItem>
-                            <SelectItem value="premium">Premium</SelectItem>
+                            <SelectItem value="daily">🔶 Daily</SelectItem>
+                            <SelectItem value="exclusive">⭐ Pro (Exclusive)</SelectItem>
+                            <SelectItem value="premium">👑 Premium</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Status *</Label>
+                        <Label className="text-sm font-medium">
+                          Status <span className="text-destructive">*</span>
+                        </Label>
                         <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
-                          <SelectTrigger className="bg-background">
+                          <SelectTrigger className="bg-background h-11">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="published">Published</SelectItem>
+                            <SelectItem value="draft">📝 Draft</SelectItem>
+                            <SelectItem value="published">✅ Published</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Result</Label>
+                        <Label className="text-sm font-medium">Result</Label>
                         <Select value={result} onValueChange={(v) => setResult(v as TicketResult)}>
-                          <SelectTrigger className="bg-background">
+                          <SelectTrigger className="bg-background h-11">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="won">Won</SelectItem>
-                            <SelectItem value="lost">Lost</SelectItem>
+                            <SelectItem value="pending">⏳ Pending</SelectItem>
+                            <SelectItem value="won">✅ Won</SelectItem>
+                            <SelectItem value="lost">❌ Lost</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
 
-                    {/* Description - UI ready, DB column needed */}
+                    {/* Description */}
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description (optional)</Label>
+                      <Label htmlFor="description" className="text-sm font-medium">
+                        Description <span className="text-muted-foreground text-xs">(optional)</span>
+                      </Label>
                       <Textarea
                         id="description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Brief description of this ticket..."
-                        className="bg-background resize-none"
-                        rows={2}
+                        className="bg-background resize-none min-h-[80px]"
+                        rows={3}
                       />
-                      <p className="text-xs text-muted-foreground">Note: Add 'description' column to tickets table to save</p>
                     </div>
 
-                    {/* AI Analysis - UI ready, DB column needed */}
+                    {/* AI Analysis */}
                     <div className="space-y-2">
-                      <Label htmlFor="aiAnalysis" className="flex items-center gap-2">
+                      <Label htmlFor="aiAnalysis" className="text-sm font-medium flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-primary" />
-                        AI Analysis (optional)
+                        AI Analysis <span className="text-muted-foreground text-xs">(optional)</span>
                       </Label>
                       <Textarea
                         id="aiAnalysis"
                         value={aiAnalysis}
                         onChange={(e) => setAiAnalysis(e.target.value)}
                         placeholder="AI-generated analysis and insights..."
-                        className="bg-background resize-none"
-                        rows={3}
+                        className="bg-background resize-none min-h-[100px]"
+                        rows={4}
                       />
-                      <p className="text-xs text-muted-foreground">Note: Add 'ai_analysis' column to tickets table to save</p>
                     </div>
                   </div>
-                </div>
+                </Card>
 
-                {/* Section 2: Match Selection */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">2</span>
-                    Match Selection
-                  </h3>
+                {/* ========== SECTION 2: MATCHES ========== */}
+                <Card className="p-5 bg-card border-border">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+                        2
+                      </div>
+                      <h3 className="font-semibold text-lg text-foreground">Matches</h3>
+                      {matches.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                          {matches.length} selected
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                  <div className="pl-8 space-y-4">
-                    <Tabs value={matchTab} onValueChange={(v) => setMatchTab(v as "today" | "custom")}>
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="today" className="gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Today's Matches
-                        </TabsTrigger>
-                        <TabsTrigger value="custom" className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Custom Match
-                        </TabsTrigger>
-                      </TabsList>
+                  {/* Match Selector Tabs */}
+                  <Tabs value={matchTab} onValueChange={(v) => setMatchTab(v as "today" | "custom")} className="mb-5">
+                    <TabsList className="grid w-full grid-cols-2 h-11">
+                      <TabsTrigger value="today" className="gap-2 text-sm">
+                        <Calendar className="h-4 w-4" />
+                        Today's Matches
+                      </TabsTrigger>
+                      <TabsTrigger value="custom" className="gap-2 text-sm">
+                        <Plus className="h-4 w-4" />
+                        Custom Match
+                      </TabsTrigger>
+                    </TabsList>
 
-                      <TabsContent value="today" className="space-y-3 mt-4">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <TabsContent value="today" className="mt-4 space-y-3">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search by team or league..."
+                          value={matchSearch}
+                          onChange={(e) => setMatchSearch(e.target.value)}
+                          className="pl-10 bg-background h-10"
+                        />
+                      </div>
+
+                      <ScrollArea className="h-44 border border-border rounded-lg bg-background/50">
+                        {fixturesLoading ? (
+                          <div className="flex items-center justify-center h-full">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : filteredFixtures.length > 0 ? (
+                          <div className="p-2 space-y-1">
+                            {filteredFixtures.slice(0, 20).map((fixture) => {
+                              const isSelected = matches.some(
+                                (m) => m.homeTeam === fixture.homeTeam && m.awayTeam === fixture.awayTeam
+                              );
+                              return (
+                                <button
+                                  key={fixture.id}
+                                  onClick={() => addMatchFromFixture(fixture)}
+                                  disabled={isSelected}
+                                  className={`w-full text-left p-3 rounded-md transition-colors ${
+                                    isSelected
+                                      ? "bg-primary/10 text-primary cursor-not-allowed border border-primary/30"
+                                      : "hover:bg-muted border border-transparent"
+                                  }`}
+                                >
+                                  <p className="text-sm font-medium">
+                                    {fixture.homeTeam} vs {fixture.awayTeam}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {fixture.league} •{" "}
+                                    {fixture.startTime && !isNaN(new Date(fixture.startTime).getTime())
+                                      ? format(new Date(fixture.startTime), "HH:mm")
+                                      : "TBD"}
+                                  </p>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                            {matchSearch ? "No matches found" : "No fixtures available"}
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </TabsContent>
+
+                    <TabsContent value="custom" className="mt-4">
+                      <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm">
+                              Home Team <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              placeholder="e.g., Manchester United"
+                              value={customHomeTeam}
+                              onChange={(e) => setCustomHomeTeam(e.target.value)}
+                              className="bg-background h-10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm">
+                              Away Team <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              placeholder="e.g., Liverpool"
+                              value={customAwayTeam}
+                              onChange={(e) => setCustomAwayTeam(e.target.value)}
+                              className="bg-background h-10"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm">League</Label>
                           <Input
-                            placeholder="Search by team or league..."
-                            value={matchSearch}
-                            onChange={(e) => setMatchSearch(e.target.value)}
-                            className="pl-10 bg-background"
+                            placeholder="e.g., Premier League"
+                            value={customLeague}
+                            onChange={(e) => setCustomLeague(e.target.value)}
+                            className="bg-background h-10"
                           />
                         </div>
 
-                        <ScrollArea className="h-48 border rounded-lg">
-                          {fixturesLoading ? (
-                            <div className="flex items-center justify-center h-full">
-                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            </div>
-                          ) : filteredFixtures.length > 0 ? (
-                            <div className="p-2 space-y-1">
-                              {filteredFixtures.slice(0, 20).map((fixture) => {
-                                const isSelected = matches.some(
-                                  (m) => m.homeTeam === fixture.homeTeam && m.awayTeam === fixture.awayTeam
-                                );
-                                return (
-                                  <button
-                                    key={fixture.id}
-                                    onClick={() => addMatchFromFixture(fixture)}
-                                    disabled={isSelected}
-                                    className={`w-full text-left p-2 rounded-md transition-colors ${
-                                      isSelected
-                                        ? "bg-primary/10 text-primary cursor-not-allowed"
-                                        : "hover:bg-muted"
-                                    }`}
-                                  >
-                                    <p className="text-sm font-medium">
-                                      {fixture.homeTeam} vs {fixture.awayTeam}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {fixture.league} •{" "}
-                                      {fixture.startTime && !isNaN(new Date(fixture.startTime).getTime())
-                                        ? format(new Date(fixture.startTime), "HH:mm")
-                                        : "TBD"}
-                                    </p>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                              {matchSearch ? "No matches found" : "No fixtures available"}
-                            </div>
-                          )}
-                        </ScrollArea>
-                      </TabsContent>
-
-                      <TabsContent value="custom" className="space-y-3 mt-4">
-                        <div className="space-y-3 p-4 bg-muted/20 rounded-lg border border-primary/30">
-                          <p className="text-sm font-medium text-primary">Create Custom Match</p>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                              <Label>Home Team *</Label>
-                              <Input
-                                placeholder="e.g., Manchester United"
-                                value={customHomeTeam}
-                                onChange={(e) => setCustomHomeTeam(e.target.value)}
-                                className="bg-background"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Away Team *</Label>
-                              <Input
-                                placeholder="e.g., Liverpool"
-                                value={customAwayTeam}
-                                onChange={(e) => setCustomAwayTeam(e.target.value)}
-                                className="bg-background"
-                              />
-                            </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm">
+                              Prediction <span className="text-destructive">*</span>
+                            </Label>
+                            <Select value={customPrediction} onValueChange={setCustomPrediction}>
+                              <SelectTrigger className="bg-background h-10">
+                                <SelectValue placeholder="Select bet type" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-popover border-border z-50">
+                                <SelectItem value="Home Win">Home Win (1)</SelectItem>
+                                <SelectItem value="Draw">Draw (X)</SelectItem>
+                                <SelectItem value="Away Win">Away Win (2)</SelectItem>
+                                <SelectItem value="1X">Home or Draw (1X)</SelectItem>
+                                <SelectItem value="X2">Draw or Away (X2)</SelectItem>
+                                <SelectItem value="12">Home or Away (12)</SelectItem>
+                                <SelectItem value="Over 0.5">Over 0.5 Goals</SelectItem>
+                                <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
+                                <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
+                                <SelectItem value="Over 3.5">Over 3.5 Goals</SelectItem>
+                                <SelectItem value="Under 0.5">Under 0.5 Goals</SelectItem>
+                                <SelectItem value="Under 1.5">Under 1.5 Goals</SelectItem>
+                                <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
+                                <SelectItem value="Under 3.5">Under 3.5 Goals</SelectItem>
+                                <SelectItem value="BTTS Yes">Both Teams to Score - Yes</SelectItem>
+                                <SelectItem value="BTTS No">Both Teams to Score - No</SelectItem>
+                                <SelectItem value="Home -1">Home -1 Handicap</SelectItem>
+                                <SelectItem value="Away -1">Away -1 Handicap</SelectItem>
+                                <SelectItem value="Home +1">Home +1 Handicap</SelectItem>
+                                <SelectItem value="Away +1">Away +1 Handicap</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label>League (optional)</Label>
+                            <Label className="text-sm">
+                              Odds <span className="text-destructive">*</span>
+                            </Label>
                             <Input
-                              placeholder="e.g., Premier League"
-                              value={customLeague}
-                              onChange={(e) => setCustomLeague(e.target.value)}
-                              className="bg-background"
+                              type="number"
+                              step="0.01"
+                              min="1"
+                              placeholder="1.50"
+                              value={customOdds}
+                              onChange={(e) => setCustomOdds(e.target.value)}
+                              className="bg-background h-10"
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                              <Label>Prediction *</Label>
-                              <Select value={customPrediction} onValueChange={setCustomPrediction}>
-                                <SelectTrigger className="bg-background">
-                                  <SelectValue placeholder="Select bet type" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-popover border-border z-50">
-                                  <SelectItem value="Home Win">Home Win (1)</SelectItem>
-                                  <SelectItem value="Draw">Draw (X)</SelectItem>
-                                  <SelectItem value="Away Win">Away Win (2)</SelectItem>
-                                  <SelectItem value="1X">Home or Draw (1X)</SelectItem>
-                                  <SelectItem value="X2">Draw or Away (X2)</SelectItem>
-                                  <SelectItem value="12">Home or Away (12)</SelectItem>
-                                  <SelectItem value="Over 0.5">Over 0.5 Goals</SelectItem>
-                                  <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
-                                  <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
-                                  <SelectItem value="Over 3.5">Over 3.5 Goals</SelectItem>
-                                  <SelectItem value="Under 0.5">Under 0.5 Goals</SelectItem>
-                                  <SelectItem value="Under 1.5">Under 1.5 Goals</SelectItem>
-                                  <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
-                                  <SelectItem value="Under 3.5">Under 3.5 Goals</SelectItem>
-                                  <SelectItem value="BTTS Yes">Both Teams to Score - Yes</SelectItem>
-                                  <SelectItem value="BTTS No">Both Teams to Score - No</SelectItem>
-                                  <SelectItem value="Home -1">Home -1 Handicap</SelectItem>
-                                  <SelectItem value="Away -1">Away -1 Handicap</SelectItem>
-                                  <SelectItem value="Home +1">Home +1 Handicap</SelectItem>
-                                  <SelectItem value="Away +1">Away +1 Handicap</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Odds *</Label>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="1"
-                                placeholder="1.50"
-                                value={customOdds}
-                                onChange={(e) => setCustomOdds(e.target.value)}
-                                className="bg-background"
-                              />
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            onClick={addCustomMatch}
-                            disabled={!customHomeTeam || !customAwayTeam || !customPrediction}
-                            className="w-full bg-primary hover:bg-primary/90"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Custom Match
-                          </Button>
                         </div>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </div>
 
-                {/* Section 3: Selected Matches */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">3</span>
-                    Selected Matches ({matches.length})
-                  </h3>
+                        <Button
+                          type="button"
+                          onClick={addCustomMatch}
+                          disabled={!customHomeTeam || !customAwayTeam || !customPrediction}
+                          className="w-full h-11 bg-primary hover:bg-primary/90 gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Match to Ticket
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
 
-                  <div className="pl-8 space-y-3">
+                  {/* Selected Matches List */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                        Selected Matches
+                      </h4>
+                    </div>
+
                     {matches.length === 0 ? (
-                      <div className="text-center py-6 border border-dashed border-border rounded-lg">
+                      <div className="text-center py-8 border-2 border-dashed border-border rounded-lg bg-muted/20">
                         <p className="text-muted-foreground text-sm">
-                          No matches added yet. Select from today's matches or add a custom match.
+                          No matches added yet
+                        </p>
+                        <p className="text-muted-foreground text-xs mt-1">
+                          Select from today's matches or add a custom match above
                         </p>
                       </div>
                     ) : (
-                      <>
+                      <div className="space-y-3">
                         {matches.map((match, index) => (
-                          <Card key={index} className="p-3 bg-muted/30 border-border">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 space-y-2">
-                                <p className="font-medium text-sm text-foreground">
-                                  {match.homeTeam} vs {match.awayTeam}
-                                </p>
-                                {match.league && (
-                                  <p className="text-xs text-muted-foreground">{match.league}</p>
-                                )}
-                                <div className="grid grid-cols-2 gap-2">
-                                  <Select
-                                    value={match.prediction}
-                                    onValueChange={(v) => updateMatch(index, "prediction", v)}
-                                  >
-                                    <SelectTrigger className="h-8 text-sm bg-background">
-                                      <SelectValue placeholder="Prediction" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Home Win">Home Win (1)</SelectItem>
-                                      <SelectItem value="Draw">Draw (X)</SelectItem>
-                                      <SelectItem value="Away Win">Away Win (2)</SelectItem>
-                                      <SelectItem value="1X">1X</SelectItem>
-                                      <SelectItem value="X2">X2</SelectItem>
-                                      <SelectItem value="12">12</SelectItem>
-                                      <SelectItem value="Over 1.5">Over 1.5</SelectItem>
-                                      <SelectItem value="Over 2.5">Over 2.5</SelectItem>
-                                      <SelectItem value="Under 2.5">Under 2.5</SelectItem>
-                                      <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
-                                      <SelectItem value="BTTS No">BTTS No</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="1"
-                                    placeholder="Odds"
-                                    value={match.odds}
-                                    onChange={(e) => updateMatch(index, "odds", parseFloat(e.target.value) || 1)}
-                                    className="h-8 text-sm bg-background"
-                                  />
+                          <Card key={index} className="p-4 bg-muted/30 border-border hover:border-primary/30 transition-colors">
+                            <div className="flex items-start gap-4">
+                              {/* Match Number */}
+                              <div className="w-7 h-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                                {index + 1}
+                              </div>
+
+                              {/* Match Details */}
+                              <div className="flex-1 space-y-3">
+                                {/* Teams */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-foreground">{match.homeTeam}</span>
+                                  <span className="text-muted-foreground text-sm">vs</span>
+                                  <span className="font-semibold text-foreground">{match.awayTeam}</span>
+                                  {match.league && (
+                                    <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted">
+                                      {match.league}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Prediction & Odds Row */}
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="space-y-1.5">
+                                    <Label className="text-xs text-muted-foreground">Prediction</Label>
+                                    <Select
+                                      value={match.prediction}
+                                      onValueChange={(v) => updateMatch(index, "prediction", v)}
+                                    >
+                                      <SelectTrigger className="h-9 text-sm bg-background">
+                                        <SelectValue placeholder="Select..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Home Win">Home Win (1)</SelectItem>
+                                        <SelectItem value="Draw">Draw (X)</SelectItem>
+                                        <SelectItem value="Away Win">Away Win (2)</SelectItem>
+                                        <SelectItem value="1X">1X</SelectItem>
+                                        <SelectItem value="X2">X2</SelectItem>
+                                        <SelectItem value="12">12</SelectItem>
+                                        <SelectItem value="Over 1.5">Over 1.5</SelectItem>
+                                        <SelectItem value="Over 2.5">Over 2.5</SelectItem>
+                                        <SelectItem value="Under 2.5">Under 2.5</SelectItem>
+                                        <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
+                                        <SelectItem value="BTTS No">BTTS No</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <Label className="text-xs text-muted-foreground">Odds</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="1"
+                                      value={match.odds}
+                                      onChange={(e) => updateMatch(index, "odds", parseFloat(e.target.value) || 1)}
+                                      className="h-9 text-sm bg-background"
+                                    />
+                                  </div>
                                 </div>
                               </div>
+
+                              {/* Remove Button */}
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                                 onClick={() => removeMatch(index)}
                               >
                                 <X className="h-4 w-4" />
@@ -630,25 +680,26 @@ export default function ManageTickets() {
                           </Card>
                         ))}
 
-                        <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
-                          <span className="font-medium text-foreground">Total Odds</span>
-                          <span className="font-bold text-primary">@{totalOdds.toFixed(2)}</span>
+                        {/* Total Odds */}
+                        <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
+                          <span className="font-semibold text-foreground">Total Odds</span>
+                          <span className="text-xl font-bold text-primary">@{totalOdds.toFixed(2)}</span>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
-                </div>
+                </Card>
               </div>
             </ScrollArea>
 
-            <DialogFooter className="px-6 py-4 border-t border-border shrink-0 bg-card">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <DialogFooter className="px-6 py-4 border-t border-border shrink-0 bg-card gap-3">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-11">
                 Cancel
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={!title || matches.length === 0 || matches.some((m) => !m.prediction)}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 h-11 px-6"
               >
                 {editingTicket ? "Update Ticket" : "Create Ticket"}
               </Button>
