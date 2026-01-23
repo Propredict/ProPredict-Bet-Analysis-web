@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -7,12 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useLiveScores, Match, DateMode, StatusFilter } from "@/hooks/useLiveScores";
+import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlerts } from "@/hooks/useMatchAlerts";
-import { useToast } from "@/hooks/use-toast";
 import { format, subDays, addDays } from "date-fns";
 
 const LEAGUES = [
@@ -26,95 +25,55 @@ const LEAGUES = [
   "Europa League",
 ];
 
+type StatusTab = "all" | "live" | "upcoming" | "finished";
+type DateMode = "yesterday" | "today" | "tomorrow";
+
 export default function LiveScores() {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const [statusTab, setStatusTab] = useState<StatusFilter>("all");
+
+  const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const [dateMode, setDateMode] = useState<DateMode>("today");
   const [search, setSearch] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
-  const [dateMode, setDateMode] = useState<DateMode>("today");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [alertsMatch, setAlertsMatch] = useState<Match | null>(null);
 
-  const { matches, previousMatches, isLoading, error, refetch } = useLiveScores(statusTab, dateMode);
-  const { favorites, isFavorite, isSaving, toggleFavorite } = useFavorites();
-  const { alerts, hasAlert, refetch: refetchAlerts } = useMatchAlerts();
+  const { matches, isLoading, error, refetch } = useLiveScores({
+    dateMode,
+    statusFilter: statusTab,
+  });
 
-  // Track previous scores for alert detection
-  const prevMatchesRef = useRef<Map<string, { home: number | null; away: number | null }>>(new Map());
+  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
+  const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
 
-  // Update current time every second
   useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    const i = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(i);
   }, []);
 
-  // Detect score changes and trigger alerts
-  useEffect(() => {
-    if (previousMatches.length === 0 || matches.length === 0) return;
-
-    const prevMap = new Map(previousMatches.map(m => [m.id, m]));
-
-    matches.forEach((current) => {
-      const prev = prevMap.get(current.id);
-      if (!prev) return;
-
-      const alert = alerts.get(current.id);
-      if (!alert) return;
-
-      // Check for goal
-      if (alert.notify_goals) {
-        const prevTotal = (prev.homeScore ?? 0) + (prev.awayScore ?? 0);
-        const currTotal = (current.homeScore ?? 0) + (current.awayScore ?? 0);
-        
-        if (currTotal > prevTotal) {
-          const scorer = (current.homeScore ?? 0) > (prev.homeScore ?? 0) 
-            ? current.homeTeam 
-            : current.awayTeam;
-          
-          toast({
-            title: "⚽ GOAL!",
-            description: `${scorer} scored! ${current.homeTeam} ${current.homeScore} - ${current.awayScore} ${current.awayTeam}`,
-          });
-        }
-      }
-
-      // Check for red card (we detect this if minute increased but score same - simplified detection)
-      // Note: Real red card detection would need events from API
-    });
-  }, [matches, previousMatches, alerts, toast]);
-
-  // Derived counts from matches array
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === "live" || m.status === "halftime").length,
-    [matches]
+    [matches],
   );
 
-  const uniqueLeagues = useMemo(
-    () => new Set(matches.map((m) => m.league)).size,
-    [matches]
-  );
+  const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
 
-  // Filter matches by search and league
   const filtered = useMemo(() => {
     return matches.filter((m) => {
       const q = search.toLowerCase();
-      const matchesSearch =
+      const okSearch =
         m.homeTeam.toLowerCase().includes(q) ||
         m.awayTeam.toLowerCase().includes(q) ||
         m.league.toLowerCase().includes(q) ||
         m.leagueCountry?.toLowerCase().includes(q);
 
-      const matchesLeague =
-        leagueFilter === "All Leagues" || m.league.includes(leagueFilter);
+      const okLeague = leagueFilter === "All Leagues" || m.league.includes(leagueFilter);
 
-      return matchesSearch && matchesLeague;
+      return okSearch && okLeague;
     });
   }, [matches, search, leagueFilter]);
 
-  // Group by league
   const grouped = useMemo(() => {
     return filtered.reduce(
       (acc, m) => {
@@ -122,406 +81,210 @@ export default function LiveScores() {
         acc[m.league].push(m);
         return acc;
       },
-      {} as Record<string, Match[]>
+      {} as Record<string, Match[]>,
     );
   }, [filtered]);
+
+  const getDateLabel = (d: DateMode) => {
+    const now = new Date();
+    if (d === "yesterday") return format(subDays(now, 1), "MMM d");
+    if (d === "tomorrow") return format(addDays(now, 1), "MMM d");
+    return format(now, "MMM d");
+  };
 
   const handleRefresh = () => {
     refetch();
     refetchAlerts();
   };
 
-  const handleFavoriteClick = useCallback((e: React.MouseEvent, matchId: string) => {
-    e.stopPropagation();
-    toggleFavorite(matchId, navigate);
-  }, [toggleFavorite, navigate]);
-
-  const handleAlertClick = useCallback((e: React.MouseEvent, match: Match) => {
-    e.stopPropagation();
-    setAlertsMatch(match);
-  }, []);
-
-  const getDateLabel = (option: DateMode) => {
-    const today = new Date();
-    switch (option) {
-      case "yesterday":
-        return format(subDays(today, 1), "MMM d");
-      case "today":
-        return format(today, "MMM d");
-      case "tomorrow":
-        return format(addDays(today, 1), "MMM d");
-    }
-  };
-
-  // Status tabs configuration
-  const statusTabs: Array<{
-    value: StatusFilter;
-    label: string;
-    shortLabel: string;
-    icon: typeof Trophy | typeof Play | null;
-    showBadge: boolean;
-  }> = [
-    { value: "all", label: "All Matches", shortLabel: "All", icon: Trophy, showBadge: false },
-    { value: "live", label: "Live Now", shortLabel: "Live", icon: Play, showBadge: true },
-    { value: "upcoming", label: "Upcoming", shortLabel: "Soon", icon: null, showBadge: false },
-    { value: "finished", label: "Finished", shortLabel: "Done", icon: null, showBadge: false },
-  ];
+  const handleFavorite = useCallback(
+    (e: React.MouseEvent, id: string) => {
+      e.stopPropagation();
+      toggleFavorite(id, navigate);
+    },
+    [toggleFavorite, navigate],
+  );
 
   return (
     <DashboardLayout>
       <div className="space-y-5">
-        {/* STICKY HEADER */}
-        <div className="sticky top-0 z-20 -mx-4 px-4 py-4 bg-[#0B1220]/95 backdrop-blur-md border-b border-white/5">
-          <div className="flex items-center justify-between">
+        {/* HEADER */}
+        <div className="sticky top-0 z-20 bg-[#0B1220]/95 backdrop-blur border-b border-white/5 px-4 py-4 -mx-4">
+          <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                <h1 className="text-xl font-bold text-foreground">Live Scores</h1>
+                <Zap className="text-primary" />
+                <h1 className="text-xl font-bold">Live Scores</h1>
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Real-time match updates • Pull down to refresh
-              </p>
+              <p className="text-sm text-muted-foreground">Real-time match updates • Pull down to refresh</p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Current time badge */}
-              <Badge 
-                variant="outline" 
-                className="bg-[#0F172A] border-white/10 text-muted-foreground font-mono"
-              >
+            <div className="flex gap-2 items-center">
+              <Badge variant="outline" className="font-mono">
                 {format(currentTime, "HH:mm")}
               </Badge>
-
-              {/* Refresh button */}
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={handleRefresh}
-                className="border-white/10 hover:bg-primary/10 hover:border-primary/50"
-              >
+              <Button variant="outline" size="icon" onClick={handleRefresh}>
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
               </Button>
-
-              {/* Alerts button */}
-              <Button 
+              <Button
                 onClick={() => {
-                  // Open alerts for the first live match, or first match if none live
-                  const firstMatch = matches.find(m => m.status === "live") || matches[0];
-                  if (firstMatch) setAlertsMatch(firstMatch);
+                  const m = matches.find((m) => m.status === "live") || matches[0];
+                  if (m) setAlertsMatch(m);
                 }}
-                className="bg-primary hover:bg-primary/90"
               >
-                <Bell className="h-4 w-4 mr-1.5" />
+                <Bell className="h-4 w-4 mr-1" />
                 Alerts
               </Button>
             </div>
           </div>
         </div>
 
-        {/* STATS CARDS */}
+        {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
-          {/* Live Now */}
-          <Card className="p-4 bg-[#0F172A] border-white/5 hover:border-white/10 transition-colors">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Live Now</p>
-                <p className="text-2xl font-bold text-destructive mt-1">{liveCount}</p>
-              </div>
-              <div className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center",
-                "bg-destructive/10",
-                liveCount > 0 && "animate-pulse"
-              )}>
-                <Play className="h-5 w-5 text-destructive fill-destructive" />
-              </div>
-            </div>
-          </Card>
-
-          {/* Total Matches */}
-          <Card className="p-4 bg-[#0F172A] border-white/5 hover:border-white/10 transition-colors">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Matches</p>
-                <p className="text-2xl font-bold text-primary mt-1">{matches.length}</p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </Card>
-
-          {/* Leagues */}
-          <Card className="p-4 bg-[#0F172A] border-white/5 hover:border-white/10 transition-colors">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Leagues</p>
-                <p className="text-2xl font-bold text-warning mt-1">{uniqueLeagues}</p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-warning" />
-              </div>
-            </div>
-          </Card>
+          <StatCard title="Live Now" value={liveCount} color="destructive" icon={Play} pulse />
+          <StatCard title="Total Matches" value={matches.length} color="primary" icon={BarChart3} />
+          <StatCard title="Leagues" value={leaguesCount} color="warning" icon={Trophy} />
         </div>
 
-        {/* LEAGUE FILTER PILLS */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
-          {LEAGUES.map((league) => (
+        {/* LEAGUES */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {LEAGUES.map((l) => (
             <Button
-              key={league}
+              key={l}
               size="sm"
-              variant={leagueFilter === league ? "default" : "outline"}
-              onClick={() => setLeagueFilter(league)}
-              className={cn(
-                "whitespace-nowrap shrink-0 transition-all",
-                leagueFilter === league
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border-white/10 text-muted-foreground hover:bg-primary/10 hover:text-foreground hover:border-primary/30"
-              )}
+              variant={leagueFilter === l ? "default" : "outline"}
+              onClick={() => setLeagueFilter(l)}
             >
-              {league}
+              {l}
             </Button>
           ))}
         </div>
 
-        {/* DATE SELECTOR */}
+        {/* DATE */}
         <div className="flex gap-2">
-          {(["yesterday", "today", "tomorrow"] as DateMode[]).map((option) => (
+          {(["yesterday", "today", "tomorrow"] as DateMode[]).map((d) => (
             <Button
-              key={option}
-              size="sm"
-              variant={dateMode === option ? "default" : "outline"}
-              onClick={() => setDateMode(option)}
-              className={cn(
-                "flex-1 flex-col h-auto py-2",
-                dateMode === option
-                  ? "bg-primary text-primary-foreground"
-                  : "border-white/10 text-muted-foreground hover:bg-primary/10"
-              )}
+              key={d}
+              variant={dateMode === d ? "default" : "outline"}
+              onClick={() => setDateMode(d)}
+              className="flex-1 flex-col"
             >
-              <span className="capitalize text-xs">{option}</span>
-              <span className="text-[10px] opacity-70">{getDateLabel(option)}</span>
+              <span className="capitalize">{d}</span>
+              <span className="text-xs opacity-70">{getDateLabel(d)}</span>
             </Button>
           ))}
         </div>
 
-        {/* SEARCH BAR */}
+        {/* SEARCH */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
+            className="pl-10"
             placeholder="Search teams, leagues, countries…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-[#0F172A] border-white/10 focus:border-primary/50 focus:ring-primary/20"
           />
         </div>
 
-        {/* STATUS FILTER TABS */}
-        <div className="flex gap-1 p-1 bg-[#0F172A] rounded-lg border border-white/5">
-          {statusTabs.map((tab) => (
-            <Button
-              key={tab.value}
-              size="sm"
-              variant="ghost"
-              onClick={() => setStatusTab(tab.value)}
-              className={cn(
-                "flex-1 gap-1.5 transition-all",
-                statusTab === tab.value
-                  ? "bg-[#1E293B] text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-              )}
-            >
-              {tab.icon && <tab.icon className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.shortLabel}</span>
-              {tab.showBadge && liveCount > 0 && (
-                <Badge className="bg-destructive text-destructive-foreground h-5 px-1.5 text-[10px]">
-                  {liveCount}
-                </Badge>
-              )}
-            </Button>
-          ))}
-        </div>
-
-        {/* LOADING / ERROR STATES */}
-        {isLoading && !matches.length && (
-          <Card className="p-10 text-center bg-[#0F172A] border-white/5">
-            <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-            <p className="mt-2 text-muted-foreground">Loading matches…</p>
-          </Card>
-        )}
-
-        {error && (
-          <Card className="p-10 text-center bg-[#0F172A] border-destructive/20">
-            <p className="text-destructive">{error}</p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
-              Try Again
-            </Button>
-          </Card>
-        )}
-
-        {/* Auto-refresh indicator */}
-        {isLoading && matches.length > 0 && (
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <RefreshCw className="h-3 w-3 animate-spin" />
-            <span>Updating…</span>
-          </div>
-        )}
-
-        {/* MATCH LIST GROUPED BY LEAGUE */}
+        {/* MATCHES */}
         {Object.entries(grouped).map(([league, games]) => (
-          <Card key={league} className="bg-[#0F172A] border-white/5 overflow-hidden">
-            {/* League Header */}
-            <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-[#0B1220]/50">
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-primary" />
-                <span className="font-semibold text-foreground">{league}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Live sync enabled</span>
-                <Badge variant="secondary" className="bg-white/5 text-muted-foreground">
-                  {games.length}
-                </Badge>
-              </div>
+          <Card key={league}>
+            <div className="px-4 py-2 border-b border-white/5 flex justify-between">
+              <span className="font-semibold">{league}</span>
+              <Badge variant="secondary">{games.length}</Badge>
             </div>
 
-            {/* Match Rows */}
-            <div className="divide-y divide-white/5">
-              {games.map((m) => {
-                const matchIsFavorite = isFavorite(m.id);
-                const matchHasAlert = hasAlert(m.id);
-                const matchIsSaving = isSaving(m.id);
+            {games.map((m) => (
+              <div
+                key={m.id}
+                onClick={() => setSelectedMatch(m)}
+                className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer"
+              >
+                <button onClick={(e) => handleFavorite(e, m.id)} disabled={isSaving(m.id)}>
+                  <Star
+                    className={cn("h-4 w-4", isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground")}
+                  />
+                </button>
 
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => setSelectedMatch(m)}
-                    className="px-4 py-3 flex items-center gap-3 hover:bg-white/[0.02] cursor-pointer transition-colors"
-                  >
-                    {/* Favorite Star */}
-                    <button
-                      onClick={(e) => handleFavoriteClick(e, m.id)}
-                      disabled={matchIsSaving}
-                      className={cn(
-                        "p-1 hover:bg-white/10 rounded transition-colors",
-                        matchIsSaving && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <Star
-                        className={cn(
-                          "h-4 w-4 transition-colors",
-                          matchIsFavorite
-                            ? "text-primary fill-primary"
-                            : "text-muted-foreground hover:text-primary"
-                        )}
-                      />
-                    </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAlertsMatch(m);
+                  }}
+                >
+                  <Bell
+                    className={cn("h-4 w-4", hasAlert(m.id) ? "text-primary fill-primary" : "text-muted-foreground")}
+                  />
+                </button>
 
-                    {/* Alert Bell */}
-                    <button
-                      onClick={(e) => handleAlertClick(e, m)}
-                      className="p-1 hover:bg-white/10 rounded transition-colors"
-                    >
-                      <Bell
-                        className={cn(
-                          "h-4 w-4 transition-colors",
-                          matchHasAlert
-                            ? "text-primary fill-primary"
-                            : "text-muted-foreground hover:text-primary"
-                        )}
-                      />
-                    </button>
+                <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
+                  <span className="text-right">{m.homeTeam}</span>
+                  <span className="font-bold px-3">
+                    {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                  </span>
+                  <span>{m.awayTeam}</span>
+                </div>
 
-                    {/* Teams and Score */}
-                    <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                      <span className="text-right text-sm font-medium text-foreground truncate">
-                        {m.homeTeam}
-                      </span>
-                      <span className="font-bold text-lg px-3 text-center min-w-[60px]">
-                        {m.status === "upcoming" ? (
-                          <span className="text-muted-foreground text-sm">vs</span>
-                        ) : (
-                          <>
-                            {m.homeScore ?? 0}
-                            <span className="text-muted-foreground mx-1">-</span>
-                            {m.awayScore ?? 0}
-                          </>
-                        )}
-                      </span>
-                      <span className="text-left text-sm font-medium text-foreground truncate">
-                        {m.awayTeam}
-                      </span>
-                    </div>
-
-                    {/* Status Badge */}
-                    <StatusBadge match={m} />
-                  </div>
-                );
-              })}
-            </div>
+                <StatusBadge match={m} />
+              </div>
+            ))}
           </Card>
         ))}
 
-        {/* Empty state */}
-        {!isLoading && !error && Object.keys(grouped).length === 0 && (
-          <Card className="p-10 text-center bg-[#0F172A] border-white/5">
-            <Trophy className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No matches found</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Try adjusting your filters or search
-            </p>
-          </Card>
-        )}
+        {!isLoading && !error && matches.length === 0 && <Card className="p-10 text-center">No matches</Card>}
+
+        {error && <Card className="p-6 text-center text-destructive">{error}</Card>}
       </div>
 
-      {/* Modals */}
-      <MatchDetailModal
-        match={selectedMatch}
-        onClose={() => setSelectedMatch(null)}
-      />
-
+      <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
       <MatchAlertsModal
         match={alertsMatch}
         onClose={() => {
           setAlertsMatch(null);
-          refetchAlerts(); // Refresh alerts after modal closes
+          refetchAlerts();
         }}
       />
     </DashboardLayout>
   );
 }
 
-/* Status Badge Component */
+/* ---------- helpers ---------- */
+
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+  pulse,
+}: {
+  title: string;
+  value: number;
+  icon: any;
+  color: string;
+  pulse?: boolean;
+}) {
+  return (
+    <Card className="p-4 flex justify-between items-center">
+      <div>
+        <p className="text-xs text-muted-foreground">{title}</p>
+        <p className={`text-2xl font-bold text-${color}`}>{value}</p>
+      </div>
+      <div className={cn("p-2 rounded-full", pulse && "animate-pulse")}>
+        <Icon />
+      </div>
+    </Card>
+  );
+}
+
 function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
-    return (
-      <Badge className="bg-destructive/90 text-destructive-foreground animate-pulse min-w-[80px] justify-center">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-pulse" />
-        LIVE {match.minute}'
-      </Badge>
-    );
+    return <Badge className="bg-destructive animate-pulse">LIVE {match.minute}'</Badge>;
   }
-
   if (match.status === "halftime") {
-    return (
-      <Badge className="bg-warning text-warning-foreground min-w-[50px] justify-center">
-        HT
-      </Badge>
-    );
+    return <Badge className="bg-warning">HT</Badge>;
   }
-
   if (match.status === "finished") {
-    return (
-      <Badge variant="secondary" className="bg-white/10 text-muted-foreground min-w-[50px] justify-center">
-        FT
-      </Badge>
-    );
+    return <Badge variant="secondary">FT</Badge>;
   }
-
-  // Upcoming
-  return (
-    <Badge variant="outline" className="border-white/20 text-muted-foreground min-w-[60px] justify-center">
-      {match.startTime}
-    </Badge>
-  );
+  return <Badge variant="outline">{match.startTime}</Badge>;
 }
