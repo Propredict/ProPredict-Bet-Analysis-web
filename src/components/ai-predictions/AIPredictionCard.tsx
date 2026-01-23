@@ -13,12 +13,7 @@ interface Props {
 }
 
 export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPremium }: Props) {
-  const locked = prediction.is_locked && !isPremiumUser;
-
-  const formatTime = (time: string | null) => {
-    if (!time || time === "LIVE") return time;
-    return time;
-  };
+  const locked = prediction.isLocked && !isPremiumUser;
 
   return (
     <Card className="relative bg-card border-border overflow-hidden">
@@ -26,23 +21,27 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
       <div className="p-3 flex justify-between text-xs text-muted-foreground">
         <span>{prediction.league}</span>
         <span>
-          {prediction.match_day === "today" ? "Today" : "Tomorrow"} · {formatTime(prediction.match_time)}
+          {prediction.matchDay === "today" ? "Today" : "Tomorrow"} ·{" "}
+          {new Date(prediction.matchTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </span>
       </div>
 
       {/* TEAMS */}
       <div className="px-4 pb-2 text-center font-semibold">
-        {prediction.home_team}
+        {prediction.homeTeam}
         <div className="text-xs text-muted-foreground my-1">VS</div>
-        {prediction.away_team}
+        {prediction.awayTeam}
       </div>
 
-      {/* PROBABILITIES */}
+      {/* PROBABILITIES (ALWAYS VISIBLE) */}
       <div className="px-4 pb-4 space-y-2">
         {[
-          { label: prediction.home_team, value: prediction.home_win },
-          { label: "Draw", value: prediction.draw },
-          { label: prediction.away_team, value: prediction.away_win },
+          { label: prediction.homeTeam, value: prediction.homeWinProbability },
+          { label: "Draw", value: prediction.drawProbability },
+          { label: prediction.awayTeam, value: prediction.awayWinProbability },
         ].map((p, i) => (
           <div key={i} className="flex items-center gap-2 text-xs">
             <span className="w-24 truncate">{p.label}</span>
@@ -54,26 +53,24 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
         ))}
       </div>
 
-      {/* AI DETAILS - BLURRED WHEN LOCKED */}
+      {/* AI DETAILS (BLUR ONLY THIS) */}
       <div className={cn("px-4 pb-4", locked && "blur-sm")}>
         <div className="grid grid-cols-4 text-center text-xs bg-muted/50 p-2 rounded">
           <div>
-            <div className="text-muted-foreground">Pick</div>
-            <strong>{prediction.prediction}</strong>
+            <div>Pick</div>
+            <strong>{prediction.predictedOutcome}</strong>
           </div>
           <div>
-            <div className="text-muted-foreground">Score</div>
-            <strong>{prediction.predicted_score}</strong>
+            <div>Score</div>
+            <strong>{prediction.predictedScore}</strong>
           </div>
           <div>
-            <div className="text-muted-foreground">Conf</div>
+            <div>Conf</div>
             <strong>{prediction.confidence}%</strong>
           </div>
           <div>
-            <div className="text-muted-foreground">Risk</div>
-            <Badge variant="outline" className="text-xs">
-              {prediction.risk_level}
-            </Badge>
+            <div>Risk</div>
+            <Badge>{prediction.riskLevel}</Badge>
           </div>
         </div>
       </div>
@@ -81,14 +78,14 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
       {/* LOCK OVERLAY */}
       {locked && (
         <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-3">
-          <Lock className="h-6 w-6" />
-          {prediction.is_premium ? (
-            <Button onClick={onBuyPremium} size="sm">
+          <Lock />
+          {prediction.isPremium ? (
+            <Button onClick={onBuyPremium}>
               <Crown className="h-4 w-4 mr-2" />
               Premium Only
             </Button>
           ) : (
-            <Button onClick={onWatchAd} size="sm">
+            <Button onClick={onWatchAd}>
               <Play className="h-4 w-4 mr-2" />
               Watch Ad to Unlock
             </Button>
