@@ -203,14 +203,19 @@ export default function LiveScores() {
         </div>
 
         {/* SEARCH */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            className="pl-10 bg-[#0E1627]"
-            placeholder="Search teams, leagues…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-orange-500/20 to-green-500/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative flex items-center">
+            <div className="absolute left-3 h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <Search className="h-4 w-4 text-green-400" />
+            </div>
+            <Input
+              className="pl-14 pr-4 py-6 bg-gradient-to-r from-[#0E1627] to-[#0E1627]/80 border-green-500/30 focus:border-green-500/50 rounded-xl text-base placeholder:text-muted-foreground/60"
+              placeholder="Search teams, leagues…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* MATCHES */}
