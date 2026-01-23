@@ -13,13 +13,24 @@ interface Props {
 }
 
 export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPremium }: Props) {
-  const locked = prediction.isLocked && !isPremiumUser;
+  const isPremiumPick = prediction.confidence >= 60;
+
+  const locked = !isPremiumUser && (isPremiumPick || prediction.isLocked);
 
   return (
     <Card className="relative bg-card border-border overflow-hidden">
       {/* HEADER */}
       <div className="p-3 flex justify-between text-xs text-muted-foreground">
-        <span>{prediction.league}</span>
+        <span className="flex items-center gap-2">
+          {prediction.league}
+          {isPremiumPick && (
+            <Badge className="bg-yellow-500/20 text-yellow-400">
+              <Crown className="h-3 w-3 mr-1" />
+              Premium
+            </Badge>
+          )}
+        </span>
+
         <span>
           {prediction.matchDay === "today" ? "Today" : "Tomorrow"} ·{" "}
           {new Date(prediction.matchTime).toLocaleTimeString([], {
@@ -30,31 +41,31 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
       </div>
 
       {/* TEAMS */}
-      <div className="px-4 pb-2 text-center font-semibold">
+      <div className="p-4 text-center font-semibold">
         {prediction.homeTeam}
         <div className="text-xs text-muted-foreground my-1">VS</div>
         {prediction.awayTeam}
       </div>
 
-      {/* PROBABILITIES (ALWAYS VISIBLE) */}
-      <div className="px-4 pb-4 space-y-2">
+      {/* PROBABILITIES – ALWAYS VISIBLE */}
+      <div className="px-4 space-y-2">
         {[
-          { label: prediction.homeTeam, value: prediction.homeWinProbability },
-          { label: "Draw", value: prediction.drawProbability },
-          { label: prediction.awayTeam, value: prediction.awayWinProbability },
-        ].map((p, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs">
-            <span className="w-24 truncate">{p.label}</span>
+          { label: "1", value: prediction.homeWinProbability },
+          { label: "X", value: prediction.drawProbability },
+          { label: "2", value: prediction.awayWinProbability },
+        ].map((p) => (
+          <div key={p.label} className="flex items-center gap-2">
+            <span className="w-4 text-xs">{p.label}</span>
             <div className="flex-1 h-2 bg-muted rounded">
-              <div className="h-full bg-primary rounded" style={{ width: `${p.value}%` }} />
+              <div className="h-full bg-primary" style={{ width: `${p.value}%` }} />
             </div>
-            <span className="w-10 text-right">{p.value}%</span>
+            <span className="w-8 text-xs text-right">{locked ? "?" : `${p.value}%`}</span>
           </div>
         ))}
       </div>
 
-      {/* AI DETAILS (BLUR ONLY THIS) */}
-      <div className={cn("px-4 pb-4", locked && "blur-sm")}>
+      {/* AI DETAILS (BLURRED IF LOCKED) */}
+      <div className={cn("p-4 mt-3", locked && "blur-sm")}>
         <div className="grid grid-cols-4 text-center text-xs bg-muted/50 p-2 rounded">
           <div>
             <div>Pick</div>
@@ -77,12 +88,13 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
 
       {/* LOCK OVERLAY */}
       {locked && (
-        <div className="absolute inset-0 bg-background/70 flex flex-col items-center justify-center gap-3">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-3">
           <Lock />
-          {prediction.isPremium ? (
+
+          {isPremiumPick ? (
             <Button onClick={onBuyPremium}>
               <Crown className="h-4 w-4 mr-2" />
-              Premium Only
+              Get Premium
             </Button>
           ) : (
             <Button onClick={onWatchAd}>
