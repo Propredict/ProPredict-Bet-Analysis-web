@@ -1,199 +1,130 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Star,
-  ChevronDown,
-  ChevronUp,
-  Crown,
-  Target,
-  Sparkles,
-  Brain,
-  TrendingUp,
-  AlertTriangle,
-  Loader2,
-  Zap,
-  Radio,
-  Lock,
-  Eye,
-  Clock,
-} from "lucide-react";
+import { Brain, Crown, Eye, ChevronDown, ChevronUp, Clock, Star, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import AddToBetSlipButton from "@/components/AddToBetSlipButton";
-import { useRealAIPredictions, RealAIPrediction } from "@/hooks/useRealAIPredictions";
-import RewardedAdModal from "@/components/RewardedAdModal";
-import { useAdMob } from "@/hooks/useAdMob";
+import { useAIPredictions } from "@/hooks/useAIPredictions";
 
 interface Match {
   id: string;
   home_team_name: string;
   away_team_name: string;
-  home_team_id: string | null;
-  away_team_id: string | null;
-  home_goals: number | null;
-  away_goals: number | null;
   league_name: string | null;
-  match_date: string;
-  match_time: string | null;
-  status: string | null;
+  match_date: string; // YYYY-MM-DD
+  match_time: string | null; // HH:mm
+  is_pro: boolean;
 }
 
-interface LiveUpdate {
-  isLive: boolean;
-  elapsedTime?: number;
-  homeGoals?: number | null;
-  awayGoals?: number | null;
-}
-
-interface AIPredictionCardProps {
+interface Props {
   match: Match;
-  isPremium: boolean;
-  isProMatch: boolean;
+  isPremium: boolean; // premium OR admin
   isFavorite: boolean;
   onToggleFavorite: () => void;
-  liveUpdate?: LiveUpdate;
+  onGoPremium: () => void;
 }
 
-/* =======================
-   Local unlock via ads
-======================= */
-const getUnlocked = (): Set<string> => {
-  try {
-    return new Set(JSON.parse(localStorage.getItem("unlocked_predictions") || "[]"));
-  } catch {
-    return new Set();
-  }
+/* =========================
+   Helpers
+========================= */
+
+const getLocalDateLabel = (date: string, time?: string | null) => {
+  const d = new Date(`${date}T${time || "12:00"}`);
+  return d.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+  });
 };
 
-const saveUnlocked = (id: string) => {
-  const set = getUnlocked();
-  set.add(id);
-  localStorage.setItem("unlocked_predictions", JSON.stringify([...set]));
+const getCountdown = (date: string, time?: string | null) => {
+  if (!time) return null;
+  const now = new Date();
+  const start = new Date(`${date}T${time}`);
+  const diff = start.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return `Starts in ${h}h ${m}m`;
 };
 
-export const AIPredictionCard = ({
-  match,
-  isPremium,
-  isProMatch,
-  isFavorite,
-  onToggleFavorite,
-  liveUpdate,
-}: AIPredictionCardProps) => {
-  const { fetchPrediction, isLoading } = useRealAIPredictions();
-  const { showRewardedAd } = useAdMob();
+/* =========================
+   Component
+========================= */
 
-  const [prediction, setPrediction] = useState<RealAIPrediction | null>(null);
+export function AIPredictionCard({ match, isPremium, isFavorite, onToggleFavorite, onGoPremium }: Props) {
+  const { fetchPrediction, loading } = useAIPredictions();
+
+  const [ai, setAi] = useState<any | null>(null);
   const [showAI, setShowAI] = useState(false);
-  const [showAd, setShowAd] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
-  const loading = isLoading(match.id);
-  const isLive = liveUpdate?.isLive || ["LIVE", "1H", "2H", "HT"].some((s) => match.status?.toUpperCase().includes(s));
-
-  /* =======================
-     DATE + COUNTDOWN
-  ======================= */
-  const getDateLabel = () => {
-    const d = new Date(`${match.match_date}T${match.match_time || "00:00"}`);
-    return d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
-  };
-
-  const getCountdown = () => {
-    if (!match.match_time) return null;
-    const now = new Date();
-    const start = new Date(`${match.match_date}T${match.match_time}`);
-    const diff = start.getTime() - now.getTime();
-    if (diff <= 0) return null;
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    return `Starts in ${h}h ${m}m`;
-  };
-
-  /* =======================
-     Unlock logic
-  ======================= */
-  useEffect(() => {
-    if (!isProMatch && !isPremium) {
-      setUnlocked(getUnlocked().has(match.id));
-    }
-  }, [match.id, isProMatch, isPremium]);
-
+  const isProMatch = match.is_pro;
   const canView = isPremium || (!isProMatch && unlocked);
 
-  /* =======================
-     Fetch AI prediction
-  ======================= */
+  /* =========================
+     Fetch AI from Supabase
+  ========================= */
+
   useEffect(() => {
-    fetchPrediction({
-      id: match.id,
-      homeTeam: match.home_team_name,
-      awayTeam: match.away_team_name,
-      league: match.league_name || "",
-      matchDate: match.match_date,
-      matchTime: match.match_time || undefined,
-    }).then((res) => res && setPrediction(res));
-  }, []);
+    fetchPrediction(
+      match.id,
+      {
+        homeTeam: match.home_team_name,
+        awayTeam: match.away_team_name,
+        league: match.league_name || "",
+        matchDate: match.match_date,
+        matchTime: match.match_time || undefined,
+      },
+      "default",
+    ).then((res) => {
+      if (res) setAi(res);
+    });
+  }, [match.id]);
 
-  if (loading && !prediction) {
-    return (
-      <Card className="bg-card">
-        <CardContent className="p-6 flex justify-center">
-          <Loader2 className="animate-spin" />
-        </CardContent>
-      </Card>
-    );
-  }
+  /* =========================
+     Derived UI flags
+  ========================= */
 
-  const p = prediction || {
-    prediction: "Over 2.5",
-    confidence: 72,
-    odds_estimate: 2.15,
-    risk_level: "high",
-    homeWin: 45,
-    draw: 20,
-    awayWin: 35,
-    predictedScore: "?-?",
-    key_factors: [],
-    analysis: "",
-  };
+  const predictionText = ai?.prediction || "—";
+  const confidence = ai?.confidence || 0;
 
-  /* =======================
-     BADGES
-  ======================= */
-  const isOver = p.prediction.includes("Over");
-  const isBTTS = p.prediction.includes("BTTS");
-  const isValue = p.odds_estimate >= 2.2;
+  const isOver = predictionText.toLowerCase().includes("over");
+  const isBTTS = predictionText.toLowerCase().includes("btts");
+  const isValue = ai?.recommendation?.toLowerCase().includes("value");
+  const isHighRisk = ai?.recommendation?.toLowerCase().includes("risk");
+
+  /* =========================
+     Render
+  ========================= */
 
   return (
-    <Card className={cn("bg-card border-border/50", isLive && "ring-1 ring-red-500/30")}>
+    <Card className="bg-card border-border/50 hover:border-primary/30 transition">
       <CardContent className="p-4">
         {/* HEADER */}
-        <div className="flex justify-between mb-2">
-          <div className="flex gap-2 flex-wrap items-center">
-            {isLive ? (
-              <Badge className="bg-red-500 text-white animate-pulse">
-                <Radio className="w-3 h-3 mr-1" /> LIVE
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-primary/10 text-primary">
-                <Brain className="w-3 h-3 mr-1" /> AI
-              </Badge>
-            )}
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            <Badge variant="outline" className="bg-primary/10 text-primary">
+              <Brain className="w-3 h-3 mr-1" />
+              AI Prediction
+            </Badge>
 
             {isProMatch && (
               <Badge className="bg-amber-500/20 text-amber-400">
-                <Crown className="w-3 h-3 mr-1" /> PRO
+                <Crown className="w-3 h-3 mr-1" />
+                PRO
               </Badge>
             )}
 
             {isOver && <Badge className="bg-indigo-500/20 text-indigo-300">Over 2.5</Badge>}
+
             {isBTTS && <Badge className="bg-cyan-500/20 text-cyan-300">BTTS</Badge>}
+
             {isValue && <Badge className="bg-emerald-500/20 text-emerald-300">Value</Badge>}
 
-            {!isLive && getCountdown() && (
-              <Badge variant="outline" className="text-xs">
-                <Clock className="w-3 h-3 mr-1" /> {getCountdown()}
+            {isHighRisk && (
+              <Badge className="bg-red-500/20 text-red-400">
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                High Risk
               </Badge>
             )}
           </div>
@@ -204,105 +135,85 @@ export const AIPredictionCard = ({
           />
         </div>
 
-        {/* MATCH */}
-        <h3 className="font-semibold text-sm mb-1">
-          {match.home_team_name} vs {match.away_team_name}
-        </h3>
-        <p className="text-xs text-muted-foreground mb-3">
-          {match.league_name} · {getDateLabel()} · {match.match_time?.slice(0, 5)}
-        </p>
+        {/* MATCH INFO */}
+        <div className="mb-3">
+          <h3 className="font-semibold text-sm">
+            {match.home_team_name} vs {match.away_team_name}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {match.league_name} · {getLocalDateLabel(match.match_date, match.match_time)} · {match.match_time || "TBD"}
+          </p>
 
-        {/* PROBABILITY */}
-        <div className="space-y-2 mb-4">
-          {[
-            [match.home_team_name, p.homeWin, "primary"],
-            ["Draw", p.draw, "muted"],
-            [match.away_team_name, p.awayWin, "accent"],
-          ].map(([label, val, color]: any) => (
-            <div key={label}>
-              <div className="flex justify-between text-xs mb-1">
-                <span>{label}</span>
-                <span>{val}%</span>
-              </div>
-              <div className="h-2 bg-muted rounded">
-                <div className={`h-full rounded bg-${color}`} style={{ width: `${val}%` }} />
-              </div>
-            </div>
-          ))}
+          {getCountdown(match.match_date, match.match_time) && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {getCountdown(match.match_date, match.match_time)}
+            </p>
+          )}
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-4 gap-2 text-center border-y py-2 mb-3">
-          <div>
-            <p className="text-[10px]">Pick</p>
-            <Badge className={cn(!canView && "blur-sm")}>{p.prediction}</Badge>
+        {/* CONFIDENCE */}
+        <div className="mb-4">
+          <div className="flex justify-between text-xs mb-1">
+            <span>Confidence</span>
+            <span>{confidence}%</span>
           </div>
-          <div>
-            <p className="text-[10px]">Score</p>
-            <p className={cn("font-bold", !canView && "blur-sm")}>{p.predictedScore}</p>
-          </div>
-          <div>
-            <p className="text-[10px]">Conf</p>
-            <p className="font-bold">{p.confidence}%</p>
-          </div>
-          <div>
-            <p className="text-[10px]">Risk</p>
-            <Badge
-              className={cn(
-                p.risk_level === "high" && "bg-red-500/20 text-red-400",
-                p.risk_level === "medium" && "bg-amber-500/20 text-amber-400",
-                p.risk_level === "low" && "bg-emerald-500/20 text-emerald-400",
-              )}
-            >
-              {p.risk_level}
-            </Badge>
+          <div className="h-2 bg-muted rounded">
+            <div className="h-full bg-primary rounded transition-all" style={{ width: `${confidence}%` }} />
           </div>
         </div>
 
-        {/* UNLOCK */}
+        {/* PREDICTION */}
+        <div className="mb-4">
+          <div className="text-xs text-muted-foreground mb-1">AI Pick</div>
+          <div className={cn("text-lg font-bold", !canView && "blur-sm select-none")}>{predictionText}</div>
+        </div>
+
+        {/* ACTIONS */}
         {!canView && isProMatch && (
-          <Button className="w-full bg-amber-500" asChild>
-            <a href="/get-premium">
-              <Crown className="w-4 h-4 mr-2" /> Get AI Pro
-            </a>
+          <Button className="w-full bg-amber-500" onClick={onGoPremium}>
+            <Crown className="w-4 h-4 mr-2" />
+            Get AI Pro
           </Button>
         )}
 
         {!canView && !isProMatch && (
-          <Button variant="outline" className="w-full" onClick={() => setShowAd(true)}>
-            <Eye className="w-4 h-4 mr-2" /> Watch Ad to Unlock
+          <Button variant="outline" className="w-full" onClick={() => setUnlocked(true)}>
+            <Eye className="w-4 h-4 mr-2" />
+            Watch Ad to Unlock
           </Button>
         )}
 
         {/* AI ANALYSIS */}
-        {canView && (
-          <button onClick={() => setShowAI(!showAI)} className="w-full mt-3 text-sm flex justify-between">
-            <span className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" /> AI Analysis
-            </span>
-            {showAI ? <ChevronUp /> : <ChevronDown />}
-          </button>
+        {canView && ai && (
+          <>
+            <button
+              onClick={() => setShowAI(!showAI)}
+              className="w-full mt-3 text-sm flex justify-between items-center"
+            >
+              <span className="flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                AI Analysis
+              </span>
+              {showAI ? <ChevronUp /> : <ChevronDown />}
+            </button>
+
+            {showAI && (
+              <div className="mt-3 text-sm text-muted-foreground space-y-2">
+                <p>{ai.reasoning}</p>
+
+                {ai.keyFactors?.length > 0 && (
+                  <ul className="list-disc pl-4">
+                    {ai.keyFactors.map((f: string, i: number) => (
+                      <li key={i}>{f}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </>
         )}
-
-        {showAI && canView && <div className="mt-3 text-xs text-muted-foreground">{p.analysis}</div>}
       </CardContent>
-
-      <RewardedAdModal
-        open={showAd}
-        onClose={() => setShowAd(false)}
-        onWatchAd={async () => {
-          const ok = await showRewardedAd();
-          if (ok) {
-            saveUnlocked(match.id);
-            setUnlocked(true);
-            setShowAd(false);
-          }
-        }}
-        title="Unlock Prediction"
-        description="Watch a short ad to unlock this AI prediction"
-      />
     </Card>
   );
-};
-
-export default AIPredictionCard;
+}
