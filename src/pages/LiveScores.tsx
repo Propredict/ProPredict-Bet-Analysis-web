@@ -35,9 +35,9 @@ export default function LiveScores() {
 
   const filteredMatches = useMemo(() => {
     return matches.filter((m) => {
-      if (statusFilter === "live" && m.status !== "live" && m.status !== "halftime") return false;
+      if (statusFilter === "live" && m.status !== "LIVE" && m.status !== "HT") return false;
 
-      if (statusFilter === "finished" && m.status !== "finished") return false;
+      if (statusFilter === "finished" && m.status !== "FT") return false;
 
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -65,13 +65,13 @@ export default function LiveScores() {
   }, [filteredMatches]);
 
   const getStatusBadge = (match: LiveMatch) => {
-    if (match.status === "live") {
+    if (match.status === "LIVE") {
       return <Badge className="bg-destructive text-destructive-foreground">LIVE {match.elapsed}'</Badge>;
     }
-    if (match.status === "halftime") {
+    if (match.status === "HT") {
       return <Badge className="bg-yellow-500/20 text-yellow-500">HT</Badge>;
     }
-    if (match.status === "finished") {
+    if (match.status === "FT") {
       return <Badge variant="secondary">FT</Badge>;
     }
     return null;
@@ -147,11 +147,11 @@ export default function LiveScores() {
               <div className="divide-y">
                 {items.map((match) => (
                   <div key={match.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted">
-                    <button onClick={() => toggleFavorite(match.id, navigate)} disabled={isSaving(match.id)}>
+                    <button onClick={() => toggleFavorite(String(match.id), navigate)} disabled={isSaving(String(match.id))}>
                       <Star
                         className={cn(
                           "h-4 w-4",
-                          isFavorite(match.id) ? "fill-primary text-primary" : "text-muted-foreground",
+                          isFavorite(String(match.id)) ? "fill-primary text-primary" : "text-muted-foreground",
                         )}
                       />
                     </button>
