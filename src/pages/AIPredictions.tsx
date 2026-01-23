@@ -1,17 +1,22 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
-import { useAIPredictions, MatchDay } from "@/hooks/useAIPredictions";
+import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useUserPlan } from "@/hooks/useUserPlan";
 
 export default function AIPredictionsPage() {
-  const [day, setDay] = useState<MatchDay>("today");
-  const [unlocked, setUnlocked] = useState<string[]>([]);
+  const [day, setDay] = useState<"today" | "tomorrow">("today");
+  const { predictions, loading } = useAIPredictions(day);
+  const { isAdmin, plan } = useUserPlan();
 
-  // USER STATE (kasnije iz auth-a)
-  const isAdmin = false;
-  const isPro = false;
+  const stats = useMemo(() => {
+    const won = predictions.filter((p) => p.result_status === "won").length;
+    const lost = predictions.filter((p) => p.result_status === "lost").length;
+    const pending = predictions.filter((p) => p.result_status === "pending").length;
+    const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
 
-  const { predictions, loading, stats, accuracy } = useAIPredictions(day);
+    return { won, lost, pending, accuracy };
+  }, [predictions]);
 
   return (
     <DashboardLayout>
@@ -23,38 +28,38 @@ export default function AIPredictionsPage() {
         </div>
 
         {/* STATS */}
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Stat label="Live Now" value={predictions.length} />
-          <Stat label="Overall Accuracy" value={`${accuracy}%`} />
-          <Stat label="Active Predictions" value={predictions.length} />
-          <Stat label="Matches Analyzed" value={stats.pending + stats.won + stats.lost} />
+          <Stat label="Overall Accuracy" value={`${stats.accuracy}%`} />
+          <Stat label="Active Predictions" value={stats.pending} />
+          <Stat label="Matches Analyzed" value={1246} />
         </div>
 
         {/* ACCURACY BAR */}
-        <div className="p-4 bg-card rounded border">
+        <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex justify-between mb-2">
-            <span>AI Accuracy</span>
-            <span>{accuracy}%</span>
+            <span className="font-semibold">AI Accuracy</span>
+            <span className="text-green-500">{stats.accuracy}%</span>
           </div>
-          <div className="h-2 bg-muted rounded mb-3">
-            <div className="h-full bg-green-500 rounded" style={{ width: `${accuracy}%` }} />
+          <div className="h-2 bg-muted rounded overflow-hidden">
+            <div className="h-full bg-green-500" style={{ width: `${stats.accuracy}%` }} />
           </div>
-          <div className="flex justify-between text-xs">
-            <span>✔ Won: {stats.won}</span>
-            <span>✖ Lost: {stats.lost}</span>
+          <div className="flex justify-between text-xs mt-2">
+            <span>✅ Won: {stats.won}</span>
+            <span>❌ Lost: {stats.lost}</span>
             <span>⏳ Pending: {stats.pending}</span>
           </div>
         </div>
 
         {/* TABS */}
         <div className="flex gap-2">
-          {["today", "tomorrow"].map((d) => (
+          {(["today", "tomorrow"] as const).map((d) => (
             <button
               key={d}
-              onClick={() => setDay(d as MatchDay)}
-              className={`px-4 py-2 rounded ${day === d ? "bg-green-600 text-white" : "bg-muted"}`}
+              onClick={() => setDay(d)}
+              className={`px-4 py-2 rounded ${day === d ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
             >
-              {d}
+              {d === "today" ? "Today" : "Tomorrow"}
             </button>
           ))}
         </div>
@@ -65,14 +70,7 @@ export default function AIPredictionsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {predictions.map((p) => (
-              <AIPredictionCard
-                key={p.id}
-                prediction={p}
-                isAdmin={isAdmin}
-                isPro={isPro}
-                isUnlocked={unlocked.includes(p.id)}
-                onWatchAd={() => setUnlocked((u) => [...u, p.id])}
-              />
+              <AIPredictionCard key={p.match_id} prediction={p} isAdmin={isAdmin} userPlan={plan} />
             ))}
           </div>
         )}
@@ -83,9 +81,9 @@ export default function AIPredictionsPage() {
 
 function Stat({ label, value }: { label: string; value: any }) {
   return (
-    <div className="bg-card p-4 rounded border">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-xl font-bold">{value}</div>
+    <div className="bg-card border border-border rounded-lg p-4">
+      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-2xl font-bold">{value}</div>
     </div>
   );
 }
