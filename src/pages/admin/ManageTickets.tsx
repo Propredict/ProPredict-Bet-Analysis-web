@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Search, X, Sparkles, Calendar } from "lucide-react";
+import { Plus, Loader2, Search, X, Calendar } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -23,8 +21,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTickets } from "@/hooks/useTickets";
 import { useFixtures } from "@/hooks/useFixtures";
+import { AdminTicketCard } from "@/components/admin/AdminTicketCard";
+import { TicketPreviewModal } from "@/components/admin/TicketPreviewModal";
 import type { Ticket, ContentTier, ContentStatus } from "@/types/admin";
+import type { TicketWithMatches } from "@/hooks/useTickets";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 /* =====================
    Types
@@ -49,6 +51,7 @@ export default function ManageTickets() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previewTicket, setPreviewTicket] = useState<TicketWithMatches | null>(null);
 
   // form state
   const [title, setTitle] = useState("");
@@ -134,6 +137,7 @@ export default function ManageTickets() {
         },
         matches,
       });
+      toast.success("Ticket updated successfully");
     } else {
       await createTicket.mutateAsync({
         ticket: {
@@ -145,6 +149,7 @@ export default function ManageTickets() {
         } as any,
         matches,
       });
+      toast.success("Ticket created successfully");
     }
 
     setIsDialogOpen(false);
@@ -154,7 +159,16 @@ export default function ManageTickets() {
     if (deleteId) {
       await deleteTicket.mutateAsync(deleteId);
       setDeleteId(null);
+      toast.success("Ticket deleted");
     }
+  };
+
+  const handleMarkResult = async (ticketId: string, newResult: TicketResult) => {
+    await updateTicket.mutateAsync({
+      id: ticketId,
+      updates: { result: newResult },
+    });
+    toast.success(`Ticket marked as ${newResult}`);
   };
 
   const addMatchFromFixture = (fixture: any) => {
@@ -166,7 +180,7 @@ export default function ManageTickets() {
 
   const addCustomMatch = () => {
     if (customHomeTeam && customAwayTeam && customPrediction) {
-      const matchName = customLeague 
+      const matchName = customLeague
         ? `${customHomeTeam} vs ${customAwayTeam} - ${customLeague}`
         : `${customHomeTeam} vs ${customAwayTeam}`;
       setMatches([
@@ -196,29 +210,6 @@ export default function ManageTickets() {
   };
 
   /* =====================
-     Badges
-  ===================== */
-
-  const resultBadge = (r: TicketResult) => {
-    if (r === "won") return <Badge className="bg-success/20 text-success">WON</Badge>;
-    if (r === "lost") return <Badge className="bg-destructive/20 text-destructive">LOST</Badge>;
-    return <Badge variant="outline">PENDING</Badge>;
-  };
-
-  const tierBadge = (t: ContentTier) => {
-    switch (t) {
-      case "daily":
-        return <Badge className="bg-primary/20 text-primary">DAILY</Badge>;
-      case "exclusive":
-        return <Badge className="bg-accent/20 text-accent">PRO</Badge>;
-      case "premium":
-        return <Badge className="bg-warning/20 text-warning">PREMIUM</Badge>;
-      default:
-        return <Badge>{t.toUpperCase()}</Badge>;
-    }
-  };
-
-  /* =====================
      Render
   ===================== */
 
@@ -240,50 +231,15 @@ export default function ManageTickets() {
         ) : (
           <div className="grid gap-4">
             {tickets.map((t) => (
-              <Card key={t.id} className="p-4 bg-card border-border">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {resultBadge((t as any).result ?? "pending")}
-                      {tierBadge(t.tier)}
-                      <Badge variant={t.status === "published" ? "default" : "secondary"}>
-                        {t.status.toUpperCase()}
-                      </Badge>
-                    </div>
-                    <p className="font-semibold text-foreground">{t.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Total Odds: @{t.total_odds.toFixed(2)} • {t.matches?.length || 0} matches
-                    </p>
-                    {t.matches && t.matches.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {t.matches.slice(0, 3).map((m, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {m.match_name.split(" - ")[0]}
-                          </Badge>
-                        ))}
-                        {t.matches.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{t.matches.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(t)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteId(t.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              <AdminTicketCard
+                key={t.id}
+                ticket={t}
+                onEdit={() => handleEdit(t)}
+                onPreview={() => setPreviewTicket(t)}
+                onDelete={() => setDeleteId(t.id)}
+                onMarkWon={() => handleMarkResult(t.id, "won")}
+                onMarkLost={() => handleMarkResult(t.id, "lost")}
+              />
             ))}
             {tickets.length === 0 && (
               <Card className="p-8 text-center bg-card border-border">
@@ -310,7 +266,7 @@ export default function ManageTickets() {
                     <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">1</span>
                     Basic Information
                   </h3>
-                  
+
                   <div className="grid gap-4 pl-8">
                     <div className="space-y-2">
                       <Label htmlFor="title">Ticket Title *</Label>
@@ -608,6 +564,13 @@ export default function ManageTickets() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Preview Modal */}
+        <TicketPreviewModal
+          ticket={previewTicket}
+          open={!!previewTicket}
+          onOpenChange={(open) => !open && setPreviewTicket(null)}
+        />
 
         {/* Delete Confirmation */}
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

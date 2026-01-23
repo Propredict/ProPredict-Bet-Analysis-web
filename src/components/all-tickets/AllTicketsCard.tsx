@@ -1,4 +1,4 @@
-import { Clock, Calendar, Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, XCircle, LogIn } from "lucide-react";
+import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { UnlockMethod } from "@/hooks/useUserPlan";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -26,14 +27,14 @@ function getTierBadge(tier: string) {
       );
     case "daily":
       return (
-        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
-          <Calendar className="h-3 w-3" />
+        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+          <Sparkles className="h-3 w-3" />
           Daily
         </Badge>
       );
     case "exclusive":
       return (
-        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
           <Star className="h-3 w-3" />
           Pro
         </Badge>
@@ -66,8 +67,19 @@ export function AllTicketsCard({
   onUnlockClick,
   isUnlocking,
 }: AllTicketsCardProps) {
+  const navigate = useNavigate();
   const isUnlocked = !isLocked;
   const ticketDate = ticket.created_at_ts ? format(new Date(ticket.created_at_ts), "EEE, MMM d") : "";
+
+  const handleUnlockClick = () => {
+    if (unlockMethod?.type === "upgrade_basic" || unlockMethod?.type === "upgrade_premium") {
+      navigate("/get-premium");
+    } else if (unlockMethod?.type === "login_required") {
+      navigate("/login");
+    } else {
+      onUnlockClick();
+    }
+  };
 
   const getUnlockButton = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
@@ -86,11 +98,13 @@ export function AllTicketsCard({
 
     return (
       <Button 
-        className={cn("flex-1 gap-2", buttonClass)}
+        variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+        size="lg"
+        className={cn("flex-1 gap-2 h-12", buttonClass)}
         disabled={isUnlocking}
         onClick={(e) => {
           e.stopPropagation();
-          onUnlockClick();
+          handleUnlockClick();
         }}
       >
         {isUnlocking ? (
@@ -115,7 +129,7 @@ export function AllTicketsCard({
         isUnlocked ? "border-success/30" : "border-border",
         isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
       )}
-      onClick={isLocked && !isUnlocking ? onUnlockClick : undefined}
+      onClick={isLocked && !isUnlocking ? handleUnlockClick : undefined}
     >
       {/* Locked State */}
       {isLocked ? (
@@ -128,7 +142,7 @@ export function AllTicketsCard({
                 {getTierBadge(ticket.tier)}
               </div>
             </div>
-            <span className="text-xs text-muted-foreground">Check</span>
+            <span className="text-xs text-muted-foreground">{ticketDate || "Check"}</span>
           </div>
 
           {/* Locked Matches Placeholder */}
@@ -153,13 +167,7 @@ export function AllTicketsCard({
           {/* Footer - unlock CTA */}
           {unlockMethod && unlockMethod.type !== "unlocked" && (
             <div className="p-4 border-t border-border">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Watch ad to unlock predictions</span>
-                </div>
-                {getUnlockButton()}
-              </div>
+              {getUnlockButton()}
             </div>
           )}
         </>

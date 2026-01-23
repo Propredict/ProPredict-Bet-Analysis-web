@@ -139,38 +139,43 @@ export default function TicketDetails() {
         </Button>
 
         <Card className={cn(
-          "p-6 space-y-4 bg-card",
-          !isLocked ? "border-success/30" : "border-border"
+          "bg-card overflow-hidden",
+          !isLocked ? "border-primary/30" : "border-border"
         )}>
           {/* Header */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <h1 className="text-xl font-bold text-foreground">{ticket.title}</h1>
+          <div className="p-4 pb-0">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                {!isLocked ? (
-                  <>
-                    <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Unlocked
-                    </Badge>
-                    <Badge variant="outline" className="text-muted-foreground border-border bg-muted/50">
-                      Total Odds: {ticket.total_odds?.toFixed(2)}
-                    </Badge>
-                  </>
-                ) : (
-                  getTierBadge()
+                {getTierBadge()}
+                <span className="text-xs text-muted-foreground">
+                  {ticket.matches?.length || 0} Matches
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {!isLocked && (
+                  <Badge className="gap-1 bg-success/20 text-success border-success/30">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Unlocked
+                  </Badge>
                 )}
+                <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+                  @{ticket.total_odds?.toFixed(2) || "1.00"}
+                </Badge>
               </div>
             </div>
-            <span className="text-xs text-muted-foreground">Check</span>
+          </div>
+
+          {/* Title */}
+          <div className="px-4 pb-3">
+            <h1 className="font-bold text-xl text-foreground">{ticket.title}</h1>
           </div>
 
           {/* Matches */}
-          <div className="space-y-2">
+          <div className="px-4 pb-3 space-y-2">
             {isLocked ? (
               <>
-                {ticket.matches.map((_, idx) => (
-                  <div key={idx} className="p-4 bg-muted/20 rounded-lg border border-border/50">
+                {(ticket.matches || []).map((_, idx) => (
+                  <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">↗</span>
@@ -187,19 +192,14 @@ export default function TicketDetails() {
               </>
             ) : (
               <>
-                {ticket.matches.map((match, idx) => (
-                  <div key={idx} className="p-4 bg-muted/20 rounded-lg border-l-2 border-l-success border border-border/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-start gap-2">
-                        <span className="text-success mt-0.5">↗</span>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-foreground">{match.match_name}</span>
-                          <Badge className="w-fit text-xs bg-success text-success-foreground rounded-full px-2 py-0.5">
-                            {match.prediction}
-                          </Badge>
-                        </div>
-                      </div>
-                      <span className="text-success font-medium">@{match.odds.toFixed(2)}</span>
+                {(ticket.matches || []).map((match, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                    <span className="text-sm text-foreground truncate flex-1 mr-4">{match.match_name}</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                        {match.prediction}
+                      </Badge>
+                      <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
@@ -207,8 +207,32 @@ export default function TicketDetails() {
             )}
           </div>
 
-          {/* Unlock Button */}
-          {isLocked && getUnlockButtonContent()}
+          {/* Total Odds footer - only when unlocked */}
+          {!isLocked && (
+            <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Total Odds</span>
+                <span className="font-bold text-lg text-primary">@{ticket.total_odds?.toFixed(2) || "1.00"}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Unlocked badge footer */}
+          {!isLocked && (
+            <div className="px-4 py-3 border-t border-border/50">
+              <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
+                <CheckCircle2 className="h-4 w-4" />
+                Ticket Unlocked
+              </Badge>
+            </div>
+          )}
+
+          {/* Unlock Button - only when locked */}
+          {isLocked && (
+            <div className="p-4 border-t border-border">
+              {getUnlockButtonContent()}
+            </div>
+          )}
         </Card>
       </div>
     </DashboardLayout>
