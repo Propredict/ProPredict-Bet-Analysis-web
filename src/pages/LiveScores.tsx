@@ -14,6 +14,8 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlerts } from "@/hooks/useMatchAlerts";
 import { format, subDays, addDays } from "date-fns";
 
+/* -------------------- CONSTANTS -------------------- */
+
 const LEAGUES = [
   "All Leagues",
   "Premier League",
@@ -27,6 +29,8 @@ const LEAGUES = [
 
 type StatusTab = "all" | "live" | "upcoming" | "finished";
 type DateMode = "yesterday" | "today" | "tomorrow";
+
+/* -------------------- PAGE -------------------- */
 
 export default function LiveScores() {
   const navigate = useNavigate();
@@ -47,27 +51,31 @@ export default function LiveScores() {
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
 
-  /* ---------- CLOCK ---------- */
+  /* -------------------- CLOCK -------------------- */
+
   useEffect(() => {
     const i = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(i);
   }, []);
 
-  /* ---------- STATUS TABS PER DATE ---------- */
-  const allowedStatusTabs = useMemo<StatusTab[]>(() => {
-    if (dateMode === "today") return ["all", "live", "upcoming", "finished"];
-    if (dateMode === "yesterday") return ["all", "finished"];
-    if (dateMode === "tomorrow") return ["all", "upcoming"];
-    return ["all"];
+  /* -------------------- STATUS TABS LOGIC -------------------- */
+
+  const allowedStatusTabs: StatusTab[] = useMemo(() => {
+    if (dateMode === "today") {
+      return ["all", "live", "upcoming", "finished"];
+    }
+    return ["all"]; // yesterday & tomorrow
   }, [dateMode]);
 
+  // reset status tab if not allowed
   useEffect(() => {
     if (!allowedStatusTabs.includes(statusTab)) {
       setStatusTab("all");
     }
   }, [allowedStatusTabs, statusTab]);
 
-  /* ---------- STATS ---------- */
+  /* -------------------- STATS -------------------- */
+
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === "live" || m.status === "halftime").length,
     [matches],
@@ -75,18 +83,12 @@ export default function LiveScores() {
 
   const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
 
-  /* ---------- LIVE BADGE LOGIC ---------- */
-  const showLiveForDate = (d: DateMode) => {
-    if (d === "today") return true;
-    if (d === "yesterday" && liveCount > 0) return true;
-    return false;
-  };
+  /* -------------------- FILTERING -------------------- */
 
-  /* ---------- FILTERING ---------- */
   const filtered = useMemo(() => {
-    return matches.filter((m) => {
-      const q = search.toLowerCase();
+    const q = search.toLowerCase();
 
+    return matches.filter((m) => {
       const okSearch =
         m.homeTeam.toLowerCase().includes(q) ||
         m.awayTeam.toLowerCase().includes(q) ||
@@ -110,7 +112,8 @@ export default function LiveScores() {
     );
   }, [filtered]);
 
-  /* ---------- HELPERS ---------- */
+  /* -------------------- HELPERS -------------------- */
+
   const getDateLabel = (d: DateMode) => {
     const now = new Date();
     if (d === "yesterday") return format(subDays(now, 1), "MMM d");
@@ -131,7 +134,8 @@ export default function LiveScores() {
     [toggleFavorite, navigate],
   );
 
-  /* ---------- RENDER ---------- */
+  /* -------------------- RENDER -------------------- */
+
   return (
     <DashboardLayout>
       <div className="space-y-5">
@@ -167,7 +171,7 @@ export default function LiveScores() {
         </div>
 
         {/* STATUS TABS */}
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2">
           {allowedStatusTabs.map((tab) => (
             <Button
               key={tab}
@@ -185,7 +189,7 @@ export default function LiveScores() {
 
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
-          <StatCard title="Live Now" value={liveCount} color="destructive" icon={Play} pulse />
+          <StatCard title="Live Now" value={liveCount} color="destructive" icon={Play} />
           <StatCard title="Total Matches" value={matches.length} color="primary" icon={BarChart3} />
           <StatCard title="Leagues" value={leaguesCount} color="warning" icon={Trophy} />
         </div>
@@ -204,24 +208,17 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* DATE + LIVE BADGE */}
+        {/* DATE */}
         <div className="flex gap-2">
           {(["yesterday", "today", "tomorrow"] as DateMode[]).map((d) => (
             <Button
               key={d}
               variant={dateMode === d ? "default" : "outline"}
               onClick={() => setDateMode(d)}
-              className="flex-1 flex-col relative"
+              className="flex-1 flex-col"
             >
               <span className="capitalize">{d}</span>
               <span className="text-xs opacity-70">{getDateLabel(d)}</span>
-
-              {showLiveForDate(d) && liveCount > 0 && (
-                <span className="mt-1 text-[10px] font-semibold text-red-500 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-                  LIVE {liveCount}
-                </span>
-              )}
             </Button>
           ))}
         </div>
@@ -254,17 +251,6 @@ export default function LiveScores() {
                 <button onClick={(e) => handleFavorite(e, m.id)} disabled={isSaving(m.id)}>
                   <Star
                     className={cn("h-4 w-4", isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground")}
-                  />
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setAlertsMatch(m);
-                  }}
-                >
-                  <Bell
-                    className={cn("h-4 w-4", hasAlert(m.id) ? "text-primary fill-primary" : "text-muted-foreground")}
                   />
                 </button>
 
@@ -301,30 +287,16 @@ export default function LiveScores() {
   );
 }
 
-/* ---------- HELPERS ---------- */
+/* -------------------- HELPERS -------------------- */
 
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  color,
-  pulse,
-}: {
-  title: string;
-  value: number;
-  icon: any;
-  color: string;
-  pulse?: boolean;
-}) {
+function StatCard({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) {
   return (
     <Card className="p-4 flex justify-between items-center">
       <div>
         <p className="text-xs text-muted-foreground">{title}</p>
         <p className={`text-2xl font-bold text-${color}`}>{value}</p>
       </div>
-      <div className={cn("p-2 rounded-full", pulse && "animate-pulse")}>
-        <Icon />
-      </div>
+      <Icon />
     </Card>
   );
 }
