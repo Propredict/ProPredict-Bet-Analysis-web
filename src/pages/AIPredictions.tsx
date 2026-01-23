@@ -1,4 +1,4 @@
-import { Brain, RefreshCw, Activity, Sparkles, Loader2 } from "lucide-react";
+import { Brain, RefreshCw, Sparkles, Loader2, Calendar, Clock } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,8 @@ import { Card } from "@/components/ui/card";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 
-const leagues = ["all", "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1", "Champions League"];
-
 export default function AIPredictions() {
-  const { predictions, loading, dayTab, setDayTab, selectedLeague, setSelectedLeague, unlockPrediction } =
-    useAIPredictions();
+  const { predictions, loading, dayTab, setDayTab, unlockPrediction } = useAIPredictions();
 
   return (
     <DashboardLayout>
@@ -55,20 +52,6 @@ export default function AIPredictions() {
           </Button>
         </div>
 
-        {/* LEAGUES */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {leagues.map((league) => (
-            <Button
-              key={league}
-              size="sm"
-              variant={selectedLeague === league ? "default" : "outline"}
-              onClick={() => setSelectedLeague(league)}
-            >
-              {league === "all" ? "All Leagues" : league}
-            </Button>
-          ))}
-        </div>
-
         {/* LIST */}
         {loading ? (
           <Card className="p-10 flex justify-center">
@@ -76,13 +59,27 @@ export default function AIPredictions() {
           </Card>
         ) : predictions.length === 0 ? (
           <Card className="p-10 text-center">
-            <Activity className="h-12 w-12 mx-auto opacity-40 mb-3" />
-            <p>No AI predictions available</p>
+            <Calendar className="h-10 w-10 mx-auto mb-2 opacity-40" />
+            <p>No matches available</p>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {predictions.map((p) => (
-              <AIPredictionCard key={p.id} prediction={p} onUnlock={unlockPrediction} />
+              <div key={p.id} className="space-y-2">
+                {/* MATCH INFO (UVEK VIDLJIVO) */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {p.matchDate}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {p.matchTime}
+                  </span>
+                </div>
+
+                <AIPredictionCard prediction={p} onUnlock={unlockPrediction} />
+              </div>
             ))}
           </div>
         )}
