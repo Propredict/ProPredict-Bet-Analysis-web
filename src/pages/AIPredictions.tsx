@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Search, Activity, BarChart3, Target, Layers } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
@@ -6,21 +7,18 @@ import { supabase } from "@/lib/supabase";
 
 export default function AIPredictionsPage() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
-
   const { predictions, loading } = useAIPredictions(day);
 
-  // TEMP – kasnije vežeš na user subscription
   const isPremiumUser = false;
 
-  // WATCH AD UNLOCK STATE
   const [unlockedMatches, setUnlockedMatches] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
 
-  const handleWatchAd = (matchId: string) => {
-    // simulacija uspešnog reward ad-a
-    setUnlockedMatches((prev) => (prev.includes(matchId) ? prev : [...prev, matchId]));
+  const handleWatchAd = (id: string) => {
+    setUnlockedMatches((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  // AI ACCURACY STATS
+  // ACCURACY STATS
   const [stats, setStats] = useState<{
     won: number;
     lost: number;
@@ -28,39 +26,74 @@ export default function AIPredictionsPage() {
   } | null>(null);
 
   useEffect(() => {
-    const loadStats = async () => {
-      const { data } = await supabase.from("ai_prediction_stats").select("*").single();
-
-      if (data) setStats(data);
-    };
-
-    loadStats();
+    supabase
+      .from("ai_prediction_stats")
+      .select("*")
+      .single()
+      .then(({ data }) => data && setStats(data));
   }, []);
 
   const accuracy = stats && stats.won + stats.lost > 0 ? Math.round((stats.won / (stats.won + stats.lost)) * 100) : 0;
 
+  const filtered = predictions.filter(
+    (p) =>
+      p.homeTeam.toLowerCase().includes(search.toLowerCase()) ||
+      p.awayTeam.toLowerCase().includes(search.toLowerCase()) ||
+      p.league.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* HEADER */}
-        <div>
-          <h1 className="text-2xl font-bold">AI Predictions</h1>
-          <p className="text-muted-foreground">AI predictions for today & tomorrow matches</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Target className="text-primary" />
+              AI Predictions
+            </h1>
+            <p className="text-muted-foreground">AI-powered match analysis and predictions</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search team or league..."
+                className="pl-9 pr-3 py-2 rounded-md bg-muted text-sm outline-none"
+              />
+            </div>
+            <span className="text-xs px-3 py-1 rounded-full bg-purple-500/10 text-purple-400">Powered by ML</span>
+          </div>
         </div>
 
-        {/* AI ACCURACY */}
+        {/* STATS CARDS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard icon={<Activity />} label="Live Now" value={predictions.length} />
+          <StatCard icon={<Target />} label="Overall Accuracy" value={`${accuracy}%`} />
+          <StatCard icon={<BarChart3 />} label="Active Predictions" value={predictions.length} />
+          <StatCard
+            icon={<Layers />}
+            label="Matches Analyzed"
+            value={stats ? stats.pending + stats.won + stats.lost : 0}
+          />
+        </div>
+
+        {/* AI ACCURACY SECTION */}
         {stats && (
-          <div className="rounded-lg border p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">AI Accuracy</span>
-              <span className="font-bold">{accuracy}%</span>
+          <div className="rounded-xl border p-6 bg-gradient-to-r from-background to-muted/40">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-semibold">AI Accuracy</span>
+              <span className="px-3 py-1 rounded-full bg-red-500 text-white text-xs">{accuracy}%</span>
             </div>
 
-            <div className="w-full bg-muted h-2 rounded">
-              <div className="bg-primary h-2 rounded" style={{ width: `${accuracy}%` }} />
+            <div className="h-2 w-full bg-muted rounded mb-4">
+              <div className="h-full bg-primary rounded" style={{ width: `${accuracy}%` }} />
             </div>
 
-            <div className="text-sm text-muted-foreground flex gap-6">
+            <div className="grid grid-cols-3 text-sm text-muted-foreground">
               <span>✔ Won: {stats.won}</span>
               <span>❌ Lost: {stats.lost}</span>
               <span>⏳ Pending: {stats.pending}</span>
@@ -68,20 +101,13 @@ export default function AIPredictionsPage() {
           </div>
         )}
 
-        {/* TOTAL MATCHES */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            Total matches ({day === "today" ? "Today" : "Tomorrow"}): <strong>{predictions.length}</strong>
-          </span>
-        </div>
-
         {/* TABS */}
         <div className="flex gap-2">
           {(["today", "tomorrow"] as const).map((d) => (
             <button
               key={d}
               onClick={() => setDay(d)}
-              className={`px-4 py-2 rounded text-sm font-medium ${
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
                 day === d ? "bg-primary text-white" : "bg-muted text-muted-foreground"
               }`}
             >
@@ -90,18 +116,14 @@ export default function AIPredictionsPage() {
           ))}
         </div>
 
-        {/* CONTENT */}
+        {/* GRID */}
         {loading ? (
-          <div className="text-muted-foreground">Loading AI predictions…</div>
-        ) : predictions.length === 0 ? (
-          <div className="rounded-lg border p-6 text-center text-muted-foreground">
-            No AI predictions available yet.
-            <br />
-            Matches are currently being analyzed.
-          </div>
+          <p className="text-muted-foreground">Loading predictions…</p>
+        ) : filtered.length === 0 ? (
+          <div className="border rounded-lg p-6 text-center text-muted-foreground">No predictions available.</div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {predictions.map((p) => (
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filtered.map((p) => (
               <AIPredictionCard
                 key={p.id}
                 prediction={{
@@ -117,5 +139,18 @@ export default function AIPredictionsPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+/* ------------------ STAT CARD ------------------ */
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number | string }) {
+  return (
+    <div className="rounded-xl border p-4 flex items-center gap-4 bg-card">
+      <div className="p-2 rounded-lg bg-primary/10 text-primary">{icon}</div>
+      <div>
+        <div className="text-xl font-bold">{value}</div>
+        <div className="text-xs text-muted-foreground">{label}</div>
+      </div>
+    </div>
   );
 }
