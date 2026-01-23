@@ -4,12 +4,17 @@ import { Card } from "@/components/ui/card";
 import { useTips } from "@/hooks/useTips";
 
 export function FeaturedPredictions() {
-  const { tips = [], isLoading, refetch } = useTips(false);
+  const tipsQuery = useTips(false);
 
-  const aiTips = tips.filter((t) => t.ai_prediction);
+  // ⛑️ HARD GUARD – ako hook nije spreman
+  if (!tipsQuery) return null;
 
-  const won = aiTips.filter((t) => t.result === "won").length;
-  const lost = aiTips.filter((t) => t.result === "lost").length;
+  const { tips = [], isLoading, refetch } = tipsQuery;
+
+  const aiTips = Array.isArray(tips) ? tips.filter((t: any) => t?.ai_prediction === true) : [];
+
+  const won = aiTips.filter((t: any) => t?.result === "won").length;
+  const lost = aiTips.filter((t: any) => t?.result === "lost").length;
   const pending = aiTips.length - won - lost;
 
   const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
@@ -20,12 +25,12 @@ export function FeaturedPredictions() {
         <div className="flex items-center gap-3">
           <TrendingUp className="h-6 w-6 text-primary" />
           <div>
-            <h2 className="text-xl font-semibold">Featured AI Predictions</h2>
+            <h2 className="text-xl font-semibold">Featured Predictions</h2>
             <p className="text-sm text-muted-foreground">AI performance overview</p>
           </div>
         </div>
 
-        <Button variant="outline" size="sm" onClick={refetch}>
+        <Button variant="outline" size="sm" onClick={() => refetch && refetch()}>
           <RefreshCw className="h-4 w-4 mr-1" />
           Refresh
         </Button>
