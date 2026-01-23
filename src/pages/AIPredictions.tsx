@@ -1,60 +1,58 @@
-import { useState } from "react";
-import { Brain, RefreshCw } from "lucide-react";
+import { Brain, Activity } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { Card } from "@/components/ui/card";
 
 export default function AIPredictions() {
-  const [day, setDay] = useState<"today" | "tomorrow">("today");
-  const { predictions, loading } = useAIPredictions(day);
+  const { predictions, loading } = useAIPredictions();
+
+  const today = predictions.filter((p) => p.matchDate === "Today");
+  const tomorrow = predictions.filter((p) => p.matchDate === "Tomorrow");
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* HEADER */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Brain className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold">AI Predictions</h1>
-            </div>
-            <p className="text-muted-foreground text-sm">AI-powered predictions for upcoming matches</p>
+        <div>
+          <div className="flex items-center gap-3">
+            <Brain className="h-7 w-7 text-primary" />
+            <h1 className="text-2xl font-bold">AI Predictions</h1>
           </div>
+          <p className="text-muted-foreground mt-1">AI predictions for today & tomorrow matches</p>
+        </div>
 
+        {/* TODAY */}
+        <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Badge className="bg-primary/20 text-primary border-primary/30">AI Powered</Badge>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
+            <Activity className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Today</h2>
           </div>
-        </div>
 
-        {/* TABS */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={() => setDay("today")} className={day === "today" ? "bg-primary" : "bg-muted"}>
-            Today
-          </Button>
-          <Button onClick={() => setDay("tomorrow")} className={day === "tomorrow" ? "bg-primary" : "bg-muted"}>
-            Tomorrow
-          </Button>
-        </div>
+          {loading ? (
+            <Card className="p-6 text-center">Loading...</Card>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {today.map((p) => (
+                <AIPredictionCard key={p.id} prediction={p} />
+              ))}
+            </div>
+          )}
+        </section>
 
-        {/* CONTENT */}
-        {loading ? (
-          <Card className="p-10 text-center text-muted-foreground">Loading AI predictions…</Card>
-        ) : predictions.length === 0 ? (
-          <Card className="p-10 text-center">No matches available</Card>
-        ) : (
+        {/* TOMORROW */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold">Tomorrow</h2>
+          </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {predictions.map((p) => (
+            {tomorrow.map((p) => (
               <AIPredictionCard key={p.id} prediction={p} />
             ))}
           </div>
-        )}
+        </section>
       </div>
     </DashboardLayout>
   );

@@ -1,76 +1,78 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { AIPrediction } from "@/components/ai-predictions/types";
 
-type DayFilter = "today" | "tomorrow";
-
-const normalizeOutcome = (value: string): "1" | "X" | "2" => {
-  if (value === "1" || value === "2" || value === "X") return value;
+const normalizeOutcome = (v: string): "1" | "X" | "2" => {
+  if (v === "1" || v === "2" || v === "X") return v;
   return "1";
 };
 
-export function useAIPredictions(day: DayFilter) {
+export function useAIPredictions() {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPredictions = async () => {
-      setLoading(true);
+    setLoading(true);
 
-      const date = new Date();
-      if (day === "tomorrow") date.setDate(date.getDate() + 1);
-      const targetDate = date.toISOString().split("T")[0];
+    // ⛔ privremeno FAKE AI DATA (dok ne spojimo pravi AI)
+    const data: AIPrediction[] = [
+      {
+        id: "1",
+        matchId: "m1",
+        league: "Premier League",
+        homeTeam: "Arsenal",
+        awayTeam: "Chelsea",
+        matchDate: "Today",
+        matchTime: "20:00",
 
-      const { data, error } = await supabase
-        .from("ai_predictions")
-        .select("*")
-        .eq("match_date", targetDate)
-        .order("match_time", { ascending: true });
+        predictedOutcome: "1",
+        predictedScore: "2-1",
+        confidence: 72,
 
-      if (error) {
-        console.error("AI predictions error:", error);
-        setPredictions([]);
-        setLoading(false);
-        return;
-      }
+        homeWinProbability: 52,
+        drawProbability: 26,
+        awayWinProbability: 22,
 
-      const mapped: AIPrediction[] = (data ?? []).map((row) => ({
-        id: row.id,
-        matchId: row.match_id,
-        league: row.league,
-
-        homeTeam: row.home_team,
-        awayTeam: row.away_team,
-
-        matchDate: row.match_date,
-        matchTime: row.match_time,
-
-        predictedOutcome: normalizeOutcome(row.prediction),
-        predictedScore: row.predicted_score,
-        confidence: row.confidence,
-
-        homeWinProbability: row.home_win,
-        drawProbability: row.draw,
-        awayWinProbability: row.away_win,
-
-        riskLevel: row.risk_level,
-
+        riskLevel: "medium",
         isLive: false,
-        liveMinute: null,
-
-        isLocked: true,
         isPremium: false,
+        isLocked: false, // 👈 TI SI UNLOCKED
 
-        analysis: "Watch an ad to unlock full AI analysis.",
-        keyFactors: [],
-      }));
+        analysis: "Arsenal shows stronger home form and higher xG.",
+        keyFactors: ["Home advantage", "Recent form"],
+      },
+      {
+        id: "2",
+        matchId: "m2",
+        league: "La Liga",
+        homeTeam: "Barcelona",
+        awayTeam: "Sevilla",
+        matchDate: "Tomorrow",
+        matchTime: "21:00",
 
-      setPredictions(mapped);
-      setLoading(false);
-    };
+        predictedOutcome: "1",
+        predictedScore: "3-1",
+        confidence: 78,
 
-    fetchPredictions();
-  }, [day]);
+        homeWinProbability: 60,
+        drawProbability: 22,
+        awayWinProbability: 18,
+
+        riskLevel: "low",
+        isLive: false,
+        isPremium: false,
+        isLocked: false,
+
+        analysis: "Barcelona dominates possession and chances at home.",
+        keyFactors: ["Squad quality", "Home dominance"],
+      },
+    ].map((p) => ({
+      ...p,
+      predictedOutcome: normalizeOutcome(p.predictedOutcome),
+    }));
+
+    setPredictions(data);
+    setLoading(false);
+  }, []);
 
   return { predictions, loading };
 }
