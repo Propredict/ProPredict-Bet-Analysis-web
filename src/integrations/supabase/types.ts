@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      match_alert_events: {
+        Row: {
+          away_score: number
+          created_at: string
+          event_type: string
+          home_score: number
+          id: string
+          match_id: string
+          minute: number | null
+        }
+        Insert: {
+          away_score?: number
+          created_at?: string
+          event_type: string
+          home_score?: number
+          id?: string
+          match_id: string
+          minute?: number | null
+        }
+        Update: {
+          away_score?: number
+          created_at?: string
+          event_type?: string
+          home_score?: number
+          id?: string
+          match_id?: string
+          minute?: number | null
+        }
+        Relationships: []
+      }
       match_alerts: {
         Row: {
           created_at: string
