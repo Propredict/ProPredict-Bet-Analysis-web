@@ -1,6 +1,5 @@
-import { Lock, Crown, Play } from "lucide-react";
+import { Crown, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "./types";
@@ -14,25 +13,22 @@ interface Props {
 
 export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPremium }: Props) {
   const isPremiumPick = prediction.confidence >= 60;
+  const locked = !isPremiumUser;
 
-  const locked = !isPremiumUser && (isPremiumPick || prediction.isLocked);
+  const hide = locked;
 
   return (
-    <Card className="relative bg-card border-border overflow-hidden">
-      {/* HEADER */}
-      <div className="p-3 flex justify-between text-xs text-muted-foreground">
+    <Card className="relative bg-gradient-to-b from-[#0b1a2e] to-[#081425] border border-white/5 rounded-xl p-4 overflow-hidden">
+      {/* TOP META */}
+      <div className="flex justify-between text-xs text-muted-foreground mb-2">
         <span className="flex items-center gap-2">
-          {prediction.league}
+          ● {prediction.league}
           {isPremiumPick && (
-            <Badge className="bg-yellow-500/20 text-yellow-400">
-              <Crown className="h-3 w-3 mr-1" />
-              Premium
-            </Badge>
+            <span className="ml-2 px-2 py-0.5 rounded-full bg-orange-500 text-xs text-white">AI PRO</span>
           )}
         </span>
-
         <span>
-          {prediction.matchDay === "today" ? "Today" : "Tomorrow"} ·{" "}
+          {prediction.matchDay === "today" ? "Today" : "Tomorrow"},{" "}
           {new Date(prediction.matchTime).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -40,70 +36,59 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
         </span>
       </div>
 
-      {/* TEAMS */}
-      <div className="p-4 text-center font-semibold">
-        {prediction.homeTeam}
-        <div className="text-xs text-muted-foreground my-1">VS</div>
-        {prediction.awayTeam}
-      </div>
+      {/* MATCH TITLE */}
+      <h3 className="font-semibold text-sm mb-4">
+        {prediction.homeTeam} vs {prediction.awayTeam}
+      </h3>
 
-      {/* PROBABILITIES – ALWAYS VISIBLE */}
-      <div className="px-4 space-y-2">
+      {/* PROBABILITIES */}
+      <div className="space-y-3">
         {[
-          { label: "1", value: prediction.homeWinProbability },
-          { label: "X", value: prediction.drawProbability },
-          { label: "2", value: prediction.awayWinProbability },
-        ].map((p) => (
-          <div key={p.label} className="flex items-center gap-2">
-            <span className="w-4 text-xs">{p.label}</span>
-            <div className="flex-1 h-2 bg-muted rounded">
-              <div className="h-full bg-primary" style={{ width: `${p.value}%` }} />
+          { label: prediction.homeTeam, value: prediction.homeWinProbability, color: "bg-green-500" },
+          { label: "Draw", value: prediction.drawProbability, color: "bg-gray-400" },
+          { label: prediction.awayTeam, value: prediction.awayWinProbability, color: "bg-orange-500" },
+        ].map((row) => (
+          <div key={row.label}>
+            <div className="flex justify-between text-xs mb-1">
+              <span>{row.label}</span>
+              <span>{hide ? "??" : `${row.value}%`}</span>
             </div>
-            <span className="w-8 text-xs text-right">{locked ? "?" : `${p.value}%`}</span>
+            <div className="h-2 bg-white/10 rounded">
+              <div className={cn("h-full rounded", row.color)} style={{ width: `${row.value}%` }} />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* AI DETAILS (BLURRED IF LOCKED) */}
-      <div className={cn("p-4 mt-3", locked && "blur-sm")}>
-        <div className="grid grid-cols-4 text-center text-xs bg-muted/50 p-2 rounded">
-          <div>
-            <div>Pick</div>
-            <strong>{prediction.predictedOutcome}</strong>
-          </div>
-          <div>
-            <div>Score</div>
-            <strong>{prediction.predictedScore}</strong>
-          </div>
-          <div>
-            <div>Conf</div>
-            <strong>{prediction.confidence}%</strong>
-          </div>
-          <div>
-            <div>Risk</div>
-            <Badge>{prediction.riskLevel}</Badge>
-          </div>
+      {/* PREDICTED SCORE + CONF */}
+      <div className="flex justify-between items-center text-xs mt-4">
+        <div>
+          <div className="text-muted-foreground">Predicted Score</div>
+          <div className={cn(hide && "blur-sm")}>{prediction.predictedScore}</div>
+        </div>
+        <div className="text-right">
+          <div className="text-muted-foreground">AI Confidence</div>
+          <div className={cn(hide && "blur-sm")}>{prediction.confidence}%</div>
         </div>
       </div>
 
-      {/* LOCK OVERLAY */}
-      {locked && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-3">
-          <Lock />
-
-          {isPremiumPick ? (
-            <Button onClick={onBuyPremium}>
-              <Crown className="h-4 w-4 mr-2" />
-              Get Premium
-            </Button>
-          ) : (
-            <Button onClick={onWatchAd}>
-              <Play className="h-4 w-4 mr-2" />
-              Watch Ad to Unlock
-            </Button>
-          )}
-        </div>
-      )}
+      {/* CTA */}
+      <div className="mt-5">
+        {!isPremiumPick ? (
+          <Button
+            onClick={onWatchAd}
+            className="w-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Watch Ad to Unlock Prediction
+          </Button>
+        ) : (
+          <Button onClick={onBuyPremium} className="w-full bg-orange-500 hover:bg-orange-600">
+            <Crown className="h-4 w-4 mr-2" />
+            Get AI Pro Access
+          </Button>
+        )}
+      </div>
     </Card>
   );
 }
