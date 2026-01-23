@@ -6,28 +6,36 @@ export function useAIPredictions(day: "today" | "tomorrow") {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [stats, setStats] = useState({
+    won: 0,
+    lost: 0,
+    pending: 0,
+    accuracy: 0,
+  });
+
   useEffect(() => {
-    const load = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
       const { data } = await supabase.from("ai_predictions").select("*").eq("match_day", day).order("match_time");
 
-      setPredictions(data || []);
+      const won = data?.filter((d) => d.result_status === "won").length ?? 0;
+      const lost = data?.filter((d) => d.result_status === "lost").length ?? 0;
+      const pending = data?.filter((d) => d.result_status === "pending").length ?? 0;
+
+      setStats({
+        won,
+        lost,
+        pending,
+        accuracy: won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0,
+      });
+
+      setPredictions(data ?? []);
       setLoading(false);
     };
 
-    load();
+    fetchData();
   }, [day]);
 
-  const won = predictions.filter((p) => p.result_status === "won").length;
-  const lost = predictions.filter((p) => p.result_status === "lost").length;
-  const pending = predictions.filter((p) => p.result_status === "pending").length;
-
-  const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
-
-  return {
-    predictions,
-    loading,
-    stats: { won, lost, pending, accuracy },
-  };
+  return { predictions, stats, loading };
 }
