@@ -27,7 +27,7 @@ function getAlertSettings(): AlertSettings {
     if (stored) return JSON.parse(stored);
   } catch {}
 
-  // ✅ ENABLED BY DEFAULT (VAŽNO)
+  // ✅ ENABLED BY DEFAULT (BITNO)
   return {
     enabled: true,
     goals: true,
@@ -39,9 +39,7 @@ function getAlertSettings(): AlertSettings {
 function getFavorites(): Set<string> {
   try {
     const stored = localStorage.getItem(FAVORITES_KEY);
-    if (stored) {
-      return new Set(JSON.parse(stored));
-    }
+    if (stored) return new Set(JSON.parse(stored));
   } catch {}
   return new Set();
 }
@@ -96,17 +94,17 @@ export function useLiveAlerts(matches: Match[]) {
       }`,
     });
 
-    // 🧾 SUPABASE ALERT INSERT
-    const { error } = await supabase.from("match_alerts").insert({
+    // 🧾 SUPABASE EVENT INSERT
+    const { error } = await supabase.from("match_alert_events").insert({
       match_id: match.id,
-      type: "goal",
+      event_type: "goal",
       home_score: match.homeScore ?? 0,
       away_score: match.awayScore ?? 0,
       minute: match.minute ?? null,
     });
 
     if (error) {
-      console.error("Supabase alert insert failed:", error);
+      console.error("Failed to insert match alert event:", error);
     }
   }, []);
 
