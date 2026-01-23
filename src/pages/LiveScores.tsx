@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -6,13 +7,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useLiveScores, Match } from "@/hooks/useLiveScores";
+import { useLiveScores, Match, DateMode, StatusFilter } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { MatchAlertsModal } from "@/components/live-scores/MatchAlertsModal";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useMatchAlerts } from "@/hooks/useMatchAlerts";
+import { useToast } from "@/hooks/use-toast";
 import { format, subDays, addDays } from "date-fns";
-
-type StatusTab = "all" | "live" | "upcoming" | "finished";
 
 const LEAGUES = [
   "All Leagues",
@@ -25,25 +26,65 @@ const LEAGUES = [
   "Europa League",
 ];
 
-type DateOption = "yesterday" | "today" | "tomorrow";
-
 export default function LiveScores() {
-  const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [statusTab, setStatusTab] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
-  const [dateOption, setDateOption] = useState<DateOption>("today");
+  const [dateMode, setDateMode] = useState<DateMode>("today");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [alertsMatch, setAlertsMatch] = useState<Match | null>(null);
 
-  const { matches, isLoading, error, refetch } = useLiveScores(statusTab);
-  const { favorites, toggleFavorite } = useFavorites();
+  const { matches, previousMatches, isLoading, error, refetch } = useLiveScores(statusTab, dateMode);
+  const { favorites, isFavorite, isSaving, toggleFavorite } = useFavorites();
+  const { alerts, hasAlert, refetch: refetchAlerts } = useMatchAlerts();
+
+  // Track previous scores for alert detection
+  const prevMatchesRef = useRef<Map<string, { home: number | null; away: number | null }>>(new Map());
 
   // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Detect score changes and trigger alerts
+  useEffect(() => {
+    if (previousMatches.length === 0 || matches.length === 0) return;
+
+    const prevMap = new Map(previousMatches.map(m => [m.id, m]));
+
+    matches.forEach((current) => {
+      const prev = prevMap.get(current.id);
+      if (!prev) return;
+
+      const alert = alerts.get(current.id);
+      if (!alert) return;
+
+      // Check for goal
+      if (alert.notify_goals) {
+        const prevTotal = (prev.homeScore ?? 0) + (prev.awayScore ?? 0);
+        const currTotal = (current.homeScore ?? 0) + (current.awayScore ?? 0);
+        
+        if (currTotal > prevTotal) {
+          const scorer = (current.homeScore ?? 0) > (prev.homeScore ?? 0) 
+            ? current.homeTeam 
+            : current.awayTeam;
+          
+          toast({
+            title: "⚽ GOAL!",
+            description: `${scorer} scored! ${current.homeTeam} ${current.homeScore} - ${current.awayScore} ${current.awayTeam}`,
+          });
+        }
+      }
+
+      // Check for red card (we detect this if minute increased but score same - simplified detection)
+      // Note: Real red card detection would need events from API
+    });
+  }, [matches, previousMatches, alerts, toast]);
 
   // Derived counts from matches array
   const liveCount = useMemo(
@@ -87,14 +128,20 @@ export default function LiveScores() {
 
   const handleRefresh = () => {
     refetch();
+    refetchAlerts();
   };
 
-  const handleFavoriteClick = (e: React.MouseEvent, matchId: string) => {
+  const handleFavoriteClick = useCallback((e: React.MouseEvent, matchId: string) => {
     e.stopPropagation();
-    toggleFavorite(matchId);
-  };
+    toggleFavorite(matchId, navigate);
+  }, [toggleFavorite, navigate]);
 
-  const getDateLabel = (option: DateOption) => {
+  const handleAlertClick = useCallback((e: React.MouseEvent, match: Match) => {
+    e.stopPropagation();
+    setAlertsMatch(match);
+  }, []);
+
+  const getDateLabel = (option: DateMode) => {
     const today = new Date();
     switch (option) {
       case "yesterday":
@@ -108,7 +155,7 @@ export default function LiveScores() {
 
   // Status tabs configuration
   const statusTabs: Array<{
-    value: StatusTab;
+    value: StatusFilter;
     label: string;
     shortLabel: string;
     icon: typeof Trophy | typeof Play | null;
@@ -239,15 +286,15 @@ export default function LiveScores() {
 
         {/* DATE SELECTOR */}
         <div className="flex gap-2">
-          {(["yesterday", "today", "tomorrow"] as DateOption[]).map((option) => (
+          {(["yesterday", "today", "tomorrow"] as DateMode[]).map((option) => (
             <Button
               key={option}
               size="sm"
-              variant={dateOption === option ? "default" : "outline"}
-              onClick={() => setDateOption(option)}
+              variant={dateMode === option ? "default" : "outline"}
+              onClick={() => setDateMode(option)}
               className={cn(
                 "flex-1 flex-col h-auto py-2",
-                dateOption === option
+                dateMode === option
                   ? "bg-primary text-primary-foreground"
                   : "border-white/10 text-muted-foreground hover:bg-primary/10"
               )}
@@ -341,7 +388,9 @@ export default function LiveScores() {
             {/* Match Rows */}
             <div className="divide-y divide-white/5">
               {games.map((m) => {
-                const isFavorite = favorites.has(m.id);
+                const matchIsFavorite = isFavorite(m.id);
+                const matchHasAlert = hasAlert(m.id);
+                const matchIsSaving = isSaving(m.id);
 
                 return (
                   <div
@@ -352,12 +401,31 @@ export default function LiveScores() {
                     {/* Favorite Star */}
                     <button
                       onClick={(e) => handleFavoriteClick(e, m.id)}
-                      className="p-1 hover:bg-white/10 rounded transition-colors"
+                      disabled={matchIsSaving}
+                      className={cn(
+                        "p-1 hover:bg-white/10 rounded transition-colors",
+                        matchIsSaving && "opacity-50 cursor-not-allowed"
+                      )}
                     >
                       <Star
                         className={cn(
                           "h-4 w-4 transition-colors",
-                          isFavorite
+                          matchIsFavorite
+                            ? "text-primary fill-primary"
+                            : "text-muted-foreground hover:text-primary"
+                        )}
+                      />
+                    </button>
+
+                    {/* Alert Bell */}
+                    <button
+                      onClick={(e) => handleAlertClick(e, m)}
+                      className="p-1 hover:bg-white/10 rounded transition-colors"
+                    >
+                      <Bell
+                        className={cn(
+                          "h-4 w-4 transition-colors",
+                          matchHasAlert
                             ? "text-primary fill-primary"
                             : "text-muted-foreground hover:text-primary"
                         )}
@@ -414,7 +482,10 @@ export default function LiveScores() {
 
       <MatchAlertsModal
         match={alertsMatch}
-        onClose={() => setAlertsMatch(null)}
+        onClose={() => {
+          setAlertsMatch(null);
+          refetchAlerts(); // Refresh alerts after modal closes
+        }}
       />
     </DashboardLayout>
   );
