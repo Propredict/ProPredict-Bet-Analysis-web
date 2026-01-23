@@ -1,26 +1,25 @@
-export type MatchDay = "today" | "tomorrow";
-
 export interface AIPrediction {
   id: string;
 
   league: string;
-  homeTeam: string;
-  awayTeam: string;
+  home_team: string;
+  away_team: string;
 
-  matchDate: string;
-  matchTime: string;
-  matchDay: MatchDay;
-
-  homeWin: number;
-  draw: number;
-  awayWin: number;
+  match_time: string;
+  match_day: "today" | "tomorrow";
 
   prediction: "1" | "X" | "2";
-  predictedScore: string;
+  predicted_score: string; // npr "2-1"
   confidence: number;
 
-  riskLevel: "low" | "medium" | "high";
+  home_win: number;
+  draw: number;
+  away_win: number;
 
-  isPremium: boolean;
-  resultStatus: "pending" | "won" | "lost";
+  risk_level: "low" | "medium" | "high";
+  is_premium: boolean;
+  result_status: "pending" | "won" | "lost";
+
+  // ➕ NOVO
+  odds?: number; // ako postoji
 }
