@@ -65,7 +65,7 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
-  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -88,7 +88,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") {
-      return ""; // Uses variant="outline"
+      return "";
     }
     if (unlockMethod.type === "watch_ad") {
       return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
@@ -102,19 +102,21 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     return "";
   };
 
-  const isUnlocked = unlockMethod?.type === "unlocked";
+  const getUnlockButtonIcon = () => {
+    if (!unlockMethod || unlockMethod.type === "unlocked") return null;
+    if (unlockMethod.type === "login_required") return LogIn;
+    if (unlockMethod.type === "watch_ad") return Sparkles;
+    if (unlockMethod.type === "upgrade_basic") return Star;
+    return Crown;
+  };
 
-  // Locked state
+  // Locked state - show match name visible, blur prediction/odds/confidence
   if (isLocked) {
+    const Icon = getUnlockButtonIcon();
+    
     return (
-      <Card 
-        className={cn(
-          "bg-card border-border transition-all overflow-hidden",
-          !isUnlocking && "cursor-pointer hover:border-primary/50"
-        )}
-        onClick={!isUnlocking ? handleUnlockClick : undefined}
-      >
-        {/* Header with tier badge */}
+      <Card className="bg-card border-border transition-all overflow-hidden hover:border-primary/50">
+        {/* Header with tier badge - VISIBLE */}
         <div className="p-4 pb-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -123,38 +125,45 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
                 {tip.league}
               </Badge>
             </div>
-            <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{tip.kickoff}</span>
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            </div>
           </div>
         </div>
 
-        {/* Match title */}
+        {/* Match title - VISIBLE */}
         <div className="px-4 pb-3">
           <h3 className="font-bold text-lg text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
         </div>
 
-        {/* Locked content placeholder */}
+        {/* Prediction details - BLURRED */}
         <div className="px-4 pb-3">
-          <div className="grid grid-cols-3 gap-4 p-3 bg-muted/20 rounded-lg border border-border/50">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Prediction</p>
-              <div className="h-4 w-20 bg-muted rounded blur-sm" />
+          <div className="p-3 bg-muted/20 rounded-lg border border-border/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Prediction</span>
+              <span className="blur-sm opacity-50 text-sm font-medium">{tip.prediction}</span>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Odds</p>
-              <div className="h-4 w-12 bg-muted rounded blur-sm mx-auto" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Odds</span>
+              <span className="blur-sm opacity-50 text-sm font-medium text-primary">@{tip.odds.toFixed(2)}</span>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-              <div className="h-4 w-16 bg-muted rounded blur-sm ml-auto" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Confidence</span>
+              <div className="flex items-center gap-2 blur-sm opacity-50">
+                <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-success to-primary rounded-full"
+                    style={{ width: `${tip.confidence}%` }}
+                  />
+                </div>
+                <span className="font-bold text-success">{tip.confidence}%</span>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 pt-3 text-muted-foreground">
-            <Lock className="h-4 w-4" />
-            <span className="text-xs">Locked</span>
           </div>
         </div>
 
-        {/* Unlock button */}
+        {/* Unlock button - NOT BLURRED */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-4 border-t border-border">
             <Button
@@ -174,10 +183,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
                 </>
               ) : (
                 <>
-                  {unlockMethod.type === "login_required" && <LogIn className="h-4 w-4" />}
-                  {unlockMethod.type === "watch_ad" && <Sparkles className="h-4 w-4" />}
-                  {unlockMethod.type === "upgrade_basic" && <Star className="h-4 w-4" />}
-                  {unlockMethod.type === "upgrade_premium" && <Crown className="h-4 w-4" />}
+                  {Icon && <Icon className="h-4 w-4" />}
                   {getUnlockButtonText(unlockMethod)}
                 </>
               )}
@@ -188,7 +194,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     );
   }
 
-  // Unlocked state - rich card design
+  // Unlocked state - full details visible
   return (
     <Card className="bg-card border-primary/30 transition-all overflow-hidden hover:border-primary/50">
       {/* Header with tier badge and unlocked status */}
