@@ -52,6 +52,8 @@ export default function LiveScores() {
     return () => clearInterval(i);
   }, []);
 
+  /* ---------- STATS ---------- */
+
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === "live" || m.status === "halftime").length,
     [matches],
@@ -59,16 +61,19 @@ export default function LiveScores() {
 
   const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
 
+  /* ---------- FILTERING ---------- */
+
   const filtered = useMemo(() => {
     return matches.filter((m) => {
       const q = search.toLowerCase();
+
       const okSearch =
         m.homeTeam.toLowerCase().includes(q) ||
         m.awayTeam.toLowerCase().includes(q) ||
         m.league.toLowerCase().includes(q) ||
         m.leagueCountry?.toLowerCase().includes(q);
 
-      const okLeague = leagueFilter === "All Leagues" || m.league.includes(leagueFilter);
+      const okLeague = leagueFilter === "All Leagues" || m.league.toLowerCase().includes(leagueFilter.toLowerCase());
 
       return okSearch && okLeague;
     });
@@ -84,6 +89,8 @@ export default function LiveScores() {
       {} as Record<string, Match[]>,
     );
   }, [filtered]);
+
+  /* ---------- HELPERS ---------- */
 
   const getDateLabel = (d: DateMode) => {
     const now = new Date();
@@ -104,6 +111,8 @@ export default function LiveScores() {
     },
     [toggleFavorite, navigate],
   );
+
+  /* ---------- RENDER ---------- */
 
   return (
     <DashboardLayout>
@@ -231,7 +240,9 @@ export default function LiveScores() {
           </Card>
         ))}
 
-        {!isLoading && !error && matches.length === 0 && <Card className="p-10 text-center">No matches</Card>}
+        {!isLoading && !error && filtered.length === 0 && (
+          <Card className="p-10 text-center opacity-70">No matches for selected filters</Card>
+        )}
 
         {error && <Card className="p-6 text-center text-destructive">{error}</Card>}
       </div>
@@ -248,7 +259,7 @@ export default function LiveScores() {
   );
 }
 
-/* ---------- helpers ---------- */
+/* ---------- HELPERS ---------- */
 
 function StatCard({
   title,
