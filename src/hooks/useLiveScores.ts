@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
+export type MatchStatus = "live" | "halftime" | "finished" | "upcoming";
 
 export interface Match {
   id: string;
@@ -16,89 +16,85 @@ export interface Match {
   leagueLogo: string | null;
   homeLogo: string | null;
   awayLogo: string | null;
+  startedAt?: number; // timestamp za lokalni timer
 }
 
-type DateMode = "yesterday" | "today" | "tomorrow";
+const REFRESH_INTERVAL = 30000;
 
-const AUTO_REFRESH_MS = 30_000;
-
-// Map API-Football status codes to our simplified status
-function mapApiStatus(shortStatus: string): MatchStatus {
-  const liveStatuses = ["1H", "2H", "ET", "P", "LIVE"];
-  const halftimeStatuses = ["HT", "BT"];
-  const finishedStatuses = ["FT", "AET", "PEN", "PST", "CANC", "ABD", "AWD", "WO"];
-  
-  if (liveStatuses.includes(shortStatus)) return "live";
-  if (halftimeStatuses.includes(shortStatus)) return "halftime";
-  if (finishedStatuses.includes(shortStatus)) return "finished";
-  return "upcoming";
-}
-
-export function useLiveScores(dateMode: DateMode = "today") {
+export function useLiveScores() {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const abortRef = useRef<AbortController | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchScores = useCallback(async () => {
-    // Abort previous request
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Call the edge function with date mode
-      const res = await fetch(`/functions/v1/get-fixtures?mode=${dateMode}`, {
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Request failed (${res.status})`);
+  const fetchMatches = useCallback(
+    async (mode: "today" | "live" | "yesterday" | "tomorrow" = "today") => {
+      if (!SUPABASE_URL) {
+        setError("Missing Supabase URL");
+        setLoading(false);
+        return;
       }
 
-      const data = await res.json();
-      
-      // Map the response to ensure correct status format
-      const mappedMatches: Match[] = (data.fixtures || []).map((fixture: any) => ({
-        ...fixture,
-        status: mapApiStatus(fixture.status) || fixture.status,
-      }));
+      controllerRef.current?.abort();
+      const controller = new AbortController();
+      controllerRef.current = controller;
 
-      setMatches(mappedMatches);
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
-        console.error("Live scores error:", err);
-        setError(err.message || "Failed to load live scores");
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/get-fixtures?mode=${mode}`, {
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const now = Date.now();
+
+        const mapped: Match[] = (data.fixtures || []).map((m: Match) => ({
+          ...m,
+          startedAt: m.status === "live" && m.minute !== null ? now - m.minute * 60 * 1000 : undefined,
+        }));
+
+        setMatches(mapped);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setError("Failed to load live scores");
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dateMode]);
+    },
+    [SUPABASE_URL],
+  );
 
-  // Initial fetch + auto refresh
+  // initial + auto refresh
   useEffect(() => {
-    fetchScores();
+    fetchMatches("today");
 
-    // Auto refresh every 30 seconds
     intervalRef.current = setInterval(() => {
-      fetchScores();
-    }, AUTO_REFRESH_MS);
+      fetchMatches("today");
+    }, REFRESH_INTERVAL);
 
     return () => {
-      abortRef.current?.abort();
+      controllerRef.current?.abort();
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [fetchScores]);
+  }, [fetchMatches]);
 
   return {
     matches,
-    isLoading,
+    loading,
     error,
-    refetch: fetchScores,
+    refetch: fetchMatches,
   };
 }
