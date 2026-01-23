@@ -38,7 +38,6 @@ export function useTickets(includeAll = false) {
         .select("*, matches:ticket_matches(*)")
         .order("created_at_ts", { ascending: false });
 
-      // PUBLIC VIEW → only published
       if (!includeAll) {
         query = query.eq("status", "published");
       }
@@ -64,14 +63,19 @@ export function useTickets(includeAll = false) {
       ticket: Omit<TicketInsert, "created_by">;
       matches: Omit<TicketMatchInsert, "ticket_id">[];
     }) => {
-      const { data: newTicket, error } = await supabase
-        .from("tickets")
-        .insert({
-          ...ticket,
-          created_by: session?.user?.id ?? null,
-        })
-        .select()
-        .single();
+      const ticketPayload = {
+        ...ticket,
+        created_by: session?.user?.id ?? null,
+      };
+
+      // 🔎 DEBUG
+      console.log("CREATE TICKET PAYLOAD:", ticketPayload);
+
+      const { data: newTicket, error } = await supabase.from("tickets").insert(ticketPayload).select().single();
+
+      // 🔎 DEBUG
+      console.log("CREATE TICKET RESPONSE:", newTicket);
+      console.log("CREATE TICKET ERROR:", error);
 
       if (error) throw error;
 
@@ -82,7 +86,13 @@ export function useTickets(includeAll = false) {
           sort_order: idx,
         }));
 
+        // 🔎 DEBUG
+        console.log("CREATE MATCHES PAYLOAD:", rows);
+
         const { error: matchError } = await supabase.from("ticket_matches").insert(rows);
+
+        // 🔎 DEBUG
+        console.log("CREATE MATCHES ERROR:", matchError);
 
         if (matchError) throw matchError;
       }
@@ -136,7 +146,9 @@ export function useTickets(includeAll = false) {
   const deleteTicket = useMutation({
     mutationFn: async (id: string) => {
       await supabase.from("ticket_matches").delete().eq("ticket_id", id);
+
       const { error } = await supabase.from("tickets").delete().eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => {
