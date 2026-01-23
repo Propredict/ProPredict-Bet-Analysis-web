@@ -69,31 +69,6 @@ export default function LiveScores() {
     }
   }, [allowedStatusTabs, statusTab]);
 
-  /* -------------------- GOAL HIGHLIGHT -------------------- */
-
-  const prevScores = useRef<Record<string, string>>({});
-  const [goalFlash, setGoalFlash] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const flashes: Record<string, boolean> = {};
-
-    matches.forEach((m) => {
-      const isLive = m.status === "live" || m.status === "halftime";
-      if (!isLive) return;
-
-      const score = `${m.homeScore}-${m.awayScore}`;
-      if (prevScores.current[m.id] && prevScores.current[m.id] !== score) {
-        flashes[m.id] = true;
-        setTimeout(() => setGoalFlash((f) => ({ ...f, [m.id]: false })), 1200);
-      }
-      prevScores.current[m.id] = score;
-    });
-
-    if (Object.keys(flashes).length) {
-      setGoalFlash((f) => ({ ...f, ...flashes }));
-    }
-  }, [matches]);
-
   /* -------------------- FILTERING -------------------- */
 
   const filtered = useMemo(() => {
@@ -163,18 +138,6 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-3 gap-4">
-          <StatCard
-            title="Live Now"
-            value={matches.filter((m) => m.status === "live").length}
-            icon={Play}
-            color="destructive"
-          />
-          <StatCard title="Total Matches" value={matches.length} icon={BarChart3} color="primary" />
-          <StatCard title="Leagues" value={new Set(matches.map((m) => m.league)).size} icon={Trophy} color="warning" />
-        </div>
-
         {/* LEAGUES */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {LEAGUES.map((l) => (
@@ -206,17 +169,6 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* SEARCH */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            className="pl-10 bg-[#0E1627]"
-            placeholder="Search teams, leagues…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
         {/* STATUS BAR */}
         <div className="bg-[#0E1627] rounded-xl p-1 flex gap-1">
           {allowedStatusTabs.map((tab) => (
@@ -229,12 +181,23 @@ export default function LiveScores() {
               )}
             >
               {tab === "all" && <Trophy className="h-4 w-4" />}
-              {tab === "live" && <Play className="h-4 w-4 text-red-500" />}
+              {tab === "live" && <Play className="h-4 w-4" />}
               {tab === "upcoming" && <Clock className="h-4 w-4" />}
               {tab === "finished" && <CheckCircle className="h-4 w-4" />}
               {tab}
             </button>
           ))}
+        </div>
+
+        {/* SEARCH */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-10 bg-[#0E1627]"
+            placeholder="Search teams, leagues…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
         {/* MATCHES */}
@@ -244,17 +207,14 @@ export default function LiveScores() {
 
             {games.map((m) => {
               const isLive = m.status === "live" || m.status === "halftime";
-              const flash = goalFlash[m.id];
+              const isFinished = m.status === "finished";
+              const isUpcoming = m.status === "upcoming";
 
               return (
                 <div
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
-                  className={cn(
-                    "px-4 py-3 flex items-center gap-3 cursor-pointer transition",
-                    "hover:bg-white/5",
-                    isLive && "border-l-2 border-red-500 bg-red-500/5",
-                  )}
+                  className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-white/5"
                 >
                   <button
                     onClick={(e) => {
@@ -270,20 +230,23 @@ export default function LiveScores() {
                     />
                   </button>
 
+                  {/* TEAMS + CENTER PILL */}
                   <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
-                    <span className={cn(isLive && "text-red-300")}>{m.homeTeam}</span>
+                    <span className={cn(isUpcoming && "text-muted-foreground")}>{m.homeTeam}</span>
 
+                    {/* CENTER SCORE / VS / TIME */}
                     <span
                       className={cn(
-                        "px-3 font-bold",
-                        isLive && "text-red-500 text-lg",
-                        flash && "animate-pulse bg-red-500/20 rounded-md",
+                        "px-4 py-1 rounded-full font-semibold text-sm min-w-[70px] text-center",
+                        isLive && "text-red-500 bg-red-500/10",
+                        isFinished && "text-white bg-white/10",
+                        isUpcoming && "text-muted-foreground bg-white/5",
                       )}
                     >
-                      {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                      {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
                     </span>
 
-                    <span className={cn(isLive && "text-red-300")}>{m.awayTeam}</span>
+                    <span className={cn(isUpcoming && "text-muted-foreground")}>{m.awayTeam}</span>
                   </div>
 
                   <StatusBadge match={m} />
@@ -302,29 +265,24 @@ export default function LiveScores() {
   );
 }
 
-/* -------------------- HELPERS -------------------- */
-
-function StatCard({ title, value, icon: Icon, color }: any) {
-  return (
-    <Card className="p-4 flex justify-between items-center">
-      <div>
-        <p className="text-xs text-muted-foreground">{title}</p>
-        <p className={`text-2xl font-bold text-${color}`}>{value}</p>
-      </div>
-      <Icon />
-    </Card>
-  );
-}
+/* -------------------- BADGES -------------------- */
 
 function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
-    return <Badge className="bg-destructive animate-pulse">LIVE</Badge>;
+    return <Badge className="bg-red-500/10 text-red-500 border border-red-500/30">LIVE</Badge>;
   }
+
   if (match.status === "halftime") {
-    return <Badge className="bg-warning">HT</Badge>;
+    return <Badge className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">HT</Badge>;
   }
+
   if (match.status === "finished") {
-    return <Badge variant="secondary">FT</Badge>;
+    return <Badge className="bg-white/5 text-muted-foreground border border-white/10">FT</Badge>;
   }
-  return <Badge variant="outline">{match.startTime}</Badge>;
+
+  return (
+    <Badge variant="outline" className="text-muted-foreground border-white/10">
+      {match.startTime}
+    </Badge>
+  );
 }
