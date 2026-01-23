@@ -1,5 +1,11 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import App from "./App";
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(<App />);
+import { UserPlanProvider } from "@/hooks/useUserPlan";
+
+createRoot(document.getElementById("root")!).render(
+  <UserPlanProvider>
+    <App />
+  </UserPlanProvider>,
+);
