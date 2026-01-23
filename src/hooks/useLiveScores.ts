@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type MatchStatus = "live" | "halftime" | "finished" | "upcoming";
+export type DateMode = "today" | "yesterday" | "tomorrow" | "live";
 
 export interface Match {
   id: string;
@@ -18,12 +19,10 @@ export interface Match {
   awayLogo: string | null;
 }
 
-export type DateMode = "today" | "yesterday" | "tomorrow" | "live";
-
 export function useLiveScores(mode: DateMode = "today") {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -41,14 +40,14 @@ export function useLiveScores(mode: DateMode = "today") {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to fetch fixtures (${res.status})`);
+        throw new Error(`Fetch failed (${res.status})`);
       }
 
       const data = await res.json();
       setMatches(data.fixtures ?? []);
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
-        setError(err.message || "Failed to load live scores");
+    } catch (e: any) {
+      if (e.name !== "AbortError") {
+        setError(e.message || "Failed to load matches");
       }
     } finally {
       setIsLoading(false);
@@ -59,7 +58,7 @@ export function useLiveScores(mode: DateMode = "today") {
     setIsLoading(true);
     fetchMatches();
 
-    const interval = setInterval(fetchMatches, 30000); // auto refresh 30s
+    const interval = setInterval(fetchMatches, 30000);
 
     return () => {
       clearInterval(interval);
