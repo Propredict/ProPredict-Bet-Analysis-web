@@ -1,6 +1,5 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3 } from "lucide-react";
+import { Zap, RefreshCw, Bell, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle } from "lucide-react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,22 +32,20 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 /* -------------------- PAGE -------------------- */
 
 export default function LiveScores() {
-  const navigate = useNavigate();
-
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [dateMode, setDateMode] = useState<DateMode>("today");
-  const [search, setSearch] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [alertsMatch, setAlertsMatch] = useState<Match | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const { matches, isLoading, error, refetch } = useLiveScores({
     dateMode,
     statusFilter: statusTab,
   });
 
-  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { refetch: refetchAlerts } = useMatchAlerts();
 
   /* -------------------- CLOCK -------------------- */
@@ -58,11 +55,12 @@ export default function LiveScores() {
     return () => clearInterval(i);
   }, []);
 
-  /* -------------------- STATUS TABS LOGIC -------------------- */
+  /* -------------------- STATUS TAB RULES -------------------- */
 
   const allowedStatusTabs: StatusTab[] = useMemo(() => {
-    if (dateMode === "today") return ["all", "live", "upcoming", "finished"];
-    return ["all"];
+    if (dateMode === "yesterday") return ["all", "finished"];
+    if (dateMode === "tomorrow") return ["all", "upcoming"];
+    return ["all", "live", "upcoming", "finished"];
   }, [dateMode]);
 
   useEffect(() => {
@@ -71,20 +69,35 @@ export default function LiveScores() {
     }
   }, [allowedStatusTabs, statusTab]);
 
-  /* -------------------- STATS -------------------- */
+  /* -------------------- GOAL HIGHLIGHT -------------------- */
 
-  const liveCount = useMemo(
-    () => matches.filter((m) => m.status === "live" || m.status === "halftime").length,
-    [matches],
-  );
+  const prevScores = useRef<Record<string, string>>({});
+  const [goalFlash, setGoalFlash] = useState<Record<string, boolean>>({});
 
-  const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
+  useEffect(() => {
+    const flashes: Record<string, boolean> = {};
+
+    matches.forEach((m) => {
+      const isLive = m.status === "live" || m.status === "halftime";
+      if (!isLive) return;
+
+      const score = `${m.homeScore}-${m.awayScore}`;
+      if (prevScores.current[m.id] && prevScores.current[m.id] !== score) {
+        flashes[m.id] = true;
+        setTimeout(() => setGoalFlash((f) => ({ ...f, [m.id]: false })), 1200);
+      }
+      prevScores.current[m.id] = score;
+    });
+
+    if (Object.keys(flashes).length) {
+      setGoalFlash((f) => ({ ...f, ...flashes }));
+    }
+  }, [matches]);
 
   /* -------------------- FILTERING -------------------- */
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-
     return matches.filter((m) => {
       const okSearch =
         m.homeTeam.toLowerCase().includes(q) ||
@@ -117,14 +130,6 @@ export default function LiveScores() {
     return format(now, "MMM d");
   };
 
-  const handleFavorite = useCallback(
-    (e: React.MouseEvent, id: string) => {
-      e.stopPropagation();
-      toggleFavorite(id, navigate);
-    },
-    [toggleFavorite, navigate],
-  );
-
   /* -------------------- RENDER -------------------- */
 
   return (
@@ -137,17 +142,51 @@ export default function LiveScores() {
               <Zap className="text-primary" />
               <h1 className="text-xl font-bold">Live Scores</h1>
             </div>
-            <Badge variant="outline" className="font-mono">
-              {format(currentTime, "HH:mm")}
-            </Badge>
+
+            <div className="flex gap-2 items-center">
+              <Badge variant="outline" className="font-mono">
+                {format(currentTime, "HH:mm")}
+              </Badge>
+              <Button size="icon" variant="outline" onClick={refetch}>
+                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              </Button>
+              <Button
+                onClick={() => {
+                  const m = matches.find((m) => m.status === "live");
+                  if (m) setAlertsMatch(m);
+                }}
+              >
+                <Bell className="h-4 w-4 mr-1" />
+                Alerts
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
-          <StatCard title="Live Now" value={liveCount} color="destructive" icon={Play} />
-          <StatCard title="Total Matches" value={matches.length} color="primary" icon={BarChart3} />
-          <StatCard title="Leagues" value={leaguesCount} color="warning" icon={Trophy} />
+          <StatCard
+            title="Live Now"
+            value={matches.filter((m) => m.status === "live").length}
+            icon={Play}
+            color="destructive"
+          />
+          <StatCard title="Total Matches" value={matches.length} icon={BarChart3} color="primary" />
+          <StatCard title="Leagues" value={new Set(matches.map((m) => m.league)).size} icon={Trophy} color="warning" />
+        </div>
+
+        {/* LEAGUES */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {LEAGUES.map((l) => (
+            <Button
+              key={l}
+              size="sm"
+              variant={leagueFilter === l ? "default" : "outline"}
+              onClick={() => setLeagueFilter(l)}
+            >
+              {l}
+            </Button>
+          ))}
         </div>
 
         {/* DATE */}
@@ -169,7 +208,7 @@ export default function LiveScores() {
 
         {/* SEARCH */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-10 bg-[#0E1627]"
             placeholder="Search teams, leagues…"
@@ -178,16 +217,34 @@ export default function LiveScores() {
           />
         </div>
 
+        {/* STATUS BAR */}
+        <div className="bg-[#0E1627] rounded-xl p-1 flex gap-1">
+          {allowedStatusTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatusTab(tab)}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm",
+                statusTab === tab ? "bg-[#18223A] text-white" : "text-muted-foreground hover:text-white",
+              )}
+            >
+              {tab === "all" && <Trophy className="h-4 w-4" />}
+              {tab === "live" && <Play className="h-4 w-4 text-red-500" />}
+              {tab === "upcoming" && <Clock className="h-4 w-4" />}
+              {tab === "finished" && <CheckCircle className="h-4 w-4" />}
+              {tab}
+            </button>
+          ))}
+        </div>
+
         {/* MATCHES */}
         {Object.entries(grouped).map(([league, games]) => (
           <Card key={league}>
-            <div className="px-4 py-2 border-b border-white/5 flex justify-between">
-              <span className="font-semibold">{league}</span>
-              <Badge variant="secondary">{games.length}</Badge>
-            </div>
+            <div className="px-4 py-2 border-b border-white/5 font-semibold">{league}</div>
 
             {games.map((m) => {
               const isLive = m.status === "live" || m.status === "halftime";
+              const flash = goalFlash[m.id];
 
               return (
                 <div
@@ -199,18 +256,34 @@ export default function LiveScores() {
                     isLive && "border-l-2 border-red-500 bg-red-500/5",
                   )}
                 >
-                  <button onClick={(e) => handleFavorite(e, m.id)}>
-                    <Star className="h-4 w-4 text-muted-foreground" />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(m.id);
+                    }}
+                  >
+                    <Star
+                      className={cn(
+                        "h-4 w-4",
+                        isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
+                      )}
+                    />
                   </button>
 
                   <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
-                    <span className={cn("text-right", isLive && "text-red-300 font-medium")}>{m.homeTeam}</span>
+                    <span className={cn(isLive && "text-red-300")}>{m.homeTeam}</span>
 
-                    <span className={cn("px-3 font-bold", isLive ? "text-red-500 text-lg" : "text-foreground")}>
+                    <span
+                      className={cn(
+                        "px-3 font-bold",
+                        isLive && "text-red-500 text-lg",
+                        flash && "animate-pulse bg-red-500/20 rounded-md",
+                      )}
+                    >
                       {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
                     </span>
 
-                    <span className={cn(isLive && "text-red-300 font-medium")}>{m.awayTeam}</span>
+                    <span className={cn(isLive && "text-red-300")}>{m.awayTeam}</span>
                   </div>
 
                   <StatusBadge match={m} />
