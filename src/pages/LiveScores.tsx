@@ -47,13 +47,34 @@ export default function LiveScores() {
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
 
+  /* ---------- CLOCK ---------- */
   useEffect(() => {
     const i = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(i);
   }, []);
 
-  /* ---------- STATS ---------- */
+  /* ---------- ALLOWED STATUS TABS ---------- */
+  const allowedStatusTabs = useMemo<StatusTab[]>(() => {
+    if (dateMode === "today") {
+      return ["all", "live", "upcoming", "finished"];
+    }
+    if (dateMode === "yesterday") {
+      return ["all", "finished"];
+    }
+    if (dateMode === "tomorrow") {
+      return ["all", "upcoming"];
+    }
+    return ["all"];
+  }, [dateMode]);
 
+  /* reset status tab if invalid */
+  useEffect(() => {
+    if (!allowedStatusTabs.includes(statusTab)) {
+      setStatusTab("all");
+    }
+  }, [allowedStatusTabs, statusTab]);
+
+  /* ---------- STATS ---------- */
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === "live" || m.status === "halftime").length,
     [matches],
@@ -62,7 +83,6 @@ export default function LiveScores() {
   const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
 
   /* ---------- FILTERING ---------- */
-
   const filtered = useMemo(() => {
     return matches.filter((m) => {
       const q = search.toLowerCase();
@@ -91,7 +111,6 @@ export default function LiveScores() {
   }, [filtered]);
 
   /* ---------- HELPERS ---------- */
-
   const getDateLabel = (d: DateMode) => {
     const now = new Date();
     if (d === "yesterday") return format(subDays(now, 1), "MMM d");
@@ -113,7 +132,6 @@ export default function LiveScores() {
   );
 
   /* ---------- RENDER ---------- */
-
   return (
     <DashboardLayout>
       <div className="space-y-5">
@@ -146,6 +164,23 @@ export default function LiveScores() {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* STATUS TABS */}
+        <div className="flex gap-2 overflow-x-auto">
+          {allowedStatusTabs.map((tab) => (
+            <Button
+              key={tab}
+              size="sm"
+              variant={statusTab === tab ? "default" : "outline"}
+              onClick={() => setStatusTab(tab)}
+            >
+              {tab === "all" && "All Matches"}
+              {tab === "live" && "Live Now"}
+              {tab === "upcoming" && "Upcoming"}
+              {tab === "finished" && "Finished"}
+            </Button>
+          ))}
         </div>
 
         {/* STATS */}
