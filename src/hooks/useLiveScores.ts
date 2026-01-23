@@ -38,6 +38,7 @@ export function useLiveScores(
   const [error, setError] = useState<string | null>(null);
 
   const controllerRef = useRef<AbortController | null>(null);
+  const matchesRef = useRef<Match[]>([]);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -87,8 +88,9 @@ export function useLiveScores(
         );
       }
 
-      // Store previous matches for comparison (for alert detection)
-      setPreviousMatches(matches);
+      // Store previous matches for comparison (use ref to avoid dependency issues)
+      setPreviousMatches(matchesRef.current);
+      matchesRef.current = filtered;
       setMatches(filtered);
     } catch (err: any) {
       if (err.name !== "AbortError") {
@@ -97,7 +99,7 @@ export function useLiveScores(
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, dateMode, matches]);
+  }, [statusFilter, dateMode]);
 
   useEffect(() => {
     fetchMatches();
@@ -108,7 +110,7 @@ export function useLiveScores(
       controllerRef.current?.abort();
       clearInterval(interval);
     };
-  }, [statusFilter, dateMode]); // Re-fetch when filters change
+  }, [fetchMatches]);
 
   return {
     matches,
