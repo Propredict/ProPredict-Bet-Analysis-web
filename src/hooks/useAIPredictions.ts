@@ -1,41 +1,41 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { AIPrediction } from "@/components/ai-predictions/types";
 
-export function useAIPredictions(day: "today" | "tomorrow") {
-  const [predictions, setPredictions] = useState<AIPrediction[]>([]);
-  const [loading, setLoading] = useState(true);
+function calcOddsAccuracy(preds: any[]) {
+  const g = { low: [0, 0], mid: [0, 0], high: [0, 0] };
 
-  const [stats, setStats] = useState({
-    won: 0,
-    lost: 0,
-    pending: 0,
-    accuracy: 0,
+  preds.forEach((p) => {
+    if (!p.odds || p.status === "pending") return;
+
+    let key = "mid";
+    if (p.odds < 1.7) key = "low";
+    if (p.odds > 2.5) key = "high";
+
+    g[key][1]++;
+    if (p.status === "won") g[key][0]++;
   });
 
+  return {
+    low: g.low[1] ? Math.round((g.low[0] / g.low[1]) * 100) : 0,
+    medium: g.mid[1] ? Math.round((g.mid[0] / g.mid[1]) * 100) : 0,
+    high: g.high[1] ? Math.round((g.high[0] / g.high[1]) * 100) : 0,
+  };
+}
+
+export function useAIPredictions() {
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [oddsAccuracy, setOddsAccuracy] = useState<any>({});
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      const { data } = await supabase.from("ai_predictions").select("*").eq("match_day", day).order("match_time");
-
-      const won = data?.filter((d) => d.result_status === "won").length ?? 0;
-      const lost = data?.filter((d) => d.result_status === "lost").length ?? 0;
-      const pending = data?.filter((d) => d.result_status === "pending").length ?? 0;
-
-      setStats({
-        won,
-        lost,
-        pending,
-        accuracy: won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0,
-      });
-
-      setPredictions(data ?? []);
+    async function load() {
+      const { data } = await supabase.from("ai_predictions").select("*");
+      setPredictions(data || []);
+      setOddsAccuracy(calcOddsAccuracy(data || []));
       setLoading(false);
-    };
+    }
+    load();
+  }, []);
 
-    fetchData();
-  }, [day]);
-
-  return { predictions, stats, loading };
+  return { predictions, loading, oddsAccuracy };
 }
