@@ -1,85 +1,122 @@
-import { TrendingUp, RefreshCw, Check, X, Clock, Flame } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { TrendingUp, Sparkles, Star, Crown, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import TipCard, { type Tip } from "./TipCard";
+import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
 
-export function FeaturedPredictions() {
-  const { tips, isLoading, refetch } = useTips(false);
+type TabType = "daily" | "exclusive" | "premium";
 
-  const aiTips = tips.filter((t) => t.ai_prediction);
+function mapDbTipToTip(dbTip: any): Tip {
+  return {
+    id: dbTip.id,
+    homeTeam: dbTip.home_team,
+    awayTeam: dbTip.away_team,
+    league: dbTip.league,
+    prediction: dbTip.prediction,
+    odds: dbTip.odds,
+    confidence: dbTip.confidence ?? 0,
+    kickoff: dbTip.created_at_ts ? new Date(dbTip.created_at_ts).toLocaleDateString() : "",
+    tier: dbTip.tier as ContentTier,
+  };
+}
 
-  const won = aiTips.filter((t) => t.result === "won").length;
-  const lost = aiTips.filter((t) => t.result === "lost").length;
-  const pending = aiTips.filter((t) => t.result === "pending").length;
+export function MatchPredictions() {
+  const [activeTab, setActiveTab] = useState<TabType>("daily");
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
 
-  const total = aiTips.length;
-  const accuracy = total > 0 ? Math.round((won / (won + lost || 1)) * 100) : 0;
+  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler({
+    onUpgradeBasic: () => {
+      setHighlightPlan("basic");
+      setShowPricingModal(true);
+    },
+    onUpgradePremium: () => {
+      setHighlightPlan("premium");
+      setShowPricingModal(true);
+    },
+  });
+
+  const tipsQuery = useTips(false);
+
+  if (!tipsQuery) return null;
+
+  const { tips: dbTips = [], isLoading } = tipsQuery;
+
+  const tips = dbTips.map(mapDbTipToTip);
+  const filteredTips = tips.filter((t) => t.tier === activeTab);
+
+  const tabs = [
+    { id: "daily", label: "Daily", icon: Sparkles },
+    { id: "exclusive", label: "Pro", icon: Star },
+    { id: "premium", label: "Premium", icon: Crown },
+  ];
 
   return (
     <section className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <TrendingUp className="h-6 w-6 text-primary" />
-          <div>
-            <h2 className="text-xl font-semibold">Featured AI Predictions</h2>
-            <p className="text-sm text-muted-foreground">AI-powered performance overview</p>
-          </div>
-        </div>
-
-        <Button variant="outline" size="sm" className="gap-2" onClick={refetch}>
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+      <div className="flex items-center gap-3">
+        <TrendingUp className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold">Match Predictions</h2>
       </div>
 
-      {/* Stats Card */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="font-medium">AI Accuracy</span>
-          </div>
-
-          <div className="flex items-center justify-center h-10 w-20 rounded-full bg-primary text-primary-foreground font-bold">
-            {isLoading ? "—" : `${accuracy}%`}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="flex items-center justify-center gap-1 text-success">
-              <Check className="h-4 w-4" />
-              <span className="font-semibold">{won}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Won</p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-center gap-1 text-destructive">
-              <X className="h-4 w-4" />
-              <span className="font-semibold">{lost}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Lost</p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-center gap-1 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span className="font-semibold">{pending}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Pending</p>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-center gap-1 text-accent">
-              <Flame className="h-4 w-4" />
-              <span className="font-semibold">{won >= 3 ? "HOT" : "—"}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Streak</p>
-          </div>
+      <Card className="p-1">
+        <div className="grid grid-cols-3 gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={cn(
+                "py-3 rounded-lg",
+                activeTab === tab.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+              )}
+            >
+              <tab.icon className="h-4 w-4 mx-auto" />
+              <p className="text-xs mt-1">{tab.label}</p>
+            </button>
+          ))}
         </div>
       </Card>
+
+      <div className="bg-primary/10 border border-primary/20 rounded-lg py-2 px-4 text-center">
+        <div className="flex items-center justify-center gap-2 text-sm text-primary">
+          <Users className="h-4 w-4" />
+          <span>Users unlocked tips today</span>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredTips.length > 0 ? (
+        <div className="space-y-3">
+          {filteredTips.map((tip) => {
+            const isLocked = !canAccess(tip.tier, "tip", tip.id);
+            const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
+
+            return (
+              <TipCard
+                key={tip.id}
+                tip={tip}
+                isLocked={isLocked}
+                unlockMethod={unlockMethod}
+                isUnlocking={unlockingId === tip.id}
+                onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">No {activeTab} predictions available</p>
+        </Card>
+      )}
+
+      <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
     </section>
   );
 }
