@@ -13,7 +13,8 @@ interface Props {
 }
 
 export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPremium }: Props) {
-  const locked = (!isPremiumUser && prediction.is_premium) || (!isPremiumUser && !prediction.is_premium);
+  // 🔒 FINAL LOCK LOGIC
+  const locked = prediction.isLocked && !isPremiumUser && (prediction.isPremium || !prediction.isPremium);
 
   return (
     <Card className="relative bg-card border-border overflow-hidden">
@@ -21,8 +22,8 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
       <div className="p-3 flex justify-between text-xs text-muted-foreground">
         <span>{prediction.league}</span>
         <span>
-          {prediction.match_day === "today" ? "Today" : "Tomorrow"} ·{" "}
-          {new Date(prediction.match_time).toLocaleTimeString([], {
+          {prediction.matchDay === "today" ? "Today" : "Tomorrow"} ·{" "}
+          {new Date(prediction.matchTime).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -31,17 +32,17 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
 
       {/* TEAMS */}
       <div className="p-4 text-center font-semibold">
-        {prediction.home_team}
+        {prediction.homeTeam}
         <div className="text-xs text-muted-foreground my-1">VS</div>
-        {prediction.away_team}
+        {prediction.awayTeam}
       </div>
 
       {/* AI SECTION */}
       <div className={cn("p-4 space-y-3", locked && "blur-sm")}>
         {[
-          { label: "1", value: prediction.home_win },
-          { label: "X", value: prediction.draw },
-          { label: "2", value: prediction.away_win },
+          { label: "1", value: prediction.homeWinProbability },
+          { label: "X", value: prediction.drawProbability },
+          { label: "2", value: prediction.awayWinProbability },
         ].map((p) => (
           <div key={p.label} className="flex items-center gap-2">
             <span className="w-4 text-xs">{p.label}</span>
@@ -55,11 +56,11 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
         <div className="grid grid-cols-4 text-center text-xs bg-muted/50 p-2 rounded">
           <div>
             <div>Outcome</div>
-            <strong>{prediction.prediction}</strong>
+            <strong>{prediction.predictedOutcome}</strong>
           </div>
           <div>
             <div>Score</div>
-            <strong>{prediction.predicted_score}</strong>
+            <strong>{prediction.predictedScore}</strong>
           </div>
           <div>
             <div>Conf</div>
@@ -67,22 +68,24 @@ export function AIPredictionCard({ prediction, isPremiumUser, onWatchAd, onBuyPr
           </div>
           <div>
             <div>Risk</div>
-            <Badge>{prediction.risk_level}</Badge>
+            <Badge>{prediction.riskLevel}</Badge>
           </div>
         </div>
       </div>
 
-      {/* LOCK OVERLAY */}
+      {/* 🔒 LOCK OVERLAY */}
       {locked && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-3">
           <Lock />
-          {prediction.is_premium ? (
+          {prediction.isPremium ? (
             <Button onClick={onBuyPremium}>
-              <Crown className="h-4 w-4 mr-2" /> Premium Only
+              <Crown className="h-4 w-4 mr-2" />
+              Premium Only
             </Button>
           ) : (
             <Button onClick={onWatchAd}>
-              <Play className="h-4 w-4 mr-2" /> Watch Ad to Unlock
+              <Play className="h-4 w-4 mr-2" />
+              Watch Ad to Unlock
             </Button>
           )}
         </div>
