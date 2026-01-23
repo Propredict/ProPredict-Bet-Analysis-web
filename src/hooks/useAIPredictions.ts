@@ -1,13 +1,35 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { AIPrediction } from "@/components/ai-predictions/types";
 
-export function useAIPredictions(day: "today" | "tomorrow") {
+export type MatchDay = "today" | "tomorrow";
+
+export interface AIPrediction {
+  id: string;
+  league: string;
+  home_team: string;
+  away_team: string;
+  match_time: string;
+  match_day: MatchDay;
+
+  home_win: number;
+  draw: number;
+  away_win: number;
+
+  prediction: string;
+  predicted_score: string;
+  confidence: number;
+  risk_level: string;
+
+  is_premium: boolean;
+  result_status: "pending" | "won" | "lost";
+}
+
+export function useAIPredictions(day: MatchDay) {
   const [data, setData] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
       const { data, error } = await supabase
@@ -16,39 +38,11 @@ export function useAIPredictions(day: "today" | "tomorrow") {
         .eq("match_day", day)
         .order("match_time", { ascending: true });
 
-      if (!error && data) {
-        setData(
-          data.map((m: any) => ({
-            match_id: m.match_id,
-
-            league: m.league,
-            home_team: m.home_team,
-            away_team: m.away_team,
-
-            match_day: m.match_day,
-            match_time: m.match_time,
-
-            home_win: m.home_win,
-            draw: m.draw,
-            away_win: m.away_win,
-
-            prediction: m.prediction,
-            predicted_score: m.predicted_score,
-            confidence: m.confidence,
-            risk_level: m.risk_level,
-
-            is_premium: m.is_premium,
-            is_locked: m.is_locked,
-
-            result_status: m.result_status,
-          })),
-        );
-      }
-
+      if (!error && data) setData(data as AIPrediction[]);
       setLoading(false);
     };
 
-    load();
+    fetchData();
   }, [day]);
 
   return { predictions: data, loading };
