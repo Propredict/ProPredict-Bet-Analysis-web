@@ -47,7 +47,6 @@ const tipsAndTickets = [
 
 const tools = [
   { title: "AI Predictions", url: "/ai-predictions", icon: Brain },
-  { title: "Betting Tips", url: "/betting-tips", icon: Target },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "Match Previews", url: "/match-previews", icon: FileText },
