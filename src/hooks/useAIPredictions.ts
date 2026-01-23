@@ -8,20 +8,24 @@ export interface AIPrediction {
   awayTeam: string;
   matchDate: string;
   matchTime: string;
-  prediction: string;
-  score: string;
+
+  // AI (blur)
+  predictedOutcome: string;
+  predictedScore: string;
   confidence: number;
-  risk: "Low" | "Medium" | "High";
+  riskLevel: "low" | "medium" | "high";
+  keyFactors: string[];
+  analysis: string;
+
   isLocked: boolean;
 }
 
 type DayTab = "today" | "tomorrow";
 
-export const useAIPredictions = () => {
-  const [predictions, setPredictions] = useState<AIPrediction[]>([]);
+export function useAIPredictions() {
+  const [allPredictions, setAllPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [dayTab, setDayTab] = useState<DayTab>("today");
-  const [selectedLeague, setSelectedLeague] = useState("all");
 
   useEffect(() => {
     const fetchPredictions = async () => {
@@ -30,10 +34,10 @@ export const useAIPredictions = () => {
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .order("match_time", { ascending: true });
+        .order("match_date", { ascending: true });
 
       if (!error && data) {
-        setPredictions(
+        setAllPredictions(
           data.map((m) => ({
             id: m.id,
             league: m.league,
@@ -41,10 +45,14 @@ export const useAIPredictions = () => {
             awayTeam: m.away_team,
             matchDate: m.match_date,
             matchTime: m.match_time,
-            prediction: "1",
-            score: "2-1",
-            confidence: Math.floor(45 + Math.random() * 35),
-            risk: "Medium",
+
+            predictedOutcome: m.predicted_outcome ?? "1",
+            predictedScore: m.predicted_score ?? "2-1",
+            confidence: m.confidence ?? 65,
+            riskLevel: m.risk_level ?? "medium",
+            keyFactors: m.key_factors ?? [],
+            analysis: m.analysis ?? "",
+
             isLocked: true,
           })),
         );
@@ -57,25 +65,21 @@ export const useAIPredictions = () => {
   }, []);
 
   const unlockPrediction = (id: string) => {
-    setPredictions((prev) => prev.map((p) => (p.id === id ? { ...p, isLocked: false } : p)));
+    setAllPredictions((prev) => prev.map((p) => (p.id === id ? { ...p, isLocked: false } : p)));
   };
 
   const today = new Date().toISOString().split("T")[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
-  const filteredByDay = predictions.filter((p) =>
+  const predictions = allPredictions.filter((p) =>
     dayTab === "today" ? p.matchDate === today : p.matchDate === tomorrow,
   );
 
-  const filtered = filteredByDay.filter((p) => (selectedLeague === "all" ? true : p.league === selectedLeague));
-
   return {
-    predictions: filtered,
+    predictions,
     loading,
     dayTab,
     setDayTab,
-    selectedLeague,
-    setSelectedLeague,
     unlockPrediction,
   };
-};
+}
