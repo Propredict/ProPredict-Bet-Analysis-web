@@ -4,10 +4,15 @@ import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 
-export default function AIPredictionsPage() {
+export default function AIPredictions() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
+
   const { predictions, loading } = useAIPredictions(day);
-  const { isAdmin, plan } = useUserPlan();
+  const { isAdmin, plan, isLoading } = useUserPlan();
+
+  if (isLoading) {
+    return <DashboardLayout>Loading...</DashboardLayout>;
+  }
 
   const stats = useMemo(() => {
     const won = predictions.filter((p) => p.result_status === "won").length;
@@ -32,22 +37,22 @@ export default function AIPredictionsPage() {
           <Stat label="Live Now" value={predictions.length} />
           <Stat label="Overall Accuracy" value={`${stats.accuracy}%`} />
           <Stat label="Active Predictions" value={stats.pending} />
-          <Stat label="Matches Analyzed" value={1246} />
+          <Stat label="Matches Analyzed" value={stats.won + stats.lost + stats.pending} />
         </div>
 
         {/* ACCURACY BAR */}
-        <div className="bg-card border border-border rounded-lg p-4">
+        <div className="bg-card border rounded-lg p-4">
           <div className="flex justify-between mb-2">
             <span className="font-semibold">AI Accuracy</span>
             <span className="text-green-500">{stats.accuracy}%</span>
           </div>
-          <div className="h-2 bg-muted rounded overflow-hidden">
+          <div className="h-2 bg-muted rounded">
             <div className="h-full bg-green-500" style={{ width: `${stats.accuracy}%` }} />
           </div>
           <div className="flex justify-between text-xs mt-2">
-            <span>✅ Won: {stats.won}</span>
-            <span>❌ Lost: {stats.lost}</span>
-            <span>⏳ Pending: {stats.pending}</span>
+            <span>Won: {stats.won}</span>
+            <span>Lost: {stats.lost}</span>
+            <span>Pending: {stats.pending}</span>
           </div>
         </div>
 
@@ -70,7 +75,7 @@ export default function AIPredictionsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {predictions.map((p) => (
-              <AIPredictionCard key={p.match_id} prediction={p} isAdmin={isAdmin} userPlan={plan} />
+              <AIPredictionCard key={p.match_id} prediction={p} />
             ))}
           </div>
         )}
@@ -81,7 +86,7 @@ export default function AIPredictionsPage() {
 
 function Stat({ label, value }: { label: string; value: any }) {
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
+    <div className="bg-card border rounded-lg p-4">
       <div className="text-sm text-muted-foreground">{label}</div>
       <div className="text-2xl font-bold">{value}</div>
     </div>
