@@ -53,21 +53,14 @@ export default function LiveScores() {
     return () => clearInterval(i);
   }, []);
 
-  /* ---------- ALLOWED STATUS TABS ---------- */
+  /* ---------- STATUS TABS PER DATE ---------- */
   const allowedStatusTabs = useMemo<StatusTab[]>(() => {
-    if (dateMode === "today") {
-      return ["all", "live", "upcoming", "finished"];
-    }
-    if (dateMode === "yesterday") {
-      return ["all", "finished"];
-    }
-    if (dateMode === "tomorrow") {
-      return ["all", "upcoming"];
-    }
+    if (dateMode === "today") return ["all", "live", "upcoming", "finished"];
+    if (dateMode === "yesterday") return ["all", "finished"];
+    if (dateMode === "tomorrow") return ["all", "upcoming"];
     return ["all"];
   }, [dateMode]);
 
-  /* reset status tab if invalid */
   useEffect(() => {
     if (!allowedStatusTabs.includes(statusTab)) {
       setStatusTab("all");
@@ -81,6 +74,13 @@ export default function LiveScores() {
   );
 
   const leaguesCount = useMemo(() => new Set(matches.map((m) => m.league)).size, [matches]);
+
+  /* ---------- LIVE BADGE LOGIC ---------- */
+  const showLiveForDate = (d: DateMode) => {
+    if (d === "today") return true;
+    if (d === "yesterday" && liveCount > 0) return true;
+    return false;
+  };
 
   /* ---------- FILTERING ---------- */
   const filtered = useMemo(() => {
@@ -204,17 +204,24 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* DATE */}
+        {/* DATE + LIVE BADGE */}
         <div className="flex gap-2">
           {(["yesterday", "today", "tomorrow"] as DateMode[]).map((d) => (
             <Button
               key={d}
               variant={dateMode === d ? "default" : "outline"}
               onClick={() => setDateMode(d)}
-              className="flex-1 flex-col"
+              className="flex-1 flex-col relative"
             >
               <span className="capitalize">{d}</span>
               <span className="text-xs opacity-70">{getDateLabel(d)}</span>
+
+              {showLiveForDate(d) && liveCount > 0 && (
+                <span className="mt-1 text-[10px] font-semibold text-red-500 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                  LIVE {liveCount}
+                </span>
+              )}
             </Button>
           ))}
         </div>
