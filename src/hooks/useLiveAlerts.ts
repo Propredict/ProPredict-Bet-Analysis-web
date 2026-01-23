@@ -2,6 +2,10 @@ import { useEffect, useRef, useCallback } from "react";
 import { Match } from "@/hooks/useLiveScores";
 import { toast } from "@/hooks/use-toast";
 
+/* =========================
+   TYPES
+========================= */
+
 interface AlertSettings {
   enabled: boolean;
   goals: boolean;
@@ -11,8 +15,13 @@ interface AlertSettings {
   favoritesOnly: boolean;
 }
 
+/* =========================
+   DEFAULT SETTINGS
+   (MORA enabled: true)
+========================= */
+
 const defaultSettings: AlertSettings = {
-  enabled: false,
+  enabled: true, // ✅ BITNO
   goals: true,
   redCards: true,
   yellowCards: false,
@@ -20,13 +29,17 @@ const defaultSettings: AlertSettings = {
   favoritesOnly: false,
 };
 
+/* =========================
+   HELPERS
+========================= */
+
 function getSettings(): AlertSettings {
   try {
     const stored = localStorage.getItem("live-scores-alert-settings");
     if (stored) {
       return { ...defaultSettings, ...JSON.parse(stored) };
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
   return defaultSettings;
@@ -38,86 +51,88 @@ function getFavorites(): Set<string> {
     if (stored) {
       return new Set(JSON.parse(stored));
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
   return new Set();
 }
 
+function playSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.value = 800;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  } catch {
+    // audio not supported
+  }
+}
+
+/* =========================
+   HOOK
+========================= */
+
 export function useLiveAlerts(matches: Match[]) {
-  const prevRef = useRef<Map<string, string>>(new Map());
+  /**
+   * Čuvamo prethodni score kao string "1-0"
+   */
+  const prevScoresRef = useRef<Map<string, string>>(new Map());
   const initializedRef = useRef(false);
 
-  const playSound = useCallback(() => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = "sine";
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
-    } catch (e) {
-      // Audio not supported
-    }
-  }, []);
-
-  const triggerAlert = useCallback((type: "goal" | "redCard" | "yellowCard", match: Match, message: string, settings: AlertSettings) => {
-    const icons = { goal: "⚽", redCard: "🟥", yellowCard: "🟨" };
-    const titles = { goal: "GOAL!", redCard: "RED CARD!", yellowCard: "YELLOW CARD!" };
-    
+  const triggerGoalAlert = useCallback((match: Match, score: string, settings: AlertSettings) => {
     toast({
-      title: `${icons[type]} ${titles[type]}`,
-      description: message,
+      title: "⚽ GOAL!",
+      description: `${match.homeTeam} ${score} ${match.awayTeam}${match.minute ? ` (${match.minute}')` : ""}`,
     });
 
     if (settings.soundEnabled) {
       playSound();
     }
-  }, [playSound]);
+  }, []);
 
   useEffect(() => {
     if (!matches.length) return;
 
     const settings = getSettings();
-    
     if (!settings.enabled) return;
 
     const favorites = getFavorites();
 
-    // Initialize on first run
+    // 1️⃣ INIT – prvi render, samo zapamti score
     if (!initializedRef.current) {
       matches.forEach((m) => {
-        prevRef.current.set(m.id, `${m.homeScore ?? 0}-${m.awayScore ?? 0}`);
+        prevScoresRef.current.set(m.id, `${m.homeScore ?? 0}-${m.awayScore ?? 0}`);
       });
       initializedRef.current = true;
       return;
     }
 
-    // Check for changes
+    // 2️⃣ CHECK – detekcija promene
     matches.forEach((m) => {
       if (m.status !== "live" && m.status !== "halftime") return;
 
-      // Check favorites filter
       if (settings.favoritesOnly && !favorites.has(m.id)) return;
 
-      const prev = prevRef.current.get(m.id);
-      const curr = `${m.homeScore ?? 0}-${m.awayScore ?? 0}`;
+      const prevScore = prevScoresRef.current.get(m.id);
+      const currScore = `${m.homeScore ?? 0}-${m.awayScore ?? 0}`;
 
-      // Detect goal
-      if (settings.goals && prev && prev !== curr) {
-        const minute = m.minute ? `(${m.minute}')` : "";
-        triggerAlert("goal", m, `${m.homeTeam} ${curr} ${m.awayTeam} ${minute}`, settings);
+      if (settings.goals && prevScore && prevScore !== currScore) {
+        triggerGoalAlert(m, currScore, settings);
       }
 
-      prevRef.current.set(m.id, curr);
+      // 3️⃣ UPDATE SNAPSHOT
+      prevScoresRef.current.set(m.id, currScore);
     });
-  }, [matches, triggerAlert]);
+  }, [matches, triggerGoalAlert]);
 }
