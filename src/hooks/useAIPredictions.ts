@@ -1,41 +1,53 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-function calcOddsAccuracy(preds: any[]) {
-  const g = { low: [0, 0], mid: [0, 0], high: [0, 0] };
-
-  preds.forEach((p) => {
-    if (!p.odds || p.status === "pending") return;
-
-    let key = "mid";
-    if (p.odds < 1.7) key = "low";
-    if (p.odds > 2.5) key = "high";
-
-    g[key][1]++;
-    if (p.status === "won") g[key][0]++;
-  });
-
-  return {
-    low: g.low[1] ? Math.round((g.low[0] / g.low[1]) * 100) : 0,
-    medium: g.mid[1] ? Math.round((g.mid[0] / g.mid[1]) * 100) : 0,
-    high: g.high[1] ? Math.round((g.high[0] / g.high[1]) * 100) : 0,
-  };
+export interface AIPrediction {
+  id: string;
+  match_id: string;
+  league: string | null;
+  home_team: string;
+  away_team: string;
+  match_date: string | null;
+  match_time: string | null;
+  match_day: string | null;
+  prediction: string;
+  predicted_score: string | null;
+  confidence: number;
+  home_win: number;
+  draw: number;
+  away_win: number;
+  risk_level: string | null;
+  analysis: string | null;
+  key_factors: string[] | null;
+  is_premium: boolean | null;
+  is_live: boolean | null;
+  is_locked: boolean | null;
+  result_status: string | null;
 }
 
-export function useAIPredictions() {
-  const [predictions, setPredictions] = useState<any[]>([]);
+export function useAIPredictions(day: "today" | "tomorrow" = "today") {
+  const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [oddsAccuracy, setOddsAccuracy] = useState<any>({});
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("ai_predictions").select("*");
-      setPredictions(data || []);
-      setOddsAccuracy(calcOddsAccuracy(data || []));
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("ai_predictions")
+        .select("*")
+        .eq("match_day", day)
+        .order("match_time", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching predictions:", error);
+        setPredictions([]);
+      } else {
+        setPredictions(data || []);
+      }
       setLoading(false);
     }
     load();
-  }, []);
+  }, [day]);
 
-  return { predictions, loading, oddsAccuracy };
+  return { predictions, loading };
 }
