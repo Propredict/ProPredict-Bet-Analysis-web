@@ -3,10 +3,6 @@ import { Match } from "@/hooks/useLiveScores";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
-/* =========================
-   TYPES
-========================= */
-
 interface AlertSettings {
   enabled: boolean;
   goals: boolean;
@@ -16,10 +12,6 @@ interface AlertSettings {
 
 const ALERT_SETTINGS_KEY = "live-scores-alert-settings";
 const FAVORITES_KEY = "match-favorites";
-
-/* =========================
-   HELPERS
-========================= */
 
 function getAlertSettings(): AlertSettings {
   try {
@@ -63,53 +55,39 @@ function playAlertSound() {
   } catch {}
 }
 
-/* =========================
-   HOOK
-========================= */
-
 export function useLiveAlerts(matches: Match[]) {
-  // DEBUG – mora se pojaviti u konzoli
   console.log("useLiveAlerts running", matches.length);
 
   const prevScoresRef = useRef<Map<string, { home: number; away: number }>>(new Map());
-
   const firstRun = useRef(true);
 
   const triggerGoal = useCallback(async (match: Match) => {
     const settings = getAlertSettings();
     if (!settings.enabled || !settings.goals) return;
 
-    if (settings.soundEnabled) {
-      playAlertSound();
-    }
+    if (settings.soundEnabled) playAlertSound();
 
     toast({
       title: "⚽ GOAL!",
-      description: `${match.homeTeam} ${match.homeScore ?? 0} – ${match.awayScore ?? 0} ${
-        match.awayTeam
-      }${match.minute ? ` (${match.minute}')` : ""}`,
+      description: `${match.homeTeam} ${match.homeScore ?? 0} - ${
+        match.awayScore ?? 0
+      } ${match.awayTeam}${match.minute ? ` (${match.minute}')` : ""}`,
     });
 
-    const { error } = await supabase.from("match_alert_events").insert({
+    await supabase.from("match_alert_events").insert({
       match_id: match.id,
       event_type: "goal",
       home_score: match.homeScore ?? 0,
       away_score: match.awayScore ?? 0,
       minute: match.minute ?? null,
     });
-
-    if (error) {
-      console.error("Supabase insert error:", error);
-    }
   }, []);
 
   useEffect(() => {
     if (!matches.length) return;
 
-    // first render – samo zapamti score
     if (firstRun.current) {
       firstRun.current = false;
-
       const init = new Map<string, { home: number; away: number }>();
       matches.forEach((m) => {
         init.set(m.id, {
@@ -117,7 +95,6 @@ export function useLiveAlerts(matches: Match[]) {
           away: m.awayScore ?? 0,
         });
       });
-
       prevScoresRef.current = init;
       return;
     }
@@ -128,11 +105,11 @@ export function useLiveAlerts(matches: Match[]) {
     const favorites = getFavorites();
 
     matches.forEach((current) => {
-      // TEMP: NE filtriramo status (da sigurno radi)
+      if (current.status !== "live" && current.status !== "halftime") return;
+      if (settings.favoritesOnly && !favorites.has(current.id)) return;
+
       const prev = prevScoresRef.current.get(current.id);
       if (!prev) return;
-
-      if (settings.favoritesOnly && !favorites.has(current.id)) return;
 
       const currHome = current.homeScore ?? 0;
       const currAway = current.awayScore ?? 0;
@@ -149,7 +126,6 @@ export function useLiveAlerts(matches: Match[]) {
         away: m.awayScore ?? 0,
       });
     });
-
     prevScoresRef.current = next;
   }, [matches, triggerGoal]);
 }
