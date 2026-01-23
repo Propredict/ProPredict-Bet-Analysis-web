@@ -2,40 +2,35 @@ import { useEffect, useRef, useCallback } from "react";
 import { Match } from "@/hooks/useLiveScores";
 import { toast } from "@/hooks/use-toast";
 
+/* =========================
+   TYPES
+========================= */
+
 interface AlertSettings {
   enabled: boolean;
   goals: boolean;
-  redCards: boolean;
-  yellowCards: boolean;
   soundEnabled: boolean;
   favoritesOnly: boolean;
-}
-
-interface MatchWithCards extends Match {
-  homeRedCards?: number;
-  awayRedCards?: number;
-  homeYellowCards?: number;
-  awayYellowCards?: number;
 }
 
 const ALERT_SETTINGS_KEY = "live-scores-alert-settings";
 const FAVORITES_KEY = "match-favorites";
 
+/* =========================
+   HELPERS
+========================= */
+
 function getAlertSettings(): AlertSettings {
   try {
     const stored = localStorage.getItem(ALERT_SETTINGS_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch {
-    // ignore
-  }
+    if (stored) return JSON.parse(stored);
+  } catch {}
+
+  // ✅ ENABLED BY DEFAULT
   return {
-    enabled: false,
+    enabled: true,
     goals: true,
-    redCards: true,
-    yellowCards: false,
-    soundEnabled: false,
+    soundEnabled: true,
     favoritesOnly: false,
   };
 }
@@ -43,172 +38,92 @@ function getAlertSettings(): AlertSettings {
 function getFavorites(): Set<string> {
   try {
     const stored = localStorage.getItem(FAVORITES_KEY);
-    if (stored) {
-      return new Set(JSON.parse(stored));
-    }
-  } catch {
-    // ignore
-  }
+    if (stored) return new Set(JSON.parse(stored));
+  } catch {}
   return new Set();
 }
 
 function playAlertSound() {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 880;
-    oscillator.type = "sine";
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  } catch {
-    // Audio not supported
-  }
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.value = 880;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  } catch {}
 }
 
+/* =========================
+   HOOK
+========================= */
+
 export function useLiveAlerts(matches: Match[]) {
-  const previousMatchesRef = useRef<Map<string, MatchWithCards>>(new Map());
-  const isFirstRender = useRef(true);
+  const prevRef = useRef<Map<number, Match>>(new Map());
+  const firstRun = useRef(true);
 
-  const triggerAlert = useCallback((
-    type: "goal" | "redCard" | "yellowCard",
-    match: Match,
-    details?: string
-  ) => {
+  const triggerGoal = useCallback((match: Match) => {
     const settings = getAlertSettings();
-    
-    if (settings.soundEnabled) {
-      playAlertSound();
-    }
+    if (!settings.enabled || !settings.goals) return;
 
-    const icons = {
-      goal: "⚽",
-      redCard: "🟥",
-      yellowCard: "🟨",
-    };
-
-    const titles = {
-      goal: "GOAL!",
-      redCard: "RED CARD!",
-      yellowCard: "YELLOW CARD!",
-    };
+    if (settings.soundEnabled) playAlertSound();
 
     toast({
-      title: `${icons[type]} ${titles[type]}`,
-      description: details || `${match.homeTeam} vs ${match.awayTeam}`,
+      title: "⚽ GOAL!",
+      description: `${match.homeTeam} ${match.homeScore} – ${match.awayScore} ${match.awayTeam}${
+        match.minute ? ` (${match.minute}')` : ""
+      }`,
     });
   }, []);
 
-  const detectEvents = useCallback((currentMatches: Match[]) => {
+  useEffect(() => {
+    // ⛔ skip first render
+    if (firstRun.current) {
+      firstRun.current = false;
+      const map = new Map<number, Match>();
+      matches.forEach((m) => map.set(m.id, m));
+      prevRef.current = map;
+      return;
+    }
+
     const settings = getAlertSettings();
-    
     if (!settings.enabled) return;
 
     const favorites = getFavorites();
 
-    currentMatches.forEach((current) => {
-      const previous = previousMatchesRef.current.get(current.id);
-      
+    matches.forEach((current) => {
+      const previous = prevRef.current.get(current.id);
       if (!previous) return;
 
-      // Check favorites filter
-      if (settings.favoritesOnly && !favorites.has(current.id)) {
+      if (settings.favoritesOnly && !favorites.has(String(current.id))) {
         return;
       }
 
-      // Only check live matches
       if (current.status !== "live" && current.status !== "halftime") {
         return;
       }
 
-      const currentWithCards = current as MatchWithCards;
-      const previousWithCards = previous as MatchWithCards;
+      const prevHome = previous.homeScore ?? 0;
+      const prevAway = previous.awayScore ?? 0;
+      const currHome = current.homeScore ?? 0;
+      const currAway = current.awayScore ?? 0;
 
-      // ⚽ GOAL DETECTION
-      if (settings.goals) {
-        const prevHome = previous.homeScore ?? 0;
-        const prevAway = previous.awayScore ?? 0;
-        const currHome = current.homeScore ?? 0;
-        const currAway = current.awayScore ?? 0;
-
-        if (currHome > prevHome) {
-          const minute = current.minute ? `(${current.minute}')` : "";
-          triggerAlert(
-            "goal",
-            current,
-            `${current.homeTeam} ${currHome}–${currAway} ${current.awayTeam} ${minute}`
-          );
-        }
-
-        if (currAway > prevAway) {
-          const minute = current.minute ? `(${current.minute}')` : "";
-          triggerAlert(
-            "goal",
-            current,
-            `${current.homeTeam} ${currHome}–${currAway} ${current.awayTeam} ${minute}`
-          );
-        }
-      }
-
-      // 🟥 RED CARD DETECTION
-      if (settings.redCards) {
-        const prevHomeRed = previousWithCards.homeRedCards ?? 0;
-        const prevAwayRed = previousWithCards.awayRedCards ?? 0;
-        const currHomeRed = currentWithCards.homeRedCards ?? 0;
-        const currAwayRed = currentWithCards.awayRedCards ?? 0;
-
-        if (currHomeRed > prevHomeRed || currAwayRed > prevAwayRed) {
-          triggerAlert(
-            "redCard",
-            current,
-            `${current.homeTeam} vs ${current.awayTeam}`
-          );
-        }
-      }
-
-      // 🟨 YELLOW CARD DETECTION
-      if (settings.yellowCards) {
-        const prevHomeYellow = previousWithCards.homeYellowCards ?? 0;
-        const prevAwayYellow = previousWithCards.awayYellowCards ?? 0;
-        const currHomeYellow = currentWithCards.homeYellowCards ?? 0;
-        const currAwayYellow = currentWithCards.awayYellowCards ?? 0;
-
-        if (currHomeYellow > prevHomeYellow || currAwayYellow > prevAwayYellow) {
-          triggerAlert(
-            "yellowCard",
-            current,
-            `${current.homeTeam} vs ${current.awayTeam}`
-          );
-        }
+      if (currHome > prevHome || currAway > prevAway) {
+        triggerGoal(current);
       }
     });
-  }, [triggerAlert]);
 
-  useEffect(() => {
-    // Skip first render to avoid false positives
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      // Store initial state
-      const map = new Map<string, MatchWithCards>();
-      matches.forEach((m) => map.set(m.id, m as MatchWithCards));
-      previousMatchesRef.current = map;
-      return;
-    }
-
-    // Detect events
-    detectEvents(matches);
-
-    // Update previous state
-    const map = new Map<string, MatchWithCards>();
-    matches.forEach((m) => map.set(m.id, m as MatchWithCards));
-    previousMatchesRef.current = map;
-  }, [matches, detectEvents]);
+    const next = new Map<number, Match>();
+    matches.forEach((m) => next.set(m.id, m));
+    prevRef.current = next;
+  }, [matches, triggerGoal]);
 }
