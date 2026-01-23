@@ -18,11 +18,11 @@ export interface Match {
   awayLogo: string | null;
 }
 
-type DateMode = "today" | "yesterday" | "tomorrow" | "live";
+export type DateMode = "today" | "yesterday" | "tomorrow" | "live";
 
 export function useLiveScores(mode: DateMode = "today") {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
   const abortRef = useRef<AbortController | null>(null);
@@ -41,7 +41,7 @@ export function useLiveScores(mode: DateMode = "today") {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to fetch (${res.status})`);
+        throw new Error(`Failed to fetch fixtures (${res.status})`);
       }
 
       const data = await res.json();
@@ -59,7 +59,8 @@ export function useLiveScores(mode: DateMode = "today") {
     setIsLoading(true);
     fetchMatches();
 
-    const interval = setInterval(fetchMatches, 30000);
+    const interval = setInterval(fetchMatches, 30000); // auto refresh 30s
+
     return () => {
       clearInterval(interval);
       abortRef.current?.abort();
