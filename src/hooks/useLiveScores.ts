@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
+export type DateMode = "yesterday" | "today" | "tomorrow";
+export type StatusFilter = "all" | "live" | "upcoming" | "finished";
 
 export interface Match {
   id: string;
@@ -24,9 +26,14 @@ interface ApiResponse {
 }
 
 const AUTO_REFRESH_MS = 30_000;
+const SUPABASE_URL = "https://tczettddxmlcmhdhgebw.supabase.co";
 
-export function useLiveScores(mode: "all" | "live" | "upcoming" | "finished" = "all") {
+export function useLiveScores(
+  statusFilter: StatusFilter = "all",
+  dateMode: DateMode = "today"
+) {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [previousMatches, setPreviousMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,14 +48,23 @@ export function useLiveScores(mode: "all" | "live" | "upcoming" | "finished" = "
       setIsLoading(true);
       setError(null);
 
+      // Determine API mode based on statusFilter and dateMode
+      let apiMode: string;
+      if (statusFilter === "live") {
+        apiMode = "live";
+      } else {
+        apiMode = dateMode; // yesterday, today, or tomorrow
+      }
+
       const params = new URLSearchParams();
+      params.set("mode", apiMode);
 
-      if (mode === "live") params.set("mode", "live");
-      else params.set("mode", "today");
-
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-fixtures?${params.toString()}`, {
-        signal: controller.signal,
-      });
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/get-fixtures?${params.toString()}`,
+        {
+          signal: controller.signal,
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`Request failed: ${res.status}`);
@@ -58,13 +74,21 @@ export function useLiveScores(mode: "all" | "live" | "upcoming" | "finished" = "
 
       let filtered = data.fixtures;
 
-      if (mode === "upcoming") {
+      // Apply client-side status filtering
+      if (statusFilter === "upcoming") {
         filtered = filtered.filter((m) => m.status === "upcoming");
       }
-      if (mode === "finished") {
+      if (statusFilter === "finished") {
         filtered = filtered.filter((m) => m.status === "finished");
       }
+      if (statusFilter === "live") {
+        filtered = filtered.filter(
+          (m) => m.status === "live" || m.status === "halftime"
+        );
+      }
 
+      // Store previous matches for comparison (for alert detection)
+      setPreviousMatches(matches);
       setMatches(filtered);
     } catch (err: any) {
       if (err.name !== "AbortError") {
@@ -73,7 +97,7 @@ export function useLiveScores(mode: "all" | "live" | "upcoming" | "finished" = "
     } finally {
       setIsLoading(false);
     }
-  }, [mode]);
+  }, [statusFilter, dateMode, matches]);
 
   useEffect(() => {
     fetchMatches();
@@ -84,10 +108,11 @@ export function useLiveScores(mode: "all" | "live" | "upcoming" | "finished" = "
       controllerRef.current?.abort();
       clearInterval(interval);
     };
-  }, [fetchMatches]);
+  }, [statusFilter, dateMode]); // Re-fetch when filters change
 
   return {
     matches,
+    previousMatches,
     isLoading,
     error,
     refetch: fetchMatches,
