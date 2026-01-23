@@ -56,7 +56,7 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
-  if (unlockMethod.type === "upgrade_premium") return "Upgrade to Premium";
+  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -71,6 +71,10 @@ export function AllTicketsCard({
   const navigate = useNavigate();
   const isUnlocked = !isLocked;
   const ticketDate = ticket.created_at_ts ? format(new Date(ticket.created_at_ts), "EEE, MMM d") : "";
+  const matchCount = ticket.matches?.length || 0;
+  const displayedMatches = ticket.matches?.slice(0, 3) || [];
+  const remainingCount = matchCount > 3 ? matchCount - 3 : 0;
+  const totalOdds = ticket.total_odds || 0;
 
   const handleUnlockClick = () => {
     if (unlockMethod?.type === "upgrade_basic" || unlockMethod?.type === "upgrade_premium") {
@@ -82,187 +86,210 @@ export function AllTicketsCard({
     }
   };
 
-  const getUnlockButton = () => {
-    if (!unlockMethod || unlockMethod.type === "unlocked") return null;
-
-    const Icon = unlockMethod.type === "login_required" ? LogIn :
-                 unlockMethod.type === "watch_ad" ? Sparkles : 
-                 unlockMethod.type === "upgrade_basic" ? Star : Crown;
-    
-    const buttonClass = unlockMethod.type === "watch_ad"
-      ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-      : unlockMethod.type === "upgrade_basic"
-        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-        : unlockMethod.type === "upgrade_premium" 
-          ? "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0" 
-          : "";
-
-    return (
-      <Button 
-        variant={unlockMethod.type === "login_required" ? "outline" : "default"}
-        size="lg"
-        className={cn("flex-1 gap-2 h-12", buttonClass)}
-        disabled={isUnlocking}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleUnlockClick();
-        }}
-      >
-        {isUnlocking ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Watching ad...
-          </>
-        ) : (
-          <>
-            <Icon className="h-4 w-4" />
-            {getUnlockButtonText(unlockMethod)}
-          </>
-        )}
-      </Button>
-    );
+  const getUnlockButtonStyle = () => {
+    if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "login_required") return "";
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-accent hover:bg-accent/90 text-accent-foreground";
+    }
+    if (unlockMethod.type === "upgrade_basic") {
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
+    }
+    if (unlockMethod.type === "upgrade_premium") {
+      return "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0";
+    }
+    return "";
   };
 
-  return (
-    <Card 
-      className={cn(
-        "bg-card overflow-hidden transition-all",
-        isUnlocked ? "border-success/30" : "border-border",
-        isLocked && !isUnlocking && "cursor-pointer hover:border-primary/50"
-      )}
-      onClick={isLocked && !isUnlocking ? handleUnlockClick : undefined}
-    >
-      {/* Locked State */}
-      {isLocked ? (
-        <>
-          {/* Header */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-foreground">{ticket.title}</h3>
-              <div className="flex items-center gap-2">
-                {getTierBadge(ticket.tier)}
-              </div>
-            </div>
-            <span className="text-xs text-muted-foreground">{ticketDate || "Check"}</span>
-          </div>
+  const getUnlockButtonIcon = () => {
+    if (!unlockMethod || unlockMethod.type === "unlocked") return null;
+    if (unlockMethod.type === "login_required") return LogIn;
+    if (unlockMethod.type === "watch_ad") return Sparkles;
+    if (unlockMethod.type === "upgrade_basic") return Star;
+    return Crown;
+  };
 
-          {/* Locked Matches Placeholder */}
-          <div className="px-4 pb-4 space-y-2">
-            {[1, 2, 3].map((idx) => (
-              <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
+  // Locked State - show title + match names visible, blur predictions/odds
+  if (isLocked) {
+    const Icon = getUnlockButtonIcon();
+
+    return (
+      <Card className="bg-card overflow-hidden transition-all border-border hover:border-primary/50">
+        {/* Header - VISIBLE */}
+        <div className="p-4 pb-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {getTierBadge(ticket.tier)}
+              <span className="text-xs text-muted-foreground">
+                {matchCount} Matches
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+        </div>
+
+        {/* Title - VISIBLE */}
+        <div className="px-4 pb-3">
+          <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
+          {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
+        </div>
+
+        {/* Matches - Names visible, predictions/odds blurred */}
+        <div className="px-4 pb-3 space-y-2">
+          {displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.match_name);
+            return (
+              <div key={match.id || idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">↗</span>
-                    <div className="h-4 w-40 bg-muted rounded blur-sm" />
+                  {/* Match name - VISIBLE */}
+                  <div className="flex-1 mr-4 min-w-0">
+                    <span className="text-sm text-foreground truncate block">
+                      {parsed.homeTeam} vs {parsed.awayTeam}
+                    </span>
+                    {parsed.league && (
+                      <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                    )}
                   </div>
-                  <div className="h-4 w-12 bg-muted rounded blur-sm" />
+                  {/* Prediction & Odds - BLURRED */}
+                  <div className="flex items-center gap-2 blur-sm opacity-50">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                      {match.prediction}
+                    </Badge>
+                    <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
-            ))}
-            <div className="flex items-center justify-center gap-2 pt-2 text-muted-foreground">
-              <Lock className="h-4 w-4" />
-              <span className="text-xs">Locked</span>
-            </div>
-          </div>
+            );
+          })}
 
-          {/* Footer - unlock CTA */}
-          {unlockMethod && unlockMethod.type !== "unlocked" && (
-            <div className="p-4 border-t border-border">
-              {getUnlockButton()}
+          {remainingCount > 0 && (
+            <div className="text-center pt-1">
+              <span className="text-xs text-muted-foreground">+{remainingCount} more matches</span>
             </div>
           )}
-        </>
-      ) : (
-        /* Unlocked State - rich card design */
-        (() => {
-          const displayedMatches = ticket.matches?.slice(0, 3) || [];
-          const remainingCount = ticket.matches && ticket.matches.length > 3 ? ticket.matches.length - 3 : 0;
-          const totalOdds = ticket.total_odds || 0;
+        </div>
 
-          return (
-            <>
-              {/* Header with tier badge and status */}
-              <div className="p-4 pb-0">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {getTierBadge(ticket.tier)}
-                    <span className="text-xs text-muted-foreground">
-                      {ticket.matches?.length || 0} Matches
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className="gap-1 bg-success/20 text-success border-success/30">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Unlocked
-                    </Badge>
-                    <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                      @{totalOdds.toFixed(2)}
-                    </Badge>
-                  </div>
+        {/* Total Odds - BLURRED */}
+        <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Total Odds</span>
+            <span className="font-bold text-lg text-primary blur-sm opacity-50">@{totalOdds.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Unlock Button - NOT BLURRED */}
+        {unlockMethod && unlockMethod.type !== "unlocked" && (
+          <div className="p-4 border-t border-border">
+            <Button 
+              variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+              size="lg"
+              className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
+              disabled={isUnlocking}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUnlockClick();
+              }}
+            >
+              {isUnlocking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Watching ad...
+                </>
+              ) : (
+                <>
+                  {Icon && <Icon className="h-4 w-4" />}
+                  {getUnlockButtonText(unlockMethod)}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </Card>
+    );
+  }
+
+  // Unlocked State - full details visible
+  return (
+    <Card className="bg-card overflow-hidden transition-all border-success/30">
+      {/* Header with tier badge and status */}
+      <div className="p-4 pb-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {getTierBadge(ticket.tier)}
+            <span className="text-xs text-muted-foreground">
+              {matchCount} Matches
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="gap-1 bg-success/20 text-success border-success/30">
+              <CheckCircle2 className="h-3 w-3" />
+              Unlocked
+            </Badge>
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+              @{totalOdds.toFixed(2)}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Title */}
+      <div className="px-4 pb-3">
+        <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
+        {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
+      </div>
+
+      {/* Match list with predictions */}
+      <div className="px-4 pb-3 space-y-2">
+        {displayedMatches.length > 0 ? (
+          displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.match_name);
+            return (
+              <div key={match.id || idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                <div className="flex-1 mr-4 min-w-0">
+                  <span className="text-sm text-foreground truncate block">
+                    {parsed.homeTeam} vs {parsed.awayTeam}
+                  </span>
+                  {parsed.league && (
+                    <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                    {match.prediction}
+                  </Badge>
+                  <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
                 </div>
               </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted-foreground py-2">No matches in this ticket</p>
+        )}
+        
+        {remainingCount > 0 && (
+          <div className="text-center pt-1">
+            <span className="text-xs text-muted-foreground">+{remainingCount} more</span>
+          </div>
+        )}
+      </div>
 
-              {/* Title */}
-              <div className="px-4 pb-3">
-                <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
-                {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
-              </div>
+      {/* Total Odds footer */}
+      <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Total Odds</span>
+          <span className="font-bold text-lg text-primary">@{totalOdds.toFixed(2)}</span>
+        </div>
+      </div>
 
-              {/* Match list with predictions */}
-              <div className="px-4 pb-3 space-y-2">
-                {displayedMatches.length > 0 ? (
-                  displayedMatches.map((match, idx) => {
-                    const parsed = parseMatchName(match.match_name);
-                    return (
-                      <div key={match.id || idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                        <div className="flex-1 mr-4 min-w-0">
-                          <span className="text-sm text-foreground truncate block">
-                            {parsed.homeTeam} vs {parsed.awayTeam}
-                          </span>
-                          {parsed.league && (
-                            <span className="text-xs text-muted-foreground">{parsed.league}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                            {match.prediction}
-                          </Badge>
-                          <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-sm text-muted-foreground py-2">No matches in this ticket</p>
-                )}
-                
-                {/* +X more indicator */}
-                {remainingCount > 0 && (
-                  <div className="text-center pt-1">
-                    <span className="text-xs text-muted-foreground">+{remainingCount} more</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Total Odds footer */}
-              <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Odds</span>
-                  <span className="font-bold text-lg text-primary">@{totalOdds.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Unlocked badge footer */}
-              <div className="px-4 py-3 border-t border-border/50">
-                <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Ticket Unlocked
-                </Badge>
-              </div>
-            </>
-          );
-        })()
-      )}
+      {/* Unlocked badge footer */}
+      <div className="px-4 py-3 border-t border-border/50">
+        <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
+          <CheckCircle2 className="h-4 w-4" />
+          Ticket Unlocked
+        </Badge>
+      </div>
     </Card>
   );
 }
