@@ -64,10 +64,9 @@ export default function LiveScores() {
     if (dateMode === "today") {
       return ["all", "live", "upcoming", "finished"];
     }
-    return ["all"]; // yesterday & tomorrow
+    return ["all"];
   }, [dateMode]);
 
-  // reset status tab if not allowed
   useEffect(() => {
     if (!allowedStatusTabs.includes(statusTab)) {
       setStatusTab("all");
@@ -170,23 +169,6 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATUS TABS */}
-        <div className="flex gap-2">
-          {allowedStatusTabs.map((tab) => (
-            <Button
-              key={tab}
-              size="sm"
-              variant={statusTab === tab ? "default" : "outline"}
-              onClick={() => setStatusTab(tab)}
-            >
-              {tab === "all" && "All Matches"}
-              {tab === "live" && "Live Now"}
-              {tab === "upcoming" && "Upcoming"}
-              {tab === "finished" && "Finished"}
-            </Button>
-          ))}
-        </div>
-
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
           <StatCard title="Live Now" value={liveCount} color="destructive" icon={Play} />
@@ -220,6 +202,29 @@ export default function LiveScores() {
               <span className="capitalize">{d}</span>
               <span className="text-xs opacity-70">{getDateLabel(d)}</span>
             </Button>
+          ))}
+        </div>
+
+        {/* STATUS TABS – NOVA POZICIJA (kao slika 2) */}
+        <div className="bg-[#0E1627] rounded-xl p-1 flex gap-1">
+          {allowedStatusTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatusTab(tab)}
+              className={cn(
+                "flex-1 text-sm py-2 rounded-lg transition",
+                statusTab === tab ? "bg-[#141E34] text-white" : "text-muted-foreground hover:text-white",
+              )}
+            >
+              {tab === "all" && "All Matches"}
+              {tab === "live" && (
+                <>
+                  Live Now <span className="ml-1 text-red-500">●</span>
+                </>
+              )}
+              {tab === "upcoming" && "Upcoming"}
+              {tab === "finished" && "Finished"}
+            </button>
           ))}
         </div>
 
