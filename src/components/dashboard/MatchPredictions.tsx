@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-import TipCard, { type Tip } from "./TipCard";
+import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
 
