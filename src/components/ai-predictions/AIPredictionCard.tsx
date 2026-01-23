@@ -2,25 +2,24 @@ import { Lock, Play, Crown, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
-import { useNavigate } from "react-router-dom";
 import type { AIPrediction } from "./types";
 
 interface Props {
   prediction: AIPrediction;
-  isAdmin: boolean;
-  userPlan: "free" | "basic" | "premium";
 }
 
-export function AIPredictionCard({ prediction, isAdmin, userPlan }: Props) {
+export function AIPredictionCard({ prediction }: Props) {
   const navigate = useNavigate();
-  const { getUnlockMethod, unlockContent } = useUserPlan();
   const { requireAuth } = useRequireAuth();
+
+  const { isAdmin, getUnlockMethod, unlockContent, isContentUnlocked } = useUserPlan();
 
   const unlock = getUnlockMethod(prediction.is_premium ? "premium" : "daily", "tip", prediction.match_id);
 
-  const isUnlocked = isAdmin || unlock?.type === "unlocked";
+  const isUnlocked = isAdmin || unlock?.type === "unlocked" || isContentUnlocked("tip", prediction.match_id);
 
   const onWatchAd = requireAuth(async () => {
     // ovde ide AdSense rewarded ad
@@ -31,8 +30,8 @@ export function AIPredictionCard({ prediction, isAdmin, userPlan }: Props) {
   const diffMin = Math.max(0, Math.floor((startTime.getTime() - Date.now()) / 60000));
 
   return (
-    <Card className="relative bg-card border-border p-4 space-y-3">
-      {/* LEAGUE / TIME */}
+    <Card className="relative bg-card border p-4 space-y-3">
+      {/* HEADER */}
       <div className="text-xs text-muted-foreground flex justify-between">
         <span>{prediction.league}</span>
         <span>
@@ -41,7 +40,7 @@ export function AIPredictionCard({ prediction, isAdmin, userPlan }: Props) {
         </span>
       </div>
 
-      {/* TEAMS */}
+      {/* MATCH */}
       <div className="font-semibold text-center">
         {prediction.home_team} vs {prediction.away_team}
       </div>
@@ -57,7 +56,7 @@ export function AIPredictionCard({ prediction, isAdmin, userPlan }: Props) {
         )}
       </div>
 
-      {/* BARS */}
+      {/* CONTENT */}
       <div className={isUnlocked ? "" : "blur-sm pointer-events-none"}>
         {[
           { label: prediction.home_team, value: prediction.home_win },
@@ -95,20 +94,29 @@ export function AIPredictionCard({ prediction, isAdmin, userPlan }: Props) {
         </div>
       </div>
 
-      {/* ACTIONS */}
+      {/* CTA */}
       {!isUnlocked && (
-        <div className="pt-3">
+        <div className="pt-3 space-y-2">
           {unlock?.type === "watch_ad" && (
             <Button className="w-full" onClick={onWatchAd}>
-              <Play className="h-4 w-4 mr-2" /> Watch Ad to Unlock
+              <Play className="h-4 w-4 mr-2" />
+              Watch Ad to Unlock
             </Button>
           )}
 
           {unlock?.type === "upgrade_premium" && (
             <Button className="w-full" onClick={() => navigate("/get-premium")}>
-              <Crown className="h-4 w-4 mr-2" /> Get AI Pro Access
+              <Crown className="h-4 w-4 mr-2" />
+              Get AI Pro Access
             </Button>
           )}
+        </div>
+      )}
+
+      {/* LOCK ICON */}
+      {!isUnlocked && (
+        <div className="absolute top-2 right-2">
+          <Lock className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
     </Card>
