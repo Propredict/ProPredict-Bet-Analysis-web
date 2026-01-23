@@ -145,9 +145,9 @@ export default function LiveScores() {
 
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4">
-          <StatCard title="Live Now" value={liveCount} icon={Play} />
-          <StatCard title="Total Matches" value={matches.length} icon={BarChart3} />
-          <StatCard title="Leagues" value={leaguesCount} icon={Trophy} />
+          <StatCard title="Live Now" value={liveCount} icon={Play} variant="live" />
+          <StatCard title="Total Matches" value={matches.length} icon={BarChart3} variant="matches" />
+          <StatCard title="Leagues" value={leaguesCount} icon={Trophy} variant="leagues" />
         </div>
 
         {/* LEAGUES */}
@@ -281,15 +281,52 @@ export default function LiveScores() {
 
 /* -------------------- HELPERS -------------------- */
 
-function StatCard({ title, value, icon: Icon }: any) {
+function StatCard({ title, value, icon: Icon, variant }: { title: string; value: number; icon: any; variant: "live" | "matches" | "leagues" }) {
+  const variantStyles = {
+    live: {
+      gradient: "from-red-500/20 to-red-600/5",
+      iconBg: "bg-red-500/20",
+      iconColor: "text-red-400",
+      border: "border-red-500/30",
+      valueColor: "text-red-400",
+      glow: "shadow-red-500/10",
+    },
+    matches: {
+      gradient: "from-green-500/20 to-green-600/5",
+      iconBg: "bg-green-500/20",
+      iconColor: "text-green-400",
+      border: "border-green-500/30",
+      valueColor: "text-green-400",
+      glow: "shadow-green-500/10",
+    },
+    leagues: {
+      gradient: "from-orange-500/20 to-orange-600/5",
+      iconBg: "bg-orange-500/20",
+      iconColor: "text-orange-400",
+      border: "border-orange-500/30",
+      valueColor: "text-orange-400",
+      glow: "shadow-orange-500/10",
+    },
+  };
+
+  const styles = variantStyles[variant];
+
   return (
-    <Card className="p-4 flex items-center gap-3 bg-[#0E1627] border-white/5">
-      <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-white/5">
-        <Icon className="h-4 w-4 text-muted-foreground" />
+    <Card className={cn(
+      "p-4 flex items-center gap-4 bg-gradient-to-br border transition-all hover:scale-[1.02]",
+      styles.gradient,
+      styles.border,
+      styles.glow && `shadow-lg ${styles.glow}`
+    )}>
+      <div className={cn(
+        "h-11 w-11 rounded-xl flex items-center justify-center",
+        styles.iconBg
+      )}>
+        <Icon className={cn("h-5 w-5", styles.iconColor)} />
       </div>
       <div>
-        <p className="text-xs text-muted-foreground">{title}</p>
-        <p className="text-lg font-semibold">{value}</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wide">{title}</p>
+        <p className={cn("text-2xl font-bold", styles.valueColor)}>{value}</p>
       </div>
     </Card>
   );
