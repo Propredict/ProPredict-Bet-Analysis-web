@@ -1,85 +1,74 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { AIPrediction } from "@/components/ai-predictions/types";
 
-export interface AIPrediction {
-  id: string;
-  league: string;
-  homeTeam: string;
-  awayTeam: string;
-  matchDate: string;
-  matchTime: string;
+type DayFilter = "today" | "tomorrow";
 
-  // AI (blur)
-  predictedOutcome: string;
-  predictedScore: string;
-  confidence: number;
-  riskLevel: "low" | "medium" | "high";
-  keyFactors: string[];
-  analysis: string;
-
-  isLocked: boolean;
-}
-
-type DayTab = "today" | "tomorrow";
-
-export function useAIPredictions() {
-  const [allPredictions, setAllPredictions] = useState<AIPrediction[]>([]);
+export function useAIPredictions(day: DayFilter) {
+  const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dayTab, setDayTab] = useState<DayTab>("today");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPredictions = async () => {
       setLoading(true);
+      setError(null);
+
+      const today = new Date();
+      const targetDate = new Date(today);
+
+      if (day === "tomorrow") {
+        targetDate.setDate(today.getDate() + 1);
+      }
+
+      const dateString = targetDate.toISOString().split("T")[0];
 
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .order("match_date", { ascending: true });
+        .eq("match_date", dateString)
+        .order("match_time", { ascending: true });
 
-      if (!error && data) {
-        setAllPredictions(
-          data.map((m) => ({
-            id: m.id,
-            league: m.league,
-            homeTeam: m.home_team,
-            awayTeam: m.away_team,
-            matchDate: m.match_date,
-            matchTime: m.match_time,
+      if (error) {
+        console.error(error);
+        setError("Failed to load AI predictions");
+      } else {
+        const mapped: AIPrediction[] = (data || []).map((row) => ({
+          id: row.id,
+          matchId: row.match_id,
+          league: row.league,
+          homeTeam: row.home_team,
+          awayTeam: row.away_team,
+          matchDate: row.match_date,
+          matchTime: row.match_time,
 
-            predictedOutcome: m.predicted_outcome ?? "1",
-            predictedScore: m.predicted_score ?? "2-1",
-            confidence: m.confidence ?? 65,
-            riskLevel: m.risk_level ?? "medium",
-            keyFactors: m.key_factors ?? [],
-            analysis: m.analysis ?? "",
+          // AI DATA (iz tvoje tabele)
+          predictedOutcome: row.prediction, // "1", "X", "2"
+          predictedScore: row.predicted_score,
+          confidence: row.confidence,
+          homeWinProbability: row.home_win,
+          drawProbability: row.draw,
+          awayWinProbability: row.away_win,
+          riskLevel: row.risk_level,
 
-            isLocked: true,
-          })),
-        );
+          // UI FLAGS
+          isLive: false,
+          isLocked: true, // 🔒 SVE JE LOCKED
+          isPremium: false,
+
+          // OPTIONAL (pošto nemas u tabeli)
+          analysis: "AI analysis available after unlock",
+          keyFactors: [],
+        }));
+
+        setPredictions(mapped);
       }
 
       setLoading(false);
     };
 
     fetchPredictions();
-  }, []);
+  }, [day]);
 
-  const unlockPrediction = (id: string) => {
-    setAllPredictions((prev) => prev.map((p) => (p.id === id ? { ...p, isLocked: false } : p)));
-  };
-
-  const today = new Date().toISOString().split("T")[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
-
-  const predictions = allPredictions.filter((p) =>
-    dayTab === "today" ? p.matchDate === today : p.matchDate === tomorrow,
-  );
-
-  return {
-    predictions,
-    loading,
-    dayTab,
-    setDayTab,
-    unlockPrediction,
-  };
+  return { predictions, loading, error };
 }
