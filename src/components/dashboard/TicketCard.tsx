@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { parseMatchName } from "@/types/admin";
 
 /* =======================
    Types
@@ -292,17 +293,27 @@ function TicketCard({
       {/* Match list with predictions */}
       <div className="px-4 pb-3 space-y-2">
         {displayedMatches.length > 0 ? (
-          displayedMatches.map((match, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-              <span className="text-sm text-foreground truncate flex-1 mr-4">{match.name}</span>
-              <div className="flex items-center gap-3 shrink-0">
-                <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                  {match.prediction}
-                </Badge>
-                <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+          displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.name);
+            return (
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                <div className="flex-1 mr-4 min-w-0">
+                  <span className="text-sm text-foreground truncate block">
+                    {parsed.homeTeam} vs {parsed.awayTeam}
+                  </span>
+                  {parsed.league && (
+                    <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                    {match.prediction}
+                  </Badge>
+                  <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-sm text-muted-foreground py-2">No matches in this ticket</p>
         )}

@@ -8,6 +8,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
+import { parseMatchName } from "@/types/admin";
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
@@ -192,17 +193,27 @@ export default function TicketDetails() {
               </>
             ) : (
               <>
-                {(ticket.matches || []).map((match, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                    <span className="text-sm text-foreground truncate flex-1 mr-4">{match.match_name}</span>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                        {match.prediction}
-                      </Badge>
-                      <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                {(ticket.matches || []).map((match, idx) => {
+                  const parsed = parseMatchName(match.match_name);
+                  return (
+                    <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                      <div className="flex-1 mr-4 min-w-0">
+                        <span className="text-sm text-foreground truncate block">
+                          {parsed.homeTeam} vs {parsed.awayTeam}
+                        </span>
+                        {parsed.league && (
+                          <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                          {match.prediction}
+                        </Badge>
+                        <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </>
             )}
           </div>

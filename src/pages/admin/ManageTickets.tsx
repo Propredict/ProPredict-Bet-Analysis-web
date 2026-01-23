@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Plus, Loader2, Search, X, Calendar } from "lucide-react";
+import { Plus, Loader2, Search, X, Calendar, Sparkles } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -23,7 +24,8 @@ import { useTickets } from "@/hooks/useTickets";
 import { useFixtures } from "@/hooks/useFixtures";
 import { AdminTicketCard } from "@/components/admin/AdminTicketCard";
 import { TicketPreviewModal } from "@/components/admin/TicketPreviewModal";
-import type { Ticket, ContentTier, ContentStatus } from "@/types/admin";
+import type { Ticket, ContentTier, ContentStatus, TicketResult } from "@/types/admin";
+import { createMatchName, parseMatchName } from "@/types/admin";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -32,10 +34,10 @@ import { toast } from "sonner";
    Types
 ===================== */
 
-type TicketResult = "pending" | "won" | "lost";
-
 interface MatchFormData {
-  match_name: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
   prediction: string;
   odds: number;
 }
@@ -53,11 +55,15 @@ export default function ManageTickets() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewTicket, setPreviewTicket] = useState<TicketWithMatches | null>(null);
 
-  // form state
+  // Form state - Basic Info
   const [title, setTitle] = useState("");
   const [tier, setTier] = useState<ContentTier>("daily");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
+  const [description, setDescription] = useState("");
+  const [aiAnalysis, setAiAnalysis] = useState("");
+
+  // Form state - Matches
   const [matches, setMatches] = useState<MatchFormData[]>([]);
 
   // Match selection state
@@ -89,6 +95,8 @@ export default function ManageTickets() {
     setTier("daily");
     setStatus("draft");
     setResult("pending");
+    setDescription("");
+    setAiAnalysis("");
     setMatches([]);
     setMatchSearch("");
     setCustomHomeTeam("");
@@ -109,21 +117,38 @@ export default function ManageTickets() {
     setTitle(ticket.title);
     setTier(ticket.tier);
     setStatus(ticket.status);
-    setResult((ticket as any).result ?? "pending");
+    setResult(ticket.result ?? "pending");
+    setDescription(""); // DB field not yet added
+    setAiAnalysis(""); // DB field not yet added
+    
+    // Parse existing matches from match_name format
     setMatches(
-      ticket.matches?.map((m) => ({
-        match_name: m.match_name,
-        prediction: m.prediction,
-        odds: m.odds,
-      })) ?? [],
+      ticket.matches?.map((m) => {
+        const parsed = parseMatchName(m.match_name);
+        return {
+          homeTeam: parsed.homeTeam,
+          awayTeam: parsed.awayTeam,
+          league: parsed.league || "",
+          prediction: m.prediction,
+          odds: m.odds,
+        };
+      }) ?? [],
     );
     setIsDialogOpen(true);
   };
 
   const handleSubmit = async () => {
     if (matches.length === 0) {
+      toast.error("Please add at least one match");
       return;
     }
+
+    // Convert MatchFormData to DB format (using match_name)
+    const dbMatches = matches.map((m) => ({
+      match_name: createMatchName(m.homeTeam, m.awayTeam, m.league || undefined),
+      prediction: m.prediction,
+      odds: m.odds,
+    }));
 
     if (editingTicket) {
       await updateTicket.mutateAsync({
@@ -134,8 +159,10 @@ export default function ManageTickets() {
           status,
           result,
           total_odds: totalOdds,
+          // description, // Uncomment when DB column added
+          // ai_analysis: aiAnalysis, // Uncomment when DB column added
         },
-        matches,
+        matches: dbMatches,
       });
       toast.success("Ticket updated successfully");
     } else {
@@ -146,8 +173,10 @@ export default function ManageTickets() {
           status,
           result,
           total_odds: totalOdds,
+          // description, // Uncomment when DB column added
+          // ai_analysis: aiAnalysis, // Uncomment when DB column added
         } as any,
-        matches,
+        matches: dbMatches,
       });
       toast.success("Ticket created successfully");
     }
@@ -172,21 +201,31 @@ export default function ManageTickets() {
   };
 
   const addMatchFromFixture = (fixture: any) => {
-    const matchName = `${fixture.homeTeam} vs ${fixture.awayTeam} - ${fixture.league}`;
-    if (!matches.find((m) => m.match_name === matchName)) {
-      setMatches([...matches, { match_name: matchName, prediction: "", odds: 1.5 }]);
+    const existingMatch = matches.find(
+      (m) => m.homeTeam === fixture.homeTeam && m.awayTeam === fixture.awayTeam
+    );
+    if (!existingMatch) {
+      setMatches([
+        ...matches,
+        {
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          league: fixture.league || "",
+          prediction: "",
+          odds: 1.5,
+        },
+      ]);
     }
   };
 
   const addCustomMatch = () => {
     if (customHomeTeam && customAwayTeam && customPrediction) {
-      const matchName = customLeague
-        ? `${customHomeTeam} vs ${customAwayTeam} - ${customLeague}`
-        : `${customHomeTeam} vs ${customAwayTeam}`;
       setMatches([
         ...matches,
         {
-          match_name: matchName,
+          homeTeam: customHomeTeam,
+          awayTeam: customAwayTeam,
+          league: customLeague,
           prediction: customPrediction,
           odds: parseFloat(customOdds) || 1.5,
         },
@@ -260,7 +299,7 @@ export default function ManageTickets() {
 
             <ScrollArea className="flex-1 px-6 overflow-y-auto">
               <div className="space-y-6 py-4">
-                {/* Basic Info Section */}
+                {/* Section 1: Basic Information */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">1</span>
@@ -321,10 +360,41 @@ export default function ManageTickets() {
                         </Select>
                       </div>
                     </div>
+
+                    {/* Description - UI ready, DB column needed */}
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (optional)</Label>
+                      <Textarea
+                        id="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Brief description of this ticket..."
+                        className="bg-background resize-none"
+                        rows={2}
+                      />
+                      <p className="text-xs text-muted-foreground">Note: Add 'description' column to tickets table to save</p>
+                    </div>
+
+                    {/* AI Analysis - UI ready, DB column needed */}
+                    <div className="space-y-2">
+                      <Label htmlFor="aiAnalysis" className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        AI Analysis (optional)
+                      </Label>
+                      <Textarea
+                        id="aiAnalysis"
+                        value={aiAnalysis}
+                        onChange={(e) => setAiAnalysis(e.target.value)}
+                        placeholder="AI-generated analysis and insights..."
+                        className="bg-background resize-none"
+                        rows={3}
+                      />
+                      <p className="text-xs text-muted-foreground">Note: Add 'ai_analysis' column to tickets table to save</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Match Selection Section */}
+                {/* Section 2: Match Selection */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">2</span>
@@ -363,8 +433,9 @@ export default function ManageTickets() {
                           ) : filteredFixtures.length > 0 ? (
                             <div className="p-2 space-y-1">
                               {filteredFixtures.slice(0, 20).map((fixture) => {
-                                const matchName = `${fixture.homeTeam} vs ${fixture.awayTeam} - ${fixture.league}`;
-                                const isSelected = matches.some((m) => m.match_name === matchName);
+                                const isSelected = matches.some(
+                                  (m) => m.homeTeam === fixture.homeTeam && m.awayTeam === fixture.awayTeam
+                                );
                                 return (
                                   <button
                                     key={fixture.id}
@@ -404,7 +475,7 @@ export default function ManageTickets() {
                             <div className="space-y-2">
                               <Label>Home Team *</Label>
                               <Input
-                                placeholder="Home team name"
+                                placeholder="e.g., Manchester United"
                                 value={customHomeTeam}
                                 onChange={(e) => setCustomHomeTeam(e.target.value)}
                                 className="bg-background"
@@ -413,7 +484,7 @@ export default function ManageTickets() {
                             <div className="space-y-2">
                               <Label>Away Team *</Label>
                               <Input
-                                placeholder="Away team name"
+                                placeholder="e.g., Liverpool"
                                 value={customAwayTeam}
                                 onChange={(e) => setCustomAwayTeam(e.target.value)}
                                 className="bg-background"
@@ -423,7 +494,7 @@ export default function ManageTickets() {
                           <div className="space-y-2">
                             <Label>League (optional)</Label>
                             <Input
-                              placeholder="League name"
+                              placeholder="e.g., Premier League"
                               value={customLeague}
                               onChange={(e) => setCustomLeague(e.target.value)}
                               className="bg-background"
@@ -431,7 +502,7 @@ export default function ManageTickets() {
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                              <Label>Betting Option *</Label>
+                              <Label>Prediction *</Label>
                               <Select value={customPrediction} onValueChange={setCustomPrediction}>
                                 <SelectTrigger className="bg-background">
                                   <SelectValue placeholder="Select bet type" />
@@ -488,7 +559,7 @@ export default function ManageTickets() {
                   </div>
                 </div>
 
-                {/* Selected Matches Section */}
+                {/* Section 3: Selected Matches */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">3</span>
@@ -508,14 +579,34 @@ export default function ManageTickets() {
                           <Card key={index} className="p-3 bg-muted/30 border-border">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 space-y-2">
-                                <p className="font-medium text-sm text-foreground">{match.match_name}</p>
+                                <p className="font-medium text-sm text-foreground">
+                                  {match.homeTeam} vs {match.awayTeam}
+                                </p>
+                                {match.league && (
+                                  <p className="text-xs text-muted-foreground">{match.league}</p>
+                                )}
                                 <div className="grid grid-cols-2 gap-2">
-                                  <Input
-                                    placeholder="Prediction"
+                                  <Select
                                     value={match.prediction}
-                                    onChange={(e) => updateMatch(index, "prediction", e.target.value)}
-                                    className="h-8 text-sm bg-background"
-                                  />
+                                    onValueChange={(v) => updateMatch(index, "prediction", v)}
+                                  >
+                                    <SelectTrigger className="h-8 text-sm bg-background">
+                                      <SelectValue placeholder="Prediction" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Home Win">Home Win (1)</SelectItem>
+                                      <SelectItem value="Draw">Draw (X)</SelectItem>
+                                      <SelectItem value="Away Win">Away Win (2)</SelectItem>
+                                      <SelectItem value="1X">1X</SelectItem>
+                                      <SelectItem value="X2">X2</SelectItem>
+                                      <SelectItem value="12">12</SelectItem>
+                                      <SelectItem value="Over 1.5">Over 1.5</SelectItem>
+                                      <SelectItem value="Over 2.5">Over 2.5</SelectItem>
+                                      <SelectItem value="Under 2.5">Under 2.5</SelectItem>
+                                      <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
+                                      <SelectItem value="BTTS No">BTTS No</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                   <Input
                                     type="number"
                                     step="0.01"
