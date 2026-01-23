@@ -25,8 +25,8 @@ interface ApiResponse {
 
 const AUTO_REFRESH_MS = 30_000;
 
-// 🔴 OVDJE UPISI TVOJ SUPABASE PROJECT URL
-const SUPABASE_FUNCTIONS_URL = "https://YOUR_PROJECT_ID.supabase.co/functions/v1/get-fixtures";
+// ✅ TAČAN SUPABASE EDGE FUNCTION URL
+const SUPABASE_FUNCTIONS_URL = "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-fixtures";
 
 export function useLiveScores({
   dateMode = "today", // today | yesterday | tomorrow | live
@@ -50,10 +50,7 @@ export function useLiveScores({
       setIsLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      params.set("mode", dateMode);
-
-      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}?${params.toString()}`, { signal: controller.signal });
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}?mode=${dateMode}`, { signal: controller.signal });
 
       if (!res.ok) {
         throw new Error(`Request failed: ${res.status}`);
@@ -61,17 +58,20 @@ export function useLiveScores({
 
       const data: ApiResponse = await res.json();
 
-      let filtered = data.fixtures;
+      let list = data.fixtures ?? [];
 
-      // 🔹 frontend status filter
-      if (statusFilter !== "all") {
-        filtered = filtered.filter((m) => m.status === statusFilter);
+      // ✅ ISPRAVAN frontend filter
+      if (statusFilter === "live") {
+        list = list.filter((m) => m.status === "live" || m.status === "halftime");
+      } else if (statusFilter !== "all") {
+        list = list.filter((m) => m.status === statusFilter);
       }
 
-      setMatches(filtered);
+      setMatches(list);
     } catch (err: any) {
       if (err.name !== "AbortError") {
         setError(err?.message ?? "Failed to load live scores");
+        setMatches([]);
       }
     } finally {
       setIsLoading(false);
