@@ -9,16 +9,20 @@ export default function AIPredictionsPage() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const { predictions, loading } = useAIPredictions(day);
 
+  // TEMP – kasnije vežeš na auth / subscription
   const isPremiumUser = false;
 
+  // WATCH AD UNLOCK
   const [unlockedMatches, setUnlockedMatches] = useState<string[]>([]);
+
+  // SEARCH
   const [search, setSearch] = useState("");
 
   const handleWatchAd = (id: string) => {
     setUnlockedMatches((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  // ACCURACY STATS
+  // AI ACCURACY STATS
   const [stats, setStats] = useState<{
     won: number;
     lost: number;
@@ -26,21 +30,27 @@ export default function AIPredictionsPage() {
   } | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("ai_prediction_stats")
-      .select("*")
-      .single()
-      .then(({ data }) => data && setStats(data));
+    const loadStats = async () => {
+      const { data } = await supabase.from("ai_prediction_stats").select("*").single();
+
+      if (data) setStats(data);
+    };
+
+    loadStats();
   }, []);
 
   const accuracy = stats && stats.won + stats.lost > 0 ? Math.round((stats.won / (stats.won + stats.lost)) * 100) : 0;
 
-  const filtered = predictions.filter(
-    (p) =>
-      p.homeTeam.toLowerCase().includes(search.toLowerCase()) ||
-      p.awayTeam.toLowerCase().includes(search.toLowerCase()) ||
-      p.league.toLowerCase().includes(search.toLowerCase()),
-  );
+  // ✅ SAFE SEARCH FILTER (NO RUNTIME ERRORS)
+  const filtered = predictions.filter((p) => {
+    const q = search.toLowerCase();
+
+    return (
+      (p.homeTeam ?? "").toLowerCase().includes(q) ||
+      (p.awayTeam ?? "").toLowerCase().includes(q) ||
+      (p.league ?? "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <DashboardLayout>
@@ -71,9 +81,9 @@ export default function AIPredictionsPage() {
 
         {/* STATS CARDS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={<Activity />} label="Live Now" value={predictions.length} />
+          <StatCard icon={<Activity />} label="Live Now" value={filtered.length} />
           <StatCard icon={<Target />} label="Overall Accuracy" value={`${accuracy}%`} />
-          <StatCard icon={<BarChart3 />} label="Active Predictions" value={predictions.length} />
+          <StatCard icon={<BarChart3 />} label="Active Predictions" value={filtered.length} />
           <StatCard
             icon={<Layers />}
             label="Matches Analyzed"
@@ -81,12 +91,12 @@ export default function AIPredictionsPage() {
           />
         </div>
 
-        {/* AI ACCURACY SECTION */}
+        {/* AI ACCURACY */}
         {stats && (
           <div className="rounded-xl border p-6 bg-gradient-to-r from-background to-muted/40">
             <div className="flex items-center justify-between mb-3">
               <span className="font-semibold">AI Accuracy</span>
-              <span className="px-3 py-1 rounded-full bg-red-500 text-white text-xs">{accuracy}%</span>
+              <span className="px-3 py-1 rounded-full bg-primary text-white text-xs">{accuracy}%</span>
             </div>
 
             <div className="h-2 w-full bg-muted rounded mb-4">
