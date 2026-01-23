@@ -113,7 +113,7 @@ export default function LiveScores() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* HEADER */}
         <div className="sticky top-0 z-20 bg-[#0B1220]/95 backdrop-blur border-b border-white/5 px-4 py-4 -mx-4">
           <div className="flex justify-between items-center">
@@ -130,6 +130,7 @@ export default function LiveScores() {
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
               </Button>
               <Button
+                className="bg-green-600 hover:bg-green-700"
                 onClick={() => {
                   const m = matches.find((m) => m.status === "live");
                   if (m) setAlertsMatch(m);
@@ -149,7 +150,7 @@ export default function LiveScores() {
           <StatCard title="Leagues" value={leaguesCount} icon={Trophy} />
         </div>
 
-        {/* LEAGUES BAR */}
+        {/* LEAGUES */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {LEAGUES.map((l) => (
             <Button
@@ -181,22 +182,22 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* STATUS BAR */}
-        <div className="bg-[#0E1627] rounded-xl p-1 flex gap-1">
+        {/* 🔥 STATUS BAR – ORANGE & CLEAR */}
+        <div className="bg-[#1A1208] border border-orange-500/30 rounded-xl p-1 flex gap-1">
           {allowedStatusTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setStatusTab(tab)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm",
-                statusTab === tab ? "bg-[#18223A] text-white" : "text-muted-foreground hover:text-white",
+                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm transition",
+                statusTab === tab ? "bg-orange-500 text-black font-semibold" : "text-orange-300 hover:bg-orange-500/20",
               )}
             >
               {tab === "all" && <Trophy className="h-4 w-4" />}
               {tab === "live" && <Play className="h-4 w-4" />}
               {tab === "upcoming" && <Clock className="h-4 w-4" />}
               {tab === "finished" && <CheckCircle className="h-4 w-4" />}
-              {tab}
+              {tab.toUpperCase()}
             </button>
           ))}
         </div>
@@ -242,6 +243,7 @@ export default function LiveScores() {
                     />
                   </button>
 
+                  {/* CENTERED SCORE */}
                   <div className="flex-1 grid grid-cols-[1fr_96px_1fr] items-center">
                     <span className="text-right pr-3 truncate">{m.homeTeam}</span>
 
@@ -281,12 +283,14 @@ export default function LiveScores() {
 
 function StatCard({ title, value, icon: Icon }: any) {
   return (
-    <Card className="p-4 flex justify-between items-center">
+    <Card className="p-4 flex items-center gap-3 bg-[#0E1627] border-white/5">
+      <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-white/5">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </div>
       <div>
         <p className="text-xs text-muted-foreground">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-lg font-semibold">{value}</p>
       </div>
-      <Icon />
     </Card>
   );
 }
