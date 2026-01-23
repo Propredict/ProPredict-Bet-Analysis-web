@@ -1,64 +1,53 @@
-import { useMemo } from "react";
-import {
-  Brain,
-  RefreshCw,
-  Target,
-  BarChart3,
-  TrendingUp,
-  Sparkles,
-  Loader2,
-  Activity,
-  LineChart,
-  GitBranch,
-  Calculator,
-} from "lucide-react";
-
+import { useEffect, useState } from "react";
+import { Brain, RefreshCw, Sparkles, Activity, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
-import { AIStatsCard } from "@/components/ai-predictions/AIStatsCard";
+import { supabase } from "@/lib/supabase";
 
-import { useAIPredictions } from "@/hooks/useAIPredictions";
-import type { AIPrediction } from "@/components/ai-predictions/types";
+/* =========================
+   TYPES
+========================= */
 
-const howItWorksData = [
-  {
-    icon: LineChart,
-    title: "Data Analysis",
-    description: "Analyzes 50+ data points per match",
-    iconColor: "text-primary",
-    bgColor: "bg-primary/20",
-  },
-  {
-    icon: GitBranch,
-    title: "Pattern Recognition",
-    description: "Identifies winning patterns from history",
-    iconColor: "text-accent",
-    bgColor: "bg-accent/20",
-  },
-  {
-    icon: Calculator,
-    title: "Probability Engine",
-    description: "Calculates accurate win probabilities",
-    iconColor: "text-primary",
-    bgColor: "bg-primary/20",
-  },
-];
+interface AIPredictionRow {
+  id: string;
+  match_id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  match_date: string;
+  match_time: string;
+}
+
+/* =========================
+   PAGE
+========================= */
 
 export default function AIPredictions() {
-  const { predictions, loading, error } = useAIPredictions();
+  const [matches, setMatches] = useState<AIPredictionRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ⬇️ pretvaramo object iz hooka u array
-  const predictionsArray: AIPrediction[] = useMemo(() => Object.values(predictions), [predictions]);
+  useEffect(() => {
+    fetchPredictions();
+  }, []);
 
-  const livePredictions = predictionsArray.filter((p) => p.isLive);
-  const todayPredictions = predictionsArray.filter((p) => !p.isLive);
+  const fetchPredictions = async () => {
+    setLoading(true);
 
-  const handleRefresh = () => {
-    // za sada samo reload stranice
-    window.location.reload();
+    const { data, error } = await supabase.from("ai_predictions").select("*").order("match_time", { ascending: true });
+
+    if (!error && data) {
+      setMatches(data);
+    } else {
+      console.error("Failed to load AI predictions", error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleUnlock = (id: string) => {
+    alert("Watch ad flow here 🔒➡️🔓");
   };
 
   return (
@@ -79,106 +68,61 @@ export default function AIPredictions() {
               <Sparkles className="h-3 w-3 mr-1" />
               AI Powered
             </Badge>
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <Button variant="outline" size="sm" onClick={fetchPredictions}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
           </div>
         </div>
 
-        {/* Error */}
-        {error && <Card className="p-4 border-destructive text-destructive">{error}</Card>}
-
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <AIStatsCard
-            icon={Activity}
-            label="Live Matches"
-            value={livePredictions.length}
-            iconClassName="bg-destructive/20 text-destructive"
-          />
-          <AIStatsCard icon={Target} label="AI Accuracy" value="—" iconClassName="bg-primary/20 text-primary" />
-          <AIStatsCard
-            icon={BarChart3}
-            label="Today's Predictions"
-            value={predictionsArray.length}
-            iconClassName="bg-accent/20 text-accent"
-          />
-          <AIStatsCard
-            icon={TrendingUp}
-            label="Matches Analyzed"
-            value={predictionsArray.length}
-            iconClassName="bg-muted text-muted-foreground"
-          />
+          <Card className="p-4">
+            <Activity className="h-5 w-5 mb-2 text-primary" />
+            <p className="text-sm text-muted-foreground">Today's Predictions</p>
+            <p className="text-2xl font-bold">{matches.length}</p>
+          </Card>
         </div>
 
-        {/* Live Predictions */}
-        {livePredictions.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Activity className="h-5 w-5 text-destructive" />
-              <h2 className="text-lg font-semibold">Live AI Predictions</h2>
-              <Badge variant="destructive" className="animate-pulse">
-                LIVE
-              </Badge>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {livePredictions.map((match) => (
-                <AIPredictionCard key={match.id} prediction={match} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Today's Predictions */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Brain className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Today's AI Predictions</h2>
-          </div>
-
-          {loading ? (
-            <Card className="p-10 flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </Card>
-          ) : todayPredictions.length === 0 ? (
-            <Card className="p-10 text-center">
-              <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">No AI predictions yet</p>
-              <p className="text-sm text-muted-foreground">AI will generate predictions when matches are available</p>
-            </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {todayPredictions.map((match) => (
-                <AIPredictionCard key={match.id} prediction={match} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* How Our AI Works */}
-        <section className="space-y-4 pt-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">How Our AI Works</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {howItWorksData.map((item, index) => (
-              <Card
-                key={index}
-                className="p-6 bg-card border-border hover:border-primary/30 transition-all duration-300 text-center"
-              >
-                <div className={`w-14 h-14 rounded-2xl ${item.bgColor} flex items-center justify-center mx-auto mb-4`}>
-                  <item.icon className={`h-7 w-7 ${item.iconColor}`} />
+        {/* Predictions */}
+        {loading ? (
+          <Card className="p-10 text-center">Loading...</Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {matches.map((m) => (
+              <Card key={m.id} className="relative p-4 overflow-hidden">
+                {/* MATCH INFO – ALWAYS VISIBLE */}
+                <div className="mb-3">
+                  <p className="text-xs text-muted-foreground">{m.league}</p>
+                  <p className="font-semibold text-lg">
+                    {m.home_team} <span className="text-muted-foreground">vs</span> {m.away_team}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {m.match_date} • {m.match_time}
+                  </p>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+
+                {/* LOCKED AI CONTENT */}
+                <div className="relative">
+                  <div className="blur-sm pointer-events-none space-y-2">
+                    <div className="h-3 bg-muted rounded" />
+                    <div className="h-3 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+
+                  {/* OVERLAY */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
+                    <Lock className="h-6 w-6 mb-2 text-primary" />
+                    <p className="font-semibold mb-2">Watch ad to unlock</p>
+                    <Button size="sm" onClick={() => handleUnlock(m.id)}>
+                      Unlock Prediction
+                    </Button>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
-        </section>
+        )}
       </div>
     </DashboardLayout>
   );
