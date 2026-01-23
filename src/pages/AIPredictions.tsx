@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { supabase } from "@/lib/supabase";
 
 export default function AIPredictionsPage() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
@@ -11,6 +12,25 @@ export default function AIPredictionsPage() {
   // TEMP – kasnije vežeš na user subscription
   const isPremiumUser = false;
 
+  // 🟢 AI ACCURACY STATS
+  const [stats, setStats] = useState<{
+    won: number;
+    lost: number;
+    pending: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const { data } = await supabase.from("ai_prediction_stats").select("*").single();
+
+      if (data) setStats(data);
+    };
+
+    loadStats();
+  }, []);
+
+  const accuracy = stats && stats.won + stats.lost > 0 ? Math.round((stats.won / (stats.won + stats.lost)) * 100) : 0;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -19,6 +39,26 @@ export default function AIPredictionsPage() {
           <h1 className="text-2xl font-bold">AI Predictions</h1>
           <p className="text-muted-foreground">AI predictions for today & tomorrow matches</p>
         </div>
+
+        {/* 🟢 AI ACCURACY BAR */}
+        {stats && (
+          <div className="rounded-lg border p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">AI Accuracy</span>
+              <span className="font-bold">{accuracy}%</span>
+            </div>
+
+            <div className="w-full bg-muted h-2 rounded">
+              <div className="bg-primary h-2 rounded" style={{ width: `${accuracy}%` }} />
+            </div>
+
+            <div className="text-sm text-muted-foreground flex gap-4">
+              <span>✔ Won: {stats.won}</span>
+              <span>❌ Lost: {stats.lost}</span>
+              <span>⏳ Pending: {stats.pending}</span>
+            </div>
+          </div>
+        )}
 
         {/* TABS */}
         <div className="flex gap-2">
@@ -33,9 +73,16 @@ export default function AIPredictionsPage() {
           ))}
         </div>
 
-        {/* GRID */}
+        {/* CONTENT */}
         {loading ? (
           <p>Loading...</p>
+        ) : predictions.length === 0 ? (
+          // 🟢 EMPTY STATE (OBAVEZNO)
+          <div className="rounded-lg border p-6 text-center text-muted-foreground">
+            No AI predictions available yet.
+            <br />
+            Matches are currently being analyzed. Please check back soon.
+          </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {predictions.map((p) => (
