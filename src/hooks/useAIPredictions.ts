@@ -1,49 +1,33 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { AIPrediction } from "@/components/ai-predictions/types";
 
-export type MatchDay = "today" | "tomorrow";
-
-export interface AIPrediction {
-  id: string;
-  league: string;
-  home_team: string;
-  away_team: string;
-  match_time: string;
-  match_day: MatchDay;
-
-  home_win: number;
-  draw: number;
-  away_win: number;
-
-  prediction: string;
-  predicted_score: string;
-  confidence: number;
-  risk_level: string;
-
-  is_premium: boolean;
-  result_status: "pending" | "won" | "lost";
-}
-
-export function useAIPredictions(day: MatchDay) {
-  const [data, setData] = useState<AIPrediction[]>([]);
+export function useAIPredictions(day: "today" | "tomorrow") {
+  const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const load = async () => {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("ai_predictions")
-        .select("*")
-        .eq("match_day", day)
-        .order("match_time", { ascending: true });
+      const { data } = await supabase.from("ai_predictions").select("*").eq("match_day", day).order("match_time");
 
-      if (!error && data) setData(data as AIPrediction[]);
+      setPredictions(data || []);
       setLoading(false);
     };
 
-    fetchData();
+    load();
   }, [day]);
 
-  return { predictions: data, loading };
+  const won = predictions.filter((p) => p.result_status === "won").length;
+  const lost = predictions.filter((p) => p.result_status === "lost").length;
+  const pending = predictions.filter((p) => p.result_status === "pending").length;
+
+  const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
+
+  return {
+    predictions,
+    loading,
+    stats: { won, lost, pending, accuracy },
+  };
 }
