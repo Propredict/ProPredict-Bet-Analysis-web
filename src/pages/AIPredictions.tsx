@@ -1,12 +1,26 @@
-import { useState } from "react";
-import { Brain, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2, Activity, LineChart, GitBranch, Calculator } from "lucide-react";
+import { useMemo } from "react";
+import {
+  Brain,
+  RefreshCw,
+  Target,
+  BarChart3,
+  TrendingUp,
+  Sparkles,
+  Loader2,
+  Activity,
+  LineChart,
+  GitBranch,
+  Calculator,
+} from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIStatsCard } from "@/components/ai-predictions/AIStatsCard";
-import { mockAIPredictions, mockStats } from "@/components/ai-predictions/mockData";
+
+import { useAIPredictions } from "@/hooks/useAIPredictions";
 import type { AIPrediction } from "@/components/ai-predictions/types";
 
 const howItWorksData = [
@@ -34,21 +48,18 @@ const howItWorksData = [
 ];
 
 export default function AIPredictions() {
-  const [predictions, setPredictions] = useState<AIPrediction[]>(mockAIPredictions);
-  const [isLoading] = useState(false);
+  const { predictions, loading, error } = useAIPredictions();
+
+  // ⬇️ pretvaramo object iz hooka u array
+  const predictionsArray: AIPrediction[] = useMemo(() => Object.values(predictions), [predictions]);
+
+  const livePredictions = predictionsArray.filter((p) => p.isLive);
+  const todayPredictions = predictionsArray.filter((p) => !p.isLive);
 
   const handleRefresh = () => {
-    // UI only - will be wired later
+    // za sada samo reload stranice
+    window.location.reload();
   };
-
-  const handleUnlock = (id: string) => {
-    setPredictions((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isLocked: false } : p))
-    );
-  };
-
-  const livePredictions = predictions.filter((p) => p.isLive);
-  const todayPredictions = predictions.filter((p) => !p.isLive);
 
   return (
     <DashboardLayout>
@@ -75,12 +86,30 @@ export default function AIPredictions() {
           </div>
         </div>
 
+        {/* Error */}
+        {error && <Card className="p-4 border-destructive text-destructive">{error}</Card>}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <AIStatsCard icon={Activity} label="Live Matches" value={mockStats.liveMatches} iconClassName="bg-destructive/20 text-destructive" />
-          <AIStatsCard icon={Target} label="AI Accuracy" value={`${mockStats.aiAccuracy}%`} iconClassName="bg-primary/20 text-primary" />
-          <AIStatsCard icon={BarChart3} label="Today's Predictions" value={predictions.length} iconClassName="bg-accent/20 text-accent" />
-          <AIStatsCard icon={TrendingUp} label="Matches Analyzed" value={mockStats.matchesAnalyzed} iconClassName="bg-muted text-muted-foreground" />
+          <AIStatsCard
+            icon={Activity}
+            label="Live Matches"
+            value={livePredictions.length}
+            iconClassName="bg-destructive/20 text-destructive"
+          />
+          <AIStatsCard icon={Target} label="AI Accuracy" value="—" iconClassName="bg-primary/20 text-primary" />
+          <AIStatsCard
+            icon={BarChart3}
+            label="Today's Predictions"
+            value={predictionsArray.length}
+            iconClassName="bg-accent/20 text-accent"
+          />
+          <AIStatsCard
+            icon={TrendingUp}
+            label="Matches Analyzed"
+            value={predictionsArray.length}
+            iconClassName="bg-muted text-muted-foreground"
+          />
         </div>
 
         {/* Live Predictions */}
@@ -89,15 +118,14 @@ export default function AIPredictions() {
             <div className="flex items-center gap-3">
               <Activity className="h-5 w-5 text-destructive" />
               <h2 className="text-lg font-semibold">Live AI Predictions</h2>
-              <Badge variant="destructive" className="animate-pulse">LIVE</Badge>
+              <Badge variant="destructive" className="animate-pulse">
+                LIVE
+              </Badge>
             </div>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {livePredictions.map((match) => (
-                <AIPredictionCard
-                  key={match.id}
-                  prediction={match}
-                  onUnlock={handleUnlock}
-                />
+                <AIPredictionCard key={match.id} prediction={match} />
               ))}
             </div>
           </section>
@@ -110,7 +138,7 @@ export default function AIPredictions() {
             <h2 className="text-lg font-semibold">Today's AI Predictions</h2>
           </div>
 
-          {isLoading ? (
+          {loading ? (
             <Card className="p-10 flex justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </Card>
@@ -123,11 +151,7 @@ export default function AIPredictions() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {todayPredictions.map((match) => (
-                <AIPredictionCard
-                  key={match.id}
-                  prediction={match}
-                  onUnlock={handleUnlock}
-                />
+                <AIPredictionCard key={match.id} prediction={match} />
               ))}
             </div>
           )}
@@ -142,8 +166,8 @@ export default function AIPredictions() {
 
           <div className="grid md:grid-cols-3 gap-4">
             {howItWorksData.map((item, index) => (
-              <Card 
-                key={index} 
+              <Card
+                key={index}
                 className="p-6 bg-card border-border hover:border-primary/30 transition-all duration-300 text-center"
               >
                 <div className={`w-14 h-14 rounded-2xl ${item.bgColor} flex items-center justify-center mx-auto mb-4`}>
