@@ -1,91 +1,30 @@
 import { Lock, Crown, Play, Clock } from "lucide-react";
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserPlan } from "@/hooks/useUserPlan";
-
-export interface AIPrediction {
-  id: string;
-  league: string;
-  match_day: "today" | "tomorrow";
-  match_time: string; // ISO
-  home_team: string;
-  away_team: string;
-
-  home_win: number;
-  draw: number;
-  away_win: number;
-
-  prediction: string;
-  predicted_score: string;
-  confidence: number;
-  risk_level: "low" | "medium" | "high";
-
-  market?: "over_2_5" | "btts" | null;
-  odds?: number;
-
-  result_status: "pending" | "won" | "lost";
-}
+import type { AIPrediction } from "./types";
 
 interface Props {
   prediction: AIPrediction;
+  onWatchAd: () => void;
+  onGoPremium: () => void;
 }
 
-export function AIPredictionCard({ prediction }: Props) {
-  const { plan, isAdmin, getUnlockMethod, unlockContent } = useUserPlan();
-  const navigate = useNavigate();
+export function AIPredictionCard({ prediction, onWatchAd, onGoPremium }: Props) {
+  const { isAdmin, plan } = useUserPlan();
 
-  /* =========================
-     ACCESS LOGIC
-  ========================= */
+  const isProTip = prediction.market === "OVER_2_5" || prediction.market === "BTTS" || prediction.odds >= 2.5;
 
-  const isPremiumPrediction = prediction.odds !== undefined && prediction.odds >= 2.5;
+  const locked = !isAdmin && (isProTip ? plan !== "premium" : plan === "free");
 
-  const unlock = getUnlockMethod(isPremiumPrediction ? "premium" : "daily", "tip", prediction.id);
-
-  const locked = unlock?.type !== "unlocked";
-
-  /* =========================
-     COUNTDOWN
-  ========================= */
-
-  const countdown = useMemo(() => {
-    const start = new Date(prediction.match_time).getTime();
-    const now = Date.now();
-    const diff = start - now;
-
-    if (diff <= 0) return "Live";
-
-    const h = Math.floor(diff / 1000 / 60 / 60);
-    const m = Math.floor((diff / 1000 / 60) % 60);
-    return `Starts in ${h}h ${m}m`;
-  }, [prediction.match_time]);
-
-  /* =========================
-     ACTION HANDLERS
-  ========================= */
-
-  const handleWatchAd = async () => {
-    // OVDE IDE PRAVI REWARDED AD (AdSense / AdMob)
-    // nakon success:
-    await unlockContent("tip", prediction.id);
-  };
-
-  const handleUpgrade = () => {
-    navigate("/get-premium");
-  };
-
-  /* =========================
-     UI
-  ========================= */
+  const startsInMs = new Date(prediction.match_time).getTime() - Date.now();
+  const startsInMin = Math.max(0, Math.floor(startsInMs / 60000));
 
   return (
-    <Card className="relative bg-[#0B1A2D] border border-white/5 rounded-xl overflow-hidden">
+    <div className="relative rounded-xl bg-[#0b1b2b] border border-white/5 p-4">
       {/* HEADER */}
-      <div className="px-4 pt-4 text-xs text-muted-foreground flex justify-between">
+      <div className="flex justify-between text-xs text-muted-foreground mb-2">
         <span>{prediction.league}</span>
         <span>
           {prediction.match_day === "today" ? "Today" : "Tomorrow"},{" "}
@@ -96,36 +35,17 @@ export function AIPredictionCard({ prediction }: Props) {
         </span>
       </div>
 
-      {/* MATCH TITLE */}
-      <div className="px-4 pt-2 font-semibold text-white">
-        {prediction.home_team} vs {prediction.away_team}
+      {/* TITLE */}
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="font-semibold text-sm">
+          {prediction.home_team} vs {prediction.away_team}
+        </h3>
+
+        {isProTip && <Badge className="bg-orange-500 text-white">AI PRO</Badge>}
       </div>
 
-      {/* STATUS ROW */}
-      <div className="px-4 py-2 flex items-center gap-2 text-xs">
-        <Clock className="w-3 h-3 text-muted-foreground" />
-        <span className="text-muted-foreground">{countdown}</span>
-
-        {prediction.market && (
-          <Badge variant="secondary">{prediction.market === "over_2_5" ? "Over 2.5" : "BTTS"}</Badge>
-        )}
-
-        {prediction.risk_level === "high" && <Badge className="bg-red-500/20 text-red-400">High Risk</Badge>}
-
-        {prediction.result_status !== "pending" && (
-          <Badge
-            className={cn(
-              prediction.result_status === "won" && "bg-green-500/20 text-green-400",
-              prediction.result_status === "lost" && "bg-red-500/20 text-red-400",
-            )}
-          >
-            {prediction.result_status.toUpperCase()}
-          </Badge>
-        )}
-      </div>
-
-      {/* AI SECTION */}
-      <div className={cn("px-4 pb-4 space-y-3", locked && "blur-sm")}>
+      {/* BARS */}
+      <div className="space-y-2">
         {[
           { label: prediction.home_team, value: prediction.home_win, color: "bg-green-500" },
           { label: "Draw", value: prediction.draw, color: "bg-gray-400" },
@@ -134,38 +54,47 @@ export function AIPredictionCard({ prediction }: Props) {
           <div key={row.label}>
             <div className="flex justify-between text-xs mb-1">
               <span>{row.label}</span>
-              <span>{row.value}%</span>
+              <span>{locked ? "??" : `${row.value}%`}</span>
             </div>
             <div className="h-2 bg-white/10 rounded">
-              <div className={cn("h-full rounded", row.color)} style={{ width: `${row.value}%` }} />
+              <div className={cn("h-2 rounded", row.color)} style={{ width: locked ? "0%" : `${row.value}%` }} />
             </div>
           </div>
         ))}
+      </div>
 
-        <div className="flex justify-between text-xs pt-2">
+      {/* AI SECTION */}
+      <div className={cn("mt-4", locked && "blur-sm select-none")}>
+        <div className="flex justify-between text-xs text-muted-foreground">
           <span>Predicted Score</span>
-          <span className="blur-sm">{prediction.predicted_score}</span>
+          <span>AI Confidence</span>
+        </div>
+        <div className="flex justify-between font-semibold">
+          <span>{prediction.predicted_score}</span>
+          <span>{prediction.confidence}%</span>
         </div>
       </div>
 
-      {/* LOCK OVERLAY */}
-      {locked && !isAdmin && (
-        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3">
-          <Lock className="w-5 h-5 text-white" />
+      {/* COUNTDOWN */}
+      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-3">
+        <Clock className="w-3 h-3" />
+        Starts in {Math.floor(startsInMin / 60)}h {startsInMin % 60}m
+      </div>
 
-          {unlock?.type === "watch_ad" && (
-            <Button onClick={handleWatchAd}>
-              <Play className="w-4 h-4 mr-2" /> Watch Ad to Unlock
-            </Button>
-          )}
-
-          {unlock?.type === "upgrade_premium" && (
-            <Button onClick={handleUpgrade} variant="secondary">
+      {/* LOCK CTA */}
+      {!isAdmin && locked && (
+        <div className="mt-4">
+          {isProTip ? (
+            <Button className="w-full bg-orange-500" onClick={onGoPremium}>
               <Crown className="w-4 h-4 mr-2" /> Get AI Pro Access
+            </Button>
+          ) : (
+            <Button className="w-full bg-green-500" onClick={onWatchAd}>
+              <Play className="w-4 h-4 mr-2" /> Watch Ad to Unlock
             </Button>
           )}
         </div>
       )}
-    </Card>
+    </div>
   );
 }
