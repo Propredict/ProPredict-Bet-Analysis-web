@@ -1,4 +1,16 @@
-import { Zap, RefreshCw, Bell, BellRing, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle } from "lucide-react";
+import {
+  Zap,
+  RefreshCw,
+  Bell,
+  BellRing,
+  Star,
+  Search,
+  Play,
+  Trophy,
+  BarChart3,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -35,6 +47,7 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 /* -------------------- PAGE -------------------- */
 
 export default function LiveScores() {
+  console.log("🔥 LiveScores mounted");
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [dateMode, setDateMode] = useState<DateMode>("today");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
@@ -51,7 +64,7 @@ export default function LiveScores() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
-  
+
   // Live alerts detection
   useLiveAlerts(matches);
 
@@ -139,9 +152,9 @@ export default function LiveScores() {
               <Button
                 className={cn(
                   "transition-all duration-300",
-                  alertSettings.enabled 
-                    ? "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30" 
-                    : "bg-[#1a1f2e] hover:bg-[#252b3d] border border-white/10"
+                  alertSettings.enabled
+                    ? "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30"
+                    : "bg-[#1a1f2e] hover:bg-[#252b3d] border border-white/10",
                 )}
                 onClick={() => setShowGlobalAlerts(true)}
               >
@@ -151,9 +164,7 @@ export default function LiveScores() {
                   <Bell className="h-4 w-4 mr-2" />
                 )}
                 Alerts
-                {alertSettings.enabled && (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-white animate-pulse" />
-                )}
+                {alertSettings.enabled && <span className="ml-2 h-2 w-2 rounded-full bg-white animate-pulse" />}
               </Button>
             </div>
           </div>
@@ -258,9 +269,7 @@ export default function LiveScores() {
                       }}
                       className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
-                        isFavorite(m.id) 
-                          ? "bg-primary/20 shadow-lg shadow-primary/30" 
-                          : "bg-white/5 hover:bg-white/10"
+                        isFavorite(m.id) ? "bg-primary/20 shadow-lg shadow-primary/30" : "bg-white/5 hover:bg-white/10",
                       )}
                     >
                       <Star
@@ -310,9 +319,9 @@ export default function LiveScores() {
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-      <GlobalAlertsModal 
-        isOpen={showGlobalAlerts} 
-        onClose={() => setShowGlobalAlerts(false)} 
+      <GlobalAlertsModal
+        isOpen={showGlobalAlerts}
+        onClose={() => setShowGlobalAlerts(false)}
         settings={alertSettings}
         onToggle={toggleAlertSetting}
       />
@@ -322,7 +331,17 @@ export default function LiveScores() {
 
 /* -------------------- HELPERS -------------------- */
 
-function StatCard({ title, value, icon: Icon, variant }: { title: string; value: number; icon: any; variant: "live" | "matches" | "leagues" }) {
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  variant,
+}: {
+  title: string;
+  value: number;
+  icon: any;
+  variant: "live" | "matches" | "leagues";
+}) {
   const variantStyles = {
     live: {
       gradient: "from-red-500/20 to-red-600/5",
@@ -353,16 +372,15 @@ function StatCard({ title, value, icon: Icon, variant }: { title: string; value:
   const styles = variantStyles[variant];
 
   return (
-    <Card className={cn(
-      "p-4 flex items-center gap-4 bg-gradient-to-br border transition-all hover:scale-[1.02]",
-      styles.gradient,
-      styles.border,
-      styles.glow && `shadow-lg ${styles.glow}`
-    )}>
-      <div className={cn(
-        "h-11 w-11 rounded-xl flex items-center justify-center",
-        styles.iconBg
-      )}>
+    <Card
+      className={cn(
+        "p-4 flex items-center gap-4 bg-gradient-to-br border transition-all hover:scale-[1.02]",
+        styles.gradient,
+        styles.border,
+        styles.glow && `shadow-lg ${styles.glow}`,
+      )}
+    >
+      <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center", styles.iconBg)}>
         <Icon className={cn("h-5 w-5", styles.iconColor)} />
       </div>
       <div>
