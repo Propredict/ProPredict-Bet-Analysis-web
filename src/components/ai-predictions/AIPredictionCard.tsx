@@ -1,122 +1,108 @@
-import { Lock, Play, Crown, Clock } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Crown, Play, Lock, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
-import type { AIPrediction } from "./types";
+import { useNavigate } from "react-router-dom";
+import type { AIPrediction } from "@/hooks/useAIPredictions";
 
 interface Props {
   prediction: AIPrediction;
 }
 
 export function AIPredictionCard({ prediction }: Props) {
+  const { isAdmin, plan, getUnlockMethod, unlockContent } = useUserPlan();
   const navigate = useNavigate();
-  const { requireAuth } = useRequireAuth();
 
-  const { isAdmin, getUnlockMethod, unlockContent, isContentUnlocked } = useUserPlan();
+  const unlock = getUnlockMethod("daily", "prediction", prediction.id);
+  const isUnlocked = isAdmin || unlock?.type === "unlocked";
 
-  const unlock = getUnlockMethod(prediction.is_premium ? "premium" : "daily", "tip", prediction.match_id);
+  const matchDate = new Date(prediction.match_time);
+  const now = new Date();
 
-  const isUnlocked = isAdmin || unlock?.type === "unlocked" || isContentUnlocked("tip", prediction.match_id);
+  const diffMs = matchDate.getTime() - now.getTime();
+  const diffH = Math.max(0, Math.floor(diffMs / 1000 / 60 / 60));
+  const diffM = Math.max(0, Math.floor((diffMs / 1000 / 60) % 60));
 
-  const onWatchAd = requireAuth(async () => {
-    // ovde ide AdSense rewarded ad
-    await unlockContent("tip", prediction.match_id);
-  });
-
-  const startTime = new Date(prediction.match_time);
-  const diffMin = Math.max(0, Math.floor((startTime.getTime() - Date.now()) / 60000));
+  async function handleWatchAd() {
+    // OVDE IDE PRAVI AdSense Rewarded
+    await unlockContent("prediction", prediction.id);
+  }
 
   return (
-    <Card className="relative bg-card border p-4 space-y-3">
+    <Card className="bg-[#0b1d33] border-[#1e2f4d] p-4 space-y-3">
       {/* HEADER */}
       <div className="text-xs text-muted-foreground flex justify-between">
         <span>{prediction.league}</span>
         <span>
           {prediction.match_day === "today" ? "Today" : "Tomorrow"} ·{" "}
-          {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {matchDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
 
-      {/* MATCH */}
-      <div className="font-semibold text-center">
+      {/* MATCH NAME */}
+      <h3 className="font-semibold text-sm">
         {prediction.home_team} vs {prediction.away_team}
-      </div>
+      </h3>
 
-      {/* STATUS */}
-      <div className="flex justify-between text-xs">
-        <Badge variant="secondary">{prediction.result_status}</Badge>
-        {diffMin > 0 && (
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            starts in {diffMin}m
-          </span>
-        )}
-      </div>
+      {/* COUNTDOWN */}
+      {diffMs > 0 && (
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock size={12} /> Starts in {diffH}h {diffM}m
+        </div>
+      )}
 
-      {/* CONTENT */}
-      <div className={isUnlocked ? "" : "blur-sm pointer-events-none"}>
-        {[
-          { label: prediction.home_team, value: prediction.home_win },
-          { label: "Draw", value: prediction.draw },
-          { label: prediction.away_team, value: prediction.away_win },
-        ].map((r) => (
-          <div key={r.label} className="space-y-1">
-            <div className="flex justify-between text-xs">
-              <span>{r.label}</span>
-              <span>{isUnlocked ? `${r.value}%` : "??"}</span>
-            </div>
-            <div className="h-2 bg-muted rounded">
-              <div className="h-full bg-primary" style={{ width: `${r.value}%` }} />
-            </div>
+      {/* BARS */}
+      {[
+        { label: prediction.home_team, value: prediction.home_win, color: "bg-green-500" },
+        { label: "Draw", value: prediction.draw, color: "bg-gray-400" },
+        { label: prediction.away_team, value: prediction.away_win, color: "bg-orange-500" },
+      ].map((row) => (
+        <div key={row.label} className="space-y-1">
+          <div className="flex justify-between text-xs">
+            <span>{row.label}</span>
+            <span>{row.value}%</span>
           </div>
-        ))}
-
-        <div className="grid grid-cols-4 text-xs mt-3 bg-muted/40 p-2 rounded">
-          <div>
-            <div>Pick</div>
-            <strong>{isUnlocked ? prediction.prediction : "?"}</strong>
-          </div>
-          <div>
-            <div>Score</div>
-            <strong>{isUnlocked ? prediction.predicted_score : "?"}</strong>
-          </div>
-          <div>
-            <div>Conf</div>
-            <strong>{prediction.confidence}%</strong>
-          </div>
-          <div>
-            <div>Risk</div>
-            <strong>{prediction.risk_level}</strong>
+          <div className="h-2 bg-muted rounded">
+            <div className={`h-2 rounded ${row.color}`} style={{ width: `${row.value}%` }} />
           </div>
         </div>
+      ))}
+
+      {/* AI LOCKED PART */}
+      <div className={`space-y-2 ${!isUnlocked && "blur-sm select-none"}`}>
+        <div className="flex justify-between text-xs">
+          <span>Predicted Score</span>
+          <span>{prediction.predicted_score}</span>
+        </div>
+        <div className="flex justify-between text-xs">
+          <span>AI Confidence</span>
+          <span>{prediction.confidence}%</span>
+        </div>
+
+        <Badge>
+          {prediction.result_status === "pending"
+            ? "⏳ Pending"
+            : prediction.result_status === "won"
+              ? "✅ Won"
+              : "❌ Lost"}
+        </Badge>
       </div>
 
-      {/* CTA */}
+      {/* ACTION */}
       {!isUnlocked && (
-        <div className="pt-3 space-y-2">
+        <div className="pt-2">
           {unlock?.type === "watch_ad" && (
-            <Button className="w-full" onClick={onWatchAd}>
-              <Play className="h-4 w-4 mr-2" />
-              Watch Ad to Unlock
+            <Button className="w-full" onClick={handleWatchAd}>
+              <Play size={16} className="mr-2" /> Watch Ad to Unlock
             </Button>
           )}
 
           {unlock?.type === "upgrade_premium" && (
-            <Button className="w-full" onClick={() => navigate("/get-premium")}>
-              <Crown className="h-4 w-4 mr-2" />
-              Get AI Pro Access
+            <Button className="w-full bg-orange-500" onClick={() => navigate("/get-premium")}>
+              <Crown size={16} className="mr-2" /> Get AI Pro Access
             </Button>
           )}
-        </div>
-      )}
-
-      {/* LOCK ICON */}
-      {!isUnlocked && (
-        <div className="absolute top-2 right-2">
-          <Lock className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
     </Card>
