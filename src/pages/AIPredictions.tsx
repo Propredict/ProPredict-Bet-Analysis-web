@@ -1,58 +1,49 @@
-import { Brain, Activity } from "lucide-react";
+import { useState } from "react";
+import { Brain } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function AIPredictions() {
-  const { predictions, loading } = useAIPredictions();
+  const [tab, setTab] = useState<"today" | "tomorrow">("today");
 
-  const today = predictions.filter((p) => p.matchDate === "Today");
-  const tomorrow = predictions.filter((p) => p.matchDate === "Tomorrow");
+  const { predictions, loading } = useAIPredictions(tab);
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* HEADER */}
-        <div>
-          <div className="flex items-center gap-3">
-            <Brain className="h-7 w-7 text-primary" />
-            <h1 className="text-2xl font-bold">AI Predictions</h1>
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="flex items-center gap-2">
+              <Brain className="text-primary" />
+              <h1 className="text-2xl font-bold">AI Predictions</h1>
+            </div>
+            <p className="text-muted-foreground">AI predictions for today & tomorrow matches</p>
           </div>
-          <p className="text-muted-foreground mt-1">AI predictions for today & tomorrow matches</p>
         </div>
 
-        {/* TODAY */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Today</h2>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-2">
+          <Button variant={tab === "today" ? "default" : "outline"} onClick={() => setTab("today")}>
+            Today
+          </Button>
+          <Button variant={tab === "tomorrow" ? "default" : "outline"} onClick={() => setTab("tomorrow")}>
+            Tomorrow
+          </Button>
+        </div>
 
-          {loading ? (
-            <Card className="p-6 text-center">Loading...</Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {today.map((p) => (
-                <AIPredictionCard key={p.id} prediction={p} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* TOMORROW */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Tomorrow</h2>
-          </div>
-
+        {/* Grid */}
+        {loading ? (
+          <p className="text-muted-foreground">Loading AI predictions…</p>
+        ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tomorrow.map((p) => (
+            {predictions.map((p) => (
               <AIPredictionCard key={p.id} prediction={p} />
             ))}
           </div>
-        </section>
+        )}
       </div>
     </DashboardLayout>
   );
