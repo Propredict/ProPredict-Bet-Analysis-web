@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Crown, Eye, Sparkles, ChevronDown, Activity, Brain, TrendingUp } from "lucide-react";
+import { Crown, Eye, ChevronDown, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 
@@ -27,7 +27,6 @@ export function AIPredictionCard({ prediction, isAdmin = false, onWatchAd, onGoP
 
   const handleWatchAd = async () => {
     setIsUnlocking(true);
-    // Simulate ad watch delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsUnlocked(true);
     setIsUnlocking(false);
@@ -39,143 +38,153 @@ export function AIPredictionCard({ prediction, isAdmin = false, onWatchAd, onGoP
     return time.slice(0, 5);
   };
 
-  const formatDate = (date: string | null) => {
+  const formatDate = (date: string | null, matchDay: string | null) => {
+    if (matchDay === "today") return "Today";
+    if (matchDay === "tomorrow") return "Tomorrow";
     if (!date) return "";
     const d = new Date(date);
     return d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
   };
 
-  const getRiskColor = (risk: string | null) => {
-    switch (risk) {
-      case "low": return "text-green-400";
-      case "medium": return "text-yellow-400";
-      case "high": return "text-red-400";
-      default: return "text-muted-foreground";
-    }
+  // Determine which team is predicted to win
+  const getPredictedTeam = () => {
+    if (prediction.prediction === "1") return "home";
+    if (prediction.prediction === "2") return "away";
+    return "draw";
   };
 
-  const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
+  const predictedTeam = getPredictedTeam();
+
+  // Calculate bar widths based on probabilities
+  const getBarWidth = (prob: number) => {
+    return Math.max(10, prob); // minimum 10% width for visibility
+  };
 
   return (
-    <Card className="bg-[#0f1729]/80 border-[#1e3a5f]/50 backdrop-blur-sm overflow-hidden">
+    <Card className="bg-[#0f1729]/90 border-[#1e3a5f]/40 backdrop-blur-sm overflow-hidden">
       <CardContent className="p-0">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-[#1e3a5f]/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{prediction.league}</span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
-              {formatDate(prediction.match_date)} {formatTime(prediction.match_time)}
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+            <span>{prediction.league}</span>
+            <span>•</span>
+            <span>{formatDate(prediction.match_date, prediction.match_day)}, {formatTime(prediction.match_time)}</span>
+          </div>
+          {isPremium && (
+            <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 text-[10px] px-2 py-0.5 font-semibold">
+              <Star className="w-3 h-3 mr-1 fill-current" />
+              AI PRO
+            </Badge>
+          )}
+        </div>
+
+        {/* Match Title - Always visible */}
+        <div className="px-4 pb-3">
+          <h3 className="font-bold text-base text-foreground">
+            {prediction.home_team} vs {prediction.away_team}
+          </h3>
+        </div>
+
+        {/* Team Probability Bars */}
+        <div className="px-4 space-y-2 mb-4">
+          {/* Home Team */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <div className="text-sm text-foreground mb-1">{prediction.home_team}</div>
+              <div className="h-1.5 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    predictedTeam === "home" ? "bg-green-500" : "bg-orange-500"
+                  )}
+                  style={{ width: hasAccess ? `${getBarWidth(prediction.home_win)}%` : "60%" }}
+                />
+              </div>
+            </div>
+            <span className={cn(
+              "text-sm font-medium min-w-[32px] text-right",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              {hasAccess ? `${prediction.home_win}%` : "??"}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            {prediction.is_live && (
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">
-                <Activity className="w-3 h-3 mr-1 animate-pulse" />
-                LIVE
-              </Badge>
-            )}
-            {isPremium && (
-              <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30 text-[10px]">
-                <Crown className="w-3 h-3 mr-1" />
-                AI PRO
-              </Badge>
-            )}
+
+          {/* Draw */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <div className="text-sm text-foreground mb-1">Draw</div>
+              <div className="h-1.5 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    predictedTeam === "draw" ? "bg-green-500" : "bg-orange-500"
+                  )}
+                  style={{ width: hasAccess ? `${getBarWidth(prediction.draw)}%` : "30%" }}
+                />
+              </div>
+            </div>
+            <span className={cn(
+              "text-sm font-medium min-w-[32px] text-right",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              {hasAccess ? `${prediction.draw}%` : "??"}
+            </span>
+          </div>
+
+          {/* Away Team */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <div className="text-sm text-foreground mb-1">{prediction.away_team}</div>
+              <div className="h-1.5 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    predictedTeam === "away" ? "bg-green-500" : "bg-orange-500"
+                  )}
+                  style={{ width: hasAccess ? `${getBarWidth(prediction.away_win)}%` : "45%" }}
+                />
+              </div>
+            </div>
+            <span className={cn(
+              "text-sm font-medium min-w-[32px] text-right",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              {hasAccess ? `${prediction.away_win}%` : "??"}
+            </span>
           </div>
         </div>
 
-        {/* Match Info - Always visible */}
-        <div className="px-4 py-4">
-          <h3 className="font-bold text-lg text-foreground mb-4">
-            {prediction.home_team} vs {prediction.away_team}
-          </h3>
-
-          {/* Win Probability Bars - Blurred if locked */}
-          <div className={cn("space-y-2 mb-4", !hasAccess && "blur-sm select-none pointer-events-none")}>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-12">Home</span>
-              <div className="flex-1 h-2 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    prediction.home_win === maxProb ? "bg-green-500" : "bg-blue-500/60"
-                  )}
-                  style={{ width: `${prediction.home_win}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium w-10 text-right">{prediction.home_win}%</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-12">Draw</span>
-              <div className="flex-1 h-2 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    prediction.draw === maxProb ? "bg-green-500" : "bg-blue-500/60"
-                  )}
-                  style={{ width: `${prediction.draw}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium w-10 text-right">{prediction.draw}%</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-12">Away</span>
-              <div className="flex-1 h-2 bg-[#1e3a5f]/30 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    prediction.away_win === maxProb ? "bg-green-500" : "bg-blue-500/60"
-                  )}
-                  style={{ width: `${prediction.away_win}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium w-10 text-right">{prediction.away_win}%</span>
+        {/* Predicted Score & Confidence */}
+        <div className="px-4 pb-4 flex items-center justify-between">
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">Predicted Score</div>
+            <div className={cn(
+              "text-lg font-bold",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              {hasAccess ? (prediction.predicted_score || "—") : "? ?"}
             </div>
           </div>
-
-          {/* Predicted Score & Confidence - Blurred if locked */}
-          <div className={cn(
-            "grid grid-cols-2 gap-3 mb-4",
-            !hasAccess && "blur-sm select-none pointer-events-none"
-          )}>
-            <div className="bg-[#1e3a5f]/20 rounded-lg p-3 text-center">
-              <div className="text-xs text-muted-foreground mb-1">Predicted Score</div>
-              <div className="text-xl font-bold text-foreground">
-                {hasAccess ? (prediction.predicted_score || "—") : "?-?"}
-              </div>
-            </div>
-            <div className="bg-[#1e3a5f]/20 rounded-lg p-3 text-center">
-              <div className="text-xs text-muted-foreground mb-1">AI Confidence</div>
-              <div className="text-xl font-bold text-green-400">
-                {hasAccess ? `${prediction.confidence}%` : "??%"}
-              </div>
+          <div className="text-right">
+            <div className="text-xs text-muted-foreground mb-1">AI Confidence</div>
+            <div className={cn(
+              "text-lg font-bold text-green-400",
+              !hasAccess && "blur-sm select-none"
+            )}>
+              {hasAccess ? `${prediction.confidence}%` : "??%"}
             </div>
           </div>
+        </div>
 
-          {/* Risk Level - Blurred if locked */}
-          <div className={cn(
-            "flex items-center justify-between mb-4",
-            !hasAccess && "blur-sm select-none pointer-events-none"
-          )}>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Risk Level:</span>
-              <span className={cn("text-xs font-semibold capitalize", getRiskColor(prediction.risk_level))}>
-                {hasAccess ? prediction.risk_level : "???"}
-              </span>
-            </div>
-            <Badge variant="outline" className="text-xs">
-              Prediction: {prediction.prediction}
-            </Badge>
-          </div>
-
-          {/* AI Analysis - Collapsible, Blurred if locked */}
-          {prediction.analysis && (
+        {/* AI Analysis - Collapsible (only when unlocked) */}
+        {hasAccess && prediction.analysis && (
+          <div className="px-4 pb-4">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-between text-xs text-muted-foreground hover:text-foreground p-2 h-auto"
+                  className="w-full justify-between text-xs text-muted-foreground hover:text-foreground p-2 h-auto bg-[#1e3a5f]/20"
                 >
                   <span className="flex items-center gap-2">
                     <Brain className="w-4 h-4" />
@@ -185,14 +194,11 @@ export function AIPredictionCard({ prediction, isAdmin = false, onWatchAd, onGoP
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className={cn(
-                  "mt-2 p-3 bg-[#1e3a5f]/20 rounded-lg",
-                  !hasAccess && "blur-sm select-none pointer-events-none"
-                )}>
+                <div className="mt-2 p-3 bg-[#1e3a5f]/20 rounded-lg">
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {hasAccess ? prediction.analysis : "Unlock to view AI analysis..."}
+                    {prediction.analysis}
                   </p>
-                  {hasAccess && prediction.key_factors && prediction.key_factors.length > 0 && (
+                  {prediction.key_factors && prediction.key_factors.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1">
                       {prediction.key_factors.map((factor, i) => (
                         <Badge key={i} variant="secondary" className="text-[10px]">
@@ -204,37 +210,32 @@ export function AIPredictionCard({ prediction, isAdmin = false, onWatchAd, onGoP
                 </div>
               </CollapsibleContent>
             </Collapsible>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Action Button - Only show if locked */}
+        {/* Unlock Section - Only show if locked */}
         {!hasAccess && (
           <div className="px-4 pb-4">
+            <p className="text-xs text-muted-foreground text-center mb-3">
+              Unlock full AI analysis and predictions
+            </p>
             {isPremium ? (
               <Button
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0"
                 onClick={onGoPremium}
               >
-                <Crown className="w-4 h-4 mr-2" />
+                <Star className="w-4 h-4 mr-2 fill-current" />
                 Get AI Pro Access
               </Button>
             ) : (
               <Button
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                variant="outline"
+                className="w-full border-[#1e3a5f] text-foreground hover:bg-[#1e3a5f]/30"
                 onClick={handleWatchAd}
                 disabled={isUnlocking}
               >
-                {isUnlocking ? (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                    Unlocking...
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Watch Ad to Unlock Prediction
-                  </>
-                )}
+                <Eye className="w-4 h-4 mr-2" />
+                {isUnlocking ? "Unlocking..." : "Watch Ad to Unlock Prediction"}
               </Button>
             )}
           </div>
