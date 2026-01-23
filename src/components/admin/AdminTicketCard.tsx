@@ -16,7 +16,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TicketWithMatches } from "@/hooks/useTickets";
-import type { ContentTier } from "@/types/admin";
+import type { ContentTier, TicketResult } from "@/types/admin";
+import { parseMatchName } from "@/types/admin";
 
 interface AdminTicketCardProps {
   ticket: TicketWithMatches;
@@ -27,7 +28,7 @@ interface AdminTicketCardProps {
   onMarkLost: () => void;
 }
 
-type TicketResult = "pending" | "won" | "lost";
+
 
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
@@ -132,24 +133,32 @@ export function AdminTicketCard({
       {matches.length > 0 && (
         <div className="px-4 pb-2">
           <div className="space-y-1">
-            {displayedMatches.map((match, idx) => (
-              <div
-                key={match.id || idx}
-                className="flex items-center justify-between py-2 px-3 bg-muted/20 rounded-lg border border-border/50"
-              >
-                <span className="text-sm text-foreground truncate flex-1 mr-3">
-                  {match.match_name.split(" - ")[0]}
-                </span>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
-                    {match.prediction}
-                  </Badge>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    @{match.odds.toFixed(2)}
-                  </span>
+            {displayedMatches.map((match, idx) => {
+              const parsed = parseMatchName(match.match_name);
+              return (
+                <div
+                  key={match.id || idx}
+                  className="flex items-center justify-between py-2 px-3 bg-muted/20 rounded-lg border border-border/50"
+                >
+                  <div className="flex-1 mr-3 min-w-0">
+                    <span className="text-sm text-foreground truncate block">
+                      {parsed.homeTeam} vs {parsed.awayTeam}
+                    </span>
+                    {parsed.league && (
+                      <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
+                      {match.prediction}
+                    </Badge>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      @{match.odds.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Expand/Collapse Toggle */}

@@ -7,15 +7,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, XCircle, Star, Crown, Sparkles } from "lucide-react";
 import type { TicketWithMatches } from "@/hooks/useTickets";
-import type { ContentTier } from "@/types/admin";
+import type { ContentTier, TicketResult } from "@/types/admin";
+import { parseMatchName } from "@/types/admin";
 
 interface TicketPreviewModalProps {
   ticket: TicketWithMatches | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-type TicketResult = "pending" | "won" | "lost";
 
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
@@ -115,24 +114,32 @@ export function TicketPreviewModal({ ticket, open, onOpenChange }: TicketPreview
 
           {/* Matches */}
           <div className="px-4 pb-3 space-y-2">
-            {matches.map((match, idx) => (
-              <div
-                key={match.id || idx}
-                className="flex items-center justify-between py-2 border-b border-border/30 last:border-0"
-              >
-                <span className="text-sm text-foreground truncate flex-1 mr-4">
-                  {match.match_name}
-                </span>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                    {match.prediction}
-                  </Badge>
-                  <span className="text-sm font-medium text-primary">
-                    @{match.odds.toFixed(2)}
-                  </span>
+            {matches.map((match, idx) => {
+              const parsed = parseMatchName(match.match_name);
+              return (
+                <div
+                  key={match.id || idx}
+                  className="flex items-center justify-between py-2 border-b border-border/30 last:border-0"
+                >
+                  <div className="flex-1 mr-4 min-w-0">
+                    <span className="text-sm text-foreground truncate block">
+                      {parsed.homeTeam} vs {parsed.awayTeam}
+                    </span>
+                    {parsed.league && (
+                      <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                      {match.prediction}
+                    </Badge>
+                    <span className="text-sm font-medium text-primary">
+                      @{match.odds.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Total Odds */}
