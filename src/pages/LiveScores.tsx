@@ -69,6 +69,12 @@ export default function LiveScores() {
     }
   }, [allowedStatusTabs, statusTab]);
 
+  /* -------------------- STATS -------------------- */
+
+  const liveCount = matches.filter((m) => m.status === "live" || m.status === "halftime").length;
+
+  const leaguesCount = new Set(matches.map((m) => m.league)).size;
+
   /* -------------------- FILTERING -------------------- */
 
   const filtered = useMemo(() => {
@@ -115,6 +121,7 @@ export default function LiveScores() {
               <Zap className="text-primary" />
               <h1 className="text-xl font-bold">Live Scores</h1>
             </div>
+
             <div className="flex gap-2 items-center">
               <Badge variant="outline" className="font-mono">
                 {format(currentTime, "HH:mm")}
@@ -135,7 +142,14 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* LEAGUES */}
+        {/* STATS */}
+        <div className="grid grid-cols-3 gap-4">
+          <StatCard title="Live Now" value={liveCount} icon={Play} />
+          <StatCard title="Total Matches" value={matches.length} icon={BarChart3} />
+          <StatCard title="Leagues" value={leaguesCount} icon={Trophy} />
+        </div>
+
+        {/* LEAGUES BAR */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {LEAGUES.map((l) => (
             <Button
@@ -145,6 +159,7 @@ export default function LiveScores() {
               onClick={() => setLeagueFilter(l)}
             >
               {l}
+              {l === "All Leagues" && <Badge className="ml-2 bg-white/10">{leaguesCount}</Badge>}
             </Button>
           ))}
         </div>
@@ -227,7 +242,6 @@ export default function LiveScores() {
                     />
                   </button>
 
-                  {/* FIXED CENTER LAYOUT */}
                   <div className="flex-1 grid grid-cols-[1fr_96px_1fr] items-center">
                     <span className="text-right pr-3 truncate">{m.homeTeam}</span>
 
@@ -263,7 +277,19 @@ export default function LiveScores() {
   );
 }
 
-/* -------------------- BADGES -------------------- */
+/* -------------------- HELPERS -------------------- */
+
+function StatCard({ title, value, icon: Icon }: any) {
+  return (
+    <Card className="p-4 flex justify-between items-center">
+      <div>
+        <p className="text-xs text-muted-foreground">{title}</p>
+        <p className="text-2xl font-bold">{value}</p>
+      </div>
+      <Icon />
+    </Card>
+  );
+}
 
 function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
@@ -275,9 +301,5 @@ function StatusBadge({ match }: { match: Match }) {
   if (match.status === "finished") {
     return <Badge className="bg-white/5 text-muted-foreground border border-white/10">FT</Badge>;
   }
-  return (
-    <Badge variant="outline" className="text-muted-foreground border-white/10">
-      {match.startTime}
-    </Badge>
-  );
+  return <Badge variant="outline">{match.startTime}</Badge>;
 }
