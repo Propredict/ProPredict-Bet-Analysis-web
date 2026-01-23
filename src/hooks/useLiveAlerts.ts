@@ -26,7 +26,7 @@ function getAlertSettings(): AlertSettings {
     if (stored) return JSON.parse(stored);
   } catch {}
 
-  // ✅ ENABLED BY DEFAULT
+  // ✅ ENABLED BY DEFAULT (BITNO!)
   return {
     enabled: true,
     goals: true,
@@ -35,10 +35,12 @@ function getAlertSettings(): AlertSettings {
   };
 }
 
-function getFavorites(): Set<string> {
+function getFavorites(): Set<number> {
   try {
     const stored = localStorage.getItem(FAVORITES_KEY);
-    if (stored) return new Set(JSON.parse(stored));
+    if (stored) {
+      return new Set(JSON.parse(stored).map(Number));
+    }
   } catch {}
   return new Set();
 }
@@ -68,7 +70,12 @@ function playAlertSound() {
 ========================= */
 
 export function useLiveAlerts(matches: Match[]) {
-  const prevRef = useRef<Map<number, Match>>(new Map());
+  /**
+   * 🔑 Čuvamo SAMO score snapshot
+   * (ne cijeli Match – manje bugova)
+   */
+  const prevScoresRef = useRef<Map<number, { home: number; away: number }>>(new Map());
+
   const firstRun = useRef(true);
 
   const triggerGoal = useCallback((match: Match) => {
@@ -86,12 +93,24 @@ export function useLiveAlerts(matches: Match[]) {
   }, []);
 
   useEffect(() => {
-    // ⛔ skip first render
+    if (!matches.length) return;
+
+    /**
+     * ⛔ Prvi render:
+     * samo zapamti score, ne šalji alert
+     */
     if (firstRun.current) {
       firstRun.current = false;
-      const map = new Map<number, Match>();
-      matches.forEach((m) => map.set(m.id, m));
-      prevRef.current = map;
+
+      const init = new Map<number, { home: number; away: number }>();
+      matches.forEach((m) =>
+        init.set(m.id, {
+          home: m.homeScore ?? 0,
+          away: m.awayScore ?? 0,
+        }),
+      );
+
+      prevScoresRef.current = init;
       return;
     }
 
@@ -101,29 +120,37 @@ export function useLiveAlerts(matches: Match[]) {
     const favorites = getFavorites();
 
     matches.forEach((current) => {
-      const previous = prevRef.current.get(current.id);
-      if (!previous) return;
+      // samo LIVE / HT
+      if (current.status !== "live" && current.status !== "halftime") return;
 
-      if (settings.favoritesOnly && !favorites.has(String(current.id))) {
-        return;
-      }
+      // favorites-only check
+      if (settings.favoritesOnly && !favorites.has(current.id)) return;
 
-      if (current.status !== "live" && current.status !== "halftime") {
-        return;
-      }
+      const prev = prevScoresRef.current.get(current.id);
+      if (!prev) return;
 
-      const prevHome = previous.homeScore ?? 0;
-      const prevAway = previous.awayScore ?? 0;
       const currHome = current.homeScore ?? 0;
       const currAway = current.awayScore ?? 0;
 
-      if (currHome > prevHome || currAway > prevAway) {
+      const homeGoal = currHome > prev.home;
+      const awayGoal = currAway > prev.away;
+
+      if (homeGoal || awayGoal) {
         triggerGoal(current);
       }
     });
 
-    const next = new Map<number, Match>();
-    matches.forEach((m) => next.set(m.id, m));
-    prevRef.current = next;
+    /**
+     * 🔄 Update snapshot
+     */
+    const next = new Map<number, { home: number; away: number }>();
+    matches.forEach((m) =>
+      next.set(m.id, {
+        home: m.homeScore ?? 0,
+        away: m.awayScore ?? 0,
+      }),
+    );
+
+    prevScoresRef.current = next;
   }, [matches, triggerGoal]);
 }
