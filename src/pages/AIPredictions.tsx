@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
-import { useAIPredictions } from "@/hooks/useAIPredictions";
-import type { MatchDay } from "@/components/ai-predictions/types";
+import { useAIPredictions, MatchDay } from "@/hooks/useAIPredictions";
 
 export default function AIPredictionsPage() {
   const [day, setDay] = useState<MatchDay>("today");
   const [unlocked, setUnlocked] = useState<string[]>([]);
 
-  // 🔐 USER STATE (kasnije vežeš na auth)
+  // USER STATE (kasnije iz auth-a)
   const isAdmin = false;
   const isPro = false;
-  const isFree = !isAdmin && !isPro;
 
   const { predictions, loading, stats, accuracy } = useAIPredictions(day);
 
@@ -19,11 +17,9 @@ export default function AIPredictionsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* HEADER */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">AI Predictions</h1>
-            <p className="text-muted-foreground">AI-powered match analysis and predictions</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">AI Predictions</h1>
+          <p className="text-muted-foreground">AI-powered match analysis and predictions</p>
         </div>
 
         {/* STATS */}
