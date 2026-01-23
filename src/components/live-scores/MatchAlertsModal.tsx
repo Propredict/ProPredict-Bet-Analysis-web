@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Bell, BellRing, Goal, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 interface Match {
   id: string;
@@ -33,7 +33,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const { toast } = useToast();
+  const isMounted = useRef(true);
+  const hasFetched = useRef(false);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -42,63 +43,75 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
     [onClose]
   );
 
-  useEffect(() => {
-    if (match) {
-      document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
-      checkAuthAndFetch();
-    }
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
-    };
-  }, [match, handleEscape]);
-
-  const checkAuthAndFetch = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsAuthenticated(false);
-    } else {
-      setIsAuthenticated(true);
-      fetchAlertSettings();
-    }
-  };
-
-  const fetchAlertSettings = async () => {
-    if (!match) return;
+  const fetchAlertSettings = useCallback(async (matchId: string) => {
+    if (!matchId) return;
     
     setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoading(false);
+      if (!user || !isMounted.current) {
+        if (isMounted.current) setIsLoading(false);
         return;
       }
 
-      // Using type assertion since match_alerts table may not be in generated types yet
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("match_alerts")
         .select("notify_goals, notify_red_cards")
-        .eq("match_id", match.id)
+        .eq("match_id", matchId)
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) throw error;
 
-      if (data) {
-        setSettings({
-          notifyGoals: data.notify_goals,
-          notifyRedCards: data.notify_red_cards,
-        });
-      } else {
-        setSettings({ notifyGoals: false, notifyRedCards: false });
+      if (isMounted.current) {
+        if (data) {
+          setSettings({
+            notifyGoals: data.notify_goals,
+            notifyRedCards: data.notify_red_cards,
+          });
+        } else {
+          setSettings({ notifyGoals: false, notifyRedCards: false });
+        }
       }
     } catch (error) {
       console.error("Error fetching alert settings:", error);
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) setIsLoading(false);
     }
-  };
+  }, []);
+
+  const checkAuthAndFetch = useCallback(async (matchId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!isMounted.current) return;
+    
+    if (!user) {
+      setIsAuthenticated(false);
+    } else {
+      setIsAuthenticated(true);
+      fetchAlertSettings(matchId);
+    }
+  }, [fetchAlertSettings]);
+
+  useEffect(() => {
+    isMounted.current = true;
+    hasFetched.current = false;
+    
+    if (match) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+      
+      // Only fetch once per modal open
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        checkAuthAndFetch(match.id);
+      }
+    }
+    return () => {
+      isMounted.current = false;
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [match, handleEscape, checkAuthAndFetch]);
 
   const handleSave = async () => {
     if (!match) return;
@@ -119,8 +132,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
       const hasAnyAlert = settings.notifyGoals || settings.notifyRedCards;
 
       if (hasAnyAlert) {
-        // Upsert alert settings (using type assertion for new table)
-        const { error } = await (supabase as any)
+        // Upsert alert settings
+        const { error } = await supabase
           .from("match_alerts")
           .upsert({
             user_id: user.id,
@@ -138,8 +151,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
           description: `You'll be notified about ${match.homeTeam} vs ${match.awayTeam}`,
         });
       } else {
-        // Remove alert if no options selected (using type assertion for new table)
-        const { error } = await (supabase as any)
+        // Remove alert if no options selected
+        const { error } = await supabase
           .from("match_alerts")
           .delete()
           .eq("user_id", user.id)
