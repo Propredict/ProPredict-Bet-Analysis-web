@@ -1,8 +1,8 @@
 export type MatchDay = "today" | "tomorrow";
 
 export interface AIPrediction {
-  // CORE
   id: string;
+
   league: string;
   homeTeam: string;
   awayTeam: string;
@@ -11,21 +11,16 @@ export interface AIPrediction {
   matchTime: string;
   matchDay: MatchDay;
 
-  // PROBABILITIES
-  homeWinProbability: number;
-  drawProbability: number;
-  awayWinProbability: number;
+  homeWin: number;
+  draw: number;
+  awayWin: number;
 
-  // AI OUTPUT
-  predictedOutcome: "1" | "X" | "2";
+  prediction: "1" | "X" | "2";
   predictedScore: string;
   confidence: number;
+
   riskLevel: "low" | "medium" | "high";
 
-  analysis?: string;
-  keyFactors?: string[];
-
-  // ACCESS
   isPremium: boolean;
-  isLocked: boolean;
+  resultStatus: "pending" | "won" | "lost";
 }
