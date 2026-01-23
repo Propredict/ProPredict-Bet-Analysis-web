@@ -13,6 +13,7 @@ import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
+import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -50,6 +51,9 @@ export default function LiveScores() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
+  
+  // Live alerts detection
+  useLiveAlerts(matches);
 
   /* -------------------- CLOCK -------------------- */
 
