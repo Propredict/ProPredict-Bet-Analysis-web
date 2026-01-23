@@ -1,85 +1,87 @@
-import { Brain, RefreshCw, Sparkles, Loader2, Calendar, Clock } from "lucide-react";
+import { useState } from "react";
+import { Brain, RefreshCw } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 
+const LEAGUES = ["Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1"];
+
 export default function AIPredictions() {
-  const { predictions, loading, dayTab, setDayTab, unlockPrediction } = useAIPredictions();
+  const [day, setDay] = useState<"today" | "tomorrow">("today");
+  const [league, setLeague] = useState<string | null>(null);
+
+  const { predictions, loading } = useAIPredictions(day);
+
+  const filtered = league ? predictions.filter((p) => p.league === league) : predictions;
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* HEADER */}
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Brain className="h-7 w-7 text-primary" />
+              <Brain className="h-6 w-6 text-primary" />
               <h1 className="text-2xl font-bold">AI Predictions</h1>
             </div>
             <p className="text-muted-foreground">AI-powered predictions for upcoming matches</p>
           </div>
 
-          <div className="flex gap-2">
-            <Badge className="bg-primary/20 text-primary">
-              <Sparkles className="h-3 w-3 mr-1" />
-              AI Powered
-            </Badge>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
 
-        {/* TODAY / TOMORROW */}
+        {/* DAY TABS */}
         <div className="flex gap-2">
           <Button
-            className="flex-1"
-            variant={dayTab === "today" ? "default" : "outline"}
-            onClick={() => setDayTab("today")}
+            className={cn(day === "today" && "bg-primary text-white")}
+            variant="outline"
+            onClick={() => setDay("today")}
           >
             Today
           </Button>
           <Button
-            className="flex-1"
-            variant={dayTab === "tomorrow" ? "default" : "outline"}
-            onClick={() => setDayTab("tomorrow")}
+            className={cn(day === "tomorrow" && "bg-primary text-white")}
+            variant="outline"
+            onClick={() => setDay("tomorrow")}
           >
             Tomorrow
           </Button>
         </div>
 
-        {/* LIST */}
+        {/* LEAGUES FILTER */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          <Button size="sm" variant={league === null ? "default" : "outline"} onClick={() => setLeague(null)}>
+            All
+          </Button>
+
+          {LEAGUES.map((l) => (
+            <Button key={l} size="sm" variant={league === l ? "default" : "outline"} onClick={() => setLeague(l)}>
+              {l}
+            </Button>
+          ))}
+        </div>
+
+        {/* CONTENT */}
         {loading ? (
-          <Card className="p-10 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </Card>
-        ) : predictions.length === 0 ? (
-          <Card className="p-10 text-center">
-            <Calendar className="h-10 w-10 mx-auto mb-2 opacity-40" />
-            <p>No matches available</p>
-          </Card>
+          <p className="text-muted-foreground">Loading predictions…</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-muted-foreground">No predictions available</p>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {predictions.map((p) => (
-              <div key={p.id} className="space-y-2">
-                {/* MATCH INFO (UVEK VIDLJIVO) */}
-                <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {p.matchDate}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {p.matchTime}
-                  </span>
-                </div>
-
-                <AIPredictionCard prediction={p} onUnlock={unlockPrediction} />
-              </div>
+            {filtered.map((p) => (
+              <AIPredictionCard
+                key={p.id}
+                prediction={p}
+                onUnlock={() => {
+                  // kasnije: rewarded ad
+                  console.log("Watch ad to unlock", p.id);
+                }}
+              />
             ))}
           </div>
         )}
