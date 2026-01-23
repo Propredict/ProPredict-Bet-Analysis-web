@@ -22,8 +22,8 @@ export default function LiveScores() {
 
   const filteredMatches = useMemo(() => {
     return matches.filter((m) => {
-      if (statusFilter === "live" && m.status !== "live" && m.status !== "halftime") return false;
-      if (statusFilter === "finished" && m.status !== "finished") return false;
+      if (statusFilter === "live" && m.status !== "LIVE" && m.status !== "HT") return false;
+      if (statusFilter === "finished" && m.status !== "FT") return false;
 
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -49,9 +49,9 @@ export default function LiveScores() {
   }, [filteredMatches]);
 
   const getStatusBadge = (m: Match) => {
-    if (m.status === "live") return <Badge className="bg-destructive">LIVE {m.minute}'</Badge>;
-    if (m.status === "halftime") return <Badge className="bg-yellow-500/20 text-yellow-500">HT</Badge>;
-    if (m.status === "finished") return <Badge variant="secondary">FT</Badge>;
+    if (m.status === "LIVE") return <Badge className="bg-destructive">LIVE {m.minute}'</Badge>;
+    if (m.status === "HT") return <Badge className="bg-yellow-500/20 text-yellow-500">HT</Badge>;
+    if (m.status === "FT") return <Badge variant="secondary">FT</Badge>;
     return <Badge variant="outline">{m.startTime ?? "—"}</Badge>;
   };
 
