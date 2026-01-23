@@ -49,7 +49,7 @@ export default function LiveScores() {
   });
 
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
-  const { hasAlert, refetch: refetchAlerts } = useMatchAlerts();
+  const { refetch: refetchAlerts } = useMatchAlerts();
 
   /* -------------------- CLOCK -------------------- */
 
@@ -61,9 +61,7 @@ export default function LiveScores() {
   /* -------------------- STATUS TABS LOGIC -------------------- */
 
   const allowedStatusTabs: StatusTab[] = useMemo(() => {
-    if (dateMode === "today") {
-      return ["all", "live", "upcoming", "finished"];
-    }
+    if (dateMode === "today") return ["all", "live", "upcoming", "finished"];
     return ["all"];
   }, [dateMode]);
 
@@ -91,8 +89,7 @@ export default function LiveScores() {
       const okSearch =
         m.homeTeam.toLowerCase().includes(q) ||
         m.awayTeam.toLowerCase().includes(q) ||
-        m.league.toLowerCase().includes(q) ||
-        m.leagueCountry?.toLowerCase().includes(q);
+        m.league.toLowerCase().includes(q);
 
       const okLeague = leagueFilter === "All Leagues" || m.league.toLowerCase().includes(leagueFilter.toLowerCase());
 
@@ -120,11 +117,6 @@ export default function LiveScores() {
     return format(now, "MMM d");
   };
 
-  const handleRefresh = () => {
-    refetch();
-    refetchAlerts();
-  };
-
   const handleFavorite = useCallback(
     (e: React.MouseEvent, id: string) => {
       e.stopPropagation();
@@ -141,31 +133,13 @@ export default function LiveScores() {
         {/* HEADER */}
         <div className="sticky top-0 z-20 bg-[#0B1220]/95 backdrop-blur border-b border-white/5 px-4 py-4 -mx-4">
           <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-2">
-                <Zap className="text-primary" />
-                <h1 className="text-xl font-bold">Live Scores</h1>
-              </div>
-              <p className="text-sm text-muted-foreground">Real-time match updates • Pull down to refresh</p>
+            <div className="flex items-center gap-2">
+              <Zap className="text-primary" />
+              <h1 className="text-xl font-bold">Live Scores</h1>
             </div>
-
-            <div className="flex gap-2 items-center">
-              <Badge variant="outline" className="font-mono">
-                {format(currentTime, "HH:mm")}
-              </Badge>
-              <Button variant="outline" size="icon" onClick={handleRefresh}>
-                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-              </Button>
-              <Button
-                onClick={() => {
-                  const m = matches.find((m) => m.status === "live") || matches[0];
-                  if (m) setAlertsMatch(m);
-                }}
-              >
-                <Bell className="h-4 w-4 mr-1" />
-                Alerts
-              </Button>
-            </div>
+            <Badge variant="outline" className="font-mono">
+              {format(currentTime, "HH:mm")}
+            </Badge>
           </div>
         </div>
 
@@ -176,28 +150,16 @@ export default function LiveScores() {
           <StatCard title="Leagues" value={leaguesCount} color="warning" icon={Trophy} />
         </div>
 
-        {/* LEAGUES */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {LEAGUES.map((l) => (
-            <Button
-              key={l}
-              size="sm"
-              variant={leagueFilter === l ? "default" : "outline"}
-              onClick={() => setLeagueFilter(l)}
-            >
-              {l}
-            </Button>
-          ))}
-        </div>
-
         {/* DATE */}
         <div className="flex gap-2">
           {(["yesterday", "today", "tomorrow"] as DateMode[]).map((d) => (
             <Button
               key={d}
-              variant={dateMode === d ? "default" : "outline"}
               onClick={() => setDateMode(d)}
-              className="flex-1 flex-col"
+              className={cn(
+                "flex-1 flex-col rounded-xl",
+                dateMode === d ? "bg-primary text-primary-foreground" : "bg-[#0E1627] text-muted-foreground",
+              )}
             >
               <span className="capitalize">{d}</span>
               <span className="text-xs opacity-70">{getDateLabel(d)}</span>
@@ -205,35 +167,12 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* STATUS TABS – NOVA POZICIJA (kao slika 2) */}
-        <div className="bg-[#0E1627] rounded-xl p-1 flex gap-1">
-          {allowedStatusTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setStatusTab(tab)}
-              className={cn(
-                "flex-1 text-sm py-2 rounded-lg transition",
-                statusTab === tab ? "bg-[#141E34] text-white" : "text-muted-foreground hover:text-white",
-              )}
-            >
-              {tab === "all" && "All Matches"}
-              {tab === "live" && (
-                <>
-                  Live Now <span className="ml-1 text-red-500">●</span>
-                </>
-              )}
-              {tab === "upcoming" && "Upcoming"}
-              {tab === "finished" && "Finished"}
-            </button>
-          ))}
-        </div>
-
         {/* SEARCH */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            className="pl-10"
-            placeholder="Search teams, leagues, countries…"
+            className="pl-10 bg-[#0E1627]"
+            placeholder="Search teams, leagues…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -247,54 +186,52 @@ export default function LiveScores() {
               <Badge variant="secondary">{games.length}</Badge>
             </div>
 
-            {games.map((m) => (
-              <div
-                key={m.id}
-                onClick={() => setSelectedMatch(m)}
-                className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer"
-              >
-                <button onClick={(e) => handleFavorite(e, m.id)} disabled={isSaving(m.id)}>
-                  <Star
-                    className={cn("h-4 w-4", isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground")}
-                  />
-                </button>
+            {games.map((m) => {
+              const isLive = m.status === "live" || m.status === "halftime";
 
-                <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
-                  <span className="text-right">{m.homeTeam}</span>
-                  <span className="font-bold px-3">
-                    {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                  </span>
-                  <span>{m.awayTeam}</span>
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => setSelectedMatch(m)}
+                  className={cn(
+                    "px-4 py-3 flex items-center gap-3 cursor-pointer transition",
+                    "hover:bg-white/5",
+                    isLive && "border-l-2 border-red-500 bg-red-500/5",
+                  )}
+                >
+                  <button onClick={(e) => handleFavorite(e, m.id)}>
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                  </button>
+
+                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
+                    <span className={cn("text-right", isLive && "text-red-300 font-medium")}>{m.homeTeam}</span>
+
+                    <span className={cn("px-3 font-bold", isLive ? "text-red-500 text-lg" : "text-foreground")}>
+                      {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                    </span>
+
+                    <span className={cn(isLive && "text-red-300 font-medium")}>{m.awayTeam}</span>
+                  </div>
+
+                  <StatusBadge match={m} />
                 </div>
-
-                <StatusBadge match={m} />
-              </div>
-            ))}
+              );
+            })}
           </Card>
         ))}
-
-        {!isLoading && !error && filtered.length === 0 && (
-          <Card className="p-10 text-center opacity-70">No matches for selected filters</Card>
-        )}
 
         {error && <Card className="p-6 text-center text-destructive">{error}</Card>}
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-      <MatchAlertsModal
-        match={alertsMatch}
-        onClose={() => {
-          setAlertsMatch(null);
-          refetchAlerts();
-        }}
-      />
+      <MatchAlertsModal match={alertsMatch} onClose={() => setAlertsMatch(null)} />
     </DashboardLayout>
   );
 }
 
 /* -------------------- HELPERS -------------------- */
 
-function StatCard({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) {
+function StatCard({ title, value, icon: Icon, color }: any) {
   return (
     <Card className="p-4 flex justify-between items-center">
       <div>
@@ -308,7 +245,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: n
 
 function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
-    return <Badge className="bg-destructive animate-pulse">LIVE {match.minute}'</Badge>;
+    return <Badge className="bg-destructive animate-pulse">LIVE</Badge>;
   }
   if (match.status === "halftime") {
     return <Badge className="bg-warning">HT</Badge>;
