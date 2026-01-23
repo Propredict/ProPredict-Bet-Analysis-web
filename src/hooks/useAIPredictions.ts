@@ -1,6 +1,26 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { AIPrediction, MatchDay } from "@/components/ai-predictions/types";
+
+export type MatchDay = "today" | "tomorrow";
+
+export interface AIPrediction {
+  id: string;
+  league: string;
+  homeTeam: string;
+  awayTeam: string;
+  matchTime: string;
+  matchDay: MatchDay;
+
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+
+  predictedScore: string;
+  confidence: number;
+
+  isPremium: boolean;
+  resultStatus: "pending" | "won" | "lost";
+}
 
 export function useAIPredictions(day: MatchDay) {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
@@ -29,16 +49,13 @@ export function useAIPredictions(day: MatchDay) {
             league: m.league,
             homeTeam: m.home_team,
             awayTeam: m.away_team,
-            matchDate: m.match_date,
             matchTime: m.match_time,
             matchDay: m.match_day,
             homeWin: m.home_win,
             draw: m.draw,
             awayWin: m.away_win,
-            prediction: m.prediction,
             predictedScore: m.predicted_score,
             confidence: m.confidence,
-            riskLevel: m.risk_level,
             isPremium: m.is_premium,
             resultStatus: m.result_status,
           })),
