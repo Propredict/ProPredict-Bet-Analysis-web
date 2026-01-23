@@ -18,19 +18,32 @@ export interface Match {
   awayLogo: string | null;
 }
 
-type Mode = "live" | "all" | "upcoming" | "finished";
+type DateMode = "yesterday" | "today" | "tomorrow";
 
 const AUTO_REFRESH_MS = 30_000;
 
-export function useLiveScores(mode: Mode = "all") {
+// Map API-Football status codes to our simplified status
+function mapApiStatus(shortStatus: string): MatchStatus {
+  const liveStatuses = ["1H", "2H", "ET", "P", "LIVE"];
+  const halftimeStatuses = ["HT", "BT"];
+  const finishedStatuses = ["FT", "AET", "PEN", "PST", "CANC", "ABD", "AWD", "WO"];
+  
+  if (liveStatuses.includes(shortStatus)) return "live";
+  if (halftimeStatuses.includes(shortStatus)) return "halftime";
+  if (finishedStatuses.includes(shortStatus)) return "finished";
+  return "upcoming";
+}
+
+export function useLiveScores(dateMode: DateMode = "today") {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchScores = useCallback(async () => {
+    // Abort previous request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -39,15 +52,24 @@ export function useLiveScores(mode: Mode = "all") {
       setIsLoading(true);
       setError(null);
 
-      // TODAY = 2026-01-23 (automatski po server time)
-      const res = await fetch(`/functions/v1/get-fixtures?mode=${mode}`, { signal: controller.signal });
+      // Call the edge function with date mode
+      const res = await fetch(`/functions/v1/get-fixtures?mode=${dateMode}`, {
+        signal: controller.signal,
+      });
 
       if (!res.ok) {
         throw new Error(`Request failed (${res.status})`);
       }
 
       const data = await res.json();
-      setMatches(data.fixtures || []);
+      
+      // Map the response to ensure correct status format
+      const mappedMatches: Match[] = (data.fixtures || []).map((fixture: any) => ({
+        ...fixture,
+        status: mapApiStatus(fixture.status) || fixture.status,
+      }));
+
+      setMatches(mappedMatches);
     } catch (err: any) {
       if (err.name !== "AbortError") {
         console.error("Live scores error:", err);
@@ -56,12 +78,13 @@ export function useLiveScores(mode: Mode = "all") {
     } finally {
       setIsLoading(false);
     }
-  }, [mode]);
+  }, [dateMode]);
 
   // Initial fetch + auto refresh
   useEffect(() => {
     fetchScores();
 
+    // Auto refresh every 30 seconds
     intervalRef.current = setInterval(() => {
       fetchScores();
     }, AUTO_REFRESH_MS);
