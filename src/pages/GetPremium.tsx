@@ -199,19 +199,19 @@ export default function GetPremium() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen py-8 px-4">
+      <div className="py-4 sm:py-8 px-0 sm:px-4 max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <p className="text-accent mb-6">
-              Unlock expert predictions, VIP tips, and AI-powered analysis to maximize your winning potential.
+          <div className="text-center mb-6 sm:mb-8 px-2">
+            <p className="text-accent text-sm sm:text-base mb-4 sm:mb-6">
+              Unlock expert predictions, VIP tips, and AI-powered analysis.
             </p>
 
-            {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-2 bg-muted/50 p-1 rounded-full">
+            {/* Billing Toggle - responsive */}
+            <div className="inline-flex items-center gap-1 sm:gap-2 bg-muted/50 p-1 rounded-full">
               <button
                 onClick={() => setBillingPeriod("monthly")}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                   billingPeriod === "monthly"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -221,47 +221,47 @@ export default function GetPremium() {
               </button>
               <button
                 onClick={() => setBillingPeriod("annual")}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 sm:gap-2 ${
                   billingPeriod === "annual"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Annual
-                <Badge className="bg-accent text-accent-foreground text-xs">Save 17%</Badge>
+                <Badge className="bg-accent text-accent-foreground text-[10px] sm:text-xs px-1 sm:px-1.5">Save 17%</Badge>
               </button>
             </div>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
+          {/* Pricing Cards - stack on mobile, 3 cols on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-16 px-2 sm:px-0">
             {currentPlans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`relative p-6 bg-card border-border ${
+                className={`relative p-4 sm:p-6 bg-card border-border ${
                   plan.popular ? "border-primary ring-1 ring-primary" : ""
                 }`}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs">
                     Most Popular
                   </Badge>
                 )}
 
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                    <span className="text-2xl sm:text-4xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-sm sm:text-base text-muted-foreground">{plan.period}</span>
                   </div>
                   {plan.savings && (
-                    <p className="text-sm text-primary mt-1">{plan.savings}</p>
+                    <p className="text-xs sm:text-sm text-primary mt-1">{plan.savings}</p>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">{plan.description}</p>
                 </div>
 
                 <Button
-                  className={`w-full mb-6 ${
+                  className={`w-full mb-4 sm:mb-6 text-sm sm:text-base ${
                     plan.id === "premium"
                       ? "bg-gradient-to-r from-accent to-primary hover:opacity-90"
                       : plan.id === "basic"
@@ -275,13 +275,13 @@ export default function GetPremium() {
                   {currentPlan === plan.id ? "Current Plan" : plan.buttonText}
                 </Button>
 
-                <ul className="space-y-3">
+                <ul className="space-y-2 sm:space-y-3">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3 text-sm">
+                    <li key={idx} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                       {feature.included ? (
-                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                       ) : (
-                        <X className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                       )}
                       <span className={feature.included ? "text-foreground" : "text-muted-foreground"}>
                         {feature.text}
@@ -294,20 +294,20 @@ export default function GetPremium() {
           </div>
 
           {/* Why Go Premium */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-foreground text-center mb-8">
+          <div className="mb-8 sm:mb-16 px-2 sm:px-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center mb-4 sm:mb-8">
               Why Go Premium?
             </h2>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {benefits.map((benefit, idx) => (
-                <Card key={idx} className="p-4 bg-card border-border">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-accent/10">
-                      <benefit.icon className="h-5 w-5 text-accent" />
+                <Card key={idx} className="p-3 sm:p-4 bg-card border-border">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10 flex-shrink-0">
+                      <benefit.icon className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">{benefit.title}</h3>
-                      <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground mb-1 text-sm sm:text-base">{benefit.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{benefit.description}</p>
                     </div>
                   </div>
                 </Card>
@@ -316,30 +316,30 @@ export default function GetPremium() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-16 px-2 sm:px-0">
             {stats.map((stat, idx) => (
               <div key={idx} className="text-center">
-                <div className="text-3xl font-bold text-foreground flex items-center justify-center gap-1">
+                <div className="text-xl sm:text-3xl font-bold text-foreground flex items-center justify-center gap-1">
                   {stat.value}
-                  {stat.isStar && <Star className="h-5 w-5 text-accent fill-accent" />}
+                  {stat.isStar && <Star className="h-4 w-4 sm:h-5 sm:w-5 text-accent fill-accent" />}
                 </div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </div>
 
           {/* FAQ */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-foreground text-center mb-8">
+          <div className="mb-8 sm:mb-16 px-2 sm:px-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center mb-4 sm:mb-8">
               Frequently Asked Questions
             </h2>
             <Accordion type="single" collapsible className="max-w-2xl mx-auto">
               {faqs.map((faq, idx) => (
                 <AccordionItem key={idx} value={`faq-${idx}`} className="border-border">
-                  <AccordionTrigger className="text-foreground hover:no-underline">
+                  <AccordionTrigger className="text-foreground hover:no-underline text-left text-sm sm:text-base">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                  <AccordionContent className="text-muted-foreground text-xs sm:text-sm">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -348,12 +348,12 @@ export default function GetPremium() {
           </div>
 
           {/* Bottom CTA */}
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4">
+          <div className="text-center px-2 sm:px-0 pb-4">
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
               Sign in to subscribe and unlock premium features.
             </p>
             <Button
-              className="bg-gradient-to-r from-accent to-primary hover:opacity-90 px-8"
+              className="bg-gradient-to-r from-accent to-primary hover:opacity-90 px-6 sm:px-8 w-full sm:w-auto"
               onClick={() => navigate("/login?redirect=/get-premium")}
             >
               Sign in to Subscribe

@@ -66,31 +66,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-x-hidden">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-background">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+        <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+          {/* STICKY Header */}
+          <header className="sticky top-0 z-50 h-14 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0" />
             
-            <div className="flex items-center gap-3">
-              {/* Subscription Badge */}
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-3 overflow-x-auto">
+              {/* Subscription Badge - hidden on very small screens */}
+              <div className="hidden xs:flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <Badge 
                   variant="outline" 
-                  className={`flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:opacity-80 transition-opacity ${planBadge.className}`}
+                  className={cn(
+                    "flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 cursor-pointer hover:opacity-80 transition-opacity",
+                    planBadge.className
+                  )}
                   onClick={() => navigate("/get-premium")}
                 >
-                  <planBadge.icon className="h-3.5 w-3.5" />
-                  <span className="text-xs font-medium">{planBadge.label}</span>
+                  <planBadge.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span className="text-[10px] sm:text-xs font-medium">{planBadge.label}</span>
                 </Badge>
                 {planBadge.showUpgrade && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate("/get-premium")}
-                    className="text-xs text-accent hover:text-accent/80 px-2 h-7"
+                    className="hidden sm:flex text-xs text-accent hover:text-accent/80 px-2 h-7"
                   >
                     {planBadge.upgradeLabel}
                   </Button>
@@ -102,7 +105,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 size="icon" 
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "relative transition-all",
+                  "relative transition-all h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0",
                   alertSettings.enabled 
                     ? "text-green-400 hover:text-green-300" 
                     : "text-muted-foreground hover:text-foreground"
@@ -110,11 +113,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 {alertSettings.enabled ? (
                   <>
-                    <BellRing className="h-5 w-5" />
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    <BellRing className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500 animate-pulse" />
                   </>
                 ) : (
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                 )}
               </Button>
               
@@ -122,9 +125,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost" 
                 size="icon" 
                 onClick={() => navigate("/favorites")}
-                className="text-muted-foreground hover:text-pink-400 transition-colors"
+                className="text-muted-foreground hover:text-pink-400 transition-colors h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
               >
-                <Heart className="h-5 w-5" />
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
 
               {user ? (
@@ -133,12 +136,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
                     >
-                      <User className="h-5 w-5" />
+                      <User className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-48 bg-popover border-border z-[60]">
                     <DropdownMenuItem onClick={() => navigate("/profile")}>
                       <User className="mr-2 h-4 w-4" />
                       Profile
@@ -155,18 +158,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   variant="default" 
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="gap-2"
+                  className="gap-1 sm:gap-2 h-8 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
                 >
-                  <LogIn className="h-4 w-4" />
-                  Sign In
+                  <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Sign In</span>
                 </Button>
               )}
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-6">
-            {children}
+          {/* Main Content - add top padding for sticky header */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6 min-w-0">
+            <div className="max-w-full overflow-x-hidden">
+              {children}
+            </div>
           </main>
         </div>
       </div>
