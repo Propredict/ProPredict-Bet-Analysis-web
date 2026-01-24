@@ -1,12 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
+import { Bell, BellRing, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
+import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -23,6 +26,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { plan } = useUserPlan();
+  const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
+  const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
 
   const getPlanBadge = () => {
     switch (plan) {
@@ -92,8 +97,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 )}
               </div>
 
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Bell className="h-5 w-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowGlobalAlerts(true)}
+                className={cn(
+                  "relative transition-all",
+                  alertSettings.enabled 
+                    ? "text-green-400 hover:text-green-300" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {alertSettings.enabled ? (
+                  <>
+                    <BellRing className="h-5 w-5" />
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  </>
+                ) : (
+                  <Bell className="h-5 w-5" />
+                )}
               </Button>
               {user ? (
                 <DropdownMenu>
@@ -138,6 +160,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </main>
         </div>
       </div>
+
+      <GlobalAlertsModal
+        isOpen={showGlobalAlerts}
+        onClose={() => setShowGlobalAlerts(false)}
+        settings={alertSettings}
+        onToggle={toggleAlertSetting}
+      />
     </SidebarProvider>
   );
 }

@@ -10,8 +10,10 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
+  Heart,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,6 +50,7 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 
 export default function LiveScores() {
   console.log("🔥 LiveScores mounted");
+  const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [dateMode, setDateMode] = useState<DateMode>("today");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
@@ -171,10 +174,24 @@ export default function LiveScores() {
         </div>
 
         {/* STATS */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard title="Live Now" value={liveCount} icon={Play} variant="live" />
           <StatCard title="Total Matches" value={matches.length} icon={BarChart3} variant="matches" />
           <StatCard title="Leagues" value={leaguesCount} icon={Trophy} variant="leagues" />
+          
+          {/* Favorites Quick Link */}
+          <Card 
+            onClick={() => navigate("/my-favorites")}
+            className="p-4 flex items-center gap-4 bg-gradient-to-br from-pink-500/20 to-pink-600/5 border-pink-500/30 shadow-lg shadow-pink-500/10 cursor-pointer transition-all hover:scale-[1.02] hover:border-pink-500/50"
+          >
+            <div className="h-11 w-11 rounded-xl flex items-center justify-center bg-pink-500/20">
+              <Heart className="h-5 w-5 text-pink-400" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">My Favorites</p>
+              <p className="text-sm font-semibold text-pink-400">View All →</p>
+            </div>
+          </Card>
         </div>
 
         {/* LEAGUES */}
