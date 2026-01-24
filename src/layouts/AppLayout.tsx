@@ -171,19 +171,17 @@ export default function AppLayout() {
             </div>
           </header>
 
-          {/* Main Content - offset for fixed header */}
-          <main className="flex-1 mt-10 sm:mt-11 pb-16 md:pb-0">
-            <div className="page-content">
+          {/* Main Content - scrollable area containing page content and footer */}
+          <main className="flex-1 flex flex-col mt-10 sm:mt-11 pb-16 md:pb-0 overflow-y-auto">
+            <div className="page-content flex-1">
               <Outlet />
             </div>
+            
+            {/* Footer - inside scrollable area, visible on all devices */}
+            <Footer />
           </main>
 
-          {/* Footer - Desktop only */}
-          <footer className="hidden md:block mt-auto">
-            <Footer />
-          </footer>
-
-          {/* Mobile Bottom Navigation */}
+          {/* Mobile Bottom Navigation - Fixed at bottom */}
           <MobileBottomNav />
         </SidebarInset>
       </div>
