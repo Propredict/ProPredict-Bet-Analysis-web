@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3 } from "lucide-react";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -57,8 +56,7 @@ export default function LeagueStatistics() {
   ).length;
 
   return (
-    <DashboardLayout>
-      <div className="section-gap max-w-full overflow-x-hidden">
+    <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5 pb-1 sm:pb-1.5 border-b border-border">
           <div className="flex items-center gap-1 sm:gap-1.5">
@@ -222,6 +220,5 @@ export default function LeagueStatistics() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
   );
 }

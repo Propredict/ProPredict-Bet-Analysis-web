@@ -1,11 +1,9 @@
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Settings as SettingsIcon, 
   User, 
   Info,
-  FileText, 
   Shield, 
   Trash2, 
   ScrollText, 
@@ -97,155 +95,151 @@ const Settings = () => {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="p-2 sm:p-4 md:p-6 max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="p-1.5 rounded-full border border-primary">
-            <SettingsIcon className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Settings</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">App settings and legal information</p>
-          </div>
+    <div className="section-gap max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 rounded-full border border-primary">
+          <SettingsIcon className="h-4 w-4 text-primary" />
         </div>
-
-        {/* Warning Banner */}
-        <Card className="mb-4 bg-primary/10 border-primary/30">
-          <CardContent className="p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-accent flex-shrink-0" />
-              <div>
-                <p className="text-xs font-medium text-accent">18+ Only · Entertainment Purposes Only</p>
-                <p className="text-[10px] text-muted-foreground">This app does not accept bets or process payments</p>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/disclaimer")}
-              className="text-[10px] text-muted-foreground hover:text-foreground h-6 px-2"
-            >
-              Read <ChevronRight className="h-3 w-3 ml-0.5" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-4">
-          {/* Account Section */}
-          <Card>
-            <CardContent className="p-0">
-              <div className="px-3 py-2 border-b border-border">
-                <h2 className="text-xs font-semibold text-foreground">Account</h2>
-              </div>
-              <div className="p-1">
-                {accountItems.map((item, index) => (
-                  <button
-                    key={item.path + index}
-                    onClick={() => navigate(item.path)}
-                    className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-full bg-muted/50">
-                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs font-medium text-foreground">{item.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Legal & Compliance Section */}
-          <Card>
-            <CardContent className="p-0">
-              <div className="px-3 py-2 border-b border-border flex items-center gap-2">
-                <Scale className="h-3.5 w-3.5 text-primary" />
-                <h2 className="text-xs font-semibold text-foreground">Legal & Compliance</h2>
-              </div>
-              <div className="p-1">
-                {legalItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => navigate(item.path)}
-                    className={`w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors ${
-                      item.highlight ? "bg-primary/5 border border-primary/20" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-1.5 rounded-full ${item.highlight ? "bg-primary/20" : "bg-muted/50"}`}>
-                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs font-medium text-foreground">{item.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Support Section */}
-          <Card>
-            <CardContent className="p-0">
-              <div className="px-3 py-2 border-b border-border">
-                <h2 className="text-xs font-semibold text-foreground">Support</h2>
-              </div>
-              <div className="p-1">
-                {supportItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => item.external ? window.open(item.path, "_blank") : navigate(item.path)}
-                    className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-full bg-muted/50">
-                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs font-medium text-foreground">{item.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
-                      </div>
-                    </div>
-                    {item.external ? (
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* App Info Footer */}
-          <Card className="bg-muted/30">
-            <CardContent className="p-4 text-center">
-              <p className="text-xs font-semibold text-primary mb-0.5">ProPredict</p>
-              <p className="text-[10px] text-muted-foreground mb-1">Version 1.0.0</p>
-              <p className="text-[9px] text-muted-foreground mb-2">© {new Date().getFullYear()} ProPredict. All rights reserved.</p>
-              <div className="flex items-center justify-center gap-2 text-[10px]">
-                <a href="https://propredict.me" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Website</a>
-                <span className="text-muted-foreground">·</span>
-                <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
-                <span className="text-muted-foreground">·</span>
-                <Link to="/terms-of-service" className="text-primary hover:underline">Terms</Link>
-                <span className="text-muted-foreground">·</span>
-                <Link to="/cookie-policy" className="text-primary hover:underline">Cookie</Link>
-              </div>
-            </CardContent>
-          </Card>
+        <div>
+          <h1 className="text-sm sm:text-base font-semibold text-foreground">Settings</h1>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">App settings and legal information</p>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* Warning Banner */}
+      <Card className="bg-primary/10 border-primary/30">
+        <CardContent className="p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-accent flex-shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-accent">18+ Only · Entertainment Purposes Only</p>
+              <p className="text-[10px] text-muted-foreground">This app does not accept bets or process payments</p>
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate("/disclaimer")}
+            className="text-[10px] text-muted-foreground hover:text-foreground h-6 px-2"
+          >
+            Read <ChevronRight className="h-3 w-3 ml-0.5" />
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Account Section */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="px-3 py-2 border-b border-border">
+            <h2 className="text-xs font-semibold text-foreground">Account</h2>
+          </div>
+          <div className="p-1">
+            {accountItems.map((item, index) => (
+              <button
+                key={item.path + index}
+                onClick={() => navigate(item.path)}
+                className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">{item.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Legal & Compliance Section */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+            <Scale className="h-3.5 w-3.5 text-primary" />
+            <h2 className="text-xs font-semibold text-foreground">Legal & Compliance</h2>
+          </div>
+          <div className="p-1">
+            {legalItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors ${
+                  item.highlight ? "bg-primary/5 border border-primary/20" : ""
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-1.5 rounded-full ${item.highlight ? "bg-primary/20" : "bg-muted/50"}`}>
+                    <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">{item.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Support Section */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="px-3 py-2 border-b border-border">
+            <h2 className="text-xs font-semibold text-foreground">Support</h2>
+          </div>
+          <div className="p-1">
+            {supportItems.map((item) => (
+              <button
+                key={item.label}
+                onClick={() => item.external ? window.open(item.path, "_blank") : navigate(item.path)}
+                className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">{item.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                  </div>
+                </div>
+                {item.external ? (
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* App Info Footer */}
+      <Card className="bg-muted/30">
+        <CardContent className="p-4 text-center">
+          <p className="text-xs font-semibold text-primary mb-0.5">ProPredict</p>
+          <p className="text-[10px] text-muted-foreground mb-1">Version 1.0.0</p>
+          <p className="text-[9px] text-muted-foreground mb-2">© {new Date().getFullYear()} ProPredict. All rights reserved.</p>
+          <div className="flex items-center justify-center gap-2 text-[10px]">
+            <a href="https://propredict.me" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Website</a>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/terms-of-service" className="text-primary hover:underline">Terms</Link>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/cookie-policy" className="text-primary hover:underline">Cookie</Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

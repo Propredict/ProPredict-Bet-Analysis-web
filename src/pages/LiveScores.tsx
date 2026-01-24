@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -138,8 +137,7 @@ export default function LiveScores() {
   /* -------------------- RENDER -------------------- */
 
   return (
-    <DashboardLayout>
-      <div className="section-gap max-w-full overflow-x-hidden">
+    <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - COMPACT */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5 pb-1 border-b border-border">
           <div className="flex items-center gap-1 sm:gap-1.5">
@@ -384,9 +382,8 @@ export default function LiveScores() {
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-    </DashboardLayout>
+    </div>
   );
-}
 
 /* -------------------- HELPERS -------------------- */
 
