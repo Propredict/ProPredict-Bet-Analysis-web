@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 
 export interface Match {
-  id: string;
+  id: string; // ← FIXTURE ID (KLJUČNO)
   homeTeam: string;
   awayTeam: string;
   homeScore: number | null;
@@ -24,13 +24,11 @@ interface ApiResponse {
 }
 
 const AUTO_REFRESH_MS = 30_000;
-
-// ✅ TAČAN SUPABASE EDGE FUNCTION URL
-const SUPABASE_FUNCTIONS_URL = "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-fixtures";
+const EDGE_URL = "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-fixtures";
 
 export function useLiveScores({
-  dateMode = "today", // today | yesterday | tomorrow | live
-  statusFilter = "all", // all | live | upcoming | finished
+  dateMode = "today",
+  statusFilter = "all",
 }: {
   dateMode?: "today" | "yesterday" | "tomorrow" | "live";
   statusFilter?: "all" | "live" | "upcoming" | "finished";
@@ -38,29 +36,26 @@ export function useLiveScores({
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const controllerRef = useRef<AbortController | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchMatches = useCallback(async () => {
     try {
-      controllerRef.current?.abort();
+      abortRef.current?.abort();
       const controller = new AbortController();
-      controllerRef.current = controller;
+      abortRef.current = controller;
 
       setIsLoading(true);
       setError(null);
 
-      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}?mode=${dateMode}`, { signal: controller.signal });
+      const res = await fetch(`${EDGE_URL}?mode=${dateMode}`, {
+        signal: controller.signal,
+      });
 
-      if (!res.ok) {
-        throw new Error(`Request failed: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data: ApiResponse = await res.json();
-
       let list = data.fixtures ?? [];
 
-      // ✅ ISPRAVAN frontend filter
       if (statusFilter === "live") {
         list = list.filter((m) => m.status === "live" || m.status === "halftime");
       } else if (statusFilter !== "all") {
@@ -68,9 +63,9 @@ export function useLiveScores({
       }
 
       setMatches(list);
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
-        setError(err?.message ?? "Failed to load live scores");
+    } catch (e: any) {
+      if (e.name !== "AbortError") {
+        setError("Failed to load live scores");
         setMatches([]);
       }
     } finally {
@@ -80,19 +75,12 @@ export function useLiveScores({
 
   useEffect(() => {
     fetchMatches();
-
-    const interval = setInterval(fetchMatches, AUTO_REFRESH_MS);
-
+    const i = setInterval(fetchMatches, AUTO_REFRESH_MS);
     return () => {
-      controllerRef.current?.abort();
-      clearInterval(interval);
+      abortRef.current?.abort();
+      clearInterval(i);
     };
   }, [fetchMatches]);
 
-  return {
-    matches,
-    isLoading,
-    error,
-    refetch: fetchMatches,
-  };
+  return { matches, isLoading, error, refetch: fetchMatches };
 }
