@@ -50,7 +50,7 @@ const tools = [
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "Match Previews", url: "/match-previews", icon: FileText },
-  { title: "League Stats", url: "/league-stats", icon: BarChart3 },
+  { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
 ];
 
 const adminItems = [
