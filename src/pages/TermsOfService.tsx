@@ -1,15 +1,24 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { useNavigate } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock } from "lucide-react";
+import { Lock, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const TermsOfService = () => {
+  const navigate = useNavigate();
+  
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="container px-4 pt-24 pb-16">
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="container px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/settings")}
+            className="mb-3 h-7 text-xs gap-1"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Back to Settings
+          </Button>
           <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
           <p className="text-muted-foreground mb-8">Last updated: January 10, 2026</p>
 
