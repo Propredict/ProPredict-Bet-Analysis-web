@@ -25,6 +25,7 @@ import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
+import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
@@ -69,8 +70,11 @@ export default function LiveScores() {
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
 
-  // Live alerts detection
-  useLiveAlerts(matches);
+  // Determine if we're in a fallback state (error or loading with no data)
+  const isUnavailable = error || (isLoading && matches.length === 0);
+
+  // Live alerts detection - only when data is available
+  useLiveAlerts(isUnavailable ? [] : matches);
 
   /* -------------------- CLOCK -------------------- */
 
@@ -263,10 +267,17 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* MATCHES */}
-        {Object.entries(grouped).map(([league, games]) => (
-          <Card key={league}>
-            <div className="px-4 py-2 border-b border-white/5 font-semibold">{league}</div>
+        {/* MATCHES or FALLBACK */}
+        {isUnavailable ? (
+          <LiveScoresFallback />
+        ) : Object.keys(grouped).length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground">No matches found for this selection</p>
+          </Card>
+        ) : (
+          Object.entries(grouped).map(([league, games]) => (
+            <Card key={league}>
+              <div className="px-4 py-2 border-b border-white/5 font-semibold">{league}</div>
 
             {games.map((m) => {
               const isLive = m.status === "live" || m.status === "halftime";
@@ -331,9 +342,8 @@ export default function LiveScores() {
               );
             })}
           </Card>
-        ))}
-
-        {error && <Card className="p-6 text-center text-destructive">{error}</Card>}
+          ))
+        )}
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
