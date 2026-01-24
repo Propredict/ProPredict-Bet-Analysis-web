@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 
 export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds";
 
@@ -115,6 +114,8 @@ type LeagueStatsResponse =
   | FixturesResponse 
   | RoundsResponse;
 
+const SUPABASE_URL = "https://tczettddxmlcmhdhgebw.supabase.co";
+
 async function fetchLeagueStats(
   leagueId: string,
   type: LeagueStatsType,
@@ -124,14 +125,8 @@ async function fetchLeagueStats(
     return null;
   }
 
-  const { data, error } = await supabase.functions.invoke("league-stats", {
-    body: null,
-    method: "GET",
-  });
-
-  // Use direct fetch since we need query params
   const response = await fetch(
-    `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/league-stats?league=${leagueId}&season=${season}&type=${type}`,
+    `${SUPABASE_URL}/functions/v1/league-stats?league=${leagueId}&season=${season}&type=${type}`,
     {
       method: "GET",
       headers: {
@@ -141,6 +136,8 @@ async function fetchLeagueStats(
   );
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Failed to fetch ${type}:`, errorText);
     throw new Error(`Failed to fetch ${type}: ${response.statusText}`);
   }
 
@@ -152,8 +149,9 @@ export function useLeagueStandings(leagueId: string, season: string = "2024") {
     queryKey: ["league-stats", "standings", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "standings", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -162,8 +160,9 @@ export function useLeagueScorers(leagueId: string, season: string = "2024") {
     queryKey: ["league-stats", "scorers", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "scorers", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -172,8 +171,9 @@ export function useLeagueAssists(leagueId: string, season: string = "2024") {
     queryKey: ["league-stats", "assists", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "assists", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -182,8 +182,9 @@ export function useLeagueFixtures(leagueId: string, season: string = "2024") {
     queryKey: ["league-stats", "fixtures", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "fixtures", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -192,7 +193,8 @@ export function useLeagueRounds(leagueId: string, season: string = "2024") {
     queryKey: ["league-stats", "rounds", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 }
