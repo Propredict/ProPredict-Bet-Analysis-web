@@ -107,6 +107,8 @@
     overflow-x: hidden !important;
     max-width: 100vw !important;
     width: 100%;
+    /* Global base font size - compact density */
+    font-size: 14px;
   }
 
   #root {
@@ -133,21 +135,53 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* Responsive typography base - ULTRA COMPACT */
+  /* =====================================================
+     GLOBAL COMPACT DENSITY SYSTEM - Typography
+     These apply to ALL pages automatically
+     ===================================================== */
+
+  /* Headings - Compact & Consistent */
   h1 {
-    @apply text-sm sm:text-base md:text-lg font-bold leading-tight;
+    @apply text-xl md:text-2xl font-bold leading-tight tracking-tight;
   }
 
   h2 {
-    @apply text-xs sm:text-sm md:text-base font-semibold leading-snug;
+    @apply text-lg md:text-xl font-semibold leading-snug;
   }
 
   h3 {
-    @apply text-[11px] sm:text-xs md:text-sm font-semibold leading-snug;
+    @apply text-base md:text-lg font-semibold leading-snug;
   }
 
-  p {
-    @apply text-[10px] sm:text-xs leading-relaxed;
+  h4 {
+    @apply text-sm md:text-base font-medium leading-snug;
+  }
+
+  /* Body text - Compact density */
+  p, span, div, li {
+    @apply text-sm leading-relaxed;
+  }
+
+  /* Secondary/muted text */
+  .text-muted-foreground, 
+  small,
+  label,
+  figcaption {
+    @apply text-xs;
+  }
+
+  /* =====================================================
+     GLOBAL SPACING & LAYOUT DENSITY
+     ===================================================== */
+
+  /* Standardized section spacing */
+  section, article, .section {
+    @apply space-y-4;
+  }
+
+  /* Standardized container padding */
+  .container, main > div:first-child {
+    @apply px-4 py-4 md:py-6;
   }
 }
 
@@ -253,45 +287,68 @@
     }
   }
 
-  /* Compact stats cards - ULTRA DENSITY */
+  /* =====================================================
+     GLOBAL COMPACT DENSITY UTILITIES
+     Use these for consistent spacing across all pages
+     ===================================================== */
+
+  /* Compact stats cards */
   .stats-card {
-    @apply flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 md:p-2 rounded-md border transition-all;
+    @apply flex items-center gap-2 p-2 md:p-3 rounded-md border transition-all;
   }
 
   .stats-card-icon {
-    @apply h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 rounded flex items-center justify-center flex-shrink-0;
+    @apply h-6 w-6 md:h-8 md:w-8 rounded flex items-center justify-center flex-shrink-0;
   }
 
   .stats-card-value {
-    @apply text-xs sm:text-sm md:text-base font-bold leading-none;
+    @apply text-sm md:text-base font-bold leading-none;
   }
 
   .stats-card-label {
-    @apply text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide;
+    @apply text-xs text-muted-foreground uppercase tracking-wide;
   }
 
-  /* Compact button sizes - TIGHTER */
+  /* Compact button sizes */
   .btn-compact {
-    @apply h-5 sm:h-6 md:h-7 px-1 sm:px-1.5 md:px-2 text-[9px] sm:text-[10px];
+    @apply h-7 md:h-8 px-2 md:px-3 text-xs;
   }
 
-  /* Compact card padding - TIGHTER */
+  /* Compact card padding override */
   .card-compact {
-    @apply p-1 sm:p-1.5 md:p-2;
+    @apply p-2 md:p-3;
   }
 
-  /* Page section spacing - TIGHTER */
+  /* Page section spacing - consistent */
   .section-gap {
-    @apply space-y-1.5 sm:space-y-2 md:space-y-3;
+    @apply space-y-4 md:space-y-6;
   }
 
   /* Horizontal chip scroll container */
   .chip-scroll {
-    @apply flex gap-1 sm:gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide -mx-1.5 px-1.5;
+    @apply flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-2 px-2;
   }
 
-  /* Chip button style - COMPACT */
+  /* Chip button style */
   .chip-btn {
-    @apply flex-shrink-0 h-6 sm:h-7 px-2 sm:px-2.5 text-[10px] sm:text-xs rounded-full whitespace-nowrap;
+    @apply flex-shrink-0 h-7 md:h-8 px-3 text-xs rounded-full whitespace-nowrap;
+  }
+
+  /* Page wrapper - standardizes all page content */
+  .page-content {
+    @apply space-y-4 md:space-y-6;
+  }
+
+  /* Page header styling */
+  .page-header {
+    @apply mb-4 md:mb-6;
+  }
+
+  .page-header h1 {
+    @apply text-xl md:text-2xl font-bold;
+  }
+
+  .page-header p {
+    @apply text-xs md:text-sm text-muted-foreground mt-1;
   }
 }
