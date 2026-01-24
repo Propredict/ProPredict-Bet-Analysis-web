@@ -13,7 +13,7 @@ export function MatchAlertButton({ hasAlert, onClick, disabled }: MatchAlertButt
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300",
+        "h-6 w-6 sm:h-8 sm:w-8 rounded-md sm:rounded-lg flex items-center justify-center transition-all duration-300",
         hasAlert 
           ? "bg-green-500/20 shadow-lg shadow-green-500/30 hover:bg-green-500/30" 
           : "bg-white/5 hover:bg-white/10",
@@ -21,9 +21,9 @@ export function MatchAlertButton({ hasAlert, onClick, disabled }: MatchAlertButt
       )}
     >
       {hasAlert ? (
-        <BellRing className="h-4 w-4 text-green-400 animate-pulse" />
+        <BellRing className="h-3 w-3 sm:h-4 sm:w-4 text-green-400 animate-pulse" />
       ) : (
-        <Bell className="h-4 w-4 text-muted-foreground" />
+        <Bell className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
       )}
     </button>
   );

@@ -47,13 +47,13 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
   return (
     <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
-        <Trophy className="h-4 w-4 text-primary" />
-        <span className="font-semibold text-sm">League Standings</span>
-        <span className="text-xs text-muted-foreground">{flag} {leagueName}</span>
+      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-white/10 flex items-center gap-2">
+        <Trophy className="h-4 w-4 text-primary flex-shrink-0" />
+        <span className="font-semibold text-xs sm:text-sm">Standings</span>
+        <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{flag} {leagueName}</span>
       </div>
 
-      {/* Table */}
+      {/* Table with horizontal scroll on mobile */}
       <div className="overflow-x-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -64,39 +64,39 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
             No data available
           </div>
         ) : (
-          <table className="w-full text-xs">
+          <table className="w-full text-xs min-w-[320px]">
             <thead>
               <tr className="border-b border-white/5 text-muted-foreground">
-                <th className="px-3 py-2 text-left">#</th>
-                <th className="px-3 py-2 text-left">Team</th>
-                <th className="px-3 py-2 text-center">P</th>
-                <th className="px-3 py-2 text-center text-green-400">W</th>
-                <th className="px-3 py-2 text-center text-yellow-400">D</th>
-                <th className="px-3 py-2 text-center text-red-400">L</th>
-                <th className="px-3 py-2 text-center">GD</th>
-                <th className="px-3 py-2 text-center text-primary">Pts</th>
+                <th className="px-2 sm:px-3 py-2 text-left w-6">#</th>
+                <th className="px-2 sm:px-3 py-2 text-left">Team</th>
+                <th className="px-1 sm:px-3 py-2 text-center">P</th>
+                <th className="px-1 sm:px-3 py-2 text-center text-green-400">W</th>
+                <th className="px-1 sm:px-3 py-2 text-center text-yellow-400">D</th>
+                <th className="px-1 sm:px-3 py-2 text-center text-red-400">L</th>
+                <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell">GD</th>
+                <th className="px-1 sm:px-3 py-2 text-center text-primary">Pts</th>
               </tr>
             </thead>
             <tbody>
               {displayTeams.map((team: TeamStanding) => (
                 <tr key={team.rank} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className={cn("px-3 py-2 font-medium", getPositionColor(team.rank, team.description))}>{team.rank}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex items-center gap-2">
+                  <td className={cn("px-2 sm:px-3 py-2 font-medium", getPositionColor(team.rank, team.description))}>{team.rank}</td>
+                  <td className="px-2 sm:px-3 py-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                       {team.team.logo && (
-                        <img src={team.team.logo} alt="" className="w-4 h-4 object-contain" />
+                        <img src={team.team.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
                       )}
-                      <span className="font-medium truncate max-w-[100px]">{team.team.name}</span>
+                      <span className="font-medium truncate max-w-[60px] sm:max-w-[100px]">{team.team.name}</span>
                     </div>
                   </td>
-                  <td className="px-3 py-2 text-center text-muted-foreground">{team.all.played}</td>
-                  <td className="px-3 py-2 text-center text-green-400">{team.all.win}</td>
-                  <td className="px-3 py-2 text-center text-yellow-400">{team.all.draw}</td>
-                  <td className="px-3 py-2 text-center text-red-400">{team.all.lose}</td>
-                  <td className={cn("px-3 py-2 text-center", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "text-muted-foreground")}>
+                  <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{team.all.played}</td>
+                  <td className="px-1 sm:px-3 py-2 text-center text-green-400">{team.all.win}</td>
+                  <td className="px-1 sm:px-3 py-2 text-center text-yellow-400">{team.all.draw}</td>
+                  <td className="px-1 sm:px-3 py-2 text-center text-red-400">{team.all.lose}</td>
+                  <td className={cn("px-1 sm:px-3 py-2 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "text-muted-foreground")}>
                     {team.goalsDiff > 0 ? `+${team.goalsDiff}` : team.goalsDiff}
                   </td>
-                  <td className="px-3 py-2 text-center font-bold text-primary">{team.points}</td>
+                  <td className="px-1 sm:px-3 py-2 text-center font-bold text-primary">{team.points}</td>
                 </tr>
               ))}
             </tbody>
@@ -104,19 +104,19 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
         )}
       </div>
 
-      {/* Legend */}
-      <div className="px-4 py-2 border-t border-white/5 flex gap-4 text-[10px] text-muted-foreground">
+      {/* Legend - wrap on mobile */}
+      <div className="px-3 sm:px-4 py-2 border-t border-white/5 flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          Champions League
+          UCL
         </span>
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-          Europa League
+          UEL
         </span>
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-red-500"></span>
-          Relegation
+          Rel.
         </span>
       </div>
     </Card>
@@ -135,20 +135,20 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
   return (
     <div className="space-y-4">
       {/* League Header */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
-        <div className="flex items-center justify-between">
+      <Card className="p-3 sm:p-4 bg-[#0E1627] border-white/10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            <span className="font-semibold">{leagueName} Standings</span>
+            <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <span className="font-semibold text-sm sm:text-base">{leagueName}</span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            📊 Official standings · Updated after round completion
+          <span className="text-[10px] sm:text-xs text-muted-foreground">
+            📊 Updated after round
           </span>
         </div>
         {league && (
-          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-            {league.flag && <img src={league.flag} alt="" className="w-5 h-3 object-cover" />}
-            <span>{league.country} : {league.name}</span>
+          <div className="flex items-center gap-2 mt-2 text-xs sm:text-sm text-muted-foreground">
+            {league.flag && <img src={league.flag} alt="" className="w-4 h-3 sm:w-5 sm:h-3 object-cover" />}
+            <span className="truncate">{league.country} : {league.name}</span>
           </div>
         )}
       </Card>
@@ -194,19 +194,19 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs sm:text-sm min-w-[500px]">
                   <thead>
-                    <tr className="border-b border-white/10 text-muted-foreground text-xs">
-                      <th className="px-3 py-3 text-left w-8"></th>
-                      <th className="px-3 py-3 text-left"></th>
-                      <th className="px-3 py-3 text-center">MP</th>
-                      <th className="px-3 py-3 text-center text-green-400">W</th>
-                      <th className="px-3 py-3 text-center text-yellow-400">D</th>
-                      <th className="px-3 py-3 text-center text-red-400">L</th>
-                      <th className="px-3 py-3 text-center">G</th>
-                      <th className="px-3 py-3 text-center">+/-</th>
-                      <th className="px-3 py-3 text-center">P</th>
-                      <th className="px-3 py-3 text-center">FORM</th>
+                    <tr className="border-b border-white/10 text-muted-foreground text-[10px] sm:text-xs">
+                      <th className="px-2 sm:px-3 py-2 sm:py-3 text-left w-6 sm:w-8">#</th>
+                      <th className="px-2 sm:px-3 py-2 sm:py-3 text-left">Team</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">MP</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">W</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-yellow-400">D</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-red-400">L</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">G</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">+/-</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">P</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden md:table-cell">FORM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -222,33 +222,33 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
 
                       return (
                         <tr key={team.rank} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <td className={cn("px-3 py-3 font-bold", getPositionColor(team.rank, team.description))}>
+                          <td className={cn("px-2 sm:px-3 py-2 sm:py-3 font-bold", getPositionColor(team.rank, team.description))}>
                             {team.rank}
                           </td>
-                          <td className="px-3 py-3">
-                            <div className="flex items-center gap-2">
+                          <td className="px-2 sm:px-3 py-2 sm:py-3">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
                               {team.team.logo && (
-                                <img src={team.team.logo} alt="" className="w-5 h-5 object-contain" />
+                                <img src={team.team.logo} alt="" className="w-4 h-4 sm:w-5 sm:h-5 object-contain flex-shrink-0" />
                               )}
-                              <span className="font-medium">{team.team.name}</span>
+                              <span className="font-medium truncate max-w-[80px] sm:max-w-none">{team.team.name}</span>
                             </div>
                           </td>
-                          <td className="px-3 py-3 text-center text-muted-foreground">{played}</td>
-                          <td className="px-3 py-3 text-center text-green-400">{win}</td>
-                          <td className="px-3 py-3 text-center text-yellow-400">{draw}</td>
-                          <td className="px-3 py-3 text-center text-red-400">{lose}</td>
-                          <td className="px-3 py-3 text-center text-muted-foreground">{goalsFor}:{goalsAgainst}</td>
-                          <td className={cn("px-3 py-3 text-center", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "")}>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">{played}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">{win}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-yellow-400">{draw}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-red-400">{lose}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden sm:table-cell">{goalsFor}:{goalsAgainst}</td>
+                          <td className={cn("px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "")}>
                             {team.goalsDiff}
                           </td>
-                          <td className="px-3 py-3 text-center font-bold text-primary">{team.points}</td>
-                          <td className="px-3 py-3">
-                            <div className="flex items-center justify-center gap-1">
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center font-bold text-primary">{team.points}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 hidden md:table-cell">
+                            <div className="flex items-center justify-center gap-0.5 sm:gap-1">
                               {team.form.slice(0, 5).map((result: string, idx: number) => (
                                 <span
                                   key={idx}
                                   className={cn(
-                                    "w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center text-white",
+                                    "w-4 h-4 sm:w-5 sm:h-5 rounded text-[8px] sm:text-[10px] font-bold flex items-center justify-center text-white",
                                     getFormColor(result)
                                   )}
                                 >
