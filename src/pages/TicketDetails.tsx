@@ -100,7 +100,7 @@ export default function TicketDetails() {
       upgrade_premium: {
         icon: Crown,
         text: "Subscribe to Premium",
-        className: "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0",
+        className: "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0",
         variant: "default" as const,
       },
     };

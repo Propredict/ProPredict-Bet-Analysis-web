@@ -92,7 +92,7 @@ export default function PremiumTickets() {
             </div>
             <Button
               size="sm"
-              className="bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
+              className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
               onClick={() => navigate("/get-premium")}
             >
               <Sparkles className="h-3 w-3" />

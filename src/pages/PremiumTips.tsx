@@ -65,7 +65,7 @@ export default function PremiumTips() {
               </span>
             </div>
             <Button
-              className="bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs"
+              className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs"
               onClick={() => navigate("/get-premium")}
             >
               Subscribe for $5.99/month

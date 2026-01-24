@@ -90,13 +90,13 @@ export function AllTicketsCard({
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
     if (unlockMethod.type === "watch_ad") {
-      return "bg-accent hover:bg-accent/90 text-accent-foreground";
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     return "";
   };
