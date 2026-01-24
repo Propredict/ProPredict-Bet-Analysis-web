@@ -10,18 +10,45 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown } from "lucide-react";
+
+type SortOption = "confidence" | "kickoff" | "risk";
 
 export default function AIPredictions() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const { predictions, loading } = useAIPredictions(day);
   const { stats, loading: statsLoading } = useAIPredictionStats();
   const { isAdmin, plan } = useUserPlan();
   const navigate = useNavigate();
 
   const isPremiumUser = plan === "premium";
+
+  // Sort function
+  const sortPredictions = (preds: typeof predictions) => {
+    return [...preds].sort((a, b) => {
+      switch (sortBy) {
+        case "confidence":
+          return b.confidence - a.confidence;
+        case "kickoff":
+          // Sort by time string
+          const timeA = a.match_time || "99:99";
+          const timeB = b.match_time || "99:99";
+          return timeA.localeCompare(timeB);
+        case "risk":
+          // low < medium < high
+          const riskOrder = { low: 0, medium: 1, high: 2 };
+          const riskA = riskOrder[a.risk_level as keyof typeof riskOrder] ?? 1;
+          const riskB = riskOrder[b.risk_level as keyof typeof riskOrder] ?? 1;
+          return riskA - riskB;
+        default:
+          return 0;
+      }
+    });
+  };
 
   // Filter predictions by search and league
   const filteredPredictions = useMemo(() => {
@@ -43,8 +70,9 @@ export default function AIPredictions() {
       );
     }
     
-    return result;
-  }, [predictions, searchQuery, selectedLeague]);
+    // Apply sorting
+    return sortPredictions(result);
+  }, [predictions, searchQuery, selectedLeague, sortBy]);
 
   // Separate featured (premium/high confidence) from regular predictions
   const featuredPredictions = useMemo(() => {
@@ -105,6 +133,18 @@ export default function AIPredictions() {
                   className="pl-10 bg-[#0a1628]/60 border-[#1e3a5f]/50"
                 />
               </div>
+              {/* Sort Dropdown */}
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className="w-[140px] bg-[#0a1628]/60 border-[#1e3a5f]/50">
+                  <ArrowUpDown className="w-3 h-3 mr-2" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="confidence">Confidence</SelectItem>
+                  <SelectItem value="kickoff">Kickoff Time</SelectItem>
+                  <SelectItem value="risk">Risk Level</SelectItem>
+                </SelectContent>
+              </Select>
               <Badge className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border-purple-500/30 px-3 py-1.5 hidden sm:flex">
                 <Sparkles className="w-3 h-3 mr-1.5" />
                 Powered by ML
