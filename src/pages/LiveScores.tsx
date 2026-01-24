@@ -181,7 +181,7 @@ export default function LiveScores() {
           
           {/* Favorites Quick Link */}
           <Card 
-            onClick={() => navigate("/my-favorites")}
+            onClick={() => navigate("/favorites")}
             className="p-4 flex items-center gap-4 bg-gradient-to-br from-pink-500/20 to-pink-600/5 border-pink-500/30 shadow-lg shadow-pink-500/10 cursor-pointer transition-all hover:scale-[1.02] hover:border-pink-500/50"
           >
             <div className="h-11 w-11 rounded-xl flex items-center justify-center bg-pink-500/20">
