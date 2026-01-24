@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { DashboardLayout } from "@/components/DashboardLayout";
+
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
@@ -107,10 +107,9 @@ export default function AIPredictions() {
   };
 
   return (
-    <DashboardLayout fullWidth>
-      <div className="flex gap-2 md:gap-4 lg:gap-6">
-        {/* Left Sidebar - Hidden on mobile */}
-        <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
+    <div className="flex gap-2 md:gap-4 lg:gap-6">
+      {/* Left Sidebar - Hidden on mobile */}
+      <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
           <div className="sticky top-4 space-y-3">
             <div className="text-center pb-2 border-b border-border">
               <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
@@ -379,6 +378,5 @@ export default function AIPredictions() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }
