@@ -103,7 +103,7 @@ export function AIPredictionCard({
       return "";
     }
     if (unlockMethod.type === "watch_ad") {
-      return "bg-emerald-500 hover:bg-emerald-600 text-white border-0";
+      return "bg-primary hover:bg-primary/90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
