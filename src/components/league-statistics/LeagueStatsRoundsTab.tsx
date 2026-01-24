@@ -142,79 +142,75 @@ function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
   const isUpcoming = matchState === "upcoming";
   
   const matchDate = new Date(fixture.date);
-  const kickoffTime = format(matchDate, "HH:mm");
+  const dateLabel = format(matchDate, "MMM d");
 
   return (
     <div className={cn(
-      "flex items-center px-3 py-3 rounded-lg text-sm",
-      isLive ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"
+      "flex items-center py-3 border-b border-white/5 last:border-0",
+      isLive && "bg-red-500/5"
     )}>
-      {/* Status / Time - Left */}
-      <div className="w-16 flex-shrink-0">
-        {isUpcoming && (
-          <span className="text-xs text-muted-foreground">{kickoffTime}</span>
-        )}
-        {isLive && (
-          <Badge className="bg-red-500/20 text-red-400 border-0 text-xs animate-pulse">
-            {fixture.status.short === "HT" ? "HT" : `${fixture.status.elapsed}'`}
-          </Badge>
-        )}
-        {isFinished && (
-          <Badge variant="outline" className="text-green-400 border-green-500/30 text-xs">
-            FT
-          </Badge>
-        )}
+      {/* Date - Left */}
+      <div className="w-20 flex-shrink-0 flex items-center gap-1.5 text-muted-foreground">
+        <span className="text-xs">📅</span>
+        <span className="text-xs">{dateLabel}</span>
       </div>
 
       {/* Match Content - Centered */}
       <div className="flex-1 flex items-center justify-center">
         {/* Home Team */}
-        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-          <span className="text-sm truncate" title={fixture.home.name}>
+        <div className="flex items-center justify-end flex-1 min-w-0">
+          <span className={cn(
+            "text-sm truncate",
+            isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
+            fixture.home.goals > fixture.away.goals && "text-green-400 font-medium"
+          )} title={fixture.home.name}>
             {fixture.home.name}
           </span>
-          {fixture.home.logo && (
-            <img src={fixture.home.logo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
-          )}
         </div>
 
-        {/* Score - Prominently centered */}
-        <div className="mx-3 flex-shrink-0">
-          <div className={cn(
-            "px-3 py-1 rounded-lg min-w-[60px] text-center",
-            isLive && "bg-red-500/20 border border-red-500/30",
-            isFinished && "bg-primary/10 border border-primary/20",
-            isUpcoming && "bg-white/5 border border-white/10"
-          )}>
-            {isUpcoming ? (
-              <span className="text-muted-foreground text-xs">vs</span>
-            ) : (
-              <span className={cn(
-                "font-bold",
-                isLive && "text-red-400"
-              )}>
-                {fixture.home.goals ?? 0} - {fixture.away.goals ?? 0}
-              </span>
-            )}
-          </div>
+        {/* Score */}
+        <div className="mx-4 flex-shrink-0 min-w-[50px] text-center">
+          {isUpcoming ? (
+            <span className="text-muted-foreground text-sm">vs</span>
+          ) : (
+            <span className={cn(
+              "font-semibold",
+              isLive && "text-red-400"
+            )}>
+              {fixture.home.goals ?? 0}
+              <span className="text-muted-foreground mx-1">-</span>
+              {fixture.away.goals ?? 0}
+            </span>
+          )}
         </div>
 
         {/* Away Team */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {fixture.away.logo && (
-            <img src={fixture.away.logo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
-          )}
-          <span className="text-sm truncate" title={fixture.away.name}>
+        <div className="flex items-center flex-1 min-w-0">
+          <span className={cn(
+            "text-sm truncate",
+            isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
+            fixture.away.goals > fixture.home.goals && "text-green-400 font-medium"
+          )} title={fixture.away.name}>
             {fixture.away.name}
           </span>
         </div>
       </div>
 
-      {/* Status Badge - Right (hidden on mobile) */}
-      <div className="w-20 flex-shrink-0 text-right hidden sm:block">
+      {/* Status Badge - Right */}
+      <div className="w-20 flex-shrink-0 flex justify-end">
+        {isUpcoming && (
+          <Badge variant="outline" className="text-xs text-muted-foreground border-white/20">
+            Upcoming
+          </Badge>
+        )}
         {isLive && (
-          <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs">
-            LIVE
+          <Badge className="bg-green-500 text-white border-0 text-xs">
+            Live
+          </Badge>
+        )}
+        {isFinished && (
+          <Badge variant="outline" className="text-xs text-muted-foreground border-white/20">
+            FT
           </Badge>
         )}
       </div>
