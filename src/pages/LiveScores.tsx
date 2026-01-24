@@ -379,11 +379,11 @@ export default function LiveScores() {
             ))}
           </div>
         )}
-      </div>
 
-      <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-    </div>
+        <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
+      </div>
   );
+}
 
 /* -------------------- HELPERS -------------------- */
 
