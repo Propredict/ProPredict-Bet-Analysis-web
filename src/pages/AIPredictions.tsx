@@ -108,13 +108,13 @@ export default function AIPredictions() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-3 md:gap-6 lg:gap-8">
+      <div className="flex gap-2 md:gap-4 lg:gap-6">
         {/* Left Sidebar - Hidden on mobile */}
-        <aside className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-          <div className="sticky top-4 space-y-4">
-            <div className="text-center pb-4 border-b border-border">
-              <h1 className="text-xl font-bold text-foreground">AI Predictions</h1>
-              <p className="text-xs text-muted-foreground mt-1">ML-powered match analysis</p>
+        <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
+          <div className="sticky top-4 space-y-3">
+            <div className="text-center pb-2 border-b border-border">
+              <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">ML-powered match analysis</p>
             </div>
             <AIPredictionsSidebar
               selectedDay={day}
@@ -126,38 +126,38 @@ export default function AIPredictions() {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 space-y-3 md:space-y-5">
+        <div className="flex-1 min-w-0 section-gap">
           {/* Header Section */}
-          <div className="flex flex-col gap-2 md:gap-4">
+          <div className="flex flex-col gap-1.5 md:gap-2">
             {/* Mobile Title */}
             <div className="lg:hidden">
-              <h1 className="text-lg md:text-2xl font-bold text-foreground">AI Predictions</h1>
-              <p className="text-muted-foreground text-xs md:text-sm">ML-powered match analysis</p>
+              <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
+              <p className="text-muted-foreground text-[9px] sm:text-[10px]">ML-powered match analysis</p>
             </div>
             
             {/* Controls Row */}
-            <div className="flex flex-wrap items-center gap-1.5 md:gap-3">
+            <div className="flex flex-wrap items-center gap-1 md:gap-2">
               {/* Search */}
-              <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-md">
-                <Search className="absolute left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-3.5 md:w-4 h-3.5 md:h-4 text-muted-foreground" />
+              <div className="relative flex-1 min-w-[120px] md:min-w-[180px] max-w-sm">
+                <Search className="absolute left-2 md:left-2.5 top-1/2 -translate-y-1/2 w-3 md:w-3.5 h-3 md:h-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 md:pl-10 h-8 md:h-10 text-xs md:text-sm bg-card border-border rounded-lg"
+                  className="pl-7 md:pl-8 h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded"
                 />
               </div>
               
               {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-[100px] md:w-[140px] h-8 md:h-10 text-xs md:text-sm bg-card border-border rounded-lg">
-                  <ArrowUpDown className="w-3 h-3 mr-1 md:mr-2" />
+                <SelectTrigger className="w-[90px] md:w-[120px] h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded">
+                  <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="confidence" className="text-xs md:text-sm">Confidence</SelectItem>
-                  <SelectItem value="kickoff" className="text-xs md:text-sm">Kickoff</SelectItem>
-                  <SelectItem value="risk" className="text-xs md:text-sm">Risk</SelectItem>
+                  <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
+                  <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff</SelectItem>
+                  <SelectItem value="risk" className="text-[10px] md:text-xs">Risk</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -165,15 +165,15 @@ export default function AIPredictions() {
               <Toggle
                 pressed={showFavoritesOnly}
                 onPressedChange={setShowFavoritesOnly}
-                className="h-8 w-8 md:h-10 md:w-10 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded-lg"
+                className="h-7 w-7 md:h-8 md:w-8 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded"
                 aria-label="Show favorites only"
               >
-                <Heart className={cn("w-3.5 md:w-4 h-3.5 md:h-4", showFavoritesOnly && "fill-current")} />
+                <Heart className={cn("w-3 md:w-3.5 h-3 md:h-3.5", showFavoritesOnly && "fill-current")} />
               </Toggle>
               
               {/* ML Badge */}
-              <Badge className="bg-primary/10 text-primary border-primary/20 px-2 py-1 text-[10px] md:text-xs hidden sm:flex rounded-lg">
-                <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1" />
+              <Badge className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0.5 text-[9px] md:text-[10px] hidden sm:flex rounded">
+                <Sparkles className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
                 ML
               </Badge>
               
@@ -181,72 +181,72 @@ export default function AIPredictions() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 md:h-10 md:w-10 border-border rounded-lg"
+                className="h-7 w-7 md:h-8 md:w-8 border-border rounded"
                 onClick={handleRefresh}
               >
-                <RefreshCw className="w-3.5 md:w-4 h-3.5 md:h-4" />
+                <RefreshCw className="w-3 md:w-3.5 h-3 md:h-3.5" />
               </Button>
             </div>
           </div>
 
           {/* Mobile Day Selector */}
-          <div className="flex gap-1.5 md:gap-2 lg:hidden">
+          <div className="flex gap-1 md:gap-1.5 lg:hidden">
             <Button
               variant={day === "today" ? "default" : "outline"}
-              className={cn("flex-1 h-8 md:h-10 text-xs md:text-sm rounded-lg", day !== "today" && "border-border")}
+              className={cn("flex-1 h-7 md:h-8 text-[10px] md:text-xs rounded", day !== "today" && "border-border")}
               onClick={() => setDay("today")}
             >
               Today
             </Button>
             <Button
               variant={day === "tomorrow" ? "default" : "outline"}
-              className={cn("flex-1 h-8 md:h-10 text-xs md:text-sm rounded-lg", day !== "tomorrow" && "border-border")}
+              className={cn("flex-1 h-7 md:h-8 text-[10px] md:text-xs rounded", day !== "tomorrow" && "border-border")}
               onClick={() => setDay("tomorrow")}
             >
               Tomorrow
             </Button>
           </div>
 
-          {/* Stats Cards Row - Compact on mobile */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 md:gap-3">
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15 rounded-lg">
-              <div className="p-1.5 md:p-2 rounded-lg bg-destructive/10">
-                <Activity className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
+          {/* Stats Cards Row - Compact */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-1.5">
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-destructive/10">
+                <Activity className="w-3 h-3 md:w-4 md:h-4 text-destructive" />
               </div>
               <div>
-                <p className="text-[10px] md:text-xs text-muted-foreground">Live</p>
-                <p className="text-sm md:text-lg font-bold text-destructive">{liveCount}</p>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Live</p>
+                <p className="text-xs md:text-sm font-bold text-destructive">{liveCount}</p>
               </div>
             </Card>
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-success/10 to-success/5 border-success/15 rounded-lg">
-              <div className="p-1.5 md:p-2 rounded-lg bg-success/10">
-                <Target className="w-4 h-4 md:w-5 md:h-5 text-success" />
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-success/10 to-success/5 border-success/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-success/10">
+                <Target className="w-3 h-3 md:w-4 md:h-4 text-success" />
               </div>
               <div>
-                <p className="text-[10px] md:text-xs text-muted-foreground">Accuracy</p>
-                <p className="text-sm md:text-lg font-bold text-success">
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Accuracy</p>
+                <p className="text-xs md:text-sm font-bold text-success">
                   {statsLoading ? "..." : `${stats.accuracy}%`}
                 </p>
               </div>
             </Card>
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15 rounded-lg">
-              <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
-                <Brain className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-primary/10">
+                <Brain className="w-3 h-3 md:w-4 md:h-4 text-primary" />
               </div>
               <div>
-                <p className="text-[10px] md:text-xs text-muted-foreground">Active</p>
-                <p className="text-sm md:text-lg font-bold text-primary">
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Active</p>
+                <p className="text-xs md:text-sm font-bold text-primary">
                   {statsLoading ? "..." : stats.pending}
                 </p>
               </div>
             </Card>
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15 rounded-lg">
-              <div className="p-1.5 md:p-2 rounded-lg bg-accent/10">
-                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-accent" />
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-accent/10">
+                <BarChart3 className="w-3 h-3 md:w-4 md:h-4 text-accent" />
               </div>
               <div>
-                <p className="text-[10px] md:text-xs text-muted-foreground">Analyzed</p>
-                <p className="text-sm md:text-lg font-bold text-accent">
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Analyzed</p>
+                <p className="text-xs md:text-sm font-bold text-accent">
                   {statsLoading ? "..." : totalAnalyzed.toLocaleString()}
                 </p>
               </div>
@@ -254,40 +254,40 @@ export default function AIPredictions() {
           </div>
 
           {/* AI Accuracy Section */}
-          <Card className="bg-card border-border rounded-lg">
-            <CardContent className="p-2.5 md:p-4">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <TrendingUp className="w-3.5 md:w-4 h-3.5 md:h-4 text-muted-foreground" />
-                  <span className="text-xs md:text-sm font-medium text-foreground">AI Accuracy</span>
+          <Card className="bg-card border-border rounded">
+            <CardContent className="p-2 md:p-3">
+              <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                <div className="flex items-center gap-1 md:gap-1.5">
+                  <TrendingUp className="w-3 md:w-3.5 h-3 md:h-3.5 text-muted-foreground" />
+                  <span className="text-[10px] md:text-xs font-medium text-foreground">AI Accuracy</span>
                 </div>
-                <Badge className="bg-success/10 text-success border-success/20 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-lg">
+                <Badge className="bg-success/10 text-success border-success/20 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded">
                   {stats.accuracy}%
                 </Badge>
               </div>
               
               {/* Stats indicators */}
-              <div className="flex items-center gap-3 md:gap-6 mb-2 md:mb-3 flex-wrap">
-                <div className="flex items-center gap-1 md:gap-2">
-                  <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-success" />
-                  <span className="text-[10px] md:text-xs text-muted-foreground">Won</span>
-                  <span className="text-xs md:text-sm font-semibold text-success">{stats.won}</span>
+              <div className="flex items-center gap-2 md:gap-4 mb-1.5 md:mb-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-success" />
+                  <span className="text-[9px] md:text-[10px] text-muted-foreground">Won</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-success">{stats.won}</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                  <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-destructive" />
-                  <span className="text-[10px] md:text-xs text-muted-foreground">Lost</span>
-                  <span className="text-xs md:text-sm font-semibold text-destructive">{stats.lost}</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-destructive" />
+                  <span className="text-[9px] md:text-[10px] text-muted-foreground">Lost</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-destructive">{stats.lost}</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                  <div className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-warning" />
-                  <span className="text-[10px] md:text-xs text-muted-foreground">Pending</span>
-                  <span className="text-xs md:text-sm font-semibold text-warning">{stats.pending}</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-warning" />
+                  <span className="text-[9px] md:text-[10px] text-muted-foreground">Pending</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-warning">{stats.pending}</span>
                 </div>
               </div>
 
               {/* Visual accuracy bar */}
               {totalAnalyzed > 0 && (
-                <div className="h-1.5 md:h-2 bg-secondary rounded-full overflow-hidden flex">
+                <div className="h-1 md:h-1.5 bg-secondary rounded-full overflow-hidden flex">
                   <div
                     className="h-full bg-success"
                     style={{ width: `${(stats.won / totalAnalyzed) * 100}%` }}
@@ -308,12 +308,12 @@ export default function AIPredictions() {
           {/* Featured Predictions Section */}
           {featuredPredictions.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-4">
-                <Star className="w-3.5 md:w-4 h-3.5 md:h-4 text-warning fill-warning" />
-                <h2 className="text-sm md:text-lg font-semibold text-foreground">Featured</h2>
-                <span className="text-[10px] md:text-xs text-muted-foreground ml-auto">Updated now</span>
+              <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
+                <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
+                <h2 className="text-xs md:text-sm font-semibold text-foreground">Featured</h2>
+                <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
               </div>
-              <div className="grid md:grid-cols-2 gap-2 md:gap-4">
+              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
                 {featuredPredictions.map((prediction) => (
                   <AIPredictionCard
                     key={prediction.id}
@@ -333,34 +333,34 @@ export default function AIPredictions() {
 
           {/* All Daily Predictions Section */}
           <div>
-            <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-4">
-              <Brain className="w-3.5 md:w-4 h-3.5 md:h-4 text-blue-400" />
-              <h2 className="text-sm md:text-lg font-semibold text-foreground">
+            <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
+              <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-blue-400" />
+              <h2 className="text-xs md:text-sm font-semibold text-foreground">
                 {day === "today" ? "Daily" : "Tomorrow"} ({regularPredictions.length})
               </h2>
             </div>
 
             {loading ? (
-              <div className="text-center py-8 md:py-12">
-                <div className="animate-spin w-6 md:w-8 h-6 md:h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3 md:mb-4" />
-                <p className="text-muted-foreground text-xs md:text-sm">Loading...</p>
+              <div className="text-center py-6 md:py-8">
+                <div className="animate-spin w-5 md:w-6 h-5 md:h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2 md:mb-3" />
+                <p className="text-muted-foreground text-[10px] md:text-xs">Loading...</p>
               </div>
             ) : regularPredictions.length === 0 && featuredPredictions.length === 0 ? (
-              <div className="text-center py-8 md:py-12">
-                <Brain className="w-10 md:w-12 h-10 md:h-12 text-muted-foreground mx-auto mb-3 md:mb-4" />
-                <p className="text-muted-foreground text-xs md:text-sm">
+              <div className="text-center py-6 md:py-8">
+                <Brain className="w-8 md:w-10 h-8 md:h-10 text-muted-foreground mx-auto mb-2 md:mb-3" />
+                <p className="text-muted-foreground text-[10px] md:text-xs">
                   No predictions for {day === "today" ? "today" : "tomorrow"}
                   {selectedLeague ? ` in ${selectedLeague}` : ""}
                 </p>
               </div>
             ) : regularPredictions.length === 0 ? (
-              <div className="text-center py-6 md:py-8">
-                <p className="text-muted-foreground text-xs md:text-sm">
+              <div className="text-center py-4 md:py-6">
+                <p className="text-muted-foreground text-[10px] md:text-xs">
                   All predictions are featured above
                 </p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {regularPredictions.map((prediction) => (
                   <AIPredictionCard
                     key={prediction.id}
