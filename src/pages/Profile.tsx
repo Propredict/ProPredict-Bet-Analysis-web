@@ -122,11 +122,11 @@ const Profile = () => {
       <div className="mx-auto max-w-lg">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/settings")}
           className="mb-3 h-7 text-xs gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to Dashboard
+          Back to Settings
         </Button>
 
         <Card>

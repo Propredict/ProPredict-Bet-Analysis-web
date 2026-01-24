@@ -20,9 +20,11 @@ import {
   Sparkles,
   Smartphone,
   Lock,
-  Clock
+  Clock,
+  ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -34,6 +36,7 @@ const contactSchema = z.object({
 });
 
 const HelpSupport = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -188,6 +191,16 @@ const HelpSupport = () => {
   return (
     <DashboardLayout>
       <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/settings")}
+          className="mb-3 h-7 text-xs gap-1"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          Back to Settings
+        </Button>
+
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
           <div className="p-1.5 rounded-full border border-primary">
