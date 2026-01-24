@@ -108,13 +108,13 @@ export default function AIPredictions() {
 
   return (
     <DashboardLayout>
-      <div className="flex gap-6">
+      <div className="flex gap-6 lg:gap-8">
         {/* Left Sidebar - Hidden on mobile */}
-        <aside className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-4">
-            <div className="text-center mb-6">
+        <aside className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
+          <div className="sticky top-4 space-y-4">
+            <div className="text-center pb-4 border-b border-border">
               <h1 className="text-xl font-bold text-foreground">AI Predictions</h1>
-              <p className="text-xs text-muted-foreground mt-1">AI-powered match analysis and predictions</p>
+              <p className="text-xs text-muted-foreground mt-1">ML-powered match analysis</p>
             </div>
             <AIPredictionsSidebar
               selectedDay={day}
@@ -126,26 +126,31 @@ export default function AIPredictions() {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* Header Section - Desktop */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex-1 min-w-0 space-y-5 md:space-y-6">
+          {/* Header Section */}
+          <div className="flex flex-col gap-4">
+            {/* Mobile Title */}
             <div className="lg:hidden">
               <h1 className="text-2xl font-bold text-foreground">AI Predictions</h1>
-              <p className="text-muted-foreground text-sm mt-1">AI-powered match analysis and predictions</p>
+              <p className="text-muted-foreground text-sm mt-1">ML-powered match analysis</p>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative flex-1 min-w-[200px]">
+            
+            {/* Controls Row */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[200px] max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search team or league..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-[#0a1628]/60 border-[#1e3a5f]/50"
+                  className="pl-10 bg-card border-border"
                 />
               </div>
+              
               {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-[140px] bg-[#0a1628]/60 border-[#1e3a5f]/50">
+                <SelectTrigger className="w-[140px] bg-card border-border">
                   <ArrowUpDown className="w-3 h-3 mr-2" />
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -155,23 +160,28 @@ export default function AIPredictions() {
                   <SelectItem value="risk">Risk Level</SelectItem>
                 </SelectContent>
               </Select>
+              
               {/* Favorites Toggle */}
               <Toggle
                 pressed={showFavoritesOnly}
                 onPressedChange={setShowFavoritesOnly}
-                className="data-[state=on]:bg-red-500/20 data-[state=on]:text-red-400 border border-[#1e3a5f]/50"
+                className="data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border"
                 aria-label="Show favorites only"
               >
                 <Heart className={cn("w-4 h-4", showFavoritesOnly && "fill-current")} />
               </Toggle>
-              <Badge className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border-purple-500/30 px-3 py-1.5 hidden sm:flex">
+              
+              {/* ML Badge */}
+              <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-1.5 hidden sm:flex">
                 <Sparkles className="w-3 h-3 mr-1.5" />
                 Powered by ML
               </Badge>
+              
+              {/* Refresh */}
               <Button
                 variant="outline"
                 size="icon"
-                className="border-[#1e3a5f]/50 bg-transparent hover:bg-[#1e3a5f]/30"
+                className="border-border"
                 onClick={handleRefresh}
               >
                 <RefreshCw className="w-4 h-4" />
@@ -183,119 +193,111 @@ export default function AIPredictions() {
           <div className="flex gap-2 lg:hidden">
             <Button
               variant={day === "today" ? "default" : "outline"}
-              className={day === "today" ? "" : "border-[#1e3a5f]/50 bg-transparent"}
+              className={cn("flex-1", day !== "today" && "border-border")}
               onClick={() => setDay("today")}
             >
               Today
             </Button>
             <Button
               variant={day === "tomorrow" ? "default" : "outline"}
-              className={day === "tomorrow" ? "" : "border-[#1e3a5f]/50 bg-transparent"}
+              className={cn("flex-1", day !== "tomorrow" && "border-border")}
               onClick={() => setDay("tomorrow")}
             >
               Tomorrow
             </Button>
           </div>
 
-          {/* Stats Cards Row */}
+          {/* Stats Cards Row - Uniform height */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-red-500/15">
-                  <Activity className="w-5 h-5 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Live Now</p>
-                  <p className="text-xl font-bold text-foreground">{liveCount}</p>
-                </div>
-              </CardContent>
+            <Card className="stats-card bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
+              <div className="stats-card-icon bg-destructive/10">
+                <Activity className="w-5 h-5 md:w-6 md:h-6 text-destructive" />
+              </div>
+              <div>
+                <p className="stats-card-label">Live Now</p>
+                <p className="stats-card-value text-destructive">{liveCount}</p>
+              </div>
             </Card>
-            <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-green-500/15">
-                  <Target className="w-5 h-5 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Overall Accuracy</p>
-                  <p className="text-xl font-bold text-green-400">
-                    {statsLoading ? "..." : `${stats.accuracy}%`}
-                  </p>
-                </div>
-              </CardContent>
+            <Card className="stats-card bg-gradient-to-br from-success/10 to-success/5 border-success/15">
+              <div className="stats-card-icon bg-success/10">
+                <Target className="w-5 h-5 md:w-6 md:h-6 text-success" />
+              </div>
+              <div>
+                <p className="stats-card-label">Accuracy</p>
+                <p className="stats-card-value text-success">
+                  {statsLoading ? "..." : `${stats.accuracy}%`}
+                </p>
+              </div>
             </Card>
-            <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-blue-500/15">
-                  <Brain className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Active Predictions</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {statsLoading ? "..." : stats.pending}
-                  </p>
-                </div>
-              </CardContent>
+            <Card className="stats-card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
+              <div className="stats-card-icon bg-primary/10">
+                <Brain className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+              </div>
+              <div>
+                <p className="stats-card-label">Active</p>
+                <p className="stats-card-value text-primary">
+                  {statsLoading ? "..." : stats.pending}
+                </p>
+              </div>
             </Card>
-            <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-purple-500/15">
-                  <BarChart3 className="w-5 h-5 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Matches Analyzed</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {statsLoading ? "..." : totalAnalyzed.toLocaleString()}
-                  </p>
-                </div>
-              </CardContent>
+            <Card className="stats-card bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
+              <div className="stats-card-icon bg-accent/10">
+                <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-accent" />
+              </div>
+              <div>
+                <p className="stats-card-label">Analyzed</p>
+                <p className="stats-card-value text-accent">
+                  {statsLoading ? "..." : totalAnalyzed.toLocaleString()}
+                </p>
+              </div>
             </Card>
           </div>
 
           {/* AI Accuracy Section */}
-          <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
+          <Card className="bg-card border-border">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">AI Accuracy</span>
                 </div>
-                <Badge className="bg-green-500/15 text-green-400 border-green-500/30">
+                <Badge className="bg-success/10 text-success border-success/20">
                   {stats.accuracy}%
                 </Badge>
               </div>
               
               {/* Stats indicators */}
-              <div className="flex items-center gap-6 mb-3 flex-wrap">
+              <div className="flex items-center gap-4 md:gap-6 mb-3 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <div className="w-3 h-3 rounded-full bg-success" />
                   <span className="text-xs text-muted-foreground">Won</span>
-                  <span className="text-sm font-semibold text-green-400">{stats.won}</span>
+                  <span className="text-sm font-semibold text-success">{stats.won}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
                   <span className="text-xs text-muted-foreground">Lost</span>
-                  <span className="text-sm font-semibold text-red-400">{stats.lost}</span>
+                  <span className="text-sm font-semibold text-destructive">{stats.lost}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-warning" />
                   <span className="text-xs text-muted-foreground">Pending</span>
-                  <span className="text-sm font-semibold text-yellow-400">{stats.pending}</span>
+                  <span className="text-sm font-semibold text-warning">{stats.pending}</span>
                 </div>
               </div>
 
               {/* Visual accuracy bar */}
               {totalAnalyzed > 0 && (
-                <div className="h-2 bg-[#1e3a5f]/30 rounded-full overflow-hidden flex">
+                <div className="h-2 bg-secondary rounded-full overflow-hidden flex">
                   <div
-                    className="h-full bg-green-500"
+                    className="h-full bg-success"
                     style={{ width: `${(stats.won / totalAnalyzed) * 100}%` }}
                   />
                   <div
-                    className="h-full bg-red-500"
+                    className="h-full bg-destructive"
                     style={{ width: `${(stats.lost / totalAnalyzed) * 100}%` }}
                   />
                   <div
-                    className="h-full bg-yellow-500"
+                    className="h-full bg-warning"
                     style={{ width: `${(stats.pending / totalAnalyzed) * 100}%` }}
                   />
                 </div>
@@ -307,7 +309,7 @@ export default function AIPredictions() {
           {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <Star className="w-4 h-4 text-warning fill-warning" />
                 <h2 className="text-lg font-semibold text-foreground">Featured Predictions</h2>
                 <span className="text-xs text-muted-foreground ml-auto">Updated just now</span>
               </div>

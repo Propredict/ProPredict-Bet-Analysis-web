@@ -70,27 +70,27 @@ export function LeagueStatsLiveTab({
   return (
     <div className="space-y-4">
       {/* Header with title and live count */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
+      <Card className="p-4 bg-card border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
             <span className="font-semibold">{title}</span>
             {liveCount > 0 && (
-              <Badge className="bg-red-500/20 text-red-400 border border-red-500/40">
+              <Badge className="bg-destructive/15 text-destructive border border-destructive/30">
                 {liveCount} Live
               </Badge>
             )}
           </div>
           {/* Real-time indicator */}
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-green-400">Real-time updates</span>
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+            <span className="text-xs text-success">Real-time</span>
           </div>
         </div>
       </Card>
 
       {/* Status Filter Tabs */}
-      <div className="flex gap-2 bg-[#0E1627] rounded-xl p-1 border border-white/10">
+      <div className="flex gap-1 bg-secondary/50 rounded-lg p-1 border border-border">
         {(["all", "live", "finished", "scheduled"] as StatusFilter[]).map((filter) => (
           <Button
             key={filter}
@@ -100,8 +100,8 @@ export function LeagueStatsLiveTab({
             className={cn(
               "flex-1 capitalize",
               statusFilter === filter 
-                ? "bg-primary text-primary-foreground" 
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
             {filter === "live" && <Play className="h-3 w-3 mr-1" />}
@@ -114,7 +114,7 @@ export function LeagueStatsLiveTab({
 
       {/* Matches List */}
       {Object.keys(grouped).length === 0 ? (
-        <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+        <Card className="p-8 text-center bg-card border-border">
           <p className="text-muted-foreground">
             {isAllLeagues 
               ? "No matches available at the moment." 
@@ -123,9 +123,9 @@ export function LeagueStatsLiveTab({
         </Card>
       ) : (
         Object.entries(grouped).map(([league, games]) => (
-          <Card key={league} className="bg-[#0E1627] border-white/10 overflow-hidden">
+          <Card key={league} className="bg-card border-border overflow-hidden">
             {/* League Header with Standings Link */}
-            <div className="px-4 py-3 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-border bg-secondary/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-muted-foreground" />
                 <span className="font-semibold text-sm">{league}</span>
@@ -136,7 +136,7 @@ export function LeagueStatsLiveTab({
             </div>
 
             {/* Matches */}
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-border">
               {games.map((m) => {
                 const isLive = m.status === "live" || m.status === "halftime";
                 const isFinished = m.status === "finished";
@@ -146,60 +146,51 @@ export function LeagueStatsLiveTab({
                   <div
                     key={m.id}
                     onClick={() => setSelectedMatch(m)}
-                    className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer"
+                    className="px-4 py-3 hover:bg-secondary/30 transition-colors cursor-pointer"
                   >
-                    {/* Minute indicator for live */}
-                    <div className="w-10 text-center">
-                      {isLive && (
-                        <Badge className="bg-red-500/20 text-red-400 border-0 text-xs px-1.5">
-                          {m.minute ?? 0}'
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Teams and Score */}
-                    <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                      <div className="flex items-center gap-2 justify-end">
-                        {m.homeLogo && (
-                          <img src={m.homeLogo} alt="" className="h-5 w-5 object-contain" />
+                    {/* Desktop Grid Layout */}
+                    <div className="grid grid-cols-[50px_1fr_80px_1fr_60px] md:grid-cols-[60px_1fr_100px_1fr_80px] items-center gap-2">
+                      {/* Minute indicator for live */}
+                      <div className="text-center">
+                        {isLive && (
+                          <Badge className="bg-destructive/15 text-destructive border-0 text-xs px-1.5">
+                            {m.minute ?? 0}'
+                          </Badge>
                         )}
-                        <span className="text-sm truncate">{m.homeTeam}</span>
                       </div>
 
-                      <div className="flex items-center gap-1 min-w-[60px] justify-center">
+                      {/* Home Team */}
+                      <div className="flex items-center gap-2 justify-end min-w-0">
+                        {m.homeLogo && (
+                          <img src={m.homeLogo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
+                        )}
+                        <span className="text-sm truncate text-right">{m.homeTeam}</span>
+                      </div>
+
+                      {/* Score */}
+                      <div className="flex items-center justify-center">
                         <span className={cn(
-                          "px-2 py-0.5 rounded text-sm font-semibold",
-                          isLive && "text-red-400",
-                          isFinished && "text-white",
+                          "px-3 py-1 rounded text-sm font-semibold",
+                          isLive && "text-destructive",
+                          isFinished && "text-foreground",
                           isUpcoming && "text-muted-foreground"
                         )}>
-                          {isUpcoming ? m.startTime : (m.homeScore ?? 0)}
+                          {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
                         </span>
-                        {!isUpcoming && (
-                          <>
-                            <span className="text-muted-foreground text-xs">-</span>
-                            <span className={cn(
-                              "px-2 py-0.5 rounded text-sm font-semibold",
-                              isLive && "text-red-400",
-                              isFinished && "text-white"
-                            )}>
-                              {m.awayScore ?? 0}
-                            </span>
-                          </>
-                        )}
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {/* Away Team */}
+                      <div className="flex items-center gap-2 min-w-0">
                         {m.awayLogo && (
-                          <img src={m.awayLogo} alt="" className="h-5 w-5 object-contain" />
+                          <img src={m.awayLogo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
                         )}
                         <span className="text-sm truncate">{m.awayTeam}</span>
                       </div>
-                    </div>
 
-                    {/* Half-time scores (muted) */}
-                    <div className="w-16 text-right text-muted-foreground text-xs">
-                      {isFinished && "(0)"}
+                      {/* Half-time scores (muted) */}
+                      <div className="text-right text-muted-foreground text-xs">
+                        {isFinished && "(0)"}
+                      </div>
                     </div>
                   </div>
                 );
