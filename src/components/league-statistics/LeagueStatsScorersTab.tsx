@@ -1,66 +1,71 @@
-import { Target } from "lucide-react";
+import { Target, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 interface LeagueStatsScorersTabProps {
   leagueId: string;
   leagueName: string;
 }
 
-// Mock data
-const MOCK_SCORERS = [
-  { pos: 1, player: "Mohamed Salah", team: "Liverpool", goals: 18, assists: 13, matches: 21 },
-  { pos: 2, player: "Erling Haaland", team: "Man City", goals: 16, assists: 1, matches: 19 },
-  { pos: 3, player: "Alexander Isak", team: "Newcastle", goals: 13, assists: 4, matches: 20 },
-  { pos: 4, player: "Chris Wood", team: "Nottm Forest", goals: 12, assists: 1, matches: 21 },
-  { pos: 5, player: "Cole Palmer", team: "Chelsea", goals: 11, assists: 6, matches: 19 },
-  { pos: 6, player: "Bryan Mbeumo", team: "Brentford", goals: 11, assists: 4, matches: 21 },
-  { pos: 7, player: "Ollie Watkins", team: "Aston Villa", goals: 9, assists: 5, matches: 20 },
-  { pos: 8, player: "Nicolas Jackson", team: "Chelsea", goals: 9, assists: 4, matches: 19 },
-  { pos: 9, player: "Bukayo Saka", team: "Arsenal", goals: 8, assists: 9, matches: 18 },
-  { pos: 10, player: "Matheus Cunha", team: "Wolves", goals: 8, assists: 3, matches: 20 },
-];
-
 export function LeagueStatsScorersTab({ leagueId, leagueName }: LeagueStatsScorersTabProps) {
+  // Note: Top scorers data requires a dedicated API endpoint (e.g., /v3/players/topscorers)
+  // which is not currently available in the existing edge functions.
+
   return (
-    <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/5 bg-white/5 flex items-center gap-2">
-        <Target className="h-4 w-4 text-orange-400" />
-        <span className="font-semibold">{leagueName} Top Scorers</span>
-      </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/5 hover:bg-transparent">
-              <TableHead className="w-[50px]">#</TableHead>
-              <TableHead>Player</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead className="text-center w-[60px]">P</TableHead>
-              <TableHead className="text-center w-[60px] font-bold">Goals</TableHead>
-              <TableHead className="text-center w-[60px]">Assists</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {MOCK_SCORERS.map((row) => (
-              <TableRow key={row.pos} className="border-white/5 hover:bg-white/5">
-                <TableCell className="font-medium text-orange-400">{row.pos}</TableCell>
-                <TableCell className="font-medium">{row.player}</TableCell>
-                <TableCell className="text-muted-foreground">{row.team}</TableCell>
-                <TableCell className="text-center text-muted-foreground">{row.matches}</TableCell>
-                <TableCell className="text-center font-bold text-green-400">{row.goals}</TableCell>
-                <TableCell className="text-center text-muted-foreground">{row.assists}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
+    <div className="space-y-4">
+      {/* Header */}
+      <Card className="p-4 bg-[#0E1627] border-white/10">
+        <div className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-primary" />
+          <span className="font-semibold">{leagueName} Top Scorers</span>
+        </div>
+      </Card>
+
+      {/* Data Not Available State */}
+      <Card className="p-8 bg-[#0E1627] border-white/10">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center">
+            <Info className="h-8 w-8 text-orange-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Top Scorers Data Not Available</h3>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md">
+              Top scorers data requires a dedicated API endpoint that is not currently integrated.
+              The data would include player names, teams, goals, assists, and penalty stats.
+            </p>
+          </div>
+
+          {/* Mock Table Structure */}
+          <div className="w-full max-w-2xl mt-6 opacity-50">
+            <div className="text-left text-xs text-muted-foreground mb-2">
+              Expected table structure:
+            </div>
+            <div className="bg-white/5 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-7 gap-2 px-4 py-2 bg-white/5 text-xs font-semibold text-muted-foreground">
+                <span>#</span>
+                <span className="col-span-2">Player</span>
+                <span>Team</span>
+                <span className="text-center">Games</span>
+                <span className="text-center">Goals</span>
+                <span className="text-center">Assists</span>
+              </div>
+              {[1, 2, 3].map((pos) => (
+                <div key={pos} className="grid grid-cols-7 gap-2 px-4 py-3 border-t border-white/5 text-sm">
+                  <span className="font-medium text-orange-400">{pos}</span>
+                  <span className="col-span-2 text-muted-foreground">—</span>
+                  <span className="text-muted-foreground">—</span>
+                  <span className="text-center text-muted-foreground">—</span>
+                  <span className="text-center font-bold text-green-400">—</span>
+                  <span className="text-center text-muted-foreground">—</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground/60 mt-4">
+            To enable top scorers, integrate the API-Football topscorers endpoint in a new edge function.
+          </p>
+        </div>
+      </Card>
+    </div>
   );
 }

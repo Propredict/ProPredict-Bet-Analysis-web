@@ -178,6 +178,7 @@ export default function LeagueStatistics() {
               isLoading={isLoading}
               error={error}
               isAllLeagues={isAllLeagues}
+              leagueName={selectedLeague?.name}
             />
           </TabsContent>
 

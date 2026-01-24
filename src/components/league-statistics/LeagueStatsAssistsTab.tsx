@@ -1,66 +1,71 @@
-import { Users } from "lucide-react";
+import { Users, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 interface LeagueStatsAssistsTabProps {
   leagueId: string;
   leagueName: string;
 }
 
-// Mock data
-const MOCK_ASSISTS = [
-  { pos: 1, player: "Mohamed Salah", team: "Liverpool", assists: 13, goals: 18, matches: 21 },
-  { pos: 2, player: "Bukayo Saka", team: "Arsenal", assists: 9, goals: 8, matches: 18 },
-  { pos: 3, player: "Trent Alexander-Arnold", team: "Liverpool", assists: 8, goals: 2, matches: 19 },
-  { pos: 4, player: "Morgan Rogers", team: "Aston Villa", assists: 7, goals: 4, matches: 20 },
-  { pos: 5, player: "Cole Palmer", team: "Chelsea", assists: 6, goals: 11, matches: 19 },
-  { pos: 6, player: "Bruno Fernandes", team: "Man United", assists: 6, goals: 5, matches: 20 },
-  { pos: 7, player: "Noni Madueke", team: "Chelsea", assists: 6, goals: 4, matches: 18 },
-  { pos: 8, player: "Ollie Watkins", team: "Aston Villa", assists: 5, goals: 9, matches: 20 },
-  { pos: 9, player: "Luis Diaz", team: "Liverpool", assists: 5, goals: 6, matches: 19 },
-  { pos: 10, player: "Amad Diallo", team: "Man United", assists: 5, goals: 3, matches: 17 },
-];
-
 export function LeagueStatsAssistsTab({ leagueId, leagueName }: LeagueStatsAssistsTabProps) {
+  // Note: Top assists data requires a dedicated API endpoint (e.g., /v3/players/topassists)
+  // which is not currently available in the existing edge functions.
+
   return (
-    <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/5 bg-white/5 flex items-center gap-2">
-        <Users className="h-4 w-4 text-orange-400" />
-        <span className="font-semibold">{leagueName} Top Assists</span>
-      </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/5 hover:bg-transparent">
-              <TableHead className="w-[50px]">#</TableHead>
-              <TableHead>Player</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead className="text-center w-[60px]">P</TableHead>
-              <TableHead className="text-center w-[60px] font-bold">Assists</TableHead>
-              <TableHead className="text-center w-[60px]">Goals</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {MOCK_ASSISTS.map((row) => (
-              <TableRow key={row.pos} className="border-white/5 hover:bg-white/5">
-                <TableCell className="font-medium text-orange-400">{row.pos}</TableCell>
-                <TableCell className="font-medium">{row.player}</TableCell>
-                <TableCell className="text-muted-foreground">{row.team}</TableCell>
-                <TableCell className="text-center text-muted-foreground">{row.matches}</TableCell>
-                <TableCell className="text-center font-bold text-purple-400">{row.assists}</TableCell>
-                <TableCell className="text-center text-muted-foreground">{row.goals}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
+    <div className="space-y-4">
+      {/* Header */}
+      <Card className="p-4 bg-[#0E1627] border-white/10">
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-primary" />
+          <span className="font-semibold">{leagueName} Top Assists</span>
+        </div>
+      </Card>
+
+      {/* Data Not Available State */}
+      <Card className="p-8 bg-[#0E1627] border-white/10">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center">
+            <Info className="h-8 w-8 text-purple-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Top Assists Data Not Available</h3>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md">
+              Top assists data requires a dedicated API endpoint that is not currently integrated.
+              The data would include player names, teams, assists, goals, and match counts.
+            </p>
+          </div>
+
+          {/* Mock Table Structure */}
+          <div className="w-full max-w-2xl mt-6 opacity-50">
+            <div className="text-left text-xs text-muted-foreground mb-2">
+              Expected table structure:
+            </div>
+            <div className="bg-white/5 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-7 gap-2 px-4 py-2 bg-white/5 text-xs font-semibold text-muted-foreground">
+                <span>#</span>
+                <span className="col-span-2">Player</span>
+                <span>Team</span>
+                <span className="text-center">P</span>
+                <span className="text-center">Assists</span>
+                <span className="text-center">Goals</span>
+              </div>
+              {[1, 2, 3].map((pos) => (
+                <div key={pos} className="grid grid-cols-7 gap-2 px-4 py-3 border-t border-white/5 text-sm">
+                  <span className="font-medium text-orange-400">{pos}</span>
+                  <span className="col-span-2 text-muted-foreground">—</span>
+                  <span className="text-muted-foreground">—</span>
+                  <span className="text-center text-muted-foreground">—</span>
+                  <span className="text-center font-bold text-purple-400">—</span>
+                  <span className="text-center text-muted-foreground">—</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground/60 mt-4">
+            To enable top assists, integrate the API-Football topassists endpoint in a new edge function.
+          </p>
+        </div>
+      </Card>
+    </div>
   );
 }

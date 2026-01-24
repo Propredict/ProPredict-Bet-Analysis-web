@@ -1,153 +1,161 @@
-import { Swords, Search } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Swords, History } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLiveScores } from "@/hooks/useLiveScores";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface LeagueStatsH2HTabProps {
   leagueId: string;
   leagueName: string;
 }
 
-// Mock team list
-const TEAMS = [
-  "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
-  "Chelsea", "Crystal Palace", "Everton", "Fulham", "Ipswich",
-  "Leicester", "Liverpool", "Man City", "Man United", "Newcastle",
-  "Nottm Forest", "Southampton", "Spurs", "West Ham", "Wolves",
-];
-
-// Mock H2H data
-const MOCK_H2H = {
-  homeWins: 12,
-  awayWins: 8,
-  draws: 5,
-  matches: [
-    { date: "Oct 20, 2024", competition: "Premier League", home: "Liverpool", away: "Arsenal", homeScore: 2, awayScore: 2 },
-    { date: "Feb 4, 2024", competition: "Premier League", home: "Arsenal", away: "Liverpool", homeScore: 3, awayScore: 1 },
-    { date: "Dec 23, 2023", competition: "Premier League", home: "Liverpool", away: "Arsenal", homeScore: 1, awayScore: 1 },
-    { date: "Apr 9, 2023", competition: "Premier League", home: "Liverpool", away: "Arsenal", homeScore: 2, awayScore: 2 },
-    { date: "Oct 9, 2022", competition: "Premier League", home: "Arsenal", away: "Liverpool", homeScore: 3, awayScore: 2 },
-  ],
-};
-
 export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabProps) {
-  const [team1, setTeam1] = useState("");
-  const [team2, setTeam2] = useState("");
-  const [showResults, setShowResults] = useState(false);
+  const [team1, setTeam1] = useState<string>("");
+  const [team2, setTeam2] = useState<string>("");
 
-  const filteredTeams1 = TEAMS.filter(
-    (t) => t.toLowerCase().includes(team1.toLowerCase()) && t !== team2
-  );
-  const filteredTeams2 = TEAMS.filter(
-    (t) => t.toLowerCase().includes(team2.toLowerCase()) && t !== team1
-  );
+  // Fetch today's matches to get teams from real data
+  const { matches, isLoading } = useLiveScores({
+    dateMode: "today",
+    statusFilter: "all",
+  });
 
-  const handleSearch = () => {
-    if (team1 && team2) {
-      setShowResults(true);
-    }
-  };
+  // Filter matches by league and extract unique teams
+  const teamsInLeague = useMemo(() => {
+    const leagueMatches = leagueName 
+      ? matches.filter((m) => m.league.toLowerCase().includes(leagueName.toLowerCase()))
+      : matches;
+    
+    const teamSet = new Set<string>();
+    leagueMatches.forEach((m) => {
+      teamSet.add(m.homeTeam);
+      teamSet.add(m.awayTeam);
+    });
+    
+    return Array.from(teamSet).sort();
+  }, [matches, leagueName]);
+
+  // Filter team options
+  const team1Options = teamsInLeague.filter((t) => t !== team2);
+  const team2Options = teamsInLeague.filter((t) => t !== team1);
+
+  const showResults = team1 && team2;
+
+  if (isLoading) {
+    return (
+      <Card className="bg-[#0E1627] border-white/10 p-6">
+        <Skeleton className="h-32 w-full bg-white/5" />
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* Team Selector */}
-      <Card className="bg-[#0E1627] border-white/10 p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Swords className="h-4 w-4 text-orange-400" />
-          <span className="font-semibold">Compare Teams</span>
+      {/* Header */}
+      <Card className="p-4 bg-[#0E1627] border-white/10">
+        <div className="flex items-center gap-2">
+          <Swords className="h-5 w-5 text-primary" />
+          <span className="font-semibold">Head to Head Comparison</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Team 1</label>
-            <Input
-              placeholder="Search team..."
-              value={team1}
-              onChange={(e) => {
-                setTeam1(e.target.value);
-                setShowResults(false);
-              }}
-              className="bg-[#0E1627] border-white/10"
-              list="team1-list"
-            />
-            <datalist id="team1-list">
-              {filteredTeams1.slice(0, 5).map((t) => (
-                <option key={t} value={t} />
-              ))}
-            </datalist>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Team 2</label>
-            <Input
-              placeholder="Search team..."
-              value={team2}
-              onChange={(e) => {
-                setTeam2(e.target.value);
-                setShowResults(false);
-              }}
-              className="bg-[#0E1627] border-white/10"
-              list="team2-list"
-            />
-            <datalist id="team2-list">
-              {filteredTeams2.slice(0, 5).map((t) => (
-                <option key={t} value={t} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-        <button
-          onClick={handleSearch}
-          disabled={!team1 || !team2}
-          className="mt-4 w-full py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-white/10 disabled:text-muted-foreground rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-        >
-          <Search className="h-4 w-4" />
-          Compare
-        </button>
       </Card>
 
-      {/* H2H Results */}
-      {showResults && (
-        <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/5 bg-white/5">
-            <span className="font-semibold">{team1} vs {team2}</span>
+      {/* Team Selectors */}
+      <Card className="p-6 bg-[#0E1627] border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Team 1 */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Team 1</label>
+            <Select value={team1} onValueChange={setTeam1}>
+              <SelectTrigger className="bg-[#0E1627] border-white/10">
+                <SelectValue placeholder="Select first team..." />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
+                {team1Options.length > 0 ? (
+                  team1Options.map((team) => (
+                    <SelectItem key={team} value={team}>
+                      {team}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>
+                    No teams available
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Summary */}
-          <div className="p-4 border-b border-white/5">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-green-400">{MOCK_H2H.homeWins}</p>
-                <p className="text-xs text-muted-foreground">{team1} Wins</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-muted-foreground">{MOCK_H2H.draws}</p>
-                <p className="text-xs text-muted-foreground">Draws</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-red-400">{MOCK_H2H.awayWins}</p>
-                <p className="text-xs text-muted-foreground">{team2} Wins</p>
-              </div>
+          {/* Team 2 */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Team 2</label>
+            <Select value={team2} onValueChange={setTeam2}>
+              <SelectTrigger className="bg-[#0E1627] border-white/10">
+                <SelectValue placeholder="Select second team..." />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
+                {team2Options.length > 0 ? (
+                  team2Options.map((team) => (
+                    <SelectItem key={team} value={team}>
+                      {team}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>
+                    No teams available
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
+
+      {/* Results or Empty State */}
+      {showResults ? (
+        <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+          <History className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">
+            {team1} vs {team2}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Head-to-head history requires additional API integration.
+          </p>
+          <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-400">—</p>
+              <p className="text-xs text-muted-foreground">{team1} Wins</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-muted-foreground">—</p>
+              <p className="text-xs text-muted-foreground">Draws</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-400">—</p>
+              <p className="text-xs text-muted-foreground">{team2} Wins</p>
             </div>
           </div>
-
-          {/* Match List */}
-          <div className="divide-y divide-white/5">
-            {MOCK_H2H.matches.map((match, idx) => (
-              <div key={idx} className="px-4 py-3 hover:bg-white/5">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">{match.date}</span>
-                  <Badge variant="outline" className="text-xs">{match.competition}</Badge>
-                </div>
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                  <span className="text-right text-sm truncate">{match.home}</span>
-                  <span className="min-w-[60px] text-center px-3 py-1 rounded-full text-sm font-semibold bg-white/10">
-                    {match.homeScore} - {match.awayScore}
-                  </span>
-                  <span className="text-left text-sm truncate">{match.away}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-muted-foreground/50 mt-6">
+            Historical H2H data is available in the match detail modal when teams play against each other.
+          </p>
+        </Card>
+      ) : (
+        <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+          <Swords className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold">Select Two Teams</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose two teams above to see their head-to-head record, recent meetings, and statistics
+          </p>
+          {teamsInLeague.length === 0 && (
+            <p className="text-xs text-muted-foreground/50 mt-4">
+              No teams found for {leagueName || "this league"} today. Try selecting a different league.
+            </p>
+          )}
         </Card>
       )}
     </div>
