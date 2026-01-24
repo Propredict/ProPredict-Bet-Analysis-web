@@ -108,6 +108,117 @@ interface UseMatchDetailsResult {
   error: string | null;
 }
 
+/**
+ * Normalize statistics from API format to flat StatItem[]
+ * API returns: [{team: {id, name}, statistics: [{type, value}, ...]}, ...]
+ * We need: [{type, home, away}, ...]
+ */
+function normalizeStatistics(rawStats: any[]): StatItem[] {
+  if (!Array.isArray(rawStats) || rawStats.length < 2) return [];
+
+  const homeStats = rawStats[0]?.statistics || [];
+  const awayStats = rawStats[1]?.statistics || [];
+
+  // Create a map of stat types to home/away values
+  const statsMap = new Map<string, StatItem>();
+
+  homeStats.forEach((stat: any) => {
+    if (stat?.type) {
+      statsMap.set(stat.type, {
+        type: stat.type,
+        home: stat.value ?? 0,
+        away: 0,
+      });
+    }
+  });
+
+  awayStats.forEach((stat: any) => {
+    if (stat?.type) {
+      const existing = statsMap.get(stat.type);
+      if (existing) {
+        existing.away = stat.value ?? 0;
+      } else {
+        statsMap.set(stat.type, {
+          type: stat.type,
+          home: 0,
+          away: stat.value ?? 0,
+        });
+      }
+    }
+  });
+
+  return Array.from(statsMap.values());
+}
+
+/**
+ * Normalize lineups from API format
+ * API returns startXI as [{player: {id, name, number, pos, grid}}]
+ * We need: [{id, name, number, pos, grid}]
+ */
+function normalizeLineups(rawLineups: any[]): TeamLineup[] {
+  if (!Array.isArray(rawLineups)) return [];
+
+  return rawLineups.map((lineup: any) => ({
+    team: lineup.team || { id: 0, name: "Unknown", logo: "" },
+    formation: lineup.formation || null,
+    coach: lineup.coach || null,
+    startXI: (lineup.startXI || []).map((item: any) => {
+      const player = item.player || item;
+      return {
+        id: player.id || 0,
+        name: player.name || "Unknown",
+        number: player.number || 0,
+        pos: player.pos || "",
+        grid: player.grid || null,
+      };
+    }),
+    substitutes: (lineup.substitutes || []).map((item: any) => {
+      const player = item.player || item;
+      return {
+        id: player.id || 0,
+        name: player.name || "Unknown",
+        number: player.number || 0,
+        pos: player.pos || "",
+        grid: player.grid || null,
+      };
+    }),
+  }));
+}
+
+/**
+ * Normalize odds from API format
+ * API returns: [{bookmakers: [{bets: [{id, name, values: [{value, odd}]}]}]}]
+ * We need: [{id, name, values: [{value, odd}]}]
+ */
+function normalizeOdds(rawOdds: any[]): OddsBet[] {
+  if (!Array.isArray(rawOdds) || rawOdds.length === 0) return [];
+
+  // Get first odds entry (pre-match or live odds)
+  const firstOdds = rawOdds[0];
+  if (!firstOdds) return [];
+
+  // Check if it's already in the expected format
+  if (firstOdds.name && firstOdds.values) {
+    return rawOdds as OddsBet[];
+  }
+
+  // Extract bets from bookmakers
+  const bookmakers = firstOdds.bookmakers || [];
+  if (bookmakers.length === 0) return [];
+
+  // Use first bookmaker's bets
+  const bets = bookmakers[0]?.bets || [];
+  
+  return bets.map((bet: any) => ({
+    id: bet.id || 0,
+    name: bet.name || "Unknown",
+    values: (bet.values || []).map((v: any) => ({
+      value: v.value || "",
+      odd: v.odd || "",
+    })),
+  }));
+}
+
 export function useMatchDetails(fixtureId: string | number | null): UseMatchDetailsResult {
   const [data, setData] = useState<MatchDetails | null>(null);
   const [loading, setLoading] = useState(false);
@@ -149,7 +260,6 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
         });
 
         if (!res.ok) {
-          // Silent fail for any error
           setData(null);
           return;
         }
@@ -161,17 +271,17 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
           return;
         }
 
-        // Normalize the response
+        // Normalize the response with proper data extraction
         const normalized: MatchDetails = {
           fixture: json.fixture ?? null,
           league: json.league ?? null,
           teams: json.teams ?? { home: null, away: null },
           goals: json.goals ?? { home: null, away: null },
           score: json.score ?? { halftime: {}, fulltime: {} },
-          statistics: Array.isArray(json.statistics) ? json.statistics : [],
-          lineups: Array.isArray(json.lineups) ? json.lineups : [],
+          statistics: normalizeStatistics(json.statistics || []),
+          lineups: normalizeLineups(json.lineups || []),
           events: Array.isArray(json.events) ? json.events : [],
-          odds: Array.isArray(json.odds) ? json.odds : [],
+          odds: normalizeOdds(json.odds || []),
           h2h: Array.isArray(json.h2h) ? json.h2h : [],
         };
 
@@ -179,7 +289,7 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
         setData(normalized);
       } catch (e: any) {
         if (e?.name === "AbortError") return;
-        setError(null); // Silent fail
+        setError(null);
         setData(null);
       } finally {
         setLoading(false);
@@ -192,4 +302,9 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
   }, [fixtureId]);
 
   return { data, loading, error };
+}
+
+// Export a function to clear cache if needed
+export function clearMatchDetailsCache() {
+  detailsCache.clear();
 }
