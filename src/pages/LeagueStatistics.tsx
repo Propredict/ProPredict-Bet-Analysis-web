@@ -191,7 +191,7 @@ export default function LeagueStatistics() {
 
           <TabsContent value="scorers" className="mt-4">
             {isAllLeagues ? (
-              <LeagueStatsEmptyState />
+              <LeagueStatsEmptyState type="scorers" onSelectLeague={setSelectedLeagueId} />
             ) : (
               <LeagueStatsScorersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
             )}
@@ -199,7 +199,7 @@ export default function LeagueStatistics() {
 
           <TabsContent value="assists" className="mt-4">
             {isAllLeagues ? (
-              <LeagueStatsEmptyState />
+              <LeagueStatsEmptyState type="assists" onSelectLeague={setSelectedLeagueId} />
             ) : (
               <LeagueStatsAssistsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
             )}
@@ -207,7 +207,7 @@ export default function LeagueStatistics() {
 
           <TabsContent value="fixtures" className="mt-4">
             {isAllLeagues ? (
-              <LeagueStatsEmptyState />
+              <LeagueStatsEmptyState type="fixtures" onSelectLeague={setSelectedLeagueId} />
             ) : (
               <LeagueStatsFixturesTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
             )}
@@ -215,7 +215,7 @@ export default function LeagueStatistics() {
 
           <TabsContent value="rounds" className="mt-4">
             {isAllLeagues ? (
-              <LeagueStatsEmptyState />
+              <LeagueStatsEmptyState type="rounds" onSelectLeague={setSelectedLeagueId} />
             ) : (
               <LeagueStatsRoundsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
             )}
@@ -223,7 +223,7 @@ export default function LeagueStatistics() {
 
           <TabsContent value="h2h" className="mt-4">
             {isAllLeagues ? (
-              <LeagueStatsEmptyState />
+              <LeagueStatsEmptyState type="h2h" onSelectLeague={setSelectedLeagueId} />
             ) : (
               <LeagueStatsH2HTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
             )}
