@@ -194,12 +194,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               {tip.league}
             </Badge>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
-            <Badge className="gap-0.5 bg-success/20 text-success border-success/30 text-[10px] px-1">
-              <CheckCircle2 className="h-2.5 w-2.5" />
-            </Badge>
-          </div>
+          <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
         </div>
       </div>
 
@@ -220,6 +215,14 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
           <span className="text-muted-foreground">Odds</span>
           <span className="font-bold text-primary">@{tip.odds.toFixed(2)}</span>
         </div>
+      </div>
+
+      {/* Unlocked badge footer - matching TicketCard style */}
+      <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
+        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-success/20 text-success border-success/30 text-xs">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          Tip Unlocked
+        </Badge>
       </div>
     </Card>
   );
