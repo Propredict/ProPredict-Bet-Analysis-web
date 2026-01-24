@@ -341,20 +341,20 @@ export default function AIPredictions() {
             </div>
 
             {loading ? (
-              <div className="text-center py-6 md:py-8">
+              <div className="text-center py-4 md:py-6">
                 <div className="animate-spin w-5 md:w-6 h-5 md:h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2 md:mb-3" />
                 <p className="text-muted-foreground text-[10px] md:text-xs">Loading...</p>
               </div>
             ) : regularPredictions.length === 0 && featuredPredictions.length === 0 ? (
-              <div className="text-center py-6 md:py-8">
-                <Brain className="w-8 md:w-10 h-8 md:h-10 text-muted-foreground mx-auto mb-2 md:mb-3" />
+              <div className="text-center py-4 md:py-6">
+                <Brain className="w-6 md:w-8 h-6 md:h-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-[10px] md:text-xs">
                   No predictions for {day === "today" ? "today" : "tomorrow"}
                   {selectedLeague ? ` in ${selectedLeague}` : ""}
                 </p>
               </div>
             ) : regularPredictions.length === 0 ? (
-              <div className="text-center py-4 md:py-6">
+              <div className="text-center py-3 md:py-4">
                 <p className="text-muted-foreground text-[10px] md:text-xs">
                   All predictions are featured above
                 </p>

@@ -171,8 +171,8 @@ export default function TicketDetails() {
           </div>
 
           {/* Title - VISIBLE */}
-          <div className="px-4 pb-3">
-            <h1 className="font-bold text-xl text-foreground">{ticket.title}</h1>
+          <div className="px-3 sm:px-4 pb-2 sm:pb-3">
+            <h1 className="font-bold text-sm sm:text-base text-foreground">{ticket.title}</h1>
           </div>
 
           {/* Matches */}

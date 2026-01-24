@@ -234,7 +234,7 @@ export default function GetPremium() {
           </div>
 
           {/* Pricing Cards - stack on mobile, 3 cols on desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-8 px-1.5 sm:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-6 px-1.5 sm:px-0">
             {currentPlans.map((plan) => (
               <Card
                 key={plan.id}
@@ -251,7 +251,7 @@ export default function GetPremium() {
                 <div className="text-center mb-2 sm:mb-3">
                   <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-1">{plan.name}</h3>
                   <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-lg sm:text-2xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-base sm:text-lg font-bold text-foreground">{plan.price}</span>
                     <span className="text-[10px] sm:text-xs text-muted-foreground">{plan.period}</span>
                   </div>
                   {plan.savings && (
@@ -294,7 +294,7 @@ export default function GetPremium() {
           </div>
 
           {/* Why Go Premium */}
-          <div className="mb-4 sm:mb-8 px-1.5 sm:px-0">
+          <div className="mb-3 sm:mb-6 px-1.5 sm:px-0">
             <h2 className="text-sm sm:text-base font-bold text-foreground text-center mb-2 sm:mb-4">
               Why Go Premium?
             </h2>
@@ -316,7 +316,7 @@ export default function GetPremium() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-8 px-1.5 sm:px-0">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-6 px-1.5 sm:px-0">
             {stats.map((stat, idx) => (
               <div key={idx} className="text-center">
                 <div className="text-sm sm:text-lg font-bold text-foreground flex items-center justify-center gap-0.5">
@@ -329,7 +329,7 @@ export default function GetPremium() {
           </div>
 
           {/* FAQ */}
-          <div className="mb-4 sm:mb-8 px-1.5 sm:px-0">
+          <div className="mb-3 sm:mb-6 px-1.5 sm:px-0">
             <h2 className="text-sm sm:text-base font-bold text-foreground text-center mb-2 sm:mb-4">
               Frequently Asked Questions
             </h2>
