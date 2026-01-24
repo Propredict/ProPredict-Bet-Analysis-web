@@ -1,11 +1,12 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, DollarSign, History } from "lucide-react";
+import { X, BarChart3, Users, DollarSign, History, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Match } from "@/hooks/useLiveScores";
 import { supabase } from "@/integrations/supabase/client";
+import { AIPredictionTab } from "./AIPredictionTab";
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -151,18 +152,21 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full justify-center border-b border-white/10">
-              <TabsTrigger value="statistics">
-                <BarChart3 className="h-4 w-4 mr-2" /> Statistics
+            <TabsList className="w-full justify-start border-b border-white/10 bg-transparent h-auto flex-wrap gap-1 px-2">
+              <TabsTrigger value="statistics" className="text-xs sm:text-sm">
+                <BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Stats
               </TabsTrigger>
-              <TabsTrigger value="lineups">
-                <Users className="h-4 w-4 mr-2" /> Lineups
+              <TabsTrigger value="lineups" className="text-xs sm:text-sm">
+                <Users className="h-3.5 w-3.5 mr-1.5" /> Lineups
               </TabsTrigger>
-              <TabsTrigger value="odds">
-                <DollarSign className="h-4 w-4 mr-2" /> Odds
+              <TabsTrigger value="odds" className="text-xs sm:text-sm">
+                <DollarSign className="h-3.5 w-3.5 mr-1.5" /> Odds
               </TabsTrigger>
-              <TabsTrigger value="h2h">
-                <History className="h-4 w-4 mr-2" /> H2H
+              <TabsTrigger value="h2h" className="text-xs sm:text-sm">
+                <History className="h-3.5 w-3.5 mr-1.5" /> H2H
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="text-xs sm:text-sm">
+                <Brain className="h-3.5 w-3.5 mr-1.5" /> AI
               </TabsTrigger>
             </TabsList>
 
@@ -200,6 +204,10 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                 {!loading && !error && (!details || isUnauthorized) && "Not available"}
                 {!loading && !error && !!details && "Data loaded"}
               </div>
+            </TabsContent>
+
+            <TabsContent value="ai" className="m-0">
+              <AIPredictionTab fixtureId={match.id} />
             </TabsContent>
           </Tabs>
         </div>
