@@ -68,21 +68,21 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="p-3 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
+      <SidebarHeader className="p-2 border-b border-sidebar-border">
+        <div className="flex items-center gap-1.5">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
             P
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-foreground">ProPredict</span>
-              <span className="text-[10px] text-muted-foreground">Betting Tips & Sports Analysis</span>
+              <span className="text-xs font-semibold text-foreground">ProPredict</span>
+              <span className="text-[9px] text-muted-foreground">Tips & Analysis</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-1.5">
         {/* Dashboard */}
         <SidebarGroup>
           <SidebarMenu>
@@ -91,10 +91,10 @@ export function AppSidebar() {
                 <NavLink 
                   to="/" 
                   end 
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-sidebar-accent"
                   activeClassName="bg-primary text-primary-foreground hover:bg-primary"
                 >
-                  <LayoutDashboard className="h-4 w-4" />
+                  <LayoutDashboard className="h-3.5 w-3.5" />
                   {!collapsed && <span>Dashboard</span>}
                 </NavLink>
               </SidebarMenuButton>
@@ -104,7 +104,7 @@ export function AppSidebar() {
 
         {/* Tips & Tickets */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-2.5 py-1.5">
+          <SidebarGroupLabel className="text-[9px] uppercase text-muted-foreground px-2 py-1">
             {!collapsed && "Tips & Tickets"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -114,14 +114,14 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm transition-colors ${
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors ${
                         item.highlight 
                           ? "bg-gradient-to-r from-accent to-primary text-white hover:opacity-90" 
                           : "hover:bg-sidebar-accent"
                       }`}
                       activeClassName={item.highlight ? "" : "bg-primary/20 text-primary"}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-3.5 w-3.5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -133,7 +133,7 @@ export function AppSidebar() {
 
         {/* Tools */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-2.5 py-1.5">
+          <SidebarGroupLabel className="text-[9px] uppercase text-muted-foreground px-2 py-1">
             {!collapsed && "Tools"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -143,10 +143,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-3.5 w-3.5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -159,7 +159,7 @@ export function AppSidebar() {
         {/* Admin Section - Only visible to admins */}
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-2.5 py-1.5">
+            <SidebarGroupLabel className="text-[9px] uppercase text-muted-foreground px-2 py-1">
               {!collapsed && "Admin"}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -169,10 +169,10 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={item.url} 
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-sidebar-accent"
                         activeClassName="bg-warning/20 text-warning"
                       >
-                        <item.icon className="h-4 w-4" />
+                        <item.icon className="h-3.5 w-3.5" />
                         {!collapsed && <span>{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
@@ -184,12 +184,12 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-sidebar-border">
+      <SidebarFooter className="p-2 border-t border-sidebar-border">
         {!collapsed && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-2 mb-2">
-            <div className="flex items-center gap-1.5 text-[10px] text-destructive">
-              <AlertTriangle className="h-3 w-3" />
-              <span>No betting services. For entertainment only.</span>
+          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-1.5 mb-1.5">
+            <div className="flex items-center gap-1 text-[9px] text-destructive">
+              <AlertTriangle className="h-2.5 w-2.5" />
+              <span>For entertainment only.</span>
             </div>
           </div>
         )}
@@ -198,10 +198,10 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <NavLink 
                 to="/settings" 
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-sidebar-accent"
                 activeClassName="bg-primary/20 text-primary"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-3.5 w-3.5" />
                 {!collapsed && <span>Settings</span>}
               </NavLink>
             </SidebarMenuButton>
