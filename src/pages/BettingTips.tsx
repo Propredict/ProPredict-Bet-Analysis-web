@@ -27,67 +27,66 @@ export default function BettingTips() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <Target className="h-7 w-7 text-accent" />
-              <h1 className="text-2xl font-bold text-foreground">Betting Tips</h1>
+      <div className="section-gap">
+        {/* Header - COMPACT */}
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-foreground">Betting Tips</h1>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Expert curated betting recommendations</p>
             </div>
-            <p className="text-muted-foreground mt-1">Expert curated betting recommendations</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30">
-              <Flame className="h-3 w-3 mr-1" />
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+              <Flame className="h-2.5 w-2.5 mr-0.5" />
               Hot Picks
             </Badge>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-0.5 h-6 sm:h-7 px-1.5">
+              <RefreshCw className="h-3 w-3" />
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <TrendingUp className="h-5 w-5 text-primary" />
+        {/* Stats Cards - COMPACT */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+                <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">76%</p>
-                <p className="text-xs text-muted-foreground">Success Rate</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">76%</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Success Rate</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/20">
-                <BarChart3 className="h-5 w-5 text-accent" />
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-accent/20">
+                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{avgOdds}</p>
-                <p className="text-xs text-muted-foreground">Avg Odds</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">{avgOdds}</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Avg Odds</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <Sparkles className="h-5 w-5 text-primary" />
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+                <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{unlockedCount}/{allTips.length}</p>
-                <p className="text-xs text-muted-foreground">Unlocked</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}/{allTips.length}</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Unlocked</p>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Tips List */}
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3">
           {isLoading ? (
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">

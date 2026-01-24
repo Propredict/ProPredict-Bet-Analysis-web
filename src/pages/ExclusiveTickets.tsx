@@ -26,90 +26,90 @@ export default function ExclusiveTickets() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <Star className="h-7 w-7 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Pro Tickets</h1>
+      <div className="section-gap">
+        {/* Header - COMPACT */}
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-foreground">Pro Tickets</h1>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Curated multi-bet combinations for members</p>
             </div>
-            <p className="text-muted-foreground mt-1">Curated multi-bet combinations for members</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
-              <Star className="h-3 w-3 mr-1" />
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+              <Star className="h-2.5 w-2.5 mr-0.5" />
               Pro
             </Badge>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-0.5 h-6 sm:h-7 px-1.5">
+              <RefreshCw className="h-3 w-3" />
             </Button>
           </div>
         </div>
 
-        {/* Upgrade Banner */}
+        {/* Upgrade Banner - COMPACT */}
         {showUpgradeBanner && (
-          <Card className="p-4 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-warning/20">
-                  <Crown className="h-6 w-6 text-warning" />
+          <Card className="p-2 sm:p-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded bg-warning/20">
+                  <Crown className="h-4 w-4 text-warning" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Remove Ads & Unlock All Tickets</h3>
-                  <p className="text-sm text-muted-foreground">Subscribe for $3.99/month</p>
+                  <h3 className="text-xs sm:text-sm font-semibold text-foreground">Remove Ads & Unlock All</h3>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
                 </div>
               </div>
               <Button
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-6 sm:h-7 text-[10px] sm:text-xs px-2"
                 onClick={() => navigate("/get-premium")}
               >
-                Subscribe Now
+                Subscribe
               </Button>
             </div>
           </Card>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <Target className="h-5 w-5 text-primary" />
+        {/* Stats Cards - COMPACT */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+                <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">80%</p>
-                <p className="text-xs text-muted-foreground">Win Rate</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">80%</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Win Rate</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/20">
-                <BarChart3 className="h-5 w-5 text-accent" />
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-accent/20">
+                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{exclusiveTickets.length}</p>
-                <p className="text-xs text-muted-foreground">Total Tickets</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">{exclusiveTickets.length}</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tickets</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <TrendingUp className="h-5 w-5 text-primary" />
+          <Card className="p-1.5 sm:p-2 bg-card border-border">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+                <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{unlockedCount}</p>
-                <p className="text-xs text-muted-foreground">Access</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground">Access</p>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Tickets List */}
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3">
           {isLoading ? (
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">

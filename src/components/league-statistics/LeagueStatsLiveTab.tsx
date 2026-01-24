@@ -160,17 +160,17 @@ export function LeagueStatsLiveTab({
                       </div>
 
                       {/* Home Team */}
-                      <div className="flex items-center gap-2 justify-end min-w-0">
+                      <div className="flex items-center gap-1.5 justify-end min-w-0">
                         {m.homeLogo && (
-                          <img src={m.homeLogo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
+                          <img src={m.homeLogo} alt="" className="h-4 w-4 object-contain flex-shrink-0" />
                         )}
-                        <span className="text-sm truncate text-right">{m.homeTeam}</span>
+                        <span className="text-[10px] sm:text-xs truncate text-right">{m.homeTeam}</span>
                       </div>
 
                       {/* Score */}
                       <div className="flex items-center justify-center">
                         <span className={cn(
-                          "px-3 py-1 rounded text-sm font-semibold",
+                          "px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold",
                           isLive && "text-destructive",
                           isFinished && "text-foreground",
                           isUpcoming && "text-muted-foreground"
@@ -180,11 +180,11 @@ export function LeagueStatsLiveTab({
                       </div>
 
                       {/* Away Team */}
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
                         {m.awayLogo && (
-                          <img src={m.awayLogo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
+                          <img src={m.awayLogo} alt="" className="h-4 w-4 object-contain flex-shrink-0" />
                         )}
-                        <span className="text-sm truncate">{m.awayTeam}</span>
+                        <span className="text-[10px] sm:text-xs truncate">{m.awayTeam}</span>
                       </div>
 
                       {/* Half-time scores (muted) */}
