@@ -57,10 +57,10 @@ export function MatchPredictions() {
   ];
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center gap-3">
-        <TrendingUp className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Match Predictions</h2>
+    <section className="space-y-3">
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-primary" />
+        <h2 className="text-base md:text-lg font-semibold">Match Predictions</h2>
       </div>
 
       <Card className="p-1">
@@ -70,20 +70,20 @@ export function MatchPredictions() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={cn(
-                "py-3 rounded-lg",
+                "py-2 md:py-2.5 rounded-lg text-xs md:text-sm",
                 activeTab === tab.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
               )}
             >
-              <tab.icon className="h-4 w-4 mx-auto" />
-              <p className="text-xs mt-1">{tab.label}</p>
+              <tab.icon className="h-3.5 w-3.5 mx-auto" />
+              <p className="mt-0.5">{tab.label}</p>
             </button>
           ))}
         </div>
       </Card>
 
-      <div className="bg-primary/10 border border-primary/20 rounded-lg py-2 px-4 text-center">
-        <div className="flex items-center justify-center gap-2 text-sm text-primary">
-          <Users className="h-4 w-4" />
+      <div className="bg-primary/10 border border-primary/20 rounded-lg py-1.5 px-3 text-center">
+        <div className="flex items-center justify-center gap-2 text-xs text-primary">
+          <Users className="h-3.5 w-3.5" />
           <span>Users unlocked tips today</span>
         </div>
       </div>
