@@ -6,39 +6,34 @@ import { Shield, Lock, ArrowLeft } from "lucide-react";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
-  
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="container px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/settings")}
-            className="mb-3 h-7 text-xs gap-1"
-          >
+          <Button variant="ghost" onClick={() => navigate("/settings")} className="mb-3 h-7 text-xs gap-1">
             <ArrowLeft className="h-3 w-3" />
             Back to Settings
           </Button>
+
           <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold">Privacy Policy</h1>
+            <Shield className="w-9 h-9 text-primary" />
+            <h1 className="text-3xl font-bold">Privacy Policy</h1>
           </div>
 
-          <p className="text-muted-foreground mb-8">
-            Last updated: January 10, 2026 | Effective Date: January 10, 2026
-          </p>
+          <p className="text-muted-foreground mb-8">Last updated: January 10, 2026</p>
 
           <div className="space-y-8">
-            {/* Important Disclaimer Banner */}
+            {/* Important Notice */}
             <Card className="border-amber-500/50 bg-amber-500/10">
               <CardContent className="py-6">
                 <div className="flex items-start gap-4">
-                  <Lock className="w-8 h-8 text-amber-500 flex-shrink-0" />
+                  <Lock className="w-7 h-7 text-amber-500 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-lg text-amber-500 mb-2">🔒 Important Notice</h3>
-                    <p className="text-foreground font-medium">
-                      ProPredict does NOT provide betting services and does NOT allow users to place bets. All content
-                      is for <strong>informational and entertainment purposes only</strong>.
+                    <h3 className="font-semibold text-amber-500 mb-2">Important Notice</h3>
+                    <p className="text-muted-foreground">
+                      ProPredict does <strong>NOT</strong> provide betting or gambling services. All content is for{" "}
+                      <strong>informational and entertainment purposes only</strong>.
                     </p>
                   </div>
                 </div>
@@ -47,43 +42,29 @@ const PrivacyPolicy = () => {
 
             {/* Intro */}
             <Card className="border-primary/30 bg-primary/5">
-              <CardContent className="py-6">
-                <p className="text-sm">
-                  <strong>ProPredict</strong> ("we", "our", or "us") is committed to protecting your privacy. This
-                  Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our
-                  mobile application and website.
-                </p>
+              <CardContent className="py-6 text-sm text-muted-foreground">
+                ProPredict ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains
+                how we collect, use, and protect your information when you use our website and mobile application.
               </CardContent>
             </Card>
 
-            {/* Section 1 */}
+            {/* 1 */}
             <Card>
               <CardHeader>
                 <CardTitle>1. Information We Collect</CardTitle>
               </CardHeader>
-              <CardContent className="prose prose-invert max-w-none space-y-4">
-                <div>
-                  <h4 className="font-semibold text-foreground">Personal Information</h4>
-                  <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
-                    <li>Email address</li>
-                    <li>Display name and profile picture (optional)</li>
-                    <li>Authentication credentials (securely hashed)</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-foreground">Usage Data</h4>
-                  <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
-                    <li>Device and browser information</li>
-                    <li>IP address and approximate location</li>
-                    <li>App usage statistics</li>
-                    <li>Crash and performance reports</li>
-                  </ul>
-                </div>
+              <CardContent className="prose prose-invert max-w-none">
+                <ul className="list-disc list-inside text-muted-foreground space-y-2">
+                  <li>Email address and account credentials</li>
+                  <li>Optional profile information</li>
+                  <li>Device and browser information</li>
+                  <li>IP address and approximate location</li>
+                  <li>Usage and performance data</li>
+                </ul>
               </CardContent>
             </Card>
 
-            {/* Section 2 */}
+            {/* 2 */}
             <Card>
               <CardHeader>
                 <CardTitle>2. How We Use Your Information</CardTitle>
@@ -91,66 +72,78 @@ const PrivacyPolicy = () => {
               <CardContent className="prose prose-invert max-w-none">
                 <ul className="list-disc list-inside text-muted-foreground space-y-2">
                   <li>Operate and improve the app</li>
-                  <li>Manage subscriptions</li>
                   <li>Provide support and notifications</li>
-                  <li>Analyze usage patterns</li>
-                  <li>Ensure security and prevent abuse</li>
+                  <li>Manage subscriptions</li>
+                  <li>Analyze usage trends</li>
+                  <li>Prevent fraud and abuse</li>
                 </ul>
               </CardContent>
             </Card>
 
-            {/* Section 3 */}
+            {/* 3 */}
             <Card>
               <CardHeader>
                 <CardTitle>3. Third-Party Services</CardTitle>
               </CardHeader>
               <CardContent className="prose prose-invert max-w-none space-y-4">
-                <div>
-                  <h4 className="font-semibold text-foreground">Google AdMob</h4>
-                  <p className="text-muted-foreground text-sm">Used to display ads in the mobile application.</p>
-                </div>
+                <p className="text-muted-foreground">We use trusted third-party services:</p>
 
-                <div>
-                  <h4 className="font-semibold text-foreground">Google Analytics / Firebase</h4>
-                  <p className="text-muted-foreground text-sm">Used for analytics and crash reporting.</p>
-                </div>
+                <ul className="list-disc list-inside text-muted-foreground space-y-2">
+                  <li>Google Analytics / Firebase – analytics & performance</li>
+                  <li>Supabase – authentication & database</li>
+                  <li>Google AdMob – ads in the mobile app</li>
+                  <li>Google AdSense – ads on the website</li>
+                </ul>
 
-                <div>
-                  <h4 className="font-semibold text-foreground">Supabase</h4>
-                  <p className="text-muted-foreground text-sm">Provides authentication and database services.</p>
-                </div>
+                <p className="text-muted-foreground text-sm">
+                  Google may use cookies or device identifiers to display personalized or non-personalized ads.
+                </p>
 
-                {/* ✅ GOOGLE ADSENSE (IMPORTANT) */}
-                <div>
-                  <h4 className="font-semibold text-foreground">Google AdSense</h4>
-                  <p className="text-muted-foreground text-sm">
-                    We use Google AdSense to display advertisements on our website. Google may use cookies or device
-                    identifiers to serve personalized ads based on your interests and browsing behavior.
-                    <a
-                      href="https://policies.google.com/technologies/ads"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline ml-1"
-                    >
-                      Learn more about how Google manages ads and data.
-                    </a>
-                  </p>
-                </div>
+                <a
+                  href="https://policies.google.com/technologies/ads"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline text-sm"
+                >
+                  Learn more about Google ads and data usage
+                </a>
               </CardContent>
             </Card>
 
-            {/* Section 4 */}
+            {/* 4 */}
             <Card>
               <CardHeader>
                 <CardTitle>4. Data Sharing</CardTitle>
               </CardHeader>
               <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground font-medium">We do NOT sell your personal data.</p>
-                <ul className="list-disc list-inside text-muted-foreground mt-4 space-y-2">
+                <p className="text-muted-foreground">
+                  We do <strong>NOT</strong> sell personal data. Information may be shared only with:
+                </p>
+                <ul className="list-disc list-inside text-muted-foreground mt-3 space-y-2">
                   <li>Service providers</li>
                   <li>Advertising partners</li>
-                  <li>Legal authorities if required</li>
+                  <li>Legal authorities when required by law</li>
                 </ul>
+              </CardContent>
+            </Card>
+
+            {/* Cookies */}
+            <Card>
+              <CardHeader>
+                <CardTitle>5. Cookies</CardTitle>
+              </CardHeader>
+              <CardContent className="prose prose-invert max-w-none">
+                <p className="text-muted-foreground">
+                  We use cookies to improve functionality, analyze traffic, and display advertisements.
+                </p>
+
+                <p className="text-muted-foreground mt-4">
+                  For more information about cookies and how we use them, please review our{" "}
+                  <a href="/cookies" className="text-primary hover:underline">
+                    Cookie Policy
+                  </a>
+                  .
+                </p>
               </CardContent>
             </Card>
 
