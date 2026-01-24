@@ -6,6 +6,8 @@ export interface Match {
   id: string; // ← FIXTURE ID (KLJUČNO)
   homeTeam: string;
   awayTeam: string;
+  homeTeamId: number;
+  awayTeamId: number;
   homeScore: number | null;
   awayScore: number | null;
   status: MatchStatus;
