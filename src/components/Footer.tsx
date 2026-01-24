@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { Shield, FileText, ScrollText, Trash2, Mail, Globe } from "lucide-react";
+import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie } from "lucide-react";
 
 export function Footer() {
   const legalLinks = [
     { label: "Disclaimer", path: "/disclaimer", icon: Shield },
     { label: "Privacy Policy", path: "/privacy-policy", icon: FileText },
+    { label: "Cookie Policy", path: "/cookie-policy", icon: Cookie },
     { label: "Terms of Service", path: "/terms-of-service", icon: ScrollText },
     { label: "Data Deletion", path: "/data-deletion", icon: Trash2 },
   ];
