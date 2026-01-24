@@ -124,6 +124,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             <TabsContent value="statistics" className="m-0">
               <StatisticsTab
                 statistics={details?.statistics ?? []}
+                events={details?.events ?? []}
                 loading={loading}
                 homeTeam={match.homeTeam}
                 awayTeam={match.awayTeam}
@@ -148,6 +149,8 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               <H2HTab
                 h2h={details?.h2h ?? []}
                 loading={loading}
+                homeTeamName={match.homeTeam}
+                awayTeamName={match.awayTeam}
               />
             </TabsContent>
 
