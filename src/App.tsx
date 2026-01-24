@@ -18,6 +18,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Disclaimer from "./pages/Disclaimer";
 import DataDeletion from "./pages/DataDeletion";
+import HelpSupport from "./pages/HelpSupport";
 
 // Tier-specific pages
 import DailyTips from "./pages/DailyTips";
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/data-deletion" element={<DataDeletion />} />
+            <Route path="/help-support" element={<HelpSupport />} />
 
             {/* Protected */}
             <Route

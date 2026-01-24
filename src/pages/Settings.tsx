@@ -75,7 +75,7 @@ const Settings = () => {
       label: "Help & Support", 
       description: "FAQs and contact support",
       icon: HelpCircle, 
-      path: "/",
+      path: "/help-support",
       iconColor: "text-muted-foreground"
     },
     { 
