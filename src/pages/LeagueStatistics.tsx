@@ -58,27 +58,27 @@ export default function LeagueStatistics() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-5 md:space-y-6 max-w-full overflow-x-hidden">
-        {/* Header - Clean desktop layout */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+      <div className="section-gap max-w-full overflow-x-hidden">
+        {/* Header - Compact */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 pb-2 sm:pb-3 border-b border-border">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold">League Statistics</h1>
-              <p className="text-xs md:text-sm text-muted-foreground">Stats, standings & rankings</p>
+              <h1 className="text-base sm:text-xl font-bold">League Statistics</h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Stats & rankings</p>
             </div>
           </div>
 
-          {/* League Selector */}
+          {/* League Selector - Compact */}
           <Select value={selectedLeagueId} onValueChange={setSelectedLeagueId}>
-            <SelectTrigger className="w-full sm:w-[220px] bg-card border-border">
+            <SelectTrigger className="w-full sm:w-[180px] h-8 sm:h-9 text-xs sm:text-sm bg-card border-border">
               <SelectValue placeholder="Select League" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
               {LEAGUES.map((league) => (
-                <SelectItem key={league.id} value={league.id}>
+                <SelectItem key={league.id} value={league.id} className="text-sm">
                   {league.name}
                 </SelectItem>
               ))}
@@ -86,20 +86,20 @@ export default function LeagueStatistics() {
           </Select>
         </div>
 
-        {/* Stats Summary - Uniform cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Stats Summary - Compact cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           <Card className="stats-card bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
             <div className="stats-card-icon bg-destructive/10">
-              <Play className="h-5 w-5 md:h-6 md:w-6 text-destructive" />
+              <Play className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
             </div>
             <div>
-              <p className="stats-card-label">Live Now</p>
+              <p className="stats-card-label">Live</p>
               <p className="stats-card-value text-destructive">{liveCount}</p>
             </div>
           </Card>
           <Card className="stats-card bg-gradient-to-br from-success/10 to-success/5 border-success/15">
             <div className="stats-card-icon bg-success/10">
-              <Trophy className="h-5 w-5 md:h-6 md:w-6 text-success" />
+              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
             </div>
             <div>
               <p className="stats-card-label">Matches</p>
@@ -108,18 +108,18 @@ export default function LeagueStatistics() {
           </Card>
           <Card className="stats-card bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
             <div className="stats-card-icon bg-accent/10">
-              <Users className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
             </div>
             <div>
               <p className="stats-card-label">Selected</p>
-              <p className="text-sm md:text-base font-semibold text-accent truncate">
-                {isAllLeagues ? "All Leagues" : selectedLeague?.name}
+              <p className="text-xs sm:text-sm font-semibold text-accent truncate">
+                {isAllLeagues ? "All" : selectedLeague?.name?.split(" ")[0]}
               </p>
             </div>
           </Card>
           <Card className="stats-card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
             <div className="stats-card-icon bg-primary/10">
-              <Target className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
               <p className="stats-card-label">Leagues</p>
@@ -128,36 +128,36 @@ export default function LeagueStatistics() {
           </Card>
         </div>
 
-        {/* Tabs - Clean horizontal layout */}
+        {/* Tabs - Horizontal scroll on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
-            <TabsList className="inline-flex w-auto min-w-full md:w-full bg-secondary/50 border border-border p-1 rounded-lg">
-              <TabsTrigger value="live" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Play className="h-4 w-4" />
+          <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
+            <TabsList className="inline-flex w-auto min-w-full bg-secondary/50 border border-border p-0.5 sm:p-1 rounded-lg">
+              <TabsTrigger value="live" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Play className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Live</span>
               </TabsTrigger>
-              <TabsTrigger value="standings" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Trophy className="h-4 w-4" />
+              <TabsTrigger value="standings" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Trophy className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Standings</span>
               </TabsTrigger>
-              <TabsTrigger value="scorers" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Target className="h-4 w-4" />
+              <TabsTrigger value="scorers" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Target className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Scorers</span>
               </TabsTrigger>
-              <TabsTrigger value="assists" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Users className="h-4 w-4" />
+              <TabsTrigger value="assists" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Users className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Assists</span>
               </TabsTrigger>
-              <TabsTrigger value="fixtures" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Calendar className="h-4 w-4" />
+              <TabsTrigger value="fixtures" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Calendar className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Fixtures</span>
               </TabsTrigger>
-              <TabsTrigger value="rounds" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <RotateCcw className="h-4 w-4" />
+              <TabsTrigger value="rounds" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <RotateCcw className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">Rounds</span>
               </TabsTrigger>
-              <TabsTrigger value="h2h" className="flex items-center gap-2 px-3 md:px-4 text-sm">
-                <Swords className="h-4 w-4" />
+              <TabsTrigger value="h2h" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
+                <Swords className="h-3.5 w-3.5" />
                 <span className="hidden xs:inline">H2H</span>
               </TabsTrigger>
             </TabsList>

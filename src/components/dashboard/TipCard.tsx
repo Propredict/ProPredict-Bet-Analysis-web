@@ -110,36 +110,36 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     return Crown;
   };
 
-  // Locked state - show match name visible, blur prediction/odds/confidence
+  // Locked state - compact design
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
     
     return (
       <Card className="bg-card border-border transition-all overflow-hidden hover:border-primary/50">
-        {/* Header with tier badge - VISIBLE */}
-        <div className="p-3 pb-0">
-          <div className="flex items-center justify-between mb-1.5">
+        {/* Header */}
+        <div className="p-2.5 sm:p-3 pb-0">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5">
               {getTierBadge(tip.tier)}
               <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-1.5">
                 {tip.league}
               </Badge>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
               <Lock className="h-3 w-3 text-muted-foreground" />
             </div>
           </div>
         </div>
 
-        {/* Match title - VISIBLE */}
-        <div className="px-3 pb-2">
-          <h3 className="font-semibold text-sm md:text-base text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
+        {/* Match title */}
+        <div className="px-2.5 sm:px-3 pb-1.5">
+          <h3 className="font-semibold text-xs sm:text-sm text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
         </div>
 
-        {/* Prediction details - BLURRED */}
-        <div className="px-3 pb-2">
-          <div className="p-2 bg-muted/20 rounded-lg border border-border/50 space-y-1.5 text-xs">
+        {/* Prediction details - Blurred */}
+        <div className="px-2.5 sm:px-3 pb-1.5">
+          <div className="p-1.5 sm:p-2 bg-muted/20 rounded border border-border/50 space-y-1 text-[10px] sm:text-xs">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Prediction</span>
               <span className="blur-sm opacity-50 font-medium">{tip.prediction}</span>
@@ -151,13 +151,13 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
           </div>
         </div>
 
-        {/* Unlock button - NOT BLURRED */}
+        {/* Unlock button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
-          <div className="p-3 pt-2 border-t border-border">
+          <div className="p-2.5 sm:p-3 pt-1.5 border-t border-border">
             <Button
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="sm"
-              className={cn("w-full gap-1.5 h-8 text-xs", getUnlockButtonStyle())}
+              className={cn("w-full gap-1 h-7 sm:h-8 text-[10px] sm:text-xs", getUnlockButtonStyle())}
               disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
@@ -182,42 +182,41 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     );
   }
 
-  // Unlocked state - full details visible
+  // Unlocked state - compact design
   return (
     <Card className="bg-card border-primary/30 transition-all overflow-hidden hover:border-primary/50">
-      {/* Header with tier badge and unlocked status */}
-      <div className="p-3 pb-0">
-        <div className="flex items-center justify-between mb-1.5">
+      {/* Header */}
+      <div className="p-2.5 sm:p-3 pb-0">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
             {getTierBadge(tip.tier)}
             <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
               {tip.league}
             </Badge>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
-            <Badge className="gap-0.5 bg-success/20 text-success border-success/30 text-[10px] px-1.5">
+            <Badge className="gap-0.5 bg-success/20 text-success border-success/30 text-[10px] px-1">
               <CheckCircle2 className="h-2.5 w-2.5" />
-              Unlocked
             </Badge>
           </div>
         </div>
       </div>
 
       {/* Match title */}
-      <div className="px-3 pb-2">
-        <h3 className="font-semibold text-sm md:text-base text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
+      <div className="px-2.5 sm:px-3 pb-1.5">
+        <h3 className="font-semibold text-xs sm:text-sm text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
       </div>
 
       {/* Prediction details */}
-      <div className="px-3 pb-2 text-xs">
-        <div className="flex items-center justify-between py-1.5 border-b border-border/30">
+      <div className="px-2.5 sm:px-3 pb-2 text-[10px] sm:text-xs">
+        <div className="flex items-center justify-between py-1 border-b border-border/30">
           <span className="text-muted-foreground">Prediction</span>
           <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
             {tip.prediction}
           </Badge>
         </div>
-        <div className="flex items-center justify-between py-1.5">
+        <div className="flex items-center justify-between py-1">
           <span className="text-muted-foreground">Odds</span>
           <span className="font-bold text-primary">@{tip.odds.toFixed(2)}</span>
         </div>

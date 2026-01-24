@@ -183,55 +183,51 @@ function TicketCard({
   const displayedMatches = ticket.matches.slice(0, 3);
   const remainingCount = ticket.matchCount > 3 ? ticket.matchCount - 3 : 0;
 
-  // Locked state - show title + match names visible, blur predictions/odds
+  // Locked state - compact design
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
     
     return (
       <Card className="bg-card overflow-hidden transition-all border-border hover:border-primary/50">
-        {/* Header - VISIBLE */}
-        <div className="p-4 pb-0">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+        {/* Header */}
+        <div className="p-2.5 sm:p-3 pb-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
               {getTierBadge(ticket.tier)}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] sm:text-xs text-muted-foreground">
                 {ticket.matchCount} Matches
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Lock className="h-4 w-4 text-muted-foreground" />
-            </div>
+            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         </div>
 
-        {/* Title - VISIBLE */}
-        <div className="px-4 pb-3">
-          <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
-          {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
+        {/* Title */}
+        <div className="px-2.5 sm:px-3 pb-2">
+          <h3 className="font-bold text-sm sm:text-base text-foreground">{ticket.title}</h3>
+          {ticketDate && <span className="text-[10px] text-muted-foreground">{ticketDate}</span>}
         </div>
 
-        {/* Matches - Names visible, predictions/odds blurred */}
-        <div className="px-4 pb-3 space-y-2">
+        {/* Matches */}
+        <div className="px-2.5 sm:px-3 pb-2 space-y-1.5">
           {displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
-                <div className="flex items-center justify-between">
-                  {/* Match name - VISIBLE */}
-                  <div className="flex-1 mr-4 min-w-0">
-                    <span className="text-sm text-foreground truncate block">
+              <div key={idx} className="p-2 bg-muted/20 rounded border border-border/50">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs sm:text-sm text-foreground truncate block">
                       {parsed.homeTeam} vs {parsed.awayTeam}
                     </span>
                     {parsed.league && (
-                      <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                      <span className="text-[10px] text-muted-foreground">{parsed.league}</span>
                     )}
                   </div>
-                  {/* Prediction & Odds - BLURRED */}
-                  <div className="flex items-center gap-2 blur-sm opacity-50">
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                  <div className="flex items-center gap-1.5 blur-sm opacity-50">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
                       {match.prediction || "???"}
                     </Badge>
-                    <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                    <span className="text-xs font-medium text-primary">@{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -239,27 +235,25 @@ function TicketCard({
           })}
           
           {remainingCount > 0 && (
-            <div className="text-center pt-1">
-              <span className="text-xs text-muted-foreground">+{remainingCount} more matches</span>
-            </div>
+            <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
           )}
         </div>
 
-        {/* Total Odds - BLURRED */}
-        <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+        {/* Total Odds - Blurred */}
+        <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Total Odds</span>
-            <span className="font-bold text-lg text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
+            <span className="text-xs text-muted-foreground">Total Odds</span>
+            <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
           </div>
         </div>
 
-        {/* Unlock Button - NOT BLURRED */}
+        {/* Unlock Button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
-          <div className="p-4 border-t border-border">
+          <div className="p-2.5 sm:p-3 border-t border-border">
             <Button
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
-              size="lg"
-              className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
+              size="sm"
+              className={cn("w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm", getUnlockButtonStyle())}
               disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
@@ -268,12 +262,12 @@ function TicketCard({
             >
               {isUnlocking ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Watching ad...
                 </>
               ) : (
                 <>
-                  {Icon && <Icon className="h-4 w-4" />}
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
                   {getUnlockButtonText(unlockMethod)}
                 </>
               )}
@@ -284,21 +278,21 @@ function TicketCard({
     );
   }
 
-  // Unlocked state - full details visible
+  // Unlocked state - compact design
   return (
     <Card className="bg-card overflow-hidden transition-all border-primary/30 hover:border-primary/50">
-      {/* Header with tier badge and status */}
-      <div className="p-4 pb-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+      {/* Header */}
+      <div className="p-2.5 sm:p-3 pb-0">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-1.5">
             {getTierBadge(ticket.tier)}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
               {ticket.matchCount} Matches
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {getStatusBadge()}
-            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-[10px] px-1.5">
               @{ticket.totalOdds.toFixed(2)}
             </Badge>
           </div>
@@ -306,58 +300,56 @@ function TicketCard({
       </div>
 
       {/* Title */}
-      <div className="px-4 pb-3">
-        <h3 className="font-bold text-lg text-foreground">{ticket.title}</h3>
-        {ticketDate && <span className="text-xs text-muted-foreground">{ticketDate}</span>}
+      <div className="px-2.5 sm:px-3 pb-2">
+        <h3 className="font-bold text-sm sm:text-base text-foreground">{ticket.title}</h3>
+        {ticketDate && <span className="text-[10px] text-muted-foreground">{ticketDate}</span>}
       </div>
 
-      {/* Match list with predictions */}
-      <div className="px-4 pb-3 space-y-2">
+      {/* Match list */}
+      <div className="px-2.5 sm:px-3 pb-2 space-y-1">
         {displayedMatches.length > 0 ? (
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                <div className="flex-1 mr-4 min-w-0">
-                  <span className="text-sm text-foreground truncate block">
+              <div key={idx} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0 gap-2">
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs sm:text-sm text-foreground truncate block">
                     {parsed.homeTeam} vs {parsed.awayTeam}
                   </span>
                   {parsed.league && (
-                    <span className="text-xs text-muted-foreground">{parsed.league}</span>
+                    <span className="text-[10px] text-muted-foreground">{parsed.league}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
                     {match.prediction}
                   </Badge>
-                  <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                  <span className="text-xs font-medium text-primary">@{match.odds.toFixed(2)}</span>
                 </div>
               </div>
             );
           })
         ) : (
-          <p className="text-sm text-muted-foreground py-2">No matches in this ticket</p>
+          <p className="text-xs text-muted-foreground py-2">No matches</p>
         )}
         
         {remainingCount > 0 && (
-          <div className="text-center pt-1">
-            <span className="text-xs text-muted-foreground">+{remainingCount} more</span>
-          </div>
+          <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
         )}
       </div>
 
       {/* Total Odds footer */}
-      <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
+      <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Total Odds</span>
-          <span className="font-bold text-lg text-primary">@{ticket.totalOdds.toFixed(2)}</span>
+          <span className="text-xs text-muted-foreground">Total Odds</span>
+          <span className="font-bold text-sm sm:text-base text-primary">@{ticket.totalOdds.toFixed(2)}</span>
         </div>
       </div>
 
       {/* Unlocked badge footer */}
-      <div className="px-4 py-3 border-t border-border/50">
-        <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
-          <CheckCircle2 className="h-4 w-4" />
+      <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
+        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-success/20 text-success border-success/30 text-xs">
+          <CheckCircle2 className="h-3.5 w-3.5" />
           Ticket Unlocked
         </Badge>
       </div>
