@@ -57,43 +57,43 @@ export function MatchPredictions() {
   ];
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center gap-2">
-        <TrendingUp className="h-4 w-4 text-primary" />
-        <h2 className="text-base md:text-lg font-semibold">Match Predictions</h2>
+    <section className="space-y-1.5 sm:space-y-2">
+      <div className="flex items-center gap-1.5">
+        <TrendingUp className="h-3.5 w-3.5 text-primary" />
+        <h2 className="text-xs sm:text-sm font-semibold">Match Predictions</h2>
       </div>
 
-      <Card className="p-1">
-        <div className="grid grid-cols-3 gap-1">
+      <Card className="p-0.5">
+        <div className="grid grid-cols-3 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={cn(
-                "py-2 md:py-2.5 rounded-lg text-xs md:text-sm",
+                "py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs",
                 activeTab === tab.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
               )}
             >
-              <tab.icon className="h-3.5 w-3.5 mx-auto" />
+              <tab.icon className="h-3 w-3 mx-auto" />
               <p className="mt-0.5">{tab.label}</p>
             </button>
           ))}
         </div>
       </Card>
 
-      <div className="bg-primary/10 border border-primary/20 rounded-lg py-1.5 px-3 text-center">
-        <div className="flex items-center justify-center gap-2 text-xs text-primary">
-          <Users className="h-3.5 w-3.5" />
+      <div className="bg-primary/10 border border-primary/20 rounded-md py-1 px-2 text-center">
+        <div className="flex items-center justify-center gap-1.5 text-[9px] sm:text-[10px] text-primary">
+          <Users className="h-3 w-3" />
           <span>Users unlocked tips today</span>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : filteredTips.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-1.5 sm:space-y-2">
           {filteredTips.map((tip) => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
             const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
@@ -111,8 +111,8 @@ export function MatchPredictions() {
           })}
         </div>
       ) : (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No {activeTab} predictions available</p>
+        <Card className="p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">No {activeTab} predictions available</p>
         </Card>
       )}
 

@@ -60,16 +60,16 @@ export function BettingTickets() {
   const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-1.5 sm:space-y-2">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Ticket className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Betting Tickets</h2>
+      <div className="flex items-center gap-1.5">
+        <Ticket className="h-3.5 w-3.5 text-primary" />
+        <h2 className="text-xs sm:text-sm font-semibold text-foreground">Betting Tickets</h2>
       </div>
 
       {/* Tabs */}
-      <Card className="p-1 bg-card border-border">
-        <div className="grid grid-cols-3 gap-1">
+      <Card className="p-0.5 bg-card border-border">
+        <div className="grid grid-cols-3 gap-0.5">
           {tabs.map((tab) => {
             const count = tickets.filter((t) => t.tier === tab.id).length;
             return (
@@ -77,23 +77,23 @@ export function BettingTickets() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-3 px-4 rounded-lg transition-all",
+                  "flex flex-col items-center gap-0.5 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-md transition-all",
                   activeTab === tab.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <tab.icon className="h-4 w-4" />
-                  <span className="font-medium">{tab.label}</span>
+                <div className="flex items-center gap-1">
+                  <tab.icon className="h-3 w-3" />
+                  <span className="font-medium text-[10px] sm:text-xs">{tab.label}</span>
                   <span
                     className={cn(
-                      "text-xs px-1.5 py-0.5 rounded-full",
+                      "text-[9px] px-1 py-0.5 rounded-full",
                       activeTab === tab.id ? "bg-primary-foreground/20" : "bg-muted",
                     )}
                   >
                     {count}
                   </span>
                 </div>
-                <span className="text-xs opacity-80">{tab.sublabel}</span>
+                <span className="text-[8px] sm:text-[9px] opacity-80">{tab.sublabel}</span>
               </button>
             );
           })}
@@ -101,20 +101,20 @@ export function BettingTickets() {
       </Card>
 
       {/* Banner */}
-      <div className="bg-primary/10 border border-primary/20 rounded-lg py-2 px-4 text-center">
-        <div className="flex items-center justify-center gap-2 text-sm text-primary">
-          <Users className="h-4 w-4" />
+      <div className="bg-primary/10 border border-primary/20 rounded-md py-1 px-2 text-center">
+        <div className="flex items-center justify-center gap-1.5 text-[9px] sm:text-[10px] text-primary">
+          <Users className="h-3 w-3" />
           <span>210 users unlocked daily tickets today</span>
         </div>
       </div>
 
       {/* Tickets */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : filteredTickets.length > 0 ? (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-1.5 sm:gap-2">
           {filteredTickets.map((ticket) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
@@ -134,8 +134,8 @@ export function BettingTickets() {
           })}
         </div>
       ) : (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No {activeTab} tickets available</p>
+        <Card className="p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">No {activeTab} tickets available</p>
         </Card>
       )}
 
