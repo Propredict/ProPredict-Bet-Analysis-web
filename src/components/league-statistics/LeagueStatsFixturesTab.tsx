@@ -72,58 +72,84 @@ export function LeagueStatsFixturesTab({ leagueId, leagueName }: LeagueStatsFixt
       <div
         key={m.id}
         onClick={() => setSelectedMatch(m)}
-        className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 last:border-0"
+        className="px-4 py-4 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 last:border-0"
       >
-        {/* Time/Status */}
-        <div className="w-16 text-sm">
-          {isUpcoming && <span className="text-muted-foreground">{m.startTime}</span>}
-          {isLive && (
-            <Badge className="bg-red-500/20 text-red-400 border-0 text-xs">
-              {m.minute}'
-            </Badge>
-          )}
-          {isFinished && <span className="text-green-400 text-xs">FT</span>}
-        </div>
-
-        {/* Teams */}
-        <div className="flex-1 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            {m.homeLogo && <img src={m.homeLogo} alt="" className="h-5 w-5 object-contain" />}
-            <span className="text-sm">{m.homeTeam}</span>
+        <div className="flex items-center">
+          {/* Time/Status - Left */}
+          <div className="w-14 flex-shrink-0">
+            {isUpcoming && <span className="text-sm text-muted-foreground">{m.startTime}</span>}
+            {isLive && (
+              <Badge className="bg-red-500/20 text-red-400 border-0 text-xs animate-pulse">
+                {m.minute}'
+              </Badge>
+            )}
+            {isFinished && <span className="text-green-400 text-xs font-medium">FT</span>}
           </div>
 
-          <span className={cn(
-            "px-3 py-1 rounded text-sm font-semibold min-w-[60px] text-center",
-            isLive && "text-red-400 bg-red-500/10",
-            isFinished && "text-white bg-white/10",
-            isUpcoming && "text-muted-foreground"
-          )}>
-            {isUpcoming ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-          </span>
+          {/* Match Content - Centered */}
+          <div className="flex-1 flex items-center justify-center">
+            {/* Home Team */}
+            <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+              <span className="text-sm truncate" title={m.homeTeam}>
+                {m.homeTeam}
+              </span>
+              {m.homeLogo && (
+                <img src={m.homeLogo} alt="" className="h-6 w-6 object-contain flex-shrink-0" />
+              )}
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm">{m.awayTeam}</span>
-            {m.awayLogo && <img src={m.awayLogo} alt="" className="h-5 w-5 object-contain" />}
+            {/* Score - Prominently centered */}
+            <div className="mx-4 flex-shrink-0">
+              <div className={cn(
+                "px-4 py-1.5 rounded-lg min-w-[70px] text-center",
+                isLive && "bg-red-500/10 border border-red-500/30",
+                isFinished && "bg-primary/10 border border-primary/20",
+                isUpcoming && "bg-white/5 border border-white/10"
+              )}>
+                <span className={cn(
+                  "font-bold text-base tracking-wider",
+                  isLive && "text-red-400"
+                )}>
+                  {isUpcoming ? (
+                    <span className="text-muted-foreground text-sm">vs</span>
+                  ) : (
+                    <>
+                      {m.homeScore ?? 0} <span className="text-muted-foreground">-</span> {m.awayScore ?? 0}
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Away Team */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {m.awayLogo && (
+                <img src={m.awayLogo} alt="" className="h-6 w-6 object-contain flex-shrink-0" />
+              )}
+              <span className="text-sm truncate" title={m.awayTeam}>
+                {m.awayTeam}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Status Badge */}
-        <div className="w-20 text-right">
-          {isUpcoming && (
-            <Badge variant="outline" className="text-xs">
-              Upcoming
-            </Badge>
-          )}
-          {isLive && (
-            <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs">
-              LIVE
-            </Badge>
-          )}
-          {isFinished && (
-            <Badge variant="outline" className="text-green-400 border-green-500/30 text-xs">
-              FT
-            </Badge>
-          )}
+          {/* Status Badge - Right */}
+          <div className="w-20 flex-shrink-0 text-right hidden sm:block">
+            {isUpcoming && (
+              <Badge variant="outline" className="text-xs">
+                Upcoming
+              </Badge>
+            )}
+            {isLive && (
+              <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs">
+                LIVE
+              </Badge>
+            )}
+            {isFinished && (
+              <Badge variant="outline" className="text-green-400 border-green-500/30 text-xs">
+                Finished
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
     );
