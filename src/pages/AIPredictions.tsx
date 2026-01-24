@@ -5,13 +5,16 @@ import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsS
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type SortOption = "confidence" | "kickoff" | "risk";
 
@@ -20,9 +23,11 @@ export default function AIPredictions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { predictions, loading } = useAIPredictions(day);
   const { stats, loading: statsLoading } = useAIPredictionStats();
   const { isAdmin, plan } = useUserPlan();
+  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
 
   const isPremiumUser = plan === "premium";
@@ -50,9 +55,14 @@ export default function AIPredictions() {
     });
   };
 
-  // Filter predictions by search and league
+  // Filter predictions by search, league, and favorites
   const filteredPredictions = useMemo(() => {
     let result = predictions;
+    
+    // Filter by favorites if enabled
+    if (showFavoritesOnly) {
+      result = result.filter((p) => isFavorite(p.match_id));
+    }
     
     // Filter by league if selected
     if (selectedLeague) {
@@ -72,7 +82,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite]);
 
   // Separate featured (premium/high confidence) from regular predictions
   const featuredPredictions = useMemo(() => {
@@ -145,6 +155,15 @@ export default function AIPredictions() {
                   <SelectItem value="risk">Risk Level</SelectItem>
                 </SelectContent>
               </Select>
+              {/* Favorites Toggle */}
+              <Toggle
+                pressed={showFavoritesOnly}
+                onPressedChange={setShowFavoritesOnly}
+                className="data-[state=on]:bg-red-500/20 data-[state=on]:text-red-400 border border-[#1e3a5f]/50"
+                aria-label="Show favorites only"
+              >
+                <Heart className={cn("w-4 h-4", showFavoritesOnly && "fill-current")} />
+              </Toggle>
               <Badge className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border-purple-500/30 px-3 py-1.5 hidden sm:flex">
                 <Sparkles className="w-3 h-3 mr-1.5" />
                 Powered by ML
@@ -299,6 +318,9 @@ export default function AIPredictions() {
                     prediction={prediction}
                     isAdmin={isAdmin}
                     isPremiumUser={isPremiumUser}
+                    isFavorite={isFavorite(prediction.match_id)}
+                    isSavingFavorite={isSaving(prediction.match_id)}
+                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                     onWatchAd={() => {}}
                     onGoPremium={() => navigate("/get-premium")}
                   />
@@ -343,6 +365,9 @@ export default function AIPredictions() {
                     prediction={prediction}
                     isAdmin={isAdmin}
                     isPremiumUser={isPremiumUser}
+                    isFavorite={isFavorite(prediction.match_id)}
+                    isSavingFavorite={isSaving(prediction.match_id)}
+                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                     onWatchAd={() => {}}
                     onGoPremium={() => navigate("/get-premium")}
                   />
