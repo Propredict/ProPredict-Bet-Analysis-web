@@ -24,6 +24,7 @@ import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
+import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
@@ -435,5 +436,6 @@ function StatusBadge({ match }: { match: Match }) {
       </Badge>
     );
   }
-  return <Badge variant="outline" className="text-xs">{match.startTime}</Badge>;
+  // Upcoming - show countdown
+  return <KickoffCountdown startTime={match.startTime} />;
 }
