@@ -59,26 +59,26 @@ export default function LeagueStatistics() {
   return (
     <DashboardLayout>
       <div className="section-gap max-w-full overflow-x-hidden">
-        {/* Header - Compact */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 pb-2 sm:pb-3 border-b border-border">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+        {/* Header - COMPACT */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 pb-1.5 sm:pb-2 border-b border-border">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
+              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
             </div>
             <div>
-              <h1 className="text-base sm:text-xl font-bold">League Statistics</h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Stats & rankings</p>
+              <h1 className="text-sm sm:text-base font-bold">League Statistics</h1>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Stats & rankings</p>
             </div>
           </div>
 
           {/* League Selector - Compact */}
           <Select value={selectedLeagueId} onValueChange={setSelectedLeagueId}>
-            <SelectTrigger className="w-full sm:w-[180px] h-8 sm:h-9 text-xs sm:text-sm bg-card border-border">
+            <SelectTrigger className="w-full sm:w-[160px] h-7 sm:h-8 text-[10px] sm:text-xs bg-card border-border">
               <SelectValue placeholder="Select League" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
               {LEAGUES.map((league) => (
-                <SelectItem key={league.id} value={league.id} className="text-sm">
+                <SelectItem key={league.id} value={league.id} className="text-xs">
                   {league.name}
                 </SelectItem>
               ))}
@@ -86,11 +86,11 @@ export default function LeagueStatistics() {
           </Select>
         </div>
 
-        {/* Stats Summary - Compact cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        {/* Stats Summary - COMPACT cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
           <Card className="stats-card bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
             <div className="stats-card-icon bg-destructive/10">
-              <Play className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
+              <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
             </div>
             <div>
               <p className="stats-card-label">Live</p>
@@ -99,7 +99,7 @@ export default function LeagueStatistics() {
           </Card>
           <Card className="stats-card bg-gradient-to-br from-success/10 to-success/5 border-success/15">
             <div className="stats-card-icon bg-success/10">
-              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
+              <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
             </div>
             <div>
               <p className="stats-card-label">Matches</p>
@@ -108,18 +108,18 @@ export default function LeagueStatistics() {
           </Card>
           <Card className="stats-card bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
             <div className="stats-card-icon bg-accent/10">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
             </div>
             <div>
               <p className="stats-card-label">Selected</p>
-              <p className="text-xs sm:text-sm font-semibold text-accent truncate">
+              <p className="text-[10px] sm:text-xs font-semibold text-accent truncate">
                 {isAllLeagues ? "All" : selectedLeague?.name?.split(" ")[0]}
               </p>
             </div>
           </Card>
           <Card className="stats-card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
             <div className="stats-card-icon bg-primary/10">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
             </div>
             <div>
               <p className="stats-card-label">Leagues</p>
