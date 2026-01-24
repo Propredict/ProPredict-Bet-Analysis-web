@@ -143,14 +143,14 @@ export default function ManageTips() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-0 sm:px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4 px-0 sm:px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Manage Tips</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">Create and manage betting tips</p>
+            <h1 className="text-sm sm:text-base font-bold text-foreground">Manage Tips</h1>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Create and manage betting tips</p>
           </div>
-          <Button onClick={handleCreate} className="gap-2 w-full sm:w-auto">
-            <Plus className="h-4 w-4" />
+          <Button onClick={handleCreate} size="sm" className="gap-1.5 w-full sm:w-auto h-8">
+            <Plus className="h-3.5 w-3.5" />
             Add Tip
           </Button>
         </div>
@@ -218,11 +218,11 @@ export default function ManageTips() {
         {/* Create/Edit Dialog - Mobile Optimized */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
-            <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-4 shrink-0 border-b border-border">
-              <DialogTitle className="text-lg sm:text-xl">{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
+            <DialogHeader className="p-3 sm:p-4 pb-2 sm:pb-3 shrink-0 border-b border-border">
+              <DialogTitle className="text-sm sm:text-base">{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
             </DialogHeader>
             
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-2 sm:pt-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 pt-2 sm:pt-3 space-y-3 sm:space-y-4">
               {/* Teams - stack on mobile */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1.5 sm:space-y-2">

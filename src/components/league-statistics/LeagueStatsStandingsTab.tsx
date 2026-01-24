@@ -305,7 +305,7 @@ export function LeagueStatsStandingsTab({ leagueId, leagueName }: LeagueStatsSta
 
   // Single league view: detailed table + grid below
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6">
       {/* Detailed standings for selected league */}
       <SingleLeagueStandings leagueId={leagueId} leagueName={leagueName} />
 

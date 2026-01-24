@@ -190,7 +190,7 @@ const HelpSupport = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
         {/* Back Button */}
         <Button
           variant="ghost"

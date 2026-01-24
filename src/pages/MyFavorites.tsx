@@ -13,19 +13,15 @@ export default function MyFavorites() {
   const navigate = useNavigate();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
-  // 👇 UČITAVAMO SVE MEČEVE (za danas)
   const { matches, isLoading: matchesLoading } = useLiveScores({
     dateMode: "today",
     statusFilter: "all",
   });
 
-  // 👇 UČITAVAMO FAVORITE ID-JEVE
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading } = useFavorites();
 
-  // 👇 PRAVI FAVORITI (FILTER)
   const favoriteMatches = useMemo(() => matches.filter((m) => favorites.has(m.id)), [matches, favorites]);
 
-  // 👇 GROUP BY LEAGUE
   const grouped = useMemo(() => {
     return favoriteMatches.reduce(
       (acc, m) => {
@@ -41,7 +37,7 @@ export default function MyFavorites() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -49,33 +45,33 @@ export default function MyFavorites() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Star className="h-6 w-6 text-accent fill-accent" />
+      <div className="space-y-3 sm:space-y-4">
+        {/* Header - Standardized */}
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4 sm:h-5 sm:w-5 text-accent fill-accent" />
           <div>
-            <h1 className="text-xl font-semibold">My Favorites</h1>
-            <p className="text-sm text-muted-foreground">{favoriteMatches.length} saved matches</p>
+            <h1 className="text-sm sm:text-base font-bold text-foreground">My Favorites</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{favoriteMatches.length} saved matches</p>
           </div>
         </div>
 
         {/* FAVORITES */}
         {favoriteMatches.length > 0 ? (
           Object.entries(grouped).map(([league, games]) => (
-            <Card key={league}>
-              <div className="flex justify-between px-4 py-2 border-b">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">{league}</span>
+            <Card key={league} className="card-compact">
+              <div className="flex justify-between px-3 py-2 border-b border-border">
+                <div className="flex items-center gap-1.5">
+                  <Trophy className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-xs sm:text-sm">{league}</span>
                 </div>
-                <Badge variant="secondary">{games.length}</Badge>
+                <Badge variant="secondary" className="text-[10px]">{games.length}</Badge>
               </div>
 
               {games.map((m) => (
                 <div
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-muted/40 cursor-pointer"
+                  className="px-3 py-2 flex items-center gap-2 hover:bg-muted/40 cursor-pointer"
                 >
                   <button
                     onClick={(e) => {
@@ -85,25 +81,27 @@ export default function MyFavorites() {
                     disabled={isSaving(m.id)}
                   >
                     <Star
-                      className={cn("h-4 w-4", isFavorite(m.id) ? "text-accent fill-accent" : "text-muted-foreground")}
+                      className={cn("h-3.5 w-3.5", isFavorite(m.id) ? "text-accent fill-accent" : "text-muted-foreground")}
                     />
                   </button>
 
-                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center">
-                    <span className="text-right">{m.homeTeam}</span>
-                    <span className="font-bold px-3">
+                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center text-xs sm:text-sm">
+                    <span className="text-right truncate">{m.homeTeam}</span>
+                    <span className="font-bold px-2">
                       {m.status === "upcoming" ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
                     </span>
-                    <span>{m.awayTeam}</span>
+                    <span className="truncate">{m.awayTeam}</span>
                   </div>
 
-                  <Badge variant="outline">{m.status === "live" ? "LIVE" : m.startTime}</Badge>
+                  <Badge variant="outline" className="text-[10px]">{m.status === "live" ? "LIVE" : m.startTime}</Badge>
                 </div>
               ))}
             </Card>
           ))
         ) : (
-          <Card className="p-12 text-center opacity-70">No favorite matches yet</Card>
+          <Card className="card-compact p-8 text-center opacity-70">
+            <p className="text-xs sm:text-sm text-muted-foreground">No favorite matches yet</p>
+          </Card>
         )}
 
         <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />

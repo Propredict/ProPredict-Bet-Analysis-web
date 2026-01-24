@@ -254,21 +254,21 @@ export default function ManageTickets() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-0 sm:px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Manage Tickets</h1>
-          <Button onClick={handleCreate} className="gap-2 w-full sm:w-auto">
-            <Plus className="h-4 w-4" />
+      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4 px-0 sm:px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+          <h1 className="text-sm sm:text-base font-bold text-foreground">Manage Tickets</h1>
+          <Button onClick={handleCreate} size="sm" className="gap-1.5 w-full sm:w-auto h-8">
+            <Plus className="h-3.5 w-3.5" />
             Add Ticket
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid gap-3 sm:gap-4">
+          <div className="grid gap-2 sm:gap-3">
             {tickets.map((t) => (
               <AdminTicketCard
                 key={t.id}
@@ -281,8 +281,8 @@ export default function ManageTickets() {
               />
             ))}
             {tickets.length === 0 && (
-              <Card className="p-6 sm:p-8 text-center bg-card border-border">
-                <p className="text-muted-foreground text-sm sm:text-base">No tickets yet. Create your first ticket!</p>
+              <Card className="card-compact p-6 text-center bg-card border-border">
+                <p className="text-muted-foreground text-xs sm:text-sm">No tickets yet. Create your first ticket!</p>
               </Card>
             )}
           </div>
@@ -291,8 +291,8 @@ export default function ManageTickets() {
         {/* Create/Edit Dialog - MOBILE OPTIMIZED */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="w-[95vw] max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
-            <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-5 pb-2 sm:pb-4 border-b border-border shrink-0">
-              <DialogTitle className="text-lg sm:text-xl font-semibold">
+            <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-4 pb-2 sm:pb-3 border-b border-border shrink-0">
+              <DialogTitle className="text-sm sm:text-base font-semibold">
                 {editingTicket ? "Edit Ticket" : "Create New Ticket"}
               </DialogTitle>
             </DialogHeader>
@@ -681,9 +681,9 @@ export default function ManageTickets() {
                         ))}
 
                         {/* Total Odds */}
-                        <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/20">
-                          <span className="font-semibold text-foreground">Total Odds</span>
-                          <span className="text-xl font-bold text-primary">@{totalOdds.toFixed(2)}</span>
+                        <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/20">
+                          <span className="font-semibold text-foreground text-xs sm:text-sm">Total Odds</span>
+                          <span className="text-sm sm:text-base font-bold text-primary">@{totalOdds.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
