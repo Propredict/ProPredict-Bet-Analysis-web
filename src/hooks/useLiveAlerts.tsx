@@ -12,6 +12,7 @@ interface AlertSettings {
   enabled: boolean;
   notifyGoals: boolean;
   notifyRedCards: boolean;
+  soundEnabled: boolean;
 }
 
 export interface RecentGoal {
@@ -32,12 +33,67 @@ function getAlertSettings(): AlertSettings {
         enabled: parsed.enabled ?? false,
         notifyGoals: parsed.notifyGoals ?? true,
         notifyRedCards: parsed.notifyRedCards ?? true,
+        soundEnabled: parsed.soundEnabled ?? true,
       };
     }
   } catch {
     // Ignore parse errors
   }
-  return { enabled: false, notifyGoals: true, notifyRedCards: true };
+  return { enabled: false, notifyGoals: true, notifyRedCards: true, soundEnabled: true };
+}
+
+// Web Audio API synthesized alert sounds
+function playGoalSound() {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Play a celebratory ascending tone sequence
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = freq;
+      oscillator.type = "sine";
+      
+      const startTime = audioContext.currentTime + i * 0.1;
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.2);
+    });
+  } catch {
+    // Audio not supported
+  }
+}
+
+function playRedCardSound() {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Play a warning descending tone
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+    oscillator.type = "square";
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch {
+    // Audio not supported
+  }
 }
 
 export function useLiveAlerts(matches: Match[]) {
@@ -104,8 +160,13 @@ export function useLiveAlerts(matches: Match[]) {
             { matchId: m.id, timestamp: Date.now(), scoringTeam },
           ]);
 
-          // Only show toast if notifications are enabled
+          // Only show toast and play sound if notifications are enabled
           if (alertSettings.enabled && alertSettings.notifyGoals) {
+            // Play sound if enabled
+            if (alertSettings.soundEnabled) {
+              playGoalSound();
+            }
+            
             toast.custom(
               () => (
                 <div className="flex items-start gap-3 bg-[#1C1917] border border-red-500/40 rounded-xl p-4 shadow-2xl shadow-red-500/30 animate-scale-in min-w-[280px]">
@@ -142,6 +203,11 @@ export function useLiveAlerts(matches: Match[]) {
 
         // 🟥 RED CARD DETECTION - Only show if enabled
         if (alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards) {
+          // Play sound if enabled
+          if (alertSettings.soundEnabled) {
+            playRedCardSound();
+          }
+          
           toast.custom(
             () => (
               <div className="flex items-start gap-3 bg-[#1a0505] border border-red-600/60 rounded-lg p-4 shadow-2xl shadow-red-600/20 animate-scale-in min-w-[280px]">
