@@ -48,19 +48,19 @@ const HelpSupport = () => {
     {
       icon: Mail,
       title: "Email Support",
-      description: "support@propredict.com",
+      description: "propredictsupp@gmail.com",
       color: "text-primary",
     },
     {
       icon: Shield,
       title: "Privacy Inquiries",
-      description: "privacy@propredict.com",
+      description: "propredictsupp@gmail.com",
       color: "text-muted-foreground",
     },
     {
       icon: CreditCard,
       title: "Billing Support",
-      description: "billing@propredict.com",
+      description: "propredictsupp@gmail.com",
       color: "text-muted-foreground",
     },
   ];

@@ -80,9 +80,9 @@ const Settings = () => {
     },
     { 
       label: "Contact Us", 
-      description: "support@example.com",
+      description: "propredictsupp@gmail.com",
       icon: Mail, 
-      path: "mailto:support@example.com",
+      path: "mailto:propredictsupp@gmail.com",
       iconColor: "text-muted-foreground",
       external: true
     },
@@ -225,7 +225,7 @@ const Settings = () => {
               <p className="text-[10px] text-muted-foreground mb-1">Version 1.0.0</p>
               <p className="text-[9px] text-muted-foreground mb-2">© {new Date().getFullYear()} ProPredict. All rights reserved.</p>
               <div className="flex items-center justify-center gap-2 text-[10px]">
-                <Link to="/" className="text-primary hover:underline">Website</Link>
+                <a href="https://propredict.me" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Website</a>
                 <span className="text-muted-foreground">·</span>
                 <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
                 <span className="text-muted-foreground">·</span>
