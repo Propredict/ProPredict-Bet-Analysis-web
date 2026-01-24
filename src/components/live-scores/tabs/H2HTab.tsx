@@ -24,7 +24,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
         </div>
         <div className="space-y-3 pt-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-muted/30 rounded-lg h-20" />
+            <div key={i} className="animate-pulse bg-muted/30 rounded-lg h-16" />
           ))}
         </div>
       </div>
@@ -81,25 +81,25 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
 
   return (
     <div className="max-h-[450px] overflow-y-auto">
-      {/* Summary Stats */}
-      <div className="p-5 border-b border-border/30">
+      {/* Summary Stats - matching reference design */}
+      <div className="py-4 px-6 border-b border-border/30">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-4xl font-bold text-emerald-400">{homeWins}</div>
+            <div className="text-3xl font-bold text-emerald-400">{homeWins}</div>
             <div className="text-xs text-muted-foreground mt-1">{shortHomeTeam} Wins</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-muted-foreground">{draws}</div>
+            <div className="text-3xl font-bold text-muted-foreground">{draws}</div>
             <div className="text-xs text-muted-foreground mt-1">Draws</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-primary">{awayWins}</div>
+            <div className="text-3xl font-bold text-orange-400">{awayWins}</div>
             <div className="text-xs text-muted-foreground mt-1">{shortAwayTeam} Wins</div>
           </div>
         </div>
       </div>
 
-      {/* Last Meetings */}
+      {/* Last Meetings - matching reference layout */}
       <div className="p-4">
         <div className="text-sm text-muted-foreground font-medium mb-3">
           Last {Math.min(h2h.length, 10)} Meetings
@@ -122,58 +122,57 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
             return (
               <div
                 key={idx}
-                className="bg-card/40 rounded-lg p-4 border border-border/40"
+                className="bg-[#0F172A] rounded-lg px-4 py-3"
               >
-                {/* Date & League */}
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs text-muted-foreground">{formattedDate}</span>
-                  <span className="text-[10px] bg-muted/50 px-2 py-0.5 rounded text-muted-foreground font-medium">
-                    {match.league?.name || "League"}
-                  </span>
-                </div>
-
-                {/* Match Row */}
+                {/* Row layout: Date/League on left, Teams+Score on right */}
                 <div className="flex items-center">
-                  {/* Home Team */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {/* Left side: Date and League */}
+                  <div className="flex flex-col min-w-[100px]">
+                    <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                    <span className="text-[10px] bg-muted/40 px-2 py-0.5 rounded text-muted-foreground font-medium mt-1 w-fit">
+                      {match.league?.name || "League"}
+                    </span>
+                  </div>
+
+                  {/* Right side: Teams and Score */}
+                  <div className="flex items-center flex-1 justify-end gap-2">
+                    {/* Home Team */}
                     {match.teams?.home?.logo && (
-                      <img src={match.teams.home.logo} alt="" className="w-5 h-5 object-contain shrink-0" />
+                      <img src={match.teams.home.logo} alt="" className="w-5 h-5 object-contain" />
                     )}
                     <span className={cn(
-                      "text-sm truncate",
-                      homeWon && "font-bold text-foreground"
+                      "text-sm",
+                      homeWon ? "font-semibold text-foreground" : "text-muted-foreground"
                     )}>
                       {match.teams?.home?.name || "Home"}
                     </span>
-                  </div>
 
-                  {/* Score */}
-                  <div className="px-4 flex items-center gap-2 shrink-0">
-                    <span className={cn(
-                      "text-lg font-bold",
-                      homeWon ? "text-emerald-400" : "text-foreground"
-                    )}>
-                      {homeGoals}
-                    </span>
-                    <span className="text-muted-foreground">-</span>
-                    <span className={cn(
-                      "text-lg font-bold",
-                      awayWon ? "text-primary" : "text-foreground"
-                    )}>
-                      {awayGoals}
-                    </span>
-                  </div>
+                    {/* Score */}
+                    <div className="flex items-center gap-1 mx-2 bg-muted/30 px-2 py-0.5 rounded">
+                      <span className={cn(
+                        "text-sm font-bold",
+                        homeWon ? "text-emerald-400" : "text-foreground"
+                      )}>
+                        {homeGoals}
+                      </span>
+                      <span className="text-muted-foreground text-sm">-</span>
+                      <span className={cn(
+                        "text-sm font-bold",
+                        awayWon ? "text-orange-400" : "text-foreground"
+                      )}>
+                        {awayGoals}
+                      </span>
+                    </div>
 
-                  {/* Away Team */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                    {/* Away Team */}
                     <span className={cn(
-                      "text-sm truncate",
-                      awayWon && "font-bold text-foreground"
+                      "text-sm",
+                      awayWon ? "font-semibold text-foreground" : "text-muted-foreground"
                     )}>
                       {match.teams?.away?.name || "Away"}
                     </span>
                     {match.teams?.away?.logo && (
-                      <img src={match.teams.away.logo} alt="" className="w-5 h-5 object-contain shrink-0" />
+                      <img src={match.teams.away.logo} alt="" className="w-5 h-5 object-contain" />
                     )}
                   </div>
                 </div>
