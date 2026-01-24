@@ -23,6 +23,7 @@ import PremiumTips from "./pages/PremiumTips";
 import PremiumTickets from "./pages/PremiumTickets";
 import AIPredictions from "./pages/AIPredictions";
 import BettingTips from "./pages/BettingTips";
+import LeagueStatistics from "./pages/LeagueStatistics";
 
 import ManageTips from "./pages/admin/ManageTips";
 import ManageTickets from "./pages/admin/ManageTickets";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/premium-tickets" element={<PremiumTickets />} />
             <Route path="/ai-predictions" element={<AIPredictions />} />
             <Route path="/betting-tips" element={<BettingTips />} />
+            <Route path="/league-statistics" element={<LeagueStatistics />} />
 
             {/* Ticket Details */}
             <Route path="/tickets/:id" element={<TicketDetails />} />
