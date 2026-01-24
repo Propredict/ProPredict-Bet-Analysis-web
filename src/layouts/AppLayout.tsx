@@ -14,7 +14,7 @@ export default function AppLayout() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col">
+        <SidebarInset className="flex-1 flex flex-col min-h-screen">
           {/* Mobile Header with Hamburger Menu */}
           <header className="flex items-center gap-2 px-3 py-2 border-b border-border md:hidden bg-background/95 backdrop-blur-sm sticky top-0 z-40">
             <SidebarTrigger className="h-8 w-8 p-0 flex items-center justify-center">
@@ -28,19 +28,19 @@ export default function AppLayout() {
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto pb-14 md:pb-0">
+          {/* Main Content - flex-1 ensures it grows, pushing footer down */}
+          <main className="flex-1 pb-16 md:pb-0">
             <div className="page-content">
               <Outlet />
             </div>
           </main>
 
-          {/* Footer - Hidden on mobile due to bottom nav */}
-          <div className="hidden md:block">
+          {/* Footer - Always visible on desktop, hidden on mobile (bottom nav replaces it) */}
+          <footer className="hidden md:block mt-auto">
             <Footer />
-          </div>
+          </footer>
 
-          {/* Mobile Bottom Navigation */}
+          {/* Mobile Bottom Navigation - Fixed at bottom */}
           <MobileBottomNav />
         </SidebarInset>
       </div>
