@@ -46,11 +46,11 @@ export default function ExclusiveTips() {
         <Card className="p-2 sm:p-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-warning/20">
-                <Crown className="h-4 w-4 text-warning" />
+              <div className="p-1.5 rounded-md bg-primary/20">
+                <Crown className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-foreground">Remove Ads & Unlock All Tips</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-primary">Remove Ads & Unlock All Tips</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
               </div>
             </div>

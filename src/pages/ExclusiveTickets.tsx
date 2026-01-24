@@ -45,11 +45,11 @@ export default function ExclusiveTickets() {
         <Card className="p-2 sm:p-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-warning/20">
-                <Crown className="h-4 w-4 text-warning" />
+              <div className="p-1.5 rounded bg-primary/20">
+                <Crown className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground">Remove Ads & Unlock All</h3>
+                <h3 className="text-xs sm:text-sm font-semibold text-primary">Remove Ads & Unlock All</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
               </div>
             </div>
