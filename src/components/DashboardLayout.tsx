@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, BellRing, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
+import { Bell, BellRing, Heart, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -117,6 +117,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <Bell className="h-5 w-5" />
                 )}
               </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate("/my-favorites")}
+                className="text-muted-foreground hover:text-pink-400 transition-colors"
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
+
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
