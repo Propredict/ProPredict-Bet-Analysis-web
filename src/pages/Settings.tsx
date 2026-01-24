@@ -1,72 +1,236 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, FileText, Shield, Trash2, ScrollText, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { 
+  Settings as SettingsIcon, 
+  User, 
+  Bell,
+  FileText, 
+  Shield, 
+  Trash2, 
+  ScrollText, 
+  ChevronRight,
+  HelpCircle,
+  Mail,
+  ExternalLink,
+  AlertTriangle,
+  Scale
+} from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 
 const Settings = () => {
   const navigate = useNavigate();
 
+  const accountItems = [
+    { 
+      label: "Profile", 
+      description: "Manage your account and preferences",
+      icon: User, 
+      path: "/profile",
+      iconColor: "text-primary"
+    },
+    { 
+      label: "Notifications", 
+      description: "Configure push notifications",
+      icon: Bell, 
+      path: "/profile",
+      iconColor: "text-muted-foreground"
+    },
+  ];
+
   const legalItems = [
-    { label: "Disclaimer", icon: Shield, path: "/disclaimer" },
-    { label: "Privacy Policy", icon: FileText, path: "/privacy-policy" },
-    { label: "Terms of Service", icon: ScrollText, path: "/terms-of-service" },
-    { label: "Data Deletion", icon: Trash2, path: "/data-deletion" },
+    { 
+      label: "Disclaimer", 
+      description: "Important legal information and age restriction",
+      icon: AlertTriangle, 
+      path: "/disclaimer",
+      iconColor: "text-primary",
+      highlight: true
+    },
+    { 
+      label: "Privacy Policy", 
+      description: "How we collect and use your data",
+      icon: Shield, 
+      path: "/privacy-policy",
+      iconColor: "text-muted-foreground"
+    },
+    { 
+      label: "Terms of Service", 
+      description: "Terms and conditions of use",
+      icon: ScrollText, 
+      path: "/terms-of-service",
+      iconColor: "text-muted-foreground"
+    },
+    { 
+      label: "Data Deletion", 
+      description: "Request deletion of your personal data",
+      icon: Trash2, 
+      path: "/data-deletion",
+      iconColor: "text-destructive"
+    },
+  ];
+
+  const supportItems = [
+    { 
+      label: "Help & Support", 
+      description: "FAQs and contact support",
+      icon: HelpCircle, 
+      path: "/",
+      iconColor: "text-muted-foreground"
+    },
+    { 
+      label: "Contact Us", 
+      description: "support@example.com",
+      icon: Mail, 
+      path: "mailto:support@example.com",
+      iconColor: "text-muted-foreground",
+      external: true
+    },
   ];
 
   return (
     <DashboardLayout>
-      <div className="p-2 sm:p-4 md:p-6 section-gap">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-3 h-7 text-xs gap-1"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Back to Dashboard
-        </Button>
+      <div className="p-2 sm:p-4 md:p-6 max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-1.5 rounded-full border border-primary">
+            <SettingsIcon className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-sm sm:text-base font-semibold text-foreground">Settings</h1>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">App settings and legal information</p>
+          </div>
+        </div>
 
-        <div className="space-y-3">
+        {/* Warning Banner */}
+        <Card className="mb-4 bg-primary/10 border-primary/30">
+          <CardContent className="p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-accent flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-accent">18+ Only · Entertainment Purposes Only</p>
+                <p className="text-[10px] text-muted-foreground">This app does not accept bets or process payments</p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/disclaimer")}
+              className="text-[10px] text-muted-foreground hover:text-foreground h-6 px-2"
+            >
+              Read <ChevronRight className="h-3 w-3 ml-0.5" />
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
           {/* Account Section */}
           <Card>
-            <CardHeader className="p-3 sm:p-4">
-              <CardTitle className="text-sm sm:text-base">Account</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0">
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/profile")}
-                className="w-full justify-between h-9 text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <User className="h-3.5 w-3.5" />
-                  <span>Profile Settings</span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
+            <CardContent className="p-0">
+              <div className="px-3 py-2 border-b border-border">
+                <h2 className="text-xs font-semibold text-foreground">Account</h2>
+              </div>
+              <div className="p-1">
+                {accountItems.map((item, index) => (
+                  <button
+                    key={item.path + index}
+                    onClick={() => navigate(item.path)}
+                    className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-full bg-muted/50">
+                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
           {/* Legal & Compliance Section */}
           <Card>
-            <CardHeader className="p-3 sm:p-4">
-              <CardTitle className="text-sm sm:text-base">Legal & Compliance</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0 space-y-1">
-              {legalItems.map((item) => (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  onClick={() => navigate(item.path)}
-                  className="w-full justify-between h-9 text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-3.5 w-3.5" />
-                    <span>{item.label}</span>
-                  </div>
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              ))}
+            <CardContent className="p-0">
+              <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+                <Scale className="h-3.5 w-3.5 text-primary" />
+                <h2 className="text-xs font-semibold text-foreground">Legal & Compliance</h2>
+              </div>
+              <div className="p-1">
+                {legalItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors ${
+                      item.highlight ? "bg-primary/5 border border-primary/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-1.5 rounded-full ${item.highlight ? "bg-primary/20" : "bg-muted/50"}`}>
+                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Support Section */}
+          <Card>
+            <CardContent className="p-0">
+              <div className="px-3 py-2 border-b border-border">
+                <h2 className="text-xs font-semibold text-foreground">Support</h2>
+              </div>
+              <div className="p-1">
+                {supportItems.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => item.external ? window.open(item.path, "_blank") : navigate(item.path)}
+                    className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-full bg-muted/50">
+                        <item.icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                      </div>
+                    </div>
+                    {item.external ? (
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* App Info Footer */}
+          <Card className="bg-muted/30">
+            <CardContent className="p-4 text-center">
+              <p className="text-xs font-semibold text-primary mb-0.5">ProPredict</p>
+              <p className="text-[10px] text-muted-foreground mb-1">Version 1.0.0</p>
+              <p className="text-[9px] text-muted-foreground mb-2">© {new Date().getFullYear()} ProPredict. All rights reserved.</p>
+              <div className="flex items-center justify-center gap-2 text-[10px]">
+                <Link to="/" className="text-primary hover:underline">Website</Link>
+                <span className="text-muted-foreground">·</span>
+                <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
+                <span className="text-muted-foreground">·</span>
+                <Link to="/terms-of-service" className="text-primary hover:underline">Terms</Link>
+              </div>
             </CardContent>
           </Card>
         </div>
