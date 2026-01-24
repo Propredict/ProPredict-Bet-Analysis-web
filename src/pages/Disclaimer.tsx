@@ -1,17 +1,27 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { useNavigate } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Shield, Ban, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 const Disclaimer = () => {
+  const navigate = useNavigate();
+  
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="container px-4 pt-24 pb-16">
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="container px-4 py-8 flex-1">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/settings")}
+          className="mb-3 h-7 text-xs gap-1"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          Back to Settings
+        </Button>
+        
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <AlertTriangle className="w-10 h-10 text-amber-500" />
+            <AlertTriangle className="w-10 h-10 text-destructive" />
             <h1 className="text-4xl font-bold">Disclaimer</h1>
           </div>
 
