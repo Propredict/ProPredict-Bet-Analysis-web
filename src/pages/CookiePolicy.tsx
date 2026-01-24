@@ -1,10 +1,23 @@
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const CookiePolicy = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="container px-4 py-8 flex-1">
+        <Button 
+          variant="ghost" 
+          className="mb-4 -ml-2" 
+          onClick={() => navigate("/settings")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Settings
+        </Button>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">Cookie Policy</h1>
           <p className="text-muted-foreground mb-8">Last updated: January 10, 2026</p>

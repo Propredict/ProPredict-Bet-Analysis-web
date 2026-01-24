@@ -1,11 +1,22 @@
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
-
+import { Shield, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 const AboutUs = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="container px-4 py-8 flex-1">
+        <Button 
+          variant="ghost" 
+          className="mb-4 -ml-2" 
+          onClick={() => navigate("/settings")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Settings
+        </Button>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10 text-primary" />
