@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,7 +148,6 @@ const HelpSupport = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
@@ -161,9 +159,8 @@ const HelpSupport = () => {
     setErrors({});
 
     try {
-      const validated = contactSchema.parse(formData);
+      contactSchema.parse(formData);
       
-      // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -171,7 +168,6 @@ const HelpSupport = () => {
         description: "We'll get back to you within 24-48 hours.",
       });
       
-      // Reset form
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -189,160 +185,158 @@ const HelpSupport = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/settings")}
-          className="mb-3 h-7 text-xs gap-1"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Back to Settings
-        </Button>
+    <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        onClick={() => navigate("/settings")}
+        className="mb-3 h-7 text-xs gap-1"
+      >
+        <ArrowLeft className="h-3 w-3" />
+        Back to Settings
+      </Button>
 
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="p-1.5 rounded-full border border-primary">
-            <HelpCircle className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Help & Support</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Get help with ProPredict</p>
-          </div>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 rounded-full border border-primary">
+          <HelpCircle className="h-4 w-4 text-primary" />
         </div>
-
-        {/* Support Contact Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-          {supportCards.map((card) => (
-            <Card key={card.title} className="hover:border-primary/50 transition-colors cursor-pointer">
-              <CardContent className="p-3 text-center">
-                <card.icon className={`h-5 w-5 mx-auto mb-1.5 ${card.color}`} />
-                <p className="text-xs font-medium text-foreground">{card.title}</p>
-                <p className="text-[10px] text-muted-foreground">{card.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+        <div>
+          <h1 className="text-sm sm:text-base font-semibold text-foreground">Help & Support</h1>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Get help with ProPredict</p>
         </div>
-
-        {/* FAQ Section */}
-        <Card className="mb-4">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              <h2 className="text-xs sm:text-sm font-semibold text-foreground">Frequently Asked Questions</h2>
-            </div>
-
-            <div className="space-y-3">
-              {faqCategories.map((category) => (
-                <div key={category.title}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <category.icon className={`h-3.5 w-3.5 ${category.color}`} />
-                    <h3 className="text-xs font-medium text-foreground">{category.title}</h3>
-                  </div>
-                  <Accordion type="single" collapsible className="space-y-1">
-                    {category.questions.map((faq, index) => (
-                      <AccordionItem 
-                        key={index} 
-                        value={`${category.title}-${index}`}
-                        className="border border-border rounded-md px-3 data-[state=open]:bg-muted/30"
-                      >
-                        <AccordionTrigger className="text-[11px] sm:text-xs text-foreground hover:no-underline py-2">
-                          {faq.q}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-[10px] sm:text-xs text-muted-foreground pb-2">
-                          {faq.a}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Form */}
-        <Card className="mb-4">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Mail className="h-4 w-4 text-primary" />
-              <h2 className="text-xs sm:text-sm font-semibold text-foreground">Contact Support</h2>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="name" className="text-[10px] sm:text-xs">Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    className={`mt-1 h-8 text-xs ${errors.name ? "border-destructive" : ""}`}
-                  />
-                  {errors.name && <p className="text-[9px] text-destructive mt-0.5">{errors.name}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="email" className="text-[10px] sm:text-xs">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className={`mt-1 h-8 text-xs ${errors.email ? "border-destructive" : ""}`}
-                  />
-                  {errors.email && <p className="text-[9px] text-destructive mt-0.5">{errors.email}</p>}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="subject" className="text-[10px] sm:text-xs">Subject</Label>
-                <Input
-                  id="subject"
-                  placeholder="Brief description of your issue"
-                  value={formData.subject}
-                  onChange={(e) => handleInputChange("subject", e.target.value)}
-                  className={`mt-1 h-8 text-xs ${errors.subject ? "border-destructive" : ""}`}
-                />
-                {errors.subject && <p className="text-[9px] text-destructive mt-0.5">{errors.subject}</p>}
-              </div>
-
-              <div>
-                <Label htmlFor="message" className="text-[10px] sm:text-xs">Message *</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Describe your issue or question in detail..."
-                  value={formData.message}
-                  onChange={(e) => handleInputChange("message", e.target.value)}
-                  className={`mt-1 text-xs min-h-[80px] resize-y ${errors.message ? "border-destructive" : ""}`}
-                />
-                {errors.message && <p className="text-[9px] text-destructive mt-0.5">{errors.message}</p>}
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-8 text-xs"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Response Time Notice */}
-        <Card className="bg-muted/30">
-          <CardContent className="p-3 flex items-center justify-center gap-2">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-[10px] text-muted-foreground">
-              Average response time: <span className="text-foreground font-medium">24-48 hours</span> · For urgent billing issues, please include your transaction ID
-            </p>
-          </CardContent>
-        </Card>
       </div>
-    </DashboardLayout>
+
+      {/* Support Contact Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
+        {supportCards.map((card) => (
+          <Card key={card.title} className="hover:border-primary/50 transition-colors cursor-pointer">
+            <CardContent className="p-3 text-center">
+              <card.icon className={`h-5 w-5 mx-auto mb-1.5 ${card.color}`} />
+              <p className="text-xs font-medium text-foreground">{card.title}</p>
+              <p className="text-[10px] text-muted-foreground">{card.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* FAQ Section */}
+      <Card className="mb-4">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MessageSquare className="h-4 w-4 text-primary" />
+            <h2 className="text-xs sm:text-sm font-semibold text-foreground">Frequently Asked Questions</h2>
+          </div>
+
+          <div className="space-y-3">
+            {faqCategories.map((category) => (
+              <div key={category.title}>
+                <div className="flex items-center gap-2 mb-2">
+                  <category.icon className={`h-3.5 w-3.5 ${category.color}`} />
+                  <h3 className="text-xs font-medium text-foreground">{category.title}</h3>
+                </div>
+                <Accordion type="single" collapsible className="space-y-1">
+                  {category.questions.map((faq, index) => (
+                    <AccordionItem 
+                      key={index} 
+                      value={`${category.title}-${index}`}
+                      className="border border-border rounded-md px-3 data-[state=open]:bg-muted/30"
+                    >
+                      <AccordionTrigger className="text-[11px] sm:text-xs text-foreground hover:no-underline py-2">
+                        {faq.q}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-[10px] sm:text-xs text-muted-foreground pb-2">
+                        {faq.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Form */}
+      <Card className="mb-4">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Mail className="h-4 w-4 text-primary" />
+            <h2 className="text-xs sm:text-sm font-semibold text-foreground">Contact Support</h2>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="name" className="text-[10px] sm:text-xs">Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Your name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  className={`mt-1 h-8 text-xs ${errors.name ? "border-destructive" : ""}`}
+                />
+                {errors.name && <p className="text-[9px] text-destructive mt-0.5">{errors.name}</p>}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-[10px] sm:text-xs">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className={`mt-1 h-8 text-xs ${errors.email ? "border-destructive" : ""}`}
+                />
+                {errors.email && <p className="text-[9px] text-destructive mt-0.5">{errors.email}</p>}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="subject" className="text-[10px] sm:text-xs">Subject</Label>
+              <Input
+                id="subject"
+                placeholder="Brief description of your issue"
+                value={formData.subject}
+                onChange={(e) => handleInputChange("subject", e.target.value)}
+                className={`mt-1 h-8 text-xs ${errors.subject ? "border-destructive" : ""}`}
+              />
+              {errors.subject && <p className="text-[9px] text-destructive mt-0.5">{errors.subject}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="message" className="text-[10px] sm:text-xs">Message *</Label>
+              <Textarea
+                id="message"
+                placeholder="Describe your issue or question in detail..."
+                value={formData.message}
+                onChange={(e) => handleInputChange("message", e.target.value)}
+                className={`mt-1 text-xs min-h-[80px] resize-y ${errors.message ? "border-destructive" : ""}`}
+              />
+              {errors.message && <p className="text-[9px] text-destructive mt-0.5">{errors.message}</p>}
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-8 text-xs"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Sending..." : "Send Message"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Response Time Notice */}
+      <Card className="bg-muted/30">
+        <CardContent className="p-3 flex items-center justify-center gap-2">
+          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          <p className="text-[10px] text-muted-foreground">
+            Average response time: <span className="text-foreground font-medium">24-48 hours</span> · For urgent billing issues, please include your transaction ID
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
