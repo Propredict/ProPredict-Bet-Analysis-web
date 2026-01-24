@@ -10,25 +10,28 @@ function PlayerRow({ player }: { player: PlayerLineup }) {
   const posLabel = player.pos || "—";
 
   return (
-    <div className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
-      <div className="flex items-center gap-2">
-        <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-          {player.number}
+    <div className="flex items-center justify-between py-2.5 border-b border-border/20 last:border-0">
+      <div className="flex items-center gap-3">
+        <span className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+          {player.number || "—"}
         </span>
-        <span className="text-sm text-foreground">{player.name}</span>
+        <span className="text-sm text-foreground">{player.name || "Unknown"}</span>
       </div>
-      <span className="text-xs text-muted-foreground font-medium bg-muted/30 px-2 py-0.5 rounded">
+      <span className="text-xs text-muted-foreground font-medium bg-muted/40 px-2.5 py-1 rounded">
         {posLabel}
       </span>
     </div>
   );
 }
 
-function TeamCard({ lineup, isAway = false }: { lineup: TeamLineup; isAway?: boolean }) {
+function TeamCard({ lineup }: { lineup: TeamLineup }) {
+  const hasStartXI = lineup.startXI && lineup.startXI.length > 0;
+  const hasSubstitutes = lineup.substitutes && lineup.substitutes.length > 0;
+
   return (
-    <div className="bg-card/30 rounded-lg border border-border/30 overflow-hidden">
+    <div className="bg-card/40 rounded-lg border border-border/40 overflow-hidden">
       {/* Team Header with Formation */}
-      <div className="flex items-center justify-between p-3 bg-muted/20 border-b border-border/30">
+      <div className="flex items-center justify-between p-3 bg-muted/30 border-b border-border/30">
         <div className="flex items-center gap-2">
           {lineup.team?.logo && (
             <img src={lineup.team.logo} alt="" className="w-5 h-5 object-contain" />
@@ -38,7 +41,7 @@ function TeamCard({ lineup, isAway = false }: { lineup: TeamLineup; isAway?: boo
           </span>
         </div>
         {lineup.formation && (
-          <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
+          <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded font-bold">
             {lineup.formation}
           </span>
         )}
@@ -46,14 +49,14 @@ function TeamCard({ lineup, isAway = false }: { lineup: TeamLineup; isAway?: boo
 
       {/* Coach */}
       {lineup.coach && (
-        <div className="px-3 py-2 border-b border-border/20 flex items-center gap-2">
+        <div className="px-3 py-2.5 border-b border-border/20 flex items-center gap-3">
           {lineup.coach.photo ? (
-            <img src={lineup.coach.photo} alt="" className="w-7 h-7 rounded-full object-cover bg-muted" />
+            <img src={lineup.coach.photo} alt="" className="w-8 h-8 rounded-full object-cover bg-muted" />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">👤</div>
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">👤</div>
           )}
           <div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Coach</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Coach</div>
             <div className="text-sm font-medium text-foreground">{lineup.coach.name}</div>
           </div>
         </div>
@@ -61,25 +64,26 @@ function TeamCard({ lineup, isAway = false }: { lineup: TeamLineup; isAway?: boo
 
       {/* Starting XI */}
       <div className="p-3">
-        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2">Starting XI</div>
-        <div className="space-y-0">
-          {lineup.startXI?.slice(0, 11).map((player, idx) => (
-            <PlayerRow key={player.id || idx} player={player} />
-          ))}
-          {(!lineup.startXI || lineup.startXI.length === 0) && (
-            <p className="text-xs text-muted-foreground py-3 text-center">No lineup available</p>
-          )}
-        </div>
+        <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 font-medium">Starting XI</div>
+        {hasStartXI ? (
+          <div className="space-y-0">
+            {lineup.startXI.slice(0, 11).map((player, idx) => (
+              <PlayerRow key={player.id || idx} player={player} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground py-3 text-center">No lineup data</p>
+        )}
       </div>
 
       {/* Substitutes */}
-      {lineup.substitutes && lineup.substitutes.length > 0 && (
+      {hasSubstitutes && (
         <div className="px-3 pb-3">
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 pt-2 border-t border-border/30">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 font-medium pt-2 border-t border-border/30">
             Substitutes
           </div>
-          <div className="space-y-0 max-h-28 overflow-y-auto">
-            {lineup.substitutes.slice(0, 7).map((player, idx) => (
+          <div className="space-y-0 max-h-32 overflow-y-auto">
+            {lineup.substitutes.slice(0, 9).map((player, idx) => (
               <PlayerRow key={player.id || idx} player={player} />
             ))}
           </div>
@@ -102,9 +106,9 @@ export function LineupsTab({ lineups, loading }: LineupsTabProps) {
             <div className="space-y-2 pt-2">
               {[...Array(8)].map((_, j) => (
                 <div key={j} className="flex items-center gap-2">
-                  <div className="h-6 w-6 bg-muted rounded-full" />
+                  <div className="h-7 w-7 bg-muted rounded-full" />
                   <div className="h-4 flex-1 bg-muted rounded" />
-                  <div className="h-4 w-6 bg-muted rounded" />
+                  <div className="h-5 w-8 bg-muted rounded" />
                 </div>
               ))}
             </div>
@@ -114,7 +118,11 @@ export function LineupsTab({ lineups, loading }: LineupsTabProps) {
     );
   }
 
-  if (!lineups || lineups.length === 0) {
+  // Check if lineups have actual player data
+  const hasValidLineups = lineups && lineups.length > 0 && 
+    lineups.some(l => l.startXI && l.startXI.length > 0);
+
+  if (!hasValidLineups) {
     return (
       <div className="p-8 text-center">
         <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
@@ -132,7 +140,7 @@ export function LineupsTab({ lineups, loading }: LineupsTabProps) {
     <div className="p-4 max-h-[450px] overflow-y-auto">
       <div className="grid grid-cols-2 gap-4">
         {lineups.slice(0, 2).map((lineup, idx) => (
-          <TeamCard key={lineup.team?.id || idx} lineup={lineup} isAway={idx === 1} />
+          <TeamCard key={lineup.team?.id || idx} lineup={lineup} />
         ))}
       </div>
     </div>

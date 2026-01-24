@@ -58,19 +58,18 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
     if (homeGoals === awayGoals) {
       draws++;
     } else {
-      // Determine which team won this H2H match
       const matchHomeTeam = match.teams?.home?.name;
-      const matchAwayTeam = match.teams?.away?.name;
       const homeTeamWonMatch = homeGoals > awayGoals;
 
-      if (matchHomeTeam === homeTeam || matchAwayTeam === awayTeam) {
-        if ((matchHomeTeam === homeTeam && homeTeamWonMatch) || (matchAwayTeam === homeTeam && !homeTeamWonMatch)) {
-          homeWins++;
-        } else {
-          awayWins++;
-        }
+      // Check if current home team was home team in H2H match
+      if (matchHomeTeam === homeTeam) {
+        if (homeTeamWonMatch) homeWins++;
+        else awayWins++;
+      } else if (matchHomeTeam === awayTeam) {
+        if (homeTeamWonMatch) awayWins++;
+        else homeWins++;
       } else {
-        // Fallback: just count by match position
+        // Fallback: count by match result
         if (homeTeamWonMatch) homeWins++;
         else awayWins++;
       }
@@ -83,7 +82,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
   return (
     <div className="max-h-[450px] overflow-y-auto">
       {/* Summary Stats */}
-      <div className="p-4 border-b border-border/30">
+      <div className="p-5 border-b border-border/30">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-4xl font-bold text-emerald-400">{homeWins}</div>
@@ -102,7 +101,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
 
       {/* Last Meetings */}
       <div className="p-4">
-        <div className="text-xs text-muted-foreground font-medium mb-3">
+        <div className="text-sm text-muted-foreground font-medium mb-3">
           Last {Math.min(h2h.length, 10)} Meetings
         </div>
 
@@ -123,12 +122,12 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
             return (
               <div
                 key={idx}
-                className="bg-card/30 rounded-lg p-3 border border-border/30"
+                className="bg-card/40 rounded-lg p-4 border border-border/40"
               >
                 {/* Date & League */}
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-3">
                   <span className="text-xs text-muted-foreground">{formattedDate}</span>
-                  <span className="text-[10px] bg-muted/30 px-2 py-0.5 rounded text-muted-foreground">
+                  <span className="text-[10px] bg-muted/50 px-2 py-0.5 rounded text-muted-foreground font-medium">
                     {match.league?.name || "League"}
                   </span>
                 </div>
@@ -142,7 +141,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
                     )}
                     <span className={cn(
                       "text-sm truncate",
-                      homeWon && "font-semibold text-foreground"
+                      homeWon && "font-bold text-foreground"
                     )}>
                       {match.teams?.home?.name || "Home"}
                     </span>
@@ -169,7 +168,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
                   <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                     <span className={cn(
                       "text-sm truncate",
-                      awayWon && "font-semibold text-foreground"
+                      awayWon && "font-bold text-foreground"
                     )}>
                       {match.teams?.away?.name || "Away"}
                     </span>
