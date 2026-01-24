@@ -64,15 +64,15 @@ export function KickoffCountdown({ startTime, matchDate }: KickoffCountdownProps
 
   if (!countdown) {
     return (
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">
         {startTime}
       </Badge>
     );
   }
 
   return (
-    <Badge className="bg-primary/10 text-primary border border-primary/30 text-xs px-2 gap-1">
-      <Clock className="h-3 w-3" />
+    <Badge className="bg-primary/10 text-primary border border-primary/30 text-[10px] sm:text-xs px-1 sm:px-2 gap-0.5 sm:gap-1">
+      <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
       {countdown}
     </Badge>
   );
