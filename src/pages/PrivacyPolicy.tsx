@@ -1,16 +1,13 @@
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Trash2, Lock } from "lucide-react";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="container px-4 pt-24 pb-16">
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="container px-4 py-6 flex-1">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10 text-primary" />
