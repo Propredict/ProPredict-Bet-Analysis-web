@@ -22,9 +22,10 @@ import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  fullWidth?: boolean;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, fullWidth = false }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { plan } = useUserPlan();
@@ -171,7 +172,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Main Content - GLOBAL COMPACT DENSITY padding */}
           <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 pb-20 md:pb-6 min-w-0 mt-10 sm:mt-11">
-            <div className="max-w-[1200px] mx-auto w-full space-y-4 md:space-y-6">
+            <div className={cn("mx-auto w-full space-y-4 md:space-y-6", !fullWidth && "max-w-[1200px]")}>
               {children}
             </div>
           </main>
