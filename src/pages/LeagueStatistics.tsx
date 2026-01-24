@@ -182,14 +182,12 @@ export default function LeagueStatistics() {
             />
           </TabsContent>
 
-          {/* Other tabs - show empty state if "All Leagues" selected */}
+          {/* Standings tab - shows grid for All Leagues, detailed view for specific league */}
           <TabsContent value="standings" className="mt-4">
-            {isAllLeagues ? (
-              <LeagueStatsEmptyState />
-            ) : (
-              <LeagueStatsStandingsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
-            )}
+            <LeagueStatsStandingsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />
           </TabsContent>
+
+          {/* Other tabs - show empty state if "All Leagues" selected */}
 
           <TabsContent value="scorers" className="mt-4">
             {isAllLeagues ? (
