@@ -3,7 +3,7 @@ import { Crown, Check, X, Zap, Target, Brain, Bell, Clock, Shield, Star } from "
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/DashboardLayout";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -198,9 +198,7 @@ export default function GetPremium() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="py-2 sm:py-4 px-0 sm:px-2 max-w-full overflow-x-hidden">
-        <div className="max-w-5xl mx-auto">
+    <div className="py-2 sm:py-4 max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-3 sm:mb-4 px-1.5">
             <p className="text-accent text-[10px] sm:text-xs mb-2 sm:mb-3">
@@ -347,14 +345,12 @@ export default function GetPremium() {
             </Accordion>
           </div>
 
-          {/* Bottom CTA */}
-          <div className="text-center px-1.5 sm:px-0 pb-2">
-            <p className="text-muted-foreground text-[10px] sm:text-xs">
-              Choose package and unlock premium features.
-            </p>
-          </div>
+        {/* Bottom CTA */}
+        <div className="text-center pb-2">
+          <p className="text-muted-foreground text-[10px] sm:text-xs">
+            Choose package and unlock premium features.
+          </p>
         </div>
       </div>
-    </DashboardLayout>
   );
 }
