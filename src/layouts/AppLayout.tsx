@@ -1,49 +1,200 @@
-import { Outlet } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Bell, BellRing, Heart, User, LogOut, Crown, Star, Gift } from "lucide-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   SidebarProvider, 
   SidebarInset, 
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
+import { cn } from "@/lib/utils";
 
 export default function AppLayout() {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { plan } = useUserPlan();
+  const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
+  const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+
+  const getPlanBadge = () => {
+    switch (plan) {
+      case "premium":
+        return {
+          icon: Crown,
+          label: "Premium",
+          className: "bg-gradient-to-r from-warning/20 to-accent/20 text-warning border-warning/30",
+          showUpgrade: false,
+          upgradeLabel: "",
+        };
+      case "basic":
+        return {
+          icon: Star,
+          label: "Pro",
+          className: "bg-primary/20 text-primary border-primary/30",
+          showUpgrade: true,
+          upgradeLabel: "Go Premium",
+        };
+      default:
+        return {
+          icon: Gift,
+          label: "Free",
+          className: "bg-muted text-muted-foreground border-border",
+          showUpgrade: true,
+          upgradeLabel: "Upgrade",
+        };
+    }
+  };
+
+  const planBadge = getPlanBadge();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen">
-          {/* Mobile Header with Hamburger Menu */}
-          <header className="flex items-center gap-2 px-3 py-2 border-b border-border md:hidden bg-background/95 backdrop-blur-sm sticky top-0 z-40">
-            <SidebarTrigger className="h-8 w-8 p-0 flex items-center justify-center">
-              <Menu className="h-5 w-5" />
-            </SidebarTrigger>
-            <div className="flex items-center gap-1.5">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-                P
+          {/* FIXED Header - Always visible */}
+          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:left-[var(--sidebar-width,0)]">
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
+            
+            <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
+              {/* Subscription Badge */}
+              <div className="hidden xs:flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 cursor-pointer hover:opacity-80 transition-opacity text-[9px] sm:text-[10px]",
+                    planBadge.className
+                  )}
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <planBadge.icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  <span className="font-medium">{planBadge.label}</span>
+                </Badge>
+                {planBadge.showUpgrade && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/get-premium")}
+                    className="hidden sm:flex text-[10px] text-accent hover:text-accent/80 px-1.5 h-5"
+                  >
+                    {planBadge.upgradeLabel}
+                  </Button>
+                )}
               </div>
-              <span className="text-sm font-semibold">ProPredict</span>
+
+              {/* Alerts Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowGlobalAlerts(true)}
+                className={cn(
+                  "relative transition-all h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0",
+                  alertSettings.enabled 
+                    ? "text-green-400 hover:text-green-300" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {alertSettings.enabled ? (
+                  <>
+                    <BellRing className="h-3.5 w-3.5" />
+                    <span className="absolute top-0 right-0 h-1 w-1 rounded-full bg-green-500 animate-pulse" />
+                  </>
+                ) : (
+                  <Bell className="h-3.5 w-3.5" />
+                )}
+              </Button>
+              
+              {/* Favorites Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate("/favorites")}
+                className="text-muted-foreground hover:text-pink-400 transition-colors h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+              >
+                <Heart className="h-3.5 w-3.5" />
+              </Button>
+
+              {/* User Menu */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-foreground h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                    >
+                      <User className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 bg-popover border-border z-[60]">
+                    <DropdownMenuItem onClick={() => navigate("/profile")} className="text-xs">
+                      <User className="mr-1.5 h-3 w-3" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive text-xs">
+                      <LogOut className="mr-1.5 h-3 w-3" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => navigate("/login")}
+                  className="text-muted-foreground hover:text-foreground h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                >
+                  <User className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
           </header>
 
-          {/* Main Content - flex-1 ensures it grows, pushing footer down */}
-          <main className="flex-1 pb-16 md:pb-0">
+          {/* Main Content - offset for fixed header */}
+          <main className="flex-1 mt-10 sm:mt-11 pb-16 md:pb-0">
             <div className="page-content">
               <Outlet />
             </div>
           </main>
 
-          {/* Footer - Always visible on desktop, hidden on mobile (bottom nav replaces it) */}
+          {/* Footer - Desktop only */}
           <footer className="hidden md:block mt-auto">
             <Footer />
           </footer>
 
-          {/* Mobile Bottom Navigation - Fixed at bottom */}
+          {/* Mobile Bottom Navigation */}
           <MobileBottomNav />
         </SidebarInset>
       </div>
+
+      {/* Global Alerts Modal */}
+      <GlobalAlertsModal 
+        isOpen={showGlobalAlerts} 
+        onClose={() => setShowGlobalAlerts(false)}
+        settings={alertSettings}
+        onToggle={toggleAlertSetting}
+      />
     </SidebarProvider>
   );
 }
