@@ -121,7 +121,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate("/my-favorites")}
+                onClick={() => navigate("/favorites")}
                 className="text-muted-foreground hover:text-pink-400 transition-colors"
               >
                 <Heart className="h-5 w-5" />
