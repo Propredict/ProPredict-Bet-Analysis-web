@@ -8,6 +8,31 @@ interface MatchSnapshot {
   redCards: number;
 }
 
+interface AlertSettings {
+  enabled: boolean;
+  notifyGoals: boolean;
+  notifyRedCards: boolean;
+}
+
+const STORAGE_KEY = "live-scores-alert-settings";
+
+function getAlertSettings(): AlertSettings {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        enabled: parsed.enabled ?? false,
+        notifyGoals: parsed.notifyGoals ?? true,
+        notifyRedCards: parsed.notifyRedCards ?? true,
+      };
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return { enabled: false, notifyGoals: true, notifyRedCards: true };
+}
+
 export function useLiveAlerts(matches: Match[]) {
   const prevSnapshots = useRef<Map<string, MatchSnapshot>>(new Map());
   const initialized = useRef(false);
@@ -28,6 +53,21 @@ export function useLiveAlerts(matches: Match[]) {
       return;
     }
 
+    // Read alert settings - only show notifications if enabled
+    const alertSettings = getAlertSettings();
+    
+    // If global alerts are disabled, skip all notifications but still update snapshots
+    if (!alertSettings.enabled) {
+      matches.forEach((m) => {
+        prevSnapshots.current.set(m.id, {
+          homeScore: m.homeScore ?? 0,
+          awayScore: m.awayScore ?? 0,
+          redCards: countRedCards(m),
+        });
+      });
+      return;
+    }
+
     // CHECK – compare current vs previous for live matches only
     matches.forEach((m) => {
       if (m.status !== "live" && m.status !== "halftime") return;
@@ -38,8 +78,8 @@ export function useLiveAlerts(matches: Match[]) {
       const currRedCards = countRedCards(m);
 
       if (prev) {
-        // ⚽ GOAL DETECTION
-        if (prev.homeScore !== currHomeScore || prev.awayScore !== currAwayScore) {
+        // ⚽ GOAL DETECTION - Only show if notifyGoals is enabled
+        if (alertSettings.notifyGoals && (prev.homeScore !== currHomeScore || prev.awayScore !== currAwayScore)) {
           const scoringTeam = prev.homeScore !== currHomeScore ? m.homeTeam : m.awayTeam;
           
           toast.custom(
@@ -75,8 +115,8 @@ export function useLiveAlerts(matches: Match[]) {
           );
         }
 
-        // 🟥 RED CARD DETECTION
-        if (currRedCards > prev.redCards) {
+        // 🟥 RED CARD DETECTION - Only show if notifyRedCards is enabled
+        if (alertSettings.notifyRedCards && currRedCards > prev.redCards) {
           toast.custom(
             () => (
               <div className="flex items-start gap-3 bg-[#1a0505] border border-red-600/60 rounded-lg p-4 shadow-2xl shadow-red-600/20 animate-scale-in min-w-[280px]">
