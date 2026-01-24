@@ -1,13 +1,11 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const CookiePolicy = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="min-h-screen bg-background flex flex-col">
 
-      <main className="container px-4 pt-24 pb-16">
+      <main className="container px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">Cookie Policy</h1>
           <p className="text-muted-foreground mb-8">Last updated: January 10, 2026</p>
