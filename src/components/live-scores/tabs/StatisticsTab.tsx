@@ -1,5 +1,7 @@
 import { StatItem, MatchEvent } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
+import { Clock, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface StatisticsTabProps {
   statistics: StatItem[];
@@ -17,7 +19,7 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
           <div key={i} className="animate-pulse">
             <div className="flex justify-between items-center mb-2">
               <div className="h-4 w-8 bg-muted rounded" />
-              <div className="h-3 w-20 bg-muted rounded" />
+              <div className="h-3 w-24 bg-muted rounded" />
               <div className="h-4 w-8 bg-muted rounded" />
             </div>
             <div className="h-2 bg-muted rounded-full" />
@@ -52,7 +54,7 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
     return String(val);
   };
 
-  // Filter and show key stats first
+  // Priority order for stats
   const priorityStats = [
     "Shots on Target", "Shots off Target", "Total Shots", "Blocked Shots",
     "Ball Possession", "Corner Kicks", "Fouls", "Offsides",
@@ -68,41 +70,62 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
     return aIdx - bIdx;
   });
 
+  // Get event icon
+  const getEventIcon = (event: MatchEvent) => {
+    if (event.type === "Goal") {
+      return <span className="text-base">⚽</span>;
+    }
+    if (event.type === "Card" && event.detail === "Yellow Card") {
+      return <span className="w-3 h-4 bg-yellow-400 rounded-sm inline-block" />;
+    }
+    if (event.type === "Card" && event.detail === "Red Card") {
+      return <span className="w-3 h-4 bg-red-500 rounded-sm inline-block" />;
+    }
+    if (event.type === "subst") {
+      return <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />;
+    }
+    return null;
+  };
+
   return (
-    <div className="max-h-[400px] overflow-y-auto">
-      {/* Match Events (if any) */}
+    <div className="max-h-[450px] overflow-y-auto">
+      {/* Match Events Section */}
       {events.length > 0 && (
-        <div className="px-4 py-3 border-b border-border/30">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Match Events
+        <div className="p-4 border-b border-border/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="w-3.5 h-3.5" />
+              Match Events
+            </div>
+            <Badge variant="outline" className="text-[10px] px-2 py-0.5 gap-1">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+              Live
+            </Badge>
           </div>
           <div className="space-y-2">
-            {events.slice(0, 5).map((event, idx) => {
+            {events.slice(0, 6).map((event, idx) => {
               const isHome = event.team?.name === homeTeam;
-              const isGoal = event.type === "Goal";
-              const isCard = event.type === "Card";
 
               return (
                 <div
                   key={idx}
                   className={cn(
-                    "flex items-center gap-2 text-xs",
-                    isHome ? "justify-start" : "justify-end flex-row-reverse"
+                    "flex items-center gap-3 text-sm py-1.5",
+                    !isHome && "flex-row-reverse"
                   )}
                 >
-                  <span className="text-muted-foreground w-8">{event.time.elapsed}'</span>
-                  <span className="flex items-center gap-1.5">
-                    {isGoal && <span className="text-emerald-400">⚽</span>}
-                    {isCard && event.detail === "Yellow Card" && <span className="w-2.5 h-3.5 bg-yellow-400 rounded-sm" />}
-                    {isCard && event.detail === "Red Card" && <span className="w-2.5 h-3.5 bg-red-500 rounded-sm" />}
-                    <span className={cn(isGoal && "font-medium text-foreground")}>
+                  <span className="text-xs text-muted-foreground w-8 shrink-0">
+                    {event.time.elapsed}'
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {getEventIcon(event)}
+                    <span className="font-medium text-foreground">
                       {event.player?.name}
                     </span>
                     {event.assist?.name && (
-                      <span className="text-muted-foreground">({event.assist.name})</span>
+                      <span className="text-muted-foreground text-xs">
+                        ({event.assist.name})
+                      </span>
                     )}
                   </span>
                 </div>
@@ -112,43 +135,43 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
         </div>
       )}
 
-      {/* Statistics */}
+      {/* Statistics Section */}
       <div className="p-4 space-y-4">
         {sortedStats.map((stat, idx) => {
           const homeVal = parseValue(stat.home);
           const awayVal = parseValue(stat.away);
-          const total = homeVal + awayVal || 1;
-          const homePercent = (homeVal / total) * 100;
-          const awayPercent = (awayVal / total) * 100;
+          const maxVal = Math.max(homeVal, awayVal) || 1;
+          const homePercent = (homeVal / maxVal) * 100;
+          const awayPercent = (awayVal / maxVal) * 100;
 
           return (
             <div key={idx} className="space-y-1.5">
-              {/* Values and Label */}
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-foreground min-w-[40px]">
+              {/* Values and Label Row */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-foreground w-12">
                   {formatValue(stat.home)}
                 </span>
-                <span className="text-xs text-muted-foreground text-center flex-1 px-2">
+                <span className="text-xs text-muted-foreground text-center flex-1">
                   {stat.type}
                 </span>
-                <span className="font-semibold text-foreground min-w-[40px] text-right">
+                <span className="text-sm font-semibold text-foreground w-12 text-right">
                   {formatValue(stat.away)}
                 </span>
               </div>
 
-              {/* Progress Bars */}
-              <div className="flex gap-1 h-2">
-                {/* Home bar (grows from right to left) */}
-                <div className="flex-1 flex justify-end">
+              {/* Dual Progress Bars */}
+              <div className="flex gap-1">
+                {/* Home bar - grows from right to left */}
+                <div className="flex-1 flex justify-end h-2 bg-muted/30 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-l-full transition-all duration-500"
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                     style={{ width: `${homePercent}%` }}
                   />
                 </div>
-                {/* Away bar (grows from left to right) */}
-                <div className="flex-1">
+                {/* Away bar - grows from left to right */}
+                <div className="flex-1 h-2 bg-muted/30 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-orange-500 rounded-r-full transition-all duration-500"
+                    className="h-full bg-orange-500 rounded-full transition-all duration-500"
                     style={{ width: `${awayPercent}%` }}
                   />
                 </div>
