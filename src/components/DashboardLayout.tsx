@@ -71,8 +71,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
-          {/* STICKY Header - ULTRA COMPACT */}
-          <header className="sticky top-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          {/* FIXED Header - ULTRA COMPACT */}
+          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:left-[var(--sidebar-width,0)]">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
             
             <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
@@ -168,8 +168,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          {/* Main Content - COMPACT padding */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-1.5 sm:p-3 md:p-4 pb-16 md:pb-4 min-w-0">
+          {/* Main Content - COMPACT padding with top offset for fixed header */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-1.5 sm:p-3 md:p-4 pb-16 md:pb-4 min-w-0 mt-10 sm:mt-11">
             <div className="max-w-[1200px] mx-auto w-full">
               {children}
             </div>
