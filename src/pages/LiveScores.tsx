@@ -74,7 +74,7 @@ export default function LiveScores() {
   const isUnavailable = error || (isLoading && matches.length === 0);
 
   // Live alerts detection - only when data is available
-  useLiveAlerts(isUnavailable ? [] : matches);
+  const { hasRecentGoal } = useLiveAlerts(isUnavailable ? [] : matches);
 
   /* -------------------- CLOCK -------------------- */
 
@@ -283,14 +283,28 @@ export default function LiveScores() {
               const isLive = m.status === "live" || m.status === "halftime";
               const isFinished = m.status === "finished";
               const isUpcoming = m.status === "upcoming";
+              const showGoalIndicator = hasRecentGoal(m.id);
 
               return (
                 <div
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer"
+                  className={cn(
+                    "px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer relative",
+                    showGoalIndicator && "bg-emerald-500/5"
+                  )}
                 >
-                  <div className="flex items-center gap-2">
+                  {/* GOAL Indicator */}
+                  {showGoalIndicator && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pl-1">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                      </span>
+                    </div>
+                  )}
+
+                  <div className={cn("flex items-center gap-2", showGoalIndicator && "ml-4")}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -337,7 +351,15 @@ export default function LiveScores() {
                     <span className="text-left pl-3 truncate">{m.awayTeam}</span>
                   </div>
 
-                  <StatusBadge match={m} />
+                  {/* GOAL badge next to status */}
+                  <div className="flex items-center gap-2">
+                    {showGoalIndicator && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider animate-pulse">
+                        ⚽ GOAL
+                      </span>
+                    )}
+                    <StatusBadge match={m} />
+                  </div>
                 </div>
               );
             })}

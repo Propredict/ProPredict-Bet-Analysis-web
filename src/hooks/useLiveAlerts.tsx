@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Match } from "@/hooks/useLiveScores";
 import { toast } from "sonner";
 
@@ -14,7 +14,14 @@ interface AlertSettings {
   notifyRedCards: boolean;
 }
 
+export interface RecentGoal {
+  matchId: string;
+  timestamp: number;
+  scoringTeam: string;
+}
+
 const STORAGE_KEY = "live-scores-alert-settings";
+const GOAL_DISPLAY_DURATION = 30000; // 30 seconds
 
 function getAlertSettings(): AlertSettings {
   try {
@@ -36,6 +43,25 @@ function getAlertSettings(): AlertSettings {
 export function useLiveAlerts(matches: Match[]) {
   const prevSnapshots = useRef<Map<string, MatchSnapshot>>(new Map());
   const initialized = useRef(false);
+  const [recentGoals, setRecentGoals] = useState<RecentGoal[]>([]);
+
+  // Cleanup expired goals every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setRecentGoals((prev) => prev.filter((g) => now - g.timestamp < GOAL_DISPLAY_DURATION));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check if a match has a recent goal
+  const hasRecentGoal = useCallback(
+    (matchId: string) => {
+      const now = Date.now();
+      return recentGoals.some((g) => g.matchId === matchId && now - g.timestamp < GOAL_DISPLAY_DURATION);
+    },
+    [recentGoals]
+  );
 
   useEffect(() => {
     if (!matches || matches.length === 0) return;
@@ -53,20 +79,8 @@ export function useLiveAlerts(matches: Match[]) {
       return;
     }
 
-    // Read alert settings - only show notifications if enabled
+    // Read alert settings
     const alertSettings = getAlertSettings();
-    
-    // If global alerts are disabled, skip all notifications but still update snapshots
-    if (!alertSettings.enabled) {
-      matches.forEach((m) => {
-        prevSnapshots.current.set(m.id, {
-          homeScore: m.homeScore ?? 0,
-          awayScore: m.awayScore ?? 0,
-          redCards: countRedCards(m),
-        });
-      });
-      return;
-    }
 
     // CHECK – compare current vs previous for live matches only
     matches.forEach((m) => {
@@ -78,45 +92,56 @@ export function useLiveAlerts(matches: Match[]) {
       const currRedCards = countRedCards(m);
 
       if (prev) {
-        // ⚽ GOAL DETECTION - Only show if notifyGoals is enabled
-        if (alertSettings.notifyGoals && (prev.homeScore !== currHomeScore || prev.awayScore !== currAwayScore)) {
+        // ⚽ GOAL DETECTION
+        const goalScored = prev.homeScore !== currHomeScore || prev.awayScore !== currAwayScore;
+        
+        if (goalScored) {
           const scoringTeam = prev.homeScore !== currHomeScore ? m.homeTeam : m.awayTeam;
           
-          toast.custom(
-            () => (
-              <div className="flex items-start gap-3 bg-[#1C1917] border border-red-500/40 rounded-xl p-4 shadow-2xl shadow-red-500/30 animate-scale-in min-w-[280px]">
-                <div className="relative flex-shrink-0 mt-0.5">
-                  <span className="absolute inset-0 h-3 w-3 rounded-full bg-red-500 animate-ping opacity-75" />
-                  <span className="relative inline-block h-3 w-3 rounded-full bg-red-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">⚽</span>
-                    <span className="text-emerald-400 font-bold text-sm uppercase tracking-wide">
-                      GOAL
-                    </span>
+          // Always track recent goals for UI indicator (regardless of notification settings)
+          setRecentGoals((current) => [
+            ...current.filter((g) => g.matchId !== m.id), // Remove old entry for this match
+            { matchId: m.id, timestamp: Date.now(), scoringTeam },
+          ]);
+
+          // Only show toast if notifications are enabled
+          if (alertSettings.enabled && alertSettings.notifyGoals) {
+            toast.custom(
+              () => (
+                <div className="flex items-start gap-3 bg-[#1C1917] border border-red-500/40 rounded-xl p-4 shadow-2xl shadow-red-500/30 animate-scale-in min-w-[280px]">
+                  <div className="relative flex-shrink-0 mt-0.5">
+                    <span className="absolute inset-0 h-3 w-3 rounded-full bg-red-500 animate-ping opacity-75" />
+                    <span className="relative inline-block h-3 w-3 rounded-full bg-red-500" />
                   </div>
-                  <p className="text-white font-semibold text-sm truncate">
-                    {scoringTeam} scores!
-                  </p>
-                  <p className="text-white/70 text-sm mt-1">
-                    {m.homeTeam} <span className="font-bold text-red-400">{currHomeScore}</span> – <span className="font-bold text-red-400">{currAwayScore}</span> {m.awayTeam}
-                  </p>
-                  {m.minute && (
-                    <p className="text-white/40 text-xs mt-1">{m.minute}'</p>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">⚽</span>
+                      <span className="text-emerald-400 font-bold text-sm uppercase tracking-wide">
+                        GOAL
+                      </span>
+                    </div>
+                    <p className="text-white font-semibold text-sm truncate">
+                      {scoringTeam} scores!
+                    </p>
+                    <p className="text-white/70 text-sm mt-1">
+                      {m.homeTeam} <span className="font-bold text-red-400">{currHomeScore}</span> – <span className="font-bold text-red-400">{currAwayScore}</span> {m.awayTeam}
+                    </p>
+                    {m.minute && (
+                      <p className="text-white/40 text-xs mt-1">{m.minute}'</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ),
-            {
-              duration: 6000,
-              position: "top-right",
-            }
-          );
+              ),
+              {
+                duration: 6000,
+                position: "top-right",
+              }
+            );
+          }
         }
 
-        // 🟥 RED CARD DETECTION - Only show if notifyRedCards is enabled
-        if (alertSettings.notifyRedCards && currRedCards > prev.redCards) {
+        // 🟥 RED CARD DETECTION - Only show if enabled
+        if (alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards) {
           toast.custom(
             () => (
               <div className="flex items-start gap-3 bg-[#1a0505] border border-red-600/60 rounded-lg p-4 shadow-2xl shadow-red-600/20 animate-scale-in min-w-[280px]">
@@ -152,6 +177,8 @@ export function useLiveAlerts(matches: Match[]) {
       });
     });
   }, [matches]);
+
+  return { recentGoals, hasRecentGoal };
 }
 
 // Helper to count red cards from match (if events exist)
