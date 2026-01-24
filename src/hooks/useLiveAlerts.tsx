@@ -44,29 +44,32 @@ export function useLiveAlerts(matches: Match[]) {
           
           toast.custom(
             () => (
-              <div className="flex items-start gap-3 bg-[#1a0a0a] border border-red-500/50 rounded-lg p-4 shadow-2xl shadow-red-500/20 animate-scale-in min-w-[300px]">
-                <div className="relative flex-shrink-0">
-                  <span className="inline-block h-4 w-4 rounded-full bg-red-500 animate-ping absolute" />
-                  <span className="inline-block h-4 w-4 rounded-full bg-red-500 relative" />
+              <div className="flex items-start gap-3 bg-[#1C1917] border border-red-500/40 rounded-xl p-4 shadow-2xl shadow-red-500/30 animate-scale-in min-w-[280px]">
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <span className="absolute inset-0 h-3 w-3 rounded-full bg-red-500 animate-ping opacity-75" />
+                  <span className="relative inline-block h-3 w-3 rounded-full bg-red-500" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-red-400 font-black text-sm uppercase tracking-wider mb-1">
-                    ⚽ GOAL
-                  </p>
-                  <p className="text-white font-semibold text-base">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">⚽</span>
+                    <span className="text-emerald-400 font-bold text-sm uppercase tracking-wide">
+                      GOAL
+                    </span>
+                  </div>
+                  <p className="text-white font-semibold text-sm truncate">
                     {scoringTeam} scores!
                   </p>
-                  <p className="text-white/80 text-sm mt-1">
+                  <p className="text-white/70 text-sm mt-1">
                     {m.homeTeam} <span className="font-bold text-red-400">{currHomeScore}</span> – <span className="font-bold text-red-400">{currAwayScore}</span> {m.awayTeam}
                   </p>
                   {m.minute && (
-                    <p className="text-white/50 text-xs mt-1">{m.minute}'</p>
+                    <p className="text-white/40 text-xs mt-1">{m.minute}'</p>
                   )}
                 </div>
               </div>
             ),
             {
-              duration: 5000,
+              duration: 6000,
               position: "top-right",
             }
           );
