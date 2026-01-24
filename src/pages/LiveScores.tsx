@@ -86,7 +86,7 @@ export default function LiveScores() {
   /* -------------------- STATUS RULES -------------------- */
 
   const allowedStatusTabs: StatusTab[] = useMemo(() => {
-    if (dateMode === "yesterday") return ["all", "finished"];
+    if (dateMode === "yesterday") return ["all"];
     if (dateMode === "tomorrow") return ["all"];
     return ["all", "live", "upcoming", "finished"];
   }, [dateMode]);
