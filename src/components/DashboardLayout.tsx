@@ -93,10 +93,9 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 </Badge>
                 {planBadge.showUpgrade && (
                   <Button
-                    variant="ghost"
                     size="sm"
                     onClick={() => navigate("/get-premium")}
-                    className="hidden sm:flex text-[10px] text-accent hover:text-accent/80 px-1.5 h-5"
+                    className="hidden sm:flex text-[10px] bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 px-2 h-6"
                   >
                     {planBadge.upgradeLabel}
                   </Button>

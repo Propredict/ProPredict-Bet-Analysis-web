@@ -211,7 +211,7 @@ export default function GetPremium() {
                 onClick={() => setBillingPeriod("monthly")}
                 className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${
                   billingPeriod === "monthly"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -221,12 +221,12 @@ export default function GetPremium() {
                 onClick={() => setBillingPeriod("annual")}
                 className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-colors flex items-center gap-0.5 sm:gap-1 ${
                   billingPeriod === "annual"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Annual
-                <Badge className="bg-accent text-accent-foreground text-[8px] sm:text-[9px] px-0.5 sm:px-1">Save 17%</Badge>
+                <Badge className="bg-white/20 text-white text-[8px] sm:text-[9px] px-0.5 sm:px-1">Save 17%</Badge>
               </button>
             </div>
           </div>
