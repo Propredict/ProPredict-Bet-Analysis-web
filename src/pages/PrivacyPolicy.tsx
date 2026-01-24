@@ -1,25 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Footer } from "@/components/Footer";
+import { Link } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Trash2, Lock, ArrowLeft } from "lucide-react";
+import { Shield, Trash2, Lock } from "lucide-react";
 
 const PrivacyPolicy = () => {
-  const navigate = useNavigate();
-  
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="container px-4 py-16 flex-1">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <main className="container px-4 pt-24 pb-16">
         <div className="max-w-4xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/settings")}
-            className="mb-3 h-7 text-xs gap-1"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            Back to Settings
-          </Button>
-          
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10 text-primary" />
             <h1 className="text-4xl font-bold">Privacy Policy</h1>
@@ -118,7 +110,8 @@ const PrivacyPolicy = () => {
                   <h4 className="font-semibold text-foreground">Google AdMob</h4>
                   <p className="text-muted-foreground text-sm">
                     Displays advertisements in our free tier. AdMob may collect device identifiers and usage data to
-                    serve personalized ads.
+                    serve personalized ads.We use Google AdSense to display advertisements on our website. Google may
+                    use cookies or device identifiers to serve personalized ads.
                     <a
                       href="https://policies.google.com/privacy"
                       target="_blank"
