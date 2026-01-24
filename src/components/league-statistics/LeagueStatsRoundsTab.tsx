@@ -42,9 +42,14 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
     <div className="space-y-4">
       {/* Header */}
       <Card className="p-4 bg-[#0E1627] border-white/10">
-        <div className="flex items-center gap-2">
-          <RotateCcw className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{leagueName} Matchdays & Rounds</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <RotateCcw className="h-5 w-5 text-primary" />
+            <span className="font-semibold">{leagueName} Matchdays & Rounds</span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            📊 Official data · Updated after round completion
+          </span>
         </div>
       </Card>
 
