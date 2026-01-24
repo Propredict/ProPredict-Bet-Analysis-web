@@ -28,8 +28,6 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
-import { useAILiveStatus } from "@/hooks/useAILiveStatus";
-import { AIStatusBadge } from "@/components/live-scores/AIStatusBadge";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -69,7 +67,6 @@ export default function LiveScores() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
-  const { getAIStatus } = useAILiveStatus();
 
   // Live alerts detection
   useLiveAlerts(matches);
@@ -328,10 +325,7 @@ export default function LiveScores() {
                     <span className="text-left pl-3 truncate">{m.awayTeam}</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <AIStatusBadge status={getAIStatus(m)} />
-                    <StatusBadge match={m} />
-                  </div>
+                  <StatusBadge match={m} />
                 </div>
               );
             })}
@@ -416,13 +410,30 @@ function StatCard({
 
 function StatusBadge({ match }: { match: Match }) {
   if (match.status === "live") {
-    return <Badge className="bg-red-500/10 text-red-500 border border-red-500/30">LIVE</Badge>;
+    const minute = match.minute ?? 0;
+    return (
+      <div className="flex items-center gap-2">
+        <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 font-bold text-xs px-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-red-500 animate-pulse mr-1.5" />
+          {minute}'
+        </Badge>
+        <Badge className="bg-red-500/10 text-red-500 border border-red-500/30 text-[10px]">LIVE</Badge>
+      </div>
+    );
   }
   if (match.status === "halftime") {
-    return <Badge className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">HT</Badge>;
+    return (
+      <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold text-xs px-2.5">
+        ⏸ HT
+      </Badge>
+    );
   }
   if (match.status === "finished") {
-    return <Badge className="bg-white/5 text-muted-foreground border border-white/10">FT</Badge>;
+    return (
+      <Badge className="bg-muted/50 text-muted-foreground border border-border font-semibold text-xs px-2.5">
+        FT
+      </Badge>
+    );
   }
-  return <Badge variant="outline">{match.startTime}</Badge>;
+  return <Badge variant="outline" className="text-xs">{match.startTime}</Badge>;
 }
