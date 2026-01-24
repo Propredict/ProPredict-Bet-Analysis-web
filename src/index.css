@@ -3,10 +3,8 @@
 @tailwind utilities;
 
 /* =====================================================
-   ProPredict – SAFE GLOBAL DESIGN SYSTEM
-   Dark theme + compact density (NO UI BREAKS)
+   BASE THEME VARIABLES
    ===================================================== */
-
 @layer base {
   :root {
     --background: 222 47% 6%;
@@ -14,9 +12,6 @@
 
     --card: 222 47% 8%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
 
     --primary: 142 76% 36%;
     --primary-foreground: 210 40% 98%;
@@ -27,55 +22,30 @@
     --muted: 222 30% 14%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 25 95% 53%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
     --border: 222 30% 18%;
-    --input: 222 30% 18%;
     --ring: 142 76% 36%;
 
     --radius: 0.5rem;
 
-    /* Sidebar */
     --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 210 40% 98%;
     --sidebar-border: 222 30% 15%;
   }
-}
 
-/* =====================================================
-   BASE – DO NOT TOUCH ELEMENTS GLOBALLY
-   ===================================================== */
-@layer base {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
   * {
     @apply border-border;
     box-sizing: border-box;
   }
 
-  html,
-  body {
-    @apply bg-background text-foreground;
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    font-size: 14px; /* compact base */
-    line-height: 1.45;
-  }
-
-  #root {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-}
-
-/* =====================================================
-   SAFE TYPOGRAPHY (NO div / p OVERRIDES)
-   ===================================================== */
-@layer base {
+  /* SAFE TYPOGRAPHY – NE DIRATI div, span */
   h1 {
     @apply text-xl md:text-2xl font-bold leading-tight;
   }
@@ -91,106 +61,57 @@
   h4 {
     @apply text-sm md:text-base font-medium;
   }
+
+  p {
+    @apply text-sm leading-relaxed;
+  }
+
+  .text-muted-foreground {
+    @apply text-xs;
+  }
 }
 
 /* =====================================================
-   PAGE LAYOUT – THIS FIXES INCONSISTENCY
+   LAYOUT & DENSITY UTILITIES
    ===================================================== */
-@layer components {
+@layer utilities {
   .page-wrapper {
-    @apply w-full flex justify-center;
+    @apply flex min-h-screen bg-background;
+  }
+
+  .page-main {
+    @apply flex-1 flex flex-col;
   }
 
   .page-content {
-    @apply w-full max-w-7xl px-4 py-4 md:py-6 flex flex-col gap-4 md:gap-6;
+    @apply w-full max-w-7xl mx-auto px-4 py-4 md:py-6 space-y-4;
   }
 
-  .page-header {
-    @apply mb-2 md:mb-4;
+  .card-compact {
+    @apply p-3 md:p-4;
   }
 
-  .page-header h1 {
-    @apply text-xl md:text-2xl;
-  }
-
-  .page-header p {
-    @apply text-xs md:text-sm text-muted-foreground;
-  }
-}
-
-/* =====================================================
-   SHADCN CARD – COMPACT BUT SAFE
-   ===================================================== */
-@layer components {
-  [data-slot="card"] {
-    @apply bg-card border border-border rounded-lg;
-  }
-
-  [data-slot="card-header"] {
-    @apply px-4 py-2;
-  }
-
-  [data-slot="card-content"] {
-    @apply px-4 py-3;
-  }
-
-  [data-slot="card-footer"] {
-    @apply px-4 py-2;
-  }
-}
-
-/* =====================================================
-   STATS / TICKETS / TIPS – CONSISTENT HEIGHT
-   ===================================================== */
-@layer components {
   .stats-card {
-    @apply flex items-center gap-2 p-3 rounded-md border;
+    @apply flex items-center gap-3 p-3 rounded-md border;
   }
 
-  .stats-card-value {
-    @apply text-sm font-bold leading-none;
-  }
-
-  .stats-card-label {
-    @apply text-xs text-muted-foreground;
-  }
-
-  /* Status row MUST always exist */
-  .ticket-status {
-    @apply h-9 flex items-center justify-center rounded-md border text-xs;
-  }
-
-  .ticket-status--success {
-    @apply bg-green-500/10 text-green-400;
-  }
-
-  .ticket-status--pending {
-    @apply bg-amber-500/10 text-amber-400;
-  }
-
-  .ticket-status--locked {
-    @apply bg-muted/30 text-muted-foreground;
-  }
-}
-
-/* =====================================================
-   BUTTONS – COMPACT BUT NOT BROKEN
-   ===================================================== */
-@layer components {
   .btn-compact {
     @apply h-8 px-3 text-xs;
   }
-}
 
-/* =====================================================
-   UTILITIES
-   ===================================================== */
-@layer utilities {
-  .scrollbar-hide {
-    scrollbar-width: none;
+  .chip {
+    @apply h-7 px-3 rounded-full text-xs flex items-center;
   }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .ticket-status {
+    @apply mt-3 h-8 flex items-center justify-center rounded-md text-xs;
+  }
+
+  .ticket-status--success {
+    @apply bg-primary/20 text-primary;
+  }
+
+  .ticket-status--empty {
+    @apply opacity-0;
   }
 }
