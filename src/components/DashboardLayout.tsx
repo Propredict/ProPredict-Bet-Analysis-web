@@ -168,8 +168,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Main Content - add top padding for sticky header */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6 min-w-0">
-            <div className="max-w-full overflow-x-hidden">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 min-w-0">
+            <div className="max-w-[1400px] mx-auto w-full">
               {children}
             </div>
           </main>

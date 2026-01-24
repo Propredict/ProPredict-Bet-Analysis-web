@@ -172,6 +172,32 @@
     overflow-x: hidden;
   }
 
+  /* Desktop max-width container for content */
+  .desktop-container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+
+  /* Consistent card grid spacing for desktop */
+  .desktop-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .desktop-grid {
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .desktop-grid {
+      gap: 1.5rem;
+    }
+  }
+
   /* Mobile-first responsive breakpoints */
   @media (max-width: 480px) {
     .hide-mobile {
@@ -183,5 +209,29 @@
     .hide-tablet {
       display: none !important;
     }
+  }
+
+  /* Desktop-only classes */
+  @media (min-width: 1025px) {
+    .desktop-only {
+      display: block;
+    }
+  }
+
+  /* Consistent stats cards */
+  .stats-card {
+    @apply flex items-center gap-3 p-3 md:p-4 rounded-xl border transition-all;
+  }
+
+  .stats-card-icon {
+    @apply h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center flex-shrink-0;
+  }
+
+  .stats-card-value {
+    @apply text-xl md:text-2xl font-bold;
+  }
+
+  .stats-card-label {
+    @apply text-xs text-muted-foreground uppercase tracking-wide;
   }
 }
