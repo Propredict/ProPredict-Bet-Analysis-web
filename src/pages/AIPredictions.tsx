@@ -107,7 +107,7 @@ export default function AIPredictions() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout fullWidth>
       <div className="flex gap-2 md:gap-4 lg:gap-6">
         {/* Left Sidebar - Hidden on mobile */}
         <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
@@ -126,7 +126,7 @@ export default function AIPredictions() {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 section-gap">
+        <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
           {/* Header Section */}
           <div className="flex flex-col gap-1.5 md:gap-2">
             {/* Mobile Title */}
