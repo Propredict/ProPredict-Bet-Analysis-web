@@ -1,5 +1,6 @@
-import { Users, Info } from "lucide-react";
+import { Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useLeagueAssists, AssistsResponse, PlayerStats } from "@/hooks/useLeagueStats";
 
 interface LeagueStatsAssistsTabProps {
   leagueId: string;
@@ -7,8 +8,9 @@ interface LeagueStatsAssistsTabProps {
 }
 
 export function LeagueStatsAssistsTab({ leagueId, leagueName }: LeagueStatsAssistsTabProps) {
-  // Note: Top assists data requires a dedicated API endpoint (e.g., /v3/players/topassists)
-  // which is not currently available in the existing edge functions.
+  const { data, isLoading, error } = useLeagueAssists(leagueId);
+  
+  const players = (data as AssistsResponse)?.players || [];
 
   return (
     <div className="space-y-4">
@@ -20,51 +22,66 @@ export function LeagueStatsAssistsTab({ leagueId, leagueName }: LeagueStatsAssis
         </div>
       </Card>
 
-      {/* Data Not Available State */}
-      <Card className="p-8 bg-[#0E1627] border-white/10">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center">
-            <Info className="h-8 w-8 text-purple-400" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Top Assists Data Not Available</h3>
-            <p className="text-sm text-muted-foreground mt-2 max-w-md">
-              Top assists data requires a dedicated API endpoint that is not currently integrated.
-              The data would include player names, teams, assists, goals, and match counts.
-            </p>
-          </div>
-
-          {/* Mock Table Structure */}
-          <div className="w-full max-w-2xl mt-6 opacity-50">
-            <div className="text-left text-xs text-muted-foreground mb-2">
-              Expected table structure:
-            </div>
-            <div className="bg-white/5 rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 gap-2 px-4 py-2 bg-white/5 text-xs font-semibold text-muted-foreground">
-                <span>#</span>
-                <span className="col-span-2">Player</span>
-                <span>Team</span>
-                <span className="text-center">P</span>
-                <span className="text-center">Assists</span>
-                <span className="text-center">Goals</span>
-              </div>
-              {[1, 2, 3].map((pos) => (
-                <div key={pos} className="grid grid-cols-7 gap-2 px-4 py-3 border-t border-white/5 text-sm">
-                  <span className="font-medium text-orange-400">{pos}</span>
-                  <span className="col-span-2 text-muted-foreground">—</span>
-                  <span className="text-muted-foreground">—</span>
-                  <span className="text-center text-muted-foreground">—</span>
-                  <span className="text-center font-bold text-purple-400">—</span>
-                  <span className="text-center text-muted-foreground">—</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground/60 mt-4">
-            To enable top assists, integrate the API-Football topassists endpoint in a new edge function.
-          </p>
+      {/* Table */}
+      <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
+        {/* Table Header */}
+        <div className="px-4 py-3 bg-primary/20 text-center font-semibold text-sm">
+          Top Assists
         </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error || players.length === 0 ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground">
+            No assists data available
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-muted-foreground text-xs">
+                  <th className="px-3 py-3 text-left w-8">#</th>
+                  <th className="px-3 py-3 text-left">Player</th>
+                  <th className="px-3 py-3 text-left">Team</th>
+                  <th className="px-3 py-3 text-center">Games</th>
+                  <th className="px-3 py-3 text-center text-purple-400">Assists</th>
+                  <th className="px-3 py-3 text-center">Goals</th>
+                </tr>
+              </thead>
+              <tbody>
+                {players.map((item: PlayerStats, index: number) => (
+                  <tr key={item.player.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="px-3 py-3 font-bold text-primary">{index + 1}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        {item.player.photo && (
+                          <img src={item.player.photo} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        )}
+                        <div>
+                          <div className="font-medium">{item.player.name}</div>
+                          <div className="text-xs text-muted-foreground">{item.player.nationality}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        {item.team.logo && (
+                          <img src={item.team.logo} alt="" className="w-5 h-5 object-contain" />
+                        )}
+                        <span className="text-muted-foreground">{item.team.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-center text-muted-foreground">{item.games.appearances}</td>
+                    <td className="px-3 py-3 text-center font-bold text-purple-400">{item.assists}</td>
+                    <td className="px-3 py-3 text-center text-muted-foreground">{item.goals || 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
     </div>
   );

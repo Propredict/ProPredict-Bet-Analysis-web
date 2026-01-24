@@ -1,1 +1,10 @@
 project_id = "tczettddxmlcmhdhgebw"
+
+[functions.get-fixtures]
+verify_jwt = false
+
+[functions.get-match-details]
+verify_jwt = false
+
+[functions.league-stats]
+verify_jwt = false
