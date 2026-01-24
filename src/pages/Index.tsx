@@ -9,7 +9,7 @@ import { GuestBanner } from "@/components/GuestBanner";
 const Index = () => {
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-5 md:space-y-6">
         <GuestBanner />
         <FeaturedPredictions />
         <MatchPredictions />
