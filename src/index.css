@@ -25,10 +25,26 @@
     --border: 222 30% 18%;
     --ring: 142 76% 36%;
 
+    --accent: 25 95% 53%;
+    --accent-foreground: 210 40% 98%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 36%;
+    --pending: 38 92% 50%;
+
     --radius: 0.5rem;
 
     --sidebar-background: 222 47% 5%;
     --sidebar-border: 222 30% 15%;
+    
+    --input: 222 30% 18%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
   }
 
   html {
