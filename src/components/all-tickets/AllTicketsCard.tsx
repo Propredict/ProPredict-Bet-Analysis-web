@@ -90,7 +90,7 @@ export function AllTicketsCard({
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
     if (unlockMethod.type === "watch_ad") {
-      return "bg-primary hover:bg-primary/90 text-primary-foreground";
+      return "bg-emerald-500 hover:bg-emerald-600 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-primary hover:bg-primary/90 text-primary-foreground";

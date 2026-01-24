@@ -88,7 +88,7 @@ export default function TicketDetails() {
       watch_ad: {
         icon: Sparkles,
         text: "Watch Ad to Unlock",
-        className: "bg-primary hover:bg-primary/90 text-primary-foreground",
+        className: "bg-emerald-500 hover:bg-emerald-600 text-white border-0",
         variant: "default" as const,
       },
       upgrade_basic: {
