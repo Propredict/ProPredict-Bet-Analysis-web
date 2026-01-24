@@ -1,180 +1,136 @@
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 
 const TermsOfService = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <main className="container px-4 py-8 flex-1">
+      <main className="container px-4 py-4 flex-1">
         <Button
           variant="ghost"
           onClick={() => navigate("/settings")}
-          className="mb-3 h-7 text-xs gap-1"
+          className="mb-2 h-7 text-xs gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to Settings
         </Button>
         
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
-          <p className="text-muted-foreground mb-8">Last updated: January 10, 2026</p>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-xl font-bold mb-1">Terms of Service</h1>
+          <p className="text-xs text-muted-foreground mb-4">Last updated: January 10, 2026</p>
 
-          <div className="space-y-8">
+          <div className="space-y-3">
             {/* Important Notice */}
-            <Card className="border-amber-500/50 bg-amber-500/10">
-              <CardContent className="py-6">
-                <div className="flex items-start gap-4">
-                  <Lock className="w-8 h-8 text-amber-500 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-bold text-lg text-amber-500 mb-2">Important Notice – No Betting Services</h3>
-                    <p className="text-foreground font-medium">
-                      ProPredict does <strong>NOT</strong> provide betting, gambling, or wagering services and does not
-                      allow users to place bets.
-                    </p>
-                  </div>
+            <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <Lock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-sm text-amber-500 mb-1">Important Notice – No Betting Services</h3>
+                  <p className="text-xs text-muted-foreground">
+                    ProPredict does <strong className="text-foreground">NOT</strong> provide betting, gambling, or wagering services and does not allow users to place bets.
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* 1 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>1. Acceptance of Terms</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">
-                  By accessing or using ProPredict, you agree to be bound by these Terms of Service. If you do not
-                  agree, you must not use the service.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">1. Acceptance of Terms</h3>
+              <p className="text-xs text-muted-foreground">
+                By accessing or using ProPredict, you agree to be bound by these Terms of Service. If you do not
+                agree, you must not use the service.
+              </p>
+            </div>
 
             {/* 2 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>2. Nature of the Service</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground font-semibold mb-4">
-                  ProPredict is an informational and entertainment service only.
-                </p>
-
-                <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                  <li>Sports predictions and analytical insights</li>
-                  <li>Match statistics and historical data</li>
-                  <li>AI-based analysis and probabilities</li>
-                  <li>Sports-related informational content</li>
-                </ul>
-
-                <p className="text-muted-foreground mt-4 font-semibold">ProPredict does NOT provide:</p>
-                <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-2">
-                  <li>Betting or gambling services</li>
-                  <li>Real-money wagering</li>
-                  <li>Bet placement or processing</li>
-                  <li>Connections to bookmakers or betting operators</li>
-                </ul>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">2. Nature of the Service</h3>
+              <p className="text-xs text-muted-foreground font-medium mb-2">
+                ProPredict is an informational and entertainment service only.
+              </p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
+                <li>Sports predictions and analytical insights</li>
+                <li>Match statistics and historical data</li>
+                <li>AI-based analysis and probabilities</li>
+                <li>Sports-related informational content</li>
+              </ul>
+              <p className="text-xs text-muted-foreground font-medium mb-1">ProPredict does NOT provide:</p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                <li>Betting or gambling services</li>
+                <li>Real-money wagering</li>
+                <li>Bet placement or processing</li>
+                <li>Connections to bookmakers or betting operators</li>
+              </ul>
+            </div>
 
             {/* 3 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>3. Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground font-semibold">
-                  ALL CONTENT IS PROVIDED FOR INFORMATIONAL AND ENTERTAINMENT PURPOSES ONLY.
-                </p>
-
-                <ul className="list-disc list-inside text-muted-foreground mt-4 space-y-2">
-                  <li>Predictions are not guaranteed</li>
-                  <li>Past performance does not guarantee future results</li>
-                  <li>You are solely responsible for how you use the content</li>
-                  <li>Use of the service is at your own risk</li>
-                </ul>
-
-                <p className="text-muted-foreground mt-4">
-                  ProPredict does not provide financial, investment, or betting advice.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">3. Disclaimer</h3>
+              <p className="text-xs text-muted-foreground font-medium mb-2">
+                ALL CONTENT IS PROVIDED FOR INFORMATIONAL AND ENTERTAINMENT PURPOSES ONLY.
+              </p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
+                <li>Predictions are not guaranteed</li>
+                <li>Past performance does not guarantee future results</li>
+                <li>You are solely responsible for how you use the content</li>
+                <li>Use of the service is at your own risk</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                ProPredict does not provide financial, investment, or betting advice.
+              </p>
+            </div>
 
             {/* 4 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>4. Advertisements</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">
-                  Some free features may require viewing advertisements to unlock content. Advertisements are provided
-                  by third-party partners.
-                </p>
-
-                <p className="text-muted-foreground mt-4">
-                  We use Google AdSense and other advertising services. These providers may use cookies or device
-                  identifiers to show personalized or non-personalized advertisements according to their privacy
-                  policies.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">4. Advertisements</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                Some free features may require viewing advertisements to unlock content. Advertisements are provided
+                by third-party partners.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                We use Google AdSense and other advertising services. These providers may use cookies or device
+                identifiers to show personalized or non-personalized advertisements according to their privacy
+                policies.
+              </p>
+            </div>
 
             {/* 5 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>5. Subscriptions</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">
-                  Premium features may be available through subscriptions. Payments, renewals, and cancellations are
-                  handled by the platform where you purchased the subscription.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">5. Subscriptions</h3>
+              <p className="text-xs text-muted-foreground">
+                Premium features may be available through subscriptions. Payments, renewals, and cancellations are
+                handled by the platform where you purchased the subscription.
+              </p>
+            </div>
 
             {/* 6 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>6. Age Restriction</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">
-                  You must be at least <strong>18 years old</strong> to use ProPredict.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">6. Age Restriction</h3>
+              <p className="text-xs text-muted-foreground">
+                You must be at least <strong className="text-foreground">18 years old</strong> to use ProPredict.
+              </p>
+            </div>
 
             {/* 7 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>7. Limitation of Liability</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">
-                  ProPredict shall not be liable for any losses, damages, or consequences arising from the use of this
-                  service.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">7. Limitation of Liability</h3>
+              <p className="text-xs text-muted-foreground">
+                ProPredict shall not be liable for any losses, damages, or consequences arising from the use of this
+                service.
+              </p>
+            </div>
 
             {/* 8 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>8. Contact</CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground">For questions about these Terms, contact us at:</p>
-                <p className="mt-4">
-                  <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">
-                    propredictsupp@gmail.com
-                  </a>
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-lg p-3">
+              <h3 className="font-semibold text-sm mb-1.5">8. Contact</h3>
+              <p className="text-xs text-muted-foreground">For questions about these Terms, contact us at:</p>
+              <a href="mailto:propredictsupp@gmail.com" className="text-xs text-primary hover:underline">
+                propredictsupp@gmail.com
+              </a>
+            </div>
           </div>
         </div>
       </main>
