@@ -169,9 +169,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          {/* Main Content - COMPACT padding with top offset for fixed header */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-1.5 sm:p-3 md:p-4 pb-16 md:pb-4 min-w-0 mt-10 sm:mt-11">
-            <div className="max-w-[1200px] mx-auto w-full">
+          {/* Main Content - GLOBAL COMPACT DENSITY padding */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 pb-20 md:pb-6 min-w-0 mt-10 sm:mt-11">
+            <div className="max-w-[1200px] mx-auto w-full space-y-4 md:space-y-6">
               {children}
             </div>
           </main>
