@@ -1,14 +1,11 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 
 const AboutUs = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <main className="container px-4 pt-24 pb-16">
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="container px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10 text-primary" />
