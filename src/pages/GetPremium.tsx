@@ -261,9 +261,9 @@ export default function GetPremium() {
                 <Button
                   className={`w-full mb-2 sm:mb-3 text-[10px] sm:text-xs h-7 sm:h-8 ${
                     plan.id === "premium"
-                      ? "bg-gradient-to-r from-accent to-primary hover:opacity-90"
+                      ? "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
                       : plan.id === "basic"
-                      ? "bg-primary hover:bg-primary/90"
+                      ? "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
                       : ""
                   }`}
                   variant={plan.buttonVariant}

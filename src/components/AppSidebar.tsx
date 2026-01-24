@@ -186,8 +186,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-2 border-t border-sidebar-border">
         {!collapsed && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-1.5 mb-1.5">
-            <div className="flex items-center gap-1 text-[9px] text-destructive">
+          <div className="rounded-md bg-accent/10 border border-accent/20 p-1.5 mb-1.5">
+            <div className="flex items-center gap-1 text-[9px] text-accent">
               <AlertTriangle className="h-2.5 w-2.5" />
               <span>For entertainment only.</span>
             </div>

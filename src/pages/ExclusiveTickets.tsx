@@ -55,7 +55,7 @@ export default function ExclusiveTickets() {
             </div>
             <Button
               size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground h-6 sm:h-7 text-[10px] sm:text-xs px-2"
+              className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
               onClick={() => navigate("/get-premium")}
             >
               Subscribe

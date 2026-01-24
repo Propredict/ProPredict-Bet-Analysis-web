@@ -48,9 +48,8 @@ export function Footer() {
           </a>
         </div>
 
-        {/* Disclaimer & Copyright */}
         <div className="text-center space-y-1">
-          <p className="text-[8px] sm:text-[9px] text-destructive/80">
+          <p className="text-[8px] sm:text-[9px] text-accent">
             For entertainment purposes only. Gambling involves risk.
           </p>
           <p className="text-[8px] sm:text-[9px] text-muted-foreground">
