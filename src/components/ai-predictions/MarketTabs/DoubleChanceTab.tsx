@@ -26,44 +26,44 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-3">
-        <Shield className="w-4 h-4 text-cyan-400" />
-        <span className="text-sm font-medium text-foreground">Double Chance</span>
+    <div className="space-y-2 md:space-y-3">
+      <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
+        <Shield className="w-3.5 md:w-4 h-3.5 md:h-4 text-cyan-400" />
+        <span className="text-xs md:text-sm font-medium text-foreground">Double Chance</span>
       </div>
 
       <div className={cn(
-        "p-4 rounded-lg border bg-green-500/10 border-green-500/30"
+        "p-2.5 md:p-4 rounded-lg border bg-green-500/10 border-green-500/30"
       )}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 md:gap-2">
             <span className={cn(
-              "text-lg font-bold",
-              !hasAccess && "blur-[4px] select-none",
+              "text-base md:text-lg font-bold",
+              !hasAccess && "blur-sm select-none",
               hasAccess ? "text-foreground" : "text-muted-foreground"
             )}>
               {hasAccess ? markets.doubleChance.option : "??"}
             </span>
             {hasAccess && (
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] px-1.5 py-0">
-                <Star className="w-2.5 h-2.5 mr-0.5 fill-current" />
-                AI Pick
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
+                <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
+                AI
               </Badge>
             )}
           </div>
         </div>
         
         {hasAccess && (
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1.5 md:mt-2">
             {getDoubleChanceLabel(markets.doubleChance.option)}
           </p>
         )}
       </div>
 
       {hasAccess && (
-        <div className="bg-[#1e3a5f]/20 rounded-lg p-3 border border-[#1e3a5f]/30">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-semibold text-cyan-400">Safer bet:</span> Double chance covers two outcomes, reducing risk compared to the straight 1X2 market.
+        <div className="bg-[#1e3a5f]/20 rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30">
+          <p className="text-[10px] md:text-xs text-muted-foreground">
+            <span className="font-semibold text-cyan-400">Safer bet:</span> Covers two outcomes.
           </p>
         </div>
       )}
