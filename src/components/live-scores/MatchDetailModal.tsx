@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Match } from "@/hooks/useLiveScores";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -16,6 +16,8 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   const [activeTab, setActiveTab] = useState("statistics");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [details, setDetails] = useState<any | null>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -38,42 +40,66 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   useEffect(() => {
     if (!match) return;
 
+    const controller = new AbortController();
+
     const fetchMatchDetails = async () => {
       try {
         setLoading(true);
         setError(null);
+        setIsUnauthorized(false);
+        setDetails(null);
 
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (!session?.access_token) {
-          throw new Error("No session");
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        // Edge function supports authenticated access, but we must not require login.
+        if (session?.access_token) {
+          headers.Authorization = `Bearer ${session.access_token}`;
         }
 
         const res = await fetch(
           `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-match-details?fixtureId=${match.id}`,
           {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              "Content-Type": "application/json",
-            },
-          },
+            method: "GET",
+            headers,
+            signal: controller.signal,
+          }
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to load match details");
+        // Auth failures should be silent: keep modal usable.
+        if (res.status === 401 || res.status === 403) {
+          setIsUnauthorized(true);
+          return;
         }
 
-        await res.json(); // za sada samo validacija
-      } catch {
-        setError("Invalid JWT");
+        if (!res.ok) {
+          setError("Failed to load match details");
+          return;
+        }
+
+        // Keep it defensive: API may return partial/empty data.
+        const json = await res
+          .json()
+          .catch(() => null);
+
+        setDetails(json);
+      } catch (e: any) {
+        // Abort is expected when switching matches / closing.
+        if (e?.name === "AbortError") return;
+        setError("Failed to load match details");
       } finally {
         setLoading(false);
       }
     };
 
     fetchMatchDetails();
+
+    return () => controller.abort();
   }, [match]);
 
   if (!match) return null;
@@ -140,11 +166,41 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               </TabsTrigger>
             </TabsList>
 
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              {loading && "Loading match details…"}
-              {error && error}
-              {!loading && !error && "Data loaded (UI placeholder)"}
-            </div>
+            <TabsContent value="statistics" className="m-0">
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                {loading && "Loading…"}
+                {!loading && error && error}
+                {!loading && !error && (!details || isUnauthorized) && "Not available"}
+                {!loading && !error && !!details && "Data loaded"}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="lineups" className="m-0">
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                {loading && "Loading…"}
+                {!loading && error && error}
+                {!loading && !error && (!details || isUnauthorized) && "Not available"}
+                {!loading && !error && !!details && "Data loaded"}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="odds" className="m-0">
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                {loading && "Loading…"}
+                {!loading && error && error}
+                {!loading && !error && (!details || isUnauthorized) && "Not available"}
+                {!loading && !error && !!details && "Data loaded"}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="h2h" className="m-0">
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                {loading && "Loading…"}
+                {!loading && error && error}
+                {!loading && !error && (!details || isUnauthorized) && "Not available"}
+                {!loading && !error && !!details && "Data loaded"}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
