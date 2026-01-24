@@ -271,18 +271,63 @@ export default function LiveScores() {
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
                   className={cn(
-                    "px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer relative transition-colors",
+                    "px-4 py-3 flex items-center hover:bg-white/5 cursor-pointer relative transition-colors",
                     showGoalIndicator && "bg-emerald-500/10 border-l-2 border-emerald-500"
                   )}
                 >
-                  <div className="flex items-center gap-2">
+                  {/* CENTERED MATCH INFO - Teams and Score */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="w-full max-w-lg grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                      {/* Home Team - right aligned */}
+                      <span className={cn(
+                        "text-right text-sm font-medium truncate",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.homeTeam}</span>
+
+                      {/* Score Badge - centered */}
+                      <div className="flex items-center justify-center gap-2">
+                        {showGoalIndicator && (
+                          <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                            </span>
+                            GOL
+                          </span>
+                        )}
+                        
+                        <span
+                          className={cn(
+                            "min-w-[60px] text-center px-3 py-1.5 rounded-md text-sm font-bold",
+                            isLive && !showGoalIndicator && "text-red-400 bg-red-500/20 border border-red-500/30",
+                            isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
+                            isFinished && "text-foreground bg-white/10 border border-white/10",
+                            isUpcoming && "text-muted-foreground bg-white/5 border border-white/5",
+                          )}
+                        >
+                          {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                        </span>
+                      </div>
+
+                      {/* Away Team - left aligned */}
+                      <span className={cn(
+                        "text-left text-sm font-medium truncate",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.awayTeam}</span>
+                    </div>
+                  </div>
+
+                  {/* RIGHT SIDE - Status + Actions */}
+                  <div className="flex items-center gap-2 ml-4">
+                    <StatusBadge match={m} />
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleFavorite(m.id);
                       }}
                       className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all",
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0",
                         isFavorite(m.id) ? "bg-primary/20 shadow-lg shadow-primary/30" : "bg-white/5 hover:bg-white/10",
                       )}
                     >
@@ -301,46 +346,6 @@ export default function LiveScores() {
                       }}
                     />
                   </div>
-
-                  {/* CENTERED SCORE with GOL indicator */}
-                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                    <span className={cn(
-                      "text-right pr-3 truncate",
-                      showGoalIndicator && "text-emerald-400 font-semibold"
-                    )}>{m.homeTeam}</span>
-
-                    <div className="flex items-center justify-center gap-2">
-                      {/* GOL indicator before score */}
-                      {showGoalIndicator && (
-                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                          </span>
-                          GOL
-                        </span>
-                      )}
-                      
-                      <span
-                        className={cn(
-                          "min-w-[72px] text-center px-3 py-1 rounded-full text-sm font-semibold",
-                          isLive && !showGoalIndicator && "text-red-500 bg-red-500/10",
-                          isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20",
-                          isFinished && "text-white bg-white/10",
-                          isUpcoming && "text-muted-foreground bg-white/5",
-                        )}
-                      >
-                        {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                      </span>
-                    </div>
-
-                    <span className={cn(
-                      "text-left pl-3 truncate",
-                      showGoalIndicator && "text-emerald-400 font-semibold"
-                    )}>{m.awayTeam}</span>
-                  </div>
-
-                  <StatusBadge match={m} />
                 </div>
               );
             })}
