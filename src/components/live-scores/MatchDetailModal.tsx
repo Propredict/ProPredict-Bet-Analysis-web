@@ -155,7 +155,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             </TabsContent>
 
             <TabsContent value="ai" className="m-0">
-              <AIPredictionTab fixtureId={match.id} />
+              <AIPredictionTab fixtureId={match.id} isActive={activeTab === "ai"} />
             </TabsContent>
           </Tabs>
         </div>
