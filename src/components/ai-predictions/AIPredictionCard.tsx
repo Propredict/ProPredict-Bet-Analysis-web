@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
+import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
 
 interface Props {
   prediction: AIPrediction;
@@ -49,6 +50,9 @@ export function AIPredictionCard({
   // Free users cannot unlock premium predictions via ads
   const canWatchAd = !isPremiumPrediction && !hasAccess;
   const needsPremiumUpgrade = isPremiumPrediction && !isAdmin && !isPremiumUser;
+
+  // Generate dynamic AI analysis
+  const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
 
   const handleWatchAd = async () => {
     if (isPremiumPrediction) return;
@@ -172,7 +176,7 @@ export function AIPredictionCard({
         </div>
 
         {/* AI Analysis - Only visible when unlocked */}
-        {hasAccess && prediction.analysis && (
+        {hasAccess && (
           <div className="px-4 pb-4">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
@@ -188,17 +192,36 @@ export function AIPredictionCard({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-2 p-3 bg-[#1e3a5f]/20 rounded">
+                <div className="mt-2 p-3 bg-[#1e3a5f]/20 rounded space-y-3">
+                  {/* Dynamic AI Explanation */}
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {prediction.analysis}
+                    {generatedAnalysis.explanation}
                   </p>
-                  {prediction.key_factors && prediction.key_factors.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {prediction.key_factors.map((factor, i) => (
-                        <Badge key={i} variant="secondary" className="text-[10px] bg-[#1e3a5f]/40">
-                          {factor}
-                        </Badge>
-                      ))}
+                  
+                  {/* Dynamic Key Factors */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {generatedAnalysis.keyFactors.map((factor, i) => (
+                      <Badge 
+                        key={i} 
+                        variant="secondary" 
+                        className={cn(
+                          "text-[10px]",
+                          i === 0 
+                            ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                            : "bg-[#1e3a5f]/40"
+                        )}
+                      >
+                        {factor}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  {/* Original analysis from DB if available */}
+                  {prediction.analysis && (
+                    <div className="pt-2 border-t border-[#1e3a5f]/30">
+                      <p className="text-[10px] text-muted-foreground/70 italic">
+                        {prediction.analysis}
+                      </p>
                     </div>
                   )}
                 </div>

@@ -5,9 +5,9 @@ import {
   deriveMarkets, 
   getBadgeStyles, 
   getBadgeLabel, 
-  getRiskLevelColor,
-  getConfidenceExplanation 
+  getRiskLevelColor
 } from "../utils/marketDerivation";
+import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
 import { Star, Shield } from "lucide-react";
 
 interface Props {
@@ -147,10 +147,10 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
-      {/* Confidence Explanation */}
+      {/* Confidence Explanation - Dynamic based on prediction context */}
       {hasAccess && (
         <p className="text-xs text-muted-foreground italic border-t border-[#1e3a5f]/30 pt-3">
-          {getConfidenceExplanation(prediction.confidence)}
+          {getShortConfidenceExplanation(prediction)}
         </p>
       )}
     </div>
