@@ -12,11 +12,11 @@ const DataDeletion = () => {
       <div className="p-2 sm:p-4 md:p-6 section-gap">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/settings")}
           className="mb-3 h-7 text-xs gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back
+          Back to Settings
         </Button>
 
         <Card>
