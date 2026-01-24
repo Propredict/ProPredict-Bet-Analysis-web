@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Eye, ChevronDown, Brain, Star, Target, Users, Shield, Zap, Radio } from "lucide-react";
+import { Eye, ChevronDown, Brain, Star, Heart, Radio, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
@@ -17,6 +18,9 @@ interface Props {
   prediction: AIPrediction;
   isAdmin?: boolean;
   isPremiumUser?: boolean;
+  isFavorite?: boolean;
+  isSavingFavorite?: boolean;
+  onToggleFavorite?: (matchId: string) => void;
   onWatchAd: () => void;
   onGoPremium: () => void;
 }
@@ -25,9 +29,13 @@ export function AIPredictionCard({
   prediction, 
   isAdmin = false, 
   isPremiumUser = false,
+  isFavorite = false,
+  isSavingFavorite = false,
+  onToggleFavorite,
   onWatchAd, 
   onGoPremium 
 }: Props) {
+  const navigate = useNavigate();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -70,7 +78,7 @@ export function AIPredictionCard({
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
-        {/* Header - League, Time, Live/Premium badges */}
+        {/* Header - League, Time, Live/Premium badges, Favorite */}
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
@@ -79,6 +87,25 @@ export function AIPredictionCard({
             <span>{formatDateLabel(prediction.match_day)}, {formatTime(prediction.match_time)}</span>
           </div>
           <div className="flex items-center gap-2">
+            {/* Favorite Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => onToggleFavorite?.(prediction.match_id)}
+              disabled={isSavingFavorite}
+            >
+              {isSavingFavorite ? (
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              ) : (
+                <Heart
+                  className={cn(
+                    "w-4 h-4 transition-colors",
+                    isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"
+                  )}
+                />
+              )}
+            </Button>
             {prediction.is_live && (
               <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-[10px] px-2 py-0.5 animate-pulse">
                 <Radio className="w-3 h-3 mr-1" />
