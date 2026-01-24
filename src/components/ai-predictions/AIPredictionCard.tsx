@@ -239,16 +239,15 @@ export function AIPredictionCard({
             
             {needsPremiumUpgrade ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
                 onClick={onGoPremium}
               >
                 <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
-                Get AI Pro
+                Subscribe to Premium
               </Button>
             ) : canWatchAd ? (
               <Button
-                variant="outline"
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs border-[#1e3a5f]/60 bg-transparent text-white hover:bg-[#1e3a5f]/30 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-emerald-500 hover:bg-emerald-600 text-white border-0 font-medium rounded"
                 onClick={handleWatchAd}
                 disabled={isUnlocking}
               >
