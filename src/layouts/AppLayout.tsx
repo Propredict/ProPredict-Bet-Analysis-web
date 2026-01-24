@@ -1,22 +1,23 @@
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Outlet } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout() {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar />
 
-        <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b border-border px-4">
-            <SidebarTrigger />
-          </header>
+      {/* Main content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Navbar />
 
-          <main className="flex-1">
-            <div className="p-4">{children}</div>
-          </main>
-        </div>
+        <main className="flex-1 overflow-y-auto">
+          <div className="desktop-container page-content">
+            <Outlet />
+          </div>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }
