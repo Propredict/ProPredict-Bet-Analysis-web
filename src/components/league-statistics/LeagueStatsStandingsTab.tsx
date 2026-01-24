@@ -136,9 +136,14 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
     <div className="space-y-4">
       {/* League Header */}
       <Card className="p-4 bg-[#0E1627] border-white/10">
-        <div className="flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{leagueName} Standings</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-primary" />
+            <span className="font-semibold">{leagueName} Standings</span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            📊 Official standings · Updated after round completion
+          </span>
         </div>
         {league && (
           <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">

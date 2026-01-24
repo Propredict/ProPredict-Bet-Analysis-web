@@ -81,6 +81,11 @@ export function LeagueStatsLiveTab({
               </Badge>
             )}
           </div>
+          {/* Real-time indicator */}
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs text-green-400">Real-time updates</span>
+          </div>
         </div>
       </Card>
 

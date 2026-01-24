@@ -16,9 +16,14 @@ export function LeagueStatsScorersTab({ leagueId, leagueName }: LeagueStatsScore
     <div className="space-y-4">
       {/* Header */}
       <Card className="p-4 bg-[#0E1627] border-white/10">
-        <div className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{leagueName} Top Scorers</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            <span className="font-semibold">{leagueName} Top Scorers</span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            📊 Official standings · Updated after round completion
+          </span>
         </div>
       </Card>
 
