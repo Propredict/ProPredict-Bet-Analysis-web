@@ -29,6 +29,8 @@ export type Database = {
           is_locked: boolean | null
           is_premium: boolean | null
           key_factors: string[] | null
+          last_away_goals: number | null
+          last_home_goals: number | null
           league: string | null
           match_date: string | null
           match_day: string | null
@@ -55,6 +57,8 @@ export type Database = {
           is_locked?: boolean | null
           is_premium?: boolean | null
           key_factors?: string[] | null
+          last_away_goals?: number | null
+          last_home_goals?: number | null
           league?: string | null
           match_date?: string | null
           match_day?: string | null
@@ -81,6 +85,8 @@ export type Database = {
           is_locked?: boolean | null
           is_premium?: boolean | null
           key_factors?: string[] | null
+          last_away_goals?: number | null
+          last_home_goals?: number | null
           league?: string | null
           match_date?: string | null
           match_day?: string | null
