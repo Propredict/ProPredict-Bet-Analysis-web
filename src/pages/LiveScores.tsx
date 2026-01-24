@@ -275,10 +275,10 @@ export default function LiveScores() {
                     showGoalIndicator && "bg-emerald-500/10 border-l-2 border-emerald-500"
                   )}
                 >
-                  {/* Use relative positioning for absolute center score */}
-                  <div className="relative flex items-center">
-                    {/* LEFT SIDE - Star & Alert */}
-                    <div className="flex items-center gap-1.5 flex-shrink-0 z-10">
+                  {/* Fixed grid: [icons][home team][SCORE][away team][status] */}
+                  <div className="grid grid-cols-[64px_1fr_70px_1fr_100px] items-center gap-1">
+                    {/* LEFT: Star & Alert (fixed 64px) */}
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -305,16 +305,14 @@ export default function LiveScores() {
                       />
                     </div>
 
-                    {/* HOME TEAM - takes available space, text right aligned */}
-                    <div className="flex-1 pr-2 min-w-0">
-                      <span className={cn(
-                        "block text-sm font-medium truncate text-right",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.homeTeam}</span>
-                    </div>
+                    {/* HOME TEAM (flex, right aligned) */}
+                    <span className={cn(
+                      "text-sm font-medium truncate text-right pr-2",
+                      showGoalIndicator && "text-emerald-400 font-semibold"
+                    )}>{m.homeTeam}</span>
 
-                    {/* SCORE - absolute center */}
-                    <div className="flex-shrink-0 w-[70px] flex items-center justify-center">
+                    {/* SCORE (fixed 70px center) */}
+                    <div className="flex items-center justify-center">
                       {showGoalIndicator && (
                         <span className="flex items-center text-emerald-400 text-xs font-bold uppercase animate-pulse mr-1">
                           <span className="relative flex h-2 w-2">
@@ -336,16 +334,14 @@ export default function LiveScores() {
                       </span>
                     </div>
 
-                    {/* AWAY TEAM - takes available space, text left aligned */}
-                    <div className="flex-1 pl-2 min-w-0">
-                      <span className={cn(
-                        "block text-sm font-medium truncate text-left",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.awayTeam}</span>
-                    </div>
+                    {/* AWAY TEAM (flex, left aligned) */}
+                    <span className={cn(
+                      "text-sm font-medium truncate text-left pl-2",
+                      showGoalIndicator && "text-emerald-400 font-semibold"
+                    )}>{m.awayTeam}</span>
 
-                    {/* RIGHT SIDE - Status */}
-                    <div className="flex items-center ml-2 flex-shrink-0 z-10">
+                    {/* RIGHT: Status (fixed 100px) */}
+                    <div className="flex items-center justify-end">
                       <StatusBadge match={m} />
                     </div>
                   </div>
