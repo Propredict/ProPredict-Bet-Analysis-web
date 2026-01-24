@@ -10,7 +10,7 @@ interface LeagueStatsStandingsTabProps {
   leagueName: string;
 }
 
-// Top leagues for "All Leagues" view
+// Top leagues for grid view
 const topLeagues = [
   { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
   { id: "140", name: "La Liga", flag: "🇪🇸" },
@@ -37,7 +37,7 @@ function getPositionColor(pos: number, description?: string) {
   return "text-foreground";
 }
 
-// Compact standings card for "All Leagues" view
+// Compact standings card for grid view
 function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string; leagueName: string; flag: string }) {
   const { data, isLoading, error } = useLeagueStandings(leagueId);
   
@@ -266,10 +266,22 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
   );
 }
 
+// Grid of league cards (shown at bottom or standalone)
+function LeagueCardsGrid() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {topLeagues.map((league) => (
+        <LeagueStandingsCard key={league.id} leagueId={league.id} leagueName={league.name} flag={league.flag} />
+      ))}
+    </div>
+  );
+}
+
 export function LeagueStatsStandingsTab({ leagueId, leagueName }: LeagueStatsStandingsTabProps) {
   const isAllLeagues = leagueId === "all";
 
   if (isAllLeagues) {
+    // All Leagues view: header + grid
     return (
       <div className="space-y-6">
         {/* Header */}
@@ -281,14 +293,19 @@ export function LeagueStatsStandingsTab({ leagueId, leagueName }: LeagueStatsSta
         </Card>
 
         {/* Grid of League Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {topLeagues.map((league) => (
-            <LeagueStandingsCard key={league.id} leagueId={league.id} leagueName={league.name} flag={league.flag} />
-          ))}
-        </div>
+        <LeagueCardsGrid />
       </div>
     );
   }
 
-  return <SingleLeagueStandings leagueId={leagueId} leagueName={leagueName} />;
+  // Single league view: detailed table + grid below
+  return (
+    <div className="space-y-8">
+      {/* Detailed standings for selected league */}
+      <SingleLeagueStandings leagueId={leagueId} leagueName={leagueName} />
+
+      {/* League cards grid below */}
+      <LeagueCardsGrid />
+    </div>
+  );
 }
