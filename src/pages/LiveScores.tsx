@@ -1,8 +1,6 @@
 import {
   Zap,
   RefreshCw,
-  Bell,
-  BellRing,
   Star,
   Search,
   Play,
@@ -22,12 +20,12 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
-import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
+
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
+
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { format, subDays, addDays } from "date-fns";
@@ -58,7 +56,7 @@ export default function LiveScores() {
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
   const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+  
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const { matches, isLoading, error, refetch } = useLiveScores({
@@ -67,7 +65,7 @@ export default function LiveScores() {
   });
 
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
+  
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
 
   // Determine if we're in a fallback state (error or loading with no data)
@@ -156,23 +154,6 @@ export default function LiveScores() {
               </Badge>
               <Button size="icon" variant="outline" onClick={refetch}>
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-              </Button>
-              <Button
-                className={cn(
-                  "transition-all duration-300",
-                  alertSettings.enabled
-                    ? "bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30"
-                    : "bg-[#1a1f2e] hover:bg-[#252b3d] border border-white/10",
-                )}
-                onClick={() => setShowGlobalAlerts(true)}
-              >
-                {alertSettings.enabled ? (
-                  <BellRing className="h-4 w-4 mr-2 animate-pulse" />
-                ) : (
-                  <Bell className="h-4 w-4 mr-2" />
-                )}
-                Alerts
-                {alertSettings.enabled && <span className="ml-2 h-2 w-2 rounded-full bg-white animate-pulse" />}
               </Button>
             </div>
           </div>
@@ -369,12 +350,6 @@ export default function LiveScores() {
       </div>
 
       <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-      <GlobalAlertsModal
-        isOpen={showGlobalAlerts}
-        onClose={() => setShowGlobalAlerts(false)}
-        settings={alertSettings}
-        onToggle={toggleAlertSetting}
-      />
     </DashboardLayout>
   );
 }
