@@ -1,12 +1,24 @@
-import { RotateCcw, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Loader2, ChevronDown, ChevronUp, Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useLeagueRounds, useLeagueFixtures, RoundsResponse, FixturesResponse, FixtureData } from "@/hooks/useLeagueStats";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface LeagueStatsRoundsTabProps {
   leagueId: string;
   leagueName: string;
+}
+
+// Helper to determine match status
+function getMatchState(statusShort: string) {
+  const liveStatuses = ["1H", "2H", "ET", "P", "LIVE", "HT", "BT"];
+  const finishedStatuses = ["FT", "AET", "PEN", "PST", "CANC", "ABD", "AWD", "WO"];
+  
+  if (liveStatuses.includes(statusShort)) return "live";
+  if (finishedStatuses.includes(statusShort)) return "finished";
+  return "upcoming";
 }
 
 export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRoundsTabProps) {
@@ -31,9 +43,10 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
   // Get round stats
   const getRoundStats = (round: string) => {
     const roundFixtures = fixturesByRound[round] || [];
-    const played = roundFixtures.filter(f => f.status.short === "FT" || f.status.short === "AET" || f.status.short === "PEN").length;
+    const played = roundFixtures.filter(f => getMatchState(f.status.short) === "finished").length;
+    const live = roundFixtures.filter(f => getMatchState(f.status.short) === "live").length;
     const total = roundFixtures.length;
-    return { played, total };
+    return { played, live, total };
   };
 
   const isLoading = roundsLoading || fixturesLoading;
@@ -81,13 +94,19 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
                         {rounds.length - index}
                       </span>
                       <span className="text-sm font-medium">{round}</span>
+                      {stats.live > 0 && (
+                        <Badge className="bg-red-500/20 text-red-400 border-0 text-xs animate-pulse">
+                          <Play className="h-3 w-3 mr-1" />
+                          {stats.live} Live
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={cn(
                         "text-xs",
                         stats.played === stats.total && stats.total > 0 ? "text-green-400" : "text-muted-foreground"
                       )}>
-                        {stats.played} / {stats.total} matches
+                        {stats.played} / {stats.total} played
                       </span>
                       {isExpanded ? (
                         <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -101,32 +120,7 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
                   {isExpanded && roundFixtures.length > 0 && (
                     <div className="px-4 pb-4 space-y-2">
                       {roundFixtures.map((fixture) => (
-                        <div
-                          key={fixture.id}
-                          className="flex items-center justify-between px-3 py-2 bg-white/5 rounded-lg text-sm"
-                        >
-                          <div className="flex items-center gap-2 flex-1">
-                            {fixture.home.logo && (
-                              <img src={fixture.home.logo} alt="" className="w-4 h-4 object-contain" />
-                            )}
-                            <span className="truncate max-w-[100px]">{fixture.home.name}</span>
-                          </div>
-                          <div className="px-3 text-center min-w-[60px]">
-                            {fixture.status.short === "NS" ? (
-                              <span className="text-xs text-muted-foreground">vs</span>
-                            ) : (
-                              <span className="font-bold">
-                                {fixture.home.goals ?? 0} - {fixture.away.goals ?? 0}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <span className="truncate max-w-[100px] text-right">{fixture.away.name}</span>
-                            {fixture.away.logo && (
-                              <img src={fixture.away.logo} alt="" className="w-4 h-4 object-contain" />
-                            )}
-                          </div>
-                        </div>
+                        <RoundFixtureRow key={fixture.id} fixture={fixture} />
                       ))}
                     </div>
                   )}
@@ -136,6 +130,94 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
           </div>
         )}
       </Card>
+    </div>
+  );
+}
+
+// Individual fixture row component
+function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
+  const matchState = getMatchState(fixture.status.short);
+  const isLive = matchState === "live";
+  const isFinished = matchState === "finished";
+  const isUpcoming = matchState === "upcoming";
+  
+  const matchDate = new Date(fixture.date);
+  const kickoffTime = format(matchDate, "HH:mm");
+
+  return (
+    <div className={cn(
+      "flex items-center px-3 py-3 rounded-lg text-sm",
+      isLive ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"
+    )}>
+      {/* Status / Time - Left */}
+      <div className="w-16 flex-shrink-0">
+        {isUpcoming && (
+          <span className="text-xs text-muted-foreground">{kickoffTime}</span>
+        )}
+        {isLive && (
+          <Badge className="bg-red-500/20 text-red-400 border-0 text-xs animate-pulse">
+            {fixture.status.short === "HT" ? "HT" : `${fixture.status.elapsed}'`}
+          </Badge>
+        )}
+        {isFinished && (
+          <Badge variant="outline" className="text-green-400 border-green-500/30 text-xs">
+            FT
+          </Badge>
+        )}
+      </div>
+
+      {/* Match Content - Centered */}
+      <div className="flex-1 flex items-center justify-center">
+        {/* Home Team */}
+        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+          <span className="text-sm truncate" title={fixture.home.name}>
+            {fixture.home.name}
+          </span>
+          {fixture.home.logo && (
+            <img src={fixture.home.logo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
+          )}
+        </div>
+
+        {/* Score - Prominently centered */}
+        <div className="mx-3 flex-shrink-0">
+          <div className={cn(
+            "px-3 py-1 rounded-lg min-w-[60px] text-center",
+            isLive && "bg-red-500/20 border border-red-500/30",
+            isFinished && "bg-primary/10 border border-primary/20",
+            isUpcoming && "bg-white/5 border border-white/10"
+          )}>
+            {isUpcoming ? (
+              <span className="text-muted-foreground text-xs">vs</span>
+            ) : (
+              <span className={cn(
+                "font-bold",
+                isLive && "text-red-400"
+              )}>
+                {fixture.home.goals ?? 0} - {fixture.away.goals ?? 0}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Away Team */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {fixture.away.logo && (
+            <img src={fixture.away.logo} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
+          )}
+          <span className="text-sm truncate" title={fixture.away.name}>
+            {fixture.away.name}
+          </span>
+        </div>
+      </div>
+
+      {/* Status Badge - Right (hidden on mobile) */}
+      <div className="w-20 flex-shrink-0 text-right hidden sm:block">
+        {isLive && (
+          <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs">
+            LIVE
+          </Badge>
+        )}
+      </div>
     </div>
   );
 }
