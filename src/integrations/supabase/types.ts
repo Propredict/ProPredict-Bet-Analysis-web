@@ -358,6 +358,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorite_leagues: {
+        Row: {
+          created_at: string | null
+          id: string
+          league: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          league: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          league?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -435,11 +456,99 @@ export type Database = {
       }
     }
     Views: {
+      ai_prediction_leagues: {
+        Row: {
+          league: string | null
+          matches_count: number | null
+        }
+        Relationships: []
+      }
       ai_prediction_stats: {
         Row: {
           lost: number | null
           pending: number | null
           won: number | null
+        }
+        Relationships: []
+      }
+      ai_predictions_yesterday: {
+        Row: {
+          analysis: string | null
+          away_team: string | null
+          away_win: number | null
+          confidence: number | null
+          created_at: string | null
+          draw: number | null
+          home_team: string | null
+          home_win: number | null
+          id: string | null
+          is_live: boolean | null
+          is_locked: boolean | null
+          is_premium: boolean | null
+          key_factors: string[] | null
+          league: string | null
+          match_date: string | null
+          match_day: string | null
+          match_id: string | null
+          match_time: string | null
+          match_timestamp: string | null
+          predicted_score: string | null
+          prediction: string | null
+          result_status: string | null
+          risk_level: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis?: string | null
+          away_team?: string | null
+          away_win?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: string[] | null
+          league?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          predicted_score?: string | null
+          prediction?: string | null
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis?: string | null
+          away_team?: string | null
+          away_win?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: string[] | null
+          league?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          predicted_score?: string | null
+          prediction?: string | null
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
