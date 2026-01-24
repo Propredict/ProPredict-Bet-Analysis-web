@@ -28,6 +28,8 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
+import { useAILiveStatus } from "@/hooks/useAILiveStatus";
+import { AIStatusBadge } from "@/components/live-scores/AIStatusBadge";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -67,6 +69,7 @@ export default function LiveScores() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const { hasAlert, toggleMatchAlert } = useMatchAlertPreferences();
+  const { getAIStatus } = useAILiveStatus();
 
   // Live alerts detection
   useLiveAlerts(matches);
@@ -325,7 +328,10 @@ export default function LiveScores() {
                     <span className="text-left pl-3 truncate">{m.awayTeam}</span>
                   </div>
 
-                  <StatusBadge match={m} />
+                  <div className="flex items-center gap-2">
+                    <AIStatusBadge status={getAIStatus(m)} />
+                    <StatusBadge match={m} />
+                  </div>
                 </div>
               );
             })}
