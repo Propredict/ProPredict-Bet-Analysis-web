@@ -303,31 +303,28 @@ export default function LiveScores() {
                     />
                   </div>
 
-                  {/* CENTER - Teams and Score with fixed widths */}
-                  <div className="flex-1 flex items-center justify-center min-w-0">
-                    {/* Home Team */}
-                    <div className="flex-1 flex justify-end pr-3 min-w-0">
-                      <span className={cn(
-                        "text-sm font-medium truncate text-right",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.homeTeam}</span>
-                    </div>
+                  {/* CENTER - Teams and Score with CSS Grid for perfect alignment */}
+                  <div className="flex-1 grid grid-cols-[1fr_80px_1fr] items-center gap-2 min-w-0">
+                    {/* Home Team - right aligned, truncates if too long */}
+                    <span className={cn(
+                      "text-sm font-medium truncate text-right",
+                      showGoalIndicator && "text-emerald-400 font-semibold"
+                    )}>{m.homeTeam}</span>
 
-                    {/* Score Badge - fixed width */}
-                    <div className="flex items-center justify-center gap-1.5 flex-shrink-0">
+                    {/* Score Badge - fixed center column */}
+                    <div className="flex items-center justify-center">
                       {showGoalIndicator && (
-                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
+                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse mr-1">
                           <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                           </span>
-                          GOL
                         </span>
                       )}
                       
                       <span
                         className={cn(
-                          "w-16 text-center px-2 py-1 rounded-md text-sm font-bold",
+                          "inline-block w-14 text-center px-1 py-1 rounded-md text-sm font-bold",
                           isLive && !showGoalIndicator && "text-red-400 bg-red-500/20 border border-red-500/30",
                           isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
                           isFinished && "text-foreground bg-white/10 border border-white/10",
@@ -338,13 +335,11 @@ export default function LiveScores() {
                       </span>
                     </div>
 
-                    {/* Away Team */}
-                    <div className="flex-1 flex justify-start pl-3 min-w-0">
-                      <span className={cn(
-                        "text-sm font-medium truncate text-left",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.awayTeam}</span>
-                    </div>
+                    {/* Away Team - left aligned */}
+                    <span className={cn(
+                      "text-sm font-medium truncate text-left",
+                      showGoalIndicator && "text-emerald-400 font-semibold"
+                    )}>{m.awayTeam}</span>
                   </div>
 
                   {/* RIGHT SIDE - Status only */}
