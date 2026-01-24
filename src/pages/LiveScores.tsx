@@ -271,60 +271,61 @@ export default function LiveScores() {
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
                   className={cn(
-                    "px-4 py-3 flex items-center hover:bg-white/5 cursor-pointer relative transition-colors",
+                    "px-4 py-3 hover:bg-white/5 cursor-pointer relative transition-colors",
                     showGoalIndicator && "bg-emerald-500/10 border-l-2 border-emerald-500"
                   )}
                 >
-                  {/* LEFT SIDE - Star & Alert */}
-                  <div className="flex items-center gap-1.5 mr-4 flex-shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(m.id);
-                      }}
-                      className={cn(
-                        "h-7 w-7 rounded-md flex items-center justify-center transition-all",
-                        isFavorite(m.id) ? "bg-primary/20 shadow-lg shadow-primary/30" : "bg-white/5 hover:bg-white/10",
-                      )}
-                    >
-                      <Star
+                  {/* Use relative positioning for absolute center score */}
+                  <div className="relative flex items-center">
+                    {/* LEFT SIDE - Star & Alert */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0 z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(m.id);
+                        }}
                         className={cn(
-                          "h-3.5 w-3.5 transition-colors",
-                          isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
+                          "h-7 w-7 rounded-md flex items-center justify-center transition-all",
+                          isFavorite(m.id) ? "bg-primary/20 shadow-lg shadow-primary/30" : "bg-white/5 hover:bg-white/10",
                         )}
+                      >
+                        <Star
+                          className={cn(
+                            "h-3.5 w-3.5 transition-colors",
+                            isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
+                          )}
+                        />
+                      </button>
+                      <MatchAlertButton
+                        hasAlert={hasAlert(m.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleMatchAlert(m.id);
+                        }}
                       />
-                    </button>
-                    <MatchAlertButton
-                      hasAlert={hasAlert(m.id)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleMatchAlert(m.id);
-                      }}
-                    />
-                  </div>
+                    </div>
 
-                  {/* CENTER - Teams and Score with CSS Grid for perfect alignment */}
-                  <div className="flex-1 grid grid-cols-[1fr_80px_1fr] items-center gap-2 min-w-0">
-                    {/* Home Team - right aligned, truncates if too long */}
-                    <span className={cn(
-                      "text-sm font-medium truncate text-right",
-                      showGoalIndicator && "text-emerald-400 font-semibold"
-                    )}>{m.homeTeam}</span>
+                    {/* HOME TEAM - takes available space, text right aligned */}
+                    <div className="flex-1 pr-2 min-w-0">
+                      <span className={cn(
+                        "block text-sm font-medium truncate text-right",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.homeTeam}</span>
+                    </div>
 
-                    {/* Score Badge - fixed center column */}
-                    <div className="flex items-center justify-center">
+                    {/* SCORE - absolute center */}
+                    <div className="flex-shrink-0 w-[70px] flex items-center justify-center">
                       {showGoalIndicator && (
-                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse mr-1">
+                        <span className="flex items-center text-emerald-400 text-xs font-bold uppercase animate-pulse mr-1">
                           <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                           </span>
                         </span>
                       )}
-                      
                       <span
                         className={cn(
-                          "inline-block w-14 text-center px-1 py-1 rounded-md text-sm font-bold",
+                          "text-center px-2 py-1 rounded-md text-sm font-bold whitespace-nowrap",
                           isLive && !showGoalIndicator && "text-red-400 bg-red-500/20 border border-red-500/30",
                           isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
                           isFinished && "text-foreground bg-white/10 border border-white/10",
@@ -335,16 +336,18 @@ export default function LiveScores() {
                       </span>
                     </div>
 
-                    {/* Away Team - left aligned */}
-                    <span className={cn(
-                      "text-sm font-medium truncate text-left",
-                      showGoalIndicator && "text-emerald-400 font-semibold"
-                    )}>{m.awayTeam}</span>
-                  </div>
+                    {/* AWAY TEAM - takes available space, text left aligned */}
+                    <div className="flex-1 pl-2 min-w-0">
+                      <span className={cn(
+                        "block text-sm font-medium truncate text-left",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.awayTeam}</span>
+                    </div>
 
-                  {/* RIGHT SIDE - Status only */}
-                  <div className="flex items-center ml-4 flex-shrink-0">
-                    <StatusBadge match={m} />
+                    {/* RIGHT SIDE - Status */}
+                    <div className="flex items-center ml-2 flex-shrink-0 z-10">
+                      <StatusBadge match={m} />
+                    </div>
                   </div>
                 </div>
               );
