@@ -13,6 +13,11 @@ import AllTickets from "./pages/AllTickets";
 import TicketDetails from "./pages/TicketDetails";
 import GetPremium from "./pages/GetPremium";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Disclaimer from "./pages/Disclaimer";
+import DataDeletion from "./pages/DataDeletion";
 
 // Tier-specific pages
 import DailyTips from "./pages/DailyTips";
@@ -63,6 +68,13 @@ const App = () => (
 
             {/* Ticket Details */}
             <Route path="/tickets/:id" element={<TicketDetails />} />
+
+            {/* Settings & Legal */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
+            <Route path="/data-deletion" element={<DataDeletion />} />
 
             {/* Protected */}
             <Route
