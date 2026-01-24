@@ -57,34 +57,33 @@ export default function AllTickets() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 p-4 md:p-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Ticket className="h-6 w-6 text-primary" />
+      <div className="section-gap">
+        {/* Page Header - Compact */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Ticket className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">All Tickets</h1>
-              <p className="text-sm text-muted-foreground">Browse all betting tickets in one place</p>
+              <h1 className="text-base sm:text-xl font-bold text-foreground">All Tickets</h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Browse betting tickets</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-sm px-3 py-1">
-              {totalCount} Total
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Badge variant="outline" className="text-[10px] sm:text-xs px-2 py-0.5">
+              {totalCount}
             </Badge>
             <Button
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              className="gap-2"
+              className="gap-1 h-7 sm:h-8 px-2"
             >
-              <RefreshCw className="h-4 w-4" />
-              <span className="hidden sm:inline">Refresh</span>
+              <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3 md:gap-4">
+        {/* Stats Cards - Compact */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <AllTicketsStatCard
             icon={Calendar}
             count={dailyCount}
@@ -105,26 +104,26 @@ export default function AllTickets() {
           />
         </div>
 
-        {/* Category Tabs */}
-        <Card className="p-1 bg-card border-border">
-          <div className="grid grid-cols-3 gap-1">
+        {/* Category Tabs - Compact */}
+        <Card className="p-0.5 sm:p-1 bg-card border-border">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all",
+                  "flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-2 sm:px-3 rounded-md transition-all text-xs sm:text-sm",
                   activeTab === tab.id
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:bg-muted/50"
                 )}
               >
-                <tab.icon className="h-4 w-4" />
+                <tab.icon className="h-3.5 w-3.5" />
                 <span className="font-medium">{tab.label}</span>
                 <Badge
                   variant="secondary"
                   className={cn(
-                    "text-xs px-1.5 py-0.5",
+                    "text-[10px] px-1 py-0",
                     activeTab === tab.id ? "bg-primary/20 text-primary" : ""
                   )}
                 >

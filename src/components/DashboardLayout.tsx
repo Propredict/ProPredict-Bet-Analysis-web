@@ -71,30 +71,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
-          {/* STICKY Header */}
-          <header className="sticky top-0 z-50 h-14 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          {/* STICKY Header - compact on mobile */}
+          <header className="sticky top-0 z-50 h-12 sm:h-14 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0" />
             
-            <div className="flex items-center gap-1 sm:gap-3 overflow-x-auto">
+            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
               {/* Subscription Badge - hidden on very small screens */}
               <div className="hidden xs:flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <Badge 
                   variant="outline" 
                   className={cn(
-                    "flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 cursor-pointer hover:opacity-80 transition-opacity",
+                    "flex items-center gap-1 px-1.5 sm:px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity text-[10px] sm:text-xs",
                     planBadge.className
                   )}
                   onClick={() => navigate("/get-premium")}
                 >
-                  <planBadge.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                  <span className="text-[10px] sm:text-xs font-medium">{planBadge.label}</span>
+                  <planBadge.icon className="h-3 w-3" />
+                  <span className="font-medium">{planBadge.label}</span>
                 </Badge>
                 {planBadge.showUpgrade && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate("/get-premium")}
-                    className="hidden sm:flex text-xs text-accent hover:text-accent/80 px-2 h-7"
+                    className="hidden sm:flex text-xs text-accent hover:text-accent/80 px-2 h-6"
                   >
                     {planBadge.upgradeLabel}
                   </Button>
@@ -106,7 +106,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 size="icon" 
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "relative transition-all h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0",
+                  "relative transition-all h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0",
                   alertSettings.enabled 
                     ? "text-green-400 hover:text-green-300" 
                     : "text-muted-foreground hover:text-foreground"
@@ -114,11 +114,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 {alertSettings.enabled ? (
                   <>
-                    <BellRing className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500 animate-pulse" />
+                    <BellRing className="h-4 w-4" />
+                    <span className="absolute top-0 right-0 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                   </>
                 ) : (
-                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Bell className="h-4 w-4" />
                 )}
               </Button>
               
@@ -126,9 +126,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost" 
                 size="icon" 
                 onClick={() => navigate("/favorites")}
-                className="text-muted-foreground hover:text-pink-400 transition-colors h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
+                className="text-muted-foreground hover:text-pink-400 transition-colors h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
               >
-                <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Heart className="h-4 w-4" />
               </Button>
 
               {user ? (
@@ -137,9 +137,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-muted-foreground hover:text-foreground h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
+                      className="text-muted-foreground hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0"
                     >
-                      <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <User className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 bg-popover border-border z-[60]">
@@ -159,9 +159,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   variant="default" 
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="gap-1 sm:gap-2 h-8 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
+                  className="gap-1 h-7 sm:h-8 px-2 sm:px-3 text-xs flex-shrink-0"
                 >
-                  <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <LogIn className="h-3.5 w-3.5" />
                   <span className="hidden xs:inline">Sign In</span>
                 </Button>
               )}
@@ -169,8 +169,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Main Content - add bottom padding for mobile nav */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-6 min-w-0">
-            <div className="max-w-[1400px] mx-auto w-full">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-2 sm:p-4 md:p-6 pb-20 md:pb-6 min-w-0">
+            <div className="max-w-[1280px] mx-auto w-full">
               {children}
             </div>
           </main>
