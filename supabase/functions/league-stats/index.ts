@@ -19,7 +19,9 @@ serve(async (req: Request) => {
   try {
     const url = new URL(req.url);
     const league = url.searchParams.get("league");
-    const season = url.searchParams.get("season") || "2024";
+    // Default to current season (API-Football uses calendar year, e.g., 2024 for 2024-25 season)
+    const currentYear = new Date().getFullYear();
+    const season = url.searchParams.get("season") || String(currentYear - 1);
     const type = url.searchParams.get("type") as StatsType;
 
     if (!league) {
