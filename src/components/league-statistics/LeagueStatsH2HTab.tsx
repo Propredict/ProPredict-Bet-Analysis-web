@@ -231,46 +231,63 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
   const matchDate = new Date(match.fixture.date);
 
   return (
-    <div className="px-4 py-3 hover:bg-white/5 transition-colors">
-      <div className="flex items-center gap-4">
-        {/* Date */}
-        <div className="text-xs text-muted-foreground w-20 flex-shrink-0">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {format(matchDate, "dd MMM yyyy")}
-          </div>
+    <div className="px-4 py-4 hover:bg-white/5 transition-colors">
+      {/* Mobile: Stack layout, Desktop: Horizontal layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        {/* Date - Top on mobile, Left on desktop */}
+        <div className="text-xs text-muted-foreground sm:w-24 flex-shrink-0 flex items-center gap-1.5">
+          <Calendar className="h-3 w-3" />
+          <span>{format(matchDate, "dd MMM yyyy")}</span>
         </div>
 
-        {/* Teams & Score */}
-        <div className="flex-1 flex items-center justify-center gap-3">
+        {/* Match Content - Centered */}
+        <div className="flex-1 flex items-center justify-center">
           {/* Home Team */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <span className={`text-sm ${match.teams.home.winner ? "font-semibold text-green-400" : ""}`}>
+          <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+            <span 
+              className={`text-sm truncate ${match.teams.home.winner ? "font-semibold text-green-400" : "text-foreground"}`}
+              title={match.teams.home.name}
+            >
               {match.teams.home.name}
             </span>
             {match.teams.home.logo && (
-              <img src={match.teams.home.logo} alt="" className="h-5 w-5 object-contain" />
+              <img 
+                src={match.teams.home.logo} 
+                alt="" 
+                className="h-6 w-6 object-contain flex-shrink-0" 
+              />
             )}
           </div>
 
-          {/* Score */}
-          <div className="px-3 py-1 rounded bg-white/10 min-w-[60px] text-center">
-            <span className="font-bold">{homeGoals} - {awayGoals}</span>
+          {/* Score - Prominently centered */}
+          <div className="mx-4 flex-shrink-0">
+            <div className="px-4 py-1.5 rounded-lg bg-primary/10 border border-primary/20 min-w-[70px] text-center">
+              <span className="font-bold text-base tracking-wider">
+                {homeGoals} <span className="text-muted-foreground">-</span> {awayGoals}
+              </span>
+            </div>
           </div>
 
           {/* Away Team */}
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {match.teams.away.logo && (
-              <img src={match.teams.away.logo} alt="" className="h-5 w-5 object-contain" />
+              <img 
+                src={match.teams.away.logo} 
+                alt="" 
+                className="h-6 w-6 object-contain flex-shrink-0" 
+              />
             )}
-            <span className={`text-sm ${match.teams.away.winner ? "font-semibold text-green-400" : ""}`}>
+            <span 
+              className={`text-sm truncate ${match.teams.away.winner ? "font-semibold text-green-400" : "text-foreground"}`}
+              title={match.teams.away.name}
+            >
               {match.teams.away.name}
             </span>
           </div>
         </div>
 
-        {/* League & Round */}
-        <div className="text-xs text-muted-foreground w-32 flex-shrink-0 text-right truncate">
+        {/* Round - Right side on desktop, hidden on mobile */}
+        <div className="hidden sm:block text-xs text-muted-foreground w-28 flex-shrink-0 text-right truncate" title={match.league.round}>
           {match.league.round}
         </div>
       </div>
