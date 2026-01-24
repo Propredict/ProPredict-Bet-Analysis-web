@@ -1,15 +1,33 @@
-import { Trophy, Target, Users, Calendar, RotateCcw } from "lucide-react";
+import { Trophy, Target, Users, Calendar, RotateCcw, Swords } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const LEAGUES = [
+  { id: "39", name: "Premier League" },
+  { id: "140", name: "La Liga" },
+  { id: "78", name: "Bundesliga" },
+  { id: "135", name: "Serie A" },
+  { id: "61", name: "Ligue 1" },
+  { id: "2", name: "Champions League" },
+  { id: "3", name: "Europa League" },
+];
 
 interface LeagueStatsEmptyStateProps {
   type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "default";
+  onSelectLeague?: (leagueId: string) => void;
 }
 
 const typeConfig = {
   standings: {
     icon: Trophy,
     title: "All Leagues Standings",
-    subtitle: "Select a league to view standings",
+    subtitle: "Choose a specific league to view standings",
   },
   scorers: {
     icon: Target,
@@ -32,9 +50,9 @@ const typeConfig = {
     subtitle: "Choose a specific league to view rounds",
   },
   h2h: {
-    icon: Trophy,
-    title: "Head to Head",
-    subtitle: "Select a league to compare teams",
+    icon: Swords,
+    title: "All Leagues Head to Head",
+    subtitle: "Choose a specific league to compare teams",
   },
   default: {
     icon: Trophy,
@@ -43,34 +61,48 @@ const typeConfig = {
   },
 };
 
-export function LeagueStatsEmptyState({ type = "default" }: LeagueStatsEmptyStateProps) {
+export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: LeagueStatsEmptyStateProps) {
   const config = typeConfig[type];
   const Icon = config.icon;
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
-        <div className="flex items-center gap-2">
-          <Icon className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{config.title}</span>
-        </div>
-      </Card>
+      {/* Header with green bullet */}
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-2 rounded-full bg-green-500" />
+        <span className="font-semibold text-white">{config.title}</span>
+      </div>
 
-      {/* Empty State */}
+      {/* Empty State Card */}
       <Card className="p-12 text-center bg-[#0E1627] border-white/10">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center">
-            <Icon className="h-8 w-8 text-orange-400/60" />
+        <div className="flex flex-col items-center gap-6">
+          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center">
+            <Icon className="h-8 w-8 text-muted-foreground/40" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-muted-foreground">
+            <h3 className="text-lg font-semibold text-white">
               Select a League
             </h3>
-            <p className="text-sm text-muted-foreground/70 max-w-md mx-auto">
-              {config.subtitle}. Use the league selector in the top right corner to choose a specific league.
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {config.subtitle}
             </p>
           </div>
+          
+          {/* League Selector Dropdown */}
+          {onSelectLeague && (
+            <Select onValueChange={onSelectLeague}>
+              <SelectTrigger className="w-[200px] bg-[#1A2537] border-white/10">
+                <SelectValue placeholder="Select a League" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1A2537] border-white/10">
+                {LEAGUES.map((league) => (
+                  <SelectItem key={league.id} value={league.id}>
+                    {league.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </Card>
     </div>
