@@ -291,7 +291,7 @@ export default function LiveScores() {
                   onClick={() => setSelectedMatch(m)}
                   className={cn(
                     "px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer relative transition-colors",
-                    showGoalIndicator && "bg-pink-500/10 border-l-2 border-pink-500"
+                    showGoalIndicator && "bg-emerald-500/10 border-l-2 border-emerald-500"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -325,16 +325,16 @@ export default function LiveScores() {
                   <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                     <span className={cn(
                       "text-right pr-3 truncate",
-                      showGoalIndicator && "text-pink-400 font-semibold"
+                      showGoalIndicator && "text-emerald-400 font-semibold"
                     )}>{m.homeTeam}</span>
 
                     <div className="flex items-center justify-center gap-2">
                       {/* GOL indicator before score */}
                       {showGoalIndicator && (
-                        <span className="flex items-center gap-1 text-pink-400 text-xs font-bold uppercase animate-pulse">
+                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
                           <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-500 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500" />
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                           </span>
                           GOL
                         </span>
@@ -344,7 +344,7 @@ export default function LiveScores() {
                         className={cn(
                           "min-w-[72px] text-center px-3 py-1 rounded-full text-sm font-semibold",
                           isLive && !showGoalIndicator && "text-red-500 bg-red-500/10",
-                          isLive && showGoalIndicator && "text-pink-400 bg-pink-500/20",
+                          isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20",
                           isFinished && "text-white bg-white/10",
                           isUpcoming && "text-muted-foreground bg-white/5",
                         )}
@@ -355,7 +355,7 @@ export default function LiveScores() {
 
                     <span className={cn(
                       "text-left pl-3 truncate",
-                      showGoalIndicator && "text-pink-400 font-semibold"
+                      showGoalIndicator && "text-emerald-400 font-semibold"
                     )}>{m.awayTeam}</span>
                   </div>
 
