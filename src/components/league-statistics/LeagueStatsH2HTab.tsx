@@ -119,12 +119,12 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
       {/* Results or Empty State */}
       {showResults ? (
         <Card className="p-8 text-center bg-[#0E1627] border-white/10">
-          <History className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <History className="h-12 w-12 text-primary/50 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">
             {team1} vs {team2}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Head-to-head history requires additional API integration.
+            View detailed head-to-head history in the match detail modal when these teams play.
           </p>
           <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mt-6">
             <div className="text-center">
@@ -141,15 +141,15 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
             </div>
           </div>
           <p className="text-xs text-muted-foreground/50 mt-6">
-            Historical H2H data is available in the match detail modal when teams play against each other.
+            💡 Tip: Click on any match to see full H2H stats in the match detail modal.
           </p>
         </Card>
       ) : (
         <Card className="p-8 text-center bg-[#0E1627] border-white/10">
-          <Swords className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold">Select Two Teams</h3>
-          <p className="text-sm text-muted-foreground">
-            Choose two teams above to see their head-to-head record, recent meetings, and statistics
+          <Swords className="h-12 w-12 text-primary/50 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold">Select Two Teams to Compare</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            Choose two teams above to compare head-to-head records
           </p>
           {teamsInLeague.length === 0 && (
             <p className="text-xs text-muted-foreground/50 mt-4">
