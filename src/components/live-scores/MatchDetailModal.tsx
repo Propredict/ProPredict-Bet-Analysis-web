@@ -1,11 +1,10 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, DollarSign, History, Brain } from "lucide-react";
+import { X, BarChart3, Users, DollarSign, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Match } from "@/hooks/useLiveScores";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
-import { AIPredictionTab } from "./AIPredictionTab";
 import { StatisticsTab } from "./tabs/StatisticsTab";
 import { LineupsTab } from "./tabs/LineupsTab";
 import { OddsTab } from "./tabs/OddsTab";
@@ -116,9 +115,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               <TabsTrigger value="h2h" className="text-xs sm:text-sm">
                 <History className="h-3.5 w-3.5 mr-1.5" /> H2H
               </TabsTrigger>
-              <TabsTrigger value="ai" className="text-xs sm:text-sm">
-                <Brain className="h-3.5 w-3.5 mr-1.5" /> AI
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="statistics" className="m-0">
@@ -152,10 +148,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                 homeTeamName={match.homeTeam}
                 awayTeamName={match.awayTeam}
               />
-            </TabsContent>
-
-            <TabsContent value="ai" className="m-0">
-              <AIPredictionTab fixtureId={match.id} isActive={activeTab === "ai"} />
             </TabsContent>
           </Tabs>
         </div>
