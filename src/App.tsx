@@ -15,6 +15,7 @@ import GetPremium from "./pages/GetPremium";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Disclaimer from "./pages/Disclaimer";
 import DataDeletion from "./pages/DataDeletion";
@@ -73,6 +74,7 @@ const App = () => (
             {/* Settings & Legal */}
             <Route path="/settings" element={<Settings />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/data-deletion" element={<DataDeletion />} />
