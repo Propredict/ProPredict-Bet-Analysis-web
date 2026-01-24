@@ -144,18 +144,18 @@ async function fetchLeagueStats(
   return response.json();
 }
 
-export function useLeagueStandings(leagueId: string, season: string = "2024") {
+export function useLeagueStandings(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "standings", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "standings", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache
+    staleTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: true,
   });
 }
 
-export function useLeagueScorers(leagueId: string, season: string = "2024") {
+export function useLeagueScorers(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "scorers", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "scorers", season),
@@ -166,7 +166,7 @@ export function useLeagueScorers(leagueId: string, season: string = "2024") {
   });
 }
 
-export function useLeagueAssists(leagueId: string, season: string = "2024") {
+export function useLeagueAssists(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "assists", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "assists", season),
@@ -177,7 +177,7 @@ export function useLeagueAssists(leagueId: string, season: string = "2024") {
   });
 }
 
-export function useLeagueFixtures(leagueId: string, season: string = "2024") {
+export function useLeagueFixtures(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "fixtures", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "fixtures", season),
@@ -188,7 +188,7 @@ export function useLeagueFixtures(leagueId: string, season: string = "2024") {
   });
 }
 
-export function useLeagueRounds(leagueId: string, season: string = "2024") {
+export function useLeagueRounds(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "rounds", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
