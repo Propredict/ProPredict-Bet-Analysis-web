@@ -350,14 +350,8 @@ export default function GetPremium() {
           {/* Bottom CTA */}
           <div className="text-center px-2 sm:px-0 pb-4">
             <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-              Sign in to subscribe and unlock premium features.
+              Choose package and unlock premium features.
             </p>
-            <Button
-              className="bg-gradient-to-r from-accent to-primary hover:opacity-90 px-6 sm:px-8 w-full sm:w-auto"
-              onClick={() => navigate("/login?redirect=/get-premium")}
-            >
-              Sign in to Subscribe
-            </Button>
           </div>
         </div>
       </div>
