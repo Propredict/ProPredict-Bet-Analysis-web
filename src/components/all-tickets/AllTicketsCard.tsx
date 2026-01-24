@@ -93,7 +93,7 @@ export function AllTicketsCard({
       return "bg-emerald-500 hover:bg-emerald-600 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
-      return "bg-primary hover:bg-primary/90 text-primary-foreground";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_premium") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";

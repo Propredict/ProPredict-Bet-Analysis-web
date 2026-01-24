@@ -50,10 +50,13 @@ export function LockedContentOverlay({
 
   const getButtonClassName = () => {
     if (unlockMethod.type === "watch_ad") {
-      return "bg-accent hover:bg-accent/90 text-accent-foreground border-accent";
+      return "bg-emerald-500 hover:bg-emerald-600 text-white border-0";
+    }
+    if (unlockMethod.type === "upgrade_basic") {
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-warning hover:bg-warning/90 text-warning-foreground";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     return "";
   };

@@ -93,8 +93,8 @@ export default function TicketDetails() {
       },
       upgrade_basic: {
         icon: Star,
-        text: "Upgrade to Pro",
-        className: "bg-primary hover:bg-primary/90 text-primary-foreground",
+        text: "Subscribe to Pro",
+        className: "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0",
         variant: "default" as const,
       },
       upgrade_premium: {
