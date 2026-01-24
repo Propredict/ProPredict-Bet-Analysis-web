@@ -275,65 +275,21 @@ export default function LiveScores() {
                     showGoalIndicator && "bg-emerald-500/10 border-l-2 border-emerald-500"
                   )}
                 >
-                  {/* CENTERED MATCH INFO - Teams and Score */}
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="w-full max-w-lg grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                      {/* Home Team - right aligned */}
-                      <span className={cn(
-                        "text-right text-sm font-medium truncate",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.homeTeam}</span>
-
-                      {/* Score Badge - centered */}
-                      <div className="flex items-center justify-center gap-2">
-                        {showGoalIndicator && (
-                          <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                            </span>
-                            GOL
-                          </span>
-                        )}
-                        
-                        <span
-                          className={cn(
-                            "min-w-[60px] text-center px-3 py-1.5 rounded-md text-sm font-bold",
-                            isLive && !showGoalIndicator && "text-red-400 bg-red-500/20 border border-red-500/30",
-                            isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
-                            isFinished && "text-foreground bg-white/10 border border-white/10",
-                            isUpcoming && "text-muted-foreground bg-white/5 border border-white/5",
-                          )}
-                        >
-                          {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                        </span>
-                      </div>
-
-                      {/* Away Team - left aligned */}
-                      <span className={cn(
-                        "text-left text-sm font-medium truncate",
-                        showGoalIndicator && "text-emerald-400 font-semibold"
-                      )}>{m.awayTeam}</span>
-                    </div>
-                  </div>
-
-                  {/* RIGHT SIDE - Status + Actions */}
-                  <div className="flex items-center gap-2 ml-4">
-                    <StatusBadge match={m} />
-                    
+                  {/* LEFT SIDE - Star & Alert */}
+                  <div className="flex items-center gap-1.5 mr-4 flex-shrink-0">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleFavorite(m.id);
                       }}
                       className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0",
+                        "h-7 w-7 rounded-md flex items-center justify-center transition-all",
                         isFavorite(m.id) ? "bg-primary/20 shadow-lg shadow-primary/30" : "bg-white/5 hover:bg-white/10",
                       )}
                     >
                       <Star
                         className={cn(
-                          "h-4 w-4 transition-colors",
+                          "h-3.5 w-3.5 transition-colors",
                           isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground",
                         )}
                       />
@@ -345,6 +301,55 @@ export default function LiveScores() {
                         toggleMatchAlert(m.id);
                       }}
                     />
+                  </div>
+
+                  {/* CENTER - Teams and Score with fixed widths */}
+                  <div className="flex-1 flex items-center justify-center min-w-0">
+                    {/* Home Team */}
+                    <div className="flex-1 flex justify-end pr-3 min-w-0">
+                      <span className={cn(
+                        "text-sm font-medium truncate text-right",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.homeTeam}</span>
+                    </div>
+
+                    {/* Score Badge - fixed width */}
+                    <div className="flex items-center justify-center gap-1.5 flex-shrink-0">
+                      {showGoalIndicator && (
+                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold uppercase animate-pulse">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                          </span>
+                          GOL
+                        </span>
+                      )}
+                      
+                      <span
+                        className={cn(
+                          "w-16 text-center px-2 py-1 rounded-md text-sm font-bold",
+                          isLive && !showGoalIndicator && "text-red-400 bg-red-500/20 border border-red-500/30",
+                          isLive && showGoalIndicator && "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
+                          isFinished && "text-foreground bg-white/10 border border-white/10",
+                          isUpcoming && "text-muted-foreground bg-white/5 border border-white/5",
+                        )}
+                      >
+                        {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                      </span>
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex-1 flex justify-start pl-3 min-w-0">
+                      <span className={cn(
+                        "text-sm font-medium truncate text-left",
+                        showGoalIndicator && "text-emerald-400 font-semibold"
+                      )}>{m.awayTeam}</span>
+                    </div>
+                  </div>
+
+                  {/* RIGHT SIDE - Status only */}
+                  <div className="flex items-center ml-4 flex-shrink-0">
+                    <StatusBadge match={m} />
                   </div>
                 </div>
               );
