@@ -54,10 +54,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* ❌ Login bez layouta */}
+            {/* Login without layout */}
             <Route path="/login" element={<Login />} />
 
-            {/* ✅ SVE OSTALO IDE KROZ AppLayout */}
+            {/* All other pages with AppLayout */}
             <Route element={<AppLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="/live-scores" element={<LiveScores />} />
