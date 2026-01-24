@@ -1,16 +1,15 @@
-import { Footer } from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Trash2, ShieldCheck, Mail, Clock, ArrowLeft } from "lucide-react";
+import { Trash2, ShieldCheck, Mail, Clock } from "lucide-react";
 
 const DataDeletion = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -29,16 +28,10 @@ const DataDeletion = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="container px-4 py-8 flex-1">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/settings")}
-          className="mb-3 h-7 text-xs gap-1"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Back to Settings
-        </Button>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <main className="container px-4 pt-24 pb-16">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <Trash2 className="w-10 h-10 text-destructive" />
