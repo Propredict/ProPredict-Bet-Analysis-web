@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Settings as SettingsIcon, 
   User, 
-  Bell,
+  Info,
   FileText, 
   Shield, 
   Trash2, 
@@ -14,7 +14,8 @@ import {
   Mail,
   ExternalLink,
   AlertTriangle,
-  Scale
+  Scale,
+  Cookie
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -30,10 +31,10 @@ const Settings = () => {
       iconColor: "text-primary"
     },
     { 
-      label: "Notifications", 
-      description: "Configure push notifications",
-      icon: Bell, 
-      path: "/profile",
+      label: "About Us", 
+      description: "Learn more about ProPredict",
+      icon: Info, 
+      path: "/about-us",
       iconColor: "text-muted-foreground"
     },
   ];
@@ -52,6 +53,13 @@ const Settings = () => {
       description: "How we collect and use your data",
       icon: Shield, 
       path: "/privacy-policy",
+      iconColor: "text-muted-foreground"
+    },
+    { 
+      label: "Cookie Policy", 
+      description: "How we use cookies on our website",
+      icon: Cookie, 
+      path: "/cookie-policy",
       iconColor: "text-muted-foreground"
     },
     { 
