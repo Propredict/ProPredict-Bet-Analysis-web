@@ -118,105 +118,105 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-2xl">
+    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
+      <div className="mx-auto max-w-lg">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-3 h-7 text-xs gap-1"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="h-3 w-3" />
           Back to Dashboard
         </Button>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-sm sm:text-base">Profile Settings</CardTitle>
+            <CardDescription className="text-[10px] sm:text-xs">
               Update your profile information and avatar
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-3 sm:p-4 pt-0 space-y-4">
             {/* Avatar Section */}
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-2">
               <div className="relative">
-                <Avatar className="h-24 w-24">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
                   <AvatarImage src={avatarUrl} alt={fullName || username} />
-                  <AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
+                  <AvatarFallback className="text-sm">{getInitials()}</AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 rounded-full bg-primary p-2">
-                  <Camera className="h-4 w-4 text-primary-foreground" />
+                <div className="absolute -bottom-1 -right-1 rounded-full bg-primary p-1.5">
+                  <Camera className="h-3 w-3 text-primary-foreground" />
                 </div>
               </div>
-              <div className="w-full max-w-md">
-                <Label htmlFor="avatar_url">Avatar URL</Label>
+              <div className="w-full max-w-sm">
+                <Label htmlFor="avatar_url" className="text-[10px] sm:text-xs">Avatar URL</Label>
                 <Input
                   id="avatar_url"
                   type="url"
                   placeholder="https://example.com/avatar.jpg"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="mt-1"
+                  className="mt-1 h-8 text-xs"
                 />
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-[9px] sm:text-[10px] text-muted-foreground">
                   Enter a URL to an image for your avatar
                 </p>
               </div>
             </div>
 
             {/* Profile Fields */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-[10px] sm:text-xs">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={user?.email || ""}
                   disabled
-                  className="mt-1 bg-muted"
+                  className="mt-1 h-8 text-xs bg-muted"
                 />
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-[9px] sm:text-[10px] text-muted-foreground">
                   Email cannot be changed
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username" className="text-[10px] sm:text-xs">Username</Label>
                 <Input
                   id="username"
                   type="text"
                   placeholder="johndoe"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="mt-1"
+                  className="mt-1 h-8 text-xs"
                 />
               </div>
 
               <div>
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name" className="text-[10px] sm:text-xs">Full Name</Label>
                 <Input
                   id="full_name"
                   type="text"
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1"
+                  className="mt-1 h-8 text-xs"
                 />
               </div>
             </div>
 
             {/* Save Button */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
                 {saving ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
+                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                    Saving...
+                  </>
                 ) : (
                   "Save Changes"
                 )}
@@ -226,16 +226,16 @@ const Profile = () => {
                 variant="destructive"
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
                 {signingOut ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                     Signing out...
                   </>
                 ) : (
                   <>
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut className="mr-1.5 h-3 w-3" />
                     Sign Out
                   </>
                 )}

@@ -78,47 +78,47 @@ export function AIPredictionCard({
 
   return (
     <Card className={cn(
-      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded-lg",
+      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
         {/* Header - League, Time, Live/Premium badges, Favorite */}
-        <div className="px-2.5 md:px-4 py-2 md:py-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
-            <span className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-muted-foreground/60" />
-            <span className="truncate max-w-[100px] md:max-w-none">{prediction.league || "League"}</span>
+        <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
+          <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/60" />
+            <span className="truncate max-w-[80px] md:max-w-none">{prediction.league || "League"}</span>
             <span>•</span>
             <span className="whitespace-nowrap">{formatTime(prediction.match_time)}</span>
           </div>
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center gap-0.5 md:gap-1">
             {/* Favorite Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 md:h-7 md:w-7"
+              className="h-5 w-5 md:h-6 md:w-6"
               onClick={() => onToggleFavorite?.(prediction.match_id)}
               disabled={isSavingFavorite}
             >
               {isSavingFavorite ? (
-                <Loader2 className="w-3 md:w-4 h-3 md:h-4 animate-spin text-muted-foreground" />
+                <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 animate-spin text-muted-foreground" />
               ) : (
                 <Heart
                   className={cn(
-                    "w-3 md:w-4 h-3 md:h-4 transition-colors",
+                    "w-2.5 md:w-3 h-2.5 md:h-3 transition-colors",
                     isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"
                   )}
                 />
               )}
             </Button>
             {prediction.is_live && (
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 animate-pulse rounded-lg">
-                <Radio className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
+              <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 animate-pulse rounded">
+                <Radio className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
                 LIVE
               </Badge>
             )}
             {isPremiumPrediction && (
-              <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 text-[9px] md:text-[10px] px-1.5 md:px-2.5 py-0.5 font-semibold rounded-lg">
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1 fill-current" />
+              <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+                <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PRO
               </Badge>
             )}
@@ -126,50 +126,50 @@ export function AIPredictionCard({
         </div>
 
         {/* Match Title - ALWAYS VISIBLE */}
-        <div className="px-2.5 md:px-4 pb-2 md:pb-3">
-          <h3 className="font-semibold text-sm md:text-lg text-white">
+        <div className="px-2 md:px-3 pb-1.5 md:pb-2">
+          <h3 className="font-semibold text-xs md:text-sm text-white">
             {prediction.home_team} vs {prediction.away_team}
           </h3>
         </div>
 
         {/* Market Tabs */}
-        <div className="px-2.5 md:px-4 pb-2.5 md:pb-4">
+        <div className="px-2 md:px-3 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 bg-[#1e3a5f]/30 h-7 md:h-9 rounded-lg">
-              <TabsTrigger value="main" className="text-[10px] md:text-xs data-[state=active]:bg-[#1e3a5f] px-0.5 md:px-1 rounded-lg">
+            <TabsList className="w-full grid grid-cols-5 bg-[#1e3a5f]/30 h-6 md:h-7 rounded">
+              <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[10px] md:text-xs data-[state=active]:bg-[#1e3a5f] px-0.5 md:px-1 rounded-lg">
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[10px] md:text-xs data-[state=active]:bg-[#1e3a5f] px-0.5 md:px-1 rounded-lg">
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 BTTS
               </TabsTrigger>
-              <TabsTrigger value="double" className="text-[10px] md:text-xs data-[state=active]:bg-[#1e3a5f] px-0.5 md:px-1 rounded-lg">
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 DC
               </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[10px] md:text-xs data-[state=active]:bg-[#1e3a5f] px-0.5 md:px-1 rounded-lg">
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Combo
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="main" className="mt-2.5 md:mt-4">
+            <TabsContent value="main" className="mt-2 md:mt-3">
               <MainMarketTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
 
-            <TabsContent value="goals" className="mt-2.5 md:mt-4">
+            <TabsContent value="goals" className="mt-2 md:mt-3">
               <GoalsMarketTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
 
-            <TabsContent value="btts" className="mt-2.5 md:mt-4">
+            <TabsContent value="btts" className="mt-2 md:mt-3">
               <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
 
-            <TabsContent value="double" className="mt-2.5 md:mt-4">
+            <TabsContent value="double" className="mt-2 md:mt-3">
               <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
 
-            <TabsContent value="combos" className="mt-2.5 md:mt-4">
+            <TabsContent value="combos" className="mt-2 md:mt-3">
               <CombosMarketTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
           </Tabs>
@@ -177,35 +177,35 @@ export function AIPredictionCard({
 
         {/* AI Analysis - Only visible when unlocked */}
         {hasAccess && (
-          <div className="px-2.5 md:px-4 pb-2.5 md:pb-4">
+          <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-between text-[10px] md:text-xs text-muted-foreground hover:text-foreground p-1.5 md:p-2 h-auto bg-[#1e3a5f]/20 rounded-lg"
+                  className="w-full justify-between text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground p-1 md:p-1.5 h-auto bg-[#1e3a5f]/20 rounded"
                 >
-                  <span className="flex items-center gap-1.5 md:gap-2">
-                    <Brain className="w-3 md:w-4 h-3 md:h-4" />
+                  <span className="flex items-center gap-1 md:gap-1.5">
+                    <Brain className="w-2.5 md:w-3 h-2.5 md:h-3" />
                     AI Analysis
                   </span>
-                  <ChevronDown className={cn("w-3 md:w-4 h-3 md:h-4 transition-transform", isAnalysisOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-2.5 md:w-3 h-2.5 md:h-3 transition-transform", isAnalysisOpen && "rotate-180")} />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-1.5 md:mt-2 p-2 md:p-3 bg-[#1e3a5f]/20 rounded-lg space-y-2 md:space-y-3">
+                <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-[#1e3a5f]/20 rounded space-y-1.5 md:space-y-2">
                   {/* Dynamic AI Explanation */}
-                  <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
                     {generatedAnalysis.explanation}
                   </p>
                   
                   {/* Dynamic Key Factors */}
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-0.5">
                     {generatedAnalysis.keyFactors.slice(0, 3).map((factor, i) => (
                       <Badge 
                         key={i} 
                         variant="secondary" 
                         className={cn(
-                          "text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-lg",
+                          "text-[8px] md:text-[9px] px-1 py-0.5 rounded",
                           i === 0 
                             ? "bg-green-500/20 text-green-400 border-green-500/30" 
                             : "bg-[#1e3a5f]/40"
@@ -218,8 +218,8 @@ export function AIPredictionCard({
                   
                   {/* Original analysis from DB if available */}
                   {prediction.analysis && (
-                    <div className="pt-1.5 md:pt-2 border-t border-[#1e3a5f]/30">
-                      <p className="text-[9px] md:text-[10px] text-muted-foreground/70 italic line-clamp-2">
+                    <div className="pt-1 md:pt-1.5 border-t border-[#1e3a5f]/30">
+                      <p className="text-[8px] md:text-[9px] text-muted-foreground/70 italic line-clamp-2">
                         {prediction.analysis}
                       </p>
                     </div>
@@ -232,27 +232,27 @@ export function AIPredictionCard({
 
         {/* Unlock CTA - Only show when locked */}
         {!hasAccess && (
-          <div className="px-2.5 md:px-4 pb-3 md:pb-5">
-            <p className="text-[10px] md:text-xs text-muted-foreground text-center mb-2 md:mb-3">
+          <div className="px-2 md:px-3 pb-2 md:pb-3">
+            <p className="text-[9px] md:text-[10px] text-muted-foreground text-center mb-1.5 md:mb-2">
               Unlock AI insights
             </p>
             
             {needsPremiumUpgrade ? (
               <Button
-                className="w-full h-8 md:h-10 text-xs md:text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 font-medium rounded-lg"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 font-medium rounded"
                 onClick={onGoPremium}
               >
-                <Star className="w-3 md:w-4 h-3 md:h-4 mr-1.5 md:mr-2 fill-current" />
+                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 Get AI Pro
               </Button>
             ) : canWatchAd ? (
               <Button
                 variant="outline"
-                className="w-full h-8 md:h-10 text-xs md:text-sm border-[#1e3a5f]/60 bg-transparent text-white hover:bg-[#1e3a5f]/30 font-medium rounded-lg"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs border-[#1e3a5f]/60 bg-transparent text-white hover:bg-[#1e3a5f]/30 font-medium rounded"
                 onClick={handleWatchAd}
                 disabled={isUnlocking}
               >
-                <Eye className="w-3 md:w-4 h-3 md:h-4 mr-1.5 md:mr-2" />
+                <Eye className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
                 {isUnlocking ? "Unlocking..." : "Watch Ad"}
               </Button>
             ) : null}
@@ -261,8 +261,8 @@ export function AIPredictionCard({
 
         {/* Unlocked indicator */}
         {hasAccess && !isAdmin && !isPremiumUser && (
-          <div className="px-2.5 md:px-4 pb-2.5 md:pb-4">
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] md:text-xs rounded-lg">
+          <div className="px-2 md:px-3 pb-2 md:pb-3">
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] md:text-[10px] rounded">
               ✓ Unlocked
             </Badge>
           </div>
