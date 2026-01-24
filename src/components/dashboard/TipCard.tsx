@@ -97,7 +97,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     return "";
   };
