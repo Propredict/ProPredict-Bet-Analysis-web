@@ -3,10 +3,13 @@ import { X, BarChart3, Users, DollarSign, History, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { Match } from "@/hooks/useLiveScores";
-import { supabase } from "@/integrations/supabase/client";
+import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { AIPredictionTab } from "./AIPredictionTab";
+import { StatisticsTab } from "./tabs/StatisticsTab";
+import { LineupsTab } from "./tabs/LineupsTab";
+import { OddsTab } from "./tabs/OddsTab";
+import { H2HTab } from "./tabs/H2HTab";
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -15,10 +18,9 @@ interface MatchDetailModalProps {
 
 export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   const [activeTab, setActiveTab] = useState("statistics");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [details, setDetails] = useState<any | null>(null);
-  const [isUnauthorized, setIsUnauthorized] = useState(false);
+
+  // Use the new hook for fetching match details
+  const { data: details, loading } = useMatchDetails(match?.id ?? null);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -38,71 +40,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     };
   }, [match, handleEscape]);
 
-  useEffect(() => {
-    if (!match) return;
-
-    const controller = new AbortController();
-
-    const fetchMatchDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        setIsUnauthorized(false);
-        setDetails(null);
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
-
-        // Edge function supports authenticated access, but we must not require login.
-        if (session?.access_token) {
-          headers.Authorization = `Bearer ${session.access_token}`;
-        }
-
-        const res = await fetch(
-          `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-match-details?fixtureId=${match.id}`,
-          {
-            method: "GET",
-            headers,
-            signal: controller.signal,
-          }
-        );
-
-        // Auth failures should be silent: keep modal usable.
-        if (res.status === 401 || res.status === 403) {
-          setIsUnauthorized(true);
-          return;
-        }
-
-        if (!res.ok) {
-          setError("Failed to load match details");
-          return;
-        }
-
-        // Keep it defensive: API may return partial/empty data.
-        const json = await res
-          .json()
-          .catch(() => null);
-
-        setDetails(json);
-      } catch (e: any) {
-        // Abort is expected when switching matches / closing.
-        if (e?.name === "AbortError") return;
-        setError("Failed to load match details");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatchDetails();
-
-    return () => controller.abort();
-  }, [match]);
-
   if (!match) return null;
 
   const isLiveOrHT = match.status === "live" || match.status === "halftime";
@@ -110,16 +47,20 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   const getStatusBadge = () => {
     if (match.status === "live") {
-      return <Badge className="bg-red-500 text-white animate-pulse">LIVE {match.minute}'</Badge>;
+      return <Badge className="bg-destructive text-destructive-foreground animate-pulse">LIVE {match.minute}'</Badge>;
     }
     if (match.status === "halftime") {
-      return <Badge className="bg-yellow-500/20 text-yellow-400">HT</Badge>;
+      return <Badge className="bg-accent text-accent-foreground">HT</Badge>;
     }
     if (match.status === "finished") {
       return <Badge variant="secondary">FT</Badge>;
     }
     return <Badge variant="outline">{match.startTime}</Badge>;
   };
+
+  // Get team logos from details if available
+  const homeLogo = details?.teams?.home?.logo;
+  const awayLogo = details?.teams?.away?.logo;
 
   return (
     <>
@@ -143,11 +84,21 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
           {/* SCORE */}
           <div className="p-6 flex justify-between items-center">
-            <div className="text-center flex-1">{match.homeTeam}</div>
-            <div className="text-4xl font-bold">
+            <div className="text-center flex-1 flex flex-col items-center gap-2">
+              {homeLogo && (
+                <img src={homeLogo} alt="" className="w-10 h-10 object-contain" />
+              )}
+              <span className="text-sm font-medium">{match.homeTeam}</span>
+            </div>
+            <div className="text-4xl font-bold px-4">
               {isUpcoming ? "VS" : `${match.homeScore ?? 0} : ${match.awayScore ?? 0}`}
             </div>
-            <div className="text-center flex-1">{match.awayTeam}</div>
+            <div className="text-center flex-1 flex flex-col items-center gap-2">
+              {awayLogo && (
+                <img src={awayLogo} alt="" className="w-10 h-10 object-contain" />
+              )}
+              <span className="text-sm font-medium">{match.awayTeam}</span>
+            </div>
           </div>
 
           {/* TABS */}
@@ -171,39 +122,33 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             </TabsList>
 
             <TabsContent value="statistics" className="m-0">
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                {loading && "Loading…"}
-                {!loading && error && error}
-                {!loading && !error && (!details || isUnauthorized) && "Not available"}
-                {!loading && !error && !!details && "Data loaded"}
-              </div>
+              <StatisticsTab
+                statistics={details?.statistics ?? []}
+                loading={loading}
+                homeTeam={match.homeTeam}
+                awayTeam={match.awayTeam}
+              />
             </TabsContent>
 
             <TabsContent value="lineups" className="m-0">
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                {loading && "Loading…"}
-                {!loading && error && error}
-                {!loading && !error && (!details || isUnauthorized) && "Not available"}
-                {!loading && !error && !!details && "Data loaded"}
-              </div>
+              <LineupsTab
+                lineups={details?.lineups ?? []}
+                loading={loading}
+              />
             </TabsContent>
 
             <TabsContent value="odds" className="m-0">
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                {loading && "Loading…"}
-                {!loading && error && error}
-                {!loading && !error && (!details || isUnauthorized) && "Not available"}
-                {!loading && !error && !!details && "Data loaded"}
-              </div>
+              <OddsTab
+                odds={details?.odds ?? []}
+                loading={loading}
+              />
             </TabsContent>
 
             <TabsContent value="h2h" className="m-0">
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                {loading && "Loading…"}
-                {!loading && error && error}
-                {!loading && !error && (!details || isUnauthorized) && "Not available"}
-                {!loading && !error && !!details && "Data loaded"}
-              </div>
+              <H2HTab
+                h2h={details?.h2h ?? []}
+                loading={loading}
+              />
             </TabsContent>
 
             <TabsContent value="ai" className="m-0">
