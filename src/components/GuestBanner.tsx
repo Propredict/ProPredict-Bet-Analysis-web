@@ -15,23 +15,23 @@ export function GuestBanner() {
   }
 
   return (
-    <div className="relative bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/30 rounded-lg p-4 mb-6">
+    <div className="relative bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/30 rounded-lg p-2 sm:p-3 mb-2">
       <button
         onClick={() => setIsDismissed(true)}
-        className="absolute top-2 right-2 p-1 rounded-full hover:bg-primary/20 transition-colors text-muted-foreground hover:text-foreground"
+        className="absolute top-1.5 right-1.5 p-0.5 rounded-full hover:bg-primary/20 transition-colors text-muted-foreground hover:text-foreground"
         aria-label="Dismiss banner"
       >
-        <X className="h-4 w-4" />
+        <X className="h-3 w-3" />
       </button>
       
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pr-8">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-            <Sparkles className="h-5 w-5 text-primary" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 pr-6">
+        <div className="flex items-center gap-2 flex-1">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Unlock Full Access</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Full Access</h3>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               Sign in to unlock daily tips, exclusive predictions, and save your favorites.
             </p>
           </div>
@@ -39,10 +39,10 @@ export function GuestBanner() {
         
         <Button
           onClick={() => navigate("/login")}
-          className="gap-2 shrink-0"
+          className="gap-1 shrink-0 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
           size="sm"
         >
-          <LogIn className="h-4 w-4" />
+          <LogIn className="h-3 w-3" />
           Sign In
         </Button>
       </div>
