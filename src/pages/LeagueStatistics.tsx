@@ -58,27 +58,27 @@ export default function LeagueStatistics() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 max-w-full overflow-x-hidden">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
-              <BarChart3 className="h-6 w-6 text-orange-400" />
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center flex-shrink-0">
+              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">League Statistics</h1>
-              <p className="text-sm text-muted-foreground">
-                Comprehensive stats, standings & player rankings
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold truncate">League Statistics</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                Stats, standings & rankings
               </p>
             </div>
           </div>
 
-          {/* League Selector */}
+          {/* League Selector - full width on mobile */}
           <Select value={selectedLeagueId} onValueChange={setSelectedLeagueId}>
-            <SelectTrigger className="w-[200px] bg-[#0E1627] border-white/10">
+            <SelectTrigger className="w-full sm:w-[200px] bg-[#0E1627] border-white/10">
               <SelectValue placeholder="Select League" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0E1627] border-white/10">
+            <SelectContent className="bg-[#0E1627] border-white/10 z-50">
               {LEAGUES.map((league) => (
                 <SelectItem key={league.id} value={league.id}>
                   {league.name}
@@ -88,88 +88,90 @@ export default function LeagueStatistics() {
           </Select>
         </div>
 
-        {/* Stats Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card className="p-4 bg-gradient-to-br from-red-500/20 to-red-600/5 border-red-500/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                <Play className="h-5 w-5 text-red-400" />
+        {/* Stats Summary - 2x2 grid on mobile */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
+          <Card className="p-2 sm:p-4 bg-gradient-to-br from-red-500/20 to-red-600/5 border-red-500/30">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <Play className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Live Now</p>
-                <p className="text-xl font-bold text-red-400">{liveCount}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-gradient-to-br from-green-500/20 to-green-600/5 border-green-500/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Matches</p>
-                <p className="text-xl font-bold text-green-400">{filteredMatches.length}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Live Now</p>
+                <p className="text-lg sm:text-xl font-bold text-red-400">{liveCount}</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/5 border-orange-500/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                <Users className="h-5 w-5 text-orange-400" />
+          <Card className="p-2 sm:p-4 bg-gradient-to-br from-green-500/20 to-green-600/5 border-green-500/30">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Selected League</p>
-                <p className="text-sm font-semibold text-orange-400 truncate max-w-[120px]">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Matches</p>
+                <p className="text-lg sm:text-xl font-bold text-green-400">{filteredMatches.length}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-2 sm:p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/5 border-orange-500/30">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Selected</p>
+                <p className="text-xs sm:text-sm font-semibold text-orange-400 truncate">
                   {isAllLeagues ? "All" : selectedLeague?.name}
                 </p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/5 border-purple-500/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                <Target className="h-5 w-5 text-purple-400" />
+          <Card className="p-2 sm:p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/5 border-purple-500/30">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <Target className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Leagues</p>
-                <p className="text-xl font-bold text-purple-400">{LEAGUES.length - 1}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Leagues</p>
+                <p className="text-lg sm:text-xl font-bold text-purple-400">{LEAGUES.length - 1}</p>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - horizontal scroll on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-[#0E1627] border border-white/10 p-1 overflow-x-auto">
-            <TabsTrigger value="live" className="flex items-center gap-2">
-              <Play className="h-4 w-4" />
-              Live
-            </TabsTrigger>
-            <TabsTrigger value="standings" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              Standings
-            </TabsTrigger>
-            <TabsTrigger value="scorers" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Scorers
-            </TabsTrigger>
-            <TabsTrigger value="assists" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Assists
-            </TabsTrigger>
-            <TabsTrigger value="fixtures" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Fixtures
-            </TabsTrigger>
-            <TabsTrigger value="rounds" className="flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" />
-              Rounds
-            </TabsTrigger>
-            <TabsTrigger value="h2h" className="flex items-center gap-2">
-              <Swords className="h-4 w-4" />
-              H2H
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start bg-[#0E1627] border border-white/10 p-1">
+              <TabsTrigger value="live" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Live</span>
+              </TabsTrigger>
+              <TabsTrigger value="standings" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Standings</span>
+              </TabsTrigger>
+              <TabsTrigger value="scorers" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Scorers</span>
+              </TabsTrigger>
+              <TabsTrigger value="assists" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Assists</span>
+              </TabsTrigger>
+              <TabsTrigger value="fixtures" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Fixtures</span>
+              </TabsTrigger>
+              <TabsTrigger value="rounds" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Rounds</span>
+              </TabsTrigger>
+              <TabsTrigger value="h2h" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap">
+                <Swords className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">H2H</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Live Tab - always shows content */}
           <TabsContent value="live" className="mt-4">

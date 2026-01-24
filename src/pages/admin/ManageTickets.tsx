@@ -254,10 +254,10 @@ export default function ManageTickets() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">Manage Tickets</h1>
-          <Button onClick={handleCreate} className="gap-2">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-0 sm:px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Manage Tickets</h1>
+          <Button onClick={handleCreate} className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Add Ticket
           </Button>
@@ -268,7 +268,7 @@ export default function ManageTickets() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {tickets.map((t) => (
               <AdminTicketCard
                 key={t.id}
@@ -281,37 +281,37 @@ export default function ManageTickets() {
               />
             ))}
             {tickets.length === 0 && (
-              <Card className="p-8 text-center bg-card border-border">
-                <p className="text-muted-foreground">No tickets yet. Create your first ticket!</p>
+              <Card className="p-6 sm:p-8 text-center bg-card border-border">
+                <p className="text-muted-foreground text-sm sm:text-base">No tickets yet. Create your first ticket!</p>
               </Card>
             )}
           </div>
         )}
 
-        {/* Create/Edit Dialog */}
+        {/* Create/Edit Dialog - MOBILE OPTIMIZED */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0">
-            <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
-              <DialogTitle className="text-xl font-semibold">
+          <DialogContent className="w-[95vw] max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+            <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-5 pb-2 sm:pb-4 border-b border-border shrink-0">
+              <DialogTitle className="text-lg sm:text-xl font-semibold">
                 {editingTicket ? "Edit Ticket" : "Create New Ticket"}
               </DialogTitle>
             </DialogHeader>
 
             <ScrollArea className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-6">
+              <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
                 {/* ========== SECTION 1: TICKET INFO ========== */}
-                <Card className="p-5 bg-card border-border">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+                <Card className="p-3 sm:p-5 bg-card border-border">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-xs sm:text-sm">
                       1
                     </div>
-                    <h3 className="font-semibold text-lg text-foreground">Ticket Info</h3>
+                    <h3 className="font-semibold text-base sm:text-lg text-foreground">Ticket Info</h3>
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="space-y-3 sm:space-y-5">
                     {/* Title */}
-                    <div className="space-y-2">
-                      <Label htmlFor="title" className="text-sm font-medium">
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label htmlFor="title" className="text-xs sm:text-sm font-medium">
                         Title <span className="text-destructive">*</span>
                       </Label>
                       <Input
@@ -319,21 +319,21 @@ export default function ManageTickets() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g., Weekend Accumulator"
-                        className="bg-background h-11"
+                        className="bg-background h-10 sm:h-11 text-sm"
                       />
                     </div>
 
-                    {/* Tier / Status / Result Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">
+                    {/* Tier / Status / Result Row - stack on mobile */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm font-medium">
                           Tier <span className="text-destructive">*</span>
                         </Label>
                         <Select value={tier} onValueChange={(v) => setTier(v as ContentTier)}>
-                          <SelectTrigger className="bg-background h-11">
+                          <SelectTrigger className="bg-background h-10 sm:h-11 text-sm">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[60]">
                             <SelectItem value="daily">🔶 Daily</SelectItem>
                             <SelectItem value="exclusive">⭐ Pro (Exclusive)</SelectItem>
                             <SelectItem value="premium">👑 Premium</SelectItem>
@@ -341,28 +341,28 @@ export default function ManageTickets() {
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm font-medium">
                           Status <span className="text-destructive">*</span>
                         </Label>
                         <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
-                          <SelectTrigger className="bg-background h-11">
+                          <SelectTrigger className="bg-background h-10 sm:h-11 text-sm">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[60]">
                             <SelectItem value="draft">📝 Draft</SelectItem>
                             <SelectItem value="published">✅ Published</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">Result</Label>
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm font-medium">Result</Label>
                         <Select value={result} onValueChange={(v) => setResult(v as TicketResult)}>
-                          <SelectTrigger className="bg-background h-11">
+                          <SelectTrigger className="bg-background h-10 sm:h-11 text-sm">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[60]">
                             <SelectItem value="pending">⏳ Pending</SelectItem>
                             <SelectItem value="won">✅ Won</SelectItem>
                             <SelectItem value="lost">❌ Lost</SelectItem>
@@ -372,42 +372,42 @@ export default function ManageTickets() {
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium">
-                        Description <span className="text-muted-foreground text-xs">(optional)</span>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label htmlFor="description" className="text-xs sm:text-sm font-medium">
+                        Description <span className="text-muted-foreground text-[10px] sm:text-xs">(optional)</span>
                       </Label>
                       <Textarea
                         id="description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Brief description of this ticket..."
-                        className="bg-background resize-none min-h-[80px]"
-                        rows={3}
+                        placeholder="Brief description..."
+                        className="bg-background resize-none min-h-[60px] sm:min-h-[80px] text-sm"
+                        rows={2}
                       />
                     </div>
 
                     {/* AI Analysis */}
-                    <div className="space-y-2">
-                      <Label htmlFor="aiAnalysis" className="text-sm font-medium flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        AI Analysis <span className="text-muted-foreground text-xs">(optional)</span>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label htmlFor="aiAnalysis" className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                        <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                        AI Analysis <span className="text-muted-foreground text-[10px] sm:text-xs">(optional)</span>
                       </Label>
                       <Textarea
                         id="aiAnalysis"
                         value={aiAnalysis}
                         onChange={(e) => setAiAnalysis(e.target.value)}
-                        placeholder="AI-generated analysis and insights..."
-                        className="bg-background resize-none min-h-[100px]"
-                        rows={4}
+                        placeholder="AI-generated analysis..."
+                        className="bg-background resize-none min-h-[60px] sm:min-h-[100px] text-sm"
+                        rows={3}
                       />
                     </div>
                   </div>
                 </Card>
 
                 {/* ========== SECTION 2: MATCHES ========== */}
-                <Card className="p-5 bg-card border-border">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
+                <Card className="p-3 sm:p-5 bg-card border-border">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 sm:mb-5">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
                         2
                       </div>

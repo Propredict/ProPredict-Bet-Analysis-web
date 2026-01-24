@@ -143,13 +143,13 @@ export default function ManageTips() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Manage Tips</h1>
-            <p className="text-muted-foreground">Create and manage single match betting tips with AI predictions</p>
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-0 sm:px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Manage Tips</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">Create and manage betting tips</p>
           </div>
-          <Button onClick={handleCreate} className="gap-2">
+          <Button onClick={handleCreate} className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Add Tip
           </Button>
@@ -215,89 +215,105 @@ export default function ManageTips() {
           </div>
         )}
 
-        {/* Create/Edit Dialog */}
+        {/* Create/Edit Dialog - Mobile Optimized */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
+          <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-4 shrink-0 border-b border-border">
+              <DialogTitle className="text-lg sm:text-xl">{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Home Team</Label>
+            
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-2 sm:pt-4 space-y-4">
+              {/* Teams - stack on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Home Team</Label>
                   <Input
                     value={formData.home_team}
                     onChange={(e) => setFormData({ ...formData, home_team: e.target.value })}
                     placeholder="e.g., Liverpool"
+                    className="h-10"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Away Team</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Away Team</Label>
                   <Input
                     value={formData.away_team}
                     onChange={(e) => setFormData({ ...formData, away_team: e.target.value })}
                     placeholder="e.g., Manchester City"
+                    className="h-10"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>League</Label>
+              
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-sm">League</Label>
                 <Input
                   value={formData.league}
                   onChange={(e) => setFormData({ ...formData, league: e.target.value })}
                   placeholder="e.g., Premier League"
+                  className="h-10"
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Prediction</Label>
+              
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-sm">Prediction</Label>
                 <Input
                   value={formData.prediction}
                   onChange={(e) => setFormData({ ...formData, prediction: e.target.value })}
                   placeholder="e.g., Over 2.5 Goals"
+                  className="h-10"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Odds</Label>
+              
+              {/* Odds & Confidence - stack on mobile */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Odds</Label>
                   <Input
                     type="number"
                     step="0.01"
                     min="1"
                     value={formData.odds}
                     onChange={(e) => setFormData({ ...formData, odds: parseFloat(e.target.value) || 1 })}
+                    className="h-10"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Confidence %</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Confidence %</Label>
                   <Input
                     type="number"
                     min="0"
                     max="100"
                     value={formData.confidence ?? 70}
                     onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) || 0 })}
+                    className="h-10"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>AI Prediction</Label>
+              
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-sm">AI Prediction</Label>
                 <Textarea
                   value={formData.ai_prediction}
                   onChange={(e) => setFormData({ ...formData, ai_prediction: e.target.value })}
-                  placeholder="Enter AI analysis and prediction rationale..."
-                  rows={4}
+                  placeholder="Enter AI analysis..."
+                  rows={3}
+                  className="min-h-[80px]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Access Level</Label>
+              
+              {/* Tier & Status - stack on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Access Level</Label>
                   <Select
                     value={formData.tier}
                     onValueChange={(value: ContentTier) => setFormData({ ...formData, tier: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[60]">
                       <SelectItem value="free">Free</SelectItem>
                       <SelectItem value="daily">Daily</SelectItem>
                       <SelectItem value="exclusive">Exclusive</SelectItem>
@@ -305,16 +321,16 @@ export default function ManageTips() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-sm">Status</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value: ContentStatus) => setFormData({ ...formData, status: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[60]">
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="published">Published</SelectItem>
                     </SelectContent>
@@ -322,11 +338,13 @@ export default function ManageTips() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            
+            {/* Sticky footer with buttons */}
+            <DialogFooter className="p-4 sm:p-6 pt-2 sm:pt-4 border-t border-border shrink-0 flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={isSubmitting}>
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto order-1 sm:order-2">
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingTip ? "Update" : "Create"}
               </Button>

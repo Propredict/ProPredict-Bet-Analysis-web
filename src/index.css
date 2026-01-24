@@ -96,17 +96,33 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
   html, body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
-    max-width: 100vw;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100%;
   }
 
   #root {
-    max-width: 100vw;
-    overflow-x: hidden;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    width: 100%;
+  }
+
+  /* Prevent any element from causing horizontal scroll by default */
+  body * {
+    max-width: 100%;
+  }
+
+  /* Allow specific elements to overflow (tables, scrollable containers) */
+  .overflow-x-auto,
+  .scrollbar-hide,
+  [data-radix-scroll-area-viewport],
+  [data-allow-overflow="true"] {
+    max-width: none;
   }
 }
 
@@ -135,5 +151,37 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Mobile-optimized scrollable tabs */
+  .mobile-tabs-scroll {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .mobile-tabs-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Responsive container that prevents overflow */
+  .responsive-container {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Mobile-first responsive breakpoints */
+  @media (max-width: 480px) {
+    .hide-mobile {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 481px) and (max-width: 1024px) {
+    .hide-tablet {
+      display: none !important;
+    }
   }
 }
