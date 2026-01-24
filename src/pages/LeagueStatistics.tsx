@@ -60,25 +60,25 @@ export default function LeagueStatistics() {
     <DashboardLayout>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 pb-1.5 sm:pb-2 border-b border-border">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
-              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5 pb-1 sm:pb-1.5 border-b border-border">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-gradient-to-br from-accent/15 to-accent/5 flex items-center justify-center">
+              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
             </div>
             <div>
-              <h1 className="text-sm sm:text-base font-bold">League Statistics</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Stats & rankings</p>
+              <h1 className="text-xs sm:text-sm font-bold">All Leagues Standings</h1>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Stats & rankings</p>
             </div>
           </div>
 
           {/* League Selector - Compact */}
           <Select value={selectedLeagueId} onValueChange={setSelectedLeagueId}>
-            <SelectTrigger className="w-full sm:w-[160px] h-7 sm:h-8 text-[10px] sm:text-xs bg-card border-border">
+            <SelectTrigger className="w-full sm:w-[140px] h-6 sm:h-7 text-[9px] sm:text-[10px] bg-card border-border">
               <SelectValue placeholder="Select League" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
               {LEAGUES.map((league) => (
-                <SelectItem key={league.id} value={league.id} className="text-xs">
+                <SelectItem key={league.id} value={league.id} className="text-[10px]">
                   {league.name}
                 </SelectItem>
               ))}
@@ -87,78 +87,78 @@ export default function LeagueStatistics() {
         </div>
 
         {/* Stats Summary - COMPACT cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
-          <Card className="stats-card bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
-            <div className="stats-card-icon bg-destructive/10">
-              <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
+        <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
+          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-destructive/10 flex items-center justify-center flex-shrink-0">
+              <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-destructive" />
             </div>
-            <div>
-              <p className="stats-card-label">Live</p>
-              <p className="stats-card-value text-destructive">{liveCount}</p>
-            </div>
-          </Card>
-          <Card className="stats-card bg-gradient-to-br from-success/10 to-success/5 border-success/15">
-            <div className="stats-card-icon bg-success/10">
-              <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
-            </div>
-            <div>
-              <p className="stats-card-label">Matches</p>
-              <p className="stats-card-value text-success">{filteredMatches.length}</p>
+            <div className="min-w-0">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Live</p>
+              <p className="text-[10px] sm:text-xs font-bold text-destructive">{liveCount}</p>
             </div>
           </Card>
-          <Card className="stats-card bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
-            <div className="stats-card-icon bg-accent/10">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
+          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-success/10 to-success/5 border-success/15">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-success/10 flex items-center justify-center flex-shrink-0">
+              <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-success" />
             </div>
-            <div>
-              <p className="stats-card-label">Selected</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-accent truncate">
+            <div className="min-w-0">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Matches</p>
+              <p className="text-[10px] sm:text-xs font-bold text-success">{filteredMatches.length}</p>
+            </div>
+          </Card>
+          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
+              <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-accent" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Selected</p>
+              <p className="text-[9px] sm:text-[10px] font-semibold text-accent truncate">
                 {isAllLeagues ? "All" : selectedLeague?.name?.split(" ")[0]}
               </p>
             </div>
           </Card>
-          <Card className="stats-card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
-            <div className="stats-card-icon bg-primary/10">
-              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
             </div>
-            <div>
-              <p className="stats-card-label">Leagues</p>
-              <p className="stats-card-value text-primary">{LEAGUES.length - 1}</p>
+            <div className="min-w-0">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Leagues</p>
+              <p className="text-[10px] sm:text-xs font-bold text-primary">{LEAGUES.length - 1}</p>
             </div>
           </Card>
         </div>
 
         {/* Tabs - Horizontal scroll on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
-            <TabsList className="inline-flex w-auto min-w-full bg-secondary/50 border border-border p-0.5 sm:p-1 rounded-lg">
-              <TabsTrigger value="live" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Play className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Live</span>
+          <div className="overflow-x-auto scrollbar-hide -mx-1.5 px-1.5">
+            <TabsList className="inline-flex w-auto min-w-full bg-secondary/50 border border-border p-0.5 rounded-md">
+              <TabsTrigger value="live" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Live</span>
               </TabsTrigger>
-              <TabsTrigger value="standings" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Trophy className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Standings</span>
+              <TabsTrigger value="standings" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Standings</span>
               </TabsTrigger>
-              <TabsTrigger value="scorers" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Target className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Scorers</span>
+              <TabsTrigger value="scorers" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Scorers</span>
               </TabsTrigger>
-              <TabsTrigger value="assists" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Users className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Assists</span>
+              <TabsTrigger value="assists" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Assists</span>
               </TabsTrigger>
-              <TabsTrigger value="fixtures" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Calendar className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Fixtures</span>
+              <TabsTrigger value="fixtures" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Fixtures</span>
               </TabsTrigger>
-              <TabsTrigger value="rounds" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Rounds</span>
+              <TabsTrigger value="rounds" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <RotateCcw className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>Rounds</span>
               </TabsTrigger>
-              <TabsTrigger value="h2h" className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
-                <Swords className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">H2H</span>
+              <TabsTrigger value="h2h" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
+                <Swords className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span>H2H</span>
               </TabsTrigger>
             </TabsList>
           </div>

@@ -141,30 +141,30 @@ export default function LiveScores() {
     <DashboardLayout>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 pb-1.5 border-b border-border">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Zap className="text-primary h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5 pb-1 border-b border-border">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Zap className="text-primary h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </div>
             <div>
-              <h1 className="text-sm sm:text-base font-bold">Live Scores</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Real-time updates</p>
+              <h1 className="text-xs sm:text-sm font-bold">All Leagues Live Scores</h1>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Real-time</p>
             </div>
           </div>
 
-          <div className="flex gap-1.5 items-center">
-            <Badge variant="outline" className="font-mono text-[10px] sm:text-xs px-1.5 py-0.5">
+          <div className="flex gap-1 items-center">
+            <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5">
               {format(currentTime, "HH:mm:ss")}
             </Badge>
-            <Button size="sm" variant="outline" onClick={refetch} className="gap-1 h-6 sm:h-7 px-1.5 sm:px-2">
-              <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
-              <span className="hidden sm:inline text-[10px]">Refresh</span>
+            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-5 sm:h-6 px-1 sm:px-1.5">
+              <RefreshCw className={cn("h-2.5 w-2.5", isLoading && "animate-spin")} />
+              <span className="hidden sm:inline text-[9px]">Refresh</span>
             </Button>
           </div>
         </div>
 
         {/* STATS CARDS - COMPACT grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
           <StatCard title="Live" value={liveCount} icon={Play} variant="live" />
           <StatCard title="Total" value={matches.length} icon={BarChart3} variant="matches" />
           <StatCard title="Leagues" value={leaguesCount} icon={Trophy} variant="leagues" />
@@ -172,14 +172,14 @@ export default function LiveScores() {
           {/* Favorites Quick Link */}
           <Card 
             onClick={() => navigate("/favorites")}
-            className="stats-card bg-gradient-to-br from-pink-500/15 to-pink-600/5 border-pink-500/20 hover:border-pink-500/40 cursor-pointer hover:scale-[1.02]"
+            className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-pink-500/15 to-pink-600/5 border-pink-500/20 hover:border-pink-500/40 cursor-pointer"
           >
-            <div className="stats-card-icon bg-pink-500/15">
-              <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-400" />
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-pink-500/15 flex items-center justify-center flex-shrink-0">
+              <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-pink-400" />
             </div>
-            <div>
-              <p className="stats-card-label">Favorites</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-pink-400">View →</p>
+            <div className="min-w-0">
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Favorites</p>
+              <p className="text-[9px] sm:text-[10px] font-semibold text-pink-400">View →</p>
             </div>
           </Card>
         </div>
@@ -224,32 +224,32 @@ export default function LiveScores() {
         </div>
 
         {/* STATUS TABS - Compact */}
-        <div className="bg-secondary/50 border border-border rounded-md p-0.5 flex gap-0.5">
+        <div className="bg-secondary/50 border border-border rounded p-0.5 flex gap-0.5">
           {allowedStatusTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setStatusTab(tab)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-1 py-1.5 px-1.5 sm:px-2 rounded text-[10px] sm:text-xs font-medium transition-all",
+                "flex-1 flex items-center justify-center gap-0.5 py-1 px-1 sm:px-1.5 rounded text-[9px] sm:text-[10px] font-medium transition-all",
                 statusTab === tab 
                   ? "bg-primary text-primary-foreground shadow-sm" 
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary",
               )}
             >
-              {tab === "all" && <Trophy className="h-3 w-3" />}
-              {tab === "live" && <Play className="h-3 w-3" />}
-              {tab === "upcoming" && <Clock className="h-3 w-3" />}
-              {tab === "finished" && <CheckCircle className="h-3 w-3" />}
-              <span className="hidden xs:inline capitalize">{tab}</span>
+              {tab === "all" && <Trophy className="h-2.5 w-2.5" />}
+              {tab === "live" && <Play className="h-2.5 w-2.5" />}
+              {tab === "upcoming" && <Clock className="h-2.5 w-2.5" />}
+              {tab === "finished" && <CheckCircle className="h-2.5 w-2.5" />}
+              <span className="capitalize">{tab}</span>
             </button>
           ))}
         </div>
 
         {/* SEARCH - Compact */}
-        <div className="relative max-w-sm">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+        <div className="relative max-w-xs">
+          <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground" />
           <Input
-            className="pl-7 h-7 sm:h-8 text-xs bg-card border-border focus:border-primary/50 rounded-md"
+            className="pl-6 h-6 sm:h-7 text-[10px] sm:text-xs bg-card border-border focus:border-primary/50 rounded"
             placeholder="Search teams…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -264,14 +264,14 @@ export default function LiveScores() {
             <p className="text-xs text-muted-foreground">No matches found</p>
           </Card>
         ) : (
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="space-y-1 sm:space-y-1.5">
             {Object.entries(grouped).map(([league, games]) => (
               <Card key={league} className="overflow-hidden bg-card border-border">
                 {/* League Header - Compact */}
-                <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-secondary/30 border-b border-border flex items-center gap-1.5">
-                  <Trophy className="h-3 w-3 text-primary" />
-                  <span className="font-semibold text-[10px] sm:text-xs truncate">{league}</span>
-                  <Badge variant="outline" className="ml-auto text-[9px] px-1">
+                <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-secondary/30 border-b border-border flex items-center gap-1">
+                  <Trophy className="h-2.5 w-2.5 text-primary" />
+                  <span className="font-semibold text-[9px] sm:text-[10px] truncate">{league}</span>
+                  <Badge variant="outline" className="ml-auto text-[8px] px-0.5">
                     {games.length}
                   </Badge>
                 </div>
@@ -430,17 +430,17 @@ function StatCard({
   return (
     <Card
       className={cn(
-        "stats-card bg-gradient-to-br",
+        "flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br",
         styles.gradient,
         styles.border,
       )}
     >
-      <div className={cn("stats-card-icon", styles.iconBg)}>
-        <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5", styles.iconColor)} />
+      <div className={cn("h-5 w-5 sm:h-6 sm:w-6 rounded flex items-center justify-center flex-shrink-0", styles.iconBg)}>
+        <Icon className={cn("h-2.5 w-2.5 sm:h-3 sm:w-3", styles.iconColor)} />
       </div>
       <div className="min-w-0">
-        <p className="stats-card-label truncate">{title}</p>
-        <p className={cn("stats-card-value", styles.valueColor)}>{value}</p>
+        <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase truncate">{title}</p>
+        <p className={cn("text-[10px] sm:text-xs font-bold leading-none", styles.valueColor)}>{value}</p>
       </div>
     </Card>
   );

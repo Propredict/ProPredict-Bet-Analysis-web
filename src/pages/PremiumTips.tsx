@@ -26,23 +26,23 @@ export default function PremiumTips() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-3 sm:space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <Crown className="h-7 w-7 text-warning" />
-              <h1 className="text-2xl font-bold text-foreground">Premium Tips</h1>
+        <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
+          <div className="flex items-center gap-1.5">
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
+            <div>
+              <h1 className="text-xs sm:text-sm font-bold text-foreground">Premium Tips</h1>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Our highest confidence picks</p>
             </div>
-            <p className="text-muted-foreground mt-1">Our highest confidence picks with detailed analysis</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-warning/20 text-warning border-warning/30">
-              <Crown className="h-3 w-3 mr-1" />
+          <div className="flex items-center gap-1">
+            <Badge className="bg-warning/20 text-warning border-warning/30 text-[9px] px-1.5 py-0.5">
+              <Crown className="h-2.5 w-2.5 mr-0.5" />
               Premium
             </Badge>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="h-6 px-1.5 text-[9px]">
+              <RefreshCw className="h-2.5 w-2.5 mr-1" />
               Refresh
             </Button>
           </div>
@@ -50,29 +50,29 @@ export default function PremiumTips() {
 
         {/* Premium Upgrade Banner */}
         {showUpgradeBanner && (
-          <Card className="p-6 bg-gradient-to-r from-warning/20 via-accent/20 to-primary/20 border-warning/30">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="p-4 rounded-full bg-gradient-to-br from-warning/30 to-accent/30">
-                <Crown className="h-10 w-10 text-warning" />
+          <Card className="p-3 sm:p-4 bg-gradient-to-r from-warning/20 via-accent/20 to-primary/20 border-warning/30">
+            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
+              <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-warning/30 to-accent/30">
+                <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-warning" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Unlock Premium Predictions</h2>
-                <p className="text-muted-foreground mt-1">
-                  Get access to our highest confidence picks with detailed analysis
+                <h2 className="text-sm sm:text-base font-bold text-foreground">Unlock Premium Predictions</h2>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">
+                  Get access to our highest confidence picks
                 </p>
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Sparkles className="h-4 w-4 text-warning" />
+              <div className="flex items-center gap-3 text-[9px] sm:text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-0.5">
+                  <Sparkles className="h-3 w-3 text-warning" />
                   Highest confidence
                 </span>
-                <span className="flex items-center gap-1">
-                  <Sparkles className="h-4 w-4 text-warning" />
+                <span className="flex items-center gap-0.5">
+                  <Sparkles className="h-3 w-3 text-warning" />
                   No ads
                 </span>
               </div>
               <Button
-                className="bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0 px-8"
+                className="bg-gradient-to-r from-warning to-accent hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs"
                 onClick={() => navigate("/get-premium")}
               >
                 Subscribe for $5.99/month
@@ -82,44 +82,38 @@ export default function PremiumTips() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <Target className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">85%</p>
-                <p className="text-xs text-muted-foreground">Win Rate</p>
-              </div>
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
+            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm sm:text-base font-bold text-foreground">85%</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Win Rate</p>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/20">
-                <BarChart3 className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{premiumTips.length}</p>
-                <p className="text-xs text-muted-foreground">Total Tips</p>
-              </div>
+          <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
+            <div className="p-1 sm:p-1.5 rounded bg-accent/20">
+              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
+            </div>
+            <div>
+              <p className="text-sm sm:text-base font-bold text-foreground">{premiumTips.length}</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tips</p>
             </div>
           </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <TrendingUp className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{unlockedCount}</p>
-                <p className="text-xs text-muted-foreground">Unlocked</p>
-              </div>
+          <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
+            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
+              <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Unlocked</p>
             </div>
           </Card>
         </div>
 
         {/* Tips List */}
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3">
           {isLoading ? (
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
