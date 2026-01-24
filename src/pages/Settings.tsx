@@ -15,7 +15,7 @@ import {
   Scale,
   Cookie
 } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -222,23 +222,6 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      {/* App Info Footer */}
-      <Card className="bg-muted/30">
-        <CardContent className="p-4 text-center">
-          <p className="text-xs font-semibold text-primary mb-0.5">ProPredict</p>
-          <p className="text-[10px] text-muted-foreground mb-1">Version 1.0.0</p>
-          <p className="text-[9px] text-muted-foreground mb-2">© {new Date().getFullYear()} ProPredict. All rights reserved.</p>
-          <div className="flex items-center justify-center gap-2 text-[10px]">
-            <a href="https://propredict.me" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Website</a>
-            <span className="text-muted-foreground">·</span>
-            <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
-            <span className="text-muted-foreground">·</span>
-            <Link to="/terms-of-service" className="text-primary hover:underline">Terms</Link>
-            <span className="text-muted-foreground">·</span>
-            <Link to="/cookie-policy" className="text-primary hover:underline">Cookie</Link>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
