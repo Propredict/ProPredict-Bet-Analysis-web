@@ -290,21 +290,11 @@ export default function LiveScores() {
                   key={m.id}
                   onClick={() => setSelectedMatch(m)}
                   className={cn(
-                    "px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer relative",
-                    showGoalIndicator && "bg-emerald-500/5"
+                    "px-4 py-3 flex items-center gap-3 hover:bg-white/5 cursor-pointer relative transition-colors",
+                    showGoalIndicator && "bg-pink-500/10 border-l-2 border-pink-500"
                   )}
                 >
-                  {/* GOAL Indicator */}
-                  {showGoalIndicator && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pl-1">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                      </span>
-                    </div>
-                  )}
-
-                  <div className={cn("flex items-center gap-2", showGoalIndicator && "ml-4")}>
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -331,15 +321,30 @@ export default function LiveScores() {
                     />
                   </div>
 
-                  {/* CENTERED SCORE */}
-                  <div className="flex-1 grid grid-cols-[1fr_96px_1fr] items-center">
-                    <span className="text-right pr-3 truncate">{m.homeTeam}</span>
+                  {/* CENTERED SCORE with GOL indicator */}
+                  <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                    <span className={cn(
+                      "text-right pr-3 truncate",
+                      showGoalIndicator && "text-pink-400 font-semibold"
+                    )}>{m.homeTeam}</span>
 
-                    <div className="flex justify-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* GOL indicator before score */}
+                      {showGoalIndicator && (
+                        <span className="flex items-center gap-1 text-pink-400 text-xs font-bold uppercase animate-pulse">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500" />
+                          </span>
+                          GOL
+                        </span>
+                      )}
+                      
                       <span
                         className={cn(
-                          "w-[72px] text-center px-3 py-1 rounded-full text-sm font-semibold",
-                          isLive && "text-red-500 bg-red-500/10",
+                          "min-w-[72px] text-center px-3 py-1 rounded-full text-sm font-semibold",
+                          isLive && !showGoalIndicator && "text-red-500 bg-red-500/10",
+                          isLive && showGoalIndicator && "text-pink-400 bg-pink-500/20",
                           isFinished && "text-white bg-white/10",
                           isUpcoming && "text-muted-foreground bg-white/5",
                         )}
@@ -348,18 +353,13 @@ export default function LiveScores() {
                       </span>
                     </div>
 
-                    <span className="text-left pl-3 truncate">{m.awayTeam}</span>
+                    <span className={cn(
+                      "text-left pl-3 truncate",
+                      showGoalIndicator && "text-pink-400 font-semibold"
+                    )}>{m.awayTeam}</span>
                   </div>
 
-                  {/* GOAL badge next to status */}
-                  <div className="flex items-center gap-2">
-                    {showGoalIndicator && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider animate-pulse">
-                        ⚽ GOAL
-                      </span>
-                    )}
-                    <StatusBadge match={m} />
-                  </div>
+                  <StatusBadge match={m} />
                 </div>
               );
             })}
