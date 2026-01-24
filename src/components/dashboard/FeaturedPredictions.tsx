@@ -20,47 +20,47 @@ export function FeaturedPredictions() {
   const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-1.5 sm:space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-1.5">
+          <TrendingUp className="h-4 w-4 text-primary" />
           <div>
-            <h2 className="text-base md:text-lg font-semibold">Featured Predictions</h2>
-            <p className="text-xs text-muted-foreground">AI performance overview</p>
+            <h2 className="text-xs sm:text-sm font-semibold">Featured Predictions</h2>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">AI performance overview</p>
           </div>
         </div>
 
-        <Button variant="outline" size="sm" onClick={() => refetch && refetch()} className="h-8 text-xs">
-          <RefreshCw className="h-3 w-3 mr-1" />
+        <Button variant="outline" size="sm" onClick={() => refetch && refetch()} className="h-6 text-[10px] px-1.5">
+          <RefreshCw className="h-2.5 w-2.5 mr-0.5" />
           Refresh
         </Button>
       </div>
 
-      <Card className="p-3 md:p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium">AI Accuracy</span>
-          <span className="text-sm font-bold text-primary">{isLoading ? "—" : `${accuracy}%`}</span>
+      <Card className="p-2 sm:p-2.5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] sm:text-xs font-medium">AI Accuracy</span>
+          <span className="text-[10px] sm:text-xs font-bold text-primary">{isLoading ? "—" : `${accuracy}%`}</span>
         </div>
 
-        <div className="grid grid-cols-4 gap-3 text-center text-xs">
+        <div className="grid grid-cols-4 gap-2 text-center text-[9px] sm:text-[10px]">
           <div>
-            <Check className="mx-auto h-3.5 w-3.5 text-success" />
-            <p className="font-medium mt-1">{won}</p>
+            <Check className="mx-auto h-3 w-3 text-success" />
+            <p className="font-medium mt-0.5">{won}</p>
             <p className="text-muted-foreground">Won</p>
           </div>
           <div>
-            <X className="mx-auto h-3.5 w-3.5 text-destructive" />
-            <p className="font-medium mt-1">{lost}</p>
+            <X className="mx-auto h-3 w-3 text-destructive" />
+            <p className="font-medium mt-0.5">{lost}</p>
             <p className="text-muted-foreground">Lost</p>
           </div>
           <div>
-            <Clock className="mx-auto h-3.5 w-3.5 text-muted-foreground" />
-            <p className="font-medium mt-1">{pending}</p>
+            <Clock className="mx-auto h-3 w-3 text-muted-foreground" />
+            <p className="font-medium mt-0.5">{pending}</p>
             <p className="text-muted-foreground">Pending</p>
           </div>
           <div>
-            <Flame className="mx-auto h-3.5 w-3.5 text-accent" />
-            <p className="font-medium mt-1">{won >= 3 ? "HOT" : "-"}</p>
+            <Flame className="mx-auto h-3 w-3 text-accent" />
+            <p className="font-medium mt-0.5">{won >= 3 ? "HOT" : "-"}</p>
             <p className="text-muted-foreground">Streak</p>
           </div>
         </div>
