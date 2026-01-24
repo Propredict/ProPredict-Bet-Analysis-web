@@ -238,6 +238,8 @@ const Settings = () => {
                 <Link to="/privacy-policy" className="text-primary hover:underline">Privacy</Link>
                 <span className="text-muted-foreground">·</span>
                 <Link to="/terms-of-service" className="text-primary hover:underline">Terms</Link>
+                <span className="text-muted-foreground">·</span>
+                <Link to="/cookie-policy" className="text-primary hover:underline">Cookie</Link>
               </div>
             </CardContent>
           </Card>
