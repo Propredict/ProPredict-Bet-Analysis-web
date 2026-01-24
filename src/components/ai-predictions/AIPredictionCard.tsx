@@ -247,7 +247,7 @@ export function AIPredictionCard({
               </Button>
             ) : canWatchAd ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-emerald-500 hover:bg-emerald-600 text-white border-0 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
                 onClick={handleWatchAd}
                 disabled={isUnlocking}
               >
