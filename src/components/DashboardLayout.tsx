@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Bell, BellRing, Heart, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -167,13 +168,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          {/* Main Content - add top padding for sticky header */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 min-w-0">
+          {/* Main Content - add bottom padding for mobile nav */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-6 min-w-0">
             <div className="max-w-[1400px] mx-auto w-full">
               {children}
             </div>
           </main>
         </div>
+        
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
       </div>
 
       <GlobalAlertsModal
