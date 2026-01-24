@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Plus, Loader2, Search, X, Calendar, Sparkles } from "lucide-react";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -253,8 +252,7 @@ export default function ManageTickets() {
   ===================== */
 
   return (
-    <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4 px-0 sm:px-4">
+    <div className="section-gap max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <h1 className="text-sm sm:text-base font-bold text-foreground">Manage Tickets</h1>
           <Button onClick={handleCreate} size="sm" className="gap-1.5 w-full sm:w-auto h-8">
@@ -732,6 +730,5 @@ export default function ManageTickets() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </DashboardLayout>
   );
 }

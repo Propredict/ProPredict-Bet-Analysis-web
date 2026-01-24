@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, Check } from "lucide-react";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -142,8 +141,7 @@ export default function ManageTips() {
   const isDeleting = deleteTip.isPending;
 
   return (
-    <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4 px-0 sm:px-4">
+    <div className="section-gap max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <div className="min-w-0">
             <h1 className="text-sm sm:text-base font-bold text-foreground">Manage Tips</h1>
@@ -375,6 +373,5 @@ export default function ManageTips() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </DashboardLayout>
   );
 }
