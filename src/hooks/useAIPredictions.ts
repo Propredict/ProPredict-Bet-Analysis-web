@@ -24,7 +24,9 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-export function useAIPredictions(day: "today" | "tomorrow" = "today") {
+export function useAIPredictions(
+  day: "today" | "tomorrow" = "today"
+) {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,21 +34,27 @@ export function useAIPredictions(day: "today" | "tomorrow" = "today") {
     async function load() {
       setLoading(true);
 
-      const table =
+      // 👉 računamo datum u FRONTENDU (jedino ispravno)
+      const now = new Date();
+
+      const targetDate =
         day === "today"
-          ? "ai_predictions_today"
-          : "ai_predictions_tomorrow";
+          ? now
+          : new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      const dateString = targetDate.toISOString().slice(0, 10); // YYYY-MM-DD
 
       const { data, error } = await supabase
-        .from(table)
+        .from("ai_predictions")
         .select("*")
+        .eq("match_date", dateString)
         .order("match_time", { ascending: true });
 
       if (error) {
         console.error("Error fetching AI predictions:", error);
         setPredictions([]);
       } else {
-        setPredictions(data ?? []);
+        setPredictions((data as AIPrediction[]) ?? []);
       }
 
       setLoading(false);
