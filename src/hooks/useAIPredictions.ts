@@ -24,6 +24,13 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
+function getLocalDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function useAIPredictions(
   day: "today" | "tomorrow" = "today"
 ) {
@@ -34,15 +41,19 @@ export function useAIPredictions(
     async function load() {
       setLoading(true);
 
-      // 👉 računamo datum u FRONTENDU (jedino ispravno)
       const now = new Date();
 
       const targetDate =
         day === "today"
           ? now
-          : new Date(now.getTime() + 24 * 60 * 60 * 1000);
+          : new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate() + 1
+            );
 
-      const dateString = targetDate.toISOString().slice(0, 10); // YYYY-MM-DD
+      // ✅ LOKALNI DATUM (NE UTC)
+      const dateString = getLocalDateString(targetDate);
 
       const { data, error } = await supabase
         .from("ai_predictions")
