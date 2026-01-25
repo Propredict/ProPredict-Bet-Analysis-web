@@ -9,7 +9,6 @@ export interface AIPrediction {
   away_team: string;
   match_date: string | null;
   match_time: string | null;
-  match_day: string | null;
   prediction: string;
   predicted_score: string | null;
   confidence: number;
@@ -30,23 +29,38 @@ export function useAIPredictions(day: "today" | "tomorrow" = "today") {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
+    let mounted = true;
+
+    async function loadPredictions() {
       setLoading(true);
+
+      const viewName =
+        day === "today"
+          ? "ai_predictions_today"
+          : "ai_predictions_tomorrow";
+
       const { data, error } = await supabase
-        .from("ai_predictions")
+        .from(viewName)
         .select("*")
-        .eq("match_day", day)
         .order("match_time", { ascending: true });
 
+      if (!mounted) return;
+
       if (error) {
-        console.error("Error fetching predictions:", error);
+        console.error("❌ Error loading AI predictions:", error);
         setPredictions([]);
       } else {
-        setPredictions(data || []);
+        setPredictions((data ?? []) as AIPrediction[]);
       }
+
       setLoading(false);
     }
-    load();
+
+    loadPredictions();
+
+    return () => {
+      mounted = false;
+    };
   }, [day]);
 
   return { predictions, loading };
