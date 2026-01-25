@@ -15,7 +15,7 @@ export interface AIPrediction {
   home_win: number;
   draw: number;
   away_win: number;
-  risk_level: string | null;
+  risk_level: "low" | "medium" | "high" | null;
   analysis: string | null;
   key_factors: string[] | null;
   is_premium: boolean | null;
@@ -24,43 +24,35 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-export function useAIPredictions(day: "today" | "tomorrow" = "today") {
+export function useAIPredictions(day: "today" | "tomorrow") {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
+    let tableName =
+      day === "today"
+        ? "ai_predictions_today"
+        : "ai_predictions_tomorrow";
 
     async function loadPredictions() {
       setLoading(true);
 
-      const viewName =
-        day === "today"
-          ? "ai_predictions_today"
-          : "ai_predictions_tomorrow";
-
       const { data, error } = await supabase
-        .from(viewName)
+        .from(tableName)
         .select("*")
         .order("match_time", { ascending: true });
 
-      if (!mounted) return;
-
       if (error) {
-        console.error("❌ Error loading AI predictions:", error);
+        console.error(`Error loading ${tableName}:`, error);
         setPredictions([]);
       } else {
-        setPredictions((data ?? []) as AIPrediction[]);
+        setPredictions(data ?? []);
       }
 
       setLoading(false);
     }
 
     loadPredictions();
-
-    return () => {
-      mounted = false;
-    };
   }, [day]);
 
   return { predictions, loading };
