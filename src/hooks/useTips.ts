@@ -12,6 +12,17 @@ type TipInsert = Database["public"]["Tables"]["tips"]["Insert"];
 type TipUpdate = Database["public"]["Tables"]["tips"]["Update"];
 
 /* =======================
+   Utils
+======================= */
+
+// Današnji datum po Europe/Belgrade (YYYY-MM-DD)
+function getTodayBelgradeDate() {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+}
+
+/* =======================
    Hook
 ======================= */
 
@@ -29,11 +40,18 @@ export function useTips(includeAll = false) {
   } = useQuery({
     queryKey: ["tips", includeAll],
     queryFn: async () => {
-      let query = supabase.from("tips").select("*").order("created_at_ts", { ascending: false });
+      let query = supabase
+        .from("tips")
+        .select("*")
+        .order("created_at_ts", { ascending: false });
 
-      // PUBLIC VIEW → only published tips
+      // 👤 PUBLIC VIEW → samo današnji + published
       if (!includeAll) {
-        query = query.eq("status", "published");
+        const today = getTodayBelgradeDate();
+
+        query = query
+          .eq("status", "published")
+          .eq("tip_date", today);
       }
 
       const { data, error } = await query;
@@ -52,6 +70,7 @@ export function useTips(includeAll = false) {
         .insert({
           ...tip,
           created_by: session?.user?.id ?? null,
+          // tip_date se već automatski setuje u DB (Belgrade)
         })
         .select()
         .single();
@@ -68,7 +87,12 @@ export function useTips(includeAll = false) {
 
   const updateTip = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: TipUpdate }) => {
-      const { data, error } = await supabase.from("tips").update(updates).eq("id", id).select().single();
+      const { data, error } = await supabase
+        .from("tips")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
@@ -83,7 +107,6 @@ export function useTips(includeAll = false) {
   const deleteTip = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("tips").delete().eq("id", id);
-
       if (error) throw error;
     },
     onSuccess: () => {
