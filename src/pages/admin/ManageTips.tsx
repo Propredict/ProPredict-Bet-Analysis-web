@@ -6,12 +6,15 @@ import {
   Loader2,
   XCircle,
   CheckCircle,
+  Sparkles,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -29,12 +32,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import { useTips } from "@/hooks/useTips";
 import type {
   Tip,
   TipInsert,
   ContentTier,
+  ContentStatus,
   TipResult,
 } from "@/types/admin";
 
@@ -113,9 +124,9 @@ export default function ManageTips() {
     }
   };
 
-  const handleMarkResult = async (tipId: string, result: TipResult) => {
+  const handleMarkResult = async (id: string, result: TipResult) => {
     await updateTip.mutateAsync({
-      id: tipId,
+      id,
       updates: { result },
     });
   };
@@ -134,7 +145,7 @@ export default function ManageTips() {
     return <Badge className={map[tier]}>{tier.toUpperCase()}</Badge>;
   };
 
-  const resultBadge = (result?: TipResult) => {
+  const resultBadge = (result: TipResult) => {
     if (result === "won")
       return <Badge className="bg-success/20 text-success">WON</Badge>;
     if (result === "lost")
@@ -160,11 +171,10 @@ export default function ManageTips() {
           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {tips.map((tip) => (
             <Card key={tip.id} className="p-4">
-              <div className="flex items-center justify-between gap-4">
-                {/* LEFT */}
+              <div className="flex justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex gap-2 mb-1">
                     {tierBadge(tip.tier)}
@@ -185,16 +195,9 @@ export default function ManageTips() {
                     </span>
                     <span>{tip.confidence}%</span>
                   </div>
-
-                  {tip.ai_prediction && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      AI: {tip.ai_prediction}
-                    </p>
-                  )}
                 </div>
 
-                {/* RIGHT – ACTIONS (HORIZONTAL LIKE TICKETS) */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
                   <Button size="icon" variant="outline" onClick={() => handleEdit(tip)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -234,44 +237,162 @@ export default function ManageTips() {
         </div>
       )}
 
-      {/* Create / Edit Dialog */}
+      {/* CREATE / EDIT TIP – TICKET STYLE */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="w-[95vw] max-w-3xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b">
             <DialogTitle>
               {editingTip ? "Edit Tip" : "Create Tip"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <Input placeholder="Home Team" value={formData.home_team}
-              onChange={(e) => setFormData({ ...formData, home_team: e.target.value })} />
-            <Input placeholder="Away Team" value={formData.away_team}
-              onChange={(e) => setFormData({ ...formData, away_team: e.target.value })} />
-            <Input placeholder="League" value={formData.league}
-              onChange={(e) => setFormData({ ...formData, league: e.target.value })} />
-            <Input placeholder="Prediction" value={formData.prediction}
-              onChange={(e) => setFormData({ ...formData, prediction: e.target.value })} />
-            <Input type="number" value={formData.odds}
-              onChange={(e) => setFormData({ ...formData, odds: Number(e.target.value) })} />
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <Card className="p-5">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Tip Info
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Home Team</Label>
+                  <Input
+                    value={formData.home_team}
+                    onChange={(e) =>
+                      setFormData({ ...formData, home_team: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Away Team</Label>
+                  <Input
+                    value={formData.away_team}
+                    onChange={(e) =>
+                      setFormData({ ...formData, away_team: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>League</Label>
+                  <Input
+                    value={formData.league}
+                    onChange={(e) =>
+                      setFormData({ ...formData, league: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Prediction</Label>
+                  <Input
+                    value={formData.prediction}
+                    onChange={(e) =>
+                      setFormData({ ...formData, prediction: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Odds</Label>
+                  <Input
+                    type="number"
+                    value={formData.odds}
+                    onChange={(e) =>
+                      setFormData({ ...formData, odds: Number(e.target.value) })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Confidence %</Label>
+                  <Input
+                    type="number"
+                    value={formData.confidence}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        confidence: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <Label>AI Analysis</Label>
+                <Textarea
+                  value={formData.ai_prediction}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      ai_prediction: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <Label>Tier</Label>
+                  <Select
+                    value={formData.tier}
+                    onValueChange={(v: ContentTier) =>
+                      setFormData({ ...formData, tier: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="exclusive">Exclusive</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(v: ContentStatus) =>
+                      setFormData({ ...formData, status: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="p-4 border-t">
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Save</Button>
+            <Button onClick={handleSubmit}>
+              {editingTip ? "Update Tip" : "Create Tip"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete */}
+      {/* DELETE */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tip?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone.
+              This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
