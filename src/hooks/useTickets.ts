@@ -17,6 +17,17 @@ type TicketUpdate = Database["public"]["Tables"]["tickets"]["Update"];
 type TicketMatchInsert = Database["public"]["Tables"]["ticket_matches"]["Insert"];
 
 /* =======================
+   Utils
+======================= */
+
+// Današnji datum po Europe/Belgrade (YYYY-MM-DD)
+function getTodayBelgradeDate() {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+}
+
+/* =======================
    Hook
 ======================= */
 
@@ -38,8 +49,13 @@ export function useTickets(includeAll = false) {
         .select("*, matches:ticket_matches(*)")
         .order("created_at_ts", { ascending: false });
 
+      // 👤 PUBLIC VIEW → samo današnji published ticket
       if (!includeAll) {
-        query = query.eq("status", "published");
+        const today = getTodayBelgradeDate();
+
+        query = query
+          .eq("status", "published")
+          .eq("ticket_date", today);
       }
 
       const { data, error } = await query;
@@ -48,7 +64,8 @@ export function useTickets(includeAll = false) {
       return (data ?? []).map((ticket: any) => ({
         ...ticket,
         matches: (ticket.matches ?? []).sort(
-          (a: TicketMatch, b: TicketMatch) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+          (a: TicketMatch, b: TicketMatch) =>
+            (a.sort_order ?? 0) - (b.sort_order ?? 0),
         ),
       })) as TicketWithMatches[];
     },
@@ -66,16 +83,14 @@ export function useTickets(includeAll = false) {
       const ticketPayload = {
         ...ticket,
         created_by: session?.user?.id ?? null,
+        // ticket_date se automatski setuje u DB (Belgrade)
       };
 
-      // 🔎 DEBUG
-      console.log("CREATE TICKET PAYLOAD:", ticketPayload);
-
-      const { data: newTicket, error } = await supabase.from("tickets").insert(ticketPayload).select().single();
-
-      // 🔎 DEBUG
-      console.log("CREATE TICKET RESPONSE:", newTicket);
-      console.log("CREATE TICKET ERROR:", error);
+      const { data: newTicket, error } = await supabase
+        .from("tickets")
+        .insert(ticketPayload)
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -86,13 +101,9 @@ export function useTickets(includeAll = false) {
           sort_order: idx,
         }));
 
-        // 🔎 DEBUG
-        console.log("CREATE MATCHES PAYLOAD:", rows);
-
-        const { error: matchError } = await supabase.from("ticket_matches").insert(rows);
-
-        // 🔎 DEBUG
-        console.log("CREATE MATCHES ERROR:", matchError);
+        const { error: matchError } = await supabase
+          .from("ticket_matches")
+          .insert(rows);
 
         if (matchError) throw matchError;
       }
@@ -115,7 +126,12 @@ export function useTickets(includeAll = false) {
       updates: TicketUpdate;
       matches?: Omit<TicketMatchInsert, "ticket_id">[];
     }) => {
-      const { data, error } = await supabase.from("tickets").update(updates).eq("id", id).select().single();
+      const { data, error } = await supabase
+        .from("tickets")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -129,7 +145,9 @@ export function useTickets(includeAll = false) {
             sort_order: idx,
           }));
 
-          const { error: matchError } = await supabase.from("ticket_matches").insert(rows);
+          const { error: matchError } = await supabase
+            .from("ticket_matches")
+            .insert(rows);
 
           if (matchError) throw matchError;
         }
@@ -148,7 +166,6 @@ export function useTickets(includeAll = false) {
       await supabase.from("ticket_matches").delete().eq("ticket_id", id);
 
       const { error } = await supabase.from("tickets").delete().eq("id", id);
-
       if (error) throw error;
     },
     onSuccess: () => {
