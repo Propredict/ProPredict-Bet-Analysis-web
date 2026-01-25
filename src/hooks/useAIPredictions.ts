@@ -7,8 +7,8 @@ export interface AIPrediction {
   league: string | null;
   home_team: string;
   away_team: string;
-  match_date: string | null;
-  match_time: string | null;
+  match_date: string;
+  match_time: string;
   prediction: string;
   predicted_score: string | null;
   confidence: number;
@@ -24,16 +24,7 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-function getLocalDateString(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-export function useAIPredictions(
-  day: "today" | "tomorrow" = "today"
-) {
+export function useAIPredictions(date: string) {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,38 +32,24 @@ export function useAIPredictions(
     async function load() {
       setLoading(true);
 
-      const now = new Date();
-
-      const targetDate =
-        day === "today"
-          ? now
-          : new Date(
-              now.getFullYear(),
-              now.getMonth(),
-              now.getDate() + 1
-            );
-
-      // ✅ LOKALNI DATUM (NE UTC)
-      const dateString = getLocalDateString(targetDate);
-
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .eq("match_date", dateString)
+        .eq("match_date", date)
         .order("match_time", { ascending: true });
 
       if (error) {
         console.error("Error fetching AI predictions:", error);
         setPredictions([]);
       } else {
-        setPredictions((data as AIPrediction[]) ?? []);
+        setPredictions(data ?? []);
       }
 
       setLoading(false);
     }
 
     load();
-  }, [day]);
+  }, [date]);
 
   return { predictions, loading };
 }
