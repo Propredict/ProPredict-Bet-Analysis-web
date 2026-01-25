@@ -98,9 +98,7 @@ export default function ManageTips() {
     if (editingTip) {
       await updateTip.mutateAsync({
         id: editingTip.id,
-        updates: {
-          ...formData,
-        },
+        updates: { ...formData },
       });
     } else {
       await createTip.mutateAsync(formData);
@@ -150,8 +148,8 @@ export default function ManageTips() {
 
   return (
     <div className="section-gap max-w-6xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h1 className="font-bold">Manage Tips</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="font-bold text-lg">Manage Tips</h1>
         <Button size="sm" onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-1" /> Add Tip
         </Button>
@@ -162,70 +160,79 @@ export default function ManageTips() {
           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {tips.map((tip) => (
-            <Card key={tip.id} className="p-4">
-              <div className="flex justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex gap-2 mb-1">
-                    {tierBadge(tip.tier)}
-                    {resultBadge(tip.result)}
-                  </div>
-
-                  <p className="font-semibold">
-                    {tip.home_team} vs {tip.away_team}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {tip.league}
-                  </p>
-
-                  <div className="flex gap-4 mt-2 text-sm">
-                    <span>{tip.prediction}</span>
-                    <span className="font-bold text-primary">
-                      @{tip.odds}
-                    </span>
-                    <span>{tip.confidence}%</span>
-                  </div>
+            <Card
+              key={tip.id}
+              className="p-4 flex items-start justify-between gap-4"
+            >
+              {/* LEFT */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  {tierBadge(tip.tier)}
+                  {resultBadge(tip.result)}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(tip)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                <p className="font-semibold text-foreground">
+                  {tip.home_team} vs {tip.away_team}
+                </p>
+                <p className="text-sm text-muted-foreground">{tip.league}</p>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-success"
-                    disabled={tip.result === "won"}
-                    onClick={() => handleMarkResult(tip.id, "won")}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-destructive"
-                    disabled={tip.result === "lost"}
-                    onClick={() => handleMarkResult(tip.id, "lost")}
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-destructive"
-                    onClick={() => setDeleteId(tip.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <span>{tip.prediction}</span>
+                  <span className="font-bold text-primary">
+                    @{tip.odds.toFixed(2)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {tip.confidence}%
+                  </span>
                 </div>
+
+                {tip.ai_prediction && (
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                    <strong>AI:</strong> {tip.ai_prediction}
+                  </p>
+                )}
+              </div>
+
+              {/* RIGHT – IDENTICAL ORDER AS TICKETS */}
+              <div className="flex flex-col gap-2 shrink-0">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => handleEdit(tip)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="text-success"
+                  disabled={tip.result === "won"}
+                  onClick={() => handleMarkResult(tip.id, "won")}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="text-destructive"
+                  disabled={tip.result === "lost"}
+                  onClick={() => handleMarkResult(tip.id, "lost")}
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="text-destructive"
+                  onClick={() => setDeleteId(tip.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </Card>
           ))}
@@ -272,6 +279,7 @@ export default function ManageTips() {
             />
             <Input
               type="number"
+              step="0.01"
               value={formData.odds}
               onChange={(e) =>
                 setFormData({
@@ -283,10 +291,7 @@ export default function ManageTips() {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleSubmit}>Save</Button>
