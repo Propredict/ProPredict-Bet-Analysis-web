@@ -15,7 +15,7 @@ export interface AIPrediction {
   home_win: number;
   draw: number;
   away_win: number;
-  risk_level: "low" | "medium" | "high" | null;
+  risk_level: string | null;
   analysis: string | null;
   key_factors: string[] | null;
   is_premium: boolean | null;
@@ -24,26 +24,26 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-export function useAIPredictions(day: "today" | "tomorrow") {
+export function useAIPredictions(day: "today" | "tomorrow" = "today") {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let tableName =
-      day === "today"
-        ? "ai_predictions_today"
-        : "ai_predictions_tomorrow";
-
-    async function loadPredictions() {
+    async function load() {
       setLoading(true);
 
+      const table =
+        day === "today"
+          ? "ai_predictions_today"
+          : "ai_predictions_tomorrow";
+
       const { data, error } = await supabase
-        .from(tableName)
+        .from(table)
         .select("*")
         .order("match_time", { ascending: true });
 
       if (error) {
-        console.error(`Error loading ${tableName}:`, error);
+        console.error("Error fetching AI predictions:", error);
         setPredictions([]);
       } else {
         setPredictions(data ?? []);
@@ -52,7 +52,7 @@ export function useAIPredictions(day: "today" | "tomorrow") {
       setLoading(false);
     }
 
-    loadPredictions();
+    load();
   }, [day]);
 
   return { predictions, loading };
