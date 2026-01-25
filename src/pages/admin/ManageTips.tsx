@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Check, XCircle, CheckCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +30,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tip, TipInsert, ContentTier, ContentStatus } from "@/types/admin";
-import { useTips } from "@/hooks/useTips";
 
-const defaultTip: TipInsert = {
+import { useTips } from "@/hooks/useTips";
+import type { Tip, TipInsert, ContentTier, ContentStatus, TipResult } from "@/types/admin";
+
+/* =====================
+   Defaults
+===================== */
+
+const defaultTip: TipInsert & { result?: TipResult } = {
   home_team: "",
   away_team: "",
   league: "",
@@ -43,14 +48,24 @@ const defaultTip: TipInsert = {
   ai_prediction: "",
   tier: "daily",
   status: "draft",
+  result: "pending",
 };
 
+/* =====================
+   Component
+===================== */
+
 export default function ManageTips() {
-  const { tips, isLoading, createTip, updateTip, deleteTip } = useTips(true); // adminView = true
+  const { tips, isLoading, createTip, updateTip, deleteTip } = useTips(true);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTip, setEditingTip] = useState<Tip | null>(null);
-  const [formData, setFormData] = useState<TipInsert>(defaultTip);
+  const [formData, setFormData] = useState(defaultTip);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  /* =====================
+     Handlers
+  ===================== */
 
   const handleCreate = () => {
     setEditingTip(null);
@@ -70,6 +85,7 @@ export default function ManageTips() {
       ai_prediction: tip.ai_prediction || "",
       tier: tip.tier,
       status: tip.status,
+      result: tip.result ?? "pending",
     });
     setIsDialogOpen(true);
   };
@@ -78,32 +94,11 @@ export default function ManageTips() {
     if (editingTip) {
       await updateTip.mutateAsync({
         id: editingTip.id,
-        updates: {
-          home_team: formData.home_team,
-          away_team: formData.away_team,
-          league: formData.league,
-          prediction: formData.prediction,
-          odds: formData.odds,
-          confidence: formData.confidence,
-          ai_prediction: formData.ai_prediction || null,
-          tier: formData.tier,
-          status: formData.status,
-        },
+        updates: formData,
       });
     } else {
-      await createTip.mutateAsync({
-        home_team: formData.home_team,
-        away_team: formData.away_team,
-        league: formData.league,
-        prediction: formData.prediction,
-        odds: formData.odds,
-        confidence: formData.confidence,
-        ai_prediction: formData.ai_prediction || null,
-        tier: formData.tier,
-        status: formData.status,
-      });
+      await createTip.mutateAsync(formData);
     }
-    
     setIsDialogOpen(false);
   };
 
@@ -114,264 +109,153 @@ export default function ManageTips() {
     }
   };
 
-  const getTierBadge = (tier: ContentTier) => {
-    const variants: Record<ContentTier, string> = {
+  const handleMarkResult = async (tipId: string, result: TipResult) => {
+    await updateTip.mutateAsync({
+      id: tipId,
+      updates: { result },
+    });
+  };
+
+  /* =====================
+     Helpers
+  ===================== */
+
+  const tierBadge = (tier: ContentTier) => {
+    const map: Record<ContentTier, string> = {
       free: "bg-success/20 text-success",
       daily: "bg-primary/20 text-primary",
       exclusive: "bg-accent/20 text-accent",
       premium: "bg-warning/20 text-warning",
     };
-    return <Badge className={variants[tier]}>{tier.toUpperCase()}</Badge>;
+    return <Badge className={map[tier]}>{tier.toUpperCase()}</Badge>;
   };
 
-  const getStatusBadge = (status: ContentStatus) => {
-    return status === "published" ? (
-      <Badge className="bg-success/20 text-success">
-        <Check className="h-3 w-3 mr-1" />
-        Published
-      </Badge>
-    ) : (
-      <Badge variant="outline" className="text-muted-foreground">
-        Draft
-      </Badge>
-    );
+  const resultBadge = (result?: TipResult) => {
+    if (result === "won")
+      return <Badge className="bg-success/20 text-success">WON</Badge>;
+    if (result === "lost")
+      return <Badge className="bg-destructive/20 text-destructive">LOST</Badge>;
+    return <Badge variant="outline">PENDING</Badge>;
   };
 
-  const isSubmitting = createTip.isPending || updateTip.isPending;
-  const isDeleting = deleteTip.isPending;
+  /* =====================
+     Render
+  ===================== */
 
   return (
     <div className="section-gap max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-          <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold text-foreground">Manage Tips</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Create and manage betting tips</p>
-          </div>
-          <Button onClick={handleCreate} size="sm" className="gap-1.5 w-full sm:w-auto h-8">
-            <Plus className="h-3.5 w-3.5" />
-            Add Tip
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <Card className="p-12 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-            <p className="text-muted-foreground mt-2">Loading tips...</p>
-          </Card>
-        ) : tips.length === 0 ? (
-          <Card className="p-12 text-center">
-            <p className="text-muted-foreground">No tips yet. Create your first tip!</p>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {tips.map((tip) => (
-              <Card key={tip.id} className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {getTierBadge(tip.tier)}
-                      {getStatusBadge(tip.status)}
-                      <span className="text-xs text-muted-foreground">{tip.created_at}</span>
-                    </div>
-                    <p className="font-medium text-foreground">
-                      {tip.home_team} vs {tip.away_team}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{tip.league}</p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="text-sm">
-                        <strong>Prediction:</strong> {tip.prediction}
-                      </span>
-                      <span className="text-sm text-primary font-bold">
-                        @{tip.odds.toFixed(2)}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {tip.confidence}% confidence
-                      </span>
-                    </div>
-                    {tip.ai_prediction && (
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                        <strong>AI:</strong> {tip.ai_prediction}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(tip)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => setDeleteId(tip.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Create/Edit Dialog - Mobile Optimized */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
-            <DialogHeader className="p-3 sm:p-4 pb-2 sm:pb-3 shrink-0 border-b border-border">
-              <DialogTitle className="text-sm sm:text-base">{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
-            </DialogHeader>
-            
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 pt-2 sm:pt-3 space-y-3 sm:space-y-4">
-              {/* Teams - stack on mobile */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Home Team</Label>
-                  <Input
-                    value={formData.home_team}
-                    onChange={(e) => setFormData({ ...formData, home_team: e.target.value })}
-                    placeholder="e.g., Liverpool"
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Away Team</Label>
-                  <Input
-                    value={formData.away_team}
-                    onChange={(e) => setFormData({ ...formData, away_team: e.target.value })}
-                    placeholder="e.g., Manchester City"
-                    className="h-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-sm">League</Label>
-                <Input
-                  value={formData.league}
-                  onChange={(e) => setFormData({ ...formData, league: e.target.value })}
-                  placeholder="e.g., Premier League"
-                  className="h-10"
-                />
-              </div>
-              
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-sm">Prediction</Label>
-                <Input
-                  value={formData.prediction}
-                  onChange={(e) => setFormData({ ...formData, prediction: e.target.value })}
-                  placeholder="e.g., Over 2.5 Goals"
-                  className="h-10"
-                />
-              </div>
-              
-              {/* Odds & Confidence - stack on mobile */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Odds</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    value={formData.odds}
-                    onChange={(e) => setFormData({ ...formData, odds: parseFloat(e.target.value) || 1 })}
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Confidence %</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.confidence ?? 70}
-                    onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) || 0 })}
-                    className="h-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-sm">AI Prediction</Label>
-                <Textarea
-                  value={formData.ai_prediction}
-                  onChange={(e) => setFormData({ ...formData, ai_prediction: e.target.value })}
-                  placeholder="Enter AI analysis..."
-                  rows={3}
-                  className="min-h-[80px]"
-                />
-              </div>
-              
-              {/* Tier & Status - stack on mobile */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Access Level</Label>
-                  <Select
-                    value={formData.tier}
-                    onValueChange={(value: ContentTier) => setFormData({ ...formData, tier: value })}
-                  >
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[60]">
-                      <SelectItem value="free">Free</SelectItem>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="exclusive">Exclusive</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label className="text-sm">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: ContentStatus) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[60]">
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-            
-            {/* Sticky footer with buttons */}
-            <DialogFooter className="p-4 sm:p-6 pt-2 sm:pt-4 border-t border-border shrink-0 flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto order-2 sm:order-1">
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto order-1 sm:order-2">
-                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {editingTip ? "Update" : "Create"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation */}
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Tip</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this tip? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <div className="flex justify-between items-center">
+        <h1 className="font-bold">Manage Tips</h1>
+        <Button size="sm" onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-1" /> Add Tip
+        </Button>
       </div>
+
+      {isLoading ? (
+        <Card className="p-10 text-center">
+          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {tips.map((tip) => (
+            <Card key={tip.id} className="p-4">
+              <div className="flex justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-1">
+                    {tierBadge(tip.tier)}
+                    {resultBadge(tip.result)}
+                  </div>
+
+                  <p className="font-semibold">
+                    {tip.home_team} vs {tip.away_team}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{tip.league}</p>
+
+                  <div className="flex gap-4 mt-2 text-sm">
+                    <span>{tip.prediction}</span>
+                    <span className="font-bold text-primary">@{tip.odds}</span>
+                    <span>{tip.confidence}%</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(tip)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-success"
+                    onClick={() => handleMarkResult(tip.id, "won")}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive"
+                    onClick={() => handleMarkResult(tip.id, "lost")}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive"
+                    onClick={() => setDeleteId(tip.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <Input placeholder="Home Team" value={formData.home_team}
+              onChange={(e) => setFormData({ ...formData, home_team: e.target.value })} />
+            <Input placeholder="Away Team" value={formData.away_team}
+              onChange={(e) => setFormData({ ...formData, away_team: e.target.value })} />
+            <Input placeholder="League" value={formData.league}
+              onChange={(e) => setFormData({ ...formData, league: e.target.value })} />
+            <Input placeholder="Prediction" value={formData.prediction}
+              onChange={(e) => setFormData({ ...formData, prediction: e.target.value })} />
+            <Input type="number" value={formData.odds}
+              onChange={(e) => setFormData({ ...formData, odds: Number(e.target.value) })} />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSubmit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Tip?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
