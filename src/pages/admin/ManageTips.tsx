@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Check, XCircle, CheckCircle } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  XCircle,
+  CheckCircle,
+} from "lucide-react";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +31,18 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useTips } from "@/hooks/useTips";
-import type { Tip, TipInsert, ContentTier, ContentStatus, TipResult } from "@/types/admin";
+import type {
+  Tip,
+  TipInsert,
+  ContentTier,
+  TipResult,
+} from "@/types/admin";
 
 /* =====================
    Defaults
 ===================== */
 
-const defaultTip: TipInsert & { result?: TipResult } = {
+const defaultTip: TipInsert & { result: TipResult } = {
   home_team: "",
   away_team: "",
   league: "",
@@ -94,7 +98,9 @@ export default function ManageTips() {
     if (editingTip) {
       await updateTip.mutateAsync({
         id: editingTip.id,
-        updates: formData,
+        updates: {
+          ...formData,
+        },
       });
     } else {
       await createTip.mutateAsync(formData);
@@ -169,17 +175,25 @@ export default function ManageTips() {
                   <p className="font-semibold">
                     {tip.home_team} vs {tip.away_team}
                   </p>
-                  <p className="text-sm text-muted-foreground">{tip.league}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tip.league}
+                  </p>
 
                   <div className="flex gap-4 mt-2 text-sm">
                     <span>{tip.prediction}</span>
-                    <span className="font-bold text-primary">@{tip.odds}</span>
+                    <span className="font-bold text-primary">
+                      @{tip.odds}
+                    </span>
                     <span>{tip.confidence}%</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(tip)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(tip)}
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
 
@@ -187,6 +201,7 @@ export default function ManageTips() {
                     size="sm"
                     variant="outline"
                     className="text-success"
+                    disabled={tip.result === "won"}
                     onClick={() => handleMarkResult(tip.id, "won")}
                   >
                     <CheckCircle className="h-4 w-4" />
@@ -196,6 +211,7 @@ export default function ManageTips() {
                     size="sm"
                     variant="outline"
                     className="text-destructive"
+                    disabled={tip.result === "lost"}
                     onClick={() => handleMarkResult(tip.id, "lost")}
                   >
                     <XCircle className="h-4 w-4" />
@@ -216,43 +232,82 @@ export default function ManageTips() {
         </div>
       )}
 
-      {/* Dialog */}
+      {/* Create / Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingTip ? "Edit Tip" : "Create Tip"}</DialogTitle>
+            <DialogTitle>
+              {editingTip ? "Edit Tip" : "Create Tip"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
-            <Input placeholder="Home Team" value={formData.home_team}
-              onChange={(e) => setFormData({ ...formData, home_team: e.target.value })} />
-            <Input placeholder="Away Team" value={formData.away_team}
-              onChange={(e) => setFormData({ ...formData, away_team: e.target.value })} />
-            <Input placeholder="League" value={formData.league}
-              onChange={(e) => setFormData({ ...formData, league: e.target.value })} />
-            <Input placeholder="Prediction" value={formData.prediction}
-              onChange={(e) => setFormData({ ...formData, prediction: e.target.value })} />
-            <Input type="number" value={formData.odds}
-              onChange={(e) => setFormData({ ...formData, odds: Number(e.target.value) })} />
+            <Input
+              placeholder="Home Team"
+              value={formData.home_team}
+              onChange={(e) =>
+                setFormData({ ...formData, home_team: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Away Team"
+              value={formData.away_team}
+              onChange={(e) =>
+                setFormData({ ...formData, away_team: e.target.value })
+              }
+            />
+            <Input
+              placeholder="League"
+              value={formData.league}
+              onChange={(e) =>
+                setFormData({ ...formData, league: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Prediction"
+              value={formData.prediction}
+              onChange={(e) =>
+                setFormData({ ...formData, prediction: e.target.value })
+              }
+            />
+            <Input
+              type="number"
+              value={formData.odds}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  odds: Number(e.target.value),
+                })
+              }
+            />
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+            >
+              Cancel
+            </Button>
             <Button onClick={handleSubmit}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete */}
+      {/* Delete confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tip?</AlertDialogTitle>
-            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
