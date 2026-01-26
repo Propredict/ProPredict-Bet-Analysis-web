@@ -7,24 +7,30 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
-
 export default function DailyTickets() {
   const navigate = useNavigate();
-  const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
-
-  const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily");
-  const unlockedCount = dailyTickets.filter((ticket) => canAccess("daily", "ticket", ticket.id)).length;
-
-  return (
-    <div className="section-gap">
+  const {
+    tickets,
+    isLoading,
+    refetch
+  } = useTickets(false);
+  const {
+    canAccess,
+    getUnlockMethod
+  } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
+  const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
+  const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
+  return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           <div>
-            <h1 className="text-sm sm:text-base font-bold text-foreground">Daily Tickets</h1>
+            <h1 className="text-sm text-foreground sm:text-lg font-semibold">Daily Tickets</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Curated multi-bet combinations updated daily</p>
           </div>
         </div>
@@ -78,15 +84,12 @@ export default function DailyTickets() {
 
       {/* Tickets List */}
       <div className="space-y-2 sm:space-y-3">
-        {isLoading ? (
-          <Card className="p-8 bg-card border-border">
+        {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tickets...</p>
             </div>
-          </Card>
-        ) : dailyTickets.length === 0 ? (
-          <Card className="p-8 bg-card border-border">
+          </Card> : dailyTickets.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No daily tickets available</p>
@@ -96,41 +99,26 @@ export default function DailyTickets() {
                 Try Again
               </Button>
             </div>
-          </Card>
-        ) : (
-          dailyTickets.map((ticket) => {
-            const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
-            const isLocked = unlockMethod?.type !== "unlocked";
-            const isUnlocking = unlockingId === ticket.id;
-            const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : (ticket.matches ?? []);
-
-            return (
-              <TicketCard
-                key={ticket.id}
-                ticket={{
-                  id: ticket.id,
-                  title: ticket.title,
-                  matchCount: ticket.matches?.length ?? 0,
-                  status: ticket.result ?? "pending",
-                  totalOdds: ticket.total_odds ?? 0,
-                  tier: ticket.tier,
-                  matches: matchesToShow.map((m) => ({
-                    name: m.match_name,
-                    prediction: m.prediction,
-                    odds: m.odds,
-                  })),
-                  createdAt: ticket.created_at_ts,
-                }}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")}
-                onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
-                isUnlocking={isUnlocking}
-              />
-            );
-          })
-        )}
+          </Card> : dailyTickets.map(ticket => {
+        const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
+        const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === ticket.id;
+        const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
+        return <TicketCard key={ticket.id} ticket={{
+          id: ticket.id,
+          title: ticket.title,
+          matchCount: ticket.matches?.length ?? 0,
+          status: ticket.result ?? "pending",
+          totalOdds: ticket.total_odds ?? 0,
+          tier: ticket.tier,
+          matches: matchesToShow.map(m => ({
+            name: m.match_name,
+            prediction: m.prediction,
+            odds: m.odds
+          })),
+          createdAt: ticket.created_at_ts
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
+      })}
       </div>
-    </div>
-  );
+    </div>;
 }
