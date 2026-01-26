@@ -17,5 +17,6 @@ export function useTipAccuracy() {
       if (error) throw error;
       return (data ?? []) as TipAccuracy[];
     },
+    refetchInterval: 30_000, // auto refresh
   });
 }
