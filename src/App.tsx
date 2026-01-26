@@ -46,83 +46,91 @@ import { UserPlanProvider } from "./hooks/useUserPlan";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <UserPlanProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Login without layout */}
-            <Route path="/login" element={<Login />} />
+const App = () => {
+  // ✅ TEMP: Stripe key check
+  console.log(
+    "Stripe key:",
+    import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+  );
 
-            {/* All other pages with AppLayout */}
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/live-scores" element={<LiveScores />} />
-              <Route path="/favorites" element={<MyFavorites />} />
-              <Route path="/all-tickets" element={<AllTickets />} />
-              <Route path="/tickets/:id" element={<TicketDetails />} />
-              <Route path="/get-premium" element={<GetPremium />} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <UserPlanProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Login without layout */}
+              <Route path="/login" element={<Login />} />
 
-              {/* Tips */}
-              <Route path="/daily-tips" element={<DailyTips />} />
-              <Route path="/daily-tickets" element={<DailyTickets />} />
-              <Route path="/exclusive-tips" element={<ExclusiveTips />} />
-              <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
-              <Route path="/premium-tips" element={<PremiumTips />} />
-              <Route path="/premium-tickets" element={<PremiumTickets />} />
-              <Route path="/ai-predictions" element={<AIPredictions />} />
-              <Route path="/betting-tips" element={<BettingTips />} />
-              <Route path="/league-statistics" element={<LeagueStatistics />} />
+              {/* All other pages with AppLayout */}
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/live-scores" element={<LiveScores />} />
+                <Route path="/favorites" element={<MyFavorites />} />
+                <Route path="/all-tickets" element={<AllTickets />} />
+                <Route path="/tickets/:id" element={<TicketDetails />} />
+                <Route path="/get-premium" element={<GetPremium />} />
 
-              {/* Protected */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Tips & Tickets */}
+                <Route path="/daily-tips" element={<DailyTips />} />
+                <Route path="/daily-tickets" element={<DailyTickets />} />
+                <Route path="/exclusive-tips" element={<ExclusiveTips />} />
+                <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
+                <Route path="/premium-tips" element={<PremiumTips />} />
+                <Route path="/premium-tickets" element={<PremiumTickets />} />
+                <Route path="/ai-predictions" element={<AIPredictions />} />
+                <Route path="/betting-tips" element={<BettingTips />} />
+                <Route path="/league-statistics" element={<LeagueStatistics />} />
 
-              {/* Admin */}
-              <Route
-                path="/admin/tips"
-                element={
-                  <AdminRoute>
-                    <ManageTips />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/tickets"
-                element={
-                  <AdminRoute>
-                    <ManageTickets />
-                  </AdminRoute>
-                }
-              />
+                {/* Protected */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Settings & Legal */}
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/cookie-policy" element={<CookiePolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/disclaimer" element={<Disclaimer />} />
-              <Route path="/data-deletion" element={<DataDeletion />} />
-              <Route path="/help-support" element={<HelpSupport />} />
-              <Route path="/about-us" element={<AboutUs />} />
-            </Route>
+                {/* Admin */}
+                <Route
+                  path="/admin/tips"
+                  element={
+                    <AdminRoute>
+                      <ManageTips />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/tickets"
+                  element={
+                    <AdminRoute>
+                      <ManageTickets />
+                    </AdminRoute>
+                  }
+                />
 
-            {/* Fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </UserPlanProvider>
-  </QueryClientProvider>
-);
+                {/* Settings & Legal */}
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/disclaimer" element={<Disclaimer />} />
+                <Route path="/data-deletion" element={<DataDeletion />} />
+                <Route path="/help-support" element={<HelpSupport />} />
+                <Route path="/about-us" element={<AboutUs />} />
+              </Route>
+
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </UserPlanProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
