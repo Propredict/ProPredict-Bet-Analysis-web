@@ -6,23 +6,29 @@ import { TipCard } from "@/components/dashboard/TipCard";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-
 export default function DailyTips() {
-  const { tips, isLoading, refetch } = useTips(false);
-  const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
-
-  const dailyTips = tips.filter((tip) => tip.tier === "daily");
-  const unlockedCount = dailyTips.filter((tip) => canAccess("daily", "tip", tip.id)).length;
-
-  return (
-    <div className="section-gap">
+  const {
+    tips,
+    isLoading,
+    refetch
+  } = useTips(false);
+  const {
+    canAccess,
+    getUnlockMethod
+  } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
+  const dailyTips = tips.filter(tip => tip.tier === "daily");
+  const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
+  return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
         <div className="flex items-center gap-1.5">
           <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
           <div>
-            <h1 className="text-xs sm:text-sm font-bold text-foreground">Daily Tips</h1>
+            <h1 className="text-xs text-foreground sm:text-lg font-semibold">Daily Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">AI-curated predictions updated daily</p>
           </div>
         </div>
@@ -71,15 +77,12 @@ export default function DailyTips() {
 
       {/* Tips List */}
       <div className="space-y-2 sm:space-y-3">
-        {isLoading ? (
-          <Card className="p-8 bg-card border-border">
+        {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tips...</p>
             </div>
-          </Card>
-        ) : dailyTips.length === 0 ? (
-          <Card className="p-8 bg-card border-border">
+          </Card> : dailyTips.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-accent mb-1">No daily tips available</p>
@@ -89,42 +92,26 @@ export default function DailyTips() {
                 Try Again
               </Button>
             </div>
-          </Card>
-        ) : (
-          dailyTips.map((tip) => {
-            const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
-            const isLocked = unlockMethod?.type !== "unlocked";
-            const isUnlocking = unlockingId === tip.id;
-
-            return (
-              <TipCard
-                key={tip.id}
-                tip={{
-                  id: tip.id,
-                  homeTeam: tip.home_team,
-                  awayTeam: tip.away_team,
-                  league: tip.league,
-                  prediction: tip.prediction,
-                  odds: tip.odds,
-                  confidence: tip.confidence ?? 0,
-                  kickoff: tip.created_at_ts
-                    ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "",
-                  tier: tip.tier,
-                }}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlock("tip", tip.id, "daily")}
-                isUnlocking={isUnlocking}
-              />
-            );
-          })
-        )}
+          </Card> : dailyTips.map(tip => {
+        const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
+        const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === tip.id;
+        return <TipCard key={tip.id} tip={{
+          id: tip.id,
+          homeTeam: tip.home_team,
+          awayTeam: tip.away_team,
+          league: tip.league,
+          prediction: tip.prediction,
+          odds: tip.odds,
+          confidence: tip.confidence ?? 0,
+          kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric"
+          }) : "",
+          tier: tip.tier
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} isUnlocking={isUnlocking} />;
+      })}
       </div>
-    </div>
-  );
+    </div>;
 }
