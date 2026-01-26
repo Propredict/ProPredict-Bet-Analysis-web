@@ -70,7 +70,7 @@ export function useTips(includeAll = false) {
         .insert({
           ...tip,
           created_by: session?.user?.id ?? null,
-          // tip_date se već automatski setuje u DB (Belgrade)
+          // tip_date se setuje u DB (Belgrade)
         })
         .select()
         .single();
@@ -79,7 +79,12 @@ export function useTips(includeAll = false) {
       return data;
     },
     onSuccess: () => {
+      // 🔄 LISTE
       queryClient.invalidateQueries({ queryKey: ["tips"] });
+
+      // 🔥 DASHBOARD / ACCURACY / COUNTS
+      queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
+      queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
     },
   });
 
@@ -98,7 +103,12 @@ export function useTips(includeAll = false) {
       return data;
     },
     onSuccess: () => {
+      // 🔄 LISTE
       queryClient.invalidateQueries({ queryKey: ["tips"] });
+
+      // 🔥 OVO JE KLJUČNO – sad se dashboard osvežava
+      queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
+      queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
     },
   });
 
@@ -111,6 +121,8 @@ export function useTips(includeAll = false) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tips"] });
+      queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
+      queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
     },
   });
 
