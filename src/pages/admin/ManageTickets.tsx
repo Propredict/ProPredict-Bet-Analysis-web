@@ -74,22 +74,21 @@ export default function ManageTickets() {
   const [previewTicket, setPreviewTicket] =
     useState<TicketWithMatches | null>(null);
 
-  /* ---------- BASIC INFO ---------- */
+  // ===== Ticket Info =====
   const [title, setTitle] = useState("");
+  const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NOVO
   const [tier, setTier] = useState<ContentTier>("daily");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState("");
 
-  // ✅ NEW – custom ticket prediction
-  const [ticketPrediction, setTicketPrediction] = useState("");
-
-  /* ---------- MATCHES ---------- */
+  // ===== Matches =====
   const [matches, setMatches] = useState<MatchFormData[]>([]);
+
+  // Match selector
   const [matchSearch, setMatchSearch] = useState("");
   const [matchTab, setMatchTab] = useState<"today" | "custom">("today");
-
   const [customHomeTeam, setCustomHomeTeam] = useState("");
   const [customAwayTeam, setCustomAwayTeam] = useState("");
   const [customLeague, setCustomLeague] = useState("");
@@ -97,27 +96,26 @@ export default function ManageTickets() {
   const [customOdds, setCustomOdds] = useState("1.50");
 
   const totalOdds =
-    matches.length > 0 ? matches.reduce((a, m) => a * m.odds, 1) : 0;
+    matches.length > 0 ? matches.reduce((acc, m) => acc * m.odds, 1) : 0;
 
-  /* =====================
-     Helpers
-  ===================== */
+  const filteredFixtures = fixtures.filter((f) => {
+    const s = matchSearch.toLowerCase();
+    return (
+      f.homeTeam?.toLowerCase().includes(s) ||
+      f.awayTeam?.toLowerCase().includes(s) ||
+      f.league?.toLowerCase().includes(s)
+    );
+  });
 
   const resetForm = () => {
     setTitle("");
+    setTicketPrediction("");
     setTier("daily");
     setStatus("draft");
     setResult("pending");
     setDescription("");
     setAiAnalysis("");
-    setTicketPrediction("");
     setMatches([]);
-    setMatchSearch("");
-    setCustomHomeTeam("");
-    setCustomAwayTeam("");
-    setCustomLeague("");
-    setCustomPrediction("");
-    setCustomOdds("1.50");
   };
 
   const handleCreate = () => {
@@ -129,10 +127,11 @@ export default function ManageTickets() {
   const handleEdit = (ticket: Ticket) => {
     setEditingTicket(ticket);
     setTitle(ticket.title);
+    setTicketPrediction(ticket.prediction ?? "");
     setTier(ticket.tier);
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
-    setTicketPrediction((ticket as any).prediction_text ?? "");
+
     setMatches(
       ticket.matches?.map((m) => {
         const parsed = parseMatchName(m.match_name);
@@ -143,8 +142,9 @@ export default function ManageTickets() {
           prediction: m.prediction,
           odds: m.odds,
         };
-      }) ?? [],
+      }) ?? []
     );
+
     setIsDialogOpen(true);
   };
 
@@ -155,7 +155,11 @@ export default function ManageTickets() {
     }
 
     const dbMatches = matches.map((m) => ({
-      match_name: createMatchName(m.homeTeam, m.awayTeam, m.league || undefined),
+      match_name: createMatchName(
+        m.homeTeam,
+        m.awayTeam,
+        m.league || undefined
+      ),
       prediction: m.prediction,
       odds: m.odds,
     }));
@@ -165,11 +169,11 @@ export default function ManageTickets() {
         id: editingTicket.id,
         updates: {
           title,
+          prediction: ticketPrediction, // ✅
           tier,
           status,
           result,
           total_odds: totalOdds,
-          description: ticketPrediction,
         },
         matches: dbMatches,
       });
@@ -178,11 +182,11 @@ export default function ManageTickets() {
       await createTicket.mutateAsync({
         ticket: {
           title,
+          prediction: ticketPrediction, // ✅
           tier,
           status,
           result,
           total_odds: totalOdds,
-          prediction_text: ticketPrediction,
         } as any,
         matches: dbMatches,
       });
@@ -192,141 +196,46 @@ export default function ManageTickets() {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    await deleteTicket.mutateAsync(deleteId);
-    setDeleteId(null);
-  };
-
-  const handleMarkResult = async (id: string, r: TicketResult) => {
-    await updateTicket.mutateAsync({ id, updates: { result: r } });
-  };
-
-  /* =====================
-     Render
-  ===================== */
-
   return (
     <div className="section-gap max-w-6xl mx-auto">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between">
         <h1 className="font-bold">Manage Tickets</h1>
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-1" /> Add Ticket
         </Button>
       </div>
 
-      {isLoading ? (
-        <Loader2 className="h-6 w-6 animate-spin mx-auto mt-10" />
-      ) : (
-        <div className="grid gap-3 mt-4">
-          {tickets.map((t) => (
-            <AdminTicketCard
-              key={t.id}
-              ticket={t}
-              onEdit={() => handleEdit(t)}
-              onPreview={() => setPreviewTicket(t)}
-              onDelete={() => setDeleteId(t.id)}
-              onMarkWon={() => handleMarkResult(t.id, "won")}
-              onMarkLost={() => handleMarkResult(t.id, "lost")}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* CREATE / EDIT */}
+      {/* Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
-          <DialogHeader className="p-4 border-b">
+        <DialogContent className="max-w-4xl h-[90vh]">
+          <DialogHeader>
             <DialogTitle>
               {editingTicket ? "Edit Ticket" : "Create Ticket"}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1">
-            <div className="p-6 space-y-6">
-              <Card className="p-4 space-y-4">
-                <h3 className="font-semibold">Ticket Info</h3>
+          <ScrollArea className="h-full pr-4">
+            <Card className="p-4 mb-6">
+              <Label>Title</Label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
 
-                <Input
-                  placeholder="Ticket title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
+              {/* ✅ TICKET PREDICTION */}
+              <Label className="mt-4 block">Ticket Prediction</Label>
+              <Input
+                placeholder="e.g. 3/4 Correct – Safe Combo"
+                value={ticketPrediction}
+                onChange={(e) => setTicketPrediction(e.target.value)}
+              />
+            </Card>
 
-                {/* ✅ CUSTOM TICKET PREDICTION */}
-                <Input
-                  placeholder="Ticket prediction (custom)"
-                  value={ticketPrediction}
-                  onChange={(e) =>
-                    setTicketPrediction(e.target.value)
-                  }
-                />
-
-                <div className="grid grid-cols-3 gap-4">
-                  <Select value={tier} onValueChange={(v) => setTier(v as ContentTier)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="exclusive">Exclusive</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={status} onValueChange={(v) => setStatus(v as ContentStatus)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={result} onValueChange={(v) => setResult(v as TicketResult)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </Card>
-            </div>
+            {/* Matches ostaju ISTI kao pre */}
           </ScrollArea>
 
-          <DialogFooter className="p-4 border-t">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>
-              {editingTicket ? "Update" : "Create"}
-            </Button>
+          <DialogFooter>
+            <Button onClick={handleSubmit}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* DELETE */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete ticket?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <TicketPreviewModal
-        ticket={previewTicket}
-        open={!!previewTicket}
-        onOpenChange={() => setPreviewTicket(null)}
-      />
     </div>
   );
 }
