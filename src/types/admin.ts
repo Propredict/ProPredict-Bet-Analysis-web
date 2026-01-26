@@ -45,9 +45,8 @@ export interface Ticket {
   tier: ContentTier;
   status: ContentStatus;
   result?: TicketResult;
-  // Future fields (add to DB to enable):
-  // description?: string;
-  // ai_analysis?: string;
+  description?: string | null;
+  ai_analysis?: string | null;
   created_at?: string;
   created_at_ts?: string;
   updated_at?: string;
