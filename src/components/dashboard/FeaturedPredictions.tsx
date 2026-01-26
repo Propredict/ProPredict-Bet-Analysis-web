@@ -1,44 +1,22 @@
-import {
-  TrendingUp,
-  RefreshCw,
-  Check,
-  X,
-  Clock,
-  Flame,
-} from "lucide-react";
+import { TrendingUp, RefreshCw, Check, X, Clock, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTipAccuracy } from "@/hooks/useTipAccuracy";
 
-/* =====================
-   Component
-===================== */
-
 export function FeaturedPredictions() {
-  const {
-    data: accuracyData = [],
-    isLoading,
-    refetch,
-  } = useTipAccuracy();
+  const { data = [], isLoading, refetch } = useTipAccuracy();
 
-  // ▶ uzimamo DAILY tier (za dashboard overview)
-  const daily = accuracyData.find((t) => t.tier === "daily");
-
+  const daily = data.find((d) => d.tier === "daily");
   const accuracy = daily?.accuracy ?? 0;
 
-  // 🔹 za sada prikazujemo samo accuracy %
-  // (won/lost/pending ćemo kasnije iz VIEW-a ako želiš)
   return (
-    <section className="space-y-1.5 sm:space-y-2">
-      {/* HEADER */}
+    <section className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <TrendingUp className="text-primary w-[20px] h-[20px]" />
+        <div className="flex items-center gap-2">
+          <TrendingUp className="text-primary w-5 h-5" />
           <div>
-            <h2 className="text-xs font-semibold sm:text-xl">
-              Featured Predictions
-            </h2>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+            <h2 className="text-sm font-semibold">Featured Predictions</h2>
+            <p className="text-[10px] text-muted-foreground">
               AI performance overview
             </p>
           </div>
@@ -48,48 +26,40 @@ export function FeaturedPredictions() {
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="h-6 text-[10px] px-1.5"
+          className="h-7 text-[10px]"
         >
-          <RefreshCw className="h-2.5 w-2.5 mr-0.5" />
+          <RefreshCw className="h-3 w-3 mr-1" />
           Refresh
         </Button>
       </div>
 
-      {/* CARD */}
-      <Card className="p-2 sm:p-2.5">
+      <Card className="p-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-medium sm:text-base">
-            Accuracy
-          </span>
-          <span className="text-[10px] sm:text-xs font-bold text-primary">
+          <span className="text-xs font-medium">Accuracy</span>
+          <span className="text-xs font-bold text-primary">
             {isLoading ? "—" : `${accuracy}%`}
           </span>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 text-center text-[9px] sm:text-[10px]">
+        <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
           <div>
             <Check className="mx-auto h-3 w-3 text-success" />
-            <p className="font-medium mt-0.5">—</p>
+            <p className="font-medium">—</p>
             <p className="text-muted-foreground">Won</p>
           </div>
-
           <div>
             <X className="mx-auto h-3 w-3 text-destructive" />
-            <p className="font-medium mt-0.5">—</p>
+            <p className="font-medium">—</p>
             <p className="text-muted-foreground">Lost</p>
           </div>
-
           <div>
             <Clock className="mx-auto h-3 w-3 text-muted-foreground" />
-            <p className="font-medium mt-0.5">—</p>
+            <p className="font-medium">—</p>
             <p className="text-muted-foreground">Pending</p>
           </div>
-
           <div>
             <Flame className="mx-auto h-3 w-3 text-accent" />
-            <p className="font-medium mt-0.5">
-              {accuracy >= 70 ? "HOT" : "-"}
-            </p>
+            <p className="font-medium">{accuracy >= 70 ? "HOT" : "-"}</p>
             <p className="text-muted-foreground">Streak</p>
           </div>
         </div>
