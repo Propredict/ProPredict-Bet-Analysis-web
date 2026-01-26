@@ -92,7 +92,13 @@ export default function ManageTickets() {
   const [customAwayTeam, setCustomAwayTeam] = useState("");
   const [customLeague, setCustomLeague] = useState("");
   const [customPrediction, setCustomPrediction] = useState("");
+  const [customPredictionText, setCustomPredictionText] = useState("");
   const [customOdds, setCustomOdds] = useState("1.50");
+
+  // For Today's Matches - when adding from fixtures
+  const [todayPrediction, setTodayPrediction] = useState("");
+  const [todayPredictionText, setTodayPredictionText] = useState("");
+  const [todayOdds, setTodayOdds] = useState("1.50");
 
   const totalOdds =
     matches.length > 0
@@ -126,7 +132,11 @@ export default function ManageTickets() {
     setCustomAwayTeam("");
     setCustomLeague("");
     setCustomPrediction("");
+    setCustomPredictionText("");
     setCustomOdds("1.50");
+    setTodayPrediction("");
+    setTodayPredictionText("");
+    setTodayOdds("1.50");
   };
 
   const handleCreate = () => {
@@ -226,14 +236,21 @@ export default function ManageTickets() {
   };
 
   const addMatchFromFixture = (fixture: any) => {
+    const finalPrediction = todayPredictionText || todayPrediction;
+    if (!finalPrediction) {
+      toast.error("Please select a prediction first");
+      return;
+    }
     if (
       matches.some(
         (m) =>
           m.homeTeam === fixture.homeTeam &&
           m.awayTeam === fixture.awayTeam
       )
-    )
+    ) {
+      toast.error("Match already added");
       return;
+    }
 
     setMatches([
       ...matches,
@@ -241,14 +258,23 @@ export default function ManageTickets() {
         homeTeam: fixture.homeTeam,
         awayTeam: fixture.awayTeam,
         league: fixture.league || "",
-        prediction: "",
-        odds: 1.5,
+        prediction: finalPrediction,
+        odds: parseFloat(todayOdds) || 1.5,
       },
     ]);
+
+    // Reset today's prediction fields after adding
+    setTodayPrediction("");
+    setTodayPredictionText("");
+    setTodayOdds("1.50");
   };
 
   const addCustomMatch = () => {
-    if (!customHomeTeam || !customAwayTeam || !customPrediction) return;
+    const finalPrediction = customPredictionText || customPrediction;
+    if (!customHomeTeam || !customAwayTeam || !finalPrediction) {
+      toast.error("Please fill in required fields");
+      return;
+    }
 
     setMatches([
       ...matches,
@@ -256,7 +282,7 @@ export default function ManageTickets() {
         homeTeam: customHomeTeam,
         awayTeam: customAwayTeam,
         league: customLeague,
-        prediction: customPrediction,
+        prediction: finalPrediction,
         odds: parseFloat(customOdds) || 1.5,
       },
     ]);
@@ -265,6 +291,7 @@ export default function ManageTickets() {
     setCustomAwayTeam("");
     setCustomLeague("");
     setCustomPrediction("");
+    setCustomPredictionText("");
     setCustomOdds("1.50");
   };
 
@@ -398,6 +425,94 @@ export default function ManageTickets() {
                 </TabsList>
 
                 <TabsContent value="today" className="space-y-3 mt-3">
+                  {/* Prediction fields for Today's Matches */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Prediction (select)</Label>
+                      <Select value={todayPrediction} onValueChange={setTodayPrediction}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select prediction" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {/* 1X2 */}
+                          <SelectItem value="1">Home Win (1)</SelectItem>
+                          <SelectItem value="X">Draw (X)</SelectItem>
+                          <SelectItem value="2">Away Win (2)</SelectItem>
+                          {/* Double Chance */}
+                          <SelectItem value="1X">Home or Draw (1X)</SelectItem>
+                          <SelectItem value="X2">Draw or Away (X2)</SelectItem>
+                          <SelectItem value="12">Home or Away (12)</SelectItem>
+                          {/* Goals Over */}
+                          <SelectItem value="Over 0.5">Over 0.5 Goals</SelectItem>
+                          <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
+                          <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
+                          <SelectItem value="Over 3.5">Over 3.5 Goals</SelectItem>
+                          <SelectItem value="Over 4.5">Over 4.5 Goals</SelectItem>
+                          {/* Goals Under */}
+                          <SelectItem value="Under 0.5">Under 0.5 Goals</SelectItem>
+                          <SelectItem value="Under 1.5">Under 1.5 Goals</SelectItem>
+                          <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
+                          <SelectItem value="Under 3.5">Under 3.5 Goals</SelectItem>
+                          <SelectItem value="Under 4.5">Under 4.5 Goals</SelectItem>
+                          {/* BTTS */}
+                          <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
+                          <SelectItem value="BTTS No">BTTS No</SelectItem>
+                          {/* Correct Score */}
+                          <SelectItem value="CS 1-0">Correct Score 1-0</SelectItem>
+                          <SelectItem value="CS 2-0">Correct Score 2-0</SelectItem>
+                          <SelectItem value="CS 2-1">Correct Score 2-1</SelectItem>
+                          <SelectItem value="CS 0-0">Correct Score 0-0</SelectItem>
+                          <SelectItem value="CS 1-1">Correct Score 1-1</SelectItem>
+                          <SelectItem value="CS 2-2">Correct Score 2-2</SelectItem>
+                          <SelectItem value="CS 0-1">Correct Score 0-1</SelectItem>
+                          <SelectItem value="CS 0-2">Correct Score 0-2</SelectItem>
+                          <SelectItem value="CS 1-2">Correct Score 1-2</SelectItem>
+                          <SelectItem value="CS 3-0">Correct Score 3-0</SelectItem>
+                          <SelectItem value="CS 3-1">Correct Score 3-1</SelectItem>
+                          <SelectItem value="CS 3-2">Correct Score 3-2</SelectItem>
+                          <SelectItem value="CS 0-3">Correct Score 0-3</SelectItem>
+                          <SelectItem value="CS 1-3">Correct Score 1-3</SelectItem>
+                          <SelectItem value="CS 2-3">Correct Score 2-3</SelectItem>
+                          {/* Half Time */}
+                          <SelectItem value="HT 1">Half Time Home Win</SelectItem>
+                          <SelectItem value="HT X">Half Time Draw</SelectItem>
+                          <SelectItem value="HT 2">Half Time Away Win</SelectItem>
+                          {/* Handicap */}
+                          <SelectItem value="Home -1">Home -1 Handicap</SelectItem>
+                          <SelectItem value="Home -2">Home -2 Handicap</SelectItem>
+                          <SelectItem value="Away +1">Away +1 Handicap</SelectItem>
+                          <SelectItem value="Away +2">Away +2 Handicap</SelectItem>
+                          {/* Combos */}
+                          <SelectItem value="1 & Over 1.5">Home Win & Over 1.5</SelectItem>
+                          <SelectItem value="1 & Over 2.5">Home Win & Over 2.5</SelectItem>
+                          <SelectItem value="2 & Over 1.5">Away Win & Over 1.5</SelectItem>
+                          <SelectItem value="2 & Over 2.5">Away Win & Over 2.5</SelectItem>
+                          <SelectItem value="1 & BTTS">Home Win & BTTS</SelectItem>
+                          <SelectItem value="2 & BTTS">Away Win & BTTS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Custom Prediction</Label>
+                      <Input
+                        placeholder="e.g. Correct Score 2-1"
+                        value={todayPredictionText}
+                        onChange={(e) => setTodayPredictionText(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Odds</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={todayOdds}
+                      onChange={(e) => setTodayOdds(e.target.value)}
+                    />
+                  </div>
+
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -407,6 +522,10 @@ export default function ManageTickets() {
                       className="pl-9"
                     />
                   </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Select prediction & odds above, then click a match to add it
+                  </p>
 
                   {fixturesLoading ? (
                     <div className="flex justify-center py-4">
@@ -474,43 +593,96 @@ export default function ManageTickets() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Prediction *</Label>
+                      <Label>Prediction (select)</Label>
                       <Select value={customPrediction} onValueChange={setCustomPrediction}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select bet type" />
+                          <SelectValue placeholder="Select prediction" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60">
+                          {/* 1X2 */}
                           <SelectItem value="1">Home Win (1)</SelectItem>
                           <SelectItem value="X">Draw (X)</SelectItem>
                           <SelectItem value="2">Away Win (2)</SelectItem>
+                          {/* Double Chance */}
                           <SelectItem value="1X">Home or Draw (1X)</SelectItem>
                           <SelectItem value="X2">Draw or Away (X2)</SelectItem>
                           <SelectItem value="12">Home or Away (12)</SelectItem>
+                          {/* Goals Over */}
+                          <SelectItem value="Over 0.5">Over 0.5 Goals</SelectItem>
                           <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
                           <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
+                          <SelectItem value="Over 3.5">Over 3.5 Goals</SelectItem>
+                          <SelectItem value="Over 4.5">Over 4.5 Goals</SelectItem>
+                          {/* Goals Under */}
+                          <SelectItem value="Under 0.5">Under 0.5 Goals</SelectItem>
+                          <SelectItem value="Under 1.5">Under 1.5 Goals</SelectItem>
                           <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
+                          <SelectItem value="Under 3.5">Under 3.5 Goals</SelectItem>
+                          <SelectItem value="Under 4.5">Under 4.5 Goals</SelectItem>
+                          {/* BTTS */}
                           <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
                           <SelectItem value="BTTS No">BTTS No</SelectItem>
+                          {/* Correct Score */}
+                          <SelectItem value="CS 1-0">Correct Score 1-0</SelectItem>
+                          <SelectItem value="CS 2-0">Correct Score 2-0</SelectItem>
+                          <SelectItem value="CS 2-1">Correct Score 2-1</SelectItem>
+                          <SelectItem value="CS 0-0">Correct Score 0-0</SelectItem>
+                          <SelectItem value="CS 1-1">Correct Score 1-1</SelectItem>
+                          <SelectItem value="CS 2-2">Correct Score 2-2</SelectItem>
+                          <SelectItem value="CS 0-1">Correct Score 0-1</SelectItem>
+                          <SelectItem value="CS 0-2">Correct Score 0-2</SelectItem>
+                          <SelectItem value="CS 1-2">Correct Score 1-2</SelectItem>
+                          <SelectItem value="CS 3-0">Correct Score 3-0</SelectItem>
+                          <SelectItem value="CS 3-1">Correct Score 3-1</SelectItem>
+                          <SelectItem value="CS 3-2">Correct Score 3-2</SelectItem>
+                          <SelectItem value="CS 0-3">Correct Score 0-3</SelectItem>
+                          <SelectItem value="CS 1-3">Correct Score 1-3</SelectItem>
+                          <SelectItem value="CS 2-3">Correct Score 2-3</SelectItem>
+                          {/* Half Time */}
+                          <SelectItem value="HT 1">Half Time Home Win</SelectItem>
+                          <SelectItem value="HT X">Half Time Draw</SelectItem>
+                          <SelectItem value="HT 2">Half Time Away Win</SelectItem>
+                          {/* Handicap */}
+                          <SelectItem value="Home -1">Home -1 Handicap</SelectItem>
+                          <SelectItem value="Home -2">Home -2 Handicap</SelectItem>
+                          <SelectItem value="Away +1">Away +1 Handicap</SelectItem>
+                          <SelectItem value="Away +2">Away +2 Handicap</SelectItem>
+                          {/* Combos */}
+                          <SelectItem value="1 & Over 1.5">Home Win & Over 1.5</SelectItem>
+                          <SelectItem value="1 & Over 2.5">Home Win & Over 2.5</SelectItem>
+                          <SelectItem value="2 & Over 1.5">Away Win & Over 1.5</SelectItem>
+                          <SelectItem value="2 & Over 2.5">Away Win & Over 2.5</SelectItem>
+                          <SelectItem value="1 & BTTS">Home Win & BTTS</SelectItem>
+                          <SelectItem value="2 & BTTS">Away Win & BTTS</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>Odds *</Label>
+                      <Label>Custom Prediction</Label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="1"
-                        value={customOdds}
-                        onChange={(e) => setCustomOdds(e.target.value)}
+                        placeholder="e.g. Correct Score 2-1"
+                        value={customPredictionText}
+                        onChange={(e) => setCustomPredictionText(e.target.value)}
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <Label>Odds *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={customOdds}
+                      onChange={(e) => setCustomOdds(e.target.value)}
+                    />
                   </div>
 
                   <Button
                     type="button"
                     className="w-full"
                     onClick={addCustomMatch}
-                    disabled={!customHomeTeam || !customAwayTeam || !customPrediction}
+                    disabled={!customHomeTeam || !customAwayTeam || (!customPrediction && !customPredictionText)}
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add Match to Ticket
