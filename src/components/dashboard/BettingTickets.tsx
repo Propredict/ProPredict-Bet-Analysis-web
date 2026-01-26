@@ -37,8 +37,7 @@ export function BettingTickets() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [highlightPlan, setHighlightPlan] =
-    useState<"basic" | "premium">();
+  const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
 
   const { tickets: dbTickets = [], isLoading } = useTickets(false);
   const { data: accuracyData = [] } = useTicketAccuracy();
@@ -80,4 +79,65 @@ export function BettingTickets() {
       <Card className="p-1">
         <div className="grid grid-cols-3 gap-1">
           {tabs.map((tab) => {
-            const count = tickets.filte
+            const count = tickets.filter((t) => t.tier === tab.id).length;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className={cn(
+                  "py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <tab.icon className="h-3 w-3 mx-auto" />
+                <p className="mt-0.5">{tab.label}</p>
+                {count > 0 && (
+                  <span className="text-[8px] opacity-70">({count})</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : filtered.length > 0 ? (
+        <div className="space-y-1.5 sm:space-y-2">
+          {filtered.map((ticket) => {
+            const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
+            const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+            return (
+              <TicketCard
+                key={ticket.id}
+                ticket={ticket}
+                isLocked={isLocked}
+                unlockMethod={unlockMethod}
+                isUnlocking={unlockingId === ticket.id}
+                onUnlockClick={() =>
+                  handleUnlock("ticket", ticket.id, ticket.tier)
+                }
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="p-4 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
+            No {activeTab} tickets available
+          </p>
+        </Card>
+      )}
+
+      <PricingModal
+        open={showPricingModal}
+        onOpenChange={setShowPricingModal}
+        highlightPlan={highlightPlan}
+      />
+    </section>
+  );
+}

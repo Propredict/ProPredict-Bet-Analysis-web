@@ -271,13 +271,13 @@ export type Database = {
       tickets: {
         Row: {
           ai_analysis: string | null
-          created_at: string
           created_at_ts: string
           created_by: string | null
           description: string | null
           id: string
           result: Database["public"]["Enums"]["ticket_result"]
           status: Database["public"]["Enums"]["content_status"]
+          ticket_date: string | null
           tier: Database["public"]["Enums"]["content_tier"]
           title: string
           total_odds: number | null
@@ -285,13 +285,13 @@ export type Database = {
         }
         Insert: {
           ai_analysis?: string | null
-          created_at?: string
           created_at_ts?: string
           created_by?: string | null
           description?: string | null
           id?: string
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
+          ticket_date?: string | null
           tier?: Database["public"]["Enums"]["content_tier"]
           title: string
           total_odds?: number | null
@@ -299,13 +299,13 @@ export type Database = {
         }
         Update: {
           ai_analysis?: string | null
-          created_at?: string
           created_at_ts?: string
           created_by?: string | null
           description?: string | null
           id?: string
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
+          ticket_date?: string | null
           tier?: Database["public"]["Enums"]["content_tier"]
           title?: string
           total_odds?: number | null
@@ -318,7 +318,6 @@ export type Database = {
           ai_prediction: string | null
           away_team: string
           confidence: number | null
-          created_at: string
           created_at_ts: string
           created_by: string | null
           home_team: string
@@ -326,15 +325,16 @@ export type Database = {
           league: string
           odds: number
           prediction: string
+          result: Database["public"]["Enums"]["ticket_result"] | null
           status: Database["public"]["Enums"]["content_status"]
           tier: Database["public"]["Enums"]["content_tier"]
+          tip_date: string | null
           updated_at: string
         }
         Insert: {
           ai_prediction?: string | null
           away_team: string
           confidence?: number | null
-          created_at?: string
           created_at_ts?: string
           created_by?: string | null
           home_team: string
@@ -342,15 +342,16 @@ export type Database = {
           league: string
           odds?: number
           prediction: string
+          result?: Database["public"]["Enums"]["ticket_result"] | null
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
+          tip_date?: string | null
           updated_at?: string
         }
         Update: {
           ai_prediction?: string | null
           away_team?: string
           confidence?: number | null
-          created_at?: string
           created_at_ts?: string
           created_by?: string | null
           home_team?: string
@@ -358,8 +359,10 @@ export type Database = {
           league?: string
           odds?: number
           prediction?: string
+          result?: Database["public"]["Enums"]["ticket_result"] | null
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
+          tip_date?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -555,6 +558,40 @@ export type Database = {
           result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stats_by_tier: {
+        Row: {
+          accuracy: number | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+        }
+        Relationships: []
+      }
+      stats_global: {
+        Row: {
+          win_rate: number | null
+        }
+        Relationships: []
+      }
+      ticket_accuracy_by_tier: {
+        Row: {
+          accuracy: number | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+        }
+        Relationships: []
+      }
+      tip_accuracy_by_tier: {
+        Row: {
+          accuracy: number | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+        }
+        Relationships: []
+      }
+      tip_count_by_tier: {
+        Row: {
+          tier: Database["public"]["Enums"]["content_tier"] | null
+          total: number | null
         }
         Relationships: []
       }

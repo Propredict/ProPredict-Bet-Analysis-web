@@ -62,7 +62,7 @@ export default function BettingTips() {
             Hot Picks
           </Badge>
 
-          <Button variant="outline" size="sm" onClick={refetch}>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-3 w-3" />
           </Button>
         </div>

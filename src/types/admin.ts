@@ -1,4 +1,5 @@
 export type TicketResult = "pending" | "won" | "lost";
+export type TipResult = "pending" | "won" | "lost";
 export type ContentTier = "free" | "daily" | "exclusive" | "premium";
 export type ContentStatus = "draft" | "published";
 
@@ -13,6 +14,7 @@ export interface Tip {
   ai_prediction?: string | null;
   tier: ContentTier;
   status: ContentStatus;
+  result?: TipResult | null;
   created_at?: string;
   created_at_ts?: string;
   updated_at?: string;

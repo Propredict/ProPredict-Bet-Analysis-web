@@ -169,7 +169,7 @@ export default function ManageTickets() {
           status,
           result,
           total_odds: totalOdds,
-          prediction_text: ticketPrediction,
+          description: ticketPrediction,
         },
         matches: dbMatches,
       });
