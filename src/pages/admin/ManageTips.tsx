@@ -40,7 +40,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useTips } from "@/hooks/useTips";
-import type { Tip, TipInsert, ContentTier, TipResult } from "@/types/admin";
+import type {
+  Tip,
+  TipInsert,
+  ContentTier,
+  ContentStatus,
+  TipResult,
+} from "@/types/admin";
 
 /* =====================
    Defaults
@@ -92,6 +98,7 @@ export default function ManageTips() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTip, setEditingTip] = useState<Tip | null>(null);
   const [formData, setFormData] = useState(defaultTip);
+  const [customPrediction, setCustomPrediction] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   /* =====================
@@ -101,6 +108,7 @@ export default function ManageTips() {
   const handleCreate = () => {
     setEditingTip(null);
     setFormData(defaultTip);
+    setCustomPrediction("");
     setIsDialogOpen(true);
   };
 
@@ -118,18 +126,25 @@ export default function ManageTips() {
       status: tip.status,
       result: tip.result ?? "pending",
     });
+    setCustomPrediction("");
     setIsDialogOpen(true);
   };
 
   const handleSubmit = async () => {
+    const payload = {
+      ...formData,
+      prediction: customPrediction || formData.prediction,
+    };
+
     if (editingTip) {
       await updateTip.mutateAsync({
         id: editingTip.id,
-        updates: formData,
+        updates: payload,
       });
     } else {
-      await createTip.mutateAsync(formData);
+      await createTip.mutateAsync(payload);
     }
+
     setIsDialogOpen(false);
   };
 
@@ -214,7 +229,7 @@ export default function ManageTips() {
                   </div>
                 </div>
 
-                {/* ACTIONS – HORIZONTAL LIKE TICKETS */}
+                {/* ACTIONS – SAME AS TICKETS */}
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="outline" onClick={() => handleEdit(tip)}>
                     <Pencil className="h-4 w-4" />
@@ -255,7 +270,7 @@ export default function ManageTips() {
         </div>
       )}
 
-      {/* CREATE / EDIT TIP – LARGE MODAL LIKE TICKETS */}
+      {/* CREATE / EDIT TIP MODAL */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -264,93 +279,161 @@ export default function ManageTips() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <Card className="p-4 space-y-4">
-              <h3 className="font-semibold">Tip Info</h3>
+          <Card className="p-4 space-y-4">
+            <h3 className="font-semibold">Tip Info</h3>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Home Team</Label>
-                  <Input
-                    value={formData.home_team}
-                    onChange={(e) =>
-                      setFormData({ ...formData, home_team: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Away Team</Label>
-                  <Input
-                    value={formData.away_team}
-                    onChange={(e) =>
-                      setFormData({ ...formData, away_team: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
+            {/* TEAMS */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>League</Label>
+                <Label>Home Team</Label>
                 <Input
-                  value={formData.league}
+                  value={formData.home_team}
                   onChange={(e) =>
-                    setFormData({ ...formData, league: e.target.value })
+                    setFormData({ ...formData, home_team: e.target.value })
                   }
                 />
               </div>
+              <div>
+                <Label>Away Team</Label>
+                <Input
+                  value={formData.away_team}
+                  onChange={(e) =>
+                    setFormData({ ...formData, away_team: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Prediction</Label>
-                  <Select
-                    value={formData.prediction}
-                    onValueChange={(v) =>
-                      setFormData({ ...formData, prediction: v })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select prediction" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PREDICTIONS.map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {p}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div>
+              <Label>League</Label>
+              <Input
+                value={formData.league}
+                onChange={(e) =>
+                  setFormData({ ...formData, league: e.target.value })
+                }
+              />
+            </div>
 
-                <div>
-                  <Label>Odds</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.odds}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        odds: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
+            {/* PREDICTION */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Prediction (select)</Label>
+                <Select
+                  value={formData.prediction}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, prediction: v })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select prediction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PREDICTIONS.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <Label>AI Analysis</Label>
-                <Textarea
-                  value={formData.ai_prediction}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      ai_prediction: e.target.value,
-                    })
-                  }
+                <Label>Custom Prediction</Label>
+                <Input
+                  placeholder="e.g. Correct Score 2-1"
+                  value={customPrediction}
+                  onChange={(e) => setCustomPrediction(e.target.value)}
                 />
               </div>
-            </Card>
-          </div>
+            </div>
+
+            {/* ODDS */}
+            <div>
+              <Label>Odds</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.odds}
+                onChange={(e) =>
+                  setFormData({ ...formData, odds: Number(e.target.value) })
+                }
+              />
+            </div>
+
+            {/* AI */}
+            <div>
+              <Label>AI Analysis</Label>
+              <Textarea
+                value={formData.ai_prediction}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    ai_prediction: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            {/* TIER / STATUS / RESULT – SAME AS TICKET */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Tier</Label>
+                <Select
+                  value={formData.tier}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, tier: v as ContentTier })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="exclusive">Exclusive</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, status: v as ContentStatus })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Result</Label>
+                <Select
+                  value={formData.result}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, result: v as TipResult })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="won">Won</SelectItem>
+                    <SelectItem value="lost">Lost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </Card>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
