@@ -81,7 +81,7 @@ export function MatchPredictions() {
       <div className="bg-primary/10 border border-primary/20 rounded-md py-1 px-2 text-center">
         <div className="flex items-center justify-center gap-1.5 text-[9px] sm:text-[10px] text-primary">
           <Users className="h-3 w-3" />
-          <span>Users unlocked tips today</span>
+          <span>128 Users unlocked tips today</span>
         </div>
       </div>
 
