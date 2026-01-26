@@ -138,7 +138,7 @@ export default function ManageTickets() {
   const handleEdit = (ticket: Ticket) => {
     setEditingTicket(ticket);
     setTitle(ticket.title);
-    setTicketPrediction(ticket.prediction ?? "");
+    setTicketPrediction(ticket.description ?? "");
     setTier(ticket.tier);
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
@@ -180,7 +180,7 @@ export default function ManageTickets() {
         id: editingTicket.id,
         updates: {
           title,
-          prediction: ticketPrediction,
+          description: ticketPrediction,
           tier,
           status,
           result,
@@ -193,7 +193,7 @@ export default function ManageTickets() {
       await createTicket.mutateAsync({
         ticket: {
           title,
-          prediction: ticketPrediction,
+          description: ticketPrediction,
           tier,
           status,
           result,

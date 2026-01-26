@@ -41,6 +41,7 @@ export interface TicketMatch {
 export interface Ticket {
   id: string;
   title: string;
+  prediction?: string;
   total_odds: number;
   tier: ContentTier;
   status: ContentStatus;
