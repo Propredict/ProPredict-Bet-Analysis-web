@@ -2,30 +2,27 @@ import { TrendingUp, RefreshCw, Check, X, Clock, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTips } from "@/hooks/useTips";
-
 export function FeaturedPredictions() {
   const tipsQuery = useTips(false);
 
   // ⛑️ HARD GUARD – ako hook nije spreman
   if (!tipsQuery) return null;
-
-  const { tips = [], isLoading, refetch } = tipsQuery;
-
+  const {
+    tips = [],
+    isLoading,
+    refetch
+  } = tipsQuery;
   const aiTips = Array.isArray(tips) ? tips.filter((t: any) => t?.ai_prediction === true) : [];
-
   const won = aiTips.filter((t: any) => t?.result === "won").length;
   const lost = aiTips.filter((t: any) => t?.result === "lost").length;
   const pending = aiTips.length - won - lost;
-
-  const accuracy = won + lost > 0 ? Math.round((won / (won + lost)) * 100) : 0;
-
-  return (
-    <section className="space-y-1.5 sm:space-y-2">
+  const accuracy = won + lost > 0 ? Math.round(won / (won + lost) * 100) : 0;
+  return <section className="space-y-1.5 sm:space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <TrendingUp className="h-4 w-4 text-primary" />
+          <TrendingUp className="text-primary w-[20px] h-[20px]" />
           <div>
-            <h2 className="text-xs sm:text-sm font-semibold">Featured Predictions</h2>
+            <h2 className="text-xs font-semibold sm:text-xl">Featured Predictions</h2>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">AI performance overview</p>
           </div>
         </div>
@@ -65,6 +62,5 @@ export function FeaturedPredictions() {
           </div>
         </div>
       </Card>
-    </section>
-  );
+    </section>;
 }
