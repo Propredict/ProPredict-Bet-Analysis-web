@@ -7,25 +7,32 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
-
 export default function PremiumTickets() {
   const navigate = useNavigate();
-  const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod, plan } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
-
-  const premiumTickets = tickets.filter((ticket) => ticket.tier === "premium");
-  const unlockedCount = premiumTickets.filter((ticket) => canAccess("premium", "ticket", ticket.id)).length;
+  const {
+    tickets,
+    isLoading,
+    refetch
+  } = useTickets(false);
+  const {
+    canAccess,
+    getUnlockMethod,
+    plan
+  } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
+  const premiumTickets = tickets.filter(ticket => ticket.tier === "premium");
+  const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
   const showUpgradeBanner = plan !== "premium";
-
-  return (
-    <div className="section-gap">
+  return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
           <div>
-            <h1 className="text-sm sm:text-base font-bold text-foreground">Premium Tickets</h1>
+            <h1 className="text-sm text-foreground sm:text-lg font-semibold">Premium Tickets</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest value picks for subscribers</p>
           </div>
         </div>
@@ -78,8 +85,7 @@ export default function PremiumTickets() {
       </div>
 
       {/* Premium Unlock Banner */}
-      {showUpgradeBanner && (
-        <Card className="p-2 sm:p-3 bg-gradient-to-r from-warning/20 to-accent/20 border-warning/30">
+      {showUpgradeBanner && <Card className="p-2 sm:p-3 bg-gradient-to-r from-warning/20 to-accent/20 border-warning/30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded bg-warning/20">
@@ -90,29 +96,21 @@ export default function PremiumTickets() {
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium tickets</p>
               </div>
             </div>
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
-              onClick={() => navigate("/get-premium")}
-            >
+            <Button size="sm" className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
               <Sparkles className="h-3 w-3" />
               Subscribe
             </Button>
           </div>
-        </Card>
-      )}
+        </Card>}
 
       {/* Tickets List */}
       <div className="space-y-2 sm:space-y-3">
-        {isLoading ? (
-          <Card className="p-8 bg-card border-border">
+        {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tickets...</p>
             </div>
-          </Card>
-        ) : premiumTickets.length === 0 ? (
-          <Card className="p-8 bg-card border-border">
+          </Card> : premiumTickets.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-warning mb-1">No premium tickets available</p>
@@ -122,41 +120,26 @@ export default function PremiumTickets() {
                 Try Again
               </Button>
             </div>
-          </Card>
-        ) : (
-          premiumTickets.map((ticket) => {
-            const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
-            const isLocked = unlockMethod?.type !== "unlocked";
-            const isUnlocking = unlockingId === ticket.id;
-            const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : (ticket.matches ?? []);
-
-            return (
-              <TicketCard
-                key={ticket.id}
-                ticket={{
-                  id: ticket.id,
-                  title: ticket.title,
-                  matchCount: ticket.matches?.length ?? 0,
-                  status: ticket.result ?? "pending",
-                  totalOdds: ticket.total_odds ?? 0,
-                  tier: ticket.tier,
-                  matches: matchesToShow.map((m) => ({
-                    name: m.match_name,
-                    prediction: m.prediction,
-                    odds: m.odds,
-                  })),
-                  createdAt: ticket.created_at_ts,
-                }}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")}
-                onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
-                isUnlocking={isUnlocking}
-              />
-            );
-          })
-        )}
+          </Card> : premiumTickets.map(ticket => {
+        const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
+        const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === ticket.id;
+        const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
+        return <TicketCard key={ticket.id} ticket={{
+          id: ticket.id,
+          title: ticket.title,
+          matchCount: ticket.matches?.length ?? 0,
+          status: ticket.result ?? "pending",
+          totalOdds: ticket.total_odds ?? 0,
+          tier: ticket.tier,
+          matches: matchesToShow.map(m => ({
+            name: m.match_name,
+            prediction: m.prediction,
+            odds: m.odds
+          })),
+          createdAt: ticket.created_at_ts
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
+      })}
       </div>
-    </div>
-  );
+    </div>;
 }
