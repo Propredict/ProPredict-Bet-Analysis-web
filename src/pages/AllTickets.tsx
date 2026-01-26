@@ -12,18 +12,25 @@ import { PricingModal } from "@/components/PricingModal";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
-
 type TabType = "daily" | "exclusive" | "premium";
-
 export default function AllTickets() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
-  
-  const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler({
+  const {
+    tickets,
+    isLoading,
+    refetch
+  } = useTickets(false);
+  const {
+    canAccess,
+    getUnlockMethod
+  } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -31,35 +38,40 @@ export default function AllTickets() {
     onUpgradePremium: () => {
       setHighlightPlan("premium");
       setShowPricingModal(true);
-    },
+    }
   });
-
-  const dailyCount = tickets.filter((t) => t.tier === "daily").length;
-  const exclusiveCount = tickets.filter((t) => t.tier === "exclusive").length;
-  const premiumCount = tickets.filter((t) => t.tier === "premium").length;
+  const dailyCount = tickets.filter(t => t.tier === "daily").length;
+  const exclusiveCount = tickets.filter(t => t.tier === "exclusive").length;
+  const premiumCount = tickets.filter(t => t.tier === "premium").length;
   const totalCount = tickets.length;
-
-  const filteredTickets = tickets.filter((ticket) => ticket.tier === activeTab);
-
-  const tabs = [
-    { id: "daily" as TabType, label: "Daily", icon: Calendar, count: dailyCount },
-    { id: "exclusive" as TabType, label: "Pro", icon: Star, count: exclusiveCount },
-    { id: "premium" as TabType, label: "Premium", icon: Crown, count: premiumCount },
-  ];
-
+  const filteredTickets = tickets.filter(ticket => ticket.tier === activeTab);
+  const tabs = [{
+    id: "daily" as TabType,
+    label: "Daily",
+    icon: Calendar,
+    count: dailyCount
+  }, {
+    id: "exclusive" as TabType,
+    label: "Pro",
+    icon: Star,
+    count: exclusiveCount
+  }, {
+    id: "premium" as TabType,
+    label: "Premium",
+    icon: Crown,
+    count: premiumCount
+  }];
   const handleRefresh = () => {
     refetch();
     toast.success("Tickets refreshed");
   };
-
-  return (
-    <div className="section-gap">
+  return <div className="section-gap">
       {/* Page Header */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           <div>
-            <h1 className="text-sm sm:text-base font-bold text-foreground">All Tickets</h1>
+            <h1 className="text-sm text-foreground font-semibold sm:text-lg">All Tickets</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse betting tickets</p>
           </div>
         </div>
@@ -83,59 +95,27 @@ export default function AllTickets() {
       {/* Category Tabs */}
       <Card className="p-0.5 bg-card border-border">
         <div className="grid grid-cols-3 gap-0.5">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded text-[10px] sm:text-xs transition-all",
-                activeTab === tab.id
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50"
-              )}
-            >
+          {tabs.map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded text-[10px] sm:text-xs transition-all", activeTab === tab.id ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/50")}>
               <tab.icon className="h-3 w-3" />
               <span className="font-medium">{tab.label}</span>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "text-[9px] px-1 py-0",
-                  activeTab === tab.id ? "bg-primary/20 text-primary" : ""
-                )}
-              >
+              <Badge variant="secondary" className={cn("text-[9px] px-1 py-0", activeTab === tab.id ? "bg-primary/20 text-primary" : "")}>
                 {tab.count}
               </Badge>
-            </button>
-          ))}
+            </button>)}
         </div>
       </Card>
 
       {/* Ticket List */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
+      {isLoading ? <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      ) : filteredTickets.length > 0 ? (
-        <div className="space-y-2 sm:space-y-3">
-          {filteredTickets.map((ticket) => {
-            const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
-            const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-            const isUnlocking = unlockingId === ticket.id;
-            
-            return (
-              <AllTicketsCard
-                key={ticket.id}
-                ticket={ticket}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)}
-                isUnlocking={isUnlocking}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <Card className="p-6 bg-card border-border text-center">
+        </div> : filteredTickets.length > 0 ? <div className="space-y-2 sm:space-y-3">
+          {filteredTickets.map(ticket => {
+        const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
+        const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
+        const isUnlocking = unlockingId === ticket.id;
+        return <AllTicketsCard key={ticket.id} ticket={ticket} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} isUnlocking={isUnlocking} />;
+      })}
+        </div> : <Card className="p-6 bg-card border-border text-center">
           <div className="flex flex-col items-center gap-3">
             <Ticket className="h-10 w-10 text-primary opacity-50" />
             <div>
@@ -143,10 +123,8 @@ export default function AllTickets() {
               <p className="text-xs text-muted-foreground">Check back soon!</p>
             </div>
           </div>
-        </Card>
-      )}
+        </Card>}
 
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
-    </div>
-  );
+    </div>;
 }
