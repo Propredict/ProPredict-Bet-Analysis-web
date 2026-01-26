@@ -9,12 +9,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useGlobalWinRate } from "@/hooks/useGlobalWinRate";
+import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
 
 export function FeaturedPredictions() {
-  const { data, isLoading, refetch } = useGlobalWinRate();
-
-  const accuracy = data?.accuracy ?? 0;
+  const { stats, loading } = useAIPredictionStats();
 
   return (
     <section className="space-y-2">
@@ -29,16 +27,6 @@ export function FeaturedPredictions() {
             </p>
           </div>
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          className="h-7 text-[10px]"
-        >
-          <RefreshCw className="h-3 w-3 mr-1" />
-          Refresh
-        </Button>
       </div>
 
       {/* Card */}
@@ -46,33 +34,33 @@ export function FeaturedPredictions() {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium">Global Accuracy</span>
           <span className="text-xs font-bold text-primary">
-            {isLoading ? "—" : `${accuracy}%`}
+            {loading ? "—" : `${stats.accuracy}%`}
           </span>
         </div>
 
         <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
           <div>
             <Check className="mx-auto h-3 w-3 text-success" />
-            <p className="font-medium">—</p>
+            <p className="font-medium">{loading ? "—" : stats.won}</p>
             <p className="text-muted-foreground">Won</p>
           </div>
 
           <div>
             <X className="mx-auto h-3 w-3 text-destructive" />
-            <p className="font-medium">—</p>
+            <p className="font-medium">{loading ? "—" : stats.lost}</p>
             <p className="text-muted-foreground">Lost</p>
           </div>
 
           <div>
             <Clock className="mx-auto h-3 w-3 text-muted-foreground" />
-            <p className="font-medium">—</p>
+            <p className="font-medium">{loading ? "—" : stats.pending}</p>
             <p className="text-muted-foreground">Pending</p>
           </div>
 
           <div>
             <Flame className="mx-auto h-3 w-3 text-accent" />
             <p className="font-medium">
-              {!isLoading && accuracy >= 70 ? "HOT" : "—"}
+              {!loading && stats.accuracy >= 70 ? "HOT" : "—"}
             </p>
             <p className="text-muted-foreground">Trend</p>
           </div>
