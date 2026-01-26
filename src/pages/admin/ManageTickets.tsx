@@ -138,7 +138,7 @@ export default function ManageTickets() {
   const handleEdit = (ticket: Ticket) => {
     setEditingTicket(ticket);
     setTitle(ticket.title);
-    setTicketPrediction(ticket.prediction ?? "");
+    setTicketPrediction(ticket.description ?? "");
     setTier(ticket.tier);
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
@@ -180,7 +180,7 @@ export default function ManageTickets() {
         id: editingTicket.id,
         updates: {
           title,
-          prediction: ticketPrediction,
+          description: ticketPrediction,
           tier,
           status,
           result,
@@ -193,7 +193,7 @@ export default function ManageTickets() {
       await createTicket.mutateAsync({
         ticket: {
           title,
-          prediction: ticketPrediction,
+          description: ticketPrediction,
           tier,
           status,
           result,
@@ -377,7 +377,231 @@ export default function ManageTickets() {
             </Card>
 
             {/* MATCHES */}
-            {/* (ovo ostaje isto kao pre – NIŠTA NIJE DIRANO) */}
+            <Card className="p-4 space-y-4 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+                  2
+                </div>
+                <span className="font-semibold">Matches</span>
+              </div>
+
+              <Tabs value={matchTab} onValueChange={(v) => setMatchTab(v as "today" | "custom")}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="today" className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    Today's Matches
+                  </TabsTrigger>
+                  <TabsTrigger value="custom" className="flex items-center gap-1">
+                    <Plus className="h-4 w-4" />
+                    Custom Match
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="today" className="space-y-3 mt-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search matches..."
+                      value={matchSearch}
+                      onChange={(e) => setMatchSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+
+                  {fixturesLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </div>
+                  ) : filteredFixtures.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No matches found
+                    </p>
+                  ) : (
+                    <ScrollArea className="h-40">
+                      <div className="space-y-2">
+                        {filteredFixtures.slice(0, 20).map((fixture) => (
+                          <div
+                            key={fixture.id}
+                            className="flex items-center justify-between p-2 rounded-md bg-muted/50 hover:bg-muted cursor-pointer"
+                            onClick={() => addMatchFromFixture(fixture)}
+                          >
+                            <div className="text-sm">
+                              <span className="font-medium">{fixture.homeTeam}</span>
+                              <span className="text-muted-foreground"> vs </span>
+                              <span className="font-medium">{fixture.awayTeam}</span>
+                              {fixture.league && (
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  ({fixture.league})
+                                </span>
+                              )}
+                            </div>
+                            <Plus className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="custom" className="space-y-3 mt-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Home Team *</Label>
+                      <Input
+                        placeholder="e.g. Manchester United"
+                        value={customHomeTeam}
+                        onChange={(e) => setCustomHomeTeam(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Away Team *</Label>
+                      <Input
+                        placeholder="e.g. Liverpool"
+                        value={customAwayTeam}
+                        onChange={(e) => setCustomAwayTeam(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>League</Label>
+                    <Input
+                      placeholder="e.g. Premier League"
+                      value={customLeague}
+                      onChange={(e) => setCustomLeague(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Prediction *</Label>
+                      <Select value={customPrediction} onValueChange={setCustomPrediction}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select bet type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Home Win (1)</SelectItem>
+                          <SelectItem value="X">Draw (X)</SelectItem>
+                          <SelectItem value="2">Away Win (2)</SelectItem>
+                          <SelectItem value="1X">Home or Draw (1X)</SelectItem>
+                          <SelectItem value="X2">Draw or Away (X2)</SelectItem>
+                          <SelectItem value="12">Home or Away (12)</SelectItem>
+                          <SelectItem value="Over 1.5">Over 1.5 Goals</SelectItem>
+                          <SelectItem value="Over 2.5">Over 2.5 Goals</SelectItem>
+                          <SelectItem value="Under 2.5">Under 2.5 Goals</SelectItem>
+                          <SelectItem value="BTTS Yes">BTTS Yes</SelectItem>
+                          <SelectItem value="BTTS No">BTTS No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Odds *</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="1"
+                        value={customOdds}
+                        onChange={(e) => setCustomOdds(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={addCustomMatch}
+                    disabled={!customHomeTeam || !customAwayTeam || !customPrediction}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Match to Ticket
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </Card>
+
+            {/* SELECTED MATCHES */}
+            <Card className="p-4 space-y-3 mt-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Selected Matches
+                </Label>
+                {matches.length > 0 && (
+                  <span className="text-xs font-medium">
+                    Total Odds: <span className="text-primary">{totalOdds.toFixed(2)}</span>
+                  </span>
+                )}
+              </div>
+
+              {matches.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p className="text-sm">No matches added yet</p>
+                  <p className="text-xs">Select from today's matches or add a custom match above</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {matches.map((match, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 rounded-md bg-muted/50 border"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">
+                          {match.homeTeam} vs {match.awayTeam}
+                        </div>
+                        {match.league && (
+                          <div className="text-xs text-muted-foreground">{match.league}</div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-2">
+                        <Select
+                          value={match.prediction}
+                          onValueChange={(v) => updateMatch(index, "prediction", v)}
+                        >
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue placeholder="Bet" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1</SelectItem>
+                            <SelectItem value="X">X</SelectItem>
+                            <SelectItem value="2">2</SelectItem>
+                            <SelectItem value="1X">1X</SelectItem>
+                            <SelectItem value="X2">X2</SelectItem>
+                            <SelectItem value="12">12</SelectItem>
+                            <SelectItem value="Over 1.5">O1.5</SelectItem>
+                            <SelectItem value="Over 2.5">O2.5</SelectItem>
+                            <SelectItem value="Under 2.5">U2.5</SelectItem>
+                            <SelectItem value="BTTS Yes">BTTS Y</SelectItem>
+                            <SelectItem value="BTTS No">BTTS N</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          value={match.odds}
+                          onChange={(e) =>
+                            updateMatch(index, "odds", parseFloat(e.target.value) || 1.5)
+                          }
+                          className="w-16 h-8 text-xs"
+                        />
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => removeMatch(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
           </ScrollArea>
 
           <DialogFooter className="p-4 border-t">
