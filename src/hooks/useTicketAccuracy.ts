@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type TicketAccuracy = {
-  tier: "free" | "daily" | "exclusive" | "premium";
+  tier: "daily" | "exclusive" | "premium";
   accuracy: number;
 };
 
@@ -17,5 +17,6 @@ export function useTicketAccuracy() {
       if (error) throw error;
       return (data ?? []) as TicketAccuracy[];
     },
+    refetchInterval: 30_000,
   });
 }
