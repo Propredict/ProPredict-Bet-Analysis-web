@@ -15,7 +15,7 @@ export function BottomCTA() {
         </Button>
         <Button variant="outline" className="gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/betting-tips")}>
           <Ticket className="h-3 w-3" />
-          Betting Tickets
+          Daily Tickets
         </Button>
         <Button className="gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2 gradient-primary glow-primary" onClick={() => navigate("/get-premium")}>
           <Crown className="h-3 w-3" />
