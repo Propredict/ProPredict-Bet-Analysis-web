@@ -35,7 +35,7 @@ export function FeaturedPredictions() {
 
       <Card className="p-2 sm:p-2.5">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-medium sm:text-lg">Accuracy</span>
+          <span className="text-[10px] font-medium sm:text-base">Accuracy</span>
           <span className="text-[10px] sm:text-xs font-bold text-primary">{isLoading ? "—" : `${accuracy}%`}</span>
         </div>
 
