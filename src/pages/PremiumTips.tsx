@@ -7,25 +7,32 @@ import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
-
 export default function PremiumTips() {
   const navigate = useNavigate();
-  const { tips, isLoading, refetch } = useTips(false);
-  const { canAccess, getUnlockMethod, plan } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
-
-  const premiumTips = tips.filter((tip) => tip.tier === "premium");
-  const unlockedCount = premiumTips.filter((tip) => canAccess("premium", "tip", tip.id)).length;
+  const {
+    tips,
+    isLoading,
+    refetch
+  } = useTips(false);
+  const {
+    canAccess,
+    getUnlockMethod,
+    plan
+  } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
+  const premiumTips = tips.filter(tip => tip.tier === "premium");
+  const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
   const showUpgradeBanner = plan !== "premium";
-
-  return (
-    <div className="section-gap">
+  return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
         <div className="flex items-center gap-1.5">
           <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
           <div>
-            <h1 className="text-xs sm:text-sm font-bold text-foreground">Premium Tips</h1>
+            <h1 className="text-xs text-foreground font-semibold sm:text-lg">Premium Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">Our highest confidence picks</p>
           </div>
         </div>
@@ -42,8 +49,7 @@ export default function PremiumTips() {
       </div>
 
       {/* Premium Upgrade Banner */}
-      {showUpgradeBanner && (
-        <Card className="p-3 sm:p-4 bg-gradient-to-r from-warning/20 via-accent/20 to-primary/20 border-warning/30">
+      {showUpgradeBanner && <Card className="p-3 sm:p-4 bg-gradient-to-r from-warning/20 via-accent/20 to-primary/20 border-warning/30">
           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
             <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-warning/30 to-accent/30">
               <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-warning" />
@@ -64,15 +70,11 @@ export default function PremiumTips() {
                 No ads
               </span>
             </div>
-            <Button
-              className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs"
-              onClick={() => navigate("/get-premium")}
-            >
+            <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
               Subscribe for $5.99/month
             </Button>
           </div>
-        </Card>
-      )}
+        </Card>}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
@@ -107,15 +109,12 @@ export default function PremiumTips() {
 
       {/* Tips List */}
       <div className="space-y-2 sm:space-y-3">
-        {isLoading ? (
-          <Card className="p-8 bg-card border-border">
+        {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tips...</p>
             </div>
-          </Card>
-        ) : premiumTips.length === 0 ? (
-          <Card className="p-8 bg-card border-border">
+          </Card> : premiumTips.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-warning mb-1">No premium tips available</p>
@@ -125,42 +124,26 @@ export default function PremiumTips() {
                 Try Again
               </Button>
             </div>
-          </Card>
-        ) : (
-          premiumTips.map((tip) => {
-            const unlockMethod = getUnlockMethod("premium", "tip", tip.id);
-            const isLocked = unlockMethod?.type !== "unlocked";
-            const isUnlocking = unlockingId === tip.id;
-
-            return (
-              <TipCard
-                key={tip.id}
-                tip={{
-                  id: tip.id,
-                  homeTeam: tip.home_team,
-                  awayTeam: tip.away_team,
-                  league: tip.league,
-                  prediction: tip.prediction,
-                  odds: tip.odds,
-                  confidence: tip.confidence ?? 0,
-                  kickoff: tip.created_at_ts
-                    ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "",
-                  tier: tip.tier,
-                }}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                onUnlockClick={() => handleUnlock("tip", tip.id, "premium")}
-                isUnlocking={isUnlocking}
-              />
-            );
-          })
-        )}
+          </Card> : premiumTips.map(tip => {
+        const unlockMethod = getUnlockMethod("premium", "tip", tip.id);
+        const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === tip.id;
+        return <TipCard key={tip.id} tip={{
+          id: tip.id,
+          homeTeam: tip.home_team,
+          awayTeam: tip.away_team,
+          league: tip.league,
+          prediction: tip.prediction,
+          odds: tip.odds,
+          confidence: tip.confidence ?? 0,
+          kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric"
+          }) : "",
+          tier: tip.tier
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />;
+      })}
       </div>
-    </div>
-  );
+    </div>;
 }
