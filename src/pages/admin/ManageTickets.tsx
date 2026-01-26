@@ -720,33 +720,23 @@ export default function ManageTickets() {
                         <div className="text-sm font-medium truncate">
                           {match.homeTeam} vs {match.awayTeam}
                         </div>
-                        {match.league && (
-                          <div className="text-xs text-muted-foreground">{match.league}</div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {match.league && (
+                            <span className="text-xs text-muted-foreground">{match.league}</span>
+                          )}
+                          <span className="text-xs font-medium text-primary">
+                            {match.prediction}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2 ml-2">
-                        <Select
+                        <Input
                           value={match.prediction}
-                          onValueChange={(v) => updateMatch(index, "prediction", v)}
-                        >
-                          <SelectTrigger className="w-28 h-8 text-xs">
-                            <SelectValue placeholder="Bet" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="X">X</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="1X">1X</SelectItem>
-                            <SelectItem value="X2">X2</SelectItem>
-                            <SelectItem value="12">12</SelectItem>
-                            <SelectItem value="Over 1.5">O1.5</SelectItem>
-                            <SelectItem value="Over 2.5">O2.5</SelectItem>
-                            <SelectItem value="Under 2.5">U2.5</SelectItem>
-                            <SelectItem value="BTTS Yes">BTTS Y</SelectItem>
-                            <SelectItem value="BTTS No">BTTS N</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          onChange={(e) => updateMatch(index, "prediction", e.target.value)}
+                          className="w-24 h-8 text-xs"
+                          placeholder="Prediction"
+                        />
 
                         <Input
                           type="number"
