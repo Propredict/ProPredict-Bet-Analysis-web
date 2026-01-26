@@ -19,117 +19,99 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 export default function BettingTips() {
-  const { tips, isLoading, refetch } = useTips(false);
+  const { tips = [], isLoading, refetch } = useTips(false);
   const { data: accuracyData = [] } = useTipAccuracy();
 
   const { canAccess, getUnlockMethod } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
 
-  const allTips = tips ?? [];
-
   const dailyAccuracy =
     accuracyData.find((a) => a.tier === "daily")?.accuracy ?? 0;
 
-  const unlockedCount = allTips.filter((tip) =>
+  const unlockedCount = tips.filter((tip) =>
     canAccess(tip.tier, "tip", tip.id)
   ).length;
 
   const avgOdds =
-    allTips.length > 0
+    tips.length > 0
       ? (
-          allTips.reduce((sum, tip) => sum + tip.odds, 0) / allTips.length
+          tips.reduce((sum, tip) => sum + tip.odds, 0) / tips.length
         ).toFixed(2)
       : "0.00";
 
   return (
     <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Target className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-accent" />
           <div>
-            <h1 className="text-sm sm:text-base font-bold text-foreground">
-              Betting Tips
-            </h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+            <h1 className="font-bold">Betting Tips</h1>
+            <p className="text-xs text-muted-foreground">
               Expert curated betting recommendations
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-1.5">
+        <div className="flex items-center gap-2">
           <Badge
             variant="outline"
-            className="bg-accent/20 text-accent border-accent/30 text-[9px] sm:text-[10px]"
+            className="bg-accent/20 text-accent border-accent/30 text-xs"
           >
-            <Flame className="h-2.5 w-2.5 mr-0.5" />
+            <Flame className="h-3 w-3 mr-1" />
             Hot Picks
           </Badge>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="h-6 sm:h-7 px-1.5"
-          >
+          <Button variant="outline" size="sm" onClick={refetch}>
             <RefreshCw className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <Card className="p-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             <div>
-              <p className="font-bold text-sm sm:text-base">
-                {dailyAccuracy}%
-              </p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">
-                Success Rate
-              </p>
+              <p className="font-bold">{dailyAccuracy}%</p>
+              <p className="text-xs text-muted-foreground">Success Rate</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-accent" />
             <div>
-              <p className="font-bold text-sm sm:text-base">{avgOdds}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">
-                Avg Odds
-              </p>
+              <p className="font-bold">{avgOdds}</p>
+              <p className="text-xs text-muted-foreground">Avg Odds</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <div>
-              <p className="font-bold text-sm sm:text-base">
-                {unlockedCount}/{allTips.length}
+              <p className="font-bold">
+                {unlockedCount}/{tips.length}
               </p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">
-                Unlocked
-              </p>
+              <p className="text-xs text-muted-foreground">Unlocked</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Tips */}
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2">
         {isLoading ? (
           <Card className="p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
           </Card>
         ) : (
-          allTips.map((tip) => {
+          tips.map((tip) => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
-            const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
 
             return (
               <TipCard
@@ -151,7 +133,7 @@ export default function BettingTips() {
                   tier: tip.tier,
                 }}
                 isLocked={isLocked}
-                unlockMethod={unlockMethod}
+                unlockMethod={getUnlockMethod(tip.tier, "tip", tip.id)}
                 isUnlocking={unlockingId === tip.id}
                 onUnlockClick={() =>
                   handleUnlock("tip", tip.id, tip.tier)
