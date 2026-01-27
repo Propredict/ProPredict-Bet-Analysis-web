@@ -1,5 +1,4 @@
 import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,32 +25,48 @@ interface TipCardProps {
   isUnlocking?: boolean;
 }
 
+function getTierCardClass(tier: ContentTier, isLocked: boolean): string {
+  const base = "tier-card";
+  const unlocked = !isLocked ? "tier-card--unlocked" : "";
+  
+  switch (tier) {
+    case "daily":
+      return cn(base, "tier-card--daily", unlocked);
+    case "exclusive":
+      return cn(base, "tier-card--pro", unlocked);
+    case "premium":
+      return cn(base, "tier-card--premium", unlocked);
+    default:
+      return cn(base, "tier-card--free", unlocked);
+  }
+}
+
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
     case "free":
       return (
-        <Badge variant="secondary" className="gap-1 bg-muted text-muted-foreground">
+        <Badge variant="secondary" className="gap-1 tier-badge--free text-[10px] px-2 py-0.5">
           <Gift className="h-3 w-3" />
           Free
         </Badge>
       );
     case "daily":
       return (
-        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--daily text-[10px] px-2 py-0.5">
           <Sparkles className="h-3 w-3" />
           Daily
         </Badge>
       );
     case "exclusive":
       return (
-        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--pro text-[10px] px-2 py-0.5">
           <Star className="h-3 w-3" />
           Pro
         </Badge>
       );
     case "premium":
       return (
-        <Badge variant="secondary" className="gap-1 bg-warning/20 text-warning border-warning/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--premium text-[10px] px-2 py-0.5">
           <Crown className="h-3 w-3" />
           Premium
         </Badge>
@@ -110,54 +125,52 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     return Crown;
   };
 
-  // Locked state - compact design
+  // Locked state
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
     
     return (
-      <Card className="bg-card border-border transition-all overflow-hidden hover:border-primary/50">
-        {/* Header */}
-        <div className="p-2.5 sm:p-3 pb-0">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5">
+      <div className={getTierCardClass(tip.tier, isLocked)}>
+        {/* Card Header */}
+        <div className="p-3 sm:p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               {getTierBadge(tip.tier)}
-              <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[10px] px-1.5">
+              <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/50 rounded-full">
                 {tip.league}
-              </Badge>
+              </span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
-              <Lock className="h-3 w-3 text-muted-foreground" />
+              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* Match Title */}
+          <h3 className="font-bold text-sm sm:text-base text-foreground mb-3">
+            {tip.homeTeam} vs {tip.awayTeam}
+          </h3>
+
+          {/* Prediction Details - Blurred */}
+          <div className="p-3 bg-muted/30 rounded-lg border border-border/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Prediction</span>
+              <span className="blur-sm opacity-50 font-medium text-sm">{tip.prediction}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Odds</span>
+              <span className="blur-sm opacity-50 font-bold text-primary">@{tip.odds.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
-        {/* Match title */}
-        <div className="px-2.5 sm:px-3 pb-1.5">
-          <h3 className="font-semibold text-xs sm:text-sm text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
-        </div>
-
-        {/* Prediction details - Blurred */}
-        <div className="px-2.5 sm:px-3 pb-1.5">
-          <div className="p-1.5 sm:p-2 bg-muted/20 rounded border border-border/50 space-y-1 text-[10px] sm:text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Prediction</span>
-              <span className="blur-sm opacity-50 font-medium">{tip.prediction}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Odds</span>
-              <span className="blur-sm opacity-50 font-medium text-primary">@{tip.odds.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Unlock button */}
+        {/* Card Footer - Unlock Button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
-          <div className="p-2.5 sm:p-3 pt-1.5 border-t border-border">
+          <div className="p-3 sm:p-4 pt-0">
             <Button
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="sm"
-              className={cn("w-full gap-1 h-7 sm:h-8 text-[10px] sm:text-xs", getUnlockButtonStyle())}
+              className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
               disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
@@ -166,64 +179,64 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
             >
               {isUnlocking ? (
                 <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Watching ad...
                 </>
               ) : (
                 <>
-                  {Icon && <Icon className="h-3 w-3" />}
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
                   {getUnlockButtonText(unlockMethod)}
                 </>
               )}
             </Button>
           </div>
         )}
-      </Card>
+      </div>
     );
   }
 
-  // Unlocked state - compact design
+  // Unlocked state
   return (
-    <Card className="bg-card border-primary/30 transition-all overflow-hidden hover:border-primary/50">
-      {/* Header */}
-      <div className="p-2.5 sm:p-3 pb-0">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1.5">
+    <div className={getTierCardClass(tip.tier, isLocked)}>
+      {/* Card Header */}
+      <div className="p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
             {getTierBadge(tip.tier)}
-            <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
+            <span className="text-[10px] text-primary px-2 py-0.5 bg-primary/10 rounded-full border border-primary/20">
               {tip.league}
-            </Badge>
+            </span>
           </div>
           <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
         </div>
-      </div>
 
-      {/* Match title */}
-      <div className="px-2.5 sm:px-3 pb-1.5">
-        <h3 className="font-semibold text-xs sm:text-sm text-foreground">{tip.homeTeam} vs {tip.awayTeam}</h3>
-      </div>
+        {/* Match Title */}
+        <h3 className="font-bold text-sm sm:text-base text-foreground mb-3">
+          {tip.homeTeam} vs {tip.awayTeam}
+        </h3>
 
-      {/* Prediction details */}
-      <div className="px-2.5 sm:px-3 pb-2 text-[10px] sm:text-xs">
-        <div className="flex items-center justify-between py-1 border-b border-border/30">
-          <span className="text-muted-foreground">Prediction</span>
-          <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
-            {tip.prediction}
-          </Badge>
+        {/* Prediction Details - Revealed */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between py-2 border-b border-border/30">
+            <span className="text-xs text-muted-foreground">Prediction</span>
+            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs px-2">
+              {tip.prediction}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-xs text-muted-foreground">Odds</span>
+            <span className="font-bold text-base text-primary">@{tip.odds.toFixed(2)}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-muted-foreground">Odds</span>
-          <span className="font-bold text-primary">@{tip.odds.toFixed(2)}</span>
-        </div>
       </div>
 
-      {/* Unlocked badge footer - matching TicketCard style */}
-      <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
-        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-success/20 text-success border-success/30 text-xs">
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          Tip Unlocked
-        </Badge>
+      {/* Unlocked Footer */}
+      <div className="p-3 sm:p-4 pt-0">
+        <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-success/10 rounded-lg border border-success/20">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <span className="text-xs font-medium text-success">Tip Unlocked</span>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

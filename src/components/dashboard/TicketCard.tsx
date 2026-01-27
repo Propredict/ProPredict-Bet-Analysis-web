@@ -12,7 +12,6 @@ import {
   Sparkles,
   Gift,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,32 +54,48 @@ interface TicketCardProps {
    Helpers
 ======================= */
 
+function getTierCardClass(tier: ContentTier, isLocked: boolean): string {
+  const base = "tier-card";
+  const unlocked = !isLocked ? "tier-card--unlocked" : "";
+  
+  switch (tier) {
+    case "daily":
+      return cn(base, "tier-card--daily", unlocked);
+    case "exclusive":
+      return cn(base, "tier-card--pro", unlocked);
+    case "premium":
+      return cn(base, "tier-card--premium", unlocked);
+    default:
+      return cn(base, "tier-card--free", unlocked);
+  }
+}
+
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
     case "free":
       return (
-        <Badge variant="secondary" className="gap-1 bg-muted text-muted-foreground">
+        <Badge variant="secondary" className="gap-1 tier-badge--free text-[10px] px-2 py-0.5">
           <Gift className="h-3 w-3" />
           Free
         </Badge>
       );
     case "daily":
       return (
-        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--daily text-[10px] px-2 py-0.5">
           <Sparkles className="h-3 w-3" />
           Daily
         </Badge>
       );
     case "exclusive":
       return (
-        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--pro text-[10px] px-2 py-0.5">
           <Star className="h-3 w-3" />
           Pro
         </Badge>
       );
     case "premium":
       return (
-        <Badge variant="secondary" className="gap-1 bg-warning/20 text-warning border-warning/30">
+        <Badge variant="secondary" className="gap-1 tier-badge--premium text-[10px] px-2 py-0.5">
           <Crown className="h-3 w-3" />
           Premium
         </Badge>
@@ -133,21 +148,21 @@ function TicketCard({
     switch (ticket.status) {
       case "won":
         return (
-          <Badge className="bg-success/20 text-success border-success/30">
+          <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Won
           </Badge>
         );
       case "lost":
         return (
-          <Badge className="bg-destructive/20 text-destructive border-destructive/30">
+          <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-2">
             <XCircle className="h-3 w-3 mr-1" />
             Lost
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10">
+          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10 text-[10px] px-2">
             <Clock className="h-3 w-3 mr-1" />
             Pending
           </Badge>
@@ -183,40 +198,38 @@ function TicketCard({
   const displayedMatches = ticket.matches.slice(0, 3);
   const remainingCount = ticket.matchCount > 3 ? ticket.matchCount - 3 : 0;
 
-  // Locked state - compact design
+  // Locked state
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
     
     return (
-      <Card className="bg-card overflow-hidden transition-all border-border hover:border-primary/50">
-        {/* Header */}
-        <div className="p-2.5 sm:p-3 pb-0">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1.5">
+      <div className={getTierCardClass(ticket.tier, isLocked)}>
+        {/* Card Header */}
+        <div className="p-3 sm:p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               {getTierBadge(ticket.tier)}
-              <span className="text-[10px] sm:text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/50 rounded-full">
                 {ticket.matchCount} Matches
               </span>
             </div>
-            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            <Lock className="h-4 w-4 text-muted-foreground" />
           </div>
-        </div>
 
-        {/* Title */}
-        <div className="px-2.5 sm:px-3 pb-2">
+          {/* Ticket Title */}
           <h3 className="font-bold text-sm sm:text-base text-foreground">{ticket.title}</h3>
           {ticketDate && <span className="text-[10px] text-muted-foreground">{ticketDate}</span>}
         </div>
 
-        {/* Matches */}
-        <div className="px-2.5 sm:px-3 pb-2 space-y-1.5">
+        {/* Match List - Blurred */}
+        <div className="px-3 sm:px-4 pb-3 space-y-2">
           {displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="p-2 bg-muted/20 rounded border border-border/50">
+              <div key={idx} className="p-2.5 bg-muted/30 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs sm:text-sm text-foreground truncate block">
+                    <span className="text-xs sm:text-sm text-foreground truncate block font-medium">
                       {parsed.homeTeam} vs {parsed.awayTeam}
                     </span>
                     {parsed.league && (
@@ -235,25 +248,25 @@ function TicketCard({
           })}
           
           {remainingCount > 0 && (
-            <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
+            <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more matches</p>
           )}
         </div>
 
         {/* Total Odds - Blurred */}
-        <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
+        <div className="mx-3 sm:mx-4 mb-3 p-3 bg-muted/20 rounded-lg border border-border/50">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Total Odds</span>
-            <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
+            <span className="font-bold text-base text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Unlock Button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
-          <div className="p-2.5 sm:p-3 border-t border-border">
+          <div className="p-3 sm:p-4 pt-0">
             <Button
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="sm"
-              className={cn("w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm", getUnlockButtonStyle())}
+              className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
               disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
@@ -274,46 +287,41 @@ function TicketCard({
             </Button>
           </div>
         )}
-      </Card>
+      </div>
     );
   }
 
-  // Unlocked state - compact design
+  // Unlocked state
   return (
-    <Card className="bg-card overflow-hidden transition-all border-primary/30 hover:border-primary/50">
-      {/* Header */}
-      <div className="p-2.5 sm:p-3 pb-0">
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5">
+    <div className={getTierCardClass(ticket.tier, isLocked)}>
+      {/* Card Header */}
+      <div className="p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
             {getTierBadge(ticket.tier)}
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/50 rounded-full">
               {ticket.matchCount} Matches
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             {getStatusBadge()}
-            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-[10px] px-1.5">
-              @{ticket.totalOdds.toFixed(2)}
-            </Badge>
           </div>
         </div>
-      </div>
 
-      {/* Title */}
-      <div className="px-2.5 sm:px-3 pb-2">
+        {/* Ticket Title */}
         <h3 className="font-bold text-sm sm:text-base text-foreground">{ticket.title}</h3>
         {ticketDate && <span className="text-[10px] text-muted-foreground">{ticketDate}</span>}
       </div>
 
-      {/* Match list */}
-      <div className="px-2.5 sm:px-3 pb-2 space-y-1">
+      {/* Match List - Revealed */}
+      <div className="px-3 sm:px-4 pb-3 space-y-1.5">
         {displayedMatches.length > 0 ? (
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0 gap-2">
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0 gap-2">
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs sm:text-sm text-foreground truncate block">
+                  <span className="text-xs sm:text-sm text-foreground truncate block font-medium">
                     {parsed.homeTeam} vs {parsed.awayTeam}
                   </span>
                   {parsed.league && (
@@ -321,10 +329,10 @@ function TicketCard({
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
+                  <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
                     {match.prediction}
                   </Badge>
-                  <span className="text-xs font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                  <span className="text-xs font-bold text-primary">@{match.odds.toFixed(2)}</span>
                 </div>
               </div>
             );
@@ -334,26 +342,26 @@ function TicketCard({
         )}
         
         {remainingCount > 0 && (
-          <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
+          <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more matches</p>
         )}
       </div>
 
-      {/* Total Odds footer */}
-      <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
+      {/* Total Odds Footer */}
+      <div className="mx-3 sm:mx-4 mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Total Odds</span>
-          <span className="font-bold text-sm sm:text-base text-primary">@{ticket.totalOdds.toFixed(2)}</span>
+          <span className="font-bold text-base text-primary">@{ticket.totalOdds.toFixed(2)}</span>
         </div>
       </div>
 
-      {/* Unlocked badge footer */}
-      <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
-        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-success/20 text-success border-success/30 text-xs">
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          Ticket Unlocked
-        </Badge>
+      {/* Unlocked Footer */}
+      <div className="p-3 sm:p-4 pt-0">
+        <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-success/10 rounded-lg border border-success/20">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <span className="text-xs font-medium text-success">Ticket Unlocked</span>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
