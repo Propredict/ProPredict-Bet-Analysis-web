@@ -191,15 +191,34 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATUS TABS - Enhanced visibility */}
-        <div className="bg-gradient-to-r from-secondary/80 via-secondary/60 to-secondary/80 border border-border/50 rounded-lg p-1 flex gap-1 shadow-md">
-          {allowedStatusTabs.map(tab => <button key={tab} onClick={() => setStatusTab(tab)} className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200", statusTab === tab ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "text-muted-foreground hover:text-foreground hover:bg-card/80 border border-transparent hover:border-border/50")}>
-              {tab === "all" && <Trophy className="h-3 w-3" />}
-              {tab === "live" && <Play className="h-3 w-3" />}
-              {tab === "upcoming" && <Clock className="h-3 w-3" />}
-              {tab === "finished" && <CheckCircle className="h-3 w-3" />}
-              <span className="capitalize">{tab}</span>
-            </button>)}
+        {/* STATUS TABS - Enhanced with borders between tabs */}
+        <div className="relative">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-accent/20 to-primary/40 rounded-xl opacity-80" />
+          <div className="relative bg-card/90 backdrop-blur-sm rounded-xl p-1 border border-border/50 shadow-lg flex">
+            {allowedStatusTabs.map((tab, index) => (
+              <div key={tab} className="flex flex-1">
+                <button 
+                  onClick={() => setStatusTab(tab)} 
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 sm:px-4 rounded-lg text-[11px] sm:text-xs font-medium transition-all duration-200",
+                    statusTab === tab 
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                  )}
+                >
+                  {tab === "all" && <Trophy className="h-3.5 w-3.5" />}
+                  {tab === "live" && <Play className="h-3.5 w-3.5" />}
+                  {tab === "upcoming" && <Clock className="h-3.5 w-3.5" />}
+                  {tab === "finished" && <CheckCircle className="h-3.5 w-3.5" />}
+                  <span className="capitalize">{tab}</span>
+                </button>
+                {/* Divider between tabs */}
+                {index < allowedStatusTabs.length - 1 && (
+                  <div className="w-px bg-gradient-to-b from-transparent via-border to-transparent my-1.5" />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* SEARCH - Enhanced visibility with gradient border */}
