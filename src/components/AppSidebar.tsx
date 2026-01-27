@@ -8,16 +8,18 @@ import {
   Crown,
   Sparkles,
   Brain,
+  Target,
   Zap,
   Heart,
+  FileText,
   BarChart3,
   Settings,
   AlertTriangle,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import logoImage from "@/assets/logo.png";
 
 import {
   Sidebar,
@@ -76,7 +78,9 @@ export function AppSidebar() {
     <Sidebar className="border-r border-sidebar-border">
       <SidebarHeader className="p-2 border-b border-sidebar-border">
         <div className="flex items-center gap-1.5">
-          <img src={logoImage} alt="ProPredict" className="h-6 w-6 object-contain rounded" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+            P
+          </div>
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-foreground">ProPredict</span>

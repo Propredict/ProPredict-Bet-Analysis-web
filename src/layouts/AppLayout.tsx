@@ -4,7 +4,6 @@ import { Bell, BellRing, Heart, User, LogOut, Crown, Star, Gift } from "lucide-r
 import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import logoImage from "@/assets/logo.png";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,12 +77,9 @@ export default function AppLayout() {
             <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
             
             {/* Center Branding - mobile only */}
-            <div className="flex sm:hidden absolute left-1/2 -translate-x-1/2 items-center gap-1.5">
-              <img src={logoImage} alt="ProPredict" className="h-6 w-6 object-contain rounded" />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-foreground tracking-tight">ProPredict</span>
-                <span className="text-[8px] text-muted-foreground -mt-0.5">AI Tips & Analysis</span>
-              </div>
+            <div className="flex sm:hidden absolute left-1/2 -translate-x-1/2 flex-col items-center">
+              <span className="text-xs font-bold text-foreground tracking-tight">ProPredict</span>
+              <span className="text-[8px] text-muted-foreground -mt-0.5">AI Tips & Analysis</span>
             </div>
             
             <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
