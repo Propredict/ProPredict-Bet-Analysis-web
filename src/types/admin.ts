@@ -64,7 +64,11 @@ export type TicketUpdate = Partial<TicketInsert>;
 export type TicketMatchInsert = Omit<TicketMatch, "id" | "created_at" | "sort_order">;
 
 // Helper to parse match_name into components
-export function parseMatchName(matchName: string): { homeTeam: string; awayTeam: string; league?: string } {
+export function parseMatchName(matchName: string | undefined | null): { homeTeam: string; awayTeam: string; league?: string } {
+  // Handle undefined/null input gracefully
+  if (!matchName) {
+    return { homeTeam: "Unknown", awayTeam: "Unknown", league: undefined };
+  }
   // Expected format: "Home vs Away - League" or "Home vs Away"
   const parts = matchName.split(" - ");
   const teamsAndRest = parts[0];
