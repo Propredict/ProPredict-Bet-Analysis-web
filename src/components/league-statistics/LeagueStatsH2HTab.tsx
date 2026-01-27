@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Swords, Calendar, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useH2H, H2HMatch } from "@/hooks/useH2H";
 import { format } from "date-fns";
@@ -80,27 +81,27 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
       </Card>
 
       {/* Team Selectors */}
-      <Card className="p-6 bg-[#0E1627] border-white/10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="p-3 sm:p-6 bg-[#0E1627] border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
           {/* Team 1 */}
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Team 1</label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="text-xs sm:text-sm text-muted-foreground">Team 1</label>
             <Select
               value={team1Id?.toString() || ""}
               onValueChange={(val) => setTeam1Id(val ? parseInt(val) : null)}
             >
-              <SelectTrigger className="bg-[#0E1627] border-white/10">
+              <SelectTrigger className="bg-[#0E1627] border-white/10 text-xs sm:text-sm h-9 sm:h-10">
                 <SelectValue placeholder="Select first team..." />
               </SelectTrigger>
               <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
                 {team1Options.length > 0 ? (
                   team1Options.map((team) => (
-                    <SelectItem key={team.id} value={team.id.toString()}>
+                    <SelectItem key={team.id} value={team.id.toString()} className="text-xs sm:text-sm">
                       {team.name}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="none" disabled>
+                  <SelectItem value="none" disabled className="text-xs sm:text-sm">
                     No teams available
                   </SelectItem>
                 )}
@@ -109,24 +110,24 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
           </div>
 
           {/* Team 2 */}
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Team 2</label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="text-xs sm:text-sm text-muted-foreground">Team 2</label>
             <Select
               value={team2Id?.toString() || ""}
               onValueChange={(val) => setTeam2Id(val ? parseInt(val) : null)}
             >
-              <SelectTrigger className="bg-[#0E1627] border-white/10">
+              <SelectTrigger className="bg-[#0E1627] border-white/10 text-xs sm:text-sm h-9 sm:h-10">
                 <SelectValue placeholder="Select second team..." />
               </SelectTrigger>
               <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
                 {team2Options.length > 0 ? (
                   team2Options.map((team) => (
-                    <SelectItem key={team.id} value={team.id.toString()}>
+                    <SelectItem key={team.id} value={team.id.toString()} className="text-xs sm:text-sm">
                       {team.name}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="none" disabled>
+                  <SelectItem value="none" disabled className="text-xs sm:text-sm">
                     No teams available
                   </SelectItem>
                 )}
@@ -162,18 +163,18 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
                   {h2hData.summary.totalMatches} matches played
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-                <div className="text-center p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <p className="text-3xl font-bold text-green-400">{h2hData.summary.team1Wins}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{h2hData.team1.name} Wins</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto">
+                <div className="text-center p-2 sm:p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <p className="text-xl sm:text-3xl font-bold text-green-400">{h2hData.summary.team1Wins}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 truncate">{h2hData.team1.name}</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-3xl font-bold text-muted-foreground">{h2hData.summary.draws}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Draws</p>
+                <div className="text-center p-2 sm:p-4 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xl sm:text-3xl font-bold text-muted-foreground">{h2hData.summary.draws}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1">Draws</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="text-3xl font-bold text-red-400">{h2hData.summary.team2Wins}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{h2hData.team2.name} Wins</p>
+                <div className="text-center p-2 sm:p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <p className="text-xl sm:text-3xl font-bold text-red-400">{h2hData.summary.team2Wins}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 truncate">{h2hData.team2.name}</p>
                 </div>
               </div>
             </Card>
@@ -231,64 +232,54 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
   const matchDate = new Date(match.fixture.date);
 
   return (
-    <div className="px-4 py-4 hover:bg-white/5 transition-colors">
-      {/* Mobile: Stack layout, Desktop: Horizontal layout */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        {/* Date - Top on mobile, Left on desktop */}
-        <div className="text-xs text-muted-foreground sm:w-24 flex-shrink-0 flex items-center gap-1.5">
-          <Calendar className="h-3 w-3" />
-          <span>{format(matchDate, "dd MMM yyyy")}</span>
+    <div className="px-2 sm:px-4 py-2 sm:py-3 hover:bg-white/5 transition-colors">
+      {/* Responsive Flex Layout */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        {/* Date - Compact */}
+        <div className="flex-shrink-0 w-14 sm:w-20 text-[9px] sm:text-xs text-muted-foreground">
+          {format(matchDate, "dd MMM")}
         </div>
 
-        {/* Match Content - Centered */}
-        <div className="flex-1 flex items-center justify-center">
+        {/* Teams & Score - Flexible */}
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-1">
           {/* Home Team */}
-          <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+          <div className="flex items-center gap-1 justify-end flex-1 min-w-0">
             <span 
-              className={`text-sm truncate ${match.teams.home.winner ? "font-semibold text-green-400" : "text-foreground"}`}
+              className={cn(
+                "text-[10px] sm:text-xs truncate text-right",
+                match.teams.home.winner && "font-semibold text-green-400"
+              )}
               title={match.teams.home.name}
             >
               {match.teams.home.name}
             </span>
             {match.teams.home.logo && (
-              <img 
-                src={match.teams.home.logo} 
-                alt="" 
-                className="h-6 w-6 object-contain flex-shrink-0" 
-              />
+              <img src={match.teams.home.logo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain flex-shrink-0" />
             )}
           </div>
 
-          {/* Score - Prominently centered */}
-          <div className="mx-4 flex-shrink-0">
-            <div className="px-4 py-1.5 rounded-lg bg-primary/10 border border-primary/20 min-w-[70px] text-center">
-              <span className="font-bold text-base tracking-wider">
-                {homeGoals} <span className="text-muted-foreground">-</span> {awayGoals}
-              </span>
-            </div>
+          {/* Score - Centered */}
+          <div className="flex-shrink-0 px-1.5 sm:px-3 py-0.5 sm:py-1 rounded bg-primary/10 border border-primary/20 min-w-[44px] sm:min-w-[60px] text-center">
+            <span className="font-bold text-[10px] sm:text-sm">
+              {homeGoals} - {awayGoals}
+            </span>
           </div>
 
           {/* Away Team */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-1 flex-1 min-w-0">
             {match.teams.away.logo && (
-              <img 
-                src={match.teams.away.logo} 
-                alt="" 
-                className="h-6 w-6 object-contain flex-shrink-0" 
-              />
+              <img src={match.teams.away.logo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain flex-shrink-0" />
             )}
             <span 
-              className={`text-sm truncate ${match.teams.away.winner ? "font-semibold text-green-400" : "text-foreground"}`}
+              className={cn(
+                "text-[10px] sm:text-xs truncate",
+                match.teams.away.winner && "font-semibold text-green-400"
+              )}
               title={match.teams.away.name}
             >
               {match.teams.away.name}
             </span>
           </div>
-        </div>
-
-        {/* Round - Right side on desktop, hidden on mobile */}
-        <div className="hidden sm:block text-xs text-muted-foreground w-28 flex-shrink-0 text-right truncate" title={match.league.round}>
-          {match.league.round}
         </div>
       </div>
     </div>
