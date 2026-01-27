@@ -100,7 +100,7 @@ export function BettingTickets() {
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
