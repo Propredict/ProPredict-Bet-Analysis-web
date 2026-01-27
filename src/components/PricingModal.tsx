@@ -27,18 +27,14 @@ const plans = [
     period: "forever",
     icon: Sparkles,
     description: "Basic access with ads",
-    features: [
-      "Daily tips (watch ads)",
-      "Basic match stats",
-      "Live scores",
-    ],
+    features: ["Daily tips (watch ads)", "Basic match stats", "Live scores"],
     buttonText: "Current Plan",
     buttonVariant: "outline" as const,
   },
   {
     id: "basic" as UserPlan,
-    name: "Basic",
-    price: "$9.99",
+    name: "Pro",
+    price: "$3.99",
     period: "/month",
     icon: Star,
     description: "Ad-free with exclusive content",
@@ -49,22 +45,21 @@ const plans = [
       "Ad-free experience",
       "Priority support",
     ],
-    buttonText: "Upgrade to Basic",
+    buttonText: "Upgrade to Pro",
     buttonVariant: "default" as const,
   },
   {
     id: "premium" as UserPlan,
     name: "Premium",
-    price: "$24.99",
+    price: "$5.99",
     period: "/month",
     icon: Crown,
     description: "Full access to everything",
     features: [
-      "Everything in Basic",
+      "Everything in Pro",
       "Premium predictions",
       "VIP betting tickets",
       "Expert analysis",
-      "Early access to features",
     ],
     buttonText: "Go Premium",
     buttonVariant: "default" as const,
@@ -75,7 +70,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const { plan: currentPlan } = useUserPlan();
   const navigate = useNavigate();
 
-  const handleSelectPlan = (planId: UserPlan) => {
+  const handleSelectPlan = () => {
     onOpenChange(false);
     navigate("/get-premium");
   };
@@ -85,7 +80,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            Unlock Premium Predictions
+            Upgrade Your Plan
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
             Choose the plan that fits your betting style
@@ -114,23 +109,22 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                 )}
 
                 <div className="flex items-center gap-2 mb-3">
-                  <div className={cn(
-                    "p-2 rounded-lg",
-                    planItem.id === "premium" ? "bg-warning/20 text-warning" :
-                    planItem.id === "basic" ? "bg-primary/20 text-primary" :
-                    "bg-muted text-muted-foreground"
-                  )}>
+                  <div className="p-2 rounded-lg bg-primary/20 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{planItem.name}</h3>
-                    <p className="text-xs text-muted-foreground">{planItem.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {planItem.description}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <span className="text-3xl font-bold">{planItem.price}</span>
-                  <span className="text-muted-foreground text-sm">{planItem.period}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {planItem.period}
+                  </span>
                 </div>
 
                 <ul className="space-y-2 mb-6 flex-1">
@@ -144,12 +138,9 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
                 <Button
                   variant={isCurrentPlan ? "outline" : planItem.buttonVariant}
-                  className={cn(
-                    "w-full",
-                    planItem.id === "premium" && !isCurrentPlan && "bg-warning hover:bg-warning/90 text-warning-foreground"
-                  )}
+                  className="w-full"
                   disabled={isCurrentPlan || planItem.id === "free"}
-                  onClick={() => handleSelectPlan(planItem.id)}
+                  onClick={handleSelectPlan}
                 >
                   {isCurrentPlan ? "Current Plan" : planItem.buttonText}
                 </Button>
@@ -157,10 +148,6 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             );
           })}
         </div>
-
-        <p className="text-xs text-center text-muted-foreground mt-4">
-          Payment integration coming soon. Contact support for early access.
-        </p>
       </DialogContent>
     </Dialog>
   );
