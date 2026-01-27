@@ -171,21 +171,29 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATUS TABS - Compact */}
-        <div className="bg-secondary/50 border border-border rounded p-0.5 flex gap-0.5">
-          {allowedStatusTabs.map(tab => <button key={tab} onClick={() => setStatusTab(tab)} className={cn("flex-1 flex items-center justify-center gap-0.5 py-1 px-1 sm:px-1.5 rounded text-[9px] sm:text-[10px] font-medium transition-all", statusTab === tab ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary")}>
-              {tab === "all" && <Trophy className="h-2.5 w-2.5" />}
-              {tab === "live" && <Play className="h-2.5 w-2.5" />}
-              {tab === "upcoming" && <Clock className="h-2.5 w-2.5" />}
-              {tab === "finished" && <CheckCircle className="h-2.5 w-2.5" />}
+        {/* STATUS TABS - Enhanced visibility */}
+        <div className="bg-gradient-to-r from-secondary/80 via-secondary/60 to-secondary/80 border border-border/50 rounded-lg p-1 flex gap-1 shadow-md">
+          {allowedStatusTabs.map(tab => <button key={tab} onClick={() => setStatusTab(tab)} className={cn("flex-1 flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200", statusTab === tab ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "text-muted-foreground hover:text-foreground hover:bg-card/80 border border-transparent hover:border-border/50")}>
+              {tab === "all" && <Trophy className="h-3 w-3" />}
+              {tab === "live" && <Play className="h-3 w-3" />}
+              {tab === "upcoming" && <Clock className="h-3 w-3" />}
+              {tab === "finished" && <CheckCircle className="h-3 w-3" />}
               <span className="capitalize">{tab}</span>
             </button>)}
         </div>
 
-        {/* SEARCH - Compact */}
-        <div className="relative max-w-xs">
-          <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground" />
-          <Input className="pl-6 h-6 sm:h-7 text-[10px] sm:text-xs bg-card border-border focus:border-primary/50 rounded" placeholder="Search teams…" value={search} onChange={e => setSearch(e.target.value)} />
+        {/* SEARCH - Enhanced visibility with gradient border */}
+        <div className="relative max-w-sm">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
+          <div className="relative flex items-center bg-card rounded-lg">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input 
+              className="pl-8 h-8 sm:h-9 text-xs sm:text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70" 
+              placeholder="Search teams…" 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+          </div>
         </div>
 
         {/* MATCHES or FALLBACK */}

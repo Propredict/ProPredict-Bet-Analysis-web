@@ -135,16 +135,19 @@ export default function AIPredictions() {
             </div>
             
             {/* Controls Row */}
-            <div className="flex flex-wrap items-center gap-1 md:gap-2">
-              {/* Search */}
-              <div className="relative flex-1 min-w-[120px] md:min-w-[180px] max-w-sm">
-                <Search className="absolute left-2 md:left-2.5 top-1/2 -translate-y-1/2 w-3 md:w-3.5 h-3 md:h-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-7 md:pl-8 h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded"
-                />
+            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+              {/* Search - Enhanced visibility with gradient border */}
+              <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
+                <div className="relative flex items-center bg-card rounded-lg">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search teams..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 h-8 md:h-9 text-xs bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70"
+                  />
+                </div>
               </div>
               
               {/* Sort Dropdown */}
