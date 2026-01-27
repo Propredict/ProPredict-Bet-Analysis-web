@@ -40,6 +40,24 @@ export default function AllTickets() {
   const totalCount = tickets.length;
 
   const filteredTickets = tickets.filter(ticket => ticket.tier === activeTab);
+  const displayedTickets = filteredTickets.slice(0, 4);
+  const hasMore = filteredTickets.length > 4;
+
+  const getFullPageRoute = (tab: TabType) => {
+    switch (tab) {
+      case "daily": return "/daily-tickets";
+      case "exclusive": return "/exclusive-tickets";
+      case "premium": return "/premium-tickets";
+    }
+  };
+
+  const getTabLabel = (tab: TabType) => {
+    switch (tab) {
+      case "daily": return "Daily";
+      case "exclusive": return "Pro";
+      case "premium": return "Premium";
+    }
+  };
 
   const tabs = [
     { id: "daily" as TabType, label: "Daily", icon: Calendar, count: dailyCount, color: "accent" },
@@ -146,22 +164,36 @@ export default function AllTickets() {
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : filteredTickets.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {filteredTickets.map(ticket => {
-            const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
-            const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-            const isUnlocking = unlockingId === ticket.id;
-            return (
-              <AllTicketsCard 
-                key={ticket.id} 
-                ticket={ticket} 
-                isLocked={isLocked} 
-                unlockMethod={unlockMethod} 
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
-                isUnlocking={isUnlocking} 
-              />
-            );
-          })}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {displayedTickets.map(ticket => {
+              const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
+              const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
+              const isUnlocking = unlockingId === ticket.id;
+              return (
+                <AllTicketsCard 
+                  key={ticket.id} 
+                  ticket={ticket} 
+                  isLocked={isLocked} 
+                  unlockMethod={unlockMethod} 
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
+                  isUnlocking={isUnlocking} 
+                />
+              );
+            })}
+          </div>
+          
+          {hasMore && (
+            <div className="flex justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(getFullPageRoute(activeTab))}
+                className="gap-2"
+              >
+                See all {getTabLabel(activeTab)} tickets
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <Card className="empty-state-compact bg-card/50 border-border/50">
