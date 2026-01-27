@@ -27,6 +27,7 @@ const Profile = () => {
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -40,6 +41,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchSubscription();
     }
   }, [user]);
 
@@ -65,6 +67,36 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchSubscription = async () => {
+    try {
+      const { data } = await supabase
+        .from("user_subscriptions")
+        .select("expires_at")
+        .eq("user_id", user?.id)
+        .maybeSingle();
+
+      if (data?.expires_at) {
+        setExpiresAt(data.expires_at);
+      }
+    } catch (error: any) {
+      console.error("Error fetching subscription:", error.message);
+    }
+  };
+
+  const formatPlanName = (p: string) => {
+    if (p === "basic") return "Pro";
+    if (p === "premium") return "Premium";
+    return "Free";
+  };
+
+  const formatExpiryDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const handleSave = async () => {
@@ -292,24 +324,36 @@ const Profile = () => {
               </Button>
 
               {plan !== "free" && (
-                <Button
-                  variant="outline"
-                  onClick={handleManageSubscription}
-                  disabled={openingPortal}
-                  className="w-full h-8 text-xs"
-                >
-                  {openingPortal ? (
-                    <>
-                      <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                      Opening...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-1.5 h-3 w-3" />
-                      Manage Subscription
-                    </>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">Current Plan</span>
+                    <span className="text-xs font-medium text-primary">{formatPlanName(plan)}</span>
+                  </div>
+                  {expiresAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground">Renews on</span>
+                      <span className="text-xs">{formatExpiryDate(expiresAt)}</span>
+                    </div>
                   )}
-                </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleManageSubscription}
+                    disabled={openingPortal}
+                    className="w-full h-8 text-xs mt-2"
+                  >
+                    {openingPortal ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-1.5 h-3 w-3" />
+                        Manage Subscription
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
 
               <Button
