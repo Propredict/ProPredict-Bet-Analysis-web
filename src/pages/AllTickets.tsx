@@ -23,7 +23,7 @@ export default function AllTickets() {
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium" | undefined>();
 
   const { tickets, isLoading, refetch } = useTickets(false);
-  const { canAccess, getUnlockMethod } = useUserPlan();
+  const { canAccess, getUnlockMethod, refetch: refetchPlan } = useUserPlan();
   const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
@@ -34,6 +34,12 @@ export default function AllTickets() {
       setShowPricingModal(true);
     }
   });
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tickets refreshed");
+  };
 
   const dailyCount = tickets.filter(t => t.tier === "daily").length;
   const exclusiveCount = tickets.filter(t => t.tier === "exclusive").length;
@@ -87,13 +93,10 @@ export default function AllTickets() {
     }
   };
 
-  const handleRefresh = () => {
-    refetch();
-    toast.success("Tickets refreshed");
-  };
 
   return (
     <div className="space-y-5">
+      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Page Header */}
       <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
         <div className="flex items-center gap-2">

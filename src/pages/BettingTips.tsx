@@ -17,7 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
+import { AdModal } from "@/components/AdModal";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 import { useTips } from "@/hooks/useTips";
 import { useTipAccuracy } from "@/hooks/useTipAccuracy";
@@ -33,8 +35,14 @@ export default function BettingTips() {
   const { tips = [], isLoading, refetch } = useTips(false);
   const { data: accuracyData = [] } = useTipAccuracy();
 
-  const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
+  const { canAccess, getUnlockMethod, refetch: refetchPlan } = useUserPlan();
+  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler();
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tips refreshed");
+  };
 
   const dailyAccuracy =
     accuracyData.find((a) => a.tier === "daily")?.accuracy ?? 0;
@@ -103,6 +111,8 @@ export default function BettingTips() {
 
   return (
     <div className="space-y-5">
+      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -127,7 +137,7 @@ export default function BettingTips() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => refetch()}
+            onClick={handleRefresh}
             className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
           >
             <RefreshCw className="h-3.5 w-3.5" />

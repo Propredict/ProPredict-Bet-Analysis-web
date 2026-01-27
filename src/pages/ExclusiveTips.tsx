@@ -8,6 +8,8 @@ import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 export default function ExclusiveTips() {
   const navigate = useNavigate();
   const {
@@ -18,7 +20,9 @@ export default function ExclusiveTips() {
   const {
     canAccess,
     getUnlockMethod,
-    plan
+    plan,
+    isAdmin,
+    refetch: refetchPlan
   } = useUserPlan();
   const {
     unlockingId,
@@ -29,8 +33,14 @@ export default function ExclusiveTips() {
   } = useUnlockHandler();
   const exclusiveTips = tips.filter(tip => tip.tier === "exclusive");
   const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
-  const { isAdmin } = useUserPlan();
   const showUpgradeBanner = !isAdmin && plan !== "premium";
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tips refreshed");
+  };
+
   return <div className="section-gap">
       <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
@@ -49,7 +59,7 @@ export default function ExclusiveTips() {
             <Star className="h-2.5 w-2.5 mr-0.5" />
             Pro
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="h-6 px-1.5 text-[9px]">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="h-6 px-1.5 text-[9px]">
             <RefreshCw className="h-2.5 w-2.5 mr-1" />
             Refresh
           </Button>
@@ -117,7 +127,7 @@ export default function ExclusiveTips() {
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No pro tips available</p>
               <p className="text-sm">Check back later for new predictions</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
