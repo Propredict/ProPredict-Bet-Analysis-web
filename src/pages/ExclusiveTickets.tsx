@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { AdModal } from "@/components/AdModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -21,13 +22,17 @@ export default function ExclusiveTickets() {
   } = useUserPlan();
   const {
     unlockingId,
-    handleUnlock
+    handleUnlock,
+    adModalOpen,
+    handleAdComplete,
+    closeAdModal
   } = useUnlockHandler();
   const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive");
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
   const { isAdmin } = useUserPlan();
   const showUpgradeBanner = !isAdmin && plan !== "premium";
   return <div className="section-gap">
+      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">

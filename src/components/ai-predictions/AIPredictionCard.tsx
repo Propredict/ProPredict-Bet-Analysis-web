@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
+import { AdModal } from "@/components/AdModal";
 
 interface Props {
   prediction: AIPrediction;
@@ -40,6 +41,7 @@ export function AIPredictionCard({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [showAdModal, setShowAdModal] = useState(false);
 
   // Premium if is_premium flag is true OR confidence > 70
   const isPremiumPrediction = prediction.is_premium || (prediction.confidence > 70);
@@ -54,14 +56,24 @@ export function AIPredictionCard({
   // Generate dynamic AI analysis
   const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
 
-  const handleWatchAd = async () => {
+  const handleWatchAdClick = useCallback(() => {
     if (isPremiumPrediction) return;
     setIsUnlocking(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setShowAdModal(true);
+  }, [isPremiumPrediction]);
+
+  const handleAdComplete = useCallback(() => {
     setIsUnlocked(true);
     setIsUnlocking(false);
     onWatchAd();
-  };
+  }, [onWatchAd]);
+
+  const handleAdModalClose = useCallback(() => {
+    setShowAdModal(false);
+    if (!isUnlocked) {
+      setIsUnlocking(false);
+    }
+  }, [isUnlocked]);
 
   // Format time as HH:mm
   const formatTime = (time: string | null) => {
@@ -77,11 +89,17 @@ export function AIPredictionCard({
   };
 
   return (
-    <Card className={cn(
-      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
-      prediction.is_live && "ring-1 ring-red-500/50"
-    )}>
-      <CardContent className="p-0">
+    <>
+      <AdModal 
+        isOpen={showAdModal} 
+        onComplete={handleAdComplete} 
+        onClose={handleAdModalClose} 
+      />
+      <Card className={cn(
+        "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
+        prediction.is_live && "ring-1 ring-red-500/50"
+      )}>
+        <CardContent className="p-0">
         {/* Header - League, Time, Live/Premium badges, Favorite */}
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
@@ -248,7 +266,7 @@ export function AIPredictionCard({
             ) : canWatchAd ? (
               <Button
                 className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
-                onClick={handleWatchAd}
+                onClick={handleWatchAdClick}
                 disabled={isUnlocking}
               >
                 <Eye className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
@@ -268,6 +286,7 @@ export function AIPredictionCard({
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 
