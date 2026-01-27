@@ -18,7 +18,7 @@ export function FeaturedPredictions() {
   return (
     <section className="space-y-2">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between p-3 rounded-lg bg-card/80 border border-primary/30 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-primary/20">
             <TrendingUp className="text-primary w-4 h-4" />
