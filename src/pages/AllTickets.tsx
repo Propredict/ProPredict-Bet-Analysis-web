@@ -62,7 +62,7 @@ export default function AllTickets() {
           : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-indigo-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-yellow-500/25 via-amber-500/20 to-orange-500/25 border-yellow-500/60 text-yellow-400 shadow-yellow-500/30 glow-warning")
+          ? cn(baseStyles, "bg-gradient-to-br from-yellow-500/25 via-amber-500/20 to-orange-500/25 border-yellow-500/60 text-yellow-400 shadow-yellow-500/30 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
           : cn(baseStyles, "bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/10 border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400");
       default:
         return cn(baseStyles, "bg-card border-border text-muted-foreground");
