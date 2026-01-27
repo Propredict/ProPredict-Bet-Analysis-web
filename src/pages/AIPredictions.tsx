@@ -112,8 +112,15 @@ export default function AIPredictions() {
       <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
           <div className="sticky top-4 space-y-3">
             <div className="text-center pb-2 border-b border-border">
-              <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">ML-powered match analysis</p>
+              <div className="inline-flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+                <div className="p-1.5 rounded-md bg-primary/20">
+                  <Brain className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">ML-powered match analysis</p>
+                </div>
+              </div>
             </div>
             <AIPredictionsSidebar
               selectedDay={day}
@@ -129,9 +136,16 @@ export default function AIPredictions() {
           {/* Header Section */}
           <div className="flex flex-col gap-1.5 md:gap-2">
             {/* Mobile Title */}
-            <div className="lg:hidden">
-              <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
-              <p className="text-muted-foreground text-[9px] sm:text-[10px]">ML-powered match analysis</p>
+            <div className="lg:hidden p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-md bg-primary/20">
+                  <Brain className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
+                  <p className="text-muted-foreground text-[9px] sm:text-[10px]">ML-powered match analysis</p>
+                </div>
+              </div>
             </div>
             
             {/* Controls Row */}

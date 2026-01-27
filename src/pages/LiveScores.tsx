@@ -112,14 +112,14 @@ export default function LiveScores() {
 
   return <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-1.5 pb-1 border-b border-border">
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Zap className="text-primary h-3 w-3 sm:w-[20px] sm:h-[20px]" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="p-1.5 rounded-md bg-primary/20">
+              <Zap className="text-primary h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h1 className="text-xs font-bold sm:text-base">All Leagues Live Scores</h1>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Real-time</p>
+              <h1 className="text-sm font-bold sm:text-base text-foreground">All Leagues Live Scores</h1>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Real-time updates</p>
             </div>
           </div>
 

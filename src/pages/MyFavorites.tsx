@@ -43,8 +43,10 @@ export default function MyFavorites() {
   return (
     <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-accent fill-accent" />
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-pink-500/20 via-pink-500/10 to-transparent border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
+        <div className="p-1.5 rounded-md bg-pink-500/20">
+          <Star className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400 fill-pink-400" />
+        </div>
         <div>
           <h1 className="text-sm sm:text-base font-bold text-foreground">My Favorites</h1>
           <p className="text-[9px] sm:text-[10px] text-muted-foreground">{favoriteMatches.length} saved matches</p>
