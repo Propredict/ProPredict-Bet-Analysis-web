@@ -41,7 +41,7 @@ const plans = {
     {
       id: "free",
       name: "Free",
-      price: "$0",
+      price: "€0",
       period: "/forever",
       description: "Watch ads to unlock daily tips",
       buttonText: "Current Plan",
@@ -97,7 +97,7 @@ const plans = {
     {
       id: "free",
       name: "Free",
-      price: "$0",
+      price: "€0",
       period: "/forever",
       description: "Watch ads to unlock daily tips",
       buttonText: "Current Plan",
@@ -164,8 +164,8 @@ const benefits = [
 
 const stats = [
   { value: "92%", label: "Premium Tip Accuracy" },
-  { value: "15K+", label: "Active Subscribers" },
-  { value: "$2.4M", label: "User Winnings (2025)" },
+  { value: "10K+", label: "Active Subscribers" },
+  { value: "€2.4K", label: "User Winnings (2025)" },
   { value: "4.9", label: "User Rating", isStar: true },
 ];
 
