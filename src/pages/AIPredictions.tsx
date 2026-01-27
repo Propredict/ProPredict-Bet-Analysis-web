@@ -191,18 +191,28 @@ export default function AIPredictions() {
             </div>
           </div>
 
-          {/* Mobile Day Selector */}
-          <div className="flex gap-1 md:gap-1.5 lg:hidden">
+          {/* Mobile Day Selector - Bordered tabs with hover glow */}
+          <div className="flex gap-2 lg:hidden">
             <Button
-              variant={day === "today" ? "default" : "outline"}
-              className={cn("flex-1 h-7 md:h-8 text-[10px] md:text-xs rounded", day !== "today" && "border-border")}
+              variant="ghost"
+              className={cn(
+                "flex-1 h-10 text-xs rounded-xl transition-all duration-300",
+                day === "today" 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+              )}
               onClick={() => setDay("today")}
             >
               Today
             </Button>
             <Button
-              variant={day === "tomorrow" ? "default" : "outline"}
-              className={cn("flex-1 h-7 md:h-8 text-[10px] md:text-xs rounded", day !== "tomorrow" && "border-border")}
+              variant="ghost"
+              className={cn(
+                "flex-1 h-10 text-xs rounded-xl transition-all duration-300",
+                day === "tomorrow" 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+              )}
               onClick={() => setDay("tomorrow")}
             >
               Tomorrow
