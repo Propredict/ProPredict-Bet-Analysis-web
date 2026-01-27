@@ -111,8 +111,9 @@ serve(async (req) => {
       const priceId = subscription.items.data[0]?.price.id;
       const plan = PRICE_TO_PLAN[priceId] || "basic";
       const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+      const status = subscription.status;
 
-      console.log(`Processing checkout for ${customerEmail}: plan=${plan}, expires=${currentPeriodEnd.toISOString()}`);
+      console.log(`Processing checkout for ${customerEmail}: plan=${plan}, status=${status}, expires=${currentPeriodEnd.toISOString()}`);
 
       const user = await findUserByEmail(customerEmail);
       
@@ -130,6 +131,7 @@ serve(async (req) => {
           {
             user_id: user.id,
             plan: plan,
+            status: status,
             expires_at: currentPeriodEnd.toISOString(),
             updated_at: new Date().toISOString(),
           },
@@ -164,8 +166,9 @@ serve(async (req) => {
       const priceId = subscription.items.data[0]?.price.id;
       const plan = PRICE_TO_PLAN[priceId] || "basic";
       const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+      const status = subscription.status;
 
-      console.log(`Subscription updated for user ${user.id}: plan=${plan}, expires=${currentPeriodEnd.toISOString()}`);
+      console.log(`Subscription updated for user ${user.id}: plan=${plan}, status=${status}, expires=${currentPeriodEnd.toISOString()}`);
 
       const { error } = await supabase
         .from("user_subscriptions")
@@ -173,6 +176,7 @@ serve(async (req) => {
           {
             user_id: user.id,
             plan: plan,
+            status: status,
             expires_at: currentPeriodEnd.toISOString(),
             updated_at: new Date().toISOString(),
           },
@@ -198,7 +202,7 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Subscription deleted for user ${user.id}, reverting to free`);
+      console.log(`Subscription deleted for user ${user.id}, marking as canceled`);
 
       const { error } = await supabase
         .from("user_subscriptions")
@@ -206,6 +210,7 @@ serve(async (req) => {
           {
             user_id: user.id,
             plan: "free",
+            status: "canceled",
             expires_at: null,
             updated_at: new Date().toISOString(),
           },

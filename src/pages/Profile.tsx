@@ -28,6 +28,7 @@ const Profile = () => {
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -71,17 +72,38 @@ const Profile = () => {
 
   const fetchSubscription = async () => {
     try {
-      const { data } = await supabase
+      // Note: status column needs to be added via migration
+      const { data } = await (supabase as any)
         .from("user_subscriptions")
-        .select("expires_at")
+        .select("expires_at, status")
         .eq("user_id", user?.id)
         .maybeSingle();
 
       if (data?.expires_at) {
         setExpiresAt(data.expires_at);
       }
+      if (data?.status) {
+        setSubscriptionStatus(data.status);
+      }
     } catch (error: any) {
       console.error("Error fetching subscription:", error.message);
+    }
+  };
+
+  const getStatusConfig = (status: string | null) => {
+    switch (status) {
+      case "active":
+        return { label: "Active", className: "bg-primary/20 text-primary border-primary/30" };
+      case "past_due":
+        return { label: "Past Due", className: "bg-warning/20 text-warning border-warning/30" };
+      case "canceled":
+        return { label: "Canceled", className: "bg-destructive/20 text-destructive border-destructive/30" };
+      case "incomplete":
+        return { label: "Incomplete", className: "bg-muted text-muted-foreground border-muted" };
+      case "trialing":
+        return { label: "Trial", className: "bg-accent/20 text-accent border-accent/30" };
+      default:
+        return { label: "Active", className: "bg-primary/20 text-primary border-primary/30" };
     }
   };
 
@@ -327,11 +349,20 @@ const Profile = () => {
                 <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-muted-foreground">Current Plan</span>
-                    <span className="text-xs font-medium text-primary">{formatPlanName(plan)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-primary">{formatPlanName(plan)}</span>
+                      {subscriptionStatus && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${getStatusConfig(subscriptionStatus).className}`}>
+                          {getStatusConfig(subscriptionStatus).label}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {expiresAt && (
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">Renews on</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {subscriptionStatus === "canceled" ? "Access until" : "Renews on"}
+                      </span>
                       <span className="text-xs">{formatExpiryDate(expiresAt)}</span>
                     </div>
                   )}
