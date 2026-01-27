@@ -74,9 +74,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
         supabase
           .from("user_unlocks")
-          .select("content_type, content_id, expires_at")
-          .eq("user_id", user.id)
-          .gte("expires_at", new Date().toISOString()),
+          .select("content_type, content_id, unlocked_date")
+          .eq("user_id", user.id),
       ]);
 
       /* ===== ADMIN OVERRIDE ===== */
@@ -92,11 +91,13 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       /* ===== UNLOCKED CONTENT ===== */
       if (Array.isArray(unlocksRes.data)) {
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const validUnlocks = unlocksRes.data.filter((u: any) => u.unlocked_date === today);
         setUnlockedContent(
-          unlocksRes.data.map((u: any) => ({
-            contentType: u.content_type,
+          validUnlocks.map((u: any) => ({
+            contentType: u.content_type as ContentType,
             contentId: u.content_id,
-            expiresAt: new Date(u.expires_at),
+            expiresAt: new Date(u.unlocked_date + "T23:59:59Z"),
           })),
         );
       } else {
@@ -223,14 +224,13 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     async (contentType: ContentType, contentId: string) => {
       if (!user) return false;
 
-      const now = new Date();
-      const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
       const { error } = await supabase.from("user_unlocks").insert({
         user_id: user.id,
         content_type: contentType,
         content_id: contentId,
-        expires_at: endOfDay.toISOString(),
+        unlocked_date: today,
       });
 
       if (error && error.code !== "23505") {
@@ -238,6 +238,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
+      // Add to local state immediately
+      const endOfDay = new Date(today + "T23:59:59Z");
       setUnlockedContent((prev) => [...prev, { contentType, contentId, expiresAt: endOfDay }]);
 
       return true;
