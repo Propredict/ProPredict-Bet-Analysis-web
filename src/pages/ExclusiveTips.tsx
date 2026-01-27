@@ -57,7 +57,7 @@ export default function ExclusiveTips() {
               </div>
               <div>
                 <h3 className="font-semibold text-[10px] sm:text-xs text-primary">Remove Ads & Unlock All Tips</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
             <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
