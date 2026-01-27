@@ -59,7 +59,7 @@ const plans = {
     {
       id: "basic",
       name: "Pro",
-      price: "$3.99",
+      price: "€3.99",
       period: "/month",
       description: "Unlock all tips without watching ads",
       buttonText: "Get Pro",
@@ -78,7 +78,7 @@ const plans = {
     {
       id: "premium",
       name: "Premium",
-      price: "$5.99",
+      price: "€5.99",
       period: "/month",
       description: "Full access to all tickets and tips",
       buttonText: "Get Premium",
@@ -115,9 +115,9 @@ const plans = {
     {
       id: "basic",
       name: "Pro",
-      price: "$39.99",
+      price: "€39.99",
       period: "/year",
-      savings: "$3.33/mo - Save 17%",
+      savings: "€3.33/mo - Save 17%",
       description: "Unlock all tips without watching ads",
       buttonText: "Get Pro",
       buttonVariant: "default" as const,
@@ -135,9 +135,9 @@ const plans = {
     {
       id: "premium",
       name: "Premium",
-      price: "$59.99",
+      price: "€59.99",
       period: "/year",
-      savings: "$5.00/mo - Save 17%",
+      savings: "€5.00/mo - Save 17%",
       description: "Full access to all tickets and tips",
       buttonText: "Get Premium",
       buttonVariant: "default" as const,
