@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -8,22 +8,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Loader2, LogOut, CreditCard } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Profile = () => {
   const { user, signOut, session } = useAuth();
   const { plan } = useUserPlan();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      setShowPaymentSuccess(true);
+      // Remove the query param from URL without navigation
+      searchParams.delete("payment");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (user) {
@@ -167,6 +179,24 @@ const Profile = () => {
           <ArrowLeft className="h-3 w-3" />
           Back to Settings
         </Button>
+
+        {showPaymentSuccess && (
+          <Alert className="mb-4 border-primary/50 bg-primary/10">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <AlertTitle className="text-sm font-medium">Payment Successful!</AlertTitle>
+            <AlertDescription className="text-xs text-muted-foreground">
+              Congratulations! Your subscription is now active. Enjoy your premium features!
+            </AlertDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 h-6 w-6"
+              onClick={() => setShowPaymentSuccess(false)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </Alert>
+        )}
 
         <Card>
           <CardHeader className="p-3 sm:p-4">
