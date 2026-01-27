@@ -41,7 +41,6 @@ export default function AllTickets() {
 
   const filteredTickets = tickets.filter(ticket => ticket.tier === activeTab);
   const displayedTickets = filteredTickets.slice(0, 4);
-  const hasMore = filteredTickets.length > 4;
 
   const getFullPageRoute = (tab: TabType) => {
     switch (tab) {
@@ -183,30 +182,39 @@ export default function AllTickets() {
             })}
           </div>
           
-          {hasMore && (
-            <div className="flex justify-center">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate(getFullPageRoute(activeTab))}
-                className="gap-2"
-              >
-                See all {getTabLabel(activeTab)} tickets
-              </Button>
-            </div>
-          )}
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(getFullPageRoute(activeTab))}
+              className="gap-2"
+            >
+              See all {getTabLabel(activeTab)} tickets
+            </Button>
+          </div>
         </div>
       ) : (
-        <Card className="empty-state-compact bg-card/50 border-border/50">
-          <div className="flex flex-col items-center gap-2">
-            {activeTab === "daily" && <Calendar className="h-6 w-6 text-accent/40" />}
-            {activeTab === "exclusive" && <Star className="h-6 w-6 text-primary/40" />}
-            {activeTab === "premium" && <Crown className="h-6 w-6 text-warning/40" />}
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">No {activeTab} tickets available</p>
-              <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
+        <div className="space-y-4">
+          <Card className="empty-state-compact bg-card/50 border-border/50">
+            <div className="flex flex-col items-center gap-2">
+              {activeTab === "daily" && <Calendar className="h-6 w-6 text-accent/40" />}
+              {activeTab === "exclusive" && <Star className="h-6 w-6 text-primary/40" />}
+              {activeTab === "premium" && <Crown className="h-6 w-6 text-warning/40" />}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">No {activeTab === "exclusive" ? "pro" : activeTab} tickets available</p>
+                <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
+              </div>
             </div>
+          </Card>
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(getFullPageRoute(activeTab))}
+              className="gap-2"
+            >
+              See all {getTabLabel(activeTab)} tickets
+            </Button>
           </div>
-        </Card>
+        </div>
       )}
 
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
