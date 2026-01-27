@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { 
   LayoutDashboard, 
   Ticket, 
@@ -58,11 +59,18 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
   const { isAdmin } = useAdminAccess();
+
+  // Auto-close mobile menu on navigation
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [currentPath, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => currentPath === path;
 
