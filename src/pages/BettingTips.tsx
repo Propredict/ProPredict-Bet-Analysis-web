@@ -103,8 +103,8 @@ export default function BettingTips() {
         </Card>
       </div>
 
-      {/* Tips */}
-      <div className="space-y-2">
+      {/* Tips Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {isLoading ? (
           <Card className="p-8 text-center">
             <Loader2 className="h-6 w-6 animate-spin mx-auto" />

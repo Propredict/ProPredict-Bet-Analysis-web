@@ -75,8 +75,8 @@ export default function DailyTips() {
         </Card>
       </div>
 
-      {/* Tips List */}
-      <div className="space-y-2 sm:space-y-3">
+      {/* Tips Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
