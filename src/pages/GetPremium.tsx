@@ -22,6 +22,19 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+const STRIPE_PRICES = {
+  basic: {
+    monthly: "price_1So1aOL8E849h6yxa6XtgjRj",
+    annual: "price_1SpZ5OL8E849h6yxLP3NB1pi",
+  },
+  premium: {
+    monthly: "price_1SpWSoL8E849h6yxK7hBWrRm",
+    annual: "price_1SpZ64L8E849h6yxd2Fnz1YP",
+  },
+};
 
 const plans = {
   monthly: [
@@ -164,13 +177,49 @@ const faqs = [
 
 export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
+  const [isLoading, setIsLoading] = useState(false);
   const { plan: currentPlan } = useUserPlan();
 
   const currentPlans = plans[billingPeriod];
 
-  const handleSubscribe = (planId: string) => {
+  const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
-    // Subscription action placeholder
+
+    const priceId = planId === "basic" 
+      ? STRIPE_PRICES.basic[billingPeriod]
+      : planId === "premium"
+      ? STRIPE_PRICES.premium[billingPeriod]
+      : null;
+
+    if (!priceId) return;
+
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke("create-checkout-session", {
+        body: {
+          priceId,
+          successUrl: `${window.location.origin}/profile?success=true`,
+          cancelUrl: `${window.location.origin}/get-premium?canceled=true`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to create checkout session");
+      }
+
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Failed to start checkout. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -263,10 +312,10 @@ export default function GetPremium() {
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
-                disabled={isCurrentPlan}
+                disabled={isCurrentPlan || isLoading}
                 onClick={() => handleSubscribe(plan.id)}
               >
-                {isCurrentPlan ? "Current Plan" : plan.buttonText}
+                {isLoading ? "Loading..." : isCurrentPlan ? "Current Plan" : plan.buttonText}
               </Button>
 
               <ul className="mt-4 space-y-2">
