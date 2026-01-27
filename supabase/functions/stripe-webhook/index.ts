@@ -9,7 +9,7 @@ const corsHeaders = {
 
 // Map price IDs to plans
 const PRICE_TO_PLAN: Record<string, string> = {
-  "price_1So1aOL8E849h6yxa6XtgjRj": "basic",   // Pro monthly
+  "price_1SuCcpL8E849h6yxv6RvooUp": "basic",   // Pro monthly
   "price_1SpZ5OL8E849h6yxLP3NB1pi": "basic",   // Pro yearly
   "price_1SpWSoL8E849h6yxK7hBWrRm": "premium", // Premium monthly
   "price_1SpZ64L8E849h6yxd2Fnz1YP": "premium", // Premium yearly
