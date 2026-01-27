@@ -28,16 +28,18 @@ export default function ExclusiveTips() {
   const showUpgradeBanner = plan === "free";
   return <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5">
-          <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          <div className="p-1.5 rounded-md bg-violet-500/20">
+            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
+          </div>
           <div>
             <h1 className="text-xs text-foreground font-semibold sm:text-lg">Pro Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">Premium predictions with higher confidence</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px] px-1.5 py-0.5">
+          <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[9px] px-1.5 py-0.5">
             <Star className="h-2.5 w-2.5 mr-0.5" />
             Pro
           </Badge>

@@ -28,16 +28,18 @@ export default function PremiumTips() {
   const showUpgradeBanner = plan !== "premium";
   return <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
         <div className="flex items-center gap-1.5">
-          <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
+          <div className="p-1.5 rounded-md bg-yellow-500/20">
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
+          </div>
           <div>
             <h1 className="text-xs text-foreground font-semibold sm:text-lg">Premium Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">Our highest confidence picks</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Badge className="bg-warning/20 text-warning border-warning/30 text-[9px] px-1.5 py-0.5">
+          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[9px] px-1.5 py-0.5">
             <Crown className="h-2.5 w-2.5 mr-0.5" />
             Premium
           </Badge>
