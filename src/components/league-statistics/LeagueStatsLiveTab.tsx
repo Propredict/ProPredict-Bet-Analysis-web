@@ -146,50 +146,61 @@ export function LeagueStatsLiveTab({
                   <div
                     key={m.id}
                     onClick={() => setSelectedMatch(m)}
-                    className="px-4 py-3 hover:bg-secondary/30 transition-colors cursor-pointer"
+                    className="px-2 sm:px-4 py-2 sm:py-3 hover:bg-secondary/30 transition-colors cursor-pointer"
                   >
-                    {/* Desktop Grid Layout */}
-                    <div className="grid grid-cols-[50px_1fr_80px_1fr_60px] md:grid-cols-[60px_1fr_100px_1fr_80px] items-center gap-2">
-                      {/* Minute indicator for live */}
-                      <div className="text-center">
+                    {/* Responsive Flex Layout - matches Live Scores */}
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      {/* Minute/Status - Compact fixed width */}
+                      <div className="flex-shrink-0 w-8 sm:w-12 text-center">
                         {isLive && (
-                          <Badge className="bg-destructive/15 text-destructive border-0 text-xs px-1.5">
+                          <Badge className="bg-destructive/15 text-destructive border-0 text-[9px] sm:text-xs px-1 sm:px-1.5">
                             {m.minute ?? 0}'
                           </Badge>
                         )}
-                      </div>
-
-                      {/* Home Team */}
-                      <div className="flex items-center gap-1.5 justify-end min-w-0">
-                        {m.homeLogo && (
-                          <img src={m.homeLogo} alt="" className="h-4 w-4 object-contain flex-shrink-0" />
+                        {isUpcoming && (
+                          <span className="text-[9px] sm:text-xs text-muted-foreground">{m.startTime}</span>
                         )}
-                        <span className="text-[10px] sm:text-xs truncate text-right">{m.homeTeam}</span>
+                        {isFinished && (
+                          <span className="text-[9px] sm:text-xs text-muted-foreground">FT</span>
+                        )}
                       </div>
 
-                      {/* Score */}
-                      <div className="flex items-center justify-center">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold",
-                          isLive && "text-destructive",
-                          isFinished && "text-foreground",
-                          isUpcoming && "text-muted-foreground"
+                      {/* Teams & Score - Flexible */}
+                      <div className="flex-1 min-w-0 flex items-center justify-between gap-1">
+                        {/* Home Team - Right aligned */}
+                        <div className="flex items-center gap-1 justify-end flex-1 min-w-0">
+                          <span className="text-[10px] sm:text-xs truncate text-right" title={m.homeTeam}>
+                            {m.homeTeam}
+                          </span>
+                          {m.homeLogo && (
+                            <img src={m.homeLogo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain flex-shrink-0" />
+                          )}
+                        </div>
+
+                        {/* Score - Centered fixed width */}
+                        <div className={cn(
+                          "flex-shrink-0 px-1.5 sm:px-2 py-0.5 rounded min-w-[40px] sm:min-w-[52px] text-center",
+                          isLive && "bg-destructive/10 border border-destructive/30",
+                          isFinished && "bg-primary/10 border border-primary/20",
+                          isUpcoming && "bg-secondary border border-border"
                         )}>
-                          {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                        </span>
-                      </div>
+                          <span className={cn(
+                            "font-bold text-[10px] sm:text-xs",
+                            isLive && "text-destructive"
+                          )}>
+                            {isUpcoming ? "vs" : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+                          </span>
+                        </div>
 
-                      {/* Away Team */}
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {m.awayLogo && (
-                          <img src={m.awayLogo} alt="" className="h-4 w-4 object-contain flex-shrink-0" />
-                        )}
-                        <span className="text-[10px] sm:text-xs truncate">{m.awayTeam}</span>
-                      </div>
-
-                      {/* Half-time scores (muted) */}
-                      <div className="text-right text-muted-foreground text-xs">
-                        {isFinished && "(0)"}
+                        {/* Away Team - Left aligned */}
+                        <div className="flex items-center gap-1 flex-1 min-w-0">
+                          {m.awayLogo && (
+                            <img src={m.awayLogo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain flex-shrink-0" />
+                          )}
+                          <span className="text-[10px] sm:text-xs truncate" title={m.awayTeam}>
+                            {m.awayTeam}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

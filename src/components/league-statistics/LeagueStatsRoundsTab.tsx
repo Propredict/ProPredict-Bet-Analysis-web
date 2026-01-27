@@ -146,73 +146,74 @@ function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
 
   return (
     <div className={cn(
-      "flex items-center py-3 border-b border-white/5 last:border-0",
+      "px-2 sm:px-4 py-2 sm:py-3 border-b border-white/5 last:border-0",
       isLive && "bg-red-500/5"
     )}>
-      {/* Date - Left */}
-      <div className="w-20 flex-shrink-0 flex items-center gap-1.5 text-muted-foreground">
-        <span className="text-xs">📅</span>
-        <span className="text-xs">{dateLabel}</span>
-      </div>
-
-      {/* Match Content - Centered */}
-      <div className="flex-1 flex items-center justify-center">
-        {/* Home Team */}
-        <div className="flex items-center justify-end flex-1 min-w-0">
-          <span className={cn(
-            "text-sm truncate",
-            isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
-            fixture.home.goals > fixture.away.goals && "text-green-400 font-medium"
-          )} title={fixture.home.name}>
-            {fixture.home.name}
-          </span>
+      {/* Responsive Flex Layout */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        {/* Date - Compact */}
+        <div className="flex-shrink-0 w-12 sm:w-16 text-muted-foreground">
+          <span className="text-[9px] sm:text-xs">{dateLabel}</span>
         </div>
 
-        {/* Score */}
-        <div className="mx-4 flex-shrink-0 min-w-[50px] text-center">
-          {isUpcoming ? (
-            <span className="text-muted-foreground text-sm">vs</span>
-          ) : (
+        {/* Teams & Score - Flexible */}
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-1">
+          {/* Home Team */}
+          <div className="flex items-center gap-1 justify-end flex-1 min-w-0">
             <span className={cn(
-              "font-semibold",
-              isLive && "text-red-400"
-            )}>
-              {fixture.home.goals ?? 0}
-              <span className="text-muted-foreground mx-1">-</span>
-              {fixture.away.goals ?? 0}
+              "text-[10px] sm:text-xs truncate text-right",
+              isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
+              fixture.home.goals > fixture.away.goals && "text-green-400 font-medium"
+            )} title={fixture.home.name}>
+              {fixture.home.name}
             </span>
+          </div>
+
+          {/* Score - Centered */}
+          <div className={cn(
+            "flex-shrink-0 px-1.5 sm:px-2 py-0.5 rounded min-w-[40px] sm:min-w-[52px] text-center",
+            isLive && "bg-destructive/10 border border-destructive/30",
+            isFinished && "bg-primary/10 border border-primary/20",
+            isUpcoming && "bg-secondary border border-border"
+          )}>
+            {isUpcoming ? (
+              <span className="text-[9px] sm:text-xs text-muted-foreground">vs</span>
+            ) : (
+              <span className={cn(
+                "font-bold text-[10px] sm:text-xs",
+                isLive && "text-destructive"
+              )}>
+                {fixture.home.goals ?? 0} - {fixture.away.goals ?? 0}
+              </span>
+            )}
+          </div>
+
+          {/* Away Team */}
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <span className={cn(
+              "text-[10px] sm:text-xs truncate",
+              isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
+              fixture.away.goals > fixture.home.goals && "text-green-400 font-medium"
+            )} title={fixture.away.name}>
+              {fixture.away.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Status - Compact */}
+        <div className="flex-shrink-0 w-10 sm:w-14 text-right">
+          {isUpcoming && (
+            <span className="text-[8px] sm:text-[10px] text-muted-foreground">Soon</span>
+          )}
+          {isLive && (
+            <Badge className="bg-destructive/15 text-destructive border-0 text-[8px] sm:text-[10px] px-1">
+              LIVE
+            </Badge>
+          )}
+          {isFinished && (
+            <span className="text-[8px] sm:text-[10px] text-muted-foreground">FT</span>
           )}
         </div>
-
-        {/* Away Team */}
-        <div className="flex items-center flex-1 min-w-0">
-          <span className={cn(
-            "text-sm truncate",
-            isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
-            fixture.away.goals > fixture.home.goals && "text-green-400 font-medium"
-          )} title={fixture.away.name}>
-            {fixture.away.name}
-          </span>
-        </div>
-      </div>
-
-      {/* Status Badge - Right */}
-      <div className="w-20 flex-shrink-0 flex justify-end">
-        {isUpcoming && (
-          <Badge variant="outline" className="text-xs text-muted-foreground border-white/20">
-            Upcoming
-          </Badge>
-        )}
-        {isLive && (
-          <Badge className="bg-green-500 text-white border-0 text-xs">
-            Live
-          </Badge>
-        )}
-        {isFinished && (
-          <Badge variant="outline" className="text-xs text-muted-foreground border-white/20">
-            FT
-          </Badge>
-        )}
       </div>
     </div>
   );
