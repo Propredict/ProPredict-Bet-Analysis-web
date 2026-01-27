@@ -105,7 +105,7 @@ export function BettingTickets() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-card/80 border border-primary/30 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-primary/20">
             <Ticket className="h-4 w-4 text-primary" />

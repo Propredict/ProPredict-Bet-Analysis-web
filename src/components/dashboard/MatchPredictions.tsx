@@ -97,7 +97,7 @@ export function MatchPredictions() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-card/80 border border-accent/30 shadow-[0_0_10px_rgba(249,115,22,0.1)]">
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-accent/20 via-accent/10 to-transparent border border-accent/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]">
         <div className="p-1.5 rounded-md bg-accent/20">
           <TrendingUp className="h-4 w-4 text-accent" />
         </div>
