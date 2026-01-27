@@ -150,7 +150,7 @@ export function MatchPredictions() {
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       ) : displayedTips.length > 0 ? (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {displayedTips.map(tip => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
             const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
