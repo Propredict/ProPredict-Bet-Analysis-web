@@ -26,16 +26,18 @@ export default function DailyTickets() {
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
   return <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          <div className="p-1.5 rounded-md bg-amber-500/20">
+            <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
+          </div>
           <div>
             <h1 className="text-sm text-foreground sm:text-lg font-semibold">Daily Tickets</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Curated multi-bet combinations updated daily</p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+          <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
             <Ticket className="h-2.5 w-2.5 mr-0.5" />
             Daily
           </Badge>

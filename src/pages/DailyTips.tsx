@@ -24,16 +24,18 @@ export default function DailyTips() {
   const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
   return <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-border">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5">
-          <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+          <div className="p-1.5 rounded-md bg-amber-500/20">
+            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
+          </div>
           <div>
             <h1 className="text-xs text-foreground sm:text-lg font-semibold">Daily Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">AI-curated predictions updated daily</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30 text-[9px] px-1.5 py-0.5">
+          <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] px-1.5 py-0.5">
             <Sparkles className="h-2.5 w-2.5 mr-0.5" />
             Free
           </Badge>
