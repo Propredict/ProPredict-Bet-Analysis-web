@@ -72,81 +72,63 @@ export function LeagueStatsFixturesTab({ leagueId, leagueName }: LeagueStatsFixt
       <div
         key={m.id}
         onClick={() => setSelectedMatch(m)}
-        className="px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer border-b border-border last:border-0"
+        className="px-3 sm:px-4 py-3 sm:py-4 hover:bg-secondary/30 transition-colors cursor-pointer border-b border-border last:border-0"
       >
-        {/* Desktop Grid Layout */}
-        <div className="grid grid-cols-[50px_1fr_80px_1fr_80px] md:grid-cols-[60px_1fr_100px_1fr_100px] items-center gap-2">
-          {/* Time/Status - Left */}
-          <div className="flex-shrink-0">
-            {isUpcoming && <span className="text-sm text-muted-foreground">{m.startTime}</span>}
+        {/* Mobile-first responsive layout */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Time/Status - Compact */}
+          <div className="flex-shrink-0 w-10 sm:w-14 text-center">
+            {isUpcoming && <span className="text-xs sm:text-sm text-muted-foreground">{m.startTime}</span>}
             {isLive && (
-              <Badge className="bg-destructive/15 text-destructive border-0 text-xs animate-pulse">
+              <Badge className="bg-destructive/15 text-destructive border-0 text-[10px] sm:text-xs px-1.5 animate-pulse">
                 {m.minute}'
               </Badge>
             )}
-            {isFinished && <span className="text-success text-xs font-medium">FT</span>}
+            {isFinished && <span className="text-success text-[10px] sm:text-xs font-medium">FT</span>}
           </div>
 
-          {/* Home Team - Right aligned */}
-          <div className="flex items-center gap-2 justify-end min-w-0">
-            <span className="text-sm truncate text-right" title={m.homeTeam}>
-              {m.homeTeam}
-            </span>
-            {m.homeLogo && (
-              <img src={m.homeLogo} alt="" className="h-6 w-6 object-contain flex-shrink-0" />
-            )}
-          </div>
+          {/* Teams & Score - Flexible width */}
+          <div className="flex-1 min-w-0 flex items-center justify-between gap-1 sm:gap-2">
+            {/* Home Team */}
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-end">
+              <span className="text-xs sm:text-sm truncate text-right" title={m.homeTeam}>
+                {m.homeTeam}
+              </span>
+              {m.homeLogo && (
+                <img src={m.homeLogo} alt="" className="h-5 w-5 sm:h-6 sm:w-6 object-contain flex-shrink-0" />
+              )}
+            </div>
 
-          {/* Score - Centered */}
-          <div className="flex justify-center">
+            {/* Score - Fixed width */}
             <div className={cn(
-              "px-4 py-1.5 rounded-lg min-w-[70px] text-center",
+              "px-2 sm:px-3 py-1 rounded-md min-w-[50px] sm:min-w-[65px] text-center flex-shrink-0",
               isLive && "bg-destructive/10 border border-destructive/30",
               isFinished && "bg-primary/10 border border-primary/20",
               isUpcoming && "bg-secondary border border-border"
             )}>
               <span className={cn(
-                "font-bold text-base tracking-wider",
+                "font-bold text-xs sm:text-sm tracking-wider",
                 isLive && "text-destructive"
               )}>
                 {isUpcoming ? (
-                  <span className="text-muted-foreground text-sm">vs</span>
+                  <span className="text-muted-foreground text-[10px] sm:text-xs">vs</span>
                 ) : (
                   <>
-                    {m.homeScore ?? 0} <span className="text-muted-foreground">-</span> {m.awayScore ?? 0}
+                    {m.homeScore ?? 0} - {m.awayScore ?? 0}
                   </>
                 )}
               </span>
             </div>
-          </div>
 
-          {/* Away Team - Left aligned */}
-          <div className="flex items-center gap-2 min-w-0">
-            {m.awayLogo && (
-              <img src={m.awayLogo} alt="" className="h-6 w-6 object-contain flex-shrink-0" />
-            )}
-            <span className="text-sm truncate" title={m.awayTeam}>
-              {m.awayTeam}
-            </span>
-          </div>
-
-          {/* Status Badge - Right */}
-          <div className="text-right hidden sm:block">
-            {isUpcoming && (
-              <Badge variant="outline" className="text-xs">
-                Upcoming
-              </Badge>
-            )}
-            {isLive && (
-              <Badge className="bg-destructive/15 text-destructive border border-destructive/30 text-xs">
-                LIVE
-              </Badge>
-            )}
-            {isFinished && (
-              <Badge variant="outline" className="text-success border-success/30 text-xs">
-                Finished
-              </Badge>
-            )}
+            {/* Away Team */}
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {m.awayLogo && (
+                <img src={m.awayLogo} alt="" className="h-5 w-5 sm:h-6 sm:w-6 object-contain flex-shrink-0" />
+              )}
+              <span className="text-xs sm:text-sm truncate" title={m.awayTeam}>
+                {m.awayTeam}
+              </span>
+            </div>
           </div>
         </div>
       </div>

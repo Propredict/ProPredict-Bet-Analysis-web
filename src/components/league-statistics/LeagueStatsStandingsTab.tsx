@@ -64,7 +64,7 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
             No data available
           </div>
         ) : (
-          <table className="w-full text-xs min-w-[320px]">
+          <table className="w-full text-xs min-w-0">
             <thead>
               <tr className="border-b border-white/5 text-muted-foreground">
                 <th className="px-2 sm:px-3 py-2 text-left w-6">#</th>
@@ -194,7 +194,7 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm min-w-[500px]">
+                <table className="w-full text-xs sm:text-sm min-w-0">
                   <thead>
                     <tr className="border-b border-white/10 text-muted-foreground text-[10px] sm:text-xs">
                       <th className="px-2 sm:px-3 py-2 sm:py-3 text-left w-6 sm:w-8">#</th>
