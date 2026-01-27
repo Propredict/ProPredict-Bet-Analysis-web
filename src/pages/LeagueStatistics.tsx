@@ -126,10 +126,10 @@ export default function LeagueStatistics() {
           </Card>
         </div>
 
-        {/* Tabs - Bordered style with hover glow */}
+        {/* Tabs - mobile wrap (no horizontal scroll) */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="overflow-x-auto scrollbar-hide -mx-1.5 px-1.5">
-            <div className="inline-flex gap-1.5 sm:gap-2 min-w-full pb-1">
+          <div className="w-full">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
               {[
                 { value: "live", icon: Play, label: "Live" },
                 { value: "standings", icon: Trophy, label: "Standings" },
@@ -143,7 +143,7 @@ export default function LeagueStatistics() {
                   key={value}
                   onClick={() => setActiveTab(value)}
                   className={`
-                    flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 whitespace-nowrap
+                    flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 whitespace-nowrap max-w-full
                     ${activeTab === value 
                       ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
                       : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
