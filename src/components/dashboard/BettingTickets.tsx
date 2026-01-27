@@ -24,7 +24,11 @@ function mapDbTicket(db: any): BettingTicket {
     status: db.result ?? "pending",
     totalOdds: db.total_odds,
     tier: db.tier,
-    matches: db.matches ?? [],
+    matches: (db.matches ?? []).map((m: any) => ({
+      name: m.match_name ?? "",
+      prediction: m.prediction ?? "",
+      odds: m.odds ?? 1,
+    })),
   };
 }
 
