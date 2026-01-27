@@ -53,56 +53,64 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
         <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{flag} {leagueName}</span>
       </div>
 
-      {/* Table with horizontal scroll on mobile */}
-      <div className="overflow-x-auto">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      {/* Mobile list (no horizontal scroll) + desktop table */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : error || displayTeams.length === 0 ? (
+        <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+          No data available
+        </div>
+      ) : (
+        <>
+          <div className="sm:hidden divide-y divide-white/5">
+            {displayTeams.map((team: TeamStanding) => (
+              <StandingsRowMobile key={team.rank} team={team} />
+            ))}
           </div>
-        ) : error || displayTeams.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            No data available
-          </div>
-        ) : (
-          <table className="w-full text-xs min-w-0">
-            <thead>
-              <tr className="border-b border-white/5 text-muted-foreground">
-                <th className="px-2 sm:px-3 py-2 text-left w-6">#</th>
-                <th className="px-2 sm:px-3 py-2 text-left">Team</th>
-                <th className="px-1 sm:px-3 py-2 text-center">P</th>
-                <th className="px-1 sm:px-3 py-2 text-center text-green-400">W</th>
-                <th className="px-1 sm:px-3 py-2 text-center text-yellow-400">D</th>
-                <th className="px-1 sm:px-3 py-2 text-center text-red-400">L</th>
-                <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell">GD</th>
-                <th className="px-1 sm:px-3 py-2 text-center text-primary">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayTeams.map((team: TeamStanding) => (
-                <tr key={team.rank} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className={cn("px-2 sm:px-3 py-2 font-medium", getPositionColor(team.rank, team.description))}>{team.rank}</td>
-                  <td className="px-2 sm:px-3 py-2">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      {team.team.logo && (
-                        <img src={team.team.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
-                      )}
-                      <span className="font-medium truncate max-w-[60px] sm:max-w-[100px]">{team.team.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{team.all.played}</td>
-                  <td className="px-1 sm:px-3 py-2 text-center text-green-400">{team.all.win}</td>
-                  <td className="px-1 sm:px-3 py-2 text-center text-yellow-400">{team.all.draw}</td>
-                  <td className="px-1 sm:px-3 py-2 text-center text-red-400">{team.all.lose}</td>
-                  <td className={cn("px-1 sm:px-3 py-2 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "text-muted-foreground")}>
-                    {team.goalsDiff > 0 ? `+${team.goalsDiff}` : team.goalsDiff}
-                  </td>
-                  <td className="px-1 sm:px-3 py-2 text-center font-bold text-primary">{team.points}</td>
+
+          <div className="hidden sm:block">
+            <table className="w-full text-xs min-w-0">
+              <thead>
+                <tr className="border-b border-white/5 text-muted-foreground">
+                  <th className="px-2 sm:px-3 py-2 text-left w-6">#</th>
+                  <th className="px-2 sm:px-3 py-2 text-left">Team</th>
+                  <th className="px-1 sm:px-3 py-2 text-center">P</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-green-400">W</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-yellow-400">D</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-red-400">L</th>
+                  <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell">GD</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-primary">Pts</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {displayTeams.map((team: TeamStanding) => (
+                  <tr key={team.rank} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className={cn("px-2 sm:px-3 py-2 font-medium", getPositionColor(team.rank, team.description))}>{team.rank}</td>
+                    <td className="px-2 sm:px-3 py-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        {team.team.logo && (
+                          <img src={team.team.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
+                        )}
+                        <span className="font-medium truncate max-w-[60px] sm:max-w-[100px]">{team.team.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{team.all.played}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-green-400">{team.all.win}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-yellow-400">{team.all.draw}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-red-400">{team.all.lose}</td>
+                    <td className={cn("px-1 sm:px-3 py-2 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "text-muted-foreground")}>
+                      {team.goalsDiff > 0 ? `+${team.goalsDiff}` : team.goalsDiff}
+                    </td>
+                    <td className="px-1 sm:px-3 py-2 text-center font-bold text-primary">{team.points}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {/* Legend - wrap on mobile */}
       <div className="px-3 sm:px-4 py-2 border-t border-white/5 flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-muted-foreground">
@@ -193,8 +201,31 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
                 No standings data available
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm min-w-0">
+              <>
+                {/* Mobile list */}
+                <div className="sm:hidden divide-y divide-white/5">
+                  {standings.map((team: TeamStanding) => {
+                    const stats = filter === "all" ? team.all : filter === "home" ? team.home : team.away;
+                    const played = stats?.played || team.all.played;
+                    const win = stats?.win || team.all.win;
+                    const draw = stats?.draw || team.all.draw;
+                    const lose = stats?.lose || team.all.lose;
+                    const goalsFor = stats?.goals?.for || team.all.goals.for;
+                    const goalsAgainst = stats?.goals?.against || team.all.goals.against;
+
+                    return (
+                      <StandingsRowMobile
+                        key={team.rank}
+                        team={team}
+                        overrides={{ played, win, draw, lose, goalsFor, goalsAgainst }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Desktop table */}
+                <div className="hidden sm:block">
+                  <table className="w-full text-xs sm:text-sm min-w-0">
                   <thead>
                     <tr className="border-b border-white/10 text-muted-foreground text-[10px] sm:text-xs">
                       <th className="px-2 sm:px-3 py-2 sm:py-3 text-left w-6 sm:w-8">#</th>
@@ -261,12 +292,76 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
                       );
                     })}
                   </tbody>
-                </table>
-              </div>
+                  </table>
+                </div>
+              </>
             )}
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function StandingsRowMobile({
+  team,
+  overrides,
+}: {
+  team: TeamStanding;
+  overrides?: {
+    played: number;
+    win: number;
+    draw: number;
+    lose: number;
+    goalsFor: number;
+    goalsAgainst: number;
+  };
+}) {
+  const played = overrides?.played ?? team.all.played;
+  const win = overrides?.win ?? team.all.win;
+  const draw = overrides?.draw ?? team.all.draw;
+  const lose = overrides?.lose ?? team.all.lose;
+  const goalsFor = overrides?.goalsFor ?? team.all.goals.for;
+  const goalsAgainst = overrides?.goalsAgainst ?? team.all.goals.against;
+
+  return (
+    <div className="px-3 py-2">
+      <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "flex-shrink-0 w-6 text-center font-bold",
+            getPositionColor(team.rank, team.description)
+          )}
+        >
+          {team.rank}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {team.team.logo && (
+              <img
+                src={team.team.logo}
+                alt=""
+                className="w-4 h-4 object-contain flex-shrink-0"
+              />
+            )}
+            <span className="font-medium truncate">{team.team.name}</span>
+          </div>
+
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span>P {played}</span>
+            <span className="text-green-400">W {win}</span>
+            <span className="text-yellow-400">D {draw}</span>
+            <span className="text-red-400">L {lose}</span>
+            <span>G {goalsFor}:{goalsAgainst}</span>
+          </div>
+        </div>
+
+        <div className="flex-shrink-0 text-right">
+          <div className="font-bold text-primary">{team.points}</div>
+          <div className="text-xs text-muted-foreground">Pts</div>
+        </div>
+      </div>
     </div>
   );
 }
