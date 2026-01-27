@@ -2,19 +2,22 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Loader2, LogOut } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, LogOut, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, session } = useAuth();
+  const { plan } = useUserPlan();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,6 +109,42 @@ const Profile = () => {
         variant: "destructive",
       });
       setSigningOut(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (!session?.access_token) return;
+    
+    setOpeningPortal(true);
+    try {
+      const response = await fetch(
+        "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/create-portal-session",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            returnUrl: `${window.location.origin}/profile`,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to open portal");
+      }
+
+      window.location.href = data.url;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setOpeningPortal(false);
     }
   };
 
@@ -221,6 +260,27 @@ const Profile = () => {
                   "Save Changes"
                 )}
               </Button>
+
+              {plan !== "free" && (
+                <Button
+                  variant="outline"
+                  onClick={handleManageSubscription}
+                  disabled={openingPortal}
+                  className="w-full h-8 text-xs"
+                >
+                  {openingPortal ? (
+                    <>
+                      <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="mr-1.5 h-3 w-3" />
+                      Manage Subscription
+                    </>
+                  )}
+                </Button>
+              )}
 
               <Button
                 variant="destructive"
