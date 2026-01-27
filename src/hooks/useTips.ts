@@ -45,13 +45,13 @@ export function useTips(includeAll = false) {
         .select("*")
         .order("created_at_ts", { ascending: false });
 
-      // 👤 PUBLIC VIEW → samo današnji + published
+      // 👤 PUBLIC VIEW → only show published tips where tip_date <= today
       if (!includeAll) {
         const today = getTodayBelgradeDate();
 
         query = query
           .eq("status", "published")
-          .eq("tip_date", today);
+          .lte("tip_date", today);
       }
 
       const { data, error } = await query;

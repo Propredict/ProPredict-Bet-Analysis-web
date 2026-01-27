@@ -15,6 +15,7 @@ export interface Tip {
   tier: ContentTier;
   status: ContentStatus;
   result?: TipResult | null;
+  tip_date?: string | null;
   created_at?: string;
   created_at_ts?: string;
   updated_at?: string;
@@ -48,6 +49,7 @@ export interface Ticket {
   result?: TicketResult;
   description?: string | null;
   ai_analysis?: string | null;
+  ticket_date?: string | null;
   created_at?: string;
   created_at_ts?: string;
   updated_at?: string;
