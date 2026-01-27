@@ -152,8 +152,8 @@ export default function LiveScores() {
           </Card>
         </div>
 
-        {/* FILTERS - Horizontal scroll chips */}
-        <div className="space-y-1.5 sm:space-y-2">
+        {/* FILTERS - Enhanced visibility */}
+        <div className="space-y-2 sm:space-y-3">
           {/* Leagues - chip scroll */}
           <div className="chip-scroll">
             {LEAGUES.map(l => <Button key={l} size="sm" variant={leagueFilter === l ? "default" : "outline"} onClick={() => setLeagueFilter(l)} className="chip-btn">
@@ -162,12 +162,32 @@ export default function LiveScores() {
               </Button>)}
           </div>
           
-          {/* Date selector - compact */}
-          <div className="flex gap-1 sm:gap-1.5">
-            {(["yesterday", "today", "tomorrow"] as DateMode[]).map(d => <Button key={d} onClick={() => setDateMode(d)} size="sm" className={cn("flex-1 flex-col px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md min-w-0 h-auto", dateMode === d ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground border border-border hover:bg-secondary")}>
-                <span className="capitalize text-[10px] sm:text-xs font-medium">{d}</span>
-                <span className="text-[9px] opacity-70">{getDateLabel(d)}</span>
-              </Button>)}
+          {/* Date selector - Enhanced with prominent borders */}
+          <div className="relative">
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-accent/20 to-primary/40 rounded-xl opacity-80" />
+            <div className="relative bg-card/90 backdrop-blur-sm rounded-xl p-1.5 border border-border/50 shadow-lg">
+              <div className="flex gap-1.5 sm:gap-2">
+                {(["yesterday", "today", "tomorrow"] as DateMode[]).map(d => (
+                  <Button 
+                    key={d} 
+                    onClick={() => setDateMode(d)} 
+                    size="sm" 
+                    className={cn(
+                      "flex-1 flex-col px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg min-w-0 h-auto transition-all duration-200",
+                      dateMode === d 
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-0" 
+                        : "bg-secondary/60 text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground hover:border-primary/30"
+                    )}
+                  >
+                    <span className="capitalize text-[11px] sm:text-xs font-semibold">{d}</span>
+                    <span className={cn(
+                      "text-[10px] sm:text-[11px]",
+                      dateMode === d ? "opacity-80" : "opacity-60"
+                    )}>{getDateLabel(d)}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
