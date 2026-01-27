@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Target,
   RefreshCw,
@@ -6,19 +8,28 @@ import {
   Flame,
   Sparkles,
   Loader2,
+  Calendar,
+  Star,
+  Crown,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
+import { cn } from "@/lib/utils";
 
 import { useTips } from "@/hooks/useTips";
 import { useTipAccuracy } from "@/hooks/useTipAccuracy";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
+type TabType = "daily" | "exclusive" | "premium";
+
 export default function BettingTips() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabType>("daily");
+  
   const { tips = [], isLoading, refetch } = useTips(false);
   const { data: accuracyData = [] } = useTipAccuracy();
 
@@ -39,31 +50,87 @@ export default function BettingTips() {
         ).toFixed(2)
       : "0.00";
 
+  const dailyCount = tips.filter(t => t.tier === "daily").length;
+  const exclusiveCount = tips.filter(t => t.tier === "exclusive").length;
+  const premiumCount = tips.filter(t => t.tier === "premium").length;
+
+  const filteredTips = tips.filter(tip => tip.tier === activeTab);
+  const displayedTips = filteredTips.slice(0, 4);
+  const hasMore = filteredTips.length > 4;
+
+  const getFullPageRoute = (tab: TabType) => {
+    switch (tab) {
+      case "daily": return "/daily-tips";
+      case "exclusive": return "/exclusive-tips";
+      case "premium": return "/premium-tips";
+    }
+  };
+
+  const getTabLabel = (tab: TabType) => {
+    switch (tab) {
+      case "daily": return "Daily";
+      case "exclusive": return "Pro";
+      case "premium": return "Premium";
+    }
+  };
+
+  const tabs = [
+    { id: "daily" as TabType, label: "Daily", icon: Calendar, count: dailyCount },
+    { id: "exclusive" as TabType, label: "Pro", icon: Star, count: exclusiveCount },
+    { id: "premium" as TabType, label: "Premium", icon: Crown, count: premiumCount }
+  ];
+
+  const getTabStyles = (tabId: string, isActive: boolean) => {
+    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
+    
+    switch (tabId) {
+      case "daily":
+        return isActive 
+          ? cn(baseStyles, "bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-yellow-500/25 border-amber-500/60 text-amber-400 shadow-amber-500/25")
+          : cn(baseStyles, "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 border-amber-500/30 text-amber-400/70 hover:border-amber-500/50 hover:text-amber-400");
+      case "exclusive":
+        return isActive 
+          ? cn(baseStyles, "bg-gradient-to-br from-violet-500/25 via-purple-500/20 to-indigo-500/25 border-violet-500/60 text-violet-400 shadow-violet-500/25")
+          : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-indigo-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
+      case "premium":
+        return isActive 
+          ? cn(baseStyles, "bg-gradient-to-br from-yellow-500/25 via-amber-500/20 to-orange-500/25 border-yellow-500/60 text-yellow-400 shadow-yellow-500/30 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
+          : cn(baseStyles, "bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/10 border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400");
+      default:
+        return cn(baseStyles, "bg-card border-border text-muted-foreground");
+    }
+  };
+
   return (
-    <div className="section-gap">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-accent" />
+          <div className="p-1.5 rounded-md bg-accent/20">
+            <Target className="h-4 w-4 text-accent" />
+          </div>
           <div>
-            <h1 className="font-bold">Betting Tips</h1>
-            <p className="text-xs text-muted-foreground">
-              Expert curated betting recommendations
-            </p>
+            <h1 className="text-sm sm:text-base font-semibold text-foreground">Betting Tips</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Expert curated recommendations</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Badge
             variant="outline"
-            className="bg-accent/20 text-accent border-accent/30 text-xs"
+            className="bg-accent/20 text-accent border-accent/30 text-[9px] sm:text-[10px] px-2 py-0.5"
           >
             <Flame className="h-3 w-3 mr-1" />
             Hot Picks
           </Badge>
 
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-3 w-3" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => refetch()}
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -74,8 +141,8 @@ export default function BettingTips() {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             <div>
-              <p className="font-bold">{dailyAccuracy}%</p>
-              <p className="text-xs text-muted-foreground">Success Rate</p>
+              <p className="font-bold text-sm">{dailyAccuracy}%</p>
+              <p className="text-[10px] text-muted-foreground">Success Rate</p>
             </div>
           </div>
         </Card>
@@ -84,8 +151,8 @@ export default function BettingTips() {
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-accent" />
             <div>
-              <p className="font-bold">{avgOdds}</p>
-              <p className="text-xs text-muted-foreground">Avg Odds</p>
+              <p className="font-bold text-sm">{avgOdds}</p>
+              <p className="text-[10px] text-muted-foreground">Avg Odds</p>
             </div>
           </div>
         </Card>
@@ -94,55 +161,112 @@ export default function BettingTips() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <div>
-              <p className="font-bold">
+              <p className="font-bold text-sm">
                 {unlockedCount}/{tips.length}
               </p>
-              <p className="text-xs text-muted-foreground">Unlocked</p>
+              <p className="text-[10px] text-muted-foreground">Unlocked</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Tips Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? (
-          <Card className="p-8 text-center">
-            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-          </Card>
-        ) : (
-          tips.map((tip) => {
-            const isLocked = !canAccess(tip.tier, "tip", tip.id);
-
-            return (
-              <TipCard
-                key={tip.id}
-                tip={{
-                  id: tip.id,
-                  homeTeam: tip.home_team,
-                  awayTeam: tip.away_team,
-                  league: tip.league,
-                  prediction: tip.prediction,
-                  odds: tip.odds,
-                  confidence: tip.confidence ?? 75,
-                  kickoff: tip.created_at_ts
-                    ? new Date(tip.created_at_ts).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "TBD",
-                  tier: tip.tier,
-                }}
-                isLocked={isLocked}
-                unlockMethod={getUnlockMethod(tip.tier, "tip", tip.id)}
-                isUnlocking={unlockingId === tip.id}
-                onUnlockClick={() =>
-                  handleUnlock("tip", tip.id, tip.tier)
-                }
-              />
-            );
-          })
-        )}
+      {/* Category Tabs */}
+      <div className="grid grid-cols-3 gap-2">
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          
+          return (
+            <button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)} 
+              className={getTabStyles(tab.id, isActive)}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <tab.icon className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  isActive && "scale-110 drop-shadow-lg"
+                )} />
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className={cn(
+                    "text-[9px] px-1.5 py-0.5 rounded-full",
+                    isActive ? "bg-background/20" : "bg-muted/50"
+                  )}>
+                    {tab.count}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
       </div>
+
+      {/* Tips Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : filteredTips.length > 0 ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {displayedTips.map((tip) => {
+              const isLocked = !canAccess(tip.tier, "tip", tip.id);
+
+              return (
+                <TipCard
+                  key={tip.id}
+                  tip={{
+                    id: tip.id,
+                    homeTeam: tip.home_team,
+                    awayTeam: tip.away_team,
+                    league: tip.league,
+                    prediction: tip.prediction,
+                    odds: tip.odds,
+                    confidence: tip.confidence ?? 75,
+                    kickoff: tip.created_at_ts
+                      ? new Date(tip.created_at_ts).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "TBD",
+                    tier: tip.tier,
+                  }}
+                  isLocked={isLocked}
+                  unlockMethod={getUnlockMethod(tip.tier, "tip", tip.id)}
+                  isUnlocking={unlockingId === tip.id}
+                  onUnlockClick={() =>
+                    handleUnlock("tip", tip.id, tip.tier)
+                  }
+                />
+              );
+            })}
+          </div>
+          
+          {hasMore && (
+            <div className="flex justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(getFullPageRoute(activeTab))}
+                className="gap-2"
+              >
+                See all {getTabLabel(activeTab)} tips
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <Card className="empty-state-compact bg-card/50 border-border/50">
+          <div className="flex flex-col items-center gap-2">
+            {activeTab === "daily" && <Calendar className="h-6 w-6 text-accent/40" />}
+            {activeTab === "exclusive" && <Star className="h-6 w-6 text-primary/40" />}
+            {activeTab === "premium" && <Crown className="h-6 w-6 text-warning/40" />}
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">No {activeTab} tips available</p>
+              <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
