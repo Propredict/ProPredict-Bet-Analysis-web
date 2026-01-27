@@ -6,7 +6,7 @@ import { GuestBanner } from "@/components/GuestBanner";
 
 const Index = () => {
   return (
-    <div className="section-gap">
+    <div className="space-y-6">
       <GuestBanner />
       <FeaturedPredictions />
       <MatchPredictions />

@@ -48,18 +48,22 @@ export default function AllTickets() {
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    if (!isActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/50";
+    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
     
-    switch (tabId) {
-      case "daily":
-        return "bg-accent/20 text-accent border border-accent/30";
-      case "exclusive":
-        return "bg-primary/20 text-primary border border-primary/30";
-      case "premium":
-        return "bg-warning/20 text-warning border border-warning/30";
-      default:
-        return "bg-primary text-primary-foreground";
+    if (isActive) {
+      switch (tabId) {
+        case "daily":
+          return cn(baseStyles, "bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-amber-500/50 text-amber-400 shadow-amber-500/20");
+        case "exclusive":
+          return cn(baseStyles, "bg-gradient-to-br from-violet-500/20 via-purple-500/15 to-indigo-500/20 border-violet-500/50 text-violet-400 shadow-violet-500/20");
+        case "premium":
+          return cn(baseStyles, "bg-gradient-to-br from-yellow-500/20 via-amber-500/15 to-orange-500/20 border-yellow-500/50 text-yellow-400 shadow-yellow-500/25 glow-warning");
+        default:
+          return cn(baseStyles, "bg-primary/20 border-primary/50 text-primary");
+      }
     }
+    
+    return cn(baseStyles, "bg-card/60 border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-border/60");
   };
 
   const handleRefresh = () => {
@@ -68,7 +72,7 @@ export default function AllTickets() {
   };
 
   return (
-    <div className="section-gap">
+    <div className="space-y-5">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -102,37 +106,36 @@ export default function AllTickets() {
         <AllTicketsStatCard icon={Crown} count={premiumCount} label="Premium" accentColor="warning" />
       </div>
 
-      {/* Category Tabs - Enhanced */}
-      <Card className="p-1 bg-card/80 backdrop-blur-sm border-border/50">
-        <div className="grid grid-cols-3 gap-1">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button 
-                key={tab.id} 
-                onClick={() => setActiveTab(tab.id)} 
-                className={cn(
-                  "flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200",
-                  getTabStyles(tab.id, isActive)
-                )}
-              >
-                <tab.icon className="h-3.5 w-3.5" />
+      {/* Category Tabs - Card-like styling matching Dashboard */}
+      <div className="grid grid-cols-3 gap-2">
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          
+          return (
+            <button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)} 
+              className={getTabStyles(tab.id, isActive)}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <tab.icon className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  isActive && "scale-110 drop-shadow-lg"
+                )} />
                 <span>{tab.label}</span>
-                <Badge 
-                  variant="secondary" 
-                  className={cn(
-                    "text-[8px] px-1.5 py-0 h-4 min-w-[18px]",
-                    isActive ? "bg-background/30 font-semibold" : "bg-muted/50"
-                  )}
-                >
-                  {tab.count}
-                </Badge>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+                {tab.count > 0 && (
+                  <span className={cn(
+                    "text-[9px] px-1.5 py-0.5 rounded-full",
+                    isActive ? "bg-background/20" : "bg-muted/50"
+                  )}>
+                    {tab.count}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Ticket Grid */}
       {isLoading ? (

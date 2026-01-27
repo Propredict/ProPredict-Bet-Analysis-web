@@ -92,7 +92,7 @@ export function MatchPredictions() {
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       {/* Section Header */}
       <div className="flex items-center gap-2">
         <div className="p-1.5 rounded-md bg-accent/20">
