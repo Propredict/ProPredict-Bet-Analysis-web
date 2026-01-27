@@ -88,7 +88,8 @@ export function BettingTickets() {
       }
     }
     
-    return cn(baseStyles, "bg-card/60 border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-border/60");
+    // Inactive tabs with visible background
+    return cn(baseStyles, "bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-border/80");
   };
 
   const getCtaLabel = () => {
