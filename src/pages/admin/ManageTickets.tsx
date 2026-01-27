@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Search, X, Calendar, Sparkles } from "lucide-react";
+import { Plus, Loader2, Search, X, Calendar, Sparkles, CalendarIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useTickets } from "@/hooks/useTickets";
 import { useFixtures } from "@/hooks/useFixtures";
 import { AdminTicketCard } from "@/components/admin/AdminTicketCard";
@@ -45,6 +52,14 @@ import { createMatchName, parseMatchName } from "@/types/admin";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+// Get today's date in Belgrade timezone (YYYY-MM-DD)
+function getTodayBelgradeDate() {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+}
 
 /* =====================
    Types
@@ -82,6 +97,7 @@ export default function ManageTickets() {
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState("");
+  const [ticketDate, setTicketDate] = useState<string>(getTodayBelgradeDate());
 
   // ===== Matches
   const [matches, setMatches] = useState<MatchFormData[]>([]);
@@ -126,6 +142,7 @@ export default function ManageTickets() {
     setResult("pending");
     setDescription("");
     setAiAnalysis("");
+    setTicketDate(getTodayBelgradeDate());
     setMatches([]);
     setMatchSearch("");
     setCustomHomeTeam("");
@@ -137,6 +154,13 @@ export default function ManageTickets() {
     setTodayPrediction("");
     setTodayPredictionText("");
     setTodayOdds("1.50");
+  };
+
+  // Check if ticket is scheduled (future date)
+  const isScheduled = (date: string | null | undefined) => {
+    if (!date) return false;
+    const today = getTodayBelgradeDate();
+    return date > today;
   };
 
   const handleCreate = () => {
@@ -152,6 +176,7 @@ export default function ManageTickets() {
     setTier(ticket.tier);
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
+    setTicketDate((ticket as any).ticket_date || getTodayBelgradeDate());
 
     setMatches(
       ticket.matches?.map((m) => {
@@ -195,6 +220,7 @@ export default function ManageTickets() {
           status,
           result,
           total_odds: totalOdds,
+          ticket_date: ticketDate,
         },
         matches: dbMatches,
       });
@@ -208,6 +234,7 @@ export default function ManageTickets() {
           status,
           result,
           total_odds: totalOdds,
+          ticket_date: ticketDate,
         } as any,
         matches: dbMatches,
       });
@@ -400,6 +427,38 @@ export default function ManageTickets() {
                     <SelectItem value="lost">Lost</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Publish Date */}
+              <div>
+                <Label>Publish Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !ticketDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {ticketDate
+                        ? format(new Date(ticketDate + "T00:00:00"), "PPP")
+                        : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={ticketDate ? new Date(ticketDate + "T00:00:00") : undefined}
+                      onSelect={(date) =>
+                        setTicketDate(date ? format(date, "yyyy-MM-dd") : getTodayBelgradeDate())
+                      }
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </Card>
 

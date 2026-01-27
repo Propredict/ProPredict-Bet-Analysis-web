@@ -6,7 +6,16 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
+  CalendarIcon,
 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +61,14 @@ import type {
    Defaults
 ===================== */
 
-const defaultTip: TipInsert & { result: TipResult } = {
+// Get today's date in Belgrade timezone (YYYY-MM-DD)
+function getTodayBelgradeDate() {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+}
+
+const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   home_team: "",
   away_team: "",
   league: "",
@@ -63,6 +79,7 @@ const defaultTip: TipInsert & { result: TipResult } = {
   tier: "daily",
   status: "draft",
   result: "pending",
+  tip_date: getTodayBelgradeDate(),
 };
 
 /* =====================
@@ -125,6 +142,7 @@ export default function ManageTips() {
       tier: tip.tier,
       status: tip.status,
       result: tip.result ?? "pending",
+      tip_date: tip.tip_date || getTodayBelgradeDate(),
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
@@ -184,6 +202,13 @@ export default function ManageTips() {
     return <Badge variant="outline">PENDING</Badge>;
   };
 
+  // Check if tip is scheduled (future date)
+  const isScheduled = (tipDate: string | null | undefined) => {
+    if (!tipDate) return false;
+    const today = getTodayBelgradeDate();
+    return tipDate > today;
+  };
+
   /* =====================
      Render
   ===================== */
@@ -208,9 +233,18 @@ export default function ManageTips() {
             <Card key={tip.id} className="p-4">
               <div className="flex justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex gap-2 mb-1">
+                  <div className="flex gap-2 mb-1 flex-wrap">
                     {tierBadge(tip.tier)}
-                    {resultBadge(tip.result ?? "pending")}
+                    {isScheduled(tip.tip_date) ? (
+                      <Badge className="bg-blue-500/20 text-blue-500">SCHEDULED</Badge>
+                    ) : (
+                      resultBadge(tip.result ?? "pending")
+                    )}
+                    {tip.tip_date && (
+                      <Badge variant="outline" className="text-xs">
+                        {format(new Date(tip.tip_date + "T00:00:00"), "MMM d, yyyy")}
+                      </Badge>
+                    )}
                   </div>
 
                   <p className="font-semibold">
@@ -414,6 +448,42 @@ export default function ManageTips() {
                 </Select>
               </div>
 
+              <div>
+                <Label>Publish Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.tip_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.tip_date
+                        ? format(new Date(formData.tip_date + "T00:00:00"), "PPP")
+                        : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.tip_date ? new Date(formData.tip_date + "T00:00:00") : undefined}
+                      onSelect={(date) =>
+                        setFormData({
+                          ...formData,
+                          tip_date: date ? format(date, "yyyy-MM-dd") : getTodayBelgradeDate(),
+                        })
+                      }
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <Label>Result</Label>
                 <Select

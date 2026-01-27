@@ -49,13 +49,13 @@ export function useTickets(includeAll = false) {
         .select("*, matches:ticket_matches(*)")
         .order("created_at_ts", { ascending: false });
 
-      // 👤 PUBLIC VIEW → samo današnji published ticket
+      // 👤 PUBLIC VIEW → only show published tickets where ticket_date <= today
       if (!includeAll) {
         const today = getTodayBelgradeDate();
 
         query = query
           .eq("status", "published")
-          .eq("ticket_date", today);
+          .lte("ticket_date", today);
       }
 
       const { data, error } = await query;

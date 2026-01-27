@@ -11,6 +11,7 @@ import {
   Star,
   Crown,
   Sparkles,
+  CalendarClock,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,14 @@ import { Button } from "@/components/ui/button";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { ContentTier, TicketResult } from "@/types/admin";
 import { parseMatchName } from "@/types/admin";
+import { format } from "date-fns";
+
+// Get today's date in Belgrade timezone (YYYY-MM-DD)
+function getTodayBelgradeDate() {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+}
 
 interface AdminTicketCardProps {
   ticket: TicketWithMatches;
@@ -106,15 +115,30 @@ export function AdminTicketCard({
   const result = (ticket as any).result ?? "pending";
   const isPublished = ticket.status === "published";
 
+  const ticketDate = (ticket as any).ticket_date;
+  const isScheduled = ticketDate && ticketDate > getTodayBelgradeDate();
+
   return (
     <Card className="bg-card border-border overflow-hidden">
       {/* Header Section */}
       <div className="p-4 space-y-3">
         {/* Row 1: Badges */}
         <div className="flex flex-wrap items-center gap-2">
-          {getResultBadge(result)}
+          {isScheduled ? (
+            <Badge className="gap-1 bg-blue-500/20 text-blue-500 border-blue-500/30">
+              <CalendarClock className="h-3 w-3" />
+              Scheduled
+            </Badge>
+          ) : (
+            getResultBadge(result)
+          )}
           {getTierBadge(ticket.tier)}
           {getStatusBadge(ticket.status)}
+          {ticketDate && (
+            <Badge variant="outline" className="text-xs">
+              {format(new Date(ticketDate + "T00:00:00"), "MMM d, yyyy")}
+            </Badge>
+          )}
           <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 ml-auto">
             @{ticket.total_odds?.toFixed(2) || "1.00"}
           </Badge>
