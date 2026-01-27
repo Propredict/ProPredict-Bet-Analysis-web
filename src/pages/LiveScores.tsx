@@ -191,17 +191,17 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATUS TABS - Individual bordered tabs */}
+        {/* STATUS TABS - Individual bordered tabs with hover glow */}
         <div className="flex gap-2">
           {allowedStatusTabs.map((tab) => (
             <button 
               key={tab}
               onClick={() => setStatusTab(tab)} 
               className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-[11px] sm:text-xs font-medium transition-all duration-200",
+                "flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-[11px] sm:text-xs font-medium transition-all duration-300",
                 statusTab === tab 
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card"
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
               )}
             >
               {tab === "all" && <Trophy className="h-3.5 w-3.5" />}
