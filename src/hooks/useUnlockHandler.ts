@@ -8,10 +8,41 @@ interface UseUnlockHandlerOptions {
   onUpgradePremium?: () => void;
 }
 
+interface AdModalState {
+  isOpen: boolean;
+  contentType: ContentType | null;
+  contentId: string | null;
+}
+
 export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   const navigate = useNavigate();
   const { getUnlockMethod, unlockContent } = useUserPlan();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
+  const [adModal, setAdModal] = useState<AdModalState>({
+    isOpen: false,
+    contentType: null,
+    contentId: null,
+  });
+
+  const handleAdComplete = useCallback(async () => {
+    if (!adModal.contentType || !adModal.contentId) return;
+
+    const success = await unlockContent(adModal.contentType, adModal.contentId);
+
+    if (success) {
+      toast.success(
+        `${adModal.contentType === "tip" ? "Tip" : "Ticket"} unlocked! Valid until midnight UTC.`
+      );
+    } else {
+      toast.error("Failed to unlock. Please try again.");
+    }
+
+    setUnlockingId(null);
+  }, [adModal.contentType, adModal.contentId, unlockContent]);
+
+  const closeAdModal = useCallback(() => {
+    setAdModal({ isOpen: false, contentType: null, contentId: null });
+  }, []);
 
   const handleUnlock = useCallback(
     async (
@@ -30,23 +61,13 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
       if (method.type === "watch_ad") {
         setUnlockingId(contentId);
-        toast.info("Playing rewarded ad...", { duration: 2000 });
-
-        // Simulate ad playback delay
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        const success = await unlockContent(contentType, contentId);
-
-        if (success) {
-          toast.success(
-            `${contentType === "tip" ? "Tip" : "Ticket"} unlocked! Valid until midnight UTC.`
-          );
-        } else {
-          toast.error("Failed to unlock. Please try again.");
-        }
-
-        setUnlockingId(null);
-        return success;
+        // Open the ad modal instead of showing a toast
+        setAdModal({
+          isOpen: true,
+          contentType,
+          contentId,
+        });
+        return false; // Will be unlocked via modal callback
       }
 
       if (method.type === "upgrade_basic") {
@@ -69,12 +90,16 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
       return false;
     },
-    [getUnlockMethod, unlockContent, navigate, options]
+    [getUnlockMethod, navigate, options]
   );
 
   return {
     unlockingId,
     handleUnlock,
     getUnlockMethod,
+    // Ad modal state and handlers
+    adModalOpen: adModal.isOpen,
+    handleAdComplete,
+    closeAdModal,
   };
 }
