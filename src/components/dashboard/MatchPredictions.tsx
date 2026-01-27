@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { TrendingUp, Sparkles, Star, Crown, Users, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { TrendingUp, Sparkles, Star, Crown, Users, Loader2, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -24,7 +26,14 @@ function mapDbTipToTip(dbTip: any): Tip {
   };
 }
 
+const TAB_ROUTES: Record<TabType, string> = {
+  daily: "/daily-tips",
+  exclusive: "/exclusive-tips",
+  premium: "/premium-tips"
+};
+
 export function MatchPredictions() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
@@ -46,30 +55,44 @@ export function MatchPredictions() {
   const { tips: dbTips = [], isLoading } = tipsQuery;
   const tips = dbTips.map(mapDbTipToTip);
   const filteredTips = tips.filter(t => t.tier === activeTab);
+  const displayedTips = filteredTips.slice(0, 4);
+  const hasMoreTips = filteredTips.length > 4;
 
   const tabs = [
-    { id: "daily", label: "Daily", icon: Sparkles, color: "accent" },
-    { id: "exclusive", label: "Pro", icon: Star, color: "primary" },
-    { id: "premium", label: "Premium", icon: Crown, color: "warning" }
+    { id: "daily", label: "Daily", icon: Sparkles },
+    { id: "exclusive", label: "Pro", icon: Star },
+    { id: "premium", label: "Premium", icon: Crown }
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    if (!isActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/50";
+    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
     
-    switch (tabId) {
-      case "daily":
-        return "bg-accent/20 text-accent border border-accent/30";
-      case "exclusive":
-        return "bg-primary/20 text-primary border border-primary/30";
-      case "premium":
-        return "bg-warning/20 text-warning border border-warning/30";
-      default:
-        return "bg-primary text-primary-foreground";
+    if (isActive) {
+      switch (tabId) {
+        case "daily":
+          return cn(baseStyles, "bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-amber-500/50 text-amber-400 shadow-amber-500/20");
+        case "exclusive":
+          return cn(baseStyles, "bg-gradient-to-br from-violet-500/20 via-purple-500/15 to-indigo-500/20 border-violet-500/50 text-violet-400 shadow-violet-500/20");
+        case "premium":
+          return cn(baseStyles, "bg-gradient-to-br from-yellow-500/20 via-amber-500/15 to-orange-500/20 border-yellow-500/50 text-yellow-400 shadow-yellow-500/25 glow-warning");
+        default:
+          return cn(baseStyles, "bg-primary/20 border-primary/50 text-primary");
+      }
+    }
+    
+    return cn(baseStyles, "bg-card/60 border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-border/60");
+  };
+
+  const getCtaLabel = () => {
+    switch (activeTab) {
+      case "daily": return "See all Daily tips";
+      case "exclusive": return "See all Pro tips";
+      case "premium": return "See all Premium tips";
     }
   };
 
   return (
-    <section className="space-y-2.5">
+    <section className="space-y-3">
       {/* Section Header */}
       <div className="flex items-center gap-2">
         <div className="p-1.5 rounded-md bg-accent/20">
@@ -81,39 +104,39 @@ export function MatchPredictions() {
         </div>
       </div>
 
-      {/* Tab Navigation - Enhanced */}
-      <Card className="p-1 bg-card/80 backdrop-blur-sm border-border/50">
-        <div className="grid grid-cols-3 gap-1">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            const count = tips.filter(t => t.tier === tab.id).length;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={cn(
-                  "relative py-2 sm:py-2.5 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200",
-                  getTabStyles(tab.id, isActive)
-                )}
-              >
-                <tab.icon className={cn("h-3.5 w-3.5 mx-auto", isActive && "drop-shadow-sm")} />
-                <p className="mt-0.5">{tab.label}</p>
+      {/* Tab Navigation - Card-like styling */}
+      <div className="grid grid-cols-3 gap-2">
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          const count = tips.filter(t => t.tier === tab.id).length;
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={getTabStyles(tab.id, isActive)}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <tab.icon className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  isActive && "scale-110 drop-shadow-lg"
+                )} />
+                <span>{tab.label}</span>
                 {count > 0 && (
                   <span className={cn(
-                    "text-[8px] opacity-80",
-                    isActive ? "font-semibold" : "opacity-60"
+                    "text-[9px] px-1.5 py-0.5 rounded-full",
+                    isActive ? "bg-background/20" : "bg-muted/50"
                   )}>
-                    ({count})
+                    {count}
                   </span>
                 )}
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Social Proof Banner - Subtle */}
+      {/* Social Proof Banner */}
       <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md bg-primary/5 border border-primary/10">
         <Users className="h-3 w-3 text-primary/70" />
         <span className="text-[9px] text-muted-foreground">
@@ -121,14 +144,14 @@ export function MatchPredictions() {
         </span>
       </div>
 
-      {/* Tips Content */}
+      {/* Tips Content - Limited to 4 */}
       {isLoading ? (
         <div className="flex justify-center py-6">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
-      ) : filteredTips.length > 0 ? (
-        <div className="space-y-2">
-          {filteredTips.map(tip => {
+      ) : displayedTips.length > 0 ? (
+        <div className="space-y-2.5">
+          {displayedTips.map(tip => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
             const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
             return (
@@ -142,15 +165,27 @@ export function MatchPredictions() {
               />
             );
           })}
+          
+          {/* See All CTA */}
+          {(hasMoreTips || filteredTips.length > 0) && (
+            <Button
+              variant="outline"
+              className="w-full mt-3 border-border/50 hover:border-primary/50 hover:bg-primary/5 group"
+              onClick={() => navigate(TAB_ROUTES[activeTab])}
+            >
+              <span>{getCtaLabel()}</span>
+              <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+          )}
         </div>
       ) : (
         <Card className="empty-state-compact bg-card/50 border-border/50">
           <div className="flex flex-col items-center gap-1">
-            {activeTab === "daily" && <Sparkles className="h-5 w-5 text-accent/50" />}
-            {activeTab === "exclusive" && <Star className="h-5 w-5 text-primary/50" />}
-            {activeTab === "premium" && <Crown className="h-5 w-5 text-warning/50" />}
+            {activeTab === "daily" && <Sparkles className="h-5 w-5 text-amber-500/50" />}
+            {activeTab === "exclusive" && <Star className="h-5 w-5 text-violet-500/50" />}
+            {activeTab === "premium" && <Crown className="h-5 w-5 text-yellow-500/50" />}
             <p className="text-[10px] text-muted-foreground">
-              No {activeTab} tips available
+              No {activeTab === "exclusive" ? "Pro" : activeTab} tips available
             </p>
           </div>
         </Card>
