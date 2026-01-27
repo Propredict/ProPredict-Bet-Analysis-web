@@ -126,39 +126,35 @@ export default function LeagueStatistics() {
           </Card>
         </div>
 
-        {/* Tabs - Horizontal scroll on mobile */}
+        {/* Tabs - Bordered style with hover glow */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto scrollbar-hide -mx-1.5 px-1.5">
-            <TabsList className="inline-flex w-auto min-w-full bg-secondary/50 border border-border p-0.5 rounded-md">
-              <TabsTrigger value="live" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Live</span>
-              </TabsTrigger>
-              <TabsTrigger value="standings" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Standings</span>
-              </TabsTrigger>
-              <TabsTrigger value="scorers" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Scorers</span>
-              </TabsTrigger>
-              <TabsTrigger value="assists" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Assists</span>
-              </TabsTrigger>
-              <TabsTrigger value="fixtures" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Fixtures</span>
-              </TabsTrigger>
-              <TabsTrigger value="rounds" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <RotateCcw className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>Rounds</span>
-              </TabsTrigger>
-              <TabsTrigger value="h2h" className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 sm:py-1.5 text-[9px] sm:text-[10px]">
-                <Swords className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span>H2H</span>
-              </TabsTrigger>
-            </TabsList>
+            <div className="inline-flex gap-1.5 sm:gap-2 min-w-full pb-1">
+              {[
+                { value: "live", icon: Play, label: "Live" },
+                { value: "standings", icon: Trophy, label: "Standings" },
+                { value: "scorers", icon: Target, label: "Scorers" },
+                { value: "assists", icon: Users, label: "Assists" },
+                { value: "fixtures", icon: Calendar, label: "Fixtures" },
+                { value: "rounds", icon: RotateCcw, label: "Rounds" },
+                { value: "h2h", icon: Swords, label: "H2H" },
+              ].map(({ value, icon: Icon, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={`
+                    flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 whitespace-nowrap
+                    ${activeTab === value 
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
+                      : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                    }
+                  `}
+                >
+                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Live Tab - always shows content */}
