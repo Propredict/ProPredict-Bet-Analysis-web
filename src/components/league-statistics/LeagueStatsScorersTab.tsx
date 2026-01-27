@@ -44,45 +44,45 @@ export function LeagueStatsScorersTab({ leagueId, leagueName }: LeagueStatsScore
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs sm:text-sm min-w-0">
               <thead>
-                <tr className="border-b border-white/10 text-muted-foreground text-xs">
-                  <th className="px-3 py-3 text-left w-8">#</th>
-                  <th className="px-3 py-3 text-left">Player</th>
-                  <th className="px-3 py-3 text-left">Team</th>
-                  <th className="px-3 py-3 text-center">Games</th>
-                  <th className="px-3 py-3 text-center text-green-400">Goals</th>
-                  <th className="px-3 py-3 text-center">Assists</th>
-                  <th className="px-3 py-3 text-center">Penalties</th>
+                <tr className="border-b border-white/10 text-muted-foreground text-[10px] sm:text-xs">
+                  <th className="px-2 sm:px-3 py-2 sm:py-3 text-left w-6">#</th>
+                  <th className="px-2 sm:px-3 py-2 sm:py-3 text-left">Player</th>
+                  <th className="px-2 sm:px-3 py-2 sm:py-3 text-left hidden sm:table-cell">Team</th>
+                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">GP</th>
+                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">G</th>
+                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">A</th>
+                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden md:table-cell">P</th>
                 </tr>
               </thead>
               <tbody>
                 {players.map((item: PlayerStats, index: number) => (
                   <tr key={item.player.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="px-3 py-3 font-bold text-primary">{index + 1}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
+                    <td className="px-2 sm:px-3 py-2 sm:py-3 font-bold text-primary">{index + 1}</td>
+                    <td className="px-2 sm:px-3 py-2 sm:py-3">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
                         {item.player.photo && (
-                          <img src={item.player.photo} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          <img src={item.player.photo} alt="" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
                         )}
-                        <div>
-                          <div className="font-medium">{item.player.name}</div>
-                          <div className="text-xs text-muted-foreground">{item.player.nationality}</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{item.player.name}</div>
+                          <div className="text-[9px] sm:text-xs text-muted-foreground truncate sm:hidden">{item.team.name}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="px-2 sm:px-3 py-2 sm:py-3 hidden sm:table-cell">
                       <div className="flex items-center gap-2">
                         {item.team.logo && (
-                          <img src={item.team.logo} alt="" className="w-5 h-5 object-contain" />
+                          <img src={item.team.logo} alt="" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
                         )}
-                        <span className="text-muted-foreground">{item.team.name}</span>
+                        <span className="text-muted-foreground truncate max-w-[100px]">{item.team.name}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center text-muted-foreground">{item.games.appearances}</td>
-                    <td className="px-3 py-3 text-center font-bold text-green-400">{item.goals}</td>
-                    <td className="px-3 py-3 text-center text-muted-foreground">{item.assists || 0}</td>
-                    <td className="px-3 py-3 text-center text-muted-foreground">{item.penalties || 0}</td>
+                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">{item.games.appearances}</td>
+                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center font-bold text-green-400">{item.goals}</td>
+                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden sm:table-cell">{item.assists || 0}</td>
+                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden md:table-cell">{item.penalties || 0}</td>
                   </tr>
                 ))}
               </tbody>
