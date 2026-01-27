@@ -9,6 +9,8 @@ import {
   Clock,
   Shield,
   Star,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,6 +22,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { toast } from "sonner";
 
 const plans = {
   monthly: [
@@ -43,11 +46,11 @@ const plans = {
     },
     {
       id: "basic",
-      name: "Basic",
+      name: "Pro",
       price: "$3.99",
       period: "/month",
       description: "Unlock all tips without watching ads",
-      buttonText: "Get Basic",
+      buttonText: "Get Pro",
       buttonVariant: "default" as const,
       popular: true,
       features: [
@@ -69,7 +72,7 @@ const plans = {
       buttonText: "Get Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Basic features", included: true },
+        { text: "All Pro features", included: true },
         { text: "All premium tickets", included: true },
         { text: "VIP accumulator bets", included: true },
         { text: "Full AI analysis", included: true },
@@ -99,12 +102,12 @@ const plans = {
     },
     {
       id: "basic",
-      name: "Basic",
+      name: "Pro",
       price: "$39.99",
       period: "/year",
       savings: "$3.33/mo - Save 17%",
       description: "Unlock all tips without watching ads",
-      buttonText: "Get Basic",
+      buttonText: "Get Pro",
       buttonVariant: "default" as const,
       popular: true,
       features: [
@@ -127,7 +130,7 @@ const plans = {
       buttonText: "Get Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Basic features", included: true },
+        { text: "All Pro features", included: true },
         { text: "All premium tickets", included: true },
         { text: "VIP accumulator bets", included: true },
         { text: "Full AI analysis", included: true },
@@ -155,9 +158,9 @@ const stats = [
 ];
 
 const faqs = [
-  { question: "Can I cancel anytime?", answer: "Yes, you can cancel anytime." },
-  { question: "How do premium tips work?", answer: "Expert curated predictions with full analysis." },
-  { question: "Is there a money-back guarantee?", answer: "Yes, 30-day refund guarantee." },
+  { question: "Can I cancel anytime?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period." },
+  { question: "How do premium tips work?", answer: "Our expert analysts provide carefully curated predictions with detailed analysis, giving you the edge you need to make informed decisions." },
+  { question: "Is there a money-back guarantee?", answer: "Yes, we offer a 30-day money-back guarantee. If you're not satisfied, contact support for a full refund." },
 ];
 
 export default function GetPremium() {
@@ -166,37 +169,186 @@ export default function GetPremium() {
 
   const currentPlans = plans[billingPeriod];
 
-  const handleSubscribe = (planId: string) => {
-    alert(`Subscribe clicked: ${planId} (${billingPeriod})`);
+  const handleSubscribe = (planId: string, planName: string) => {
+    if (planId === "free" || currentPlan === planId) return;
+    
+    toast.info(`Subscription to ${planName} coming soon!`, {
+      description: "Payment integration will be available shortly.",
+    });
   };
 
   return (
-    <div className="py-4 max-w-5xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {currentPlans.map((plan) => (
-          <Card key={plan.id} className="p-4">
-            <h3 className="text-center font-semibold mb-2">{plan.name}</h3>
-            <p className="text-center text-lg font-bold">{plan.price}{plan.period}</p>
+    <div className="section-gap max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <div className="flex items-center justify-center gap-2">
+          <Crown className="h-6 w-6 text-warning" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience</h1>
+        </div>
+        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
+      </div>
 
-            <Button
-              className="w-full mt-3"
-              disabled={currentPlan === plan.id}
-              onClick={() => handleSubscribe(plan.id)}
+      {/* Billing Toggle */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+          <button
+            onClick={() => setBillingPeriod("monthly")}
+            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+              billingPeriod === "monthly"
+                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingPeriod("annual")}
+            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+              billingPeriod === "annual"
+                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Annual
+            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
+          </button>
+        </div>
+      </div>
+
+      {/* Pricing Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {currentPlans.map((plan) => {
+          const isCurrentPlan = currentPlan === plan.id;
+          const isPremium = plan.id === "premium";
+          const isPopular = plan.popular;
+
+          return (
+            <Card
+              key={plan.id}
+              className={`relative p-4 transition-all ${
+                isPremium
+                  ? "bg-gradient-to-b from-warning/10 via-card to-card border-warning/30 ring-1 ring-warning/20"
+                  : isPopular
+                  ? "bg-gradient-to-b from-primary/10 via-card to-card border-primary/30"
+                  : "bg-card border-border"
+              }`}
             >
-              {currentPlan === plan.id ? "Current Plan" : plan.buttonText}
-            </Button>
+              {isPremium && (
+                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-warning via-accent to-primary text-white border-0 text-[9px] px-2">
+                  <Crown className="h-2.5 w-2.5 mr-1" />
+                  Best Value
+                </Badge>
+              )}
+              {isPopular && !isPremium && (
+                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground border-0 text-[9px] px-2">
+                  <Sparkles className="h-2.5 w-2.5 mr-1" />
+                  Popular
+                </Badge>
+              )}
 
-            <ul className="mt-3 space-y-1">
-              {plan.features.map((f, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm">
-                  {f.included ? <Check className="h-4 w-4 text-primary" /> : <X className="h-4 w-4 text-muted-foreground" />}
-                  {f.text}
-                </li>
-              ))}
-            </ul>
+              <div className="text-center space-y-2 pt-2">
+                <h3 className="text-sm font-semibold text-foreground">{plan.name}</h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-xs text-muted-foreground">{plan.period}</span>
+                </div>
+                {plan.savings && (
+                  <p className="text-[10px] text-primary font-medium">{plan.savings}</p>
+                )}
+                <p className="text-[10px] text-muted-foreground">{plan.description}</p>
+              </div>
+
+              <Button
+                className={`w-full mt-4 h-8 text-xs ${
+                  isPremium && !isCurrentPlan
+                    ? "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
+                    : isPopular && !isCurrentPlan
+                    ? "bg-primary hover:bg-primary/90"
+                    : ""
+                }`}
+                variant={isCurrentPlan ? "outline" : plan.buttonVariant}
+                disabled={isCurrentPlan}
+                onClick={() => handleSubscribe(plan.id, plan.name)}
+              >
+                {isCurrentPlan ? "Current Plan" : plan.buttonText}
+              </Button>
+
+              <ul className="mt-4 space-y-2">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-center gap-2 text-[11px]">
+                    {f.included ? (
+                      <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                    )}
+                    <span className={f.included ? "text-foreground" : "text-muted-foreground/50"}>
+                      {f.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Benefits Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {benefits.map((benefit, index) => (
+          <Card key={index} className="p-3 bg-card/50 border-border hover:border-primary/30 transition-colors">
+            <div className="flex items-start gap-2">
+              <div className="p-1.5 rounded-md bg-primary/10">
+                <benefit.icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-medium text-foreground">{benefit.title}</h4>
+                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                  {benefit.description}
+                </p>
+              </div>
+            </div>
           </Card>
         ))}
       </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-4 gap-2">
+        {stats.map((stat, index) => (
+          <div key={index} className="text-center py-3">
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-lg sm:text-xl font-bold text-foreground">{stat.value}</span>
+              {stat.isStar && <Star className="h-4 w-4 text-warning fill-warning" />}
+            </div>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* FAQ Section */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground text-center">Frequently Asked Questions</h2>
+        <Accordion type="single" collapsible className="space-y-1">
+          {faqs.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              value={`faq-${index}`}
+              className="border border-border rounded-lg bg-card/50 px-3"
+            >
+              <AccordionTrigger className="text-xs font-medium text-foreground py-3 hover:no-underline">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-[11px] text-muted-foreground pb-3">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+
+      {/* Footer CTA */}
+      <p className="text-center text-xs text-muted-foreground">
+        Choose package and unlock premium features.
+      </p>
     </div>
   );
 }
