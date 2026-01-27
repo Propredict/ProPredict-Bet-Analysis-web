@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info, Smartphone } from "lucide-react";
+import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info } from "lucide-react";
 
 export function Footer() {
   const legalLinks = [
@@ -14,17 +14,19 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
-        
-        {/* Google Play Button - Clean & Minimal */}
-        <div className="flex justify-center mb-3">
-          <a 
-            href="#" 
-            className="inline-flex items-center gap-2 bg-foreground/95 text-background px-4 py-2 rounded-lg hover:bg-foreground transition-colors shadow-sm"
+
+        {/* Google Play - small square button (right aligned) */}
+        <div className="flex justify-end mb-2">
+          <a
+            href="#"
+            aria-label="Get it on Google Play"
+            title="Get it on Google Play"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-foreground/95 text-background hover:bg-foreground transition-colors shadow-sm"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/>
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" />
             </svg>
-            <span className="text-sm font-medium">Get it on Google Play</span>
+            <span className="sr-only">Get it on Google Play</span>
           </a>
         </div>
 
