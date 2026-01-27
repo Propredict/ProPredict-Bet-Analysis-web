@@ -49,6 +49,27 @@ export default function PremiumTickets() {
         </div>
       </div>
 
+      {/* Premium Unlock Banner - Above Stats */}
+      {showUpgradeBanner && (
+        <Card className="p-2 sm:p-3 bg-gradient-to-r from-yellow-500/20 via-amber-500/15 to-yellow-500/10 border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded bg-yellow-500/20">
+                <Lock className="h-4 w-4 text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Premium Access</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium tickets</p>
+              </div>
+            </div>
+            <Button size="sm" className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:opacity-90 text-black font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
+              <Sparkles className="h-3 w-3" />
+              Subscribe
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
         <Card className="p-1.5 sm:p-2 bg-card border-border">
@@ -85,28 +106,6 @@ export default function PremiumTickets() {
           </div>
         </Card>
       </div>
-
-      {/* Premium Unlock Banner - Below Stats */}
-      {showUpgradeBanner && (
-        <Card className="p-2 sm:p-3 bg-gradient-to-r from-yellow-500/20 via-amber-500/15 to-yellow-500/10 border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-yellow-500/20">
-                <Lock className="h-4 w-4 text-yellow-400" />
-              </div>
-              <div>
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Premium Access</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium tickets</p>
-              </div>
-            </div>
-            <Button size="sm" className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:opacity-90 text-black font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
-              <Sparkles className="h-3 w-3" />
-              Subscribe
-            </Button>
-          </div>
-        </Card>
-      )}
-
       {/* Tickets Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {isLoading ? <Card className="p-8 bg-card border-border">
