@@ -191,34 +191,26 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* STATUS TABS - Enhanced with borders between tabs */}
-        <div className="relative">
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-accent/20 to-primary/40 rounded-xl opacity-80" />
-          <div className="relative bg-card/90 backdrop-blur-sm rounded-xl p-1 border border-border/50 shadow-lg flex">
-            {allowedStatusTabs.map((tab, index) => (
-              <div key={tab} className="flex flex-1">
-                <button 
-                  onClick={() => setStatusTab(tab)} 
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 sm:px-4 rounded-lg text-[11px] sm:text-xs font-medium transition-all duration-200",
-                    statusTab === tab 
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-                  )}
-                >
-                  {tab === "all" && <Trophy className="h-3.5 w-3.5" />}
-                  {tab === "live" && <Play className="h-3.5 w-3.5" />}
-                  {tab === "upcoming" && <Clock className="h-3.5 w-3.5" />}
-                  {tab === "finished" && <CheckCircle className="h-3.5 w-3.5" />}
-                  <span className="capitalize">{tab}</span>
-                </button>
-                {/* Divider between tabs */}
-                {index < allowedStatusTabs.length - 1 && (
-                  <div className="w-px bg-gradient-to-b from-transparent via-border to-transparent my-1.5" />
-                )}
-              </div>
-            ))}
-          </div>
+        {/* STATUS TABS - Individual bordered tabs */}
+        <div className="flex gap-2">
+          {allowedStatusTabs.map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setStatusTab(tab)} 
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-[11px] sm:text-xs font-medium transition-all duration-200",
+                statusTab === tab 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card"
+              )}
+            >
+              {tab === "all" && <Trophy className="h-3.5 w-3.5" />}
+              {tab === "live" && <Play className="h-3.5 w-3.5" />}
+              {tab === "upcoming" && <Clock className="h-3.5 w-3.5" />}
+              {tab === "finished" && <CheckCircle className="h-3.5 w-3.5" />}
+              <span className="capitalize">{tab}</span>
+            </button>
+          ))}
         </div>
 
         {/* SEARCH - Enhanced visibility with gradient border */}
