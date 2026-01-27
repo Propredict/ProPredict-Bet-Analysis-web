@@ -55,8 +55,8 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl || "https://propredictbet.lovable.app/profile?success=true",
-      cancel_url: cancelUrl || "https://propredictbet.lovable.app/get-premium?canceled=true",
+      success_url: successUrl || "https://propredictbet.lovable.app/profile?payment=success",
+      cancel_url: cancelUrl || "https://propredictbet.lovable.app/get-premium",
       customer_email: customerEmail,
     });
 
