@@ -27,7 +27,7 @@ import { toast } from "sonner";
 
 const STRIPE_PRICES = {
   basic: {
-    monthly: "price_1So1aOL8E849h6yxa6XtgjRj",
+    monthly: "price_1SuCcpL8E849h6yxv6RvooUp",
     annual: "price_1SpZ5OL8E849h6yxLP3NB1pi",
   },
   premium: {
