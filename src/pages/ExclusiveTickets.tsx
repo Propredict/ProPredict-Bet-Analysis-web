@@ -25,7 +25,8 @@ export default function ExclusiveTickets() {
   } = useUnlockHandler();
   const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive");
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
-  const showUpgradeBanner = plan === "free";
+  const { isAdmin } = useUserPlan();
+  const showUpgradeBanner = !isAdmin && plan !== "premium";
   return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
