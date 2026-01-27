@@ -13,6 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
+import { AdModal } from "@/components/AdModal";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -55,7 +56,7 @@ export function BettingTickets() {
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
   const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler({
+  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -204,6 +205,7 @@ export function BettingTickets() {
         </Card>
       )}
 
+      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal
         open={showPricingModal}
         onOpenChange={setShowPricingModal}
