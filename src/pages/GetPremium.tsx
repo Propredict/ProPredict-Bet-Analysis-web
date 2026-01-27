@@ -293,16 +293,19 @@ export default function GetPremium() {
       </div>
 
       {/* Benefits Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {benefits.map((benefit, index) => (
-          <Card key={index} className="p-3 bg-card/50 border-border hover:border-primary/30 transition-colors">
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 rounded-md bg-primary/10">
+          <Card 
+            key={index} 
+            className="p-3 bg-card border-border/50 hover:border-primary/40 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 group-hover:border-primary/40 transition-colors">
                 <benefit.icon className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-medium text-foreground">{benefit.title}</h4>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                <h4 className="text-xs font-semibold text-foreground">{benefit.title}</h4>
+                <p className="text-[10px] text-muted-foreground leading-snug">
                   {benefit.description}
                 </p>
               </div>
