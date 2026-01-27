@@ -130,4 +130,92 @@
   .ticket-status--empty {
     @apply opacity-0;
   }
+
+  /* Section gap for consistent spacing */
+  .section-gap {
+    @apply space-y-3 sm:space-y-4;
+  }
+
+  /* Premium gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary to-primary/80;
+  }
+
+  .gradient-premium {
+    @apply bg-gradient-to-r from-warning via-accent to-primary;
+  }
+
+  .gradient-card {
+    @apply bg-gradient-to-b from-card to-card/80;
+  }
+
+  .gradient-card-hover {
+    @apply bg-gradient-to-b from-card via-card to-muted/20;
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 20px hsl(var(--warning) / 0.3);
+  }
+
+  /* Soft shadows for depth */
+  .shadow-soft {
+    box-shadow: 0 4px 20px -4px hsl(var(--background) / 0.8);
+  }
+
+  .shadow-card {
+    box-shadow: 0 2px 12px -2px hsl(var(--background) / 0.6);
+  }
+
+  /* Subtle border glow on hover */
+  .border-glow {
+    @apply transition-all duration-300;
+  }
+
+  .border-glow:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+  }
+
+  /* Tab styling utilities */
+  .tab-item {
+    @apply relative py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200;
+  }
+
+  .tab-item--active {
+    @apply bg-primary text-primary-foreground shadow-sm;
+  }
+
+  .tab-item--inactive {
+    @apply text-muted-foreground hover:text-foreground hover:bg-muted/50;
+  }
+
+  /* Empty state compact */
+  .empty-state-compact {
+    @apply py-4 text-center;
+  }
+
+  /* Premium badge shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--primary) / 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
 }

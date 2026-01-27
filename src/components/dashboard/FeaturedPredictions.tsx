@@ -17,61 +17,74 @@ export function FeaturedPredictions() {
 
   return (
     <section className="space-y-2">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="text-primary w-5 h-5" />
+          <div className="p-1.5 rounded-md bg-primary/20">
+            <TrendingUp className="text-primary w-4 h-4" />
+          </div>
           <div>
-            <h2 className="text-sm font-semibold">Featured Predictions</h2>
-            <p className="text-[10px] text-muted-foreground">
-              AI performance overview (all tips & tickets)
+            <h2 className="text-sm font-semibold text-foreground">AI Performance</h2>
+            <p className="text-[9px] text-muted-foreground">
+              Global accuracy across all predictions
             </p>
           </div>
         </div>
 
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => refetch()}
-          className="h-7 text-[10px]"
+          className="h-7 text-[10px] text-muted-foreground hover:text-foreground"
         >
           <RefreshCw className="h-3 w-3 mr-1" />
           Refresh
         </Button>
       </div>
 
-      <Card className="p-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium">Global Accuracy</span>
-          <span className="text-xs font-bold text-primary">
-            {isLoading ? "—" : `${accuracy}%`}
-          </span>
+      {/* Stats Card */}
+      <Card className="p-3 bg-gradient-to-b from-card to-card/80 border-border/50 shadow-card">
+        {/* Accuracy Header */}
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/50">
+          <span className="text-xs font-medium text-muted-foreground">Global Win Rate</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-lg font-bold text-primary">
+              {isLoading ? "—" : `${accuracy}%`}
+            </span>
+            {!isLoading && accuracy >= 70 && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-medium">
+                HOT
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
-          <div>
-            <Check className="mx-auto h-3 w-3 text-success" />
-            <p className="font-medium">—</p>
-            <p className="text-muted-foreground">Won</p>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="flex flex-col items-center p-2 rounded-md bg-success/5 border border-success/10">
+            <Check className="h-3.5 w-3.5 text-success mb-1" />
+            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-[9px] text-muted-foreground">Won</p>
           </div>
 
-          <div>
-            <X className="mx-auto h-3 w-3 text-destructive" />
-            <p className="font-medium">—</p>
-            <p className="text-muted-foreground">Lost</p>
+          <div className="flex flex-col items-center p-2 rounded-md bg-destructive/5 border border-destructive/10">
+            <X className="h-3.5 w-3.5 text-destructive mb-1" />
+            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-[9px] text-muted-foreground">Lost</p>
           </div>
 
-          <div>
-            <Clock className="mx-auto h-3 w-3 text-muted-foreground" />
-            <p className="font-medium">—</p>
-            <p className="text-muted-foreground">Pending</p>
+          <div className="flex flex-col items-center p-2 rounded-md bg-muted/30 border border-border/50">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground mb-1" />
+            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-[9px] text-muted-foreground">Pending</p>
           </div>
 
-          <div>
-            <Flame className="mx-auto h-3 w-3 text-accent" />
-            <p className="font-medium">
-              {!isLoading && accuracy >= 70 ? "HOT" : "—"}
+          <div className="flex flex-col items-center p-2 rounded-md bg-accent/5 border border-accent/10">
+            <Flame className="h-3.5 w-3.5 text-accent mb-1" />
+            <p className="text-xs font-semibold text-foreground">
+              {!isLoading && accuracy >= 70 ? "🔥" : "—"}
             </p>
-            <p className="text-muted-foreground">Trend</p>
+            <p className="text-[9px] text-muted-foreground">Trend</p>
           </div>
         </div>
       </Card>
