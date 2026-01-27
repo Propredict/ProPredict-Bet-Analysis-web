@@ -8,6 +8,8 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 export default function DailyTickets() {
   const navigate = useNavigate();
   const {
@@ -17,7 +19,8 @@ export default function DailyTickets() {
   } = useTickets(false);
   const {
     canAccess,
-    getUnlockMethod
+    getUnlockMethod,
+    refetch: refetchPlan
   } = useUserPlan();
   const {
     unlockingId,
@@ -28,6 +31,13 @@ export default function DailyTickets() {
   } = useUnlockHandler();
   const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tickets refreshed");
+  };
+
   return <div className="section-gap">
       <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
@@ -46,7 +56,7 @@ export default function DailyTickets() {
             <Ticket className="h-2.5 w-2.5 mr-0.5" />
             Daily
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-0.5 h-6 sm:h-7 px-1.5">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-0.5 h-6 sm:h-7 px-1.5">
             <RefreshCw className="h-3 w-3" />
           </Button>
         </div>
@@ -101,7 +111,7 @@ export default function DailyTickets() {
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No daily tickets available</p>
               <p className="text-sm">Check back later for new picks</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>

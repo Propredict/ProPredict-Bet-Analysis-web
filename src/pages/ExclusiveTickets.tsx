@@ -8,6 +8,8 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
   const {
@@ -18,7 +20,9 @@ export default function ExclusiveTickets() {
   const {
     canAccess,
     getUnlockMethod,
-    plan
+    plan,
+    isAdmin,
+    refetch: refetchPlan
   } = useUserPlan();
   const {
     unlockingId,
@@ -29,8 +33,14 @@ export default function ExclusiveTickets() {
   } = useUnlockHandler();
   const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive");
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
-  const { isAdmin } = useUserPlan();
   const showUpgradeBanner = !isAdmin && plan !== "premium";
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tickets refreshed");
+  };
+
   return <div className="section-gap">
       <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
@@ -49,7 +59,7 @@ export default function ExclusiveTickets() {
             <Star className="h-2.5 w-2.5 mr-0.5" />
             Pro
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-0.5 h-6 sm:h-7 px-1.5">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-0.5 h-6 sm:h-7 px-1.5">
             <RefreshCw className="h-3 w-3" />
           </Button>
         </div>
@@ -122,7 +132,7 @@ export default function ExclusiveTickets() {
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No pro tickets available</p>
               <p className="text-sm">Check back later for new picks</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>

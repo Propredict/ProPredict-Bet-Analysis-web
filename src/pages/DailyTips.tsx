@@ -7,6 +7,8 @@ import { AdModal } from "@/components/AdModal";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { toast } from "sonner";
+
 export default function DailyTips() {
   const {
     tips,
@@ -15,7 +17,8 @@ export default function DailyTips() {
   } = useTips(false);
   const {
     canAccess,
-    getUnlockMethod
+    getUnlockMethod,
+    refetch: refetchPlan
   } = useUserPlan();
   const {
     unlockingId,
@@ -26,6 +29,13 @@ export default function DailyTips() {
   } = useUnlockHandler();
   const dailyTips = tips.filter(tip => tip.tier === "daily");
   const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
+
+  const handleRefresh = () => {
+    refetch();
+    refetchPlan();
+    toast.success("Tips refreshed");
+  };
+
   return <div className="section-gap">
       <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
@@ -44,7 +54,7 @@ export default function DailyTips() {
             <Sparkles className="h-2.5 w-2.5 mr-0.5" />
             Free
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="h-6 px-1.5 text-[9px]">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="h-6 px-1.5 text-[9px]">
             <RefreshCw className="h-2.5 w-2.5 mr-1" />
             Refresh
           </Button>
@@ -94,7 +104,7 @@ export default function DailyTips() {
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-accent mb-1">No daily tips available</p>
               <p className="text-sm">Check back later for new predictions</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
