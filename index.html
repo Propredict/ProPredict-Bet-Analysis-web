@@ -6,10 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b1220" />
 
-    <!-- Google Search Console verification -->
-    <meta name="google-site-verification" content="H42oD3hK64ZhEihuCGaH84dTLOnxTwP0q44oR4ksq0o" />
-
-    <!-- Title & SEO -->
+    <!-- SEO -->
     <title>ProPredict – AI Analysis & Smart Bet Tickets</title>
     <meta
       name="description"
@@ -17,22 +14,29 @@
     />
     <meta name="author" content="ProPredict" />
 
+    <!-- Google Search Console verification -->
+    <meta
+      name="google-site-verification"
+      content="H42oD3hK64ZhEihuCGaH84dTLOnxTwP0q44oR4ksq0o"
+    />
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7MHF8JGYSZ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7MHF8JGYSZ');
+    </script>
+
     <!-- Open Graph -->
     <meta property="og:title" content="ProPredict – AI Sports Predictions" />
-    <meta
-      property="og:description"
-      content="AI-powered match predictions, tips, and ticket analysis. Entertainment purposes only. No betting services."
-    />
+    <meta property="og:description" content="AI-powered match predictions and ticket analysis." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://propredict.me" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ProPredict – AI Sports Predictions" />
-    <meta
-      name="twitter:description"
-      content="AI-powered sports predictions and analysis. Entertainment purposes only."
-    />
 
     <!-- Google AdSense -->
     <script
@@ -44,8 +48,6 @@
 
   <body>
     <div id="root"></div>
-
-    <!-- Vite entry -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
