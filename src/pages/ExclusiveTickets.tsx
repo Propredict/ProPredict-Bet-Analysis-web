@@ -50,22 +50,22 @@ export default function ExclusiveTickets() {
       </div>
 
       {/* Upgrade Banner */}
-      {showUpgradeBanner && <Card className="p-2 sm:p-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
+      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-primary/20">
-                <Crown className="h-4 w-4 text-primary" />
+              <div className="p-1.5 rounded-md bg-violet-500/20">
+                <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="text-xs sm:text-sm font-semibold text-primary">Remove Ads & Unlock All</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Remove Ads & Unlock All Tickets</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
-            <Button size="sm" className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
+            <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
               Subscribe
             </Button>
           </div>
-        </Card>}
+        </div>}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">

@@ -51,14 +51,14 @@ export default function ExclusiveTips() {
       </div>
 
       {/* Upgrade Banner */}
-      {showUpgradeBanner && <Card className="p-2 sm:p-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
+      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-primary/20">
-                <Crown className="h-4 w-4 text-primary" />
+              <div className="p-1.5 rounded-md bg-violet-500/20">
+                <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-primary">Remove Ads & Unlock All Tips</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Remove Ads & Unlock All Tips</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function ExclusiveTips() {
               Subscribe
             </Button>
           </div>
-        </Card>}
+        </div>}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
