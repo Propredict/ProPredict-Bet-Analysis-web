@@ -56,7 +56,7 @@ export default function ExclusiveTickets() {
               </div>
               <div>
                 <h3 className="text-xs sm:text-sm font-semibold text-primary">Remove Ads & Unlock All</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
             <Button size="sm" className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
