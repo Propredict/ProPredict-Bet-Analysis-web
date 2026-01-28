@@ -69,9 +69,9 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw]">
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col min-h-screen">
+        <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
           <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:left-[var(--sidebar-width,0)]">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
@@ -178,8 +178,8 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-10 sm:mt-11 pb-16 md:pb-0 overflow-y-auto overflow-x-hidden">
-            <div className="page-content flex-1">
+          <main className="flex-1 flex flex-col mt-10 sm:mt-11 pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
+            <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>
             
