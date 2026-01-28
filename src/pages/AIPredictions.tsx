@@ -357,12 +357,12 @@ export default function AIPredictions() {
           </Card>
 
           {/* Tier Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 pr-4 scrollbar-hide">
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
+                "h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1",
                 tierFilter === "all"
                   ? "bg-primary/20 text-primary border-2 border-primary shadow-[0_0_15px_rgba(34,197,94,0.3)]"
                   : "bg-primary/10 text-primary/70 border border-primary/30 hover:bg-primary/20 hover:text-primary hover:border-primary/50 hover:shadow-[0_0_10px_rgba(34,197,94,0.15)]"
@@ -375,42 +375,42 @@ export default function AIPredictions() {
               variant="ghost"
               size="sm"
               className={cn(
-                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
+                "h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1",
                 tierFilter === "free"
                   ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                   : "bg-emerald-500/10 text-emerald-400/70 border border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
               )}
               onClick={() => setTierFilter("free")}
             >
-              <Gift className="w-3.5 h-3.5" />
+              <Gift className="w-3 md:w-3.5 h-3 md:h-3.5" />
               Free ({tierCounts.free})
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
+                "h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1",
                 tierFilter === "pro"
                   ? "bg-violet-500/20 text-violet-400 border-2 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
                   : "bg-violet-500/10 text-violet-400/70 border border-violet-500/30 hover:bg-violet-500/20 hover:text-violet-400 hover:border-violet-500/50 hover:shadow-[0_0_10px_rgba(139,92,246,0.15)]"
               )}
               onClick={() => setTierFilter("pro")}
             >
-              <Star className="w-3.5 h-3.5" />
+              <Star className="w-3 md:w-3.5 h-3 md:h-3.5" />
               Pro ({tierCounts.pro})
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
+                "h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1",
                 tierFilter === "premium"
                   ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
                   : "bg-amber-500/10 text-amber-400/70 border border-amber-500/30 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
               )}
               onClick={() => setTierFilter("premium")}
             >
-              <Crown className="w-3.5 h-3.5" />
+              <Crown className="w-3 md:w-3.5 h-3 md:h-3.5" />
               Premium ({tierCounts.premium})
             </Button>
           </div>
