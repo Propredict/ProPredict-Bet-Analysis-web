@@ -24,7 +24,7 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-export function useAIPredictions(day: "today" | "tomorrow") {
+export function useAIPredictions(date: string) {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,11 +32,10 @@ export function useAIPredictions(day: "today" | "tomorrow") {
     async function load() {
       setLoading(true);
 
-      // Query by match_day field which contains "today" or "tomorrow"
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .eq("match_day", day)
+        .eq("match_date", date)
         .order("match_time", { ascending: true });
 
       if (error) {
@@ -50,7 +49,7 @@ export function useAIPredictions(day: "today" | "tomorrow") {
     }
 
     load();
-  }, [day]);
+  }, [date]);
 
   return { predictions, loading };
 }
