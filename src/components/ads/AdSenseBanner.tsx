@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useUserPlan } from "@/hooks/useUserPlan";
 
 interface AdSenseBannerProps {
   slot: string;
@@ -9,6 +10,9 @@ interface AdSenseBannerProps {
 /**
  * Google AdSense responsive banner component.
  * This is a placeholder that will display ads once AdSense is configured.
+ * 
+ * IMPORTANT: Ads are ONLY shown to FREE users on web.
+ * Pro and Premium subscribers do not see any ads.
  * 
  * To activate:
  * 1. Add your AdSense script to index.html
@@ -59,8 +63,17 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
 /**
  * In-content ad specifically designed to be placed between card rows.
  * Responsive and styled to match the app design.
+ * 
+ * AUTOMATICALLY HIDDEN for Pro, Premium, and Admin users.
  */
 export function InContentAd({ className = "" }: { className?: string }) {
+  const { plan, isAdmin } = useUserPlan();
+  
+  // Hide ads for Pro (basic), Premium, and Admin users
+  if (plan === "basic" || plan === "premium" || isAdmin) {
+    return null;
+  }
+
   return (
     <div className={`col-span-full my-2 ${className}`}>
       <AdSenseBanner 
@@ -74,8 +87,17 @@ export function InContentAd({ className = "" }: { className?: string }) {
 
 /**
  * Footer banner ad for placement at the bottom of pages.
+ * 
+ * AUTOMATICALLY HIDDEN for Pro, Premium, and Admin users.
  */
 export function FooterAd({ className = "" }: { className?: string }) {
+  const { plan, isAdmin } = useUserPlan();
+  
+  // Hide ads for Pro (basic), Premium, and Admin users
+  if (plan === "basic" || plan === "premium" || isAdmin) {
+    return null;
+  }
+
   return (
     <div className={`w-full ${className}`}>
       <AdSenseBanner 
