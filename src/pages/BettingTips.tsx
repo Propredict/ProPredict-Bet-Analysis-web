@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { AdModal } from "@/components/AdModal";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -36,7 +35,7 @@ export default function BettingTips() {
   const { data: accuracyData = [] } = useTipAccuracy();
 
   const { canAccess, getUnlockMethod, refetch: refetchPlan } = useUserPlan();
-  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
 
   const handleRefresh = () => {
     refetch();
@@ -48,7 +47,7 @@ export default function BettingTips() {
     accuracyData.find((a) => a.tier === "daily")?.accuracy ?? 0;
 
   const unlockedCount = tips.filter((tip) =>
-    canAccess(tip.tier, "tip", tip.id)
+    canAccess(tip.tier)
   ).length;
 
   const avgOdds =
@@ -111,8 +110,6 @@ export default function BettingTips() {
 
   return (
     <div className="space-y-5">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
-      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -220,7 +217,8 @@ export default function BettingTips() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {displayedTips.map((tip) => {
-              const isLocked = !canAccess(tip.tier, "tip", tip.id);
+              const isLocked = !canAccess(tip.tier);
+              const unlockMethod = getUnlockMethod(tip.tier);
 
               return (
                 <TipCard
@@ -242,8 +240,7 @@ export default function BettingTips() {
                     tier: tip.tier,
                   }}
                   isLocked={isLocked}
-                  unlockMethod={getUnlockMethod(tip.tier, "tip", tip.id)}
-                  isUnlocking={unlockingId === tip.id}
+                  unlockMethod={unlockMethod}
                   onUnlockClick={() =>
                     handleUnlock("tip", tip.id, tip.tier)
                   }

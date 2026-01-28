@@ -16,10 +16,9 @@ export default function TicketDetails() {
 
   const { tickets, isLoading } = useTickets(false);
   const { getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
 
   const ticket = tickets.find((t) => t.id === id);
-  const isUnlocking = unlockingId === id;
 
   if (isLoading) {
     return (
@@ -44,7 +43,7 @@ export default function TicketDetails() {
     );
   }
 
-  const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+  const unlockMethod = getUnlockMethod(ticket.tier);
   const isLocked = unlockMethod?.type !== "unlocked";
 
   const getTierBadge = () => {
@@ -85,12 +84,6 @@ export default function TicketDetails() {
         className: "",
         variant: "outline" as const,
       },
-      watch_ad: {
-        icon: Sparkles,
-        text: "Watch Ad to Unlock",
-        className: "bg-primary hover:bg-primary/90 text-white border-0",
-        variant: "default" as const,
-      },
       upgrade_basic: {
         icon: Star,
         text: "Subscribe to Pro",
@@ -113,20 +106,10 @@ export default function TicketDetails() {
         variant={config.variant}
         size="lg"
         className={cn("w-full gap-2 h-12", config.className)}
-        disabled={isUnlocking}
         onClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
       >
-        {isUnlocking ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Watching ad...
-          </>
-        ) : (
-          <>
-            <config.icon className="h-4 w-4" />
-            {config.text}
-          </>
-        )}
+        <config.icon className="h-4 w-4" />
+        {config.text}
       </Button>
     );
   };
@@ -178,14 +161,12 @@ export default function TicketDetails() {
           {/* Matches */}
           <div className="px-4 pb-3 space-y-2">
             {isLocked ? (
-              // Locked: Show match names visible, predictions/odds blurred
               <>
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
                     <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/50">
                       <div className="flex items-center justify-between">
-                        {/* Match name - VISIBLE */}
                         <div className="flex-1 mr-4 min-w-0">
                           <span className="text-sm text-foreground truncate block">
                             {parsed.homeTeam} vs {parsed.awayTeam}
@@ -194,7 +175,6 @@ export default function TicketDetails() {
                             <span className="text-xs text-muted-foreground">{parsed.league}</span>
                           )}
                         </div>
-                        {/* Prediction & Odds - BLURRED */}
                         <div className="flex items-center gap-2 blur-sm opacity-50">
                           <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
                             {match.prediction}
@@ -207,7 +187,6 @@ export default function TicketDetails() {
                 })}
               </>
             ) : (
-              // Unlocked: Full details visible
               <>
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
@@ -234,7 +213,7 @@ export default function TicketDetails() {
             )}
           </div>
 
-          {/* Total Odds - Blurred when locked */}
+          {/* Total Odds */}
           <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Total Odds</span>
@@ -247,7 +226,6 @@ export default function TicketDetails() {
             </div>
           </div>
 
-          {/* Unlocked badge footer - only when unlocked */}
           {!isLocked && (
             <div className="px-4 py-3 border-t border-border/50">
               <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
@@ -257,7 +235,6 @@ export default function TicketDetails() {
             </div>
           )}
 
-          {/* Unlock Button - only when locked, NOT BLURRED */}
           {isLocked && (
             <div className="p-4 border-t border-border">
               {getUnlockButtonContent()}

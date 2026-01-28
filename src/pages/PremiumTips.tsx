@@ -7,6 +7,7 @@ import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+
 export default function PremiumTips() {
   const navigate = useNavigate();
   const {
@@ -19,13 +20,11 @@ export default function PremiumTips() {
     getUnlockMethod,
     plan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock
-  } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
   const premiumTips = tips.filter(tip => tip.tier === "premium");
-  const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
+  const unlockedCount = premiumTips.filter(tip => canAccess("premium")).length;
   const showUpgradeBanner = plan !== "premium";
+
   return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
@@ -69,7 +68,7 @@ export default function PremiumTips() {
               </span>
               <span className="flex items-center gap-0.5">
                 <Sparkles className="h-3 w-3 text-warning" />
-                No ads
+                Full access
               </span>
             </div>
             <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
@@ -127,9 +126,8 @@ export default function PremiumTips() {
               </Button>
             </div>
           </Card> : premiumTips.map(tip => {
-        const unlockMethod = getUnlockMethod("premium", "tip", tip.id);
+        const unlockMethod = getUnlockMethod("premium");
         const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === tip.id;
         return <TipCard key={tip.id} tip={{
           id: tip.id,
           homeTeam: tip.home_team,
@@ -144,7 +142,7 @@ export default function PremiumTips() {
             day: "numeric"
           }) : "",
           tier: tip.tier
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} />;
       })}
       </div>
     </div>;

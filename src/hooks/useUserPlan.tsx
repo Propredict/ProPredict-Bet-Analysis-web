@@ -13,8 +13,7 @@ export type ContentType = "tip" | "ticket";
 export type UnlockMethod =
   | { type: "unlocked" }
   | { type: "login_required"; message: "Sign in to unlock" }
-  | { type: "watch_ad"; message: "Watch an ad to unlock" }
-  | { type: "upgrade_basic"; message: "Upgrade to Basic" }
+  | { type: "upgrade_basic"; message: "Upgrade to Pro" }
   | { type: "upgrade_premium"; message: "Upgrade to Premium" };
 
 interface UnlockedContent {
@@ -154,26 +153,27 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   ===================== */
 
   const canAccess = useCallback(
-    (tier: ContentTier, contentType?: ContentType, contentId?: string) => {
+    (tier: ContentTier) => {
       if (isAdmin) return true;
 
       if (tier === "free") return true;
 
-      if (tier === "daily" || tier === "exclusive") {
-        if (plan === "basic" || plan === "premium") return true;
-        if (contentType && contentId) {
-          return isContentUnlocked(contentType, contentId);
-        }
-        return false;
+      // Daily content is accessible to all logged-in users
+      if (tier === "daily") return true;
+
+      // Exclusive (Pro) content requires basic or premium plan
+      if (tier === "exclusive") {
+        return plan === "basic" || plan === "premium";
       }
 
+      // Premium content requires premium plan
       if (tier === "premium") {
         return plan === "premium";
       }
 
       return false;
     },
-    [isAdmin, plan, isContentUnlocked],
+    [isAdmin, plan],
   );
 
   /* =====================
@@ -181,10 +181,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   ===================== */
 
   const getUnlockMethod = useCallback(
-    (tier: ContentTier, contentType?: ContentType, contentId?: string): UnlockMethod | null => {
+    (tier: ContentTier): UnlockMethod | null => {
       if (isAdmin) return { type: "unlocked" };
 
-      if (canAccess(tier, contentType, contentId)) {
+      if (canAccess(tier)) {
         return { type: "unlocked" };
       }
 
@@ -193,17 +193,12 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return { type: "login_required", message: "Sign in to unlock" };
       }
 
-      // DAILY + EXCLUSIVE → ADS for FREE users
-      if ((tier === "daily" || tier === "exclusive") && plan === "free") {
-        return { type: "watch_ad", message: "Watch an ad to unlock" };
-      }
-
-      // EXCLUSIVE → upgrade to basic (no ads)
+      // EXCLUSIVE (Pro) → upgrade to basic/pro plan
       if (tier === "exclusive" && plan === "free") {
-        return { type: "upgrade_basic", message: "Upgrade to Basic" };
+        return { type: "upgrade_basic", message: "Upgrade to Pro" };
       }
 
-      // PREMIUM → ONLY premium
+      // PREMIUM → upgrade to premium plan
       if (tier === "premium") {
         return {
           type: "upgrade_premium",

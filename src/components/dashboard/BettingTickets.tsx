@@ -13,7 +13,6 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
-import { AdModal } from "@/components/AdModal";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -56,7 +55,7 @@ export function BettingTickets() {
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
   const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
+  const { handleUnlock } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -164,15 +163,14 @@ export function BettingTickets() {
       ) : displayedTickets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {displayedTickets.map((ticket) => {
-            const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
-            const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+            const isLocked = !canAccess(ticket.tier);
+            const unlockMethod = getUnlockMethod(ticket.tier);
             return (
               <TicketCard
                 key={ticket.id}
                 ticket={ticket}
                 isLocked={isLocked}
                 unlockMethod={unlockMethod}
-                isUnlocking={unlockingId === ticket.id}
                 onUnlockClick={() =>
                   handleUnlock("ticket", ticket.id, ticket.tier)
                 }
@@ -205,7 +203,6 @@ export function BettingTickets() {
         </Card>
       )}
 
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal
         open={showPricingModal}
         onOpenChange={setShowPricingModal}

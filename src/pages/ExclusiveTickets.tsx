@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { AdModal } from "@/components/AdModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -24,16 +23,10 @@ export default function ExclusiveTickets() {
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
   const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive");
-  const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
-  const showUpgradeBanner = !isAdmin && plan !== "premium";
+  const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive")).length;
+  const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
     refetch();
@@ -42,7 +35,6 @@ export default function ExclusiveTickets() {
   };
 
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -73,7 +65,7 @@ export default function ExclusiveTickets() {
                 <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Remove Ads & Unlock All Tickets</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Unlock All Pro Tickets</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
@@ -138,9 +130,8 @@ export default function ExclusiveTickets() {
               </Button>
             </div>
           </Card> : exclusiveTickets.map(ticket => {
-        const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
+        const unlockMethod = getUnlockMethod("exclusive");
         const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === ticket.id;
         const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
         return <TicketCard key={ticket.id} ticket={{
           id: ticket.id,
@@ -155,7 +146,7 @@ export default function ExclusiveTickets() {
             odds: m.odds
           })),
           createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} />;
       })}
       </div>
     </div>;

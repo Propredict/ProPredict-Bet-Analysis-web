@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { AdModal } from "@/components/AdModal";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -24,16 +23,10 @@ export default function ExclusiveTips() {
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
   const exclusiveTips = tips.filter(tip => tip.tier === "exclusive");
-  const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
-  const showUpgradeBanner = !isAdmin && plan !== "premium";
+  const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive")).length;
+  const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
     refetch();
@@ -42,7 +35,6 @@ export default function ExclusiveTips() {
   };
 
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -74,7 +66,7 @@ export default function ExclusiveTips() {
                 <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Remove Ads & Unlock All Tips</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Unlock All Pro Tips</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
@@ -133,9 +125,8 @@ export default function ExclusiveTips() {
               </Button>
             </div>
           </Card> : exclusiveTips.map(tip => {
-        const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
+        const unlockMethod = getUnlockMethod("exclusive");
         const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === tip.id;
         return <TipCard key={tip.id} tip={{
           id: tip.id,
           homeTeam: tip.home_team,
@@ -150,7 +141,7 @@ export default function ExclusiveTips() {
             day: "numeric"
           }) : "",
           tier: tip.tier
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")} />;
       })}
       </div>
     </div>;
