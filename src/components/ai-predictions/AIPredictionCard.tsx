@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
@@ -100,11 +100,15 @@ export function AIPredictionCard({
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
-        {/* Header - League, Time, Live/Premium badges, Favorite */}
+        {/* Header - League, Time, AI/Live/Premium badges, Favorite */}
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
-            <span className="w-1 h-1 rounded-full bg-muted-foreground/60" />
-            <span className="truncate max-w-[80px] md:max-w-none">{prediction.league || "League"}</span>
+            {/* AI Badge - Always visible */}
+            <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
+              <Bot className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
+              AI
+            </Badge>
+            <span className="truncate max-w-[70px] md:max-w-none">{prediction.league || "League"}</span>
             <span>•</span>
             <span className="whitespace-nowrap">{formatTime(prediction.match_time)}</span>
           </div>
@@ -279,6 +283,13 @@ export function AIPredictionCard({
             </Badge>
           </div>
         )}
+
+        {/* Mandatory AI Disclaimer - Always visible */}
+        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-[#1e3a5f]/30">
+          <p className="text-[8px] md:text-[9px] text-muted-foreground/60 text-center leading-tight">
+            AI-generated prediction. No guarantee of accuracy. For informational purposes only.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
