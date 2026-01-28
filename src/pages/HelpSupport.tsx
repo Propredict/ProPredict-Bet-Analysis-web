@@ -81,10 +81,6 @@ const HelpSupport = () => {
           q: "How do I cancel my subscription?",
           a: "To cancel your subscription, go to Profile Settings and look for the subscription management section. You can cancel anytime and retain access until your current billing period ends."
         },
-        {
-          q: "Can I get a refund?",
-          a: "Refunds are handled on a case-by-case basis. Please contact our billing support team within 7 days of your purchase to discuss refund options."
-        },
       ],
     },
     {
