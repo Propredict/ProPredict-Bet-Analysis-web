@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
+import { InContentAd } from "@/components/ads/AdSenseBanner";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -31,6 +32,7 @@ export default function AIPredictions() {
   const navigate = useNavigate();
 
   const isPremiumUser = plan === "premium";
+  const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
   // Sort function
   const sortPredictions = (preds: typeof predictions) => {
@@ -340,18 +342,23 @@ export default function AIPredictions() {
                 <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                {featuredPredictions.map((prediction) => (
-                  <AIPredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    isAdmin={isAdmin}
-                    isPremiumUser={isPremiumUser}
-                    isFavorite={isFavorite(prediction.match_id)}
-                    isSavingFavorite={isSaving(prediction.match_id)}
-                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                    onWatchAd={() => {}}
-                    onGoPremium={() => navigate("/get-premium")}
-                  />
+                {featuredPredictions.map((prediction, index) => (
+                  <React.Fragment key={prediction.id}>
+                    <AIPredictionCard
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onWatchAd={() => {}}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
+                    {(index + 1) % 4 === 0 && index < featuredPredictions.length - 1 && (
+                      <InContentAd />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
@@ -387,18 +394,23 @@ export default function AIPredictions() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-                {regularPredictions.map((prediction) => (
-                  <AIPredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    isAdmin={isAdmin}
-                    isPremiumUser={isPremiumUser}
-                    isFavorite={isFavorite(prediction.match_id)}
-                    isSavingFavorite={isSaving(prediction.match_id)}
-                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                    onWatchAd={() => {}}
-                    onGoPremium={() => navigate("/get-premium")}
-                  />
+                {regularPredictions.map((prediction, index) => (
+                  <React.Fragment key={prediction.id}>
+                    <AIPredictionCard
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onWatchAd={() => {}}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
+                    {(index + 1) % 3 === 0 && index < regularPredictions.length - 1 && (
+                      <InContentAd />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             )}
