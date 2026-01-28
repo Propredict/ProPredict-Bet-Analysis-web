@@ -158,7 +158,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               <span className="blur-sm opacity-50 font-medium text-sm">{tip.prediction}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Odds</span>
+              <span className="text-xs text-muted-foreground">Value</span>
               <span className="blur-sm opacity-50 font-bold text-primary">@{tip.odds.toFixed(2)}</span>
             </div>
           </div>
@@ -224,7 +224,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
             </Badge>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-muted-foreground">Odds</span>
+            <span className="text-xs text-muted-foreground">Value</span>
             <span className="font-bold text-base text-primary">@{tip.odds.toFixed(2)}</span>
           </div>
         </div>

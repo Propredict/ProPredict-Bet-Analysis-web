@@ -234,10 +234,10 @@ export default function TicketDetails() {
             )}
           </div>
 
-          {/* Total Odds - Blurred when locked */}
+          {/* Combined Value - Blurred when locked */}
           <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Total Odds</span>
+              <span className="text-sm text-muted-foreground">Combined Value</span>
               <span className={cn(
                 "font-bold text-lg text-primary",
                 isLocked && "blur-sm opacity-50"
