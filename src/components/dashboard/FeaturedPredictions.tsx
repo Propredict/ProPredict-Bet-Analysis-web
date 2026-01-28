@@ -14,6 +14,9 @@ import { useGlobalWinRate } from "@/hooks/useGlobalWinRate";
 export function FeaturedPredictions() {
   const { data, isLoading, refetch } = useGlobalWinRate();
   const accuracy = data?.accuracy ?? 0;
+  const won = data?.won ?? 0;
+  const lost = data?.lost ?? 0;
+  const pending = data?.pending ?? 0;
 
   return (
     <section className="space-y-2">
@@ -63,19 +66,25 @@ export function FeaturedPredictions() {
         <div className="grid grid-cols-4 gap-2">
           <div className="flex flex-col items-center p-2 rounded-md bg-success/5 border border-success/10">
             <Check className="h-3.5 w-3.5 text-success mb-1" />
-            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-xs font-semibold text-foreground">
+              {isLoading ? "—" : won}
+            </p>
             <p className="text-[9px] text-muted-foreground">Won</p>
           </div>
 
           <div className="flex flex-col items-center p-2 rounded-md bg-destructive/5 border border-destructive/10">
             <X className="h-3.5 w-3.5 text-destructive mb-1" />
-            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-xs font-semibold text-foreground">
+              {isLoading ? "—" : lost}
+            </p>
             <p className="text-[9px] text-muted-foreground">Lost</p>
           </div>
 
           <div className="flex flex-col items-center p-2 rounded-md bg-muted/30 border border-border/50">
             <Clock className="h-3.5 w-3.5 text-muted-foreground mb-1" />
-            <p className="text-xs font-semibold text-foreground">—</p>
+            <p className="text-xs font-semibold text-foreground">
+              {isLoading ? "—" : pending}
+            </p>
             <p className="text-[9px] text-muted-foreground">Pending</p>
           </div>
 

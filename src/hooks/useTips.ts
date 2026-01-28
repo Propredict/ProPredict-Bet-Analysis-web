@@ -79,12 +79,10 @@ export function useTips(includeAll = false) {
       return data;
     },
     onSuccess: () => {
-      // 🔄 LISTE
       queryClient.invalidateQueries({ queryKey: ["tips"] });
-
-      // 🔥 DASHBOARD / ACCURACY / COUNTS
       queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
       queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
     },
   });
 
@@ -103,12 +101,10 @@ export function useTips(includeAll = false) {
       return data;
     },
     onSuccess: () => {
-      // 🔄 LISTE
       queryClient.invalidateQueries({ queryKey: ["tips"] });
-
-      // 🔥 OVO JE KLJUČNO – sad se dashboard osvežava
       queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
       queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
     },
   });
 
@@ -123,6 +119,7 @@ export function useTips(includeAll = false) {
       queryClient.invalidateQueries({ queryKey: ["tips"] });
       queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
       queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
+      queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
     },
   });
 
