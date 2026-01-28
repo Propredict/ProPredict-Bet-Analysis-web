@@ -68,8 +68,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const [profileRes, subRes, unlocksRes] = await Promise.all([
-        supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
+      const [adminRes, subRes, unlocksRes] = await Promise.all([
+        // Check admin role from user_roles table (proper security pattern)
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle(),
 
         supabase.from("user_subscriptions").select("plan, expires_at").eq("user_id", user.id).maybeSingle(),
 
@@ -80,7 +86,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       ]);
 
       /* ===== ADMIN OVERRIDE ===== */
-      if (profileRes.data?.role === "admin") {
+      if (adminRes.data?.role === "admin") {
         setIsAdmin(true);
         setPlan("premium");
         setUnlockedContent([]);
