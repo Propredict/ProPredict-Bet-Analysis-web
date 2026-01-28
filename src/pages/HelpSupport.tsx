@@ -81,6 +81,10 @@ const HelpSupport = () => {
           q: "How do I cancel my subscription?",
           a: "To cancel your subscription, go to Profile Settings and look for the subscription management section. You can cancel anytime and retain access until your current billing period ends."
         },
+        {
+          q: "How does billing work?",
+          a: "You can choose between monthly or annual billing. Annual plans offer savings compared to monthly. You can upgrade or downgrade your plan anytime, and changes take effect immediately with prorated billing adjustments."
+        },
       ],
     },
     {
