@@ -176,11 +176,10 @@ const HelpSupport = () => {
         serviceId,
         adminTemplateId,
         {
-          from_name: formData.name,
-          from_email: formData.email,
-          subject: formData.subject,
+          name: formData.name,
+          email: formData.email,
+          title: formData.subject,
           message: formData.message,
-          to_email: "propredictsupp@gmail.com",
         },
         publicKey
       );
@@ -191,8 +190,7 @@ const HelpSupport = () => {
         autoreplyTemplateId,
         {
           to_name: formData.name,
-          to_email: formData.email,
-          reply_subject: "We received your message",
+          email: formData.email,
         },
         publicKey
       );
