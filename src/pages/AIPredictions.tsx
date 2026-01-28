@@ -365,7 +365,7 @@ export default function AIPredictions() {
                 "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "all"
                   ? "bg-primary/20 text-primary border-2 border-primary shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                  : "bg-card text-muted-foreground border border-border hover:text-primary hover:border-primary/50 hover:shadow-[0_0_10px_rgba(34,197,94,0.15)]"
+                  : "bg-primary/10 text-primary/70 border border-primary/30 hover:bg-primary/20 hover:text-primary hover:border-primary/50 hover:shadow-[0_0_10px_rgba(34,197,94,0.15)]"
               )}
               onClick={() => setTierFilter("all")}
             >
@@ -378,7 +378,7 @@ export default function AIPredictions() {
                 "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "free"
                   ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                  : "bg-card text-muted-foreground border border-border hover:text-emerald-400 hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                  : "bg-emerald-500/10 text-emerald-400/70 border border-emerald-500/30 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
               )}
               onClick={() => setTierFilter("free")}
             >
@@ -392,7 +392,7 @@ export default function AIPredictions() {
                 "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "pro"
                   ? "bg-violet-500/20 text-violet-400 border-2 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-                  : "bg-card text-muted-foreground border border-border hover:text-violet-400 hover:border-violet-500/50 hover:shadow-[0_0_10px_rgba(139,92,246,0.15)]"
+                  : "bg-violet-500/10 text-violet-400/70 border border-violet-500/30 hover:bg-violet-500/20 hover:text-violet-400 hover:border-violet-500/50 hover:shadow-[0_0_10px_rgba(139,92,246,0.15)]"
               )}
               onClick={() => setTierFilter("pro")}
             >
@@ -406,7 +406,7 @@ export default function AIPredictions() {
                 "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "premium"
                   ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-                  : "bg-card text-muted-foreground border border-border hover:text-amber-400 hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                  : "bg-amber-500/10 text-amber-400/70 border border-amber-500/30 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
               )}
               onClick={() => setTierFilter("premium")}
             >
