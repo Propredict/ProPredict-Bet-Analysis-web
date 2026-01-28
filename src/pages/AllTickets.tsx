@@ -10,6 +10,7 @@ import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
 import { AdModal } from "@/components/AdModal";
+import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
@@ -220,6 +221,9 @@ export default function AllTickets() {
           </div>
         </div>
       )}
+
+      {/* Sidebar Ad */}
+      <SidebarAd className="mt-4" />
 
       <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />

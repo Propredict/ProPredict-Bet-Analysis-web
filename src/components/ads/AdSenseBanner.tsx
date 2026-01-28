@@ -35,10 +35,19 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
 
   // Placeholder styling for when AdSense is not loaded yet
   if (!isAdSenseLoaded) {
+    const getMinHeight = () => {
+      switch (format) {
+        case "horizontal": return "90px";
+        case "rectangle": return "200px";
+        case "vertical": return "300px";
+        default: return "250px";
+      }
+    };
+    
     return (
       <div 
         className={`w-full flex items-center justify-center bg-muted/30 border border-border/50 rounded-lg overflow-hidden ${className}`}
-        style={{ minHeight: format === "horizontal" ? "90px" : "250px" }}
+        style={{ minHeight: getMinHeight() }}
       >
         <span className="text-[10px] text-muted-foreground/50">Advertisement</span>
       </div>
@@ -111,11 +120,11 @@ export function FooterAd({ className = "" }: { className?: string }) {
  */
 export function SidebarAd({ className = "" }: { className?: string }) {
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full max-w-md mx-auto ${className}`}>
       <AdSenseBanner 
         slot="XXXXXXXXXX" // Replace with your sidebar ad slot ID
-        format="rectangle"
-        className="rounded-lg"
+        format="horizontal"
+        className="rounded-lg shadow-sm"
       />
     </div>
   );
