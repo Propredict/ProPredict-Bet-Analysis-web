@@ -115,17 +115,10 @@ export function FooterAd({ className = "" }: { className?: string }) {
 /**
  * Sidebar banner ad for placement alongside content.
  * 
- * AUTOMATICALLY HIDDEN for Premium and Admin users.
+ * VISIBLE TO ALL USERS (Free, Pro, Premium, Admin).
  * Use only on Dashboard, Tips, and Tickets pages.
  */
 export function SidebarAd({ className = "" }: { className?: string }) {
-  const { plan, isAdmin } = useUserPlan();
-  
-  // Hide ads for Premium and Admin users
-  if (plan === "premium" || isAdmin) {
-    return null;
-  }
-
   return (
     <div className={`w-full max-w-md mx-auto ${className}`}>
       <AdSenseBanner 
