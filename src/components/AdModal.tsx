@@ -54,14 +54,19 @@ export function AdModal({ isOpen, onComplete, onClose }: AdModalProps) {
               <Unlock className="h-5 w-5 text-primary" />
             </div>
             <h2 className="text-lg font-semibold text-foreground">
-              Unlock Premium Prediction
+              Unlock Prediction
             </h2>
           </div>
 
           {/* Body */}
-          <p className="text-sm text-muted-foreground mb-6">
-            Watch a short promotional message to unlock this prediction.
+          <p className="text-sm text-muted-foreground mb-4">
+            Watch a short video to unlock this prediction.
             This helps us keep ProPredict free and improve our AI analysis.
+          </p>
+
+          {/* Disclaimer */}
+          <p className="text-[10px] text-accent text-center mb-6">
+            For entertainment & informational purposes only.
           </p>
 
           {/* State Content */}
@@ -74,14 +79,14 @@ export function AdModal({ isOpen, onComplete, onClose }: AdModalProps) {
                 <div className="text-center">
                   <p className="text-sm font-medium text-foreground">Prediction unlocked!</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    You now have access to this match analysis.
+                    You can now view this analysis.
                   </p>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Loading content…</p>
+                <p className="text-sm text-muted-foreground">Loading…</p>
               </div>
             )}
           </div>
