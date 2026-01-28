@@ -75,23 +75,29 @@ export default function AppLayout() {
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
           <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:left-[var(--sidebar-width,0)]">
-            <div className="flex items-center gap-1.5">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
-              
-              {/* Logo - clickable to home */}
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
+            
+            {/* Center Branding with Logo - mobile only */}
+            <div className="flex sm:hidden absolute left-1/2 -translate-x-1/2 items-center gap-1.5">
               <img 
                 src={logoImage} 
                 alt="ProPredict" 
-                className="h-6 w-6 sm:h-7 sm:w-7 object-contain cursor-pointer flex-shrink-0" 
+                className="h-6 w-6 object-contain cursor-pointer flex-shrink-0" 
                 onClick={() => navigate("/")}
               />
-              
-              {/* Center Branding - mobile only */}
-              <div className="flex sm:hidden flex-col items-start ml-1">
+              <div className="flex flex-col items-start">
                 <span className="text-xs font-bold text-foreground tracking-tight">ProPredict</span>
-                <span className="text-[8px] text-muted-foreground -mt-0.5">AI Tips & Analysis</span>
+                <span className="text-[8px] text-muted-foreground -mt-0.5">All Tips & AI Analysis</span>
               </div>
             </div>
+            
+            {/* Desktop Logo - visible on sm+ */}
+            <img 
+              src={logoImage} 
+              alt="ProPredict" 
+              className="hidden sm:block h-7 w-7 object-contain cursor-pointer flex-shrink-0 ml-2" 
+              onClick={() => navigate("/")}
+            />
             
             <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
               {/* Subscription Badge */}
