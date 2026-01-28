@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import emailjs from "@emailjs/browser";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -161,7 +162,40 @@ const HelpSupport = () => {
     try {
       contactSchema.parse(formData);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
+      const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
+        throw new Error("EmailJS configuration is missing");
+      }
+
+      // Send admin notification email
+      await emailjs.send(
+        serviceId,
+        adminTemplateId,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          to_email: "propredictsupp@gmail.com",
+        },
+        publicKey
+      );
+
+      // Send auto-reply to user
+      await emailjs.send(
+        serviceId,
+        autoreplyTemplateId,
+        {
+          to_name: formData.name,
+          to_email: formData.email,
+          reply_subject: "We received your message",
+        },
+        publicKey
+      );
       
       toast({
         title: "Message Sent!",
@@ -178,6 +212,13 @@ const HelpSupport = () => {
           }
         });
         setErrors(fieldErrors);
+      } else {
+        console.error("EmailJS error:", error);
+        toast({
+          title: "Failed to send message",
+          description: "Please try again or email us directly.",
+          variant: "destructive",
+        });
       }
     } finally {
       setIsSubmitting(false);
