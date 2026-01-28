@@ -172,7 +172,7 @@ const stats = [
 const faqs = [
   { question: "Can I cancel anytime?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period." },
   { question: "How do premium tips work?", answer: "Our expert analysts provide carefully curated predictions with detailed analysis, giving you the edge you need to make informed decisions." },
-  { question: "Is there a money-back guarantee?", answer: "Yes, we offer a 30-day money-back guarantee. If you're not satisfied, contact support for a full refund." },
+  { question: "Can I change my plan anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly." },
 ];
 
 export default function GetPremium() {
