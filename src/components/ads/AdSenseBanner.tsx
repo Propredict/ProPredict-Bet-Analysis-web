@@ -88,16 +88,10 @@ export function InContentAd({ className = "" }: { className?: string }) {
 /**
  * Footer banner ad for placement at the bottom of pages.
  * 
- * AUTOMATICALLY HIDDEN for Pro, Premium, and Admin users.
+ * VISIBLE TO ALL USERS (Free, Pro, Premium, Admin).
+ * Footer ads are non-intrusive and shown globally for revenue.
  */
 export function FooterAd({ className = "" }: { className?: string }) {
-  const { plan, isAdmin } = useUserPlan();
-  
-  // Hide ads for Pro (basic), Premium, and Admin users
-  if (plan === "basic" || plan === "premium" || isAdmin) {
-    return null;
-  }
-
   return (
     <div className={`w-full ${className}`}>
       <AdSenseBanner 
