@@ -3,10 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { AdModal } from "@/components/AdModal";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -24,13 +22,7 @@ export default function ExclusiveTips() {
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  
   const exclusiveTips = tips.filter(tip => tip.tier === "exclusive");
   const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
@@ -42,7 +34,6 @@ export default function ExclusiveTips() {
   };
 
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -117,12 +108,15 @@ export default function ExclusiveTips() {
 
       {/* Tips Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? <Card className="p-8 bg-card border-border">
+        {isLoading ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tips...</p>
             </div>
-          </Card> : exclusiveTips.length === 0 ? <Card className="p-8 bg-card border-border">
+          </Card>
+        ) : exclusiveTips.length === 0 ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No pro tips available</p>
@@ -132,26 +126,37 @@ export default function ExclusiveTips() {
                 Try Again
               </Button>
             </div>
-          </Card> : exclusiveTips.map(tip => {
-        const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
-        const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === tip.id;
-        return <TipCard key={tip.id} tip={{
-          id: tip.id,
-          homeTeam: tip.home_team,
-          awayTeam: tip.away_team,
-          league: tip.league,
-          prediction: tip.prediction,
-          odds: tip.odds,
-          confidence: tip.confidence ?? 0,
-          kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric"
-          }) : "",
-          tier: tip.tier
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")} isUnlocking={isUnlocking} />;
-      })}
+          </Card>
+        ) : (
+          exclusiveTips.map(tip => {
+            const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
+            const isLocked = unlockMethod?.type !== "unlocked";
+            return (
+              <TipCard 
+                key={tip.id} 
+                tip={{
+                  id: tip.id,
+                  homeTeam: tip.home_team,
+                  awayTeam: tip.away_team,
+                  league: tip.league,
+                  prediction: tip.prediction,
+                  odds: tip.odds,
+                  confidence: tip.confidence ?? 0,
+                  kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric"
+                  }) : "",
+                  tier: tip.tier
+                }} 
+                isLocked={isLocked} 
+                unlockMethod={unlockMethod} 
+                onUnlockClick={() => navigate("/get-premium")} 
+                isUnlocking={false} 
+              />
+            );
+          })
+        )}
       </div>
     </div>;
 }

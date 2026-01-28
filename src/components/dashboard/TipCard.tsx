@@ -78,9 +78,9 @@ function getTierBadge(tier: ContentTier) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
-  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
-  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock"; // Kept for future Android use
+  if (unlockMethod.type === "upgrade_basic") return "Get Pro to unlock";
+  if (unlockMethod.type === "upgrade_premium") return "Get Premium to unlock";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }

@@ -3,10 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { AdModal } from "@/components/AdModal";
+import { InContentAd } from "@/components/ads/AdSenseBanner";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -22,13 +21,7 @@ export default function DailyTickets() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  
   const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
 
@@ -38,8 +31,47 @@ export default function DailyTickets() {
     toast.success("Tickets refreshed");
   };
 
+  // Helper to insert ads every 3-4 cards
+  const renderTicketsWithAds = () => {
+    const elements: React.ReactNode[] = [];
+    dailyTickets.forEach((ticket, index) => {
+      const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
+      const isLocked = unlockMethod?.type !== "unlocked";
+      
+      elements.push(
+        <TicketCard 
+          key={ticket.id} 
+          ticket={{
+            id: ticket.id,
+            title: ticket.title,
+            matchCount: ticket.matches?.length ?? 0,
+            status: ticket.result ?? "pending",
+            totalOdds: ticket.total_odds ?? 0,
+            tier: ticket.tier,
+            matches: (ticket.matches ?? []).map(m => ({
+              name: m.match_name,
+              prediction: m.prediction,
+              odds: m.odds
+            })),
+            createdAt: ticket.created_at_ts
+          }} 
+          isLocked={isLocked} 
+          unlockMethod={unlockMethod} 
+          onUnlockClick={() => {}} 
+          onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
+          isUnlocking={false} 
+        />
+      );
+      
+      // Insert ad after every 3rd card (indices 2, 5, 8, etc.)
+      if ((index + 1) % 3 === 0 && index < dailyTickets.length - 1) {
+        elements.push(<InContentAd key={`ad-${index}`} />);
+      }
+    });
+    return elements;
+  };
+
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -101,12 +133,15 @@ export default function DailyTickets() {
 
       {/* Tickets Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? <Card className="p-8 bg-card border-border">
+        {isLoading ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tickets...</p>
             </div>
-          </Card> : dailyTickets.length === 0 ? <Card className="p-8 bg-card border-border">
+          </Card>
+        ) : dailyTickets.length === 0 ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-primary mb-1">No daily tickets available</p>
@@ -116,26 +151,10 @@ export default function DailyTickets() {
                 Try Again
               </Button>
             </div>
-          </Card> : dailyTickets.map(ticket => {
-        const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
-        const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === ticket.id;
-        const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
-        return <TicketCard key={ticket.id} ticket={{
-          id: ticket.id,
-          title: ticket.title,
-          matchCount: ticket.matches?.length ?? 0,
-          status: ticket.result ?? "pending",
-          totalOdds: ticket.total_odds ?? 0,
-          tier: ticket.tier,
-          matches: matchesToShow.map(m => ({
-            name: m.match_name,
-            prediction: m.prediction,
-            odds: m.odds
-          })),
-          createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
-      })}
+          </Card>
+        ) : (
+          renderTicketsWithAds()
+        )}
       </div>
     </div>;
 }

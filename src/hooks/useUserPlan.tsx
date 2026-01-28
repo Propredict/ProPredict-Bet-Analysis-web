@@ -12,10 +12,10 @@ export type ContentType = "tip" | "ticket";
 
 export type UnlockMethod =
   | { type: "unlocked" }
-  | { type: "login_required"; message: "Sign in to unlock" }
-  | { type: "watch_ad"; message: "Watch an ad to unlock" }
-  | { type: "upgrade_basic"; message: "Upgrade to Basic" }
-  | { type: "upgrade_premium"; message: "Upgrade to Premium" };
+  | { type: "login_required"; message: string }
+  | { type: "watch_ad"; message: string }
+  | { type: "upgrade_basic"; message: string }
+  | { type: "upgrade_premium"; message: string };
 
 interface UnlockedContent {
   contentType: ContentType;
@@ -159,21 +159,25 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       if (tier === "free") return true;
 
-      if (tier === "daily" || tier === "exclusive") {
+      // Daily tier: Always accessible for all users (monetized via AdSense)
+      if (tier === "daily") {
+        return true;
+      }
+
+      // Exclusive (Pro) tier: Requires basic or premium subscription
+      if (tier === "exclusive") {
         if (plan === "basic" || plan === "premium") return true;
-        if (contentType && contentId) {
-          return isContentUnlocked(contentType, contentId);
-        }
         return false;
       }
 
+      // Premium tier: Requires premium subscription only
       if (tier === "premium") {
         return plan === "premium";
       }
 
       return false;
     },
-    [isAdmin, plan, isContentUnlocked],
+    [isAdmin, plan],
   );
 
   /* =====================
@@ -193,21 +197,16 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return { type: "login_required", message: "Sign in to unlock" };
       }
 
-      // DAILY + EXCLUSIVE → ADS for FREE users
-      if ((tier === "daily" || tier === "exclusive") && plan === "free") {
-        return { type: "watch_ad", message: "Watch an ad to unlock" };
-      }
-
-      // EXCLUSIVE → upgrade to basic (no ads)
+      // EXCLUSIVE (Pro) → upgrade to basic for FREE users
       if (tier === "exclusive" && plan === "free") {
-        return { type: "upgrade_basic", message: "Upgrade to Basic" };
+        return { type: "upgrade_basic", message: "Get Pro to unlock" };
       }
 
-      // PREMIUM → ONLY premium
+      // PREMIUM → upgrade to premium for FREE & BASIC users
       if (tier === "premium") {
         return {
           type: "upgrade_premium",
-          message: "Upgrade to Premium",
+          message: "Get Premium to unlock",
         };
       }
 

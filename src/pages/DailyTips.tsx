@@ -3,10 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { AdModal } from "@/components/AdModal";
+import { InContentAd } from "@/components/ads/AdSenseBanner";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { toast } from "sonner";
 
 export default function DailyTips() {
@@ -20,13 +19,7 @@ export default function DailyTips() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  
   const dailyTips = tips.filter(tip => tip.tier === "daily");
   const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
 
@@ -36,8 +29,47 @@ export default function DailyTips() {
     toast.success("Tips refreshed");
   };
 
+  // Helper to insert ads every 3-4 cards
+  const renderTipsWithAds = () => {
+    const elements: React.ReactNode[] = [];
+    dailyTips.forEach((tip, index) => {
+      const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
+      const isLocked = unlockMethod?.type !== "unlocked";
+      
+      elements.push(
+        <TipCard 
+          key={tip.id} 
+          tip={{
+            id: tip.id,
+            homeTeam: tip.home_team,
+            awayTeam: tip.away_team,
+            league: tip.league,
+            prediction: tip.prediction,
+            odds: tip.odds,
+            confidence: tip.confidence ?? 0,
+            kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric"
+            }) : "",
+            tier: tip.tier
+          }} 
+          isLocked={isLocked} 
+          unlockMethod={unlockMethod} 
+          onUnlockClick={() => {}} 
+          isUnlocking={false} 
+        />
+      );
+      
+      // Insert ad after every 3rd card (indices 2, 5, 8, etc.)
+      if ((index + 1) % 3 === 0 && index < dailyTips.length - 1) {
+        elements.push(<InContentAd key={`ad-${index}`} />);
+      }
+    });
+    return elements;
+  };
+
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -94,12 +126,15 @@ export default function DailyTips() {
 
       {/* Tips Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? <Card className="p-8 bg-card border-border">
+        {isLoading ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
               <p>Loading tips...</p>
             </div>
-          </Card> : dailyTips.length === 0 ? <Card className="p-8 bg-card border-border">
+          </Card>
+        ) : dailyTips.length === 0 ? (
+          <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-accent mb-1">No daily tips available</p>
@@ -109,26 +144,10 @@ export default function DailyTips() {
                 Try Again
               </Button>
             </div>
-          </Card> : dailyTips.map(tip => {
-        const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
-        const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === tip.id;
-        return <TipCard key={tip.id} tip={{
-          id: tip.id,
-          homeTeam: tip.home_team,
-          awayTeam: tip.away_team,
-          league: tip.league,
-          prediction: tip.prediction,
-          odds: tip.odds,
-          confidence: tip.confidence ?? 0,
-          kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric"
-          }) : "",
-          tier: tip.tier
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} isUnlocking={isUnlocking} />;
-      })}
+          </Card>
+        ) : (
+          renderTipsWithAds()
+        )}
       </div>
     </div>;
 }
