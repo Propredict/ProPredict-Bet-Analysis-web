@@ -14,10 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart } from "lucide-react";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type SortOption = "confidence" | "kickoff" | "risk";
+type TierFilter = "all" | "free" | "pro" | "premium";
 
 export default function AIPredictions() {
   const [day, setDay] = useState<"today" | "tomorrow">("today");
@@ -25,6 +26,7 @@ export default function AIPredictions() {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const { predictions, loading } = useAIPredictions(day);
   const { stats, loading: statsLoading } = useAIPredictionStats();
   const { isAdmin, plan } = useUserPlan();
@@ -33,6 +35,22 @@ export default function AIPredictions() {
 
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
+
+  // Helper to determine prediction tier
+  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
+    if (prediction.is_premium && prediction.confidence > 80) return "premium";
+    if (prediction.confidence > 70) return "pro";
+    return "free";
+  };
+
+  // Count predictions per tier
+  const tierCounts = useMemo(() => {
+    const counts = { free: 0, pro: 0, premium: 0 };
+    predictions.forEach((p) => {
+      counts[getPredictionTier(p)]++;
+    });
+    return counts;
+  }, [predictions]);
 
   // Sort function
   const sortPredictions = (preds: typeof predictions) => {
@@ -57,9 +75,14 @@ export default function AIPredictions() {
     });
   };
 
-  // Filter predictions by search, league, and favorites
+  // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
     let result = predictions;
+    
+    // Filter by tier if not "all"
+    if (tierFilter !== "all") {
+      result = result.filter((p) => getPredictionTier(p) === tierFilter);
+    }
     
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
@@ -84,7 +107,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
 
   // Separate featured (premium/high confidence) from regular predictions
   const featuredPredictions = useMemo(() => {
@@ -333,7 +356,65 @@ export default function AIPredictions() {
             </CardContent>
           </Card>
 
-          {/* Featured Predictions Section */}
+          {/* Tier Filter Tabs */}
+          <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0",
+                tierFilter === "all"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+              )}
+              onClick={() => setTierFilter("all")}
+            >
+              All ({predictions.length})
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                tierFilter === "free"
+                  ? "bg-muted text-foreground shadow-lg border-2 border-muted-foreground/50"
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-muted-foreground/30 hover:bg-card"
+              )}
+              onClick={() => setTierFilter("free")}
+            >
+              <Gift className="w-3 h-3" />
+              Free ({tierCounts.free})
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                tierFilter === "pro"
+                  ? "bg-violet-500/20 text-violet-400 shadow-lg shadow-violet-500/20 border-2 border-violet-500/50"
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/5"
+              )}
+              onClick={() => setTierFilter("pro")}
+            >
+              <Star className="w-3 h-3" />
+              Pro ({tierCounts.pro})
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                tierFilter === "premium"
+                  ? "bg-gradient-to-r from-warning/20 to-accent/20 text-warning shadow-lg shadow-warning/20 border-2 border-warning/50"
+                  : "bg-card/50 text-muted-foreground border border-border hover:text-warning hover:border-warning/30 hover:bg-warning/5"
+              )}
+              onClick={() => setTierFilter("premium")}
+            >
+              <Crown className="w-3 h-3" />
+              Premium ({tierCounts.premium})
+            </Button>
+          </div>
+
           {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
@@ -367,7 +448,7 @@ export default function AIPredictions() {
           {/* All Daily Predictions Section */}
           <div>
             <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
-              <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-blue-400" />
+              <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary" />
               <h2 className="text-xs md:text-sm font-semibold text-foreground">
                 {day === "today" ? "Daily" : "Tomorrow"} ({regularPredictions.length})
               </h2>
