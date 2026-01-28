@@ -33,25 +33,10 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
     }
   }, [isAdSenseLoaded]);
 
-  // Placeholder styling for when AdSense is not loaded yet
+  // Don't render placeholder if AdSense is not loaded
+  // This prevents empty space in production before ads are configured
   if (!isAdSenseLoaded) {
-    const getMinHeight = () => {
-      switch (format) {
-        case "horizontal": return "90px";
-        case "rectangle": return "200px";
-        case "vertical": return "300px";
-        default: return "250px";
-      }
-    };
-    
-    return (
-      <div 
-        className={`w-full flex items-center justify-center bg-muted/30 border border-border/50 rounded-lg overflow-hidden ${className}`}
-        style={{ minHeight: getMinHeight() }}
-      >
-        <span className="text-[10px] text-muted-foreground/50">Advertisement</span>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -121,13 +106,13 @@ export function FooterAd({ className = "" }: { className?: string }) {
 export function SidebarAd({ className = "" }: { className?: string }) {
   const { plan, isAdmin } = useUserPlan();
   
-  // Hide ads for Premium and Admin users
+  // Hide ads completely for Premium and Admin users (no space reserved)
   if (plan === "premium" || isAdmin) {
     return null;
   }
 
   return (
-    <div className={`w-full max-w-md mx-auto ${className}`}>
+    <div className={`w-full max-w-md mx-auto my-4 ${className}`}>
       <AdSenseBanner 
         slot="XXXXXXXXXX" // Replace with your sidebar ad slot ID
         format="horizontal"

@@ -10,10 +10,10 @@ const Index = () => {
     <div className="space-y-6">
       <GuestBanner />
       <FeaturedPredictions />
-      <SidebarAd className="my-4" />
+      <SidebarAd />
       <MatchPredictions />
       <BettingTickets />
-      <SidebarAd className="my-4" />
+      <SidebarAd />
       <BottomCTA />
     </div>
   );
