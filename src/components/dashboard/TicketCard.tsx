@@ -1,10 +1,13 @@
 import {
+  Ticket,
   Clock,
   Lock,
+  Unlock,
   Star,
   Crown,
   CheckCircle2,
   XCircle,
+  Loader2,
   LogIn,
   Sparkles,
   Gift,
@@ -44,6 +47,7 @@ interface TicketCardProps {
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
   onViewTicket?: () => void;
+  isUnlocking?: boolean;
 }
 
 /* =======================
@@ -103,6 +107,7 @@ function getTierBadge(tier: ContentTier) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
   if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
@@ -119,6 +124,7 @@ function TicketCard({
   unlockMethod,
   onUnlockClick,
   onViewTicket,
+  isUnlocking = false,
 }: TicketCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -169,6 +175,9 @@ function TicketCard({
     if (unlockMethod.type === "login_required") {
       return "";
     }
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-primary hover:bg-primary/90 text-white border-0";
+    }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
@@ -181,6 +190,7 @@ function TicketCard({
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
     if (unlockMethod.type === "login_required") return LogIn;
+    if (unlockMethod.type === "watch_ad") return Sparkles;
     if (unlockMethod.type === "upgrade_basic") return Star;
     return Crown;
   };
@@ -257,13 +267,23 @@ function TicketCard({
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="sm"
               className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
+              disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
                 handleUnlockClick();
               }}
             >
-              {Icon && <Icon className="h-3.5 w-3.5" />}
-              {getUnlockButtonText(unlockMethod)}
+              {isUnlocking ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Watching ad...
+                </>
+              ) : (
+                <>
+                  {Icon && <Icon className="h-3.5 w-3.5" />}
+                  {getUnlockButtonText(unlockMethod)}
+                </>
+              )}
             </Button>
           </div>
         )}

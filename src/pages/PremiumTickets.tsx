@@ -7,7 +7,6 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
-
 export default function PremiumTickets() {
   const navigate = useNavigate();
   const {
@@ -20,11 +19,13 @@ export default function PremiumTickets() {
     getUnlockMethod,
     plan
   } = useUserPlan();
-  const { handleUnlock } = useUnlockHandler();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
   const premiumTickets = tickets.filter(ticket => ticket.tier === "premium");
-  const unlockedCount = premiumTickets.filter(ticket => canAccess("premium")).length;
+  const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
   const showUpgradeBanner = plan !== "premium";
-
   return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
@@ -105,7 +106,6 @@ export default function PremiumTickets() {
           </div>
         </Card>
       </div>
-
       {/* Tickets Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {isLoading ? <Card className="p-8 bg-card border-border">
@@ -124,8 +124,9 @@ export default function PremiumTickets() {
               </Button>
             </div>
           </Card> : premiumTickets.map(ticket => {
-        const unlockMethod = getUnlockMethod("premium");
+        const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
         const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === ticket.id;
         const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
         return <TicketCard key={ticket.id} ticket={{
           id: ticket.id,
@@ -140,7 +141,7 @@ export default function PremiumTickets() {
             odds: m.odds
           })),
           createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
       })}
       </div>
     </div>;

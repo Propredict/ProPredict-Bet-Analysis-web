@@ -1,4 +1,4 @@
-import { Lock, Star, Crown, LogIn } from "lucide-react";
+import { Lock, Play, Star, Crown, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type UnlockMethod } from "@/hooks/useUserPlan";
@@ -22,6 +22,8 @@ export function LockedContentOverlay({
 
   const getIcon = () => {
     switch (unlockMethod.type) {
+      case "watch_ad":
+        return Play;
       case "upgrade_basic":
         return Star;
       case "upgrade_premium":
@@ -35,6 +37,8 @@ export function LockedContentOverlay({
 
   const getButtonVariant = () => {
     switch (unlockMethod.type) {
+      case "watch_ad":
+        return "outline";
       case "upgrade_basic":
         return "default";
       case "upgrade_premium":
@@ -45,6 +49,9 @@ export function LockedContentOverlay({
   };
 
   const getButtonClassName = () => {
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-primary hover:bg-primary/90 text-white border-0";
+    }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }

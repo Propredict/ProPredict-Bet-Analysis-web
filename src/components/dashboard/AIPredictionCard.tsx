@@ -1,4 +1,4 @@
-import { Lock, LogIn, Star, Crown, Gift, CheckCircle2, Brain, TrendingUp, Target, Sparkles } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Brain, TrendingUp, Target } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ interface AIPredictionCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
+  isUnlocking?: boolean;
 }
 
 function getTierBadge(tier: ContentTier) {
@@ -68,6 +69,7 @@ function getTierBadge(tier: ContentTier) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
   if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
@@ -78,7 +80,8 @@ export function AIPredictionCard({
   prediction, 
   isLocked, 
   unlockMethod, 
-  onUnlockClick
+  onUnlockClick, 
+  isUnlocking = false 
 }: AIPredictionCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -99,6 +102,9 @@ export function AIPredictionCard({
     if (unlockMethod.type === "login_required") {
       return "";
     }
+    if (unlockMethod.type === "watch_ad") {
+      return "bg-primary hover:bg-primary/90 text-white border-0";
+    }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
@@ -111,6 +117,7 @@ export function AIPredictionCard({
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
     if (unlockMethod.type === "login_required") return LogIn;
+    if (unlockMethod.type === "watch_ad") return Sparkles;
     if (unlockMethod.type === "upgrade_basic") return Star;
     return Crown;
   };
@@ -235,13 +242,23 @@ export function AIPredictionCard({
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="lg"
               className={cn("w-full gap-2 h-12", getUnlockButtonStyle())}
+              disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
                 handleUnlockClick();
               }}
             >
-              {Icon && <Icon className="h-4 w-4" />}
-              {getUnlockButtonText(unlockMethod)}
+              {isUnlocking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Watching ad...
+                </>
+              ) : (
+                <>
+                  {Icon && <Icon className="h-4 w-4" />}
+                  {getUnlockButtonText(unlockMethod)}
+                </>
+              )}
             </Button>
           </div>
         )}

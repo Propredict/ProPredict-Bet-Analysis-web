@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { AdModal } from "@/components/AdModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -21,9 +22,15 @@ export default function DailyTickets() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
-  const { handleUnlock } = useUnlockHandler();
+  const {
+    unlockingId,
+    handleUnlock,
+    adModalOpen,
+    handleAdComplete,
+    closeAdModal
+  } = useUnlockHandler();
   const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
-  const unlockedCount = dailyTickets.filter(ticket => canAccess("daily")).length;
+  const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
 
   const handleRefresh = () => {
     refetch();
@@ -32,6 +39,7 @@ export default function DailyTickets() {
   };
 
   return <div className="section-gap">
+      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -109,8 +117,9 @@ export default function DailyTickets() {
               </Button>
             </div>
           </Card> : dailyTickets.map(ticket => {
-        const unlockMethod = getUnlockMethod("daily");
+        const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
         const isLocked = unlockMethod?.type !== "unlocked";
+        const isUnlocking = unlockingId === ticket.id;
         const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
         return <TicketCard key={ticket.id} ticket={{
           id: ticket.id,
@@ -125,7 +134,7 @@ export default function DailyTickets() {
             odds: m.odds
           })),
           createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
       })}
       </div>
     </div>;
