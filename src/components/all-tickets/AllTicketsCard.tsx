@@ -165,10 +165,10 @@ export function AllTicketsCard({
           )}
         </div>
 
-        {/* Total Odds - Blurred */}
+        {/* Combined Value - Blurred */}
         <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Total Odds</span>
+            <span className="text-xs text-muted-foreground">Combined Value</span>
             <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">@{totalOdds.toFixed(2)}</span>
           </div>
         </div>
@@ -267,10 +267,10 @@ export function AllTicketsCard({
         )}
       </div>
 
-      {/* Total Odds footer */}
+      {/* Combined Value footer */}
       <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Total Odds</span>
+          <span className="text-xs text-muted-foreground">Combined Value</span>
           <span className="font-bold text-sm sm:text-base text-primary">@{totalOdds.toFixed(2)}</span>
         </div>
       </div>

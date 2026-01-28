@@ -85,8 +85,8 @@ const plans = {
       buttonVariant: "default" as const,
       features: [
         { text: "All Pro features", included: true },
-        { text: "All premium tickets", included: true },
-        { text: "VIP accumulator bets", included: true },
+        { text: "All premium match insights", included: true },
+        { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
@@ -143,8 +143,8 @@ const plans = {
       buttonVariant: "default" as const,
       features: [
         { text: "All Pro features", included: true },
-        { text: "All premium tickets", included: true },
-        { text: "VIP accumulator bets", included: true },
+        { text: "All premium match insights", included: true },
+        { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
@@ -154,18 +154,18 @@ const plans = {
 };
 
 const benefits = [
-  { icon: Target, title: "Premium Tips", description: "Expert predictions with 90%+ historical accuracy" },
-  { icon: Zap, title: "VIP Tickets", description: "High-odds accumulator bets curated by experts" },
+  { icon: Target, title: "Premium Predictions", description: "Expert analysis with 90%+ historical accuracy" },
+  { icon: Zap, title: "VIP Match Bundles", description: "Curated multi-match insights from our experts" },
   { icon: Brain, title: "Full AI Analysis", description: "Complete AI-powered match analysis and insights" },
-  { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new tips and opportunities" },
-  { icon: Clock, title: "Priority Access", description: "Get picks before the odds change" },
-  { icon: Shield, title: "Money-back Guarantee", description: "30-day refund if not satisfied" },
+  { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new predictions" },
+  { icon: Clock, title: "Priority Access", description: "Get insights before match kickoff" },
+  { icon: Shield, title: "Satisfaction Guarantee", description: "30-day refund if not satisfied" },
 ];
 
 const stats = [
-  { value: "92%", label: "Premium Tip Accuracy" },
-  { value: "10K+", label: "Active Subscribers" },
-  { value: "€2.4K", label: "User Winnings (2025)" },
+  { value: "92%", label: "Prediction Accuracy" },
+  { value: "10K+", label: "Active Users" },
+  { value: "500+", label: "Daily Analyses" },
   { value: "4.9", label: "User Rating", isStar: true },
 ];
 

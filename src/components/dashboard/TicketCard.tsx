@@ -150,14 +150,14 @@ function TicketCard({
         return (
           <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2">
             <CheckCircle2 className="h-3 w-3 mr-1" />
-            Won
+            Correct
           </Badge>
         );
       case "lost":
         return (
           <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-2">
             <XCircle className="h-3 w-3 mr-1" />
-            Lost
+            Incorrect
           </Badge>
         );
       default:
@@ -252,10 +252,10 @@ function TicketCard({
           )}
         </div>
 
-        {/* Total Odds - Blurred */}
+        {/* Combined Value - Blurred */}
         <div className="mx-3 sm:mx-4 mb-3 p-3 bg-muted/20 rounded-lg border border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Total Odds</span>
+            <span className="text-xs text-muted-foreground">Combined Value</span>
             <span className="font-bold text-base text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
           </div>
         </div>
@@ -346,10 +346,10 @@ function TicketCard({
         )}
       </div>
 
-      {/* Total Odds Footer */}
+      {/* Combined Value Footer */}
       <div className="mx-3 sm:mx-4 mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Total Odds</span>
+          <span className="text-xs text-muted-foreground">Combined Value</span>
           <span className="font-bold text-base text-primary">@{ticket.totalOdds.toFixed(2)}</span>
         </div>
       </div>
