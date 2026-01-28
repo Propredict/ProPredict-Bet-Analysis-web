@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Calendar, Star, Crown, RefreshCw, Loader2, TrendingUp } from "lucide-react";
+import { Ticket, Calendar, Star, Crown, RefreshCw, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,6 @@ import { useTickets, type TicketWithMatches } from "@/hooks/useTickets";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
-import { AdModal } from "@/components/AdModal";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
@@ -24,7 +23,7 @@ export default function AllTickets() {
 
   const { tickets, isLoading, refetch } = useTickets(false);
   const { canAccess, getUnlockMethod, refetch: refetchPlan } = useUserPlan();
-  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
+  const { handleUnlock } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -74,7 +73,6 @@ export default function AllTickets() {
   const getTabStyles = (tabId: string, isActive: boolean) => {
     const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
     
-    // Each tier always shows its color - stronger when active, subtle when inactive
     switch (tabId) {
       case "daily":
         return isActive 
@@ -96,7 +94,6 @@ export default function AllTickets() {
 
   return (
     <div className="space-y-5">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Page Header */}
       <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
         <div className="flex items-center gap-2">
@@ -170,9 +167,8 @@ export default function AllTickets() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {displayedTickets.map(ticket => {
-              const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
-              const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-              const isUnlocking = unlockingId === ticket.id;
+              const isLocked = !canAccess(ticket.tier as ContentTier);
+              const unlockMethod = getUnlockMethod(ticket.tier as ContentTier);
               return (
                 <AllTicketsCard 
                   key={ticket.id} 
@@ -180,7 +176,6 @@ export default function AllTickets() {
                   isLocked={isLocked} 
                   unlockMethod={unlockMethod} 
                   onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
-                  isUnlocking={isUnlocking} 
                 />
               );
             })}
@@ -221,7 +216,6 @@ export default function AllTickets() {
         </div>
       )}
 
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
     </div>
   );

@@ -1,4 +1,4 @@
-import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn } from "lucide-react";
+import { Star, Crown, Lock, Sparkles, Gift, CheckCircle2, LogIn } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,6 @@ interface AllTicketsCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
-  isUnlocking: boolean;
 }
 
 function getTierBadge(tier: string) {
@@ -54,7 +53,6 @@ function getTierBadge(tier: string) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
-  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
   if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
@@ -66,7 +64,6 @@ export function AllTicketsCard({
   isLocked,
   unlockMethod,
   onUnlockClick,
-  isUnlocking,
 }: AllTicketsCardProps) {
   const navigate = useNavigate();
   const isUnlocked = !isLocked;
@@ -89,9 +86,6 @@ export function AllTicketsCard({
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
-    if (unlockMethod.type === "watch_ad") {
-      return "bg-primary hover:bg-primary/90 text-white border-0";
-    }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
@@ -104,7 +98,6 @@ export function AllTicketsCard({
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
     if (unlockMethod.type === "login_required") return LogIn;
-    if (unlockMethod.type === "watch_ad") return Sparkles;
     if (unlockMethod.type === "upgrade_basic") return Star;
     return Crown;
   };
@@ -180,23 +173,13 @@ export function AllTicketsCard({
               variant={unlockMethod.type === "login_required" ? "outline" : "default"}
               size="sm"
               className={cn("w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm", getUnlockButtonStyle())}
-              disabled={isUnlocking}
               onClick={(e) => {
                 e.stopPropagation();
                 handleUnlockClick();
               }}
             >
-              {isUnlocking ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Watching ad...
-                </>
-              ) : (
-                <>
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  {getUnlockButtonText(unlockMethod)}
-                </>
-              )}
+              {Icon && <Icon className="h-3.5 w-3.5" />}
+              {getUnlockButtonText(unlockMethod)}
             </Button>
           </div>
         )}

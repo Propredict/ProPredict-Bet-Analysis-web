@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Eye, ChevronDown, Brain, Star, Heart, Radio, Loader2 } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
@@ -14,7 +14,6 @@ import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
-import { AdModal } from "@/components/AdModal";
 
 interface Props {
   prediction: AIPrediction;
@@ -34,46 +33,22 @@ export function AIPredictionCard({
   isFavorite = false,
   isSavingFavorite = false,
   onToggleFavorite,
-  onWatchAd, 
   onGoPremium 
 }: Props) {
   const navigate = useNavigate();
-  const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
-  const [isUnlocking, setIsUnlocking] = useState(false);
-  const [showAdModal, setShowAdModal] = useState(false);
 
   // Premium if is_premium flag is true OR confidence > 70
   const isPremiumPrediction = prediction.is_premium || (prediction.confidence > 70);
   
-  // Access logic: admin or premium user always has access, free users can unlock non-premium via ads
-  const hasAccess = isAdmin || isPremiumUser || isUnlocked;
+  // Access logic: admin or premium user always has access
+  const hasAccess = isAdmin || isPremiumUser;
 
-  // Free users cannot unlock premium predictions via ads
-  const canWatchAd = !isPremiumPrediction && !hasAccess;
+  // Free users need to upgrade for premium predictions
   const needsPremiumUpgrade = isPremiumPrediction && !isAdmin && !isPremiumUser;
 
   // Generate dynamic AI analysis
   const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
-
-  const handleWatchAdClick = useCallback(() => {
-    if (isPremiumPrediction) return;
-    setIsUnlocking(true);
-    setShowAdModal(true);
-  }, [isPremiumPrediction]);
-
-  const handleAdComplete = useCallback(() => {
-    setIsUnlocked(true);
-    setIsUnlocking(false);
-    onWatchAd();
-  }, [onWatchAd]);
-
-  const handleAdModalClose = useCallback(() => {
-    setShowAdModal(false);
-    if (!isUnlocked) {
-      setIsUnlocking(false);
-    }
-  }, [isUnlocked]);
 
   // Format time as HH:mm
   const formatTime = (time: string | null) => {
@@ -81,25 +56,12 @@ export function AIPredictionCard({
     return time.length >= 5 ? time.slice(0, 5) : time;
   };
 
-  // Format date label from match_day
-  const formatDateLabel = (matchDay: string | null) => {
-    if (matchDay === "today") return "Today";
-    if (matchDay === "tomorrow") return "Tomorrow";
-    return matchDay || "";
-  };
-
   return (
-    <>
-      <AdModal 
-        isOpen={showAdModal} 
-        onComplete={handleAdComplete} 
-        onClose={handleAdModalClose} 
-      />
-      <Card className={cn(
-        "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
-        prediction.is_live && "ring-1 ring-red-500/50"
-      )}>
-        <CardContent className="p-0">
+    <Card className={cn(
+      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
+      prediction.is_live && "ring-1 ring-red-500/50"
+    )}>
+      <CardContent className="p-0">
         {/* Header - League, Time, Live/Premium badges, Favorite */}
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
@@ -255,24 +217,15 @@ export function AIPredictionCard({
               Unlock AI insights
             </p>
             
-            {needsPremiumUpgrade ? (
+            {needsPremiumUpgrade && (
               <Button
                 className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
                 onClick={onGoPremium}
               >
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
+                <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
                 Subscribe to Premium
               </Button>
-            ) : canWatchAd ? (
-              <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
-                onClick={handleWatchAdClick}
-                disabled={isUnlocking}
-              >
-                <Eye className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
-                {isUnlocking ? "Unlocking..." : "Watch Ad"}
-              </Button>
-            ) : null}
+            )}
           </div>
         )}
 
@@ -286,7 +239,6 @@ export function AIPredictionCard({
         )}
       </CardContent>
     </Card>
-    </>
   );
 }
 

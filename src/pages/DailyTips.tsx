@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { AdModal } from "@/components/AdModal";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -20,15 +19,9 @@ export default function DailyTips() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock,
-    adModalOpen,
-    handleAdComplete,
-    closeAdModal
-  } = useUnlockHandler();
+  const { handleUnlock } = useUnlockHandler();
   const dailyTips = tips.filter(tip => tip.tier === "daily");
-  const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
+  const unlockedCount = dailyTips.filter(tip => canAccess("daily")).length;
 
   const handleRefresh = () => {
     refetch();
@@ -37,7 +30,6 @@ export default function DailyTips() {
   };
 
   return <div className="section-gap">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -110,9 +102,8 @@ export default function DailyTips() {
               </Button>
             </div>
           </Card> : dailyTips.map(tip => {
-        const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
+        const unlockMethod = getUnlockMethod("daily");
         const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === tip.id;
         return <TipCard key={tip.id} tip={{
           id: tip.id,
           homeTeam: tip.home_team,
@@ -127,7 +118,7 @@ export default function DailyTips() {
             day: "numeric"
           }) : "",
           tier: tip.tier
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} />;
       })}
       </div>
     </div>;
