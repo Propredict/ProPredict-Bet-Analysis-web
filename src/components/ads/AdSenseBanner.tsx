@@ -102,3 +102,21 @@ export function FooterAd({ className = "" }: { className?: string }) {
     </div>
   );
 }
+
+/**
+ * Sidebar banner ad for placement alongside content.
+ * 
+ * VISIBLE TO ALL USERS (Free, Pro, Premium, Admin).
+ * Use only on Dashboard, Tips, and Tickets pages.
+ */
+export function SidebarAd({ className = "" }: { className?: string }) {
+  return (
+    <div className={`w-full ${className}`}>
+      <AdSenseBanner 
+        slot="XXXXXXXXXX" // Replace with your sidebar ad slot ID
+        format="rectangle"
+        className="rounded-lg"
+      />
+    </div>
+  );
+}

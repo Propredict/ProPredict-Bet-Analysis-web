@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { InContentAd } from "@/components/ads/AdSenseBanner";
+import { InContentAd, SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { toast } from "sonner";
@@ -149,5 +149,8 @@ export default function DailyTips() {
           renderTipsWithAds()
         )}
       </div>
+      
+      {/* Sidebar Ad */}
+      <SidebarAd className="mt-4" />
     </div>;
 }

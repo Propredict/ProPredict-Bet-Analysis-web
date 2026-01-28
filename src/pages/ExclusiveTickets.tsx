@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
@@ -164,5 +165,8 @@ export default function ExclusiveTickets() {
           })
         )}
       </div>
+      
+      {/* Sidebar Ad */}
+      <SidebarAd className="mt-4" />
     </div>;
 }

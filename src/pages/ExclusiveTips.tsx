@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
+import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
@@ -158,5 +159,8 @@ export default function ExclusiveTips() {
           })
         )}
       </div>
+      
+      {/* Sidebar Ad */}
+      <SidebarAd className="mt-4" />
     </div>;
 }
