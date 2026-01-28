@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getIsMobileApp } from "@/hooks/usePlatform";
 
 /* =====================
    Types
@@ -182,6 +183,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
   /* =====================
      UNLOCK METHOD (UI)
+     
+     Platform-aware unlock logic:
+     - WEB: Subscription-based (no Watch Ad)
+     - MOBILE APP: Rewarded ads for free users
   ===================== */
 
   const getUnlockMethod = useCallback(
@@ -192,10 +197,38 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return { type: "unlocked" };
       }
 
-      // GUEST
+      const isMobileApp = getIsMobileApp();
+
+      // GUEST - same on both platforms
       if (!user) {
         return { type: "login_required", message: "Sign in to unlock" };
       }
+
+      /* =====================
+         MOBILE APP LOGIC
+         - Free users: Watch Ad for ALL content (daily, exclusive, premium)
+         - Pro users: Watch Ad for premium only
+         - Premium users: Everything unlocked (handled by canAccess above)
+      ===================== */
+      if (isMobileApp) {
+        // Free user on mobile - Watch Ad for everything
+        if (plan === "free") {
+          return { type: "watch_ad", message: "Watch Ad to Unlock" };
+        }
+
+        // Pro (basic) user on mobile - Watch Ad for premium only
+        if (plan === "basic" && tier === "premium") {
+          return { type: "watch_ad", message: "Watch Ad to Unlock" };
+        }
+
+        return null;
+      }
+
+      /* =====================
+         WEB LOGIC (current behavior - unchanged)
+         - Free users: Upgrade prompts for exclusive/premium
+         - No Watch Ad on web
+      ===================== */
 
       // EXCLUSIVE (Pro) → upgrade to basic for FREE users
       if (tier === "exclusive" && plan === "free") {
