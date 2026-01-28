@@ -45,7 +45,7 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
         ref={adRef}
         className="adsbygoogle"
         style={{ display: "block" }}
-        data-ad-client="ca-pub-XXXXXXXXXX" // Replace with your AdSense publisher ID
+        data-ad-client="ca-pub-4138787612808412"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
