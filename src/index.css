@@ -49,16 +49,23 @@
 
   html {
     font-size: 14px;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    max-width: 100vw;
   }
 
   * {
     @apply border-border;
     box-sizing: border-box;
+  }
+
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* SAFE TYPOGRAPHY – NE DIRATI div, span */
