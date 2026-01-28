@@ -3,10 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+
 export default function PremiumTickets() {
   const navigate = useNavigate();
   const {
@@ -144,5 +146,8 @@ export default function PremiumTickets() {
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
       })}
       </div>
+      
+      {/* Sidebar Ad */}
+      <SidebarAd className="mt-4" />
     </div>;
 }
