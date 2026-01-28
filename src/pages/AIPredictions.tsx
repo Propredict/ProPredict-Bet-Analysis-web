@@ -357,15 +357,15 @@ export default function AIPredictions() {
           </Card>
 
           {/* Tier Filter Tabs */}
-          <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0",
+                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "all"
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                  ? "bg-primary/20 text-primary border-2 border-primary shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                  : "bg-card text-muted-foreground border border-border hover:text-primary hover:border-primary/50 hover:shadow-[0_0_10px_rgba(34,197,94,0.15)]"
               )}
               onClick={() => setTierFilter("all")}
             >
@@ -375,42 +375,42 @@ export default function AIPredictions() {
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "free"
-                  ? "bg-muted text-foreground shadow-lg border-2 border-muted-foreground/50"
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-muted-foreground/30 hover:bg-card"
+                  ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                  : "bg-card text-muted-foreground border border-border hover:text-emerald-400 hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
               )}
               onClick={() => setTierFilter("free")}
             >
-              <Gift className="w-3 h-3" />
+              <Gift className="w-3.5 h-3.5" />
               Free ({tierCounts.free})
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "pro"
-                  ? "bg-violet-500/20 text-violet-400 shadow-lg shadow-violet-500/20 border-2 border-violet-500/50"
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/5"
+                  ? "bg-violet-500/20 text-violet-400 border-2 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+                  : "bg-card text-muted-foreground border border-border hover:text-violet-400 hover:border-violet-500/50 hover:shadow-[0_0_10px_rgba(139,92,246,0.15)]"
               )}
               onClick={() => setTierFilter("pro")}
             >
-              <Star className="w-3 h-3" />
+              <Star className="w-3.5 h-3.5" />
               Pro ({tierCounts.pro})
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-3 text-[10px] md:text-xs rounded-lg transition-all duration-300 flex-shrink-0 gap-1",
+                "h-9 px-4 text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1.5",
                 tierFilter === "premium"
-                  ? "bg-gradient-to-r from-warning/20 to-accent/20 text-warning shadow-lg shadow-warning/20 border-2 border-warning/50"
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-warning hover:border-warning/30 hover:bg-warning/5"
+                  ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                  : "bg-card text-muted-foreground border border-border hover:text-amber-400 hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
               )}
               onClick={() => setTierFilter("premium")}
             >
-              <Crown className="w-3 h-3" />
+              <Crown className="w-3.5 h-3.5" />
               Premium ({tierCounts.premium})
             </Button>
           </div>
