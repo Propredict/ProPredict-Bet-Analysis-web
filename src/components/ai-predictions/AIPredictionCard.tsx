@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Eye, ChevronDown, Brain, Star, Heart, Radio, Loader2 } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
@@ -14,16 +14,18 @@ import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
-import { AdModal } from "@/components/AdModal";
+// AdModal kept for future Android AdMob use - disabled on web
+// import { AdModal } from "@/components/AdModal";
 
 interface Props {
   prediction: AIPrediction;
   isAdmin?: boolean;
   isPremiumUser?: boolean;
+  isProUser?: boolean;
   isFavorite?: boolean;
   isSavingFavorite?: boolean;
   onToggleFavorite?: (matchId: string) => void;
-  onWatchAd: () => void;
+  onWatchAd: () => void; // Kept for future Android use
   onGoPremium: () => void;
 }
 
@@ -31,49 +33,50 @@ export function AIPredictionCard({
   prediction, 
   isAdmin = false, 
   isPremiumUser = false,
+  isProUser = false,
   isFavorite = false,
   isSavingFavorite = false,
   onToggleFavorite,
-  onWatchAd, 
+  onWatchAd, // Kept for future Android use
   onGoPremium 
 }: Props) {
   const navigate = useNavigate();
-  const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
-  const [isUnlocking, setIsUnlocking] = useState(false);
-  const [showAdModal, setShowAdModal] = useState(false);
 
-  // Premium if is_premium flag is true OR confidence > 70
-  const isPremiumPrediction = prediction.is_premium || (prediction.confidence > 70);
-  
-  // Access logic: admin or premium user always has access, free users can unlock non-premium via ads
-  const hasAccess = isAdmin || isPremiumUser || isUnlocked;
+  // Determine prediction tier based on confidence and is_premium flag
+  // Premium: is_premium = true AND confidence > 80
+  // Pro/Exclusive: is_premium = true OR confidence > 70
+  // Daily: everything else (open for all)
+  const isPremiumTier = prediction.is_premium && prediction.confidence > 80;
+  const isProTier = (prediction.is_premium || prediction.confidence > 70) && !isPremiumTier;
+  const isDailyTier = !isPremiumTier && !isProTier;
 
-  // Free users cannot unlock premium predictions via ads
-  const canWatchAd = !isPremiumPrediction && !hasAccess;
-  const needsPremiumUpgrade = isPremiumPrediction && !isAdmin && !isPremiumUser;
+  // Access logic:
+  // - Admin: full access
+  // - Premium user: full access
+  // - Pro user (basic plan): access to Daily + Pro tiers
+  // - Free user: access to Daily tier only
+  const hasAccess = isAdmin || isPremiumUser || 
+    (isProUser && (isDailyTier || isProTier)) || 
+    isDailyTier;
+
+  // Determine what unlock method to show
+  const getUnlockInfo = () => {
+    if (hasAccess) return null;
+    
+    if (isPremiumTier) {
+      return { type: "premium", text: "Get Premium to unlock", icon: Crown };
+    }
+    if (isProTier) {
+      return { type: "pro", text: "Get Pro to unlock", icon: Star };
+    }
+    return null;
+  };
+
+  const unlockInfo = getUnlockInfo();
 
   // Generate dynamic AI analysis
   const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
-
-  const handleWatchAdClick = useCallback(() => {
-    if (isPremiumPrediction) return;
-    setIsUnlocking(true);
-    setShowAdModal(true);
-  }, [isPremiumPrediction]);
-
-  const handleAdComplete = useCallback(() => {
-    setIsUnlocked(true);
-    setIsUnlocking(false);
-    onWatchAd();
-  }, [onWatchAd]);
-
-  const handleAdModalClose = useCallback(() => {
-    setShowAdModal(false);
-    if (!isUnlocked) {
-      setIsUnlocking(false);
-    }
-  }, [isUnlocked]);
 
   // Format time as HH:mm
   const formatTime = (time: string | null) => {
@@ -88,18 +91,15 @@ export function AIPredictionCard({
     return matchDay || "";
   };
 
+  // Determine badge type for display
+  const showProBadge = isProTier || isPremiumTier;
+
   return (
-    <>
-      <AdModal 
-        isOpen={showAdModal} 
-        onComplete={handleAdComplete} 
-        onClose={handleAdModalClose} 
-      />
-      <Card className={cn(
-        "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
-        prediction.is_live && "ring-1 ring-red-500/50"
-      )}>
-        <CardContent className="p-0">
+    <Card className={cn(
+      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
+      prediction.is_live && "ring-1 ring-red-500/50"
+    )}>
+      <CardContent className="p-0">
         {/* Header - League, Time, Live/Premium badges, Favorite */}
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
@@ -134,8 +134,14 @@ export function AIPredictionCard({
                 LIVE
               </Badge>
             )}
-            {isPremiumPrediction && (
-              <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+            {isPremiumTier && (
+              <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+                <Crown className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
+                PREMIUM
+              </Badge>
+            )}
+            {isProTier && !isPremiumTier && (
+              <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PRO
               </Badge>
@@ -249,35 +255,24 @@ export function AIPredictionCard({
         )}
 
         {/* Unlock CTA - Only show when locked */}
-        {!hasAccess && (
+        {!hasAccess && unlockInfo && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <p className="text-[9px] md:text-[10px] text-muted-foreground text-center mb-1.5 md:mb-2">
               Unlock AI insights
             </p>
             
-            {needsPremiumUpgrade ? (
-              <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
-                onClick={onGoPremium}
-              >
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
-                Subscribe to Premium
-              </Button>
-            ) : canWatchAd ? (
-              <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
-                onClick={handleWatchAdClick}
-                disabled={isUnlocking}
-              >
-                <Eye className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
-                {isUnlocking ? "Unlocking..." : "Watch Ad"}
-              </Button>
-            ) : null}
+            <Button
+              className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
+              onClick={() => navigate("/get-premium")}
+            >
+              <unlockInfo.icon className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
+              {unlockInfo.text}
+            </Button>
           </div>
         )}
 
-        {/* Unlocked indicator */}
-        {hasAccess && !isAdmin && !isPremiumUser && (
+        {/* Unlocked indicator for Pro/Premium tiers when user has access */}
+        {hasAccess && (isProTier || isPremiumTier) && !isAdmin && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] md:text-[10px] rounded">
               ✓ Unlocked
@@ -286,7 +281,6 @@ export function AIPredictionCard({
         )}
       </CardContent>
     </Card>
-    </>
   );
 }
 
