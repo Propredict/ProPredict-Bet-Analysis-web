@@ -30,9 +30,9 @@ export const useAuth = () => {
 
   useEffect(() => {
     if (!user) return;
-    // Fire-and-forget: only sends after the user is confirmed + signed in.
+    // Fire-and-forget: sends welcome/admin emails after signup/login
     void maybeSendPostSignupEmails(user);
-  }, [user?.id, user?.email_confirmed_at]);
+  }, [user?.id]);
 
   const signOut = async () => {
     // Clear local state first to ensure UI updates even if server call fails

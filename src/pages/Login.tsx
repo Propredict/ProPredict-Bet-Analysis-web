@@ -35,33 +35,19 @@ const Login = () => {
 
         if (error) throw error;
 
+        // Email confirmation disabled - user is auto-signed in
         toast({
-          title: "Check your email",
-          description:
-            "We’ve sent a confirmation email. Please confirm your account to continue.",
+          title: "Account created!",
+          description: "Welcome to ProPredict. You're now signed in.",
         });
-
-        // IMPORTANT: Do NOT send EmailJS during signup.
-        // Welcome/Admin emails are sent only after the user confirms and signs in.
+        navigate(redirectTo);
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
-
-        // Extra safety: block access if email isn't confirmed.
-        if (data.user && !data.user.email_confirmed_at) {
-          await supabase.auth.signOut({ scope: "local" });
-          toast({
-            title: "Please confirm your email",
-            description:
-              "After signing up, please confirm your email before logging in.",
-            variant: "destructive",
-          });
-          return;
-        }
 
         toast({
           title: "Welcome back!",
@@ -73,11 +59,7 @@ const Login = () => {
       const message = String(error?.message ?? "Authentication failed");
       toast({
         title: "Authentication error",
-        description:
-          message.toLowerCase().includes("confirm") ||
-          message.toLowerCase().includes("confirmed")
-            ? "Please check your email and click the confirmation link to activate your account."
-            : message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -118,7 +100,7 @@ const Login = () => {
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "After signing up, please confirm your email before logging in."
+              ? "Create your account and start making predictions"
               : "Sign in to start making predictions"}
           </CardDescription>
         </CardHeader>
