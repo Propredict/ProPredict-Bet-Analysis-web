@@ -23,10 +23,10 @@ const Login = () => {
   const sendSignupEmails = async (userEmail: string) => {
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
     const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
-    const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
+    const welcomeTemplateId = import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID;
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-    if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
+    if (!serviceId || !adminTemplateId || !welcomeTemplateId || !publicKey) {
       console.warn("EmailJS configuration is missing for signup notifications");
       return;
     }
@@ -53,10 +53,10 @@ const Login = () => {
         publicKey
       );
 
-      // Send welcome email to user
+      // Send welcome email to user using dedicated signup template
       await emailjs.send(
         serviceId,
-        autoreplyTemplateId,
+        welcomeTemplateId,
         {
           to_name: userEmail.split("@")[0],
           email: userEmail,
