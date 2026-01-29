@@ -26,7 +26,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import emailjs from "@emailjs/browser";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -157,7 +156,6 @@ const HelpSupport = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prevent double-submit
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -167,50 +165,15 @@ const HelpSupport = () => {
       // Validate form data
       const validatedData = contactSchema.parse(formData);
       
-      // Extra guard: don't send if message is empty after trim
       if (!validatedData.message.trim()) {
         setErrors({ message: "Message cannot be empty" });
         return;
       }
       
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
-      const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-      if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
-        throw new Error("EmailJS configuration is missing");
-      }
-
-      // Send both emails in parallel (exactly once each)
-      await Promise.all([
-        // Admin notification with full content
-        emailjs.send(
-          serviceId,
-          adminTemplateId,
-          {
-            name: validatedData.name,
-            email: validatedData.email,
-            title: validatedData.subject,
-            message: validatedData.message,
-          },
-          publicKey
-        ),
-        // Auto-reply to user
-        emailjs.send(
-          serviceId,
-          autoreplyTemplateId,
-          {
-            to_name: validatedData.name,
-            email: validatedData.email,
-          },
-          publicKey
-        ),
-      ]);
-      
+      // Show success message (no email sending)
       toast({
-        title: "Message Sent!",
-        description: "We'll get back to you within 24-48 hours.",
+        title: "Message Received!",
+        description: "Thank you for contacting us. We'll review your message and get back to you within 24-48 hours.",
       });
       
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -223,13 +186,6 @@ const HelpSupport = () => {
           }
         });
         setErrors(fieldErrors);
-      } else {
-        console.error("EmailJS error:", error);
-        toast({
-          title: "Failed to send message",
-          description: "Please try again or email us directly.",
-          variant: "destructive",
-        });
       }
     } finally {
       setIsSubmitting(false);
