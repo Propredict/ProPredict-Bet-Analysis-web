@@ -9,6 +9,8 @@ import AppLayout from "@/layouts/AppLayout";
 // Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
 import MyFavorites from "./pages/MyFavorites";
@@ -61,8 +63,10 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Login without layout */}
+              {/* Auth pages without layout */}
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* All other pages with AppLayout */}
               <Route element={<AppLayout />}>
