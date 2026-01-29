@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import emailjs from "@emailjs/browser";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -156,6 +157,7 @@ const HelpSupport = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Block double-submit
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -165,15 +167,42 @@ const HelpSupport = () => {
       // Validate form data
       const validatedData = contactSchema.parse(formData);
       
+      // Guard: don't send if message is empty after trim
       if (!validatedData.message.trim()) {
         setErrors({ message: "Message cannot be empty" });
+        setIsSubmitting(false);
         return;
       }
+
+      // Send exactly two emails in parallel (once each)
+      await Promise.all([
+        // Admin notification - user email is embedded in message body, not as template variable
+        emailjs.send(
+          "service_wty5549",
+          "template_z0lwv9e",
+          {
+            name: validatedData.name,
+            title: validatedData.subject,
+            message: `From: ${validatedData.email}\n\n${validatedData.message}`,
+          },
+          "o03PTPwXDLpmaaFHF"
+        ),
+        // Auto-reply to user - includes their message text
+        emailjs.send(
+          "service_wty5549",
+          "template_naqfz4i",
+          {
+            to_name: validatedData.name,
+            to_email: validatedData.email,
+            user_message: validatedData.message,
+          },
+          "o03PTPwXDLpmaaFHF"
+        ),
+      ]);
       
-      // Show success message (no email sending)
       toast({
-        title: "Message Received!",
-        description: "Thank you for contacting us. We'll review your message and get back to you within 24-48 hours.",
+        title: "Message Sent!",
+        description: "We'll get back to you within 24-48 hours.",
       });
       
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -186,6 +215,13 @@ const HelpSupport = () => {
           }
         });
         setErrors(fieldErrors);
+      } else {
+        console.error("Contact form error:", error);
+        toast({
+          title: "Failed to send message",
+          description: "Please try again or email us directly at propredictsupp@gmail.com",
+          variant: "destructive",
+        });
       }
     } finally {
       setIsSubmitting(false);
