@@ -41,7 +41,7 @@ const Login = () => {
         // Send welcome email via EmailJS
         try {
           const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-          const welcomeTemplateId = "template_b724wpv";
+          const welcomeTemplateId = import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID;
           const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
           if (serviceId && publicKey) {
