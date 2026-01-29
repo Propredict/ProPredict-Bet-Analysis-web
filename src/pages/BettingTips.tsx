@@ -241,6 +241,7 @@ export default function BettingTips() {
                         })
                       : "TBD",
                     tier: tip.tier,
+                    result: tip.result,
                   }}
                   isLocked={isLocked}
                   unlockMethod={getUnlockMethod(tip.tier, "tip", tip.id)}

@@ -148,8 +148,9 @@ export default function ExclusiveTips() {
                     month: "short",
                     day: "numeric"
                   }) : "",
-                  tier: tip.tier
-                }} 
+                  tier: tip.tier,
+                  result: tip.result
+                }}
                 isLocked={isLocked} 
                 unlockMethod={unlockMethod} 
                 onUnlockClick={() => navigate("/get-premium")} 

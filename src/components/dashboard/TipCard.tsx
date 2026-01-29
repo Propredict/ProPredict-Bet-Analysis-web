@@ -1,9 +1,11 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2 } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { useNavigate } from "react-router-dom";
+
+export type TipResult = "pending" | "won" | "lost";
 
 export interface Tip {
   id: string;
@@ -15,6 +17,7 @@ export interface Tip {
   confidence: number;
   kickoff: string;
   tier: ContentTier;
+  result?: TipResult | null;
 }
 
 interface TipCardProps {
@@ -100,6 +103,33 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     }
   };
 
+  const getStatusBadge = () => {
+    const status = tip.result ?? "pending";
+    switch (status) {
+      case "won":
+        return (
+          <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            Won
+          </Badge>
+        );
+      case "lost":
+        return (
+          <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-2">
+            <XCircle className="h-3 w-3 mr-1" />
+            Lost
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10 text-[10px] px-2">
+            <Clock className="h-3 w-3 mr-1" />
+            Pending
+          </Badge>
+        );
+    }
+  };
+
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") {
@@ -141,8 +171,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
-              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+              {getStatusBadge()}
             </div>
           </div>
 
@@ -207,7 +236,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
               {tip.league}
             </span>
           </div>
-          <span className="text-[10px] text-muted-foreground">{tip.kickoff}</span>
+          <div className="flex items-center gap-1.5">
+            {getStatusBadge()}
+          </div>
         </div>
 
         {/* Match Title */}
