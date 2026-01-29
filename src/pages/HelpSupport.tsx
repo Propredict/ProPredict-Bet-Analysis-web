@@ -156,49 +156,44 @@ const HelpSupport = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Block double-submit
-    if (isSubmitting) return;
-    
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      // Validate form data
-      const validatedData = contactSchema.parse(formData);
+      contactSchema.parse(formData);
       
-      // Guard: don't send if message is empty after trim
-      if (!validatedData.message.trim()) {
-        setErrors({ message: "Message cannot be empty" });
-        setIsSubmitting(false);
-        return;
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
+      const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
+        throw new Error("EmailJS configuration is missing");
       }
 
-      // Send exactly two emails in parallel (once each)
-      await Promise.all([
-        // Admin notification - user email is embedded in message body, not as template variable
-        emailjs.send(
-          "service_wty5549",
-          "template_z0lwv9e",
-          {
-            name: validatedData.name,
-            title: validatedData.subject,
-            message: `From: ${validatedData.email}\n\n${validatedData.message}`,
-          },
-          "o03PTPwXDLpmaaFHF"
-        ),
-        // Auto-reply to user - includes their message text
-        emailjs.send(
-          "service_wty5549",
-          "template_naqfz4i",
-          {
-            to_name: validatedData.name,
-            to_email: validatedData.email,
-            user_message: validatedData.message,
-          },
-          "o03PTPwXDLpmaaFHF"
-        ),
-      ]);
+      // Send admin notification email
+      await emailjs.send(
+        serviceId,
+        adminTemplateId,
+        {
+          name: formData.name,
+          email: formData.email,
+          title: formData.subject,
+          message: formData.message,
+        },
+        publicKey
+      );
+
+      // Send auto-reply to user
+      await emailjs.send(
+        serviceId,
+        autoreplyTemplateId,
+        {
+          to_name: formData.name,
+          email: formData.email,
+        },
+        publicKey
+      );
       
       toast({
         title: "Message Sent!",
@@ -216,10 +211,10 @@ const HelpSupport = () => {
         });
         setErrors(fieldErrors);
       } else {
-        console.error("Contact form error:", error);
+        console.error("EmailJS error:", error);
         toast({
           title: "Failed to send message",
-          description: "Please try again or email us directly at propredictsupp@gmail.com",
+          description: "Please try again or email us directly.",
           variant: "destructive",
         });
       }

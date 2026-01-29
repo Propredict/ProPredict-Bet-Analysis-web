@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,12 +35,10 @@ const Login = () => {
 
         if (error) throw error;
 
-        // Email confirmation disabled - user is auto-signed in
         toast({
-          title: "Account created!",
-          description: "Welcome to ProPredict. You're now signed in.",
+          title: "Check your email",
+          description: "We sent you a confirmation link to verify your account.",
         });
-        navigate(redirectTo);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -56,10 +54,9 @@ const Login = () => {
         navigate(redirectTo);
       }
     } catch (error: any) {
-      const message = String(error?.message ?? "Authentication failed");
       toast({
         title: "Authentication error",
-        description: message,
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -100,7 +97,7 @@ const Login = () => {
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Create your account and start making predictions"
+              ? "Enter your email to create your account"
               : "Sign in to start making predictions"}
           </CardDescription>
         </CardHeader>
@@ -125,17 +122,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                {!isSignUp && (
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                )}
-              </div>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
