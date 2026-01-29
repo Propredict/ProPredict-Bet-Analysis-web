@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Chrome, ArrowRight } from "lucide-react";
-import emailjs from "@emailjs/browser";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,55 +18,6 @@ const Login = () => {
   const { toast } = useToast();
   
   const redirectTo = searchParams.get("redirect") || "/";
-
-  const sendSignupEmails = async (userEmail: string) => {
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
-    const welcomeTemplateId = import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID;
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-    if (!serviceId || !adminTemplateId || !welcomeTemplateId || !publicKey) {
-      console.warn("EmailJS configuration is missing for signup notifications");
-      return;
-    }
-
-    const signupDate = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    try {
-      // Send admin notification (DO NOT use 'email' field - it triggers auto-reply)
-      await emailjs.send(
-        serviceId,
-        adminTemplateId,
-        {
-          name: userEmail.split("@")[0],
-          title: "New user signup",
-          message: `New user signup:\n\nEmail: ${userEmail}\nSignup Date: ${signupDate}`,
-        },
-        publicKey
-      );
-
-      // Send welcome email to user using dedicated signup template
-      await emailjs.send(
-        serviceId,
-        welcomeTemplateId,
-        {
-          to_name: userEmail.split("@")[0],
-          email: userEmail,
-        },
-        publicKey
-      );
-
-      console.log("Signup notification emails sent successfully");
-    } catch (emailError) {
-      console.error("Failed to send signup emails:", emailError);
-    }
-  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,20 +35,33 @@ const Login = () => {
 
         if (error) throw error;
 
-        // Send EmailJS notifications (fire and forget, don't block UI)
-        sendSignupEmails(email);
-
         toast({
           title: "Check your email",
-          description: "We sent you a confirmation link to verify your account.",
+          description:
+            "We’ve sent a confirmation email. Please confirm your account to continue.",
         });
+
+        // IMPORTANT: Do NOT send EmailJS during signup.
+        // Welcome/Admin emails are sent only after the user confirms and signs in.
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
+        // Extra safety: block access if email isn't confirmed.
+        if (data.user && !data.user.email_confirmed_at) {
+          await supabase.auth.signOut({ scope: "local" });
+          toast({
+            title: "Please confirm your email",
+            description:
+              "After signing up, please confirm your email before logging in.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         toast({
           title: "Welcome back!",
@@ -107,9 +70,14 @@ const Login = () => {
         navigate(redirectTo);
       }
     } catch (error: any) {
+      const message = String(error?.message ?? "Authentication failed");
       toast({
         title: "Authentication error",
-        description: error.message,
+        description:
+          message.toLowerCase().includes("confirm") ||
+          message.toLowerCase().includes("confirmed")
+            ? "Please check your email and click the confirmation link to activate your account."
+            : message,
         variant: "destructive",
       });
     } finally {
@@ -150,7 +118,7 @@ const Login = () => {
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Enter your email to create your account"
+              ? "After signing up, please confirm your email before logging in."
               : "Sign in to start making predictions"}
           </CardDescription>
         </CardHeader>

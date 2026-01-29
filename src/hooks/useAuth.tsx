@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { maybeSendPostSignupEmails } from "@/lib/emailjs/postSignupEmails";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +27,12 @@ export const useAuth = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    // Fire-and-forget: only sends after the user is confirmed + signed in.
+    void maybeSendPostSignupEmails(user);
+  }, [user?.id, user?.email_confirmed_at]);
 
   const signOut = async () => {
     // Clear local state first to ensure UI updates even if server call fails
