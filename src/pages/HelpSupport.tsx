@@ -164,14 +164,13 @@ const HelpSupport = () => {
       
       const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
       const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
-      const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-      if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
+      if (!serviceId || !adminTemplateId || !publicKey) {
         throw new Error("EmailJS configuration is missing");
       }
 
-      // Send admin notification email
+      // Send admin notification email only
       await emailjs.send(
         serviceId,
         adminTemplateId,
@@ -180,17 +179,6 @@ const HelpSupport = () => {
           email: formData.email,
           title: formData.subject,
           message: formData.message,
-        },
-        publicKey
-      );
-
-      // Send auto-reply to user
-      await emailjs.send(
-        serviceId,
-        autoreplyTemplateId,
-        {
-          to_name: formData.name,
-          email: formData.email,
         },
         publicKey
       );
