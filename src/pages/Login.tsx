@@ -46,8 +46,10 @@ const Login = () => {
 
           if (serviceId && publicKey) {
             await emailjs.send(serviceId, welcomeTemplateId, {
+              email: email,
               to_email: email,
               user_email: email,
+              reply_to: email,
             }, publicKey);
           }
         } catch (emailError) {
