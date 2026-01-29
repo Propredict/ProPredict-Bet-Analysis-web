@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, Chrome, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, Chrome, ArrowRight, CheckCircle2 } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -35,10 +37,7 @@ const Login = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Check your email",
-          description: "We sent you a confirmation link to verify your account.",
-        });
+        setSignUpSuccess(true);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -84,6 +83,39 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  if (signUpSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+        <Card className="w-full max-w-md shadow-2xl border-border/50 backdrop-blur">
+          <CardHeader className="space-y-1 text-center">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Welcome to ProPredict 🎉
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="border-primary/20 bg-primary/5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <AlertTitle className="text-foreground">Your account has been successfully created.</AlertTitle>
+              <AlertDescription className="text-muted-foreground">
+                You can now explore AI-powered tips, predictions, and in-depth analysis.
+              </AlertDescription>
+            </Alert>
+            <Button 
+              className="w-full" 
+              onClick={() => navigate(redirectTo)}
+            >
+              Start Exploring
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
