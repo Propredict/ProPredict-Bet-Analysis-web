@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Chrome, ArrowRight, CheckCircle2 } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -36,6 +37,23 @@ const Login = () => {
         });
 
         if (error) throw error;
+
+        // Send welcome email via EmailJS
+        try {
+          const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+          const welcomeTemplateId = "template_b724wpv";
+          const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+          if (serviceId && publicKey) {
+            await emailjs.send(serviceId, welcomeTemplateId, {
+              to_email: email,
+              user_email: email,
+            }, publicKey);
+          }
+        } catch (emailError) {
+          console.error("Welcome email failed:", emailError);
+          // Don't block signup if email fails
+        }
 
         setSignUpSuccess(true);
       } else {
