@@ -156,11 +156,22 @@ const HelpSupport = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double-submit
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      contactSchema.parse(formData);
+      // Validate form data
+      const validatedData = contactSchema.parse(formData);
+      
+      // Extra guard: don't send if message is empty after trim
+      if (!validatedData.message.trim()) {
+        setErrors({ message: "Message cannot be empty" });
+        return;
+      }
       
       const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
       const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
@@ -171,29 +182,31 @@ const HelpSupport = () => {
         throw new Error("EmailJS configuration is missing");
       }
 
-      // Send admin notification email
-      await emailjs.send(
-        serviceId,
-        adminTemplateId,
-        {
-          name: formData.name,
-          email: formData.email,
-          title: formData.subject,
-          message: formData.message,
-        },
-        publicKey
-      );
-
-      // Send auto-reply to user
-      await emailjs.send(
-        serviceId,
-        autoreplyTemplateId,
-        {
-          to_name: formData.name,
-          email: formData.email,
-        },
-        publicKey
-      );
+      // Send both emails in parallel (exactly once each)
+      await Promise.all([
+        // Admin notification with full content
+        emailjs.send(
+          serviceId,
+          adminTemplateId,
+          {
+            name: validatedData.name,
+            email: validatedData.email,
+            title: validatedData.subject,
+            message: validatedData.message,
+          },
+          publicKey
+        ),
+        // Auto-reply to user
+        emailjs.send(
+          serviceId,
+          autoreplyTemplateId,
+          {
+            to_name: validatedData.name,
+            email: validatedData.email,
+          },
+          publicKey
+        ),
+      ]);
       
       toast({
         title: "Message Sent!",
