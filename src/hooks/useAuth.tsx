@@ -28,10 +28,16 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Send welcome emails only on first login (not on every auth state change)
   useEffect(() => {
-    if (!user) return;
-    // Fire-and-forget: sends welcome/admin emails after signup/login
-    void maybeSendPostSignupEmails(user);
+    if (!user?.id) return;
+    
+    // Debounce: wait 500ms to ensure auth state has stabilized
+    const timeoutId = setTimeout(() => {
+      void maybeSendPostSignupEmails(user);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
   }, [user?.id]);
 
   const signOut = async () => {
