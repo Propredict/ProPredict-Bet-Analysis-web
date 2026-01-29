@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Chrome, ArrowRight } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,56 @@ const Login = () => {
   const { toast } = useToast();
   
   const redirectTo = searchParams.get("redirect") || "/";
+
+  const sendSignupEmails = async (userEmail: string) => {
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
+    const autoreplyTemplateId = import.meta.env.VITE_EMAILJS_AUTOREPLY_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!serviceId || !adminTemplateId || !autoreplyTemplateId || !publicKey) {
+      console.warn("EmailJS configuration is missing for signup notifications");
+      return;
+    }
+
+    const signupDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    try {
+      // Send admin notification
+      await emailjs.send(
+        serviceId,
+        adminTemplateId,
+        {
+          name: userEmail.split("@")[0],
+          email: userEmail,
+          title: "New user signup",
+          message: `New user signup:\n\nEmail: ${userEmail}\nSignup Date: ${signupDate}`,
+        },
+        publicKey
+      );
+
+      // Send welcome email to user
+      await emailjs.send(
+        serviceId,
+        autoreplyTemplateId,
+        {
+          to_name: userEmail.split("@")[0],
+          email: userEmail,
+        },
+        publicKey
+      );
+
+      console.log("Signup notification emails sent successfully");
+    } catch (emailError) {
+      console.error("Failed to send signup emails:", emailError);
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +85,9 @@ const Login = () => {
         });
 
         if (error) throw error;
+
+        // Send EmailJS notifications (fire and forget, don't block UI)
+        sendSignupEmails(email);
 
         toast({
           title: "Check your email",
