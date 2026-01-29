@@ -12,24 +12,29 @@ const getEmailJsConfig = () => {
   return { serviceId, adminTemplateId, welcomeTemplateId, publicKey };
 };
 
-const shouldAttemptForUser = (user: User) => {
-  // Frontend-only heuristic to avoid sending welcome/admin emails to long-existing users
-  // after deploying this fix.
+const isNewSignup = (user: User) => {
+  // Only send emails for accounts created within the last 2 minutes.
+  // This ensures emails are ONLY sent on initial signup, not on subsequent logins.
   const createdAtMs = Date.parse(user.created_at);
   if (!Number.isFinite(createdAtMs)) return false;
 
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  return Date.now() - createdAtMs <= THIRTY_DAYS_MS;
+  const TWO_MINUTES_MS = 2 * 60 * 1000;
+  return Date.now() - createdAtMs <= TWO_MINUTES_MS;
 };
 
 export const maybeSendPostSignupEmails = async (user: User) => {
   try {
     if (!user?.id || !user?.email) return;
-    // Email confirmation disabled - send emails immediately after signup/login
-    if (!shouldAttemptForUser(user)) return;
+    
+    // Only send for brand new signups (created within last 2 minutes)
+    if (!isNewSignup(user)) return;
 
+    // Prevent duplicate sends using localStorage
     const key = `${STORAGE_PREFIX}${user.id}`;
     if (localStorage.getItem(key) === "1") return;
+    
+    // Set flag immediately to prevent race conditions
+    localStorage.setItem(key, "1");
 
     const { serviceId, adminTemplateId, welcomeTemplateId, publicKey } =
       getEmailJsConfig();
@@ -71,8 +76,6 @@ export const maybeSendPostSignupEmails = async (user: User) => {
       },
       publicKey
     );
-
-    localStorage.setItem(key, "1");
   } catch (error) {
     console.error("Failed to send post-signup emails:", error);
   }
