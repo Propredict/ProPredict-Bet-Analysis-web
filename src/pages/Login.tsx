@@ -40,13 +40,12 @@ const Login = () => {
     });
 
     try {
-      // Send admin notification
+      // Send admin notification (DO NOT use 'email' field - it triggers auto-reply)
       await emailjs.send(
         serviceId,
         adminTemplateId,
         {
           name: userEmail.split("@")[0],
-          email: userEmail,
           title: "New user signup",
           message: `New user signup:\n\nEmail: ${userEmail}\nSignup Date: ${signupDate}`,
         },
