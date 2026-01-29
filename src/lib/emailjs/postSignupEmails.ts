@@ -25,7 +25,7 @@ const shouldAttemptForUser = (user: User) => {
 export const maybeSendPostSignupEmails = async (user: User) => {
   try {
     if (!user?.id || !user?.email) return;
-    if (!user.email_confirmed_at) return;
+    // Email confirmation disabled - send emails immediately after signup/login
     if (!shouldAttemptForUser(user)) return;
 
     const key = `${STORAGE_PREFIX}${user.id}`;
