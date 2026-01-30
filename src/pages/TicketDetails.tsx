@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { parseMatchName } from "@/types/admin";
 
@@ -50,24 +49,20 @@ export default function TicketDetails() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
+      <div className="section-gap flex justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (!ticket) {
     return (
-      <DashboardLayout>
-        <div className="text-center py-20">
-          <p className="text-muted-foreground mb-4">Ticket not found</p>
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            Go Back
-          </Button>
-        </div>
-      </DashboardLayout>
+      <div className="section-gap text-center py-20">
+        <p className="text-muted-foreground mb-4">Ticket not found</p>
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          Go Back
+        </Button>
+      </div>
     );
   }
 
@@ -173,7 +168,7 @@ export default function TicketDetails() {
   };
 
   return (
-    <>
+    <div className="section-gap">
       <Helmet>
         <title>{ogTitle}</title>
         <meta name="description" content={ogDescription} />
@@ -187,8 +182,7 @@ export default function TicketDetails() {
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImage} />
       </Helmet>
-      <DashboardLayout>
-        <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="space-y-6 max-w-3xl mx-auto">
           <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -320,7 +314,6 @@ export default function TicketDetails() {
           )}
         </Card>
       </div>
-    </DashboardLayout>
-    </>
+    </div>
   );
 }
