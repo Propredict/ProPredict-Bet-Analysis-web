@@ -52,6 +52,7 @@ const tools = [
 ];
 
 const adminItems = [
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Manage Tips", url: "/admin/tips", icon: Lightbulb },
   { title: "Manage Tickets", url: "/admin/tickets", icon: Ticket },
 ];
