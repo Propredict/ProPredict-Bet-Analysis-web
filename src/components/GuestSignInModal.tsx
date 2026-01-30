@@ -63,7 +63,7 @@ export function GuestSignInModal() {
 
         <div className="p-6 pt-8">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 text-center leading-snug mb-6">
-            Sign in and get full access to Daily Tips & Analysis
+            Sign In and get FREE access to AI predictions
           </DialogTitle>
 
           <div className="space-y-3">
