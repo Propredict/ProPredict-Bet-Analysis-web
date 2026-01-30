@@ -37,12 +37,6 @@
     --success: 142 76% 36%;
     --pending: 38 92% 50%;
 
-    /* Luxury Gold Palette */
-    --gold: 45 93% 47%;
-    --gold-light: 48 96% 53%;
-    --gold-dark: 40 90% 40%;
-    --gold-muted: 43 25% 25%;
-
     --radius: 0.5rem;
 
     --sidebar-background: 222 47% 5%;
@@ -167,144 +161,72 @@
   }
 
   /* =====================================================
-     TIER CARD SYSTEM - Luxury Gold Premium Card Styles
+     TIER CARD SYSTEM - Global Premium Card Styles
      ===================================================== */
   
-  /* Base tier card - Luxury upgrade */
+  /* Base tier card */
   .tier-card {
-    @apply relative rounded-xl overflow-hidden transition-all duration-300;
-    background: linear-gradient(
-      180deg,
-      hsl(var(--card)) 0%,
-      hsl(222 47% 7%) 100%
-    );
-    border: 1px solid hsl(var(--border));
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(255 255% 255% / 0.02);
+    @apply relative bg-card rounded-xl border overflow-hidden transition-all duration-300;
+    box-shadow: 0 4px 20px -8px hsl(var(--background) / 0.8);
   }
 
   .tier-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 12px 40px -12px hsl(var(--background) / 0.6),
-      0 0 0 1px hsl(var(--gold) / 0.1);
+    @apply border-primary/40;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
-  /* Tier accent borders with luxury glow */
-  
-  /* Daily - Amber/Orange warm tones */
+  /* Tier accent borders (top border glow) */
   .tier-card--daily {
     border-top: 3px solid hsl(var(--accent));
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--accent) / 0.05);
   }
 
   .tier-card--daily:hover {
-    border-color: hsl(var(--accent));
-    box-shadow: 
-      0 -4px 25px -8px hsl(var(--accent) / 0.4),
-      0 12px 40px -12px hsl(var(--background) / 0.6),
-      inset 0 1px 0 hsl(var(--accent) / 0.1);
+    box-shadow: 0 -4px 20px -8px hsl(var(--accent) / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
-  /* Pro/Exclusive - Rich Violet/Purple */
   .tier-card--pro {
-    border-top: 3px solid hsl(270 70% 60%);
-    background: linear-gradient(
-      180deg,
-      hsl(var(--card)) 0%,
-      hsl(270 50% 12% / 0.5) 50%,
-      hsl(222 47% 7%) 100%
-    );
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(270 70% 60% / 0.08);
+    border-top: 3px solid hsl(280 70% 55%);
   }
 
   .tier-card--pro:hover {
-    border-color: hsl(270 80% 65%);
-    box-shadow: 
-      0 -4px 30px -8px hsl(270 70% 60% / 0.5),
-      0 12px 40px -12px hsl(270 70% 60% / 0.15),
-      0 0 20px hsl(270 70% 60% / 0.1),
-      inset 0 1px 0 hsl(270 70% 60% / 0.15);
+    box-shadow: 0 -4px 20px -8px hsl(280 70% 55% / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
-  /* Premium - Luxury Gold */
   .tier-card--premium {
-    border-top: 3px solid hsl(var(--gold));
-    background: linear-gradient(
-      180deg,
-      hsl(var(--card)) 0%,
-      hsl(var(--gold-dark) / 0.08) 50%,
-      hsl(222 47% 7%) 100%
-    );
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--gold) / 0.1);
+    border-top: 3px solid hsl(var(--warning));
   }
 
   .tier-card--premium:hover {
-    border-color: hsl(var(--gold-light));
-    box-shadow: 
-      0 -4px 30px -8px hsl(var(--gold) / 0.5),
-      0 12px 40px -12px hsl(var(--gold) / 0.2),
-      0 0 25px hsl(var(--gold) / 0.15),
-      inset 0 1px 0 hsl(var(--gold) / 0.2);
+    box-shadow: 0 -4px 20px -8px hsl(var(--warning) / 0.5), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--free {
     border-top: 3px solid hsl(var(--muted-foreground));
   }
 
-  /* Unlocked card styling - Success green accent */
+  /* Unlocked card styling */
   .tier-card--unlocked {
-    border-color: hsl(var(--success) / 0.3);
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--success) / 0.05);
+    @apply border-primary/30;
   }
 
   .tier-card--unlocked:hover {
-    border-color: hsl(var(--success) / 0.5);
-    box-shadow: 
-      0 12px 40px -12px hsl(var(--success) / 0.15),
-      0 0 25px hsl(var(--success) / 0.08),
-      inset 0 1px 0 hsl(var(--success) / 0.1);
+    @apply border-primary/50;
   }
 
   /* Tier badge styling */
-  
-  /* Daily - Amber/Orange */
   .tier-badge--daily {
     @apply bg-accent/20 text-accent border-accent/30;
-    text-shadow: 0 1px 2px hsl(var(--background) / 0.3);
   }
 
-  /* Pro - Violet/Purple */
   .tier-badge--pro {
-    background: linear-gradient(
-      135deg,
-      hsl(270 50% 25% / 0.3) 0%,
-      hsl(270 70% 60% / 0.2) 100%
-    );
-    color: hsl(270 80% 70%);
-    border-color: hsl(270 70% 60% / 0.4);
-    text-shadow: 0 1px 2px hsl(var(--background) / 0.4);
+    background: hsl(280 70% 55% / 0.2);
+    color: hsl(280 70% 65%);
+    border-color: hsl(280 70% 55% / 0.3);
   }
 
-  /* Premium - Luxury Gold */
   .tier-badge--premium {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold-dark) / 0.3) 0%,
-      hsl(var(--gold) / 0.2) 100%
-    );
-    color: hsl(var(--gold-light));
-    border-color: hsl(var(--gold) / 0.5);
-    text-shadow: 0 1px 2px hsl(var(--background) / 0.5);
+    @apply bg-warning/20 text-warning border-warning/30;
   }
 
   .tier-badge--free {
@@ -325,11 +247,7 @@
   }
 
   .glow-pro {
-    box-shadow: 0 0 20px hsl(270 70% 60% / 0.3);
-  }
-
-  .glow-daily {
-    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+    box-shadow: 0 0 20px hsl(280 70% 55% / 0.3);
   }
 
   /* Soft shadows for depth */
@@ -383,200 +301,5 @@
     );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
-  }
-
-  /* =====================================================
-     LUXURY GOLD THEME SYSTEM
-     ===================================================== */
-  
-  /* Gold shimmer animation */
-  @keyframes gold-shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-
-  @keyframes gold-pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
-
-  @keyframes subtle-glow {
-    0%, 100% { box-shadow: 0 0 20px hsl(var(--gold) / 0.2); }
-    50% { box-shadow: 0 0 30px hsl(var(--gold) / 0.35); }
-  }
-
-  /* Luxury gradient backgrounds */
-  .luxury-gradient {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold-dark) / 0.15) 0%,
-      hsl(var(--gold) / 0.08) 50%,
-      hsl(var(--gold-light) / 0.12) 100%
-    );
-  }
-
-  .luxury-border {
-    border: 1px solid hsl(var(--gold) / 0.3);
-    position: relative;
-  }
-
-  .luxury-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold) / 0.5) 0%,
-      hsl(var(--gold-dark) / 0.2) 50%,
-      hsl(var(--gold-light) / 0.4) 100%
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  /* Gold glow effect */
-  .glow-gold {
-    box-shadow: 
-      0 0 20px hsl(var(--gold) / 0.25),
-      0 0 40px hsl(var(--gold) / 0.1),
-      inset 0 1px 0 hsl(var(--gold-light) / 0.1);
-  }
-
-  .glow-gold-subtle {
-    box-shadow: 0 0 15px hsl(var(--gold) / 0.15);
-  }
-
-  .glow-gold-animated {
-    animation: subtle-glow 3s ease-in-out infinite;
-  }
-
-  /* Gold text styling */
-  .text-gold {
-    color: hsl(var(--gold));
-  }
-
-  .text-gold-gradient {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold-light)) 0%,
-      hsl(var(--gold)) 50%,
-      hsl(var(--gold-dark)) 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Luxury card styling */
-  .luxury-card {
-    @apply relative bg-card rounded-xl overflow-hidden transition-all duration-300;
-    background: linear-gradient(
-      180deg,
-      hsl(var(--card)) 0%,
-      hsl(222 47% 7%) 100%
-    );
-    border: 1px solid hsl(var(--gold) / 0.2);
-    box-shadow: 
-      0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--gold) / 0.05);
-  }
-
-  .luxury-card:hover {
-    border-color: hsl(var(--gold) / 0.4);
-    box-shadow: 
-      0 8px 30px -12px hsl(var(--gold) / 0.2),
-      0 0 20px hsl(var(--gold) / 0.1),
-      inset 0 1px 0 hsl(var(--gold) / 0.1);
-    transform: translateY(-2px);
-  }
-
-  /* Luxury header styling */
-  .luxury-header {
-    @apply relative p-4 rounded-xl overflow-hidden;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold-dark) / 0.2) 0%,
-      hsl(var(--gold) / 0.1) 30%,
-      hsl(var(--gold-muted) / 0.15) 70%,
-      transparent 100%
-    );
-    border: 1px solid hsl(var(--gold) / 0.25);
-    box-shadow: 
-      0 0 30px hsl(var(--gold) / 0.1),
-      inset 0 1px 0 hsl(var(--gold-light) / 0.1);
-  }
-
-  .luxury-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(var(--gold-light) / 0.5) 50%,
-      transparent 100%
-    );
-  }
-
-  /* Luxury stats grid */
-  .luxury-stat {
-    @apply relative flex flex-col items-center p-3 rounded-lg transition-all duration-300;
-    background: linear-gradient(
-      180deg,
-      hsl(var(--gold) / 0.08) 0%,
-      hsl(var(--gold-dark) / 0.05) 100%
-    );
-    border: 1px solid hsl(var(--gold) / 0.15);
-  }
-
-  .luxury-stat:hover {
-    border-color: hsl(var(--gold) / 0.3);
-    box-shadow: 0 0 15px hsl(var(--gold) / 0.1);
-  }
-
-  /* Premium shimmer effect */
-  .luxury-shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(var(--gold) / 0.15) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: gold-shimmer 3s ease-in-out infinite;
-  }
-
-  /* Luxury badge */
-  .luxury-badge {
-    @apply px-2.5 py-1 rounded-full text-[10px] font-semibold;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--gold-dark) / 0.3) 0%,
-      hsl(var(--gold) / 0.2) 100%
-    );
-    border: 1px solid hsl(var(--gold) / 0.4);
-    color: hsl(var(--gold-light));
-    text-shadow: 0 1px 2px hsl(var(--background) / 0.5);
-  }
-
-  /* Divider with gold accent */
-  .luxury-divider {
-    @apply relative h-px w-full my-3;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      hsl(var(--gold) / 0.3) 20%,
-      hsl(var(--gold) / 0.5) 50%,
-      hsl(var(--gold) / 0.3) 80%,
-      transparent 100%
-    );
   }
 }

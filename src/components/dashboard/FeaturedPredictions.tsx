@@ -37,96 +37,85 @@ export function FeaturedPredictions() {
   };
 
   return (
-    <section className="space-y-3">
-      {/* Luxury Header */}
-      <div className="luxury-header">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-gold/20 to-gold-dark/10 border border-gold/30 glow-gold-subtle">
-              <TrendingUp className="text-gold w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-gold-gradient">AI Performance</h2>
-              <p className="text-[10px] text-muted-foreground">
-                Global accuracy across all predictions
-              </p>
-            </div>
+    <section className="space-y-2">
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-primary/20">
+            <TrendingUp className="text-primary w-4 h-4" />
           </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing || isLoading}
-            className="h-8 text-[10px] text-gold/70 hover:text-gold hover:bg-gold/10 border border-gold/20"
-          >
-            <RefreshCw className={`h-3 w-3 mr-1.5 ${isRefreshing ? "animate-spin" : ""}`} />
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </Button>
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">AI Performance</h2>
+            <p className="text-[9px] text-muted-foreground">
+              Global accuracy across all predictions
+            </p>
+          </div>
         </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing || isLoading}
+          className="h-7 text-[10px] text-muted-foreground hover:text-foreground"
+        >
+          <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+          {isRefreshing ? "Refreshing..." : "Refresh"}
+        </Button>
       </div>
 
-      {/* Luxury Stats Card */}
-      <div className="luxury-card p-4">
+      {/* Stats Card */}
+      <Card className="p-3 bg-gradient-to-b from-card to-card/80 border-border/50 shadow-card">
         {/* Accuracy Header */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-gold/10">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/50">
           <span className="text-xs font-medium text-muted-foreground">Global Win Rate</span>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-black text-gold-gradient">
+          <div className="flex items-center gap-1.5">
+            <span className="text-lg font-bold text-primary">
               {isLoading ? "—" : `${accuracy}%`}
             </span>
             {!isLoading && accuracy >= 70 && (
-              <span className="luxury-badge flex items-center gap-1">
-                <Flame className="h-3 w-3" />
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-medium">
                 HOT
               </span>
             )}
           </div>
         </div>
 
-        {/* Luxury Stats Grid */}
-        <div className="grid grid-cols-4 gap-2.5">
-          <div className="luxury-stat">
-            <div className="p-1.5 rounded-md bg-success/20 mb-1.5">
-              <Check className="h-4 w-4 text-success" />
-            </div>
-            <p className="text-sm font-bold text-foreground">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="flex flex-col items-center p-2 rounded-md bg-success/5 border border-success/10">
+            <Check className="h-3.5 w-3.5 text-success mb-1" />
+            <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : won}
             </p>
             <p className="text-[9px] text-muted-foreground">Won</p>
           </div>
 
-          <div className="luxury-stat">
-            <div className="p-1.5 rounded-md bg-destructive/20 mb-1.5">
-              <X className="h-4 w-4 text-destructive" />
-            </div>
-            <p className="text-sm font-bold text-foreground">
+          <div className="flex flex-col items-center p-2 rounded-md bg-destructive/5 border border-destructive/10">
+            <X className="h-3.5 w-3.5 text-destructive mb-1" />
+            <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : lost}
             </p>
             <p className="text-[9px] text-muted-foreground">Lost</p>
           </div>
 
-          <div className="luxury-stat">
-            <div className="p-1.5 rounded-md bg-gold/20 mb-1.5">
-              <Clock className="h-4 w-4 text-gold" />
-            </div>
-            <p className="text-sm font-bold text-foreground">
+          <div className="flex flex-col items-center p-2 rounded-md bg-muted/30 border border-border/50">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground mb-1" />
+            <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : pending}
             </p>
             <p className="text-[9px] text-muted-foreground">Pending</p>
           </div>
 
-          <div className="luxury-stat glow-gold-animated">
-            <div className="p-1.5 rounded-md bg-gold/20 mb-1.5">
-              <Flame className="h-4 w-4 text-gold" />
-            </div>
-            <p className="text-sm font-bold text-gold">
+          <div className="flex flex-col items-center p-2 rounded-md bg-accent/5 border border-accent/10">
+            <Flame className="h-3.5 w-3.5 text-accent mb-1" />
+            <p className="text-xs font-semibold text-foreground">
               {!isLoading && accuracy >= 70 ? "🔥" : "—"}
             </p>
             <p className="text-[9px] text-muted-foreground">Trend</p>
           </div>
         </div>
-      </div>
+      </Card>
     </section>
   );
 }
