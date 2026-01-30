@@ -35,8 +35,8 @@ import {
 
 const tipsAndTickets = [
   { title: "All Tickets", url: "/all-tickets", icon: Ticket },
-  { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
   { title: "Daily Tips", url: "/daily-tips", icon: Lightbulb },
+  { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
   { title: "Exclusive Tips", url: "/exclusive-tips", icon: Star },
   { title: "Exclusive Tickets", url: "/exclusive-tickets", icon: Ticket },
   { title: "Premium Tips", url: "/premium-tips", icon: Crown },
