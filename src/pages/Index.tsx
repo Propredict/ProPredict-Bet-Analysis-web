@@ -4,6 +4,7 @@ import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
 import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
+import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { SidebarAd } from "@/components/ads/AdSenseBanner";
 
 const Index = () => {
@@ -25,6 +26,7 @@ const Index = () => {
         <SidebarAd />
         <BottomCTA />
       </div>
+      <GuestSignInModal />
     </>
   );
 };
