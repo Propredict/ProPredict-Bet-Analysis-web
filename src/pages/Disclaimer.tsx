@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
@@ -6,7 +7,12 @@ const Disclaimer = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>Disclaimer – ProPredict | Legal Notice & Age Restriction</title>
+        <meta name="description" content="Important legal disclaimer for ProPredict. This app is for informational and entertainment purposes only. 18+ age restriction applies." />
+      </Helmet>
+      <div className="section-gap">
       <Button
         variant="ghost"
         onClick={() => navigate("/settings")}
@@ -86,6 +92,7 @@ const Disclaimer = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
