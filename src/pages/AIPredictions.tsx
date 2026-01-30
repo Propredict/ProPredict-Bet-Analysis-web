@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
@@ -132,8 +133,16 @@ export default function AIPredictions() {
   };
 
   return (
-    <div className="flex gap-2 md:gap-4 lg:gap-6">
-      {/* Left Sidebar - Hidden on mobile */}
+    <>
+      <Helmet>
+        <title>AI Predictions – ProPredict</title>
+        <meta
+          name="description"
+          content="AI-generated sports predictions and statistical insights. No guarantee of accuracy. For informational purposes only."
+        />
+      </Helmet>
+      <div className="flex gap-2 md:gap-4 lg:gap-6">
+        {/* Left Sidebar - Hidden on mobile */}
       <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
           <div className="sticky top-4 space-y-3">
             <div className="text-center pb-2 border-b border-border">
@@ -498,5 +507,6 @@ export default function AIPredictions() {
           </div>
         </div>
       </div>
+    </>
   );
 }
