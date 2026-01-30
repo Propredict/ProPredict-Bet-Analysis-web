@@ -192,6 +192,8 @@
   }
 
   /* Tier accent borders with luxury glow */
+  
+  /* Daily - Amber/Orange warm tones */
   .tier-card--daily {
     border-top: 3px solid hsl(var(--accent));
     box-shadow: 
@@ -207,83 +209,101 @@
       inset 0 1px 0 hsl(var(--accent) / 0.1);
   }
 
+  /* Pro/Exclusive - Rich Violet/Purple */
   .tier-card--pro {
-    border-top: 3px solid hsl(280 70% 55%);
+    border-top: 3px solid hsl(270 70% 60%);
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card)) 0%,
+      hsl(270 50% 12% / 0.5) 50%,
+      hsl(222 47% 7%) 100%
+    );
     box-shadow: 
       0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(280 70% 55% / 0.05);
+      inset 0 1px 0 hsl(270 70% 60% / 0.08);
   }
 
   .tier-card--pro:hover {
+    border-color: hsl(270 80% 65%);
     box-shadow: 
-      0 -4px 25px -8px hsl(280 70% 55% / 0.4),
-      0 12px 40px -12px hsl(var(--background) / 0.6),
-      inset 0 1px 0 hsl(280 70% 55% / 0.1);
+      0 -4px 30px -8px hsl(270 70% 60% / 0.5),
+      0 12px 40px -12px hsl(270 70% 60% / 0.15),
+      0 0 20px hsl(270 70% 60% / 0.1),
+      inset 0 1px 0 hsl(270 70% 60% / 0.15);
   }
 
+  /* Premium - Luxury Gold */
   .tier-card--premium {
     border-top: 3px solid hsl(var(--gold));
     background: linear-gradient(
       180deg,
       hsl(var(--card)) 0%,
-      hsl(var(--gold-dark) / 0.05) 50%,
+      hsl(var(--gold-dark) / 0.08) 50%,
       hsl(222 47% 7%) 100%
     );
     box-shadow: 
       0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--gold) / 0.08);
+      inset 0 1px 0 hsl(var(--gold) / 0.1);
   }
 
   .tier-card--premium:hover {
     border-color: hsl(var(--gold-light));
     box-shadow: 
       0 -4px 30px -8px hsl(var(--gold) / 0.5),
-      0 12px 40px -12px hsl(var(--gold) / 0.15),
-      0 0 20px hsl(var(--gold) / 0.1),
-      inset 0 1px 0 hsl(var(--gold) / 0.15);
+      0 12px 40px -12px hsl(var(--gold) / 0.2),
+      0 0 25px hsl(var(--gold) / 0.15),
+      inset 0 1px 0 hsl(var(--gold) / 0.2);
   }
 
   .tier-card--free {
     border-top: 3px solid hsl(var(--muted-foreground));
   }
 
-  /* Unlocked card styling - Gold accent */
+  /* Unlocked card styling - Success green accent */
   .tier-card--unlocked {
-    border-color: hsl(var(--gold) / 0.3);
+    border-color: hsl(var(--success) / 0.3);
     box-shadow: 
       0 4px 20px -8px hsl(var(--background) / 0.8),
-      inset 0 1px 0 hsl(var(--gold) / 0.05);
+      inset 0 1px 0 hsl(var(--success) / 0.05);
   }
 
   .tier-card--unlocked:hover {
-    border-color: hsl(var(--gold) / 0.5);
+    border-color: hsl(var(--success) / 0.5);
     box-shadow: 
-      0 12px 40px -12px hsl(var(--gold) / 0.15),
-      0 0 25px hsl(var(--gold) / 0.08),
-      inset 0 1px 0 hsl(var(--gold) / 0.1);
+      0 12px 40px -12px hsl(var(--success) / 0.15),
+      0 0 25px hsl(var(--success) / 0.08),
+      inset 0 1px 0 hsl(var(--success) / 0.1);
   }
 
-  /* Tier badge styling - Luxury upgrade */
+  /* Tier badge styling */
+  
+  /* Daily - Amber/Orange */
   .tier-badge--daily {
     @apply bg-accent/20 text-accent border-accent/30;
     text-shadow: 0 1px 2px hsl(var(--background) / 0.3);
   }
 
+  /* Pro - Violet/Purple */
   .tier-badge--pro {
-    background: hsl(280 70% 55% / 0.2);
-    color: hsl(280 70% 65%);
-    border-color: hsl(280 70% 55% / 0.3);
-    text-shadow: 0 1px 2px hsl(var(--background) / 0.3);
+    background: linear-gradient(
+      135deg,
+      hsl(270 50% 25% / 0.3) 0%,
+      hsl(270 70% 60% / 0.2) 100%
+    );
+    color: hsl(270 80% 70%);
+    border-color: hsl(270 70% 60% / 0.4);
+    text-shadow: 0 1px 2px hsl(var(--background) / 0.4);
   }
 
+  /* Premium - Luxury Gold */
   .tier-badge--premium {
     background: linear-gradient(
       135deg,
-      hsl(var(--gold-dark) / 0.25) 0%,
+      hsl(var(--gold-dark) / 0.3) 0%,
       hsl(var(--gold) / 0.2) 100%
     );
     color: hsl(var(--gold-light));
-    border-color: hsl(var(--gold) / 0.4);
+    border-color: hsl(var(--gold) / 0.5);
     text-shadow: 0 1px 2px hsl(var(--background) / 0.5);
   }
 
@@ -305,7 +325,11 @@
   }
 
   .glow-pro {
-    box-shadow: 0 0 20px hsl(280 70% 55% / 0.3);
+    box-shadow: 0 0 20px hsl(270 70% 60% / 0.3);
+  }
+
+  .glow-daily {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
   }
 
   /* Soft shadows for depth */
