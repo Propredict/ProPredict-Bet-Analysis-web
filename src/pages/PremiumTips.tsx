@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,12 @@ import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     tips,
     isLoading,
@@ -19,7 +23,8 @@ export default function PremiumTips() {
   const {
     canAccess,
     getUnlockMethod,
-    plan
+    plan,
+    refetch: refetchPlan
   } = useUserPlan();
   const {
     unlockingId,
@@ -28,6 +33,20 @@ export default function PremiumTips() {
   const premiumTips = tips.filter(tip => tip.tier === "premium");
   const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
   const showUpgradeBanner = plan !== "premium";
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetch(), refetchPlan()]);
+      toast({
+        title: "Data refreshed",
+        description: "Premium tips have been updated.",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
@@ -45,9 +64,15 @@ export default function PremiumTips() {
             <Crown className="h-2.5 w-2.5 mr-0.5" />
             Premium
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="h-6 px-1.5 text-[9px]">
-            <RefreshCw className="h-2.5 w-2.5 mr-1" />
-            Refresh
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing || isLoading}
+            className="h-6 px-1.5 text-[9px]"
+          >
+            <RefreshCw className={`h-2.5 w-2.5 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+            {isRefreshing ? "..." : "Refresh"}
           </Button>
         </div>
       </div>
