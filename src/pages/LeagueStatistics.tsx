@@ -126,9 +126,9 @@ export default function LeagueStatistics() {
           </Card>
         </div>
 
-        {/* Tabs - mobile wrap (no horizontal scroll) */}
+        {/* Tabs - Enhanced visibility with container */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="w-full">
+          <div className="w-full p-2 sm:p-3 rounded-xl bg-card/80 border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
             <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
               {[
                 { value: "live", icon: Play, label: "Live" },
@@ -143,14 +143,14 @@ export default function LeagueStatistics() {
                   key={value}
                   onClick={() => setActiveTab(value)}
                   className={`
-                    flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 whitespace-nowrap max-w-full
+                    flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-300 whitespace-nowrap max-w-full
                     ${activeTab === value 
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
-                      : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/40 border-2 border-primary scale-[1.02]" 
+                      : "bg-muted/50 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/50 hover:bg-muted hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]"
                     }
                   `}
                 >
-                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <Icon className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${activeTab === value ? "" : "opacity-70"}`} />
                   <span>{label}</span>
                 </button>
               ))}
