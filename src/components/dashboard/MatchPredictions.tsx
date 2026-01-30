@@ -23,7 +23,8 @@ function mapDbTipToTip(dbTip: any): Tip {
     odds: dbTip.odds,
     confidence: dbTip.confidence ?? 0,
     kickoff: dbTip.created_at_ts ? new Date(dbTip.created_at_ts).toLocaleDateString() : "",
-    tier: dbTip.tier as ContentTier
+    tier: dbTip.tier as ContentTier,
+    result: dbTip.result as Tip["result"]
   };
 }
 
