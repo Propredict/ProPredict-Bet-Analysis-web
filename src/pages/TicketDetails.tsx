@@ -128,6 +128,20 @@ export default function TicketDetails() {
   const ogTitle = `${matchTitle} Prediction – ProPredict`;
   const ogDescription = `AI-powered ${tierName} ticket with ${matchCount} match${matchCount !== 1 ? 'es' : ''} for ${leagueName}. Informational purposes only.`;
 
+  // Tier-specific breadcrumb path
+  const getTierBreadcrumb = () => {
+    switch (ticket.tier) {
+      case "premium":
+        return { label: "Premium Tickets", path: "/premium-tickets" };
+      case "exclusive":
+        return { label: "Pro Tickets", path: "/exclusive-tickets" };
+      case "daily":
+      default:
+        return { label: "Daily Tickets", path: "/daily-tickets" };
+    }
+  };
+  const tierBreadcrumb = getTierBreadcrumb();
+
   // Breadcrumb JSON-LD schema
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -142,8 +156,8 @@ export default function TicketDetails() {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "All Tickets",
-        "item": "https://propredict.me/all-tickets"
+        "name": tierBreadcrumb.label,
+        "item": `https://propredict.me${tierBreadcrumb.path}`
       },
       {
         "@type": "ListItem",
@@ -273,8 +287,8 @@ export default function TicketDetails() {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/all-tickets" className="text-muted-foreground hover:text-foreground">
-                  All Tickets
+                <Link to={tierBreadcrumb.path} className="text-muted-foreground hover:text-foreground">
+                  {tierBreadcrumb.label}
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
