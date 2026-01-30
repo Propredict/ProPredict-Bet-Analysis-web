@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Shield, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,12 @@ const AboutUs = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>About Us – ProPredict | AI Sports Analysis Platform</title>
+        <meta name="description" content="ProPredict is an AI-powered sports analysis platform providing match insights, predictions, and statistics for informational and entertainment purposes." />
+      </Helmet>
+      <div className="section-gap">
       <Button 
         variant="ghost" 
         className="mb-2 h-7 text-xs gap-1" 
@@ -63,6 +69,7 @@ const AboutUs = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

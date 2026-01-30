@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -95,7 +96,12 @@ const Settings = () => {
   ];
 
   return (
-    <div className="section-gap max-w-2xl mx-auto">
+    <>
+      <Helmet>
+        <title>Settings – ProPredict | App Preferences & Legal</title>
+        <meta name="description" content="Manage your ProPredict account settings, preferences, and access legal information including privacy policy and terms of service." />
+      </Helmet>
+      <div className="section-gap max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2">
         <div className="p-1.5 rounded-full border border-primary">
@@ -223,6 +229,7 @@ const Settings = () => {
       </Card>
 
     </div>
+    </>
   );
 };
 
