@@ -203,7 +203,7 @@ const Profile = () => {
         throw new Error(data.error || "Failed to open portal");
       }
 
-      window.location.href = data.url;
+      window.open(data.url, "_blank");
     } catch (error: any) {
       toast({
         title: "Error",
