@@ -12,51 +12,24 @@ export function useGlobalWinRate() {
   return useQuery({
     queryKey: ["global-win-rate"],
     queryFn: async (): Promise<GlobalWinRateData> => {
-      // Fetch tips results
-      const { data: tipsData, error: tipsError } = await supabase
-        .from("tips")
-        .select("result")
-        .eq("status", "published");
+      const { data, error } = await supabase
+        .from("dashboard_results")
+        .select("result");
 
-      if (tipsError) throw tipsError;
+      if (error) throw error;
 
-      // Fetch tickets results
-      const { data: ticketsData, error: ticketsError } = await supabase
-        .from("tickets")
-        .select("result")
-        .eq("status", "published");
+      let won = 0;
+      let lost = 0;
+      let pending = 0;
 
-      if (ticketsError) throw ticketsError;
-
-      // Count results from tips
-      let tipsWon = 0;
-      let tipsLost = 0;
-      let tipsPending = 0;
-
-      (tipsData ?? []).forEach((tip) => {
-        if (tip.result === "won") tipsWon++;
-        else if (tip.result === "lost") tipsLost++;
-        else tipsPending++;
+      (data ?? []).forEach((item) => {
+        if (item.result === "won") won++;
+        else if (item.result === "lost") lost++;
+        else pending++;
       });
-
-      // Count results from tickets
-      let ticketsWon = 0;
-      let ticketsLost = 0;
-      let ticketsPending = 0;
-
-      (ticketsData ?? []).forEach((ticket) => {
-        if (ticket.result === "won") ticketsWon++;
-        else if (ticket.result === "lost") ticketsLost++;
-        else ticketsPending++;
-      });
-
-      // Combine counts
-      const won = tipsWon + ticketsWon;
-      const lost = tipsLost + ticketsLost;
-      const pending = tipsPending + ticketsPending;
 
       // Calculate accuracy: won / (won + lost) * 100
-      // If no closed items, accuracy is 0
+      // Pending items are excluded from accuracy calculation
       const closedTotal = won + lost;
       const accuracy = closedTotal > 0 ? Math.round((won / closedTotal) * 100) : 0;
 

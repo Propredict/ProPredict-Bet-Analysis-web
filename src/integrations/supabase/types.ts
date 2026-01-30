@@ -564,6 +564,17 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_results: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          result: Database["public"]["Enums"]["ticket_result"] | null
+          source: string | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+        }
+        Relationships: []
+      }
       stats_by_tier: {
         Row: {
           accuracy: number | null
