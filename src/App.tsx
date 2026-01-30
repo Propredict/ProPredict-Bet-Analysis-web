@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Pages
 import Index from "./pages/Index";
@@ -64,6 +65,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
               {/* Auth pages without layout */}
               <Route path="/login" element={<Login />} />
