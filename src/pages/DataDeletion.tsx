@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +27,12 @@ const DataDeletion = () => {
   };
 
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>Data Deletion – ProPredict | Request Account Removal</title>
+        <meta name="description" content="Request deletion of your personal data from ProPredict. Learn about your privacy rights and how we handle data removal requests." />
+      </Helmet>
+      <div className="section-gap">
       <Button 
         variant="ghost" 
         onClick={() => navigate("/settings")} 
@@ -157,6 +163,7 @@ const DataDeletion = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

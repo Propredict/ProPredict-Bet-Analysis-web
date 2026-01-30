@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -212,7 +213,12 @@ const HelpSupport = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+    <>
+      <Helmet>
+        <title>Help & Support – ProPredict | FAQs & Contact</title>
+        <meta name="description" content="Get help with ProPredict. Browse FAQs about subscriptions, predictions, and technical issues, or contact our support team directly." />
+      </Helmet>
+      <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
       {/* Back Button */}
       <Button
         variant="ghost"
@@ -364,6 +370,7 @@ const HelpSupport = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
