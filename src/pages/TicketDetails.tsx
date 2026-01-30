@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn, Link2, Check, Share2 } from "lucide-react";
+import { Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn, Link2, Check, Share2, Home, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -120,6 +128,32 @@ export default function TicketDetails() {
   const ogTitle = `${matchTitle} Prediction – ProPredict`;
   const ogDescription = `AI-powered ${tierName} ticket with ${matchCount} match${matchCount !== 1 ? 'es' : ''} for ${leagueName}. Informational purposes only.`;
 
+  // Breadcrumb JSON-LD schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://propredict.me"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "All Tickets",
+        "item": "https://propredict.me/all-tickets"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": ticket.title,
+        "item": `https://propredict.me/tickets/${ticket.id}`
+      }
+    ]
+  };
+
   const getTierBadge = () => {
     switch (ticket.tier) {
       case "daily":
@@ -218,12 +252,42 @@ export default function TicketDetails() {
         <meta name="twitter:title" content={ogTitle} />
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImage} />
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
       </Helmet>
-      <div className="space-y-6 max-w-3xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-        </Button>
+      <div className="space-y-4 max-w-3xl mx-auto">
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb>
+          <BreadcrumbList className="text-xs sm:text-sm">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                  <Home className="h-3 w-3" />
+                  <span className="hidden sm:inline">Home</span>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className="h-3 w-3" />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/all-tickets" className="text-muted-foreground hover:text-foreground">
+                  All Tickets
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className="h-3 w-3" />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-foreground font-medium truncate max-w-[150px] sm:max-w-[250px]">
+                {ticket.title}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <Card className={cn(
           "bg-card overflow-hidden",
