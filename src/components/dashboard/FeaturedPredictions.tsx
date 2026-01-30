@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   TrendingUp,
   RefreshCw,
@@ -10,13 +11,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useGlobalWinRate } from "@/hooks/useGlobalWinRate";
+import { useToast } from "@/hooks/use-toast";
 
 export function FeaturedPredictions() {
   const { data, isLoading, refetch } = useGlobalWinRate();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const accuracy = data?.accuracy ?? 0;
   const won = data?.won ?? 0;
   const lost = data?.lost ?? 0;
   const pending = data?.pending ?? 0;
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      toast({
+        title: "Data refreshed",
+        description: "Dashboard stats have been updated.",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <section className="space-y-2">
@@ -37,11 +55,12 @@ export function FeaturedPredictions() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => refetch()}
+          onClick={handleRefresh}
+          disabled={isRefreshing || isLoading}
           className="h-7 text-[10px] text-muted-foreground hover:text-foreground"
         >
-          <RefreshCw className="h-3 w-3 mr-1" />
-          Refresh
+          <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+          {isRefreshing ? "Refreshing..." : "Refresh"}
         </Button>
       </div>
 
