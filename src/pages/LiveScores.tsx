@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart } from "lucide-react";
+import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
@@ -34,6 +35,7 @@ export default function LiveScores() {
   const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [viewMode, setViewMode] = useState<"simple" | "structured">("structured");
   const {
     matches,
     isLoading,
@@ -95,6 +97,7 @@ export default function LiveScores() {
       return okSearch && okLeague;
     });
   }, [matches, search, leagueFilter]);
+  // Simple grouping by league only
   const grouped = useMemo(() => {
     return filtered.reduce((acc, m) => {
       acc[m.league] ??= [];
@@ -102,6 +105,30 @@ export default function LiveScores() {
       return acc;
     }, {} as Record<string, Match[]>);
   }, [filtered]);
+
+  // Structured grouping: Country → League → Matches
+  const structuredGrouped = useMemo(() => {
+    const result: Record<string, Record<string, Match[]>> = {};
+    filtered.forEach(m => {
+      const country = m.leagueCountry || "Other";
+      result[country] ??= {};
+      result[country][m.league] ??= [];
+      result[country][m.league].push(m);
+    });
+    // Sort countries alphabetically, but put "World" and "Other" at the end
+    const sortedResult: Record<string, Record<string, Match[]>> = {};
+    const sortedCountries = Object.keys(result).sort((a, b) => {
+      if (a === "World" || a === "Other") return 1;
+      if (b === "World" || b === "Other") return -1;
+      return a.localeCompare(b);
+    });
+    sortedCountries.forEach(country => {
+      sortedResult[country] = result[country];
+    });
+    return sortedResult;
+  }, [filtered]);
+
+  const countriesCount = Object.keys(structuredGrouped).length;
   const getDateLabel = (d: DateMode) => {
     const now = new Date();
     if (d === "yesterday") return format(subDays(now, 1), "MMM d");
@@ -223,27 +250,64 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* SEARCH - Enhanced visibility with white border and glow */}
-        <div className="relative max-w-sm">
-          <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
-          <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
-            <Input 
-              className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
-              placeholder="Search teams…" 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-            />
+        {/* SEARCH + VIEW TOGGLE */}
+        <div className="flex items-center gap-2">
+          {/* Search */}
+          <div className="relative flex-1 max-w-sm">
+            <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
+            <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+              <Input 
+                className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
+                placeholder="Search teams…" 
+                value={search} 
+                onChange={e => setSearch(e.target.value)} 
+              />
+            </div>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg border border-border">
+            <button
+              onClick={() => setViewMode("simple")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
+                viewMode === "simple" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <List className="h-3 w-3" />
+              <span className="hidden sm:inline">Simple</span>
+            </button>
+            <button
+              onClick={() => setViewMode("structured")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
+                viewMode === "structured" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="h-3 w-3" />
+              <span className="hidden sm:inline">Grouped</span>
+            </button>
           </div>
         </div>
 
         {/* MATCHES or FALLBACK */}
-        {isUnavailable ? <LiveScoresFallback /> : Object.keys(grouped).length === 0 ? <Card className="p-4 sm:p-6 text-center bg-card border-border">
+        {isUnavailable ? (
+          <LiveScoresFallback />
+        ) : Object.keys(grouped).length === 0 ? (
+          <Card className="p-4 sm:p-6 text-center bg-card border-border">
             <p className="text-xs text-muted-foreground">No matches found</p>
-          </Card> : <div className="space-y-1 sm:space-y-1.5">
-            {Object.entries(grouped).map(([league, games]) => <Card key={league} className="overflow-hidden bg-card border-border">
-                {/* League Header - Compact */}
+          </Card>
+        ) : viewMode === "simple" ? (
+          /* ==================== SIMPLE VIEW ==================== */
+          <div className="space-y-1 sm:space-y-1.5">
+            {Object.entries(grouped).map(([league, games]) => (
+              <Card key={league} className="overflow-hidden bg-card border-border">
                 <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-secondary/30 border-b border-border flex items-center gap-1">
                   <Trophy className="h-2.5 w-2.5 text-primary" />
                   <span className="font-semibold text-[9px] sm:text-[10px] truncate">{league}</span>
@@ -251,66 +315,48 @@ export default function LiveScores() {
                     {games.length}
                   </Badge>
                 </div>
-
-                {/* Match Rows - Compact */}
                 <div className="divide-y divide-border">
-                  {games.map(m => {
-            const isLive = m.status === "live" || m.status === "halftime";
-            const isFinished = m.status === "finished";
-            const isUpcoming = m.status === "upcoming";
-            const showGoalIndicator = hasRecentGoal(m.id);
-            return <div key={m.id} onClick={() => setSelectedMatch(m)} className={cn("px-1.5 sm:px-2 py-1.5 sm:py-2 hover:bg-secondary/30 cursor-pointer transition-colors", showGoalIndicator && "bg-success/10 border-l-2 border-success")}>
-                        {/* Grid layout for alignment */}
-                        <div className="grid grid-cols-[28px_1fr_52px_1fr_72px] sm:grid-cols-[40px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
-                          {/* Actions */}
-                          <div className="flex items-center gap-0.5">
-                            <button onClick={e => {
-                    e.stopPropagation();
-                    toggleFavorite(m.id);
-                  }} className={cn("h-5 w-5 sm:h-6 sm:w-6 rounded flex items-center justify-center transition-all", isFavorite(m.id) ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80")}>
-                              <Star className={cn("h-2.5 w-2.5 sm:h-3 sm:w-3", isFavorite(m.id) ? "text-primary fill-primary" : "text-muted-foreground")} />
-                            </button>
-                            <MatchAlertButton hasAlert={hasAlert(m.id)} onClick={e => {
-                    e.stopPropagation();
-                    toggleMatchAlert(m.id);
-                  }} />
-                          </div>
-
-                          {/* Home Team - Right aligned */}
-                          <div className="flex items-center gap-0.5 sm:gap-1 justify-end min-w-0">
-                            <span className={cn("text-[10px] sm:text-xs font-medium truncate text-right", showGoalIndicator && "text-success font-semibold")}>
-                              {m.homeTeam}
-                            </span>
-                            {m.homeLogo && <img src={m.homeLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
-                          </div>
-
-                          {/* Score - Centered */}
-                          <div className="flex justify-center">
-                            <div className={cn("px-1.5 py-0.5 rounded text-center min-w-[40px] sm:min-w-[52px]", isLive && !showGoalIndicator && "bg-destructive/15 border border-destructive/30", isLive && showGoalIndicator && "bg-success/15 border border-success/30", isFinished && "bg-secondary border border-border", isUpcoming && "bg-muted border border-border")}>
-                              <span className={cn("font-bold text-[10px] sm:text-xs", isLive && !showGoalIndicator && "text-destructive", isLive && showGoalIndicator && "text-success")}>
-                                {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Away Team - Left aligned */}
-                          <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-                            {m.awayLogo && <img src={m.awayLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
-                            <span className={cn("text-[10px] sm:text-xs font-medium truncate", showGoalIndicator && "text-success font-semibold")}>
-                              {m.awayTeam}
-                            </span>
-                          </div>
-
-                          {/* Status */}
-                          <div className="flex justify-end">
-                            <StatusBadge match={m} />
-                          </div>
-                        </div>
-                      </div>;
-          })}
+                  {games.map(m => (
+                    <MatchRow 
+                      key={m.id} 
+                      match={m} 
+                      onSelect={setSelectedMatch}
+                      isFavorite={isFavorite(m.id)}
+                      toggleFavorite={() => toggleFavorite(m.id)}
+                      hasAlert={hasAlert(m.id)}
+                      toggleMatchAlert={() => toggleMatchAlert(m.id)}
+                      hasRecentGoal={hasRecentGoal(m.id)}
+                    />
+                  ))}
                 </div>
-              </Card>)}
-          </div>}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          /* ==================== STRUCTURED VIEW (Country → League) ==================== */
+          <div className="space-y-2">
+            {Object.entries(structuredGrouped).map(([country, leagues]) => {
+              const countryMatchCount = Object.values(leagues).flat().length;
+              const countryLeagueCount = Object.keys(leagues).length;
+              
+              return (
+                <CountrySection
+                  key={country}
+                  country={country}
+                  leagues={leagues}
+                  matchCount={countryMatchCount}
+                  leagueCount={countryLeagueCount}
+                  onSelectMatch={setSelectedMatch}
+                  isFavorite={isFavorite}
+                  toggleFavorite={toggleFavorite}
+                  hasAlert={hasAlert}
+                  toggleMatchAlert={toggleMatchAlert}
+                  hasRecentGoal={hasRecentGoal}
+                />
+              );
+            })}
+          </div>
+        )}
 
         <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
       </div>
@@ -394,4 +440,261 @@ function StatusBadge({
   }
   // Upcoming - show countdown
   return <KickoffCountdown startTime={match.startTime} />;
+}
+
+/* -------------------- MATCH ROW -------------------- */
+
+function MatchRow({
+  match: m,
+  onSelect,
+  isFavorite: isFav,
+  toggleFavorite,
+  hasAlert,
+  toggleMatchAlert,
+  hasRecentGoal: showGoalIndicator
+}: {
+  match: Match;
+  onSelect: (m: Match) => void;
+  isFavorite: boolean;
+  toggleFavorite: () => void;
+  hasAlert: boolean;
+  toggleMatchAlert: () => void;
+  hasRecentGoal: boolean;
+}) {
+  const isLive = m.status === "live" || m.status === "halftime";
+  const isFinished = m.status === "finished";
+  const isUpcoming = m.status === "upcoming";
+
+  return (
+    <div 
+      onClick={() => onSelect(m)} 
+      className={cn(
+        "px-1.5 sm:px-2 py-1.5 sm:py-2 hover:bg-secondary/30 cursor-pointer transition-colors",
+        showGoalIndicator && "bg-success/10 border-l-2 border-success"
+      )}
+    >
+      <div className="grid grid-cols-[28px_1fr_52px_1fr_72px] sm:grid-cols-[40px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
+        {/* Actions */}
+        <div className="flex items-center gap-0.5">
+          <button 
+            onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
+            className={cn(
+              "h-5 w-5 sm:h-6 sm:w-6 rounded flex items-center justify-center transition-all", 
+              isFav ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80"
+            )}
+          >
+            <Star className={cn("h-2.5 w-2.5 sm:h-3 sm:w-3", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
+          </button>
+          <MatchAlertButton 
+            hasAlert={hasAlert} 
+            onClick={e => { e.stopPropagation(); toggleMatchAlert(); }} 
+          />
+        </div>
+
+        {/* Home Team */}
+        <div className="flex items-center gap-0.5 sm:gap-1 justify-end min-w-0">
+          <span className={cn("text-[10px] sm:text-xs font-medium truncate text-right", showGoalIndicator && "text-success font-semibold")}>
+            {m.homeTeam}
+          </span>
+          {m.homeLogo && <img src={m.homeLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
+        </div>
+
+        {/* Score */}
+        <div className="flex justify-center">
+          <div className={cn(
+            "px-1.5 py-0.5 rounded text-center min-w-[40px] sm:min-w-[52px]",
+            isLive && !showGoalIndicator && "bg-destructive/15 border border-destructive/30",
+            isLive && showGoalIndicator && "bg-success/15 border border-success/30",
+            isFinished && "bg-secondary border border-border",
+            isUpcoming && "bg-muted border border-border"
+          )}>
+            <span className={cn(
+              "font-bold text-[10px] sm:text-xs",
+              isLive && !showGoalIndicator && "text-destructive",
+              isLive && showGoalIndicator && "text-success"
+            )}>
+              {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
+            </span>
+          </div>
+        </div>
+
+        {/* Away Team */}
+        <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
+          {m.awayLogo && <img src={m.awayLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
+          <span className={cn("text-[10px] sm:text-xs font-medium truncate", showGoalIndicator && "text-success font-semibold")}>
+            {m.awayTeam}
+          </span>
+        </div>
+
+        {/* Status */}
+        <div className="flex justify-end">
+          <StatusBadge match={m} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- COUNTRY SECTION -------------------- */
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "Spain": "🇪🇸",
+  "Germany": "🇩🇪",
+  "Italy": "🇮🇹",
+  "France": "🇫🇷",
+  "Portugal": "🇵🇹",
+  "Netherlands": "🇳🇱",
+  "Belgium": "🇧🇪",
+  "Turkey": "🇹🇷",
+  "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "Brazil": "🇧🇷",
+  "Argentina": "🇦🇷",
+  "USA": "🇺🇸",
+  "Mexico": "🇲🇽",
+  "Saudi-Arabia": "🇸🇦",
+  "Japan": "🇯🇵",
+  "Australia": "🇦🇺",
+  "World": "🌍",
+  "Europe": "🇪🇺",
+};
+
+function CountrySection({
+  country,
+  leagues,
+  matchCount,
+  leagueCount,
+  onSelectMatch,
+  isFavorite,
+  toggleFavorite,
+  hasAlert,
+  toggleMatchAlert,
+  hasRecentGoal
+}: {
+  country: string;
+  leagues: Record<string, Match[]>;
+  matchCount: number;
+  leagueCount: number;
+  onSelectMatch: (m: Match) => void;
+  isFavorite: (id: string) => boolean;
+  toggleFavorite: (id: string) => void;
+  hasAlert: (id: string) => boolean;
+  toggleMatchAlert: (id: string) => void;
+  hasRecentGoal: (id: string) => boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+  const flag = COUNTRY_FLAGS[country] || "🏳️";
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="overflow-hidden bg-card border-border">
+        {/* Country Header */}
+        <CollapsibleTrigger asChild>
+          <button className="w-full px-2 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-secondary/60 to-secondary/30 border-b border-border flex items-center gap-2 hover:bg-secondary/50 transition-colors">
+            <span className="text-base sm:text-lg">{flag}</span>
+            <span className="font-bold text-xs sm:text-sm text-foreground">{country}</span>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-secondary/50">
+                {leagueCount} league{leagueCount !== 1 ? "s" : ""}
+              </Badge>
+              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/10 text-primary border-primary/30">
+                {matchCount} match{matchCount !== 1 ? "es" : ""}
+              </Badge>
+              {isOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </div>
+          </button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="divide-y divide-border/50">
+            {Object.entries(leagues).map(([league, games]) => (
+              <LeagueSection
+                key={league}
+                league={league}
+                leagueLogo={games[0]?.leagueLogo}
+                matches={games}
+                onSelectMatch={onSelectMatch}
+                isFavorite={isFavorite}
+                toggleFavorite={toggleFavorite}
+                hasAlert={hasAlert}
+                toggleMatchAlert={toggleMatchAlert}
+                hasRecentGoal={hasRecentGoal}
+              />
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
+}
+
+/* -------------------- LEAGUE SECTION -------------------- */
+
+function LeagueSection({
+  league,
+  leagueLogo,
+  matches,
+  onSelectMatch,
+  isFavorite,
+  toggleFavorite,
+  hasAlert,
+  toggleMatchAlert,
+  hasRecentGoal
+}: {
+  league: string;
+  leagueLogo: string | null;
+  matches: Match[];
+  onSelectMatch: (m: Match) => void;
+  isFavorite: (id: string) => boolean;
+  toggleFavorite: (id: string) => void;
+  hasAlert: (id: string) => boolean;
+  toggleMatchAlert: (id: string) => void;
+  hasRecentGoal: (id: string) => boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      {/* League Header */}
+      <CollapsibleTrigger asChild>
+        <button className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-secondary/20 flex items-center gap-1.5 hover:bg-secondary/30 transition-colors">
+          {isOpen ? (
+            <ChevronDown className="h-3 w-3 text-primary" />
+          ) : (
+            <ChevronRight className="h-3 w-3 text-primary" />
+          )}
+          {leagueLogo ? (
+            <img src={leagueLogo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+          ) : (
+            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+          )}
+          <span className="font-semibold text-[10px] sm:text-xs text-foreground truncate">{league}</span>
+          <Badge variant="outline" className="ml-auto text-[8px] px-1 bg-muted/30">
+            {matches.length}
+          </Badge>
+        </button>
+      </CollapsibleTrigger>
+
+      <CollapsibleContent>
+        <div className="divide-y divide-border">
+          {matches.map(m => (
+            <MatchRow
+              key={m.id}
+              match={m}
+              onSelect={onSelectMatch}
+              isFavorite={isFavorite(m.id)}
+              toggleFavorite={() => toggleFavorite(m.id)}
+              hasAlert={hasAlert(m.id)}
+              toggleMatchAlert={() => toggleMatchAlert(m.id)}
+              hasRecentGoal={hasRecentGoal(m.id)}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
