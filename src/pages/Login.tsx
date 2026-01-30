@@ -151,7 +151,7 @@ const Login = () => {
           <CardDescription className={!isSignUp ? "bg-primary text-primary-foreground px-3 py-1 rounded-md inline-block" : ""}>
             {isSignUp
               ? "Enter your email to create your account"
-              : "Sign in to start making predictions"}
+              : "Sign In and get FREE access to AI predictions"}
           </CardDescription>
         </CardHeader>
 
