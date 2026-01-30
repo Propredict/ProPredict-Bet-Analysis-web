@@ -81,26 +81,50 @@ export default function TicketDetails() {
   };
 
   const handleInstagramShare = async () => {
-    // Instagram doesn't have a direct share URL, so we copy the link and inform the user
-    try {
+    // Try native share first (works on mobile - lets user pick Instagram)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: ticket?.title || "ProPredict Prediction",
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fall back to copy
+        if ((err as Error).name !== "AbortError") {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success("Link copied! Paste it in your Instagram story or bio.", { duration: 4000 });
+        }
+      }
+    } else {
+      // Desktop fallback - copy link
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied! Paste it in your Instagram story or bio.", {
-        duration: 4000,
-      });
-    } catch {
-      toast.error("Failed to copy link");
+      toast.success("Link copied! Paste it in your Instagram story or bio.", { duration: 4000 });
     }
   };
 
   const handleTikTokShare = async () => {
-    // TikTok doesn't have a direct share URL, so we copy the link and inform the user
-    try {
+    // Try native share first (works on mobile - lets user pick TikTok)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: ticket?.title || "ProPredict Prediction",
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fall back to copy
+        if ((err as Error).name !== "AbortError") {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success("Link copied! Paste it in your TikTok video description.", { duration: 4000 });
+        }
+      }
+    } else {
+      // Desktop fallback - copy link
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied! Paste it in your TikTok video description.", {
-        duration: 4000,
-      });
-    } catch {
-      toast.error("Failed to copy link");
+      toast.success("Link copied! Paste it in your TikTok video description.", { duration: 4000 });
     }
   };
 
