@@ -338,7 +338,7 @@ export default function TicketDetails() {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbPage className="text-foreground font-medium truncate max-w-[150px] sm:max-w-[250px]">
-                {ticket.title}
+                {ticket.title.replace(/\s*\d{1,2}\/\d{1,2}\/\d{2,4}$/, '')}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
