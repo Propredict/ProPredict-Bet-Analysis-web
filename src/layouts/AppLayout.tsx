@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -206,6 +207,9 @@ export default function AppLayout() {
 
           {/* Mobile Bottom Navigation - Fixed at bottom */}
           <MobileBottomNav />
+          
+          {/* Scroll to Top Button */}
+          <ScrollToTopButton />
         </SidebarInset>
       </div>
 
