@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +111,16 @@ export default function LiveScores() {
 
   /* -------------------- RENDER -------------------- */
 
-  return <div className="section-gap max-w-full overflow-x-hidden">
+  return (
+    <>
+      <Helmet>
+        <title>Live Scores – ProPredict</title>
+        <meta
+          name="description"
+          content="Real-time live scores from all major football leagues. Track matches, goals, and results as they happen."
+        />
+      </Helmet>
+      <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - COMPACT */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -302,7 +312,9 @@ export default function LiveScores() {
           </div>}
 
         <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
-      </div>;
+      </div>
+    </>
+  );
 }
 
 /* -------------------- HELPERS -------------------- */

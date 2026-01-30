@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,15 @@ export default function ExclusiveTips() {
     toast.success("Tips refreshed");
   };
 
-  return <div className="section-gap">
+  return <>
+    <Helmet>
+      <title>Pro Tips – ProPredict</title>
+      <meta
+        name="description"
+        content="Pro-level AI sports tips with higher confidence predictions. For entertainment and informational purposes only."
+      />
+    </Helmet>
+    <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -163,5 +172,6 @@ export default function ExclusiveTips() {
       
       {/* Sidebar Ad */}
       <SidebarAd className="mt-4" />
-    </div>;
+    </div>
+  </>;
 }

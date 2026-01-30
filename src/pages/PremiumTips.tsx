@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,15 @@ export default function PremiumTips() {
     }
   };
 
-  return <div className="section-gap">
+  return <>
+    <Helmet>
+      <title>Premium Tips – ProPredict</title>
+      <meta
+        name="description"
+        content="Premium AI sports tips with highest confidence predictions. For entertainment and informational purposes only."
+      />
+    </Helmet>
+    <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
         <div className="flex items-center gap-1.5">
@@ -178,5 +187,6 @@ export default function PremiumTips() {
       
       {/* Sidebar Ad */}
       <SidebarAd className="mt-4" />
-    </div>;
+    </div>
+  </>;
 }
