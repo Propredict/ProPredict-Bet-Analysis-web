@@ -1,12 +1,40 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const CookiePolicy = () => {
   const navigate = useNavigate();
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://propredict.me"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cookie Policy",
+        "item": "https://propredict.me/cookie-policy"
+      }
+    ]
+  };
+
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>Cookie Policy – ProPredict</title>
+        <meta name="description" content="Understand how ProPredict uses cookies and similar technologies to improve your experience." />
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
+      </Helmet>
+      <div className="section-gap">
       <Button variant="ghost" className="mb-2 h-7 text-xs gap-1" onClick={() => navigate("/settings")}>
         <ArrowLeft className="h-3 w-3" />
         Back to Settings
@@ -80,6 +108,7 @@ const CookiePolicy = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
