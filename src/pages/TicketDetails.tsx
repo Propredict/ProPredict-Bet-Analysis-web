@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +10,32 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { parseMatchName } from "@/types/admin";
+
+// Get tier-specific OG image
+const getTierOgImage = (tier: string) => {
+  switch (tier) {
+    case "premium":
+      return "https://propredict.me/og-image.png"; // Premium tier image
+    case "exclusive":
+      return "https://propredict.me/og-image.png"; // Pro tier image
+    case "daily":
+    default:
+      return "https://propredict.me/og-image.png"; // Daily tier image
+  }
+};
+
+// Get tier display name
+const getTierDisplayName = (tier: string) => {
+  switch (tier) {
+    case "premium":
+      return "Premium";
+    case "exclusive":
+      return "Pro";
+    case "daily":
+    default:
+      return "Daily";
+  }
+};
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +73,20 @@ export default function TicketDetails() {
 
   const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
   const isLocked = unlockMethod?.type !== "unlocked";
+
+  // Dynamic OG meta data
+  const matchCount = ticket.matches?.length || 0;
+  const firstMatch = ticket.matches?.[0];
+  const parsedFirst = firstMatch ? parseMatchName(firstMatch.match_name) : null;
+  const matchTitle = parsedFirst 
+    ? `${parsedFirst.homeTeam} vs ${parsedFirst.awayTeam}` 
+    : ticket.title;
+  const leagueName = parsedFirst?.league || "Football";
+  const tierName = getTierDisplayName(ticket.tier);
+  const ogImage = getTierOgImage(ticket.tier);
+
+  const ogTitle = `${matchTitle} Prediction – ProPredict`;
+  const ogDescription = `AI-powered ${tierName} ticket with ${matchCount} match${matchCount !== 1 ? 'es' : ''} for ${leagueName}. Informational purposes only.`;
 
   const getTierBadge = () => {
     switch (ticket.tier) {
@@ -132,11 +173,25 @@ export default function TicketDetails() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 max-w-3xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back
+    <>
+      <Helmet>
+        <title>{ogTitle}</title>
+        <meta name="description" content={ogDescription} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://propredict.me/tickets/${ticket.id}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </Helmet>
+      <DashboardLayout>
+        <div className="space-y-6 max-w-3xl mx-auto">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back
         </Button>
 
         <Card className={cn(
@@ -266,5 +321,6 @@ export default function TicketDetails() {
         </Card>
       </div>
     </DashboardLayout>
+    </>
   );
 }
