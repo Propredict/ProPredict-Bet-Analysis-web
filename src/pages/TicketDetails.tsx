@@ -80,16 +80,28 @@ export default function TicketDetails() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleInstagramShare = () => {
+  const handleInstagramShare = async () => {
     // Instagram doesn't have a direct share URL, so we copy the link and inform the user
-    handleCopyLink();
-    toast.info("Link copied! Paste it in your Instagram story or bio.");
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied! Paste it in your Instagram story or bio.", {
+        duration: 4000,
+      });
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
-  const handleTikTokShare = () => {
+  const handleTikTokShare = async () => {
     // TikTok doesn't have a direct share URL, so we copy the link and inform the user
-    handleCopyLink();
-    toast.info("Link copied! Paste it in your TikTok video description.");
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied! Paste it in your TikTok video description.", {
+        duration: 4000,
+      });
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
   if (isLoading) {
