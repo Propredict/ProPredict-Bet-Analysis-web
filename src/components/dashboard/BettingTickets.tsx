@@ -105,23 +105,25 @@ export function BettingTickets() {
 
   return (
     <section className="space-y-4">
-      {/* Section Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-primary/20">
-            <Ticket className="h-4 w-4 text-primary" />
+      {/* Luxury Section Header */}
+      <div className="luxury-header">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-gold/20 to-gold-dark/10 border border-gold/30 glow-gold-subtle">
+              <Ticket className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gold-gradient">Betting Tickets</h2>
+              <p className="text-[10px] text-muted-foreground">Multi-bet combinations</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Daily Tickets</h2>
-            <p className="text-[9px] text-muted-foreground">Multi-bet combinations</p>
-          </div>
+          {accuracy > 0 && (
+            <div className="luxury-badge flex items-center gap-1.5">
+              <span className="text-[9px] opacity-80">Win Rate</span>
+              <span className="text-xs font-bold">{accuracy}%</span>
+            </div>
+          )}
         </div>
-        {accuracy > 0 && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-[10px] text-muted-foreground">Win Rate</span>
-            <span className="text-xs font-bold text-primary">{accuracy}%</span>
-          </div>
-        )}
       </div>
 
       {/* Tab Navigation - Card-like styling */}
