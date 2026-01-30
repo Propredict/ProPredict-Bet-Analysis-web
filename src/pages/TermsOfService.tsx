@@ -1,12 +1,40 @@
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Lock } from "lucide-react";
 
 const TermsOfService = () => {
   const navigate = useNavigate();
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://propredict.me"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Terms of Service",
+        "item": "https://propredict.me/terms-of-service"
+      }
+    ]
+  };
+
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>Terms of Service – ProPredict</title>
+        <meta name="description" content="Read the terms and conditions for using ProPredict. Understand your rights and responsibilities." />
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
+      </Helmet>
+      <div className="section-gap">
       <Button
         variant="ghost"
         onClick={() => navigate("/settings")}
@@ -132,6 +160,7 @@ const TermsOfService = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

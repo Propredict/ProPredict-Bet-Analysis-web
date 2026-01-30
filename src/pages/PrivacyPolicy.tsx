@@ -1,12 +1,40 @@
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Shield, Lock, ArrowLeft } from "lucide-react";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://propredict.me"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Privacy Policy",
+        "item": "https://propredict.me/privacy-policy"
+      }
+    ]
+  };
+
   return (
-    <div className="section-gap">
+    <>
+      <Helmet>
+        <title>Privacy Policy – ProPredict</title>
+        <meta name="description" content="Learn how ProPredict collects, uses, and protects your personal information. Your privacy matters to us." />
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
+      </Helmet>
+      <div className="section-gap">
       <Button variant="ghost" onClick={() => navigate("/settings")} className="mb-2 h-7 text-xs gap-1">
         <ArrowLeft className="h-3 w-3" />
         Back to Settings
@@ -141,6 +169,7 @@ const PrivacyPolicy = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
