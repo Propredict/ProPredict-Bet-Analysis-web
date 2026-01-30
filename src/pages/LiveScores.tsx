@@ -223,13 +223,14 @@ export default function LiveScores() {
           ))}
         </div>
 
-        {/* SEARCH - Enhanced visibility with gradient border */}
+        {/* SEARCH - Enhanced visibility with white border and glow */}
         <div className="relative max-w-sm">
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
-          <div className="relative flex items-center bg-card rounded-lg">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
+          <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
             <Input 
-              className="pl-8 h-8 sm:h-9 text-xs sm:text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70" 
+              className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
               placeholder="Search teams…" 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
