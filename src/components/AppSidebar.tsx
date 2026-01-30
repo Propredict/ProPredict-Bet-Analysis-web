@@ -84,7 +84,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-foreground">ProPredict</span>
-              <span className="text-[9px] text-muted-foreground">AI Tips & Analysis</span>
+              <span className="text-[9px] text-muted-foreground">AI Predictions & Analysis</span>
             </div>
           )}
         </div>
