@@ -1,4 +1,4 @@
-import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn } from "lucide-react";
+import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -119,7 +119,7 @@ export function AllTicketsCard({
 
     return (
       <Card 
-        className="bg-card overflow-hidden transition-all border-border hover:border-primary/50 cursor-pointer"
+        className="group bg-card overflow-hidden transition-all border-border hover:border-primary/50 cursor-pointer"
         onClick={handleCardClick}
       >
         {/* Header */}
@@ -168,7 +168,10 @@ export function AllTicketsCard({
           })}
 
           {remainingCount > 0 && (
-            <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
+            <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5 group-hover:underline">
+              +{remainingCount} more
+              <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </p>
           )}
         </div>
 
@@ -214,7 +217,7 @@ export function AllTicketsCard({
   // Unlocked State - Compact
   return (
     <Card 
-      className="bg-card overflow-hidden transition-all border-success/30 cursor-pointer hover:border-success/50"
+      className="group bg-card overflow-hidden transition-all border-success/30 cursor-pointer hover:border-success/50"
       onClick={handleCardClick}
     >
       {/* Header */}
@@ -273,7 +276,10 @@ export function AllTicketsCard({
         )}
         
         {remainingCount > 0 && (
-          <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more</p>
+          <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5 group-hover:underline">
+            +{remainingCount} more
+            <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </p>
         )}
       </div>
 
