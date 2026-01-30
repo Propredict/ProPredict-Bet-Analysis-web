@@ -109,12 +109,19 @@ export function AllTicketsCard({
     return Crown;
   };
 
+  const handleCardClick = () => {
+    navigate(`/tickets/${ticket.id}`);
+  };
+
   // Locked State - Compact
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
 
     return (
-      <Card className="bg-card overflow-hidden transition-all border-border hover:border-primary/50">
+      <Card 
+        className="bg-card overflow-hidden transition-all border-border hover:border-primary/50 cursor-pointer"
+        onClick={handleCardClick}
+      >
         {/* Header */}
         <div className="p-2.5 sm:p-3 pb-0">
           <div className="flex items-center justify-between mb-1.5">
@@ -206,7 +213,10 @@ export function AllTicketsCard({
 
   // Unlocked State - Compact
   return (
-    <Card className="bg-card overflow-hidden transition-all border-success/30">
+    <Card 
+      className="bg-card overflow-hidden transition-all border-success/30 cursor-pointer hover:border-success/50"
+      onClick={handleCardClick}
+    >
       {/* Header */}
       <div className="p-2.5 sm:p-3 pb-0">
         <div className="flex items-center justify-between mb-1.5">
