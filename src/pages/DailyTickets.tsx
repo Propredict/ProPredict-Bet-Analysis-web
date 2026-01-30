@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,15 @@ export default function DailyTickets() {
     return elements;
   };
 
-  return <div className="section-gap">
+  return <>
+    <Helmet>
+      <title>Daily Tickets – ProPredict</title>
+      <meta
+        name="description"
+        content="Explore daily sports tickets and AI-based analysis. Entertainment and informational use only."
+      />
+    </Helmet>
+    <div className="section-gap">
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -159,5 +168,6 @@ export default function DailyTickets() {
       
       {/* Sidebar Ad */}
       <SidebarAd className="mt-4" />
-    </div>;
+    </div>
+  </>;
 }

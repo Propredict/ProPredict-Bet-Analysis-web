@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
 
 // Pages
@@ -56,84 +56,86 @@ const App = () => {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <UserPlanProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-            {/* Auth pages without layout */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <UserPlanProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+              {/* Auth pages without layout */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* All other pages with AppLayout */}
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/live-scores" element={<LiveScores />} />
-                <Route path="/favorites" element={<MyFavorites />} />
-                <Route path="/all-tickets" element={<AllTickets />} />
-                <Route path="/tickets/:id" element={<TicketDetails />} />
-                <Route path="/get-premium" element={<GetPremium />} />
+              {/* All other pages with AppLayout */}
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/live-scores" element={<LiveScores />} />
+                  <Route path="/favorites" element={<MyFavorites />} />
+                  <Route path="/all-tickets" element={<AllTickets />} />
+                  <Route path="/tickets/:id" element={<TicketDetails />} />
+                  <Route path="/get-premium" element={<GetPremium />} />
 
-                {/* Tips & Tickets */}
-                <Route path="/daily-tips" element={<DailyTips />} />
-                <Route path="/daily-tickets" element={<DailyTickets />} />
-                <Route path="/exclusive-tips" element={<ExclusiveTips />} />
-                <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
-                <Route path="/premium-tips" element={<PremiumTips />} />
-                <Route path="/premium-tickets" element={<PremiumTickets />} />
-                <Route path="/ai-predictions" element={<AIPredictions />} />
-                <Route path="/betting-tips" element={<BettingTips />} />
-                <Route path="/league-statistics" element={<LeagueStatistics />} />
+                  {/* Tips & Tickets */}
+                  <Route path="/daily-tips" element={<DailyTips />} />
+                  <Route path="/daily-tickets" element={<DailyTickets />} />
+                  <Route path="/exclusive-tips" element={<ExclusiveTips />} />
+                  <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
+                  <Route path="/premium-tips" element={<PremiumTips />} />
+                  <Route path="/premium-tickets" element={<PremiumTickets />} />
+                  <Route path="/ai-predictions" element={<AIPredictions />} />
+                  <Route path="/betting-tips" element={<BettingTips />} />
+                  <Route path="/league-statistics" element={<LeagueStatistics />} />
 
-                {/* Protected */}
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Protected */}
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Admin */}
-                <Route
-                  path="/admin/tips"
-                  element={
-                    <AdminRoute>
-                      <ManageTips />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/tickets"
-                  element={
-                    <AdminRoute>
-                      <ManageTickets />
-                    </AdminRoute>
-                  }
-                />
+                  {/* Admin */}
+                  <Route
+                    path="/admin/tips"
+                    element={
+                      <AdminRoute>
+                        <ManageTips />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/tickets"
+                    element={
+                      <AdminRoute>
+                        <ManageTickets />
+                      </AdminRoute>
+                    }
+                  />
 
-                {/* Settings & Legal */}
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/cookie-policy" element={<CookiePolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/disclaimer" element={<Disclaimer />} />
-                <Route path="/data-deletion" element={<DataDeletion />} />
-                <Route path="/help-support" element={<HelpSupport />} />
-                <Route path="/about-us" element={<AboutUs />} />
-              </Route>
+                  {/* Settings & Legal */}
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/cookie-policy" element={<CookiePolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/disclaimer" element={<Disclaimer />} />
+                  <Route path="/data-deletion" element={<DataDeletion />} />
+                  <Route path="/help-support" element={<HelpSupport />} />
+                  <Route path="/about-us" element={<AboutUs />} />
+                </Route>
 
-              {/* Fallback */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </UserPlanProvider>
-    </QueryClientProvider>
+                {/* Fallback */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </UserPlanProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 
