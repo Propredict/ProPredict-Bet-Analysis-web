@@ -11,6 +11,7 @@ import {
   LogIn,
   Sparkles,
   Gift,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -198,12 +199,19 @@ function TicketCard({
   const displayedMatches = ticket.matches.slice(0, 3);
   const remainingCount = ticket.matchCount > 3 ? ticket.matchCount - 3 : 0;
 
+  const handleCardClick = () => {
+    navigate(`/tickets/${ticket.id}`);
+  };
+
   // Locked state
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
     
     return (
-      <div className={getTierCardClass(ticket.tier, isLocked)}>
+      <div 
+        className={cn(getTierCardClass(ticket.tier, isLocked), "cursor-pointer group")}
+        onClick={handleCardClick}
+      >
         {/* Card Header */}
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between mb-2">
@@ -248,7 +256,10 @@ function TicketCard({
           })}
           
           {remainingCount > 0 && (
-            <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more matches</p>
+            <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5 group-hover:underline">
+              +{remainingCount} more matches
+              <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </p>
           )}
         </div>
 
@@ -293,7 +304,10 @@ function TicketCard({
 
   // Unlocked state
   return (
-    <div className={getTierCardClass(ticket.tier, isLocked)}>
+    <div 
+      className={cn(getTierCardClass(ticket.tier, isLocked), "cursor-pointer group")}
+      onClick={handleCardClick}
+    >
       {/* Card Header */}
       <div className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
@@ -342,7 +356,10 @@ function TicketCard({
         )}
         
         {remainingCount > 0 && (
-          <p className="text-center text-[10px] text-muted-foreground pt-1">+{remainingCount} more matches</p>
+          <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5 group-hover:underline">
+            +{remainingCount} more matches
+            <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </p>
         )}
       </div>
 
