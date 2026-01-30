@@ -87,7 +87,7 @@ export default function AppLayout() {
               />
               <div className="flex flex-col items-start">
                 <span className="text-xs font-bold text-foreground tracking-tight">ProPredict</span>
-                <span className="text-[8px] text-muted-foreground -mt-0.5">All Tips & AI Analysis</span>
+                <span className="text-[8px] text-muted-foreground -mt-0.5">AI Predictions & Analysis</span>
               </div>
             </div>
             
