@@ -39,6 +39,7 @@ import BettingTips from "./pages/BettingTips";
 import LeagueStatistics from "./pages/LeagueStatistics";
 
 // Admin
+import AdminDashboard from "./pages/admin/Dashboard";
 import ManageTips from "./pages/admin/ManageTips";
 import ManageTickets from "./pages/admin/ManageTickets";
 
@@ -100,6 +101,14 @@ const App = () => {
                   />
 
                   {/* Admin */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminRoute>
+                        <AdminDashboard />
+                      </AdminRoute>
+                    }
+                  />
                   <Route
                     path="/admin/tips"
                     element={
