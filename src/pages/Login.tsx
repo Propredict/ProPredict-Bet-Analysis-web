@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Chrome, ArrowRight, CheckCircle2 } from "lucide-react";
 import emailjs from "@emailjs/browser";
+import logo from "@/assets/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -141,8 +142,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md shadow-2xl border-border/50 backdrop-blur">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary">PP</span>
+          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center p-2">
+            <img src={logo} alt="ProPredict" className="h-full w-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             {isSignUp ? "Create an account" : "Welcome to ProPredict"}
