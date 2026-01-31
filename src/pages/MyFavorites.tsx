@@ -91,7 +91,9 @@ export default function MyFavorites() {
                   <span className="truncate">{m.awayTeam}</span>
                 </div>
 
-                <Badge variant="outline" className="text-[10px]">{m.status === "live" ? "LIVE" : m.startTime}</Badge>
+                <Badge variant={m.status === "live" ? "destructive" : "outline"} className="text-[10px]">
+                  {m.status === "live" ? `${m.minute}'` : m.status === "halftime" ? "HT" : m.startTime}
+                </Badge>
               </div>
             ))}
           </Card>
