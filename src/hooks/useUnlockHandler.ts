@@ -78,15 +78,21 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         setUnlockingId(contentId);
         pendingUnlockRef.current = { contentType, contentId };
 
-        // Signal to Android WebView to show ad
-        if (window.Android?.showRewardedAd) {
-          window.Android.showRewardedAd();
+        // Signal to Android WebView to show rewarded ad
+        if (window.Android?.watchRewardedAd) {
+          window.Android.watchRewardedAd();
         }
 
         return false; // Will be unlocked via message callback
       }
 
       if (method.type === "upgrade_basic") {
+        // On Android, use native purchase flow
+        if (isAndroidApp && window.Android?.buyPro) {
+          window.Android.buyPro();
+          return false;
+        }
+        // Web fallback
         if (options.onUpgradeBasic) {
           options.onUpgradeBasic();
         } else {
@@ -96,6 +102,12 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
       }
 
       if (method.type === "upgrade_premium" || method.type === "android_premium_only") {
+        // On Android, use native purchase flow
+        if (isAndroidApp && window.Android?.buyPremium) {
+          window.Android.buyPremium();
+          return false;
+        }
+        // Web fallback
         if (options.onUpgradePremium) {
           options.onUpgradePremium();
         } else {
@@ -106,17 +118,23 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
       return false;
     },
-    [getUnlockMethod, navigate, options, unlockingId]
+    [getUnlockMethod, navigate, options, unlockingId, isAndroidApp]
   );
 
   // Secondary handler for Android "Buy Pro" button
   const handleSecondaryUnlock = useCallback(() => {
+    // On Android, use native purchase flow
+    if (isAndroidApp && window.Android?.buyPro) {
+      window.Android.buyPro();
+      return;
+    }
+    // Web fallback
     if (options.onUpgradeBasic) {
       options.onUpgradeBasic();
     } else {
       navigate("/get-premium");
     }
-  }, [navigate, options]);
+  }, [navigate, options, isAndroidApp]);
 
   return {
     unlockingId,
@@ -130,7 +148,9 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 declare global {
   interface Window {
     Android?: {
-      showRewardedAd?: () => void;
+      watchRewardedAd?: () => void;
+      buyPro?: () => void;
+      buyPremium?: () => void;
       requestEntitlements?: () => void;
       purchaseProduct?: (productId: string) => void;
     };

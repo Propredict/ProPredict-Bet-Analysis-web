@@ -15,7 +15,8 @@
  */
 function detectAndroidApp(): boolean {
   if (typeof window === 'undefined') return false;
-  return (window as any).__IS_ANDROID_APP__ === true;
+  // Check for Android bridge object OR legacy flag
+  return typeof (window as any).Android !== 'undefined' || (window as any).__IS_ANDROID_APP__ === true;
 }
 
 export function usePlatform() {
