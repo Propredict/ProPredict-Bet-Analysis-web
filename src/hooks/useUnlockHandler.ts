@@ -1,48 +1,59 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserPlan, type ContentTier, type ContentType, type UnlockMethod } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
 
 interface UseUnlockHandlerOptions {
   onUpgradeBasic?: () => void;
   onUpgradePremium?: () => void;
 }
 
-interface AdModalState {
-  isOpen: boolean;
-  contentType: ContentType | null;
-  contentId: string | null;
+interface PendingUnlock {
+  contentType: ContentType;
+  contentId: string;
 }
 
 export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   const navigate = useNavigate();
   const { getUnlockMethod, unlockContent } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const [adModal, setAdModal] = useState<AdModalState>({
-    isOpen: false,
-    contentType: null,
-    contentId: null,
-  });
+  const pendingUnlockRef = useRef<PendingUnlock | null>(null);
 
-  const handleAdComplete = useCallback(async () => {
-    if (!adModal.contentType || !adModal.contentId) return;
+  // Listen for Android WebView messages
+  useEffect(() => {
+    if (!isAndroidApp) return;
 
-    const success = await unlockContent(adModal.contentType, adModal.contentId);
+    const handleMessage = async (event: MessageEvent) => {
+      const { type } = event.data || {};
 
-    if (success) {
-      toast.success(
-        `${adModal.contentType === "tip" ? "Tip" : "Ticket"} unlocked! Valid until midnight UTC.`
-      );
-    } else {
-      toast.error("Failed to unlock. Please try again.");
-    }
+      if (type === "AD_UNLOCK_SUCCESS" && pendingUnlockRef.current) {
+        const { contentType, contentId } = pendingUnlockRef.current;
+        const success = await unlockContent(contentType, contentId);
 
-    setUnlockingId(null);
-  }, [adModal.contentType, adModal.contentId, unlockContent]);
+        if (success) {
+          toast.success(
+            contentType === "tip" 
+              ? "Thanks for watching! Tip unlocked." 
+              : "Thanks for watching! Ticket unlocked."
+          );
+        }
+        
+        pendingUnlockRef.current = null;
+        setUnlockingId(null);
+      }
 
-  const closeAdModal = useCallback(() => {
-    setAdModal({ isOpen: false, contentType: null, contentId: null });
-  }, []);
+      if (type === "AD_UNLOCK_CANCELLED") {
+        // Restore locked state silently - no error toast
+        pendingUnlockRef.current = null;
+        setUnlockingId(null);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isAndroidApp, unlockContent]);
 
   const handleUnlock = useCallback(
     async (
@@ -59,15 +70,20 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         return false;
       }
 
+      // Android ad-based unlock
       if (method.type === "watch_ad" || method.type === "android_watch_ad_or_pro") {
+        // Prevent repeated clicks
+        if (unlockingId === contentId) return false;
+
         setUnlockingId(contentId);
-        // Open the ad modal instead of showing a toast
-        setAdModal({
-          isOpen: true,
-          contentType,
-          contentId,
-        });
-        return false; // Will be unlocked via modal callback
+        pendingUnlockRef.current = { contentType, contentId };
+
+        // Signal to Android WebView to show ad
+        if (window.Android?.showRewardedAd) {
+          window.Android.showRewardedAd();
+        }
+
+        return false; // Will be unlocked via message callback
       }
 
       if (method.type === "upgrade_basic") {
@@ -90,7 +106,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
       return false;
     },
-    [getUnlockMethod, navigate, options]
+    [getUnlockMethod, navigate, options, unlockingId]
   );
 
   // Secondary handler for Android "Buy Pro" button
@@ -107,9 +123,14 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     handleUnlock,
     handleSecondaryUnlock,
     getUnlockMethod,
-    // Ad modal state and handlers
-    adModalOpen: adModal.isOpen,
-    handleAdComplete,
-    closeAdModal,
   };
+}
+
+// Type declaration for Android WebView interface
+declare global {
+  interface Window {
+    Android?: {
+      showRewardedAd?: () => void;
+    };
+  }
 }
