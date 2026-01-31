@@ -13,6 +13,7 @@ interface AlertSettings {
   notifyGoals: boolean;
   notifyRedCards: boolean;
   soundEnabled: boolean;
+  favoritesOnly: boolean;
 }
 
 export interface RecentGoal {
@@ -34,12 +35,13 @@ function getAlertSettings(): AlertSettings {
         notifyGoals: parsed.notifyGoals ?? true,
         notifyRedCards: parsed.notifyRedCards ?? true,
         soundEnabled: parsed.soundEnabled ?? true,
+        favoritesOnly: parsed.favoritesOnly ?? false,
       };
     }
   } catch {
     // Ignore parse errors
   }
-  return { enabled: false, notifyGoals: true, notifyRedCards: true, soundEnabled: true };
+  return { enabled: false, notifyGoals: true, notifyRedCards: true, soundEnabled: true, favoritesOnly: false };
 }
 
 // Web Audio API synthesized alert sounds
@@ -96,7 +98,7 @@ function playRedCardSound() {
   }
 }
 
-export function useLiveAlerts(matches: Match[]) {
+export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) {
   const prevSnapshots = useRef<Map<string, MatchSnapshot>>(new Map());
   const initialized = useRef(false);
   const [recentGoals, setRecentGoals] = useState<RecentGoal[]>([]);
@@ -160,8 +162,21 @@ export function useLiveAlerts(matches: Match[]) {
             { matchId: m.id, timestamp: Date.now(), scoringTeam },
           ]);
 
-          // Only show toast and play sound if notifications are enabled
-          if (alertSettings.enabled && alertSettings.notifyGoals) {
+          // Check if this match is a favorite
+          const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
+          
+          // Goal notification logic:
+          // 1. If notifyGoals ON + favoritesOnly OFF → all goals
+          // 2. If notifyGoals ON + favoritesOnly ON → only favorite match goals
+          // 3. If notifyGoals OFF + favoritesOnly ON → only favorite match goals (NEW!)
+          // 4. If notifyGoals OFF + favoritesOnly OFF → no goals
+          const shouldNotifyGoal = alertSettings.enabled && (
+            (alertSettings.notifyGoals && !alertSettings.favoritesOnly) || // All goals
+            (alertSettings.notifyGoals && alertSettings.favoritesOnly && isFavoriteMatch) || // Goals + favorites filter
+            (!alertSettings.notifyGoals && alertSettings.favoritesOnly && isFavoriteMatch) // Favorites only (even without goals toggle)
+          );
+
+          if (shouldNotifyGoal) {
             // Play sound if enabled
             if (alertSettings.soundEnabled) {
               playGoalSound();
@@ -201,8 +216,13 @@ export function useLiveAlerts(matches: Match[]) {
           }
         }
 
-        // 🟥 RED CARD DETECTION - Only show if enabled
-        if (alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards) {
+        // 🟥 RED CARD DETECTION - Similar logic for favorites
+        const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
+        const shouldNotifyRedCard = alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards && (
+          !alertSettings.favoritesOnly || isFavoriteMatch
+        );
+        
+        if (shouldNotifyRedCard) {
           // Play sound if enabled
           if (alertSettings.soundEnabled) {
             playRedCardSound();
