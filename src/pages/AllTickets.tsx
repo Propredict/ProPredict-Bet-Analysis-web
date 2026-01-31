@@ -9,7 +9,6 @@ import { useTickets, type TicketWithMatches } from "@/hooks/useTickets";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
-import { AdModal } from "@/components/AdModal";
 import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
@@ -25,7 +24,7 @@ export default function AllTickets() {
 
   const { tickets, isLoading, refetch } = useTickets(false);
   const { canAccess, getUnlockMethod, refetch: refetchPlan } = useUserPlan();
-  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
+  const { unlockingId, handleUnlock } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -97,7 +96,6 @@ export default function AllTickets() {
 
   return (
     <div className="space-y-5">
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       {/* Page Header */}
       <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
         <div className="flex items-center gap-2">
@@ -225,7 +223,6 @@ export default function AllTickets() {
       {/* Sidebar Ad */}
       <SidebarAd className="mt-4" />
 
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
     </div>
   );
