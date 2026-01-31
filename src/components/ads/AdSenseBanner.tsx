@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
 
 interface AdSenseBannerProps {
   slot: string;
@@ -11,8 +12,9 @@ interface AdSenseBannerProps {
  * Google AdSense responsive banner component.
  * This is a placeholder that will display ads once AdSense is configured.
  * 
- * IMPORTANT: Ads are ONLY shown to FREE users on web.
- * Pro and Premium subscribers do not see any ads.
+ * IMPORTANT: Ads are ONLY shown on web (desktop + mobile browser).
+ * Android WebView users do not see any ads (clean native experience).
+ * Pro and Premium subscribers do not see in-content/sidebar ads.
  * 
  * To activate:
  * 1. Add your AdSense script to index.html
@@ -20,18 +22,24 @@ interface AdSenseBannerProps {
  */
 export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSenseBannerProps) {
   const adRef = useRef<HTMLModElement>(null);
+  const { isAndroidApp } = usePlatform();
   const isAdSenseLoaded = typeof window !== "undefined" && (window as any).adsbygoogle;
 
   useEffect(() => {
-    // Only push ads if AdSense script is loaded
-    if (isAdSenseLoaded && adRef.current) {
+    // Only push ads if AdSense script is loaded and not on Android
+    if (isAdSenseLoaded && adRef.current && !isAndroidApp) {
       try {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       } catch (e) {
         console.log("AdSense not available");
       }
     }
-  }, [isAdSenseLoaded]);
+  }, [isAdSenseLoaded, isAndroidApp]);
+
+  // Hide all ads on Android WebView - no empty gaps
+  if (isAndroidApp) {
+    return null;
+  }
 
   // Don't render placeholder if AdSense is not loaded
   // This prevents empty space in production before ads are configured
@@ -58,11 +66,19 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
  * In-content ad specifically designed to be placed between card rows.
  * Responsive and styled to match the app design.
  * 
- * AUTOMATICALLY HIDDEN for Pro, Premium, and Admin users.
+ * AUTOMATICALLY HIDDEN for:
+ * - Android WebView users (clean native experience)
+ * - Pro, Premium, and Admin users
  */
 export function InContentAd({ className = "" }: { className?: string }) {
   const { plan, isAdmin } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   
+  // Hide ads on Android WebView - no empty gaps
+  if (isAndroidApp) {
+    return null;
+  }
+
   // Hide ads for Pro (basic), Premium, and Admin users
   if (plan === "basic" || plan === "premium" || isAdmin) {
     return null;
@@ -82,10 +98,18 @@ export function InContentAd({ className = "" }: { className?: string }) {
 /**
  * Footer banner ad for placement at the bottom of pages.
  * 
- * VISIBLE TO ALL USERS (Free, Pro, Premium, Admin).
+ * VISIBLE TO ALL WEB USERS (Free, Pro, Premium, Admin).
+ * HIDDEN on Android WebView for clean native experience.
  * Footer ads are non-intrusive and shown globally for revenue.
  */
 export function FooterAd({ className = "" }: { className?: string }) {
+  const { isAndroidApp } = usePlatform();
+  
+  // Hide ads on Android WebView - no empty gaps
+  if (isAndroidApp) {
+    return null;
+  }
+
   return (
     <div className={`w-full ${className}`}>
       <AdSenseBanner 
@@ -100,12 +124,21 @@ export function FooterAd({ className = "" }: { className?: string }) {
 /**
  * Sidebar banner ad for placement alongside content.
  * 
- * AUTOMATICALLY HIDDEN for Premium and Admin users.
+ * AUTOMATICALLY HIDDEN for:
+ * - Android WebView users (clean native experience)
+ * - Premium and Admin users
+ * 
  * Use only on Dashboard, Tips, and Tickets pages.
  */
 export function SidebarAd({ className = "" }: { className?: string }) {
   const { plan, isAdmin } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   
+  // Hide ads on Android WebView - no empty gaps
+  if (isAndroidApp) {
+    return null;
+  }
+
   // Hide ads completely for Premium and Admin users (no space reserved)
   if (plan === "premium" || isAdmin) {
     return null;
