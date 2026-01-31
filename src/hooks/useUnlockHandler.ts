@@ -131,6 +131,8 @@ declare global {
   interface Window {
     Android?: {
       showRewardedAd?: () => void;
+      requestEntitlements?: () => void;
+      purchaseProduct?: (productId: string) => void;
     };
   }
 }

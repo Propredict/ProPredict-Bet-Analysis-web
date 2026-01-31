@@ -8,7 +8,6 @@ import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
-import { AdModal } from "@/components/AdModal";
 import { useTips } from "@/hooks/useTips";
 
 type TabType = "daily" | "exclusive" | "premium";
@@ -41,7 +40,7 @@ export function MatchPredictions() {
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
   
   const { canAccess, getUnlockMethod } = useUserPlan();
-  const { unlockingId, handleUnlock, adModalOpen, handleAdComplete, closeAdModal } = useUnlockHandler({
+  const { unlockingId, handleUnlock } = useUnlockHandler({
     onUpgradeBasic: () => {
       setHighlightPlan("basic");
       setShowPricingModal(true);
@@ -196,7 +195,6 @@ export function MatchPredictions() {
         </Card>
       )}
 
-      <AdModal isOpen={adModalOpen} onComplete={handleAdComplete} onClose={closeAdModal} />
       <PricingModal 
         open={showPricingModal} 
         onOpenChange={setShowPricingModal} 

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
+import { useRevenueCat } from "@/hooks/useRevenueCat";
 
 /* =====================
    Types
@@ -50,6 +51,10 @@ const UserPlanContext = createContext<UserPlanContextType | undefined>(undefined
 
 export function UserPlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const isMobileApp = getIsMobileApp();
+  
+  // RevenueCat integration for Android - source of truth for mobile subscriptions
+  const revenueCat = useRevenueCat();
 
   const [plan, setPlan] = useState<UserPlan>("free");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -143,6 +148,24 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
+
+  /* =====================
+     Android RevenueCat Integration
+     On Android, RevenueCat is the source of truth for subscriptions.
+     Override the plan from Supabase with RevenueCat entitlements.
+  ===================== */
+  useEffect(() => {
+    if (!isMobileApp) return;
+    
+    // When RevenueCat data is ready on Android, use it as the plan source
+    if (!revenueCat.isLoading) {
+      // Only override if user has an active RevenueCat subscription
+      // This takes priority over Supabase (which is synced by backend webhook)
+      if (revenueCat.hasActiveSubscription) {
+        setPlan(revenueCat.plan);
+      }
+    }
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, revenueCat.hasActiveSubscription]);
 
   /* =====================
      Android Ad-Unlock Event Listener
@@ -347,18 +370,32 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
      Provider
   ===================== */
 
+  /* =====================
+     Combined refetch for both Supabase and RevenueCat
+  ===================== */
+  const handleRefetch = useCallback(async () => {
+    await fetchUserData();
+    // Also refresh RevenueCat entitlements on Android
+    if (isMobileApp) {
+      revenueCat.refetch();
+    }
+  }, [fetchUserData, isMobileApp, revenueCat]);
+
+  // Combined loading state
+  const combinedIsLoading = isLoading || (isMobileApp && revenueCat.isLoading);
+
   return (
     <UserPlanContext.Provider
       value={{
         plan,
-        isLoading,
+        isLoading: combinedIsLoading,
         isAdmin,
         isAuthenticated: !!user,
         canAccess,
         getUnlockMethod,
         unlockContent,
         isContentUnlocked,
-        refetch: fetchUserData,
+        refetch: handleRefetch,
       }}
     >
       {children}
