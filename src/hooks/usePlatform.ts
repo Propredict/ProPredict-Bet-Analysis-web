@@ -10,16 +10,21 @@
  * - Use Capacitor.isNativePlatform() for detection
  */
 
+/**
+ * Check if running inside Android WebView app
+ */
+function detectAndroidApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (window as any).__IS_ANDROID_APP__ === true;
+}
+
 export function usePlatform() {
-  // TODO: When Capacitor is integrated, replace with:
-  // import { Capacitor } from '@capacitor/core';
-  // const isMobileApp = Capacitor.isNativePlatform();
-  
-  const isMobileApp = false; // Always false for web
+  const isAndroidApp = detectAndroidApp();
   
   return {
-    isMobileApp,
-    isWeb: !isMobileApp,
+    isMobileApp: isAndroidApp,
+    isAndroidApp,
+    isWeb: !isAndroidApp,
   };
 }
 
@@ -27,9 +32,9 @@ export function usePlatform() {
  * Standalone function for non-hook contexts
  */
 export function getIsMobileApp(): boolean {
-  // TODO: When Capacitor is integrated:
-  // import { Capacitor } from '@capacitor/core';
-  // return Capacitor.isNativePlatform();
-  
-  return false; // Always false for web
+  return detectAndroidApp();
+}
+
+export function getIsAndroidApp(): boolean {
+  return detectAndroidApp();
 }
