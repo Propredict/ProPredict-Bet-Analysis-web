@@ -35,7 +35,7 @@ export function useAIPredictions(date: string) {
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .eq("match_date", date)
+        .eq("match_day", date)
         .order("match_time", { ascending: true });
 
       if (error) {
