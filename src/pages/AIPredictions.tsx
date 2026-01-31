@@ -8,6 +8,7 @@ import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useInterstitialAd } from "@/hooks/useInterstitialAd";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,9 @@ export default function AIPredictions() {
   const { isAdmin, plan } = useUserPlan();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
+
+  // Trigger interstitial ad on Android when page loads
+  useInterstitialAd();
 
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
