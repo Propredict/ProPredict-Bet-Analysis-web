@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { format, addDays } from "date-fns";
 
 export interface AIPrediction {
   id: string;
@@ -24,7 +25,12 @@ export interface AIPrediction {
   result_status: string | null;
 }
 
-export function useAIPredictions(date: string) {
+/**
+ * Fetch AI predictions based on dynamic date logic:
+ * - "today" → match_date = current date
+ * - "tomorrow" → match_date = current date + 1 day
+ */
+export function useAIPredictions(day: "today" | "tomorrow") {
   const [predictions, setPredictions] = useState<AIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,10 +38,15 @@ export function useAIPredictions(date: string) {
     async function load() {
       setLoading(true);
 
+      // Calculate the actual date based on "today" or "tomorrow"
+      const now = new Date();
+      const targetDate = day === "tomorrow" ? addDays(now, 1) : now;
+      const dateStr = format(targetDate, "yyyy-MM-dd");
+
       const { data, error } = await supabase
         .from("ai_predictions")
         .select("*")
-        .eq("match_day", date)
+        .eq("match_date", dateStr)
         .order("match_time", { ascending: true });
 
       if (error) {
@@ -49,7 +60,7 @@ export function useAIPredictions(date: string) {
     }
 
     load();
-  }, [date]);
+  }, [day]);
 
   return { predictions, loading };
 }
