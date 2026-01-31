@@ -16,7 +16,9 @@ export type UnlockMethod =
   | { type: "login_required"; message: string }
   | { type: "watch_ad"; message: string }
   | { type: "upgrade_basic"; message: string }
-  | { type: "upgrade_premium"; message: string };
+  | { type: "upgrade_premium"; message: string }
+  | { type: "android_watch_ad_or_pro"; primaryMessage: string; secondaryMessage: string }
+  | { type: "android_premium_only"; message: string };
 
 interface UnlockedContent {
   contentType: ContentType;
@@ -143,6 +145,39 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   }, [fetchUserData]);
 
   /* =====================
+     Android Ad-Unlock Event Listener
+     Listens for 'ad-unlocked' event from Android WebView
+     Event payload: { contentType, contentId, expiresAt }
+  ===================== */
+  useEffect(() => {
+    const handleAdUnlocked = (event: CustomEvent<{ 
+      contentType: ContentType; 
+      contentId: string; 
+      expiresAt: string;
+    }>) => {
+      const { contentType, contentId, expiresAt } = event.detail;
+      const expiry = new Date(expiresAt);
+      
+      // Add to local unlocked content state
+      setUnlockedContent((prev) => {
+        // Check if already unlocked
+        const exists = prev.some(
+          (u) => u.contentType === contentType && u.contentId === contentId
+        );
+        if (exists) return prev;
+        
+        return [...prev, { contentType, contentId, expiresAt: expiry }];
+      });
+    };
+
+    window.addEventListener('ad-unlocked', handleAdUnlocked as EventListener);
+    
+    return () => {
+      window.removeEventListener('ad-unlocked', handleAdUnlocked as EventListener);
+    };
+  }, []);
+
+  /* =====================
      Helpers
   ===================== */
 
@@ -211,29 +246,52 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       /* =====================
-         MOBILE APP LOGIC
-         - Free users: Watch Ad for ALL content (daily, exclusive, premium)
-         - Pro users: Watch Ad for premium only
-         - Premium users: Everything unlocked (handled by canAccess above)
+         ANDROID APP LOGIC
+         FREE users:
+         - Daily: Watch Ad only
+         - Exclusive: Watch Ad (primary) + Buy Pro (secondary)
+         - Premium: Buy Premium only
+         
+         PRO (basic) users:
+         - Daily + Exclusive: Full access (handled by canAccess)
+         - Premium: Buy Premium only
+         
+         PREMIUM users:
+         - Full access (handled by canAccess)
       ===================== */
       if (isMobileApp) {
-        // Free user on mobile - Watch Ad for everything
+        // FREE user on Android
         if (plan === "free") {
-          return { type: "watch_ad", message: "Watch Ad to Unlock" };
+          // Daily content: Watch Ad only
+          if (tier === "daily") {
+            return { type: "watch_ad", message: "Watch Ad to Unlock" };
+          }
+          
+          // Exclusive/Pro content: Watch Ad + Buy Pro option
+          if (tier === "exclusive") {
+            return { 
+              type: "android_watch_ad_or_pro", 
+              primaryMessage: "Watch Ad to Unlock",
+              secondaryMessage: "Buy Pro – No Ads"
+            };
+          }
+          
+          // Premium content: Buy Premium only (no ad option)
+          if (tier === "premium") {
+            return { type: "android_premium_only", message: "Buy Premium" };
+          }
         }
 
-        // Pro (basic) user on mobile - Watch Ad for premium only
+        // PRO (basic) user on Android - Premium content only shows Buy Premium
         if (plan === "basic" && tier === "premium") {
-          return { type: "watch_ad", message: "Watch Ad to Unlock" };
+          return { type: "android_premium_only", message: "Buy Premium" };
         }
 
         return null;
       }
 
       /* =====================
-         WEB LOGIC (current behavior - unchanged)
-         - Free users: Upgrade prompts for exclusive/premium
-         - No Watch Ad on web
+         WEB LOGIC (unchanged - no Watch Ad on web)
       ===================== */
 
       // EXCLUSIVE (Pro) → upgrade to basic for FREE users

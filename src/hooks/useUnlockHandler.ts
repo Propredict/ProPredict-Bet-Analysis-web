@@ -59,7 +59,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         return false;
       }
 
-      if (method.type === "watch_ad") {
+      if (method.type === "watch_ad" || method.type === "android_watch_ad_or_pro") {
         setUnlockingId(contentId);
         // Open the ad modal instead of showing a toast
         setAdModal({
@@ -79,7 +79,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         return false;
       }
 
-      if (method.type === "upgrade_premium") {
+      if (method.type === "upgrade_premium" || method.type === "android_premium_only") {
         if (options.onUpgradePremium) {
           options.onUpgradePremium();
         } else {
@@ -93,9 +93,19 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     [getUnlockMethod, navigate, options]
   );
 
+  // Secondary handler for Android "Buy Pro" button
+  const handleSecondaryUnlock = useCallback(() => {
+    if (options.onUpgradeBasic) {
+      options.onUpgradeBasic();
+    } else {
+      navigate("/get-premium");
+    }
+  }, [navigate, options]);
+
   return {
     unlockingId,
     handleUnlock,
+    handleSecondaryUnlock,
     getUnlockMethod,
     // Ad modal state and handlers
     adModalOpen: adModal.isOpen,
