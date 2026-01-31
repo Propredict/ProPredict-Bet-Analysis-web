@@ -148,6 +148,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 declare global {
   interface Window {
     Android?: {
+      showInterstitial?: () => void;
       watchRewardedAd?: () => void;
       buyPro?: () => void;
       buyPremium?: () => void;
