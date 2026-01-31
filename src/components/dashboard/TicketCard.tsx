@@ -280,28 +280,67 @@ function TicketCard({
         {/* Unlock Button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-3 sm:p-4 pt-0">
-            <Button
-              variant={unlockMethod.type === "login_required" ? "outline" : "default"}
-              size="sm"
-              className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
-              disabled={isUnlocking}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleUnlockClick();
-              }}
-            >
-              {isUnlocking ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Watching ad...
-                </>
-              ) : (
-                <>
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  {getUnlockButtonText(unlockMethod)}
-                </>
-              )}
-            </Button>
+            {/* Android dual-button layout for Pro/Exclusive content */}
+            {unlockMethod.type === "android_watch_ad_or_pro" ? (
+              <div className="flex flex-col gap-1.5">
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0"
+                  disabled={isUnlocking}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnlockClick();
+                  }}
+                >
+                  {isUnlocking ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Watching ad...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {unlockMethod.primaryMessage}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/get-premium");
+                  }}
+                >
+                  <Star className="h-3 w-3 mr-1" />
+                  {unlockMethod.secondaryMessage}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+                size="sm"
+                className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
+                disabled={isUnlocking}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnlockClick();
+                }}
+              >
+                {isUnlocking ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Watching ad...
+                  </>
+                ) : (
+                  <>
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    {getUnlockButtonText(unlockMethod)}
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         )}
       </div>
