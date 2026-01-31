@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
+import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
 import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
@@ -42,6 +43,7 @@ export function AIPredictionCard({
 }: Props) {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+  const { getUnlockMethod, canAccess } = useUserPlan();
 
   // Determine prediction tier based on confidence and is_premium flag
   // Premium: is_premium = true AND confidence > 80
@@ -51,29 +53,12 @@ export function AIPredictionCard({
   const isProTier = (prediction.is_premium || prediction.confidence > 70) && !isPremiumTier;
   const isDailyTier = !isPremiumTier && !isProTier;
 
-  // Access logic:
-  // - Admin: full access
-  // - Premium user: full access
-  // - Pro user (basic plan): access to Daily + Pro tiers
-  // - Free user: access to Daily tier only
-  const hasAccess = isAdmin || isPremiumUser || 
-    (isProUser && (isDailyTier || isProTier)) || 
-    isDailyTier;
+  // Map to content tier for useUserPlan
+  const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
 
-  // Determine what unlock method to show
-  const getUnlockInfo = () => {
-    if (hasAccess) return null;
-    
-    if (isPremiumTier) {
-      return { type: "premium", text: "Get Premium to unlock", icon: Crown };
-    }
-    if (isProTier) {
-      return { type: "pro", text: "Get Pro to unlock", icon: Star };
-    }
-    return null;
-  };
-
-  const unlockInfo = getUnlockInfo();
+  // Use centralized access logic from useUserPlan
+  const hasAccess = canAccess(contentTier);
+  const unlockMethod = getUnlockMethod(contentTier);
 
   // Generate dynamic AI analysis
   const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
@@ -259,19 +244,61 @@ export function AIPredictionCard({
         )}
 
         {/* Unlock CTA - Only show when locked */}
-        {!hasAccess && unlockInfo && (
+        {!hasAccess && unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <p className="text-[9px] md:text-[10px] text-muted-foreground text-center mb-1.5 md:mb-2">
               Unlock AI insights
             </p>
             
-            <Button
-              className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
-              onClick={() => navigate("/get-premium")}
-            >
-              <unlockInfo.icon className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
-              {unlockInfo.text}
-            </Button>
+            {/* Android dual-button layout for Pro/Exclusive content */}
+            {unlockMethod.type === "android_watch_ad_or_pro" ? (
+              <div className="flex flex-col gap-1.5">
+                <Button
+                  className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
+                  onClick={onWatchAd}
+                >
+                  <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                  {unlockMethod.primaryMessage}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-6 text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground"
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <ShoppingCart className="w-2 md:w-2.5 h-2 md:h-2.5 mr-1" />
+                  {unlockMethod.secondaryMessage}
+                </Button>
+              </div>
+            ) : unlockMethod.type === "android_premium_only" ? (
+              <Button
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
+                onClick={() => navigate("/get-premium")}
+              >
+                <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
+                {unlockMethod.message}
+              </Button>
+            ) : unlockMethod.type === "watch_ad" ? (
+              <Button
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
+                onClick={onWatchAd}
+              >
+                <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                Watch Ad to Unlock
+              </Button>
+            ) : (
+              <Button
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
+                onClick={() => navigate("/get-premium")}
+              >
+                {unlockMethod.type === "upgrade_basic" ? (
+                  <Star className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
+                ) : (
+                  <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
+                )}
+                {unlockMethod.type === "upgrade_basic" ? "Get Pro to unlock" : "Get Premium to unlock"}
+              </Button>
+            )}
           </div>
         )}
 

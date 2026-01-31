@@ -81,7 +81,9 @@ function getTierBadge(tier: ContentTier) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
-  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock"; // Kept for future Android use
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
+  if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
+  if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "Get Pro to unlock";
   if (unlockMethod.type === "upgrade_premium") return "Get Premium to unlock";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
@@ -135,8 +137,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
     if (unlockMethod.type === "login_required") {
       return "";
     }
-    if (unlockMethod.type === "watch_ad") {
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") {
       return "bg-primary hover:bg-primary/90 text-white border-0";
+    }
+    if (unlockMethod.type === "android_premium_only") {
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
@@ -150,7 +155,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
     if (unlockMethod.type === "login_required") return LogIn;
-    if (unlockMethod.type === "watch_ad") return Sparkles;
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return Sparkles;
+    if (unlockMethod.type === "android_premium_only") return Crown;
     if (unlockMethod.type === "upgrade_basic") return Star;
     return Crown;
   };
