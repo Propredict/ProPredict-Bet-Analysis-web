@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,8 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider>
+      {/* Web-only: dynamically inject AdSense script (never on Android WebView) */}
+      <AdSenseScript />
       <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw]">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
