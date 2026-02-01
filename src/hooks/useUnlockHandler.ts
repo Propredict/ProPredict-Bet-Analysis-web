@@ -93,15 +93,18 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
       // Android: Premium only - call native purchase flow
       if (method.type === "android_premium_only") {
-        if (isAndroidApp && window.Android?.getPremium) {
-          window.Android.getPremium();
-        } else if (isAndroidApp && window.Android?.buyPremium) {
-          // Fallback to buyPremium if getPremium doesn't exist
-          window.Android.buyPremium();
-        } else {
-          // Web fallback (shouldn't happen on Android)
-          navigate("/get-premium");
+        if (isAndroidApp) {
+          // HARD BLOCK - NO Stripe, NO redirects on Android
+          if (window.Android?.getPremium) {
+            window.Android.getPremium();
+          } else if (window.Android?.buyPremium) {
+            window.Android.buyPremium();
+          }
+          // Always return on Android - never fall through to web
+          return false;
         }
+        // Web-only fallback
+        navigate("/get-premium");
         return false;
       }
 
@@ -135,19 +138,17 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
    * Calls native purchase flow for Pro subscription
    */
   const handleSecondaryUnlock = useCallback(() => {
+    // Android: HARD BLOCK - NO Stripe, NO redirects
     if (isAndroidApp) {
-      // Call Android native Pro purchase flow
       if (window.Android?.getPro) {
         window.Android.getPro();
-        return;
-      }
-      if (window.Android?.buyPro) {
-        // Fallback to buyPro if getPro doesn't exist
+      } else if (window.Android?.buyPro) {
         window.Android.buyPro();
-        return;
       }
+      // Always return on Android - never fall through to web
+      return;
     }
-    // Web fallback
+    // Web-only fallback
     if (options.onUpgradeBasic) {
       options.onUpgradeBasic();
     } else {
