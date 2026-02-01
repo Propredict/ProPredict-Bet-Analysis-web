@@ -120,13 +120,13 @@ export function AllTicketsCard({
     navigate(`/tickets/${ticket.id}`);
   };
 
-  // Android-specific button logic for Pro tier (watch ad + get pro option)
-  const isAndroidProTier = isAndroid && (
-    unlockMethod?.type === "watch_ad" || 
-    unlockMethod?.type === "android_watch_ad_or_pro"
-  );
+  // Android-specific: Daily tier = watch ad ONLY (no Get Pro option)
+  const isAndroidDailyTier = isAndroid && unlockMethod?.type === "watch_ad";
   
-  // Android-specific button logic for Premium tier (get premium only)
+  // Android-specific: Pro tier = watch ad + Get Pro option
+  const isAndroidProTier = isAndroid && unlockMethod?.type === "android_watch_ad_or_pro";
+  
+  // Android-specific: Premium tier = Get Premium only
   const isAndroidPremiumTier = isAndroid && unlockMethod?.type === "android_premium_only";
 
   const getUnlockButtonStyle = () => {
@@ -236,8 +236,31 @@ export function AllTicketsCard({
         {/* Unlock Buttons - Android specific layout */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-2.5 sm:p-3 border-t border-border">
-            {/* Android Pro tier: Watch Ad + Get Pro option */}
-            {isAndroidProTier ? (
+            {/* Android Daily tier: Watch Ad ONLY - no Get Pro option */}
+            {isAndroidDailyTier ? (
+              <Button 
+                size="sm"
+                className="w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white border-0"
+                disabled={isUnlocking}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnlockClick();
+                }}
+              >
+                {isUnlocking ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Watching ad...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5" />
+                    Watch Ad to Unlock
+                  </>
+                )}
+              </Button>
+            ) : isAndroidProTier ? (
+              /* Android Pro tier: Watch Ad + Get Pro option */
               <div className="space-y-2">
                 <Button 
                   size="sm"
