@@ -25,6 +25,7 @@ interface TipCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
+  onSecondaryUnlock?: () => void;
   isUnlocking?: boolean;
 }
 
@@ -90,10 +91,11 @@ function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   return "";
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlocking = false }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false }: TipCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
+  const isAndroidPremium = unlockMethod?.type === "android_premium_only";
 
   const handleUnlockClick = () => {
     if (isPremiumLocked || isBasicLocked) {
@@ -102,6 +104,14 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
       navigate("/login");
     } else {
       onUnlockClick();
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    if (onSecondaryUnlock) {
+      onSecondaryUnlock();
+    } else {
+      navigate("/get-premium");
     }
   };
 
@@ -232,7 +242,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, isUnlockin
                   className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate("/get-premium");
+                    handleSecondaryClick();
                   }}
                 >
                   <Star className="h-3 w-3 mr-1" />

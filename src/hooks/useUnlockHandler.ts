@@ -21,7 +21,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
   const pendingUnlockRef = useRef<PendingUnlock | null>(null);
 
-  // Listen for Android WebView messages
+  // Listen for Android WebView messages (AD_UNLOCK_SUCCESS / AD_UNLOCK_CANCELLED)
   useEffect(() => {
     if (!isAndroidApp) return;
 
@@ -55,6 +55,10 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     return () => window.removeEventListener("message", handleMessage);
   }, [isAndroidApp, unlockContent]);
 
+  /**
+   * Main unlock handler - call this when user clicks the primary unlock button
+   * Returns true if already unlocked, false if unlock is in progress or redirect happened
+   */
   const handleUnlock = useCallback(
     async (
       contentType: ContentType,
@@ -64,35 +68,45 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
       const method = getUnlockMethod(tier, contentType, contentId);
       if (!method || method.type === "unlocked") return true;
 
+      // Login required - redirect to login
       if (method.type === "login_required") {
         toast.info("Please sign in to unlock this content");
         navigate("/login");
         return false;
       }
 
-      // Android ad-based unlock
+      // Android: Watch Ad to unlock (Daily tier OR primary action for Exclusive)
       if (method.type === "watch_ad" || method.type === "android_watch_ad_or_pro") {
-        // Prevent repeated clicks
+        // Prevent repeated clicks while ad is showing
         if (unlockingId === contentId) return false;
 
         setUnlockingId(contentId);
         pendingUnlockRef.current = { contentType, contentId };
 
-        // Signal to Android WebView to show rewarded ad
+        // Call Android native bridge to show rewarded ad
         if (window.Android?.watchRewardedAd) {
           window.Android.watchRewardedAd();
         }
 
-        return false; // Will be unlocked via message callback
+        return false; // Will be unlocked via AD_UNLOCK_SUCCESS message callback
       }
 
-      if (method.type === "upgrade_basic") {
-        // On Android, use native purchase flow
-        if (isAndroidApp && window.Android?.buyPro) {
-          window.Android.buyPro();
-          return false;
+      // Android: Premium only - call native purchase flow
+      if (method.type === "android_premium_only") {
+        if (isAndroidApp && window.Android?.getPremium) {
+          window.Android.getPremium();
+        } else if (isAndroidApp && window.Android?.buyPremium) {
+          // Fallback to buyPremium if getPremium doesn't exist
+          window.Android.buyPremium();
+        } else {
+          // Web fallback (shouldn't happen on Android)
+          navigate("/get-premium");
         }
-        // Web fallback
+        return false;
+      }
+
+      // Web: Upgrade to Basic (Pro) subscription
+      if (method.type === "upgrade_basic") {
         if (options.onUpgradeBasic) {
           options.onUpgradeBasic();
         } else {
@@ -101,13 +115,8 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         return false;
       }
 
-      if (method.type === "upgrade_premium" || method.type === "android_premium_only") {
-        // On Android, use native purchase flow
-        if (isAndroidApp && window.Android?.buyPremium) {
-          window.Android.buyPremium();
-          return false;
-        }
-        // Web fallback
+      // Web: Upgrade to Premium subscription
+      if (method.type === "upgrade_premium") {
         if (options.onUpgradePremium) {
           options.onUpgradePremium();
         } else {
@@ -121,12 +130,22 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     [getUnlockMethod, navigate, options, unlockingId, isAndroidApp]
   );
 
-  // Secondary handler for Android "Buy Pro" button
+  /**
+   * Secondary handler for Android "Get Pro" button (used in android_watch_ad_or_pro layout)
+   * Calls native purchase flow for Pro subscription
+   */
   const handleSecondaryUnlock = useCallback(() => {
-    // On Android, use native purchase flow
-    if (isAndroidApp && window.Android?.buyPro) {
-      window.Android.buyPro();
-      return;
+    if (isAndroidApp) {
+      // Call Android native Pro purchase flow
+      if (window.Android?.getPro) {
+        window.Android.getPro();
+        return;
+      }
+      if (window.Android?.buyPro) {
+        // Fallback to buyPro if getPro doesn't exist
+        window.Android.buyPro();
+        return;
+      }
     }
     // Web fallback
     if (options.onUpgradeBasic) {
@@ -152,6 +171,8 @@ declare global {
       watchRewardedAd?: () => void;
       buyPro?: () => void;
       buyPremium?: () => void;
+      getPro?: () => void;
+      getPremium?: () => void;
       requestEntitlements?: () => void;
       purchaseProduct?: (productId: string) => void;
     };

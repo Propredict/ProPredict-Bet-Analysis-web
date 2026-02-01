@@ -47,6 +47,7 @@ interface TicketCardProps {
   isLocked: boolean;
   unlockMethod: UnlockMethod | null;
   onUnlockClick: () => void;
+  onSecondaryUnlock?: () => void;
   onViewTicket?: () => void;
   isUnlocking?: boolean;
 }
@@ -126,6 +127,7 @@ function TicketCard({
   isLocked,
   unlockMethod,
   onUnlockClick,
+  onSecondaryUnlock,
   onViewTicket,
   isUnlocking = false,
 }: TicketCardProps) {
@@ -133,6 +135,7 @@ function TicketCard({
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
   const isUnlocked = unlockMethod?.type === "unlocked";
+  const isAndroidPremium = unlockMethod?.type === "android_premium_only";
   const ticketDate = ticket.createdAt && !isNaN(new Date(ticket.createdAt).getTime())
     ? format(new Date(ticket.createdAt), "EEE, MMM d")
     : "";
@@ -144,6 +147,14 @@ function TicketCard({
       navigate("/login");
     } else {
       onUnlockClick();
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    if (onSecondaryUnlock) {
+      onSecondaryUnlock();
+    } else {
+      navigate("/get-premium");
     }
   };
 
@@ -310,7 +321,7 @@ function TicketCard({
                   className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate("/get-premium");
+                    handleSecondaryClick();
                   }}
                 >
                   <Star className="h-3 w-3 mr-1" />
