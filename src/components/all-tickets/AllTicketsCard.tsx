@@ -1,4 +1,4 @@
-import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn, ChevronRight } from "lucide-react";
+import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn, ChevronRight, Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import type { UnlockMethod } from "@/hooks/useUserPlan";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseMatchName } from "@/types/admin";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -76,7 +77,20 @@ export function AllTicketsCard({
   const remainingCount = matchCount > 3 ? matchCount - 3 : 0;
   const totalOdds = ticket.total_odds || 0;
 
+  const isAndroid = getIsAndroidApp();
+
   const handleUnlockClick = () => {
+    // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
+    if (
+      unlockMethod?.type === "watch_ad" ||
+      unlockMethod?.type === "android_watch_ad_or_pro" ||
+      unlockMethod?.type === "android_premium_only"
+    ) {
+      onUnlockClick();
+      return;
+    }
+    
+    // Web-only redirects
     if (unlockMethod?.type === "upgrade_basic" || unlockMethod?.type === "upgrade_premium") {
       navigate("/get-premium");
     } else if (unlockMethod?.type === "login_required") {
@@ -86,16 +100,45 @@ export function AllTicketsCard({
     }
   };
 
+  const handleSecondaryClick = () => {
+    // Android: HARD BLOCK - NO Stripe, NO redirects
+    if (isAndroid) {
+      if (window.Android?.getPro) {
+        window.Android.getPro();
+      } else if (window.Android?.buyPro) {
+        window.Android.buyPro();
+      }
+      // Always return on Android - never fall through to web
+      return;
+    }
+    
+    // Web-only fallback
+    navigate("/get-premium");
+  };
+
+  const handleCardClick = () => {
+    navigate(`/tickets/${ticket.id}`);
+  };
+
+  // Android-specific button logic for Pro tier (watch ad + get pro option)
+  const isAndroidProTier = isAndroid && (
+    unlockMethod?.type === "watch_ad" || 
+    unlockMethod?.type === "android_watch_ad_or_pro"
+  );
+  
+  // Android-specific button logic for Premium tier (get premium only)
+  const isAndroidPremiumTier = isAndroid && unlockMethod?.type === "android_premium_only";
+
   const getUnlockButtonStyle = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
-    if (unlockMethod.type === "watch_ad") {
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") {
       return "bg-primary hover:bg-primary/90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
-    if (unlockMethod.type === "upgrade_premium") {
+    if (unlockMethod.type === "upgrade_premium" || unlockMethod.type === "android_premium_only") {
       return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
     }
     return "";
@@ -104,13 +147,20 @@ export function AllTicketsCard({
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
     if (unlockMethod.type === "login_required") return LogIn;
-    if (unlockMethod.type === "watch_ad") return Sparkles;
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return Play;
     if (unlockMethod.type === "upgrade_basic") return Star;
+    if (unlockMethod.type === "android_premium_only") return Crown;
     return Crown;
   };
 
-  const handleCardClick = () => {
-    navigate(`/tickets/${ticket.id}`);
+  const getUnlockButtonText = () => {
+    if (!unlockMethod || unlockMethod.type === "unlocked") return "";
+    if (unlockMethod.type === "login_required") return "Sign in to Unlock";
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "Watch Ad to Unlock";
+    if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
+    if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
+    if (unlockMethod.type === "android_premium_only") return "Get Premium";
+    return "";
   };
 
   // Locked State - Compact
@@ -183,31 +233,83 @@ export function AllTicketsCard({
           </div>
         </div>
 
-        {/* Unlock Button */}
+        {/* Unlock Buttons - Android specific layout */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-2.5 sm:p-3 border-t border-border">
-            <Button 
-              variant={unlockMethod.type === "login_required" ? "outline" : "default"}
-              size="sm"
-              className={cn("w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm", getUnlockButtonStyle())}
-              disabled={isUnlocking}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleUnlockClick();
-              }}
-            >
-              {isUnlocking ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Watching ad...
-                </>
-              ) : (
-                <>
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  {getUnlockButtonText(unlockMethod)}
-                </>
-              )}
-            </Button>
+            {/* Android Pro tier: Watch Ad + Get Pro option */}
+            {isAndroidProTier ? (
+              <div className="space-y-2">
+                <Button 
+                  size="sm"
+                  className="w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white border-0"
+                  disabled={isUnlocking}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnlockClick();
+                  }}
+                >
+                  {isUnlocking ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Watching ad...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-3.5 w-3.5" />
+                      Watch Ad to Unlock
+                    </>
+                  )}
+                </Button>
+                <button
+                  className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSecondaryClick();
+                  }}
+                >
+                  <Star className="h-3 w-3" />
+                  Get Pro – No Ads
+                </button>
+              </div>
+            ) : isAndroidPremiumTier ? (
+              /* Android Premium tier: Get Premium only */
+              <Button 
+                size="sm"
+                className="w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
+                disabled={isUnlocking}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnlockClick();
+                }}
+              >
+                <Crown className="h-3.5 w-3.5" />
+                Get Premium
+              </Button>
+            ) : (
+              /* Web fallback - original button */
+              <Button 
+                variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+                size="sm"
+                className={cn("w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm", getUnlockButtonStyle())}
+                disabled={isUnlocking}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnlockClick();
+                }}
+              >
+                {isUnlocking ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Watching ad...
+                  </>
+                ) : (
+                  <>
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    {getUnlockButtonText()}
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         )}
       </Card>
