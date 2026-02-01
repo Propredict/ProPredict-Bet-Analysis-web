@@ -224,25 +224,47 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       if (tier === "free") return true;
 
-      // Daily tier: Always accessible for all users (monetized via AdSense)
-      if (tier === "daily") {
-        return true;
-      }
+      const isMobileApp = getIsMobileApp();
 
-      // Exclusive (Pro) tier: Requires basic or premium subscription
-      if (tier === "exclusive") {
+      // Daily tier access rules:
+      // - WEB: Always accessible (monetized via AdSense)
+      // - ANDROID: Requires Pro/Premium OR ad-unlock (checked via isContentUnlocked)
+      if (tier === "daily") {
+        // Web: always accessible
+        if (!isMobileApp) return true;
+        
+        // Android: Pro/Premium users have full access
         if (plan === "basic" || plan === "premium") return true;
+        
+        // Android Free users: check if content was unlocked via ad
+        if (contentType && contentId) {
+          return isContentUnlocked(contentType, contentId);
+        }
+        
         return false;
       }
 
-      // Premium tier: Requires premium subscription only
+      // Exclusive (Pro) tier: Requires basic or premium subscription
+      // On Android, free users can unlock via ads (checked via isContentUnlocked)
+      if (tier === "exclusive") {
+        if (plan === "basic" || plan === "premium") return true;
+        
+        // Android: check ad-unlock
+        if (isMobileApp && contentType && contentId) {
+          return isContentUnlocked(contentType, contentId);
+        }
+        
+        return false;
+      }
+
+      // Premium tier: Requires premium subscription only (NO ad unlock option)
       if (tier === "premium") {
         return plan === "premium";
       }
 
       return false;
     },
-    [isAdmin, plan],
+    [isAdmin, plan, isContentUnlocked],
   );
 
   /* =====================
@@ -272,15 +294,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
          ANDROID APP LOGIC
          FREE users:
          - Daily: Watch Ad only
-         - Exclusive: Watch Ad (primary) + Buy Pro (secondary)
-         - Premium: Buy Premium only
+         - Exclusive/Pro: Watch Ad (primary) + Get Pro (secondary)
+         - Premium: Get Premium only (NO ad option)
          
          PRO (basic) users:
-         - Daily + Exclusive: Full access (handled by canAccess)
-         - Premium: Buy Premium only
+         - Daily + Exclusive: Full access (no ads needed)
+         - Premium: Get Premium only
          
          PREMIUM users:
-         - Full access (handled by canAccess)
+         - Full access to everything (no ads)
       ===================== */
       if (isMobileApp) {
         // FREE user on Android
@@ -290,24 +312,24 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             return { type: "watch_ad", message: "Watch Ad to Unlock" };
           }
           
-          // Exclusive/Pro content: Watch Ad + Buy Pro option
+          // Exclusive/Pro content: Watch Ad + Get Pro option
           if (tier === "exclusive") {
             return { 
               type: "android_watch_ad_or_pro", 
               primaryMessage: "Watch Ad to Unlock",
-              secondaryMessage: "Buy Pro – No Ads"
+              secondaryMessage: "Get Pro – No Ads"
             };
           }
           
-          // Premium content: Buy Premium only (no ad option)
+          // Premium content: Get Premium only (no ad option)
           if (tier === "premium") {
-            return { type: "android_premium_only", message: "Buy Premium" };
+            return { type: "android_premium_only", message: "Get Premium" };
           }
         }
 
-        // PRO (basic) user on Android - Premium content only shows Buy Premium
+        // PRO (basic) user on Android - Premium content only shows Get Premium
         if (plan === "basic" && tier === "premium") {
-          return { type: "android_premium_only", message: "Buy Premium" };
+          return { type: "android_premium_only", message: "Get Premium" };
         }
 
         return null;

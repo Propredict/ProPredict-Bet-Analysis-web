@@ -7,6 +7,7 @@ import { TipCard } from "@/components/dashboard/TipCard";
 import { InContentAd, SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { toast } from "sonner";
 
 export default function DailyTips() {
@@ -20,6 +21,10 @@ export default function DailyTips() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
   
   const dailyTips = tips.filter(tip => tip.tier === "daily");
   const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
@@ -36,6 +41,7 @@ export default function DailyTips() {
     dailyTips.forEach((tip, index) => {
       const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
       const isLocked = unlockMethod?.type !== "unlocked";
+      const isUnlocking = unlockingId === tip.id;
       
       elements.push(
         <TipCard 
@@ -58,8 +64,8 @@ export default function DailyTips() {
           }}
           isLocked={isLocked} 
           unlockMethod={unlockMethod} 
-          onUnlockClick={() => {}} 
-          isUnlocking={false} 
+          onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} 
+          isUnlocking={isUnlocking} 
         />
       );
       

@@ -279,8 +279,12 @@ export function AIPredictionCard({
               <Button
                 className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0 font-medium rounded"
                 onClick={() => {
-                  if (isAndroidApp && window.Android?.buyPremium) {
-                    window.Android.buyPremium();
+                  if (isAndroidApp) {
+                    if (window.Android?.getPremium) {
+                      window.Android.getPremium();
+                    } else if (window.Android?.buyPremium) {
+                      window.Android.buyPremium();
+                    }
                   } else {
                     navigate("/get-premium");
                   }

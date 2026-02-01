@@ -7,6 +7,7 @@ import TicketCard from "@/components/dashboard/TicketCard";
 import { InContentAd, SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -22,6 +23,10 @@ export default function DailyTickets() {
     getUnlockMethod,
     refetch: refetchPlan
   } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock
+  } = useUnlockHandler();
   
   const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
@@ -38,6 +43,7 @@ export default function DailyTickets() {
     dailyTickets.forEach((ticket, index) => {
       const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
       const isLocked = unlockMethod?.type !== "unlocked";
+      const isUnlocking = unlockingId === ticket.id;
       
       elements.push(
         <TicketCard 
@@ -58,9 +64,9 @@ export default function DailyTickets() {
           }} 
           isLocked={isLocked} 
           unlockMethod={unlockMethod} 
-          onUnlockClick={() => {}} 
+          onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} 
           onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-          isUnlocking={false} 
+          isUnlocking={isUnlocking} 
         />
       );
       

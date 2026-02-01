@@ -7,6 +7,7 @@ import TicketCard from "@/components/dashboard/TicketCard";
 import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -24,6 +25,11 @@ export default function ExclusiveTickets() {
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock,
+    handleSecondaryUnlock
+  } = useUnlockHandler();
   
   const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive");
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
@@ -146,6 +152,7 @@ export default function ExclusiveTickets() {
           exclusiveTickets.map(ticket => {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = unlockMethod?.type !== "unlocked";
+            const isUnlocking = unlockingId === ticket.id;
             const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
             return (
               <TicketCard 
@@ -166,9 +173,10 @@ export default function ExclusiveTickets() {
                 }} 
                 isLocked={isLocked} 
                 unlockMethod={unlockMethod} 
-                onUnlockClick={() => navigate("/get-premium")} 
+                onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
+                onSecondaryUnlock={handleSecondaryUnlock}
                 onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-                isUnlocking={false} 
+                isUnlocking={isUnlocking} 
               />
             );
           })

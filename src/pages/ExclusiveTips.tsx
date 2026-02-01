@@ -7,6 +7,7 @@ import { TipCard } from "@/components/dashboard/TipCard";
 import { SidebarAd } from "@/components/ads/AdSenseBanner";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -24,6 +25,11 @@ export default function ExclusiveTips() {
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
+  const {
+    unlockingId,
+    handleUnlock,
+    handleSecondaryUnlock
+  } = useUnlockHandler();
   
   const exclusiveTips = tips.filter(tip => tip.tier === "exclusive");
   const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
@@ -141,6 +147,7 @@ export default function ExclusiveTips() {
           exclusiveTips.map(tip => {
             const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
             const isLocked = unlockMethod?.type !== "unlocked";
+            const isUnlocking = unlockingId === tip.id;
             return (
               <TipCard 
                 key={tip.id} 
@@ -162,8 +169,9 @@ export default function ExclusiveTips() {
                 }}
                 isLocked={isLocked} 
                 unlockMethod={unlockMethod} 
-                onUnlockClick={() => navigate("/get-premium")} 
-                isUnlocking={false} 
+                onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
+                onSecondaryUnlock={handleSecondaryUnlock}
+                isUnlocking={isUnlocking} 
               />
             );
           })
