@@ -98,6 +98,17 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   const isAndroidPremium = unlockMethod?.type === "android_premium_only";
 
   const handleUnlockClick = () => {
+    // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
+    if (
+      unlockMethod?.type === "watch_ad" ||
+      unlockMethod?.type === "android_watch_ad_or_pro" ||
+      unlockMethod?.type === "android_premium_only"
+    ) {
+      onUnlockClick();
+      return;
+    }
+    
+    // Web-only redirects
     if (isPremiumLocked || isBasicLocked) {
       navigate("/get-premium");
     } else if (unlockMethod?.type === "login_required") {
