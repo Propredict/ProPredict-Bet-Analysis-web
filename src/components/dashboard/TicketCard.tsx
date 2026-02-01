@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { parseMatchName } from "@/types/admin";
@@ -162,6 +163,19 @@ function TicketCard({
   };
 
   const handleSecondaryClick = () => {
+    // Android: Call native bridge for Pro purchase - NO Stripe
+    if (getIsAndroidApp()) {
+      if (window.Android?.getPro) {
+        window.Android.getPro();
+        return;
+      }
+      if (window.Android?.buyPro) {
+        window.Android.buyPro();
+        return;
+      }
+    }
+    
+    // Web fallback or custom handler
     if (onSecondaryUnlock) {
       onSecondaryUnlock();
     } else {
