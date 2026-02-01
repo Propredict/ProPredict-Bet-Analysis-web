@@ -101,14 +101,18 @@ export function AllTicketsCard({
   };
 
   const handleSecondaryClick = () => {
-    // Android: Navigate to Get Premium page (internal navigation, not Stripe)
-    // Web: Same behavior
-    navigate("/get-premium");
-  };
-
-  const handlePremiumClick = () => {
-    // Android: Navigate to Get Premium page (internal navigation, not Stripe)
-    // Web: Same behavior
+    // Android: HARD BLOCK - NO Stripe, NO redirects
+    if (isAndroid) {
+      if (window.Android?.getPro) {
+        window.Android.getPro();
+      } else if (window.Android?.buyPro) {
+        window.Android.buyPro();
+      }
+      // Always return on Android - never fall through to web
+      return;
+    }
+    
+    // Web-only fallback
     navigate("/get-premium");
   };
 
@@ -256,10 +260,8 @@ export function AllTicketsCard({
                     </>
                   )}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-1.5 h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
+                <button
+                  className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSecondaryClick();
@@ -267,16 +269,17 @@ export function AllTicketsCard({
                 >
                   <Star className="h-3 w-3" />
                   Get Pro – No Ads
-                </Button>
+                </button>
               </div>
             ) : isAndroidPremiumTier ? (
-              /* Android Premium tier: Get Premium button */
+              /* Android Premium tier: Get Premium only */
               <Button 
                 size="sm"
                 className="w-full gap-1.5 h-8 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
+                disabled={isUnlocking}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handlePremiumClick();
+                  handleUnlockClick();
                 }}
               >
                 <Crown className="h-3.5 w-3.5" />
