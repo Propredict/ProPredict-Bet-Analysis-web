@@ -120,19 +120,18 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   };
 
   const handleSecondaryClick = () => {
-    // Android: Call native bridge for Pro purchase - NO Stripe
+    // Android: HARD BLOCK - NO Stripe, NO redirects
     if (getIsAndroidApp()) {
       if (window.Android?.getPro) {
         window.Android.getPro();
-        return;
-      }
-      if (window.Android?.buyPro) {
+      } else if (window.Android?.buyPro) {
         window.Android.buyPro();
-        return;
       }
+      // Always return on Android - never fall through to web
+      return;
     }
     
-    // Web fallback or custom handler
+    // Web-only fallback
     if (onSecondaryUnlock) {
       onSecondaryUnlock();
     } else {
