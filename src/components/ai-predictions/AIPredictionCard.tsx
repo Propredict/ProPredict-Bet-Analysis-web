@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,14 +9,14 @@ import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, 
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
 import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
-// AdModal kept for future Android AdMob use - disabled on web
-// import { AdModal } from "@/components/AdModal";
 
 interface Props {
   prediction: AIPrediction;
@@ -26,7 +26,6 @@ interface Props {
   isFavorite?: boolean;
   isSavingFavorite?: boolean;
   onToggleFavorite?: (matchId: string) => void;
-  onWatchAd: () => void; // Kept for future Android use
   onGoPremium: () => void;
 }
 
@@ -38,12 +37,13 @@ export function AIPredictionCard({
   isFavorite = false,
   isSavingFavorite = false,
   onToggleFavorite,
-  onWatchAd, // Kept for future Android use
   onGoPremium 
 }: Props) {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const { getUnlockMethod, canAccess } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
+  const { handleUnlock, handleSecondaryUnlock, unlockingId } = useUnlockHandler();
 
   // Determine prediction tier based on confidence and is_premium flag
   // Premium: is_premium = true AND confidence > 80
@@ -254,17 +254,22 @@ export function AIPredictionCard({
             {unlockMethod.type === "android_watch_ad_or_pro" ? (
               <div className="flex flex-col gap-1.5">
                 <Button
-                  className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
-                  onClick={onWatchAd}
+                  className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-medium rounded"
+                  onClick={() => handleUnlock("tip", prediction.match_id, contentTier)}
+                  disabled={unlockingId === prediction.match_id}
                 >
-                  <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                  {unlockingId === prediction.match_id ? (
+                    <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                  )}
                   {unlockMethod.primaryMessage}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="w-full h-6 text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground"
-                  onClick={() => navigate("/get-premium")}
+                  onClick={handleSecondaryUnlock}
                 >
                   <ShoppingCart className="w-2 md:w-2.5 h-2 md:h-2.5 mr-1" />
                   {unlockMethod.secondaryMessage}
@@ -272,23 +277,34 @@ export function AIPredictionCard({
               </div>
             ) : unlockMethod.type === "android_premium_only" ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
-                onClick={() => navigate("/get-premium")}
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0 font-medium rounded"
+                onClick={() => {
+                  if (isAndroidApp && window.Android?.buyPremium) {
+                    window.Android.buyPremium();
+                  } else {
+                    navigate("/get-premium");
+                  }
+                }}
               >
                 <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 {unlockMethod.message}
               </Button>
             ) : unlockMethod.type === "watch_ad" ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-white border-0 font-medium rounded"
-                onClick={onWatchAd}
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-medium rounded"
+                onClick={() => handleUnlock("tip", prediction.match_id, contentTier)}
+                disabled={unlockingId === prediction.match_id}
               >
-                <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                {unlockingId === prediction.match_id ? (
+                  <Loader2 className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
+                )}
                 Watch Ad to Unlock
               </Button>
             ) : (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0 font-medium rounded"
                 onClick={() => navigate("/get-premium")}
               >
                 {unlockMethod.type === "upgrade_basic" ? (

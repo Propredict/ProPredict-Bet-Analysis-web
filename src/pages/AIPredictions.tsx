@@ -446,7 +446,6 @@ export default function AIPredictions() {
                       isFavorite={isFavorite(prediction.match_id)}
                       isSavingFavorite={isSaving(prediction.match_id)}
                       onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                      onWatchAd={() => {}}
                       onGoPremium={() => navigate("/get-premium")}
                     />
                     {(index + 1) % 4 === 0 && index < featuredPredictions.length - 1 && (
@@ -498,7 +497,6 @@ export default function AIPredictions() {
                       isFavorite={isFavorite(prediction.match_id)}
                       isSavingFavorite={isSaving(prediction.match_id)}
                       onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                      onWatchAd={() => {}}
                       onGoPremium={() => navigate("/get-premium")}
                     />
                     {(index + 1) % 3 === 0 && index < regularPredictions.length - 1 && (
