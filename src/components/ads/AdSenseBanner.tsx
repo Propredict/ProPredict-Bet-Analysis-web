@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 
@@ -24,17 +24,27 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
   const adRef = useRef<HTMLModElement>(null);
   const { isAndroidApp } = usePlatform();
   const isAdSenseLoaded = typeof window !== "undefined" && (window as any).adsbygoogle;
+  const [adSenseReady, setAdSenseReady] = useState<boolean>(!!isAdSenseLoaded);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (adSenseReady) return;
+
+    const onLoaded = () => setAdSenseReady(true);
+    window.addEventListener("adsense:loaded", onLoaded);
+    return () => window.removeEventListener("adsense:loaded", onLoaded);
+  }, [adSenseReady]);
 
   useEffect(() => {
     // Only push ads if AdSense script is loaded and not on Android
-    if (isAdSenseLoaded && adRef.current && !isAndroidApp) {
+    if (adSenseReady && adRef.current && !isAndroidApp) {
       try {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       } catch (e) {
         console.log("AdSense not available");
       }
     }
-  }, [isAdSenseLoaded, isAndroidApp]);
+  }, [adSenseReady, isAndroidApp]);
 
   // Hide all ads on Android WebView - no empty gaps
   if (isAndroidApp) {
@@ -43,7 +53,7 @@ export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSense
 
   // Don't render placeholder if AdSense is not loaded
   // This prevents empty space in production before ads are configured
-  if (!isAdSenseLoaded) {
+  if (!adSenseReady) {
     return null;
   }
 

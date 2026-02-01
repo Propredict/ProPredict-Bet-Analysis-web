@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info } from "lucide-react";
 import { FooterAd } from "@/components/ads/AdSenseBanner";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export function Footer() {
+  const { isAndroidApp } = usePlatform();
+
   const legalLinks = [
     { label: "About Us", path: "/about-us", icon: Info },
     { label: "Disclaimer", path: "/disclaimer", icon: Shield },
@@ -17,9 +20,11 @@ export function Footer() {
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
         
         {/* AdSense Footer Banner */}
-        <div className="mb-4">
-          <FooterAd />
-        </div>
+        {!isAndroidApp && (
+          <div className="mb-4">
+            <FooterAd />
+          </div>
+        )}
 
         {/* Google Play - small square button (right aligned) */}
         <div className="flex justify-end mb-2">
