@@ -49,7 +49,7 @@ const plans = {
       buttonVariant: "outline" as const,
       features: [
         { text: "Full access to daily tips/tickets", included: true },
-        { text: "Free AI predictions", included: true },
+        { text: "Free AI basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
@@ -68,8 +68,8 @@ const plans = {
       buttonVariant: "default" as const,
       popular: true,
       features: [
-        { text: "All daily tips/tickets unlocked", included: true },
-        { text: "Exclusive tips/tickets", included: true },
+        { text: "Daily & Pro tips/tickets unlocked", included: true },
+        { text: "Basic & Pro AI predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ad-free tips/ticket experience", included: true },
@@ -106,7 +106,7 @@ const plans = {
       buttonVariant: "outline" as const,
       features: [
         { text: "Full access to daily tips/tickets", included: true },
-        { text: "Free AI predictions", included: true },
+        { text: "Free AI basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
@@ -126,8 +126,8 @@ const plans = {
       buttonVariant: "default" as const,
       popular: true,
       features: [
-        { text: "All daily tips/tickets unlocked", included: true },
-        { text: "Exclusive tips/tickets", included: true },
+        { text: "Daily & Pro tips/tickets unlocked", included: true },
+        { text: "Basic & Pro AI predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ad-free tips/ticket experience", included: true },
