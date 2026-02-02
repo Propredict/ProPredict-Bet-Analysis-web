@@ -56,8 +56,8 @@ function getTierBadge(tier: string) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
-  if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
+  if (unlockMethod.type === "upgrade_basic") return "Unlock with Pro";
+  if (unlockMethod.type === "upgrade_premium") return "Unlock with Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -157,8 +157,8 @@ export function AllTicketsCard({
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "Sign in to Unlock";
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "Watch Ad to Unlock";
-    if (unlockMethod.type === "upgrade_basic") return "Upgrade to Pro";
-    if (unlockMethod.type === "upgrade_premium") return "Subscribe to Premium";
+    if (unlockMethod.type === "upgrade_basic") return "Unlock with Pro";
+    if (unlockMethod.type === "upgrade_premium") return "Unlock with Premium";
     if (unlockMethod.type === "android_premium_only") return "Get Premium";
     return "";
   };
