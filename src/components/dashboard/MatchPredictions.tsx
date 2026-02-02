@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, Sparkles, Star, Crown, Users, Loader2, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
+import { InlineListAd } from "@/components/ads/EzoicAd";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -155,18 +156,21 @@ export function MatchPredictions() {
         </div>
       ) : displayedTips.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {displayedTips.map(tip => {
+          {displayedTips.map((tip, index) => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
             const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
+            const showAdAfter = (index + 1) % 3 === 0 && index < displayedTips.length - 1;
             return (
-              <TipCard
-                key={tip.id}
-                tip={tip}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                isUnlocking={unlockingId === tip.id}
-                onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
-              />
+              <Fragment key={tip.id}>
+                <TipCard
+                  tip={tip}
+                  isLocked={isLocked}
+                  unlockMethod={unlockMethod}
+                  isUnlocking={unlockingId === tip.id}
+                  onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
+                />
+                {showAdAfter && <InlineListAd />}
+              </Fragment>
             );
           })}
           

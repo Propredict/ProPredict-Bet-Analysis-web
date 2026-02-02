@@ -61,7 +61,7 @@ export function EzoicAd({ placeholderId, className = "" }: EzoicAdProps) {
  * 
  * AUTOMATICALLY HIDDEN for:
  * - Android WebView users (clean native experience)
- * - Pro, Premium, and Admin users
+ * - Pro (basic), Premium, and Admin users
  */
 export function InContentAd({ className = "" }: { className?: string }) {
   const { plan, isAdmin } = useUserPlan();
@@ -78,7 +78,41 @@ export function InContentAd({ className = "" }: { className?: string }) {
   }
 
   return (
+    <div className={`col-span-full my-3 ${className}`}>
+      <div className="text-[9px] text-muted-foreground/60 text-center mb-1">Advertisement</div>
+      <EzoicAd 
+        placeholderId={101}
+        className="rounded-lg"
+      />
+    </div>
+  );
+}
+
+/**
+ * Inline ad for use within card grids.
+ * Renders as a full-width item spanning all columns with "Advertisement" label.
+ * 
+ * AUTOMATICALLY HIDDEN for:
+ * - Android WebView users (clean native experience)
+ * - Pro (basic), Premium, and Admin users
+ */
+export function InlineListAd({ className = "" }: { className?: string }) {
+  const { plan, isAdmin } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
+  
+  // Hide ads on Android WebView - no empty gaps
+  if (isAndroidApp) {
+    return null;
+  }
+
+  // Hide ads for Pro (basic), Premium, and Admin users
+  if (plan === "basic" || plan === "premium" || isAdmin) {
+    return null;
+  }
+
+  return (
     <div className={`col-span-full my-2 ${className}`}>
+      <div className="text-[9px] text-muted-foreground/60 text-center mb-1">Advertisement</div>
       <EzoicAd 
         placeholderId={101}
         className="rounded-lg"
