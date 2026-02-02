@@ -1,1 +1,8 @@
+# Ezoic Ads.txt
+# For automatic sync, set up a redirect at your CDN/DNS level:
+# Redirect /ads.txt -> https://srv.adstxtmanager.com/19390/propredict.me
+#
+# Until then, periodically copy content from:
+# https://srv.adstxtmanager.com/19390/propredict.me
+
 google.com, pub-4138787612808412, DIRECT, f08c47fec0942fa0
