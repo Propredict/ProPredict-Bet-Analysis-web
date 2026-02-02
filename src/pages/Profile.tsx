@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const Profile = () => {
   const { user, signOut, session } = useAuth();
   const { plan } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -179,6 +181,15 @@ const Profile = () => {
   };
 
   const handleManageSubscription = async () => {
+    // Android: HARD BLOCK - no Stripe portal
+    if (isAndroidApp) {
+      toast({
+        title: "Manage subscription",
+        description: "On Android, subscriptions are managed by Google Play Store.",
+      });
+      return;
+    }
+
     if (!session?.access_token) return;
     
     setOpeningPortal(true);
@@ -380,7 +391,7 @@ const Profile = () => {
                     ) : (
                       <>
                         <CreditCard className="mr-1.5 h-3 w-3" />
-                        Manage Subscription
+                        {isAndroidApp ? "Manage in Google Play" : "Manage Subscription"}
                       </>
                     )}
                   </Button>

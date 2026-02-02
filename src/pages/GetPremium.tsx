@@ -22,6 +22,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -179,11 +180,34 @@ export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [isLoading, setIsLoading] = useState(false);
   const { plan: currentPlan } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
 
   const currentPlans = plans[billingPeriod];
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
+
+    // Android: HARD BLOCK - NO Stripe, NO redirects. Native only.
+    if (isAndroidApp) {
+      if (!window.Android) {
+        toast.error("Native purchase is unavailable. Please use the Android app version.");
+        return;
+      }
+
+      if (planId === "basic") {
+        if (window.Android.getPro) window.Android.getPro();
+        else if (window.Android.buyPro) window.Android.buyPro();
+        return;
+      }
+
+      if (planId === "premium") {
+        if (window.Android.getPremium) window.Android.getPremium();
+        else if (window.Android.buyPremium) window.Android.buyPremium();
+        return;
+      }
+
+      return;
+    }
 
     const priceId = planId === "basic" 
       ? STRIPE_PRICES.basic[billingPeriod]
@@ -232,6 +256,14 @@ export default function GetPremium() {
         </div>
         <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
       </div>
+
+      {isAndroidApp && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+          <p className="text-xs text-muted-foreground">
+            Subscriptions in the Android app are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
+          </p>
+        </div>
+      )}
 
       {/* Billing Toggle */}
       <div className="flex justify-center">

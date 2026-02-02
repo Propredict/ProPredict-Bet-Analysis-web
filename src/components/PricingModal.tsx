@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type UserPlan } from "@/hooks/useUserPlan";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 
 interface PricingModalProps {
@@ -70,8 +71,23 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const { plan: currentPlan } = useUserPlan();
   const navigate = useNavigate();
 
-  const handleSelectPlan = () => {
+  const handleSelectPlan = (planId: UserPlan) => {
     onOpenChange(false);
+
+    // Android: HARD BLOCK - never navigate to Stripe flows
+    if (getIsAndroidApp()) {
+      if (!window.Android) return;
+      if (planId === "basic") {
+        if (window.Android.getPro) window.Android.getPro();
+        else if (window.Android.buyPro) window.Android.buyPro();
+      }
+      if (planId === "premium") {
+        if (window.Android.getPremium) window.Android.getPremium();
+        else if (window.Android.buyPremium) window.Android.buyPremium();
+      }
+      return;
+    }
+
     navigate("/get-premium");
   };
 
@@ -140,7 +156,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                   variant={isCurrentPlan ? "outline" : planItem.buttonVariant}
                   className="w-full"
                   disabled={isCurrentPlan || planItem.id === "free"}
-                  onClick={handleSelectPlan}
+                  onClick={() => handleSelectPlan(planItem.id)}
                 >
                   {isCurrentPlan ? "Current Plan" : planItem.buttonText}
                 </Button>
