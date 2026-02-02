@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info } from "lucide-react";
-import { FooterAd } from "@/components/ads/AdSenseBanner";
+import { FooterAd } from "@/components/ads/EzoicAd";
 import { usePlatform } from "@/hooks/usePlatform";
 
 export function Footer() {
@@ -19,7 +19,7 @@ export function Footer() {
     <footer className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
         
-        {/* AdSense Footer Banner */}
+        {/* Ezoic Footer Banner */}
         {!isAndroidApp && (
           <div className="mb-4">
             <FooterAd />

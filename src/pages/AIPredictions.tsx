@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
-import { InContentAd } from "@/components/ads/AdSenseBanner";
+import { InContentAd } from "@/components/ads/EzoicAd";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
 import { useUserPlan } from "@/hooks/useUserPlan";
