@@ -124,15 +124,13 @@ const PrivacyPolicy = () => {
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">Advertising & Consent</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
-              We use Google AdMob to display advertisements in the mobile application.
-              Ads may be personalized or non-personalized depending on user consent and regional regulations (e.g. GDPR).
+              ProPredict displays advertisements on the website through third-party advertising partners such as Ezoic.
             </p>
             <p className="text-xs text-muted-foreground mb-1.5">
-              For the website, advertisements are served by Ezoic.
+              Ads may be personalized or non-personalized depending on user consent, location, and applicable regulations (e.g. GDPR, CCPA).
             </p>
             <p className="text-xs text-muted-foreground">
-              Users in applicable regions may be asked for consent before personalized ads are shown.
-              You can manage or withdraw your ad personalization preferences through your device settings.
+              Users in certain regions may be asked to provide consent before personalized ads are shown. You may manage or withdraw consent through cookie settings or browser controls.
             </p>
           </div>
 
