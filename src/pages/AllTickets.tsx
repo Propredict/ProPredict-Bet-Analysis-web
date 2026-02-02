@@ -47,15 +47,6 @@ export default function AllTickets() {
   const totalCount = tickets.length;
 
   const filteredTickets = tickets.filter(ticket => ticket.tier === activeTab);
-  const displayedTickets = filteredTickets.slice(0, 4);
-
-  const getFullPageRoute = (tab: TabType) => {
-    switch (tab) {
-      case "daily": return "/daily-tickets";
-      case "exclusive": return "/exclusive-tickets";
-      case "premium": return "/premium-tickets";
-    }
-  };
 
   const getTabLabel = (tab: TabType) => {
     switch (tab) {
@@ -166,62 +157,39 @@ export default function AllTickets() {
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : filteredTickets.length > 0 ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {displayedTickets.map((ticket, index) => {
-              const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
-              const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-              const isUnlocking = unlockingId === ticket.id;
-              // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
-              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
-              return (
-                <Fragment key={ticket.id}>
-                  <AllTicketsCard 
-                    ticket={ticket} 
-                    isLocked={isLocked} 
-                    unlockMethod={unlockMethod} 
-                    onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
-                    isUnlocking={isUnlocking} 
-                  />
-                  {showAdAfter && <InlineListAd />}
-                </Fragment>
-              );
-            })}
-          </div>
-          
-          <div className="flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(getFullPageRoute(activeTab))}
-              className="gap-2"
-            >
-              See all {getTabLabel(activeTab)} tickets
-            </Button>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {filteredTickets.map((ticket, index) => {
+            const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
+            const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
+            const isUnlocking = unlockingId === ticket.id;
+            // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
+            const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTickets.length - 1;
+            return (
+              <Fragment key={ticket.id}>
+                <AllTicketsCard 
+                  ticket={ticket} 
+                  isLocked={isLocked} 
+                  unlockMethod={unlockMethod} 
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
+                  isUnlocking={isUnlocking} 
+                />
+                {showAdAfter && <InlineListAd />}
+              </Fragment>
+            );
+          })}
         </div>
       ) : (
-        <div className="space-y-4">
-          <Card className="empty-state-compact bg-card/50 border-border/50">
-            <div className="flex flex-col items-center gap-2">
-              {activeTab === "daily" && <Calendar className="h-6 w-6 text-accent/40" />}
-              {activeTab === "exclusive" && <Star className="h-6 w-6 text-primary/40" />}
-              {activeTab === "premium" && <Crown className="h-6 w-6 text-warning/40" />}
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">No {activeTab === "exclusive" ? "pro" : activeTab} tickets available</p>
-                <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
-              </div>
+        <Card className="empty-state-compact bg-card/50 border-border/50">
+          <div className="flex flex-col items-center gap-2">
+            {activeTab === "daily" && <Calendar className="h-6 w-6 text-accent/40" />}
+            {activeTab === "exclusive" && <Star className="h-6 w-6 text-primary/40" />}
+            {activeTab === "premium" && <Crown className="h-6 w-6 text-warning/40" />}
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">No {activeTab === "exclusive" ? "pro" : activeTab} tickets available</p>
+              <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
             </div>
-          </Card>
-          <div className="flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(getFullPageRoute(activeTab))}
-              className="gap-2"
-            >
-              See all {getTabLabel(activeTab)} tickets
-            </Button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Sidebar Ad */}
