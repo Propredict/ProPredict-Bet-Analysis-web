@@ -90,15 +90,21 @@ export function InContentAd({ className = "" }: { className?: string }) {
 /**
  * Footer banner ad for placement at the bottom of pages.
  * 
- * VISIBLE TO ALL WEB USERS (Free, Pro, Premium, Admin).
- * HIDDEN on Android WebView for clean native experience.
- * Footer ads are non-intrusive and shown globally for revenue.
+ * VISIBLE TO: Free and Pro (basic) web users only.
+ * HIDDEN for: Premium users, Admin users, and Android WebView.
+ * Footer ads are non-intrusive and shown for revenue.
  */
 export function FooterAd({ className = "" }: { className?: string }) {
+  const { plan, isAdmin } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   
   // Hide ads on Android WebView - no empty gaps
   if (isAndroidApp) {
+    return null;
+  }
+
+  // Hide footer ads for Premium and Admin users (completely ad-free experience)
+  if (plan === "premium" || isAdmin) {
     return null;
   }
 
@@ -117,7 +123,7 @@ export function FooterAd({ className = "" }: { className?: string }) {
  * 
  * AUTOMATICALLY HIDDEN for:
  * - Android WebView users (clean native experience)
- * - Premium and Admin users
+ * - Pro (basic), Premium, and Admin users
  * 
  * Use only on Dashboard, Tips, and Tickets pages.
  */
@@ -130,8 +136,8 @@ export function SidebarAd({ className = "" }: { className?: string }) {
     return null;
   }
 
-  // Hide ads completely for Premium and Admin users (no space reserved)
-  if (plan === "premium" || isAdmin) {
+  // Hide ads completely for Pro, Premium and Admin users (no space reserved)
+  if (plan === "basic" || plan === "premium" || isAdmin) {
     return null;
   }
 
