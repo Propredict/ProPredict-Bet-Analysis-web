@@ -39,62 +39,122 @@ const STRIPE_PRICES = {
 };
 
 // Android-specific plans (RevenueCat) - matches reference image exactly
-const androidPlans = [
-  {
-    id: "free",
-    name: "Free",
-    price: "€0",
-    period: "/forever",
-    description: "Watch ads to unlock daily tips",
-    buttonText: "Current Plan",
-    buttonVariant: "outline" as const,
-    features: [
-      { text: "Daily tips (watch ads to unlock)", included: true },
-      { text: "Live scores", included: true },
-      { text: "League standings", included: true },
-      { text: "Basic predictions", included: true },
-      { text: "Exclusive tips", included: false },
-      { text: "Premium tickets", included: false },
-      { text: "Ad-free experience", included: false },
-    ],
-  },
-  {
-    id: "basic",
-    name: "Pro",
-    price: "€3.99",
-    period: "/month",
-    description: "Unlock all tips without watching ads",
-    buttonText: "Get Pro",
-    buttonVariant: "default" as const,
-    popular: true,
-    features: [
-      { text: "All daily tips unlocked", included: true },
-      { text: "Exclusive tips access", included: true },
-      { text: "Live scores", included: true },
-      { text: "League standings", included: true },
-      { text: "No ads for tips", included: true },
-      { text: "Premium tickets", included: false },
-      { text: "VIP analysis", included: false },
-    ],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: "€5.99",
-    period: "/month",
-    description: "Full access to all tickets and tips",
-    buttonText: "Get Premium",
-    buttonVariant: "default" as const,
-    features: [
-      { text: "All Pro features", included: true },
-      { text: "All premium match insights", included: true },
-      { text: "VIP multi-match analysis", included: true },
-      { text: "Full AI analysis", included: true },
-      { text: "Priority support", included: true },
-      { text: "Ad-free experience", included: true },
-    ],
-  },
-];
+const androidPlans = {
+  monthly: [
+    {
+      id: "free",
+      name: "Free",
+      price: "€0",
+      period: "/forever",
+      description: "Basic access to get started",
+      buttonText: "Current Plan",
+      buttonVariant: "outline" as const,
+      features: [
+        { text: "Full access to daily tips/tickets", included: true },
+        { text: "Free AI Basic predictions", included: true },
+        { text: "Live scores", included: true },
+        { text: "League standings", included: true },
+        { text: "Ads supported", included: true },
+        { text: "Exclusive content", included: false },
+        { text: "Premium content", included: false },
+      ],
+    },
+    {
+      id: "basic",
+      name: "Pro",
+      price: "€3.99",
+      period: "/month",
+      description: "Full access to daily & exclusive content",
+      buttonText: "Get Pro",
+      buttonVariant: "default" as const,
+      popular: true,
+      features: [
+        { text: "Daily & Pro tips/tickets unlocked", included: true },
+        { text: "Basic & Pro AI predictions", included: true },
+        { text: "Live scores", included: true },
+        { text: "League standings", included: true },
+        { text: "Ad-free tips/ticket experience", included: true },
+        { text: "Premium insights", included: false },
+        { text: "VIP analysis", included: false },
+      ],
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      price: "€5.99",
+      period: "/month",
+      description: "Full access to all content",
+      buttonText: "Get Premium",
+      buttonVariant: "default" as const,
+      features: [
+        { text: "All Pro features", included: true },
+        { text: "Premium match insights", included: true },
+        { text: "VIP multi-match analysis", included: true },
+        { text: "Full AI analysis", included: true },
+        { text: "Priority support", included: true },
+        { text: "Ad-free experience", included: true },
+      ],
+    },
+  ],
+  annual: [
+    {
+      id: "free",
+      name: "Free",
+      price: "€0",
+      period: "/forever",
+      description: "Basic access to get started",
+      buttonText: "Current Plan",
+      buttonVariant: "outline" as const,
+      features: [
+        { text: "Full access to daily tips/tickets", included: true },
+        { text: "Free AI Basic predictions", included: true },
+        { text: "Live scores", included: true },
+        { text: "League standings", included: true },
+        { text: "Ads supported", included: true },
+        { text: "Exclusive content", included: false },
+        { text: "Premium content", included: false },
+      ],
+    },
+    {
+      id: "basic",
+      name: "Pro",
+      price: "€39.99",
+      period: "/year",
+      savings: "€3.33/mo - Save 17%",
+      description: "Full access to daily & exclusive content",
+      buttonText: "Get Pro",
+      buttonVariant: "default" as const,
+      popular: true,
+      features: [
+        { text: "Daily & Pro tips/tickets unlocked", included: true },
+        { text: "Basic & Pro AI predictions", included: true },
+        { text: "Live scores", included: true },
+        { text: "League standings", included: true },
+        { text: "Ad-free tips/ticket experience", included: true },
+        { text: "Premium insights", included: false },
+        { text: "VIP analysis", included: false },
+      ],
+    },
+    {
+      id: "premium",
+      name: "Premium",
+      price: "€59.99",
+      period: "/year",
+      savings: "€5.00/mo - Save 17%",
+      description: "Full access to all content",
+      buttonText: "Get Premium",
+      buttonVariant: "default" as const,
+      features: [
+        { text: "All Pro features", included: true },
+        { text: "Premium match insights", included: true },
+        { text: "VIP multi-match analysis", included: true },
+        { text: "Full AI analysis", included: true },
+        { text: "Priority support", included: true },
+        { text: "Ad-free experience", included: true },
+      ],
+    },
+  ],
+};
 
 // Web plans (Stripe) - unchanged
 const webPlans = {
@@ -242,8 +302,8 @@ export default function GetPremium() {
   const { plan: currentPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Android: fixed monthly plans only; Web: supports monthly/annual toggle
-  const currentPlans = isAndroidApp ? androidPlans : webPlans[billingPeriod];
+  // Both Android and Web now support monthly/annual toggle
+  const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans[billingPeriod];
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
@@ -328,45 +388,32 @@ export default function GetPremium() {
         </div>
       )}
 
-      {/* Billing Toggle - Web only (Android is monthly-only via RevenueCat) */}
-      {!isAndroidApp && (
-        <div className="flex justify-center">
-          <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
-            <button
-              onClick={() => setBillingPeriod("monthly")}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
-                billingPeriod === "monthly"
-                  ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingPeriod("annual")}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
-                billingPeriod === "annual"
-                  ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Annual
-              <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
-            </button>
-          </div>
+      {/* Billing Toggle - Both Web and Android */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+          <button
+            onClick={() => setBillingPeriod("monthly")}
+            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+              billingPeriod === "monthly"
+                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingPeriod("annual")}
+            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+              billingPeriod === "annual"
+                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Annual
+            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
+          </button>
         </div>
-      )}
-
-      {/* Android: Monthly-only indicator */}
-      {isAndroidApp && (
-        <div className="flex justify-center">
-          <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
-            <span className="px-4 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-warning via-accent to-primary text-white">
-              Monthly
-            </span>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
