@@ -130,9 +130,23 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
-          {/* 4 */}
+          {/* 4 - Subscriptions & Payments */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">4. Data Sharing</h3>
+            <h3 className="font-semibold text-sm mb-1.5">4. Subscriptions & Payments</h3>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              Premium features may be available through paid subscriptions.
+            </p>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              All subscription payments are processed and managed exclusively by the platform where the purchase is made (such as Google Play Store or Apple App Store).
+            </p>
+            <p className="text-xs text-muted-foreground">
+              ProPredict does not directly collect, process, or store any payment or credit card information.
+            </p>
+          </div>
+
+          {/* 5 */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">5. Data Sharing</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
               We do <strong className="text-foreground">NOT</strong> sell personal data. Information may be shared only with:
             </p>
@@ -143,9 +157,9 @@ const PrivacyPolicy = () => {
             </ul>
           </div>
 
-          {/* Cookies */}
+          {/* 6 - Cookies */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">5. Cookies</h3>
+            <h3 className="font-semibold text-sm mb-1.5">6. Cookies</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
               We use cookies to improve functionality, analyze traffic, and display advertisements.
             </p>
