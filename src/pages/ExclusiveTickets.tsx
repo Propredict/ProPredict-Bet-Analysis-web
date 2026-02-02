@@ -1,10 +1,11 @@
+import { Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { SidebarAd } from "@/components/ads/EzoicAd";
+import { SidebarAd, InContentAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -149,35 +150,39 @@ export default function ExclusiveTickets() {
             </div>
           </Card>
         ) : (
-          exclusiveTickets.map(ticket => {
+          exclusiveTickets.map((ticket, index) => {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = unlockMethod?.type !== "unlocked";
             const isUnlocking = unlockingId === ticket.id;
             const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
+            // Show ads after every 3rd card
+            const showAdAfter = (index + 1) % 3 === 0 && index < exclusiveTickets.length - 1;
             return (
-              <TicketCard 
-                key={ticket.id} 
-                ticket={{
-                  id: ticket.id,
-                  title: ticket.title,
-                  matchCount: ticket.matches?.length ?? 0,
-                  status: ticket.result ?? "pending",
-                  totalOdds: ticket.total_odds ?? 0,
-                  tier: ticket.tier,
-                  matches: matchesToShow.map(m => ({
-                    name: m.match_name,
-                    prediction: m.prediction,
-                    odds: m.odds
-                  })),
-                  createdAt: ticket.created_at_ts
-                }} 
-                isLocked={isLocked} 
-                unlockMethod={unlockMethod} 
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
-                onSecondaryUnlock={handleSecondaryUnlock}
-                onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-                isUnlocking={isUnlocking} 
-              />
+              <Fragment key={ticket.id}>
+                <TicketCard 
+                  ticket={{
+                    id: ticket.id,
+                    title: ticket.title,
+                    matchCount: ticket.matches?.length ?? 0,
+                    status: ticket.result ?? "pending",
+                    totalOdds: ticket.total_odds ?? 0,
+                    tier: ticket.tier,
+                    matches: matchesToShow.map(m => ({
+                      name: m.match_name,
+                      prediction: m.prediction,
+                      odds: m.odds
+                    })),
+                    createdAt: ticket.created_at_ts
+                  }} 
+                  isLocked={isLocked} 
+                  unlockMethod={unlockMethod} 
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
+                  onSecondaryUnlock={handleSecondaryUnlock}
+                  onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
+                  isUnlocking={isUnlocking} 
+                />
+                {showAdAfter && <InContentAd />}
+              </Fragment>
             );
           })
         )}

@@ -172,7 +172,8 @@ export default function AllTickets() {
               const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
               const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
               const isUnlocking = unlockingId === ticket.id;
-              const showAdAfter = (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
+              // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
+              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
               return (
                 <Fragment key={ticket.id}>
                   <AllTicketsCard 

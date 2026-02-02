@@ -159,7 +159,8 @@ export function MatchPredictions() {
           {displayedTips.map((tip, index) => {
             const isLocked = !canAccess(tip.tier, "tip", tip.id);
             const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
-            const showAdAfter = (index + 1) % 3 === 0 && index < displayedTips.length - 1;
+            // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
+            const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTips.length - 1;
             return (
               <Fragment key={tip.id}>
                 <TipCard

@@ -166,7 +166,8 @@ export function BettingTickets() {
           {displayedTickets.map((ticket, index) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
-            const showAdAfter = (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
+            // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
+            const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
             return (
               <Fragment key={ticket.id}>
                 <TicketCard
