@@ -80,7 +80,7 @@ export default function ExclusiveTickets() {
                 <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Remove Ads & Unlock All Tickets</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Subscribe & Unlock All Tickets</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
               </div>
             </div>
