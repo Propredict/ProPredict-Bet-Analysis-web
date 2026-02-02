@@ -160,7 +160,7 @@ const benefits = [
   { icon: Brain, title: "Full AI Analysis", description: "Complete AI-powered match analysis and insights" },
   { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new predictions" },
   { icon: Clock, title: "Priority Access", description: "Get insights before match kickoff" },
-  { icon: Shield, title: "Satisfaction Guarantee", description: "30-day refund if not satisfied" },
+  { icon: Shield, title: "Flexible & Risk-Free", description: "Cancel or switch plans anytime, no questions asked" },
 ];
 
 const stats = [
