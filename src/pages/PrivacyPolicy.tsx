@@ -112,13 +112,13 @@ const PrivacyPolicy = () => {
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">Advertising & Consent</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
-              ProPredict displays advertisements on the website through third-party advertising partners such as Ezoic.
+              ProPredict may display advertisements on the website and in the mobile application through third-party advertising partners.
             </p>
             <p className="text-xs text-muted-foreground mb-1.5">
-              Ads may be personalized or non-personalized depending on user consent, location, and applicable regulations (e.g. GDPR, CCPA).
+              Ads may be personalized or non-personalized depending on user consent, location, and applicable regulations (such as GDPR and CCPA).
             </p>
             <p className="text-xs text-muted-foreground">
-              Users in certain regions may be asked to provide consent before personalized ads are shown. You may manage or withdraw consent through cookie settings or browser controls.
+              Users may manage or withdraw consent through cookie settings, device settings, or browser controls.
             </p>
           </div>
 
