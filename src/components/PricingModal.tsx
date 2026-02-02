@@ -30,7 +30,7 @@ const plans = [
     description: "Basic access to get started",
     features: [
       "Full access to daily tips/tickets",
-      "Free AI predictions",
+      "Free AI basic predictions",
       "Live scores & standings",
       "Ads supported",
     ],
@@ -46,8 +46,8 @@ const plans = [
     description: "Full access to daily & exclusive",
     popular: true,
     features: [
-      "All daily tips/tickets unlocked",
-      "Exclusive tips/tickets",
+      "Daily & Pro tips/tickets unlocked",
+      "Basic & Pro AI predictions",
       "Live scores & standings",
       "Ad-free tips/ticket experience",
     ],
