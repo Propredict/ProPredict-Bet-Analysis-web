@@ -117,6 +117,19 @@ const PrivacyPolicy = () => {
             </a>
           </div>
 
+          {/* Advertising & Consent */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">Advertising & Consent</h3>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              We use Google AdMob to display advertisements in the mobile application.
+              Ads may be personalized or non-personalized depending on user consent and regional regulations (e.g. GDPR).
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Users in applicable regions may be asked for consent before personalized ads are shown.
+              You can manage or withdraw your ad personalization preferences through your device settings.
+            </p>
+          </div>
+
           {/* 4 */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">4. Data Sharing</h3>
