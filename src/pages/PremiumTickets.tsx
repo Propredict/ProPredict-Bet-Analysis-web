@@ -100,7 +100,7 @@ export default function PremiumTickets() {
             </div>
             <Button size="sm" className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:opacity-90 text-black font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
               <Sparkles className="h-3 w-3" />
-              Subscribe
+              Get PREMIUM
             </Button>
           </div>
         </Card>
