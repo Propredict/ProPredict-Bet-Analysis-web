@@ -49,10 +49,9 @@ const plans = {
       buttonVariant: "outline" as const,
       features: [
         { text: "Full access to daily tips/tickets", included: true },
-        { text: "Free AI basic predictions", included: true },
+        { text: "Free AI Basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
-        { text: "Basic predictions", included: true },
         { text: "Ads supported", included: true },
         { text: "Exclusive content", included: false },
         { text: "Premium content", included: false },
@@ -106,10 +105,9 @@ const plans = {
       buttonVariant: "outline" as const,
       features: [
         { text: "Full access to daily tips/tickets", included: true },
-        { text: "Free AI basic predictions", included: true },
+        { text: "Free AI Basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
-        { text: "Basic predictions", included: true },
         { text: "Ads supported", included: true },
         { text: "Exclusive content", included: false },
         { text: "Premium content", included: false },

@@ -30,7 +30,7 @@ const plans = [
     description: "Basic access to get started",
     features: [
       "Full access to daily tips/tickets",
-      "Free AI basic predictions",
+      "Free AI Basic predictions",
       "Live scores & standings",
       "Ads supported",
     ],
