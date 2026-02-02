@@ -68,33 +68,15 @@ const CookiePolicy = () => {
           {/* Third-party cookies */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">Third-Party Cookies</h3>
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-1.5">
               We use third-party services that may place cookies or similar technologies on your device.
             </p>
-            <p className="text-xs text-muted-foreground mb-2">
-              <strong className="text-foreground">Google AdSense</strong> is used on our website to display advertisements. Google may use
-              cookies or device identifiers to serve personalized or non-personalized ads based on your browsing
-              behavior.
+            <p className="text-xs text-muted-foreground mb-1.5">
+              These services are used for advertising, analytics, and performance optimization on the website and mobile application.
             </p>
-            <p className="text-xs text-muted-foreground mb-2">
-              <strong className="text-foreground">Google AdMob</strong> is used in our mobile application to display advertisements. AdMob may
-              collect device identifiers and usage data to provide relevant ads.
+            <p className="text-xs text-muted-foreground">
+              Advertising partners may use cookies or device identifiers to provide relevant ads based on your preferences and consent.
             </p>
-            <p className="text-xs text-muted-foreground mb-2">
-              <strong className="text-foreground">Google Analytics / Firebase</strong> may be used to analyze usage patterns and improve
-              performance and stability.
-            </p>
-            <p className="text-xs text-muted-foreground mb-1">
-              Learn more about how Google uses data from sites that use its services:
-            </p>
-            <a
-              href="https://policies.google.com/technologies/ads"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline"
-            >
-              https://policies.google.com/technologies/ads
-            </a>
           </div>
 
           {/* User choices */}
