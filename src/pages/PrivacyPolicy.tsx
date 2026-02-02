@@ -172,6 +172,25 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
+          {/* 7 - Data Retention */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">7. Data Retention</h3>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              We retain personal data only for as long as necessary to provide and improve the service or to comply with legal obligations.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Users may request deletion of their personal data at any time via the{" "}
+              <a href="/data-deletion" className="text-primary hover:underline">
+                Data Deletion Request
+              </a>{" "}
+              page or by contacting us at{" "}
+              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">
+                propredictsupp@gmail.com
+              </a>
+              .
+            </p>
+          </div>
+
           {/* Contact */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">Contact Us</h3>
