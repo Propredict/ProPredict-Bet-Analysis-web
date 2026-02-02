@@ -43,11 +43,6 @@ export function EzoicAd({ placeholderId, className = "" }: EzoicAdProps) {
     return null;
   }
 
-  // Don't render placeholder if Ezoic is not loaded
-  if (!ezoicReady) {
-    return null;
-  }
-
   return (
     <div className={`w-full overflow-hidden ${className}`}>
       <div id={`ezoic-pub-ad-placeholder-${placeholderId}`} />
@@ -80,10 +75,13 @@ export function InContentAd({ className = "" }: { className?: string }) {
   return (
     <div className={`col-span-full my-3 ${className}`}>
       <div className="text-[9px] text-muted-foreground/60 text-center mb-1">Advertisement</div>
-      <EzoicAd 
-        placeholderId={101}
-        className="rounded-lg"
-      />
+      <div className="bg-muted/30 border border-border rounded-lg p-4 text-center">
+        <EzoicAd 
+          placeholderId={101}
+          className="rounded-lg"
+        />
+        <span className="text-[10px] text-muted-foreground">Ad Placeholder</span>
+      </div>
     </div>
   );
 }
@@ -113,10 +111,13 @@ export function InlineListAd({ className = "" }: { className?: string }) {
   return (
     <div className={`col-span-full my-2 ${className}`}>
       <div className="text-[9px] text-muted-foreground/60 text-center mb-1">Advertisement</div>
-      <EzoicAd 
-        placeholderId={101}
-        className="rounded-lg"
-      />
+      <div className="bg-muted/30 border border-border rounded-lg p-4 text-center">
+        <EzoicAd 
+          placeholderId={101}
+          className="rounded-lg"
+        />
+        <span className="text-[10px] text-muted-foreground">Ad Placeholder</span>
+      </div>
     </div>
   );
 }
