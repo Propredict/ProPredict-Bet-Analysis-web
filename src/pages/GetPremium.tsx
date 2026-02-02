@@ -26,6 +26,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Web-only: Stripe price IDs
 const STRIPE_PRICES = {
   basic: {
     monthly: "price_1SuCcpL8E849h6yxv6RvooUp",
@@ -37,7 +38,66 @@ const STRIPE_PRICES = {
   },
 };
 
-const plans = {
+// Android-specific plans (RevenueCat) - matches reference image exactly
+const androidPlans = [
+  {
+    id: "free",
+    name: "Free",
+    price: "€0",
+    period: "/forever",
+    description: "Watch ads to unlock daily tips",
+    buttonText: "Current Plan",
+    buttonVariant: "outline" as const,
+    features: [
+      { text: "Daily tips (watch ads to unlock)", included: true },
+      { text: "Live scores", included: true },
+      { text: "League standings", included: true },
+      { text: "Basic predictions", included: true },
+      { text: "Exclusive tips", included: false },
+      { text: "Premium tickets", included: false },
+      { text: "Ad-free experience", included: false },
+    ],
+  },
+  {
+    id: "basic",
+    name: "Pro",
+    price: "€3.99",
+    period: "/month",
+    description: "Unlock all tips without watching ads",
+    buttonText: "Get Pro",
+    buttonVariant: "default" as const,
+    popular: true,
+    features: [
+      { text: "All daily tips unlocked", included: true },
+      { text: "Exclusive tips access", included: true },
+      { text: "Live scores", included: true },
+      { text: "League standings", included: true },
+      { text: "No ads for tips", included: true },
+      { text: "Premium tickets", included: false },
+      { text: "VIP analysis", included: false },
+    ],
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: "€5.99",
+    period: "/month",
+    description: "Full access to all tickets and tips",
+    buttonText: "Get Premium",
+    buttonVariant: "default" as const,
+    features: [
+      { text: "All Pro features", included: true },
+      { text: "All premium match insights", included: true },
+      { text: "VIP multi-match analysis", included: true },
+      { text: "Full AI analysis", included: true },
+      { text: "Priority support", included: true },
+      { text: "Ad-free experience", included: true },
+    ],
+  },
+];
+
+// Web plans (Stripe) - unchanged
+const webPlans = {
   monthly: [
     {
       id: "free",
@@ -182,12 +242,13 @@ export default function GetPremium() {
   const { plan: currentPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  const currentPlans = plans[billingPeriod];
+  // Android: fixed monthly plans only; Web: supports monthly/annual toggle
+  const currentPlans = isAndroidApp ? androidPlans : webPlans[billingPeriod];
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
 
-    // Android: HARD BLOCK - NO Stripe, NO redirects. Native only.
+    // Android: HARD BLOCK - NO Stripe, NO redirects. Native RevenueCat only.
     if (isAndroidApp) {
       if (!window.Android) {
         toast.error("Native purchase is unavailable. Please use the Android app version.");
@@ -209,6 +270,7 @@ export default function GetPremium() {
       return;
     }
 
+    // Web: Stripe checkout
     const priceId = planId === "basic" 
       ? STRIPE_PRICES.basic[billingPeriod]
       : planId === "premium"
@@ -257,40 +319,54 @@ export default function GetPremium() {
         <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
       </div>
 
+      {/* Android: Google Play info banner */}
       {isAndroidApp && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
           <p className="text-xs text-muted-foreground">
-            Subscriptions in the Android app are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
+            Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
           </p>
         </div>
       )}
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center">
-        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
-          <button
-            onClick={() => setBillingPeriod("monthly")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
-              billingPeriod === "monthly"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingPeriod("annual")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
-              billingPeriod === "annual"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Annual
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
-          </button>
+      {/* Billing Toggle - Web only (Android is monthly-only via RevenueCat) */}
+      {!isAndroidApp && (
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+            <button
+              onClick={() => setBillingPeriod("monthly")}
+              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                billingPeriod === "monthly"
+                  ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingPeriod("annual")}
+              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                billingPeriod === "annual"
+                  ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Annual
+              <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Android: Monthly-only indicator */}
+      {isAndroidApp && (
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+            <span className="px-4 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-warning via-accent to-primary text-white">
+              Monthly
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -329,7 +405,7 @@ export default function GetPremium() {
                   <span className="text-2xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-xs text-muted-foreground">{plan.period}</span>
                 </div>
-                {plan.savings && (
+                {'savings' in plan && typeof plan.savings === 'string' && (
                   <p className="text-[10px] text-primary font-medium">{plan.savings}</p>
                 )}
                 <p className="text-[10px] text-muted-foreground">{plan.description}</p>
