@@ -1,73 +1,56 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 
-interface AdSenseBannerProps {
-  slot: string;
-  format?: "auto" | "horizontal" | "vertical" | "rectangle";
+interface EzoicAdProps {
+  placeholderId: number;
   className?: string;
 }
 
 /**
- * Google AdSense responsive banner component.
- * This is a placeholder that will display ads once AdSense is configured.
+ * Ezoic ad placeholder component.
+ * Renders an Ezoic placeholder div that will be filled by Ezoic's ad system.
  * 
  * IMPORTANT: Ads are ONLY shown on web (desktop + mobile browser).
- * Android WebView users do not see any ads (clean native experience).
- * Pro and Premium subscribers do not see in-content/sidebar ads.
- * 
- * To activate:
- * 1. Add your AdSense script to index.html
- * 2. Replace slot IDs with your actual ad unit IDs
+ * Android WebView users do not see any ads (AdMob is used natively).
  */
-export function AdSenseBanner({ slot, format = "auto", className = "" }: AdSenseBannerProps) {
-  const adRef = useRef<HTMLModElement>(null);
+export function EzoicAd({ placeholderId, className = "" }: EzoicAdProps) {
   const { isAndroidApp } = usePlatform();
-  const isAdSenseLoaded = typeof window !== "undefined" && (window as any).adsbygoogle;
-  const [adSenseReady, setAdSenseReady] = useState<boolean>(!!isAdSenseLoaded);
+  const [ezoicReady, setEzoicReady] = useState<boolean>(
+    typeof window !== "undefined" && !!window.ezstandalone
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (adSenseReady) return;
+    if (ezoicReady) return;
 
-    const onLoaded = () => setAdSenseReady(true);
-    window.addEventListener("adsense:loaded", onLoaded);
-    return () => window.removeEventListener("adsense:loaded", onLoaded);
-  }, [adSenseReady]);
+    const onLoaded = () => setEzoicReady(true);
+    window.addEventListener("ezoic:loaded", onLoaded);
+    return () => window.removeEventListener("ezoic:loaded", onLoaded);
+  }, [ezoicReady]);
 
   useEffect(() => {
-    // Only push ads if AdSense script is loaded and not on Android
-    if (adSenseReady && adRef.current && !isAndroidApp) {
-      try {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-      } catch (e) {
-        console.log("AdSense not available");
-      }
+    // Trigger Ezoic to show ads for this placeholder
+    if (ezoicReady && !isAndroidApp && window.ezstandalone?.cmd) {
+      window.ezstandalone.cmd.push(() => {
+        window.ezstandalone?.showAds([placeholderId]);
+      });
     }
-  }, [adSenseReady, isAndroidApp]);
+  }, [ezoicReady, isAndroidApp, placeholderId]);
 
   // Hide all ads on Android WebView - no empty gaps
   if (isAndroidApp) {
     return null;
   }
 
-  // Don't render placeholder if AdSense is not loaded
-  // This prevents empty space in production before ads are configured
-  if (!adSenseReady) {
+  // Don't render placeholder if Ezoic is not loaded
+  if (!ezoicReady) {
     return null;
   }
 
   return (
     <div className={`w-full overflow-hidden ${className}`}>
-      <ins
-        ref={adRef}
-        className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-4138787612808412"
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
+      <div id={`ezoic-pub-ad-placeholder-${placeholderId}`} />
     </div>
   );
 }
@@ -96,9 +79,8 @@ export function InContentAd({ className = "" }: { className?: string }) {
 
   return (
     <div className={`col-span-full my-2 ${className}`}>
-      <AdSenseBanner 
-        slot="XXXXXXXXXX" // Replace with your in-content ad slot ID
-        format="horizontal"
+      <EzoicAd 
+        placeholderId={101}
         className="rounded-lg"
       />
     </div>
@@ -122,9 +104,8 @@ export function FooterAd({ className = "" }: { className?: string }) {
 
   return (
     <div className={`w-full ${className}`}>
-      <AdSenseBanner 
-        slot="XXXXXXXXXX" // Replace with your footer ad slot ID
-        format="horizontal"
+      <EzoicAd 
+        placeholderId={102}
         className="max-w-[728px] mx-auto"
       />
     </div>
@@ -156,9 +137,8 @@ export function SidebarAd({ className = "" }: { className?: string }) {
 
   return (
     <div className={`w-full max-w-md mx-auto my-4 ${className}`}>
-      <AdSenseBanner 
-        slot="XXXXXXXXXX" // Replace with your sidebar ad slot ID
-        format="horizontal"
+      <EzoicAd 
+        placeholderId={103}
         className="rounded-lg shadow-sm"
       />
     </div>

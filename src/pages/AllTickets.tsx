@@ -9,7 +9,7 @@ import { useTickets, type TicketWithMatches } from "@/hooks/useTickets";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
-import { SidebarAd } from "@/components/ads/AdSenseBanner";
+import { SidebarAd } from "@/components/ads/EzoicAd";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";

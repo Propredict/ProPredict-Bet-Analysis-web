@@ -5,7 +5,7 @@ import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
-import { SidebarAd } from "@/components/ads/AdSenseBanner";
+import { SidebarAd } from "@/components/ads/EzoicAd";
 
 const Index = () => {
   return (

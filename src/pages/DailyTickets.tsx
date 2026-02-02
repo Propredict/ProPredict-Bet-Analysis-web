@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { InContentAd, SidebarAd } from "@/components/ads/AdSenseBanner";
+import { InContentAd, SidebarAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
