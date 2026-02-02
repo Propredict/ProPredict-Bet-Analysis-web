@@ -77,6 +77,17 @@ export function Footer() {
           </a>
         </div>
 
+        {/* Ads Disclosure - Web only */}
+        {!isAndroidApp && (
+          <p className="text-center text-[8px] sm:text-[9px] text-muted-foreground mb-2">
+            <span className="font-medium">Ads Disclosure:</span> ProPredict may display advertisements on the website through third-party advertising partners. Ads help support the operation of the platform. Learn more in our{" "}
+            <Link to="/privacy-policy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        )}
+
         {/* Copyright */}
         <div className="text-center space-y-0.5 pt-2 border-t border-border/30">
           <p className="text-[8px] sm:text-[9px] text-accent">
