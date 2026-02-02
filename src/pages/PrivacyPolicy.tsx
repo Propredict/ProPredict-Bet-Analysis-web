@@ -127,6 +127,9 @@ const PrivacyPolicy = () => {
               We use Google AdMob to display advertisements in the mobile application.
               Ads may be personalized or non-personalized depending on user consent and regional regulations (e.g. GDPR).
             </p>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              For the website, advertisements are served by Ezoic.
+            </p>
             <p className="text-xs text-muted-foreground">
               Users in applicable regions may be asked for consent before personalized ads are shown.
               You can manage or withdraw your ad personalization preferences through your device settings.
