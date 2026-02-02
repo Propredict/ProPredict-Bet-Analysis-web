@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight } from "lucide-react";
 
@@ -13,6 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
+import { InlineListAd } from "@/components/ads/EzoicAd";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -162,20 +163,23 @@ export function BettingTickets() {
         </div>
       ) : displayedTickets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {displayedTickets.map((ticket) => {
+          {displayedTickets.map((ticket, index) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+            const showAdAfter = (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
             return (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                isUnlocking={unlockingId === ticket.id}
-                onUnlockClick={() =>
-                  handleUnlock("ticket", ticket.id, ticket.tier)
-                }
-              />
+              <Fragment key={ticket.id}>
+                <TicketCard
+                  ticket={ticket}
+                  isLocked={isLocked}
+                  unlockMethod={unlockMethod}
+                  isUnlocking={unlockingId === ticket.id}
+                  onUnlockClick={() =>
+                    handleUnlock("ticket", ticket.id, ticket.tier)
+                  }
+                />
+                {showAdAfter && <InlineListAd />}
+              </Fragment>
             );
           })}
           

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Ticket, Calendar, Star, Crown, RefreshCw, Loader2, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { useTickets, type TicketWithMatches } from "@/hooks/useTickets";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
-import { SidebarAd } from "@/components/ads/EzoicAd";
+import { SidebarAd, InlineListAd } from "@/components/ads/EzoicAd";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
@@ -168,19 +168,22 @@ export default function AllTickets() {
       ) : filteredTickets.length > 0 ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {displayedTickets.map(ticket => {
+            {displayedTickets.map((ticket, index) => {
               const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
               const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
               const isUnlocking = unlockingId === ticket.id;
+              const showAdAfter = (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
               return (
-                <AllTicketsCard 
-                  key={ticket.id} 
-                  ticket={ticket} 
-                  isLocked={isLocked} 
-                  unlockMethod={unlockMethod} 
-                  onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
-                  isUnlocking={isUnlocking} 
-                />
+                <Fragment key={ticket.id}>
+                  <AllTicketsCard 
+                    ticket={ticket} 
+                    isLocked={isLocked} 
+                    unlockMethod={unlockMethod} 
+                    onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
+                    isUnlocking={isUnlocking} 
+                  />
+                  {showAdAfter && <InlineListAd />}
+                </Fragment>
               );
             })}
           </div>
