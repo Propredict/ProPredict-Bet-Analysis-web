@@ -47,15 +47,18 @@ import ManageTickets from "./pages/admin/ManageTickets";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { UserPlanProvider } from "./hooks/useUserPlan";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   // ✅ TEMP: Stripe key check
-  console.log(
-    "Stripe key:",
-    import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
-  );
+  if (!getIsAndroidApp()) {
+    console.log(
+      "Stripe key:",
+      import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+    );
+  }
 
   return (
     <HelmetProvider>
