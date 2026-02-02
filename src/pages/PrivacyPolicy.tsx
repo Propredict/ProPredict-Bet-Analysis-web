@@ -97,26 +97,14 @@ const PrivacyPolicy = () => {
           {/* 3 */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">3. Third-Party Services</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">We use trusted third-party services, including:</p>
+            <p className="text-xs text-muted-foreground mb-1.5">We use trusted third-party services to operate and monetize ProPredict:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
-              <li>Google Analytics / Firebase – analytics & performance</li>
-              <li>Supabase – authentication & database</li>
-              <li>Google AdMob – advertisements in the mobile application</li>
-              <li>Ezoic – advertisements on the website</li>
+              <li>Advertising partners for website and mobile app monetization</li>
+              <li>Analytics services (e.g. Google Analytics / Firebase)</li>
+              <li>Authentication and database services (e.g. Supabase)</li>
             </ul>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              Ezoic may use cookies or similar technologies to display personalized or non-personalized advertisements.
-            </p>
             <p className="text-xs text-muted-foreground">
-              Learn more about Ezoic's privacy practices:{" "}
-              <a
-                href="https://www.ezoic.com/privacy-policy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                https://www.ezoic.com/privacy-policy/
-              </a>
+              Advertising partners may use cookies, device identifiers, or similar technologies to display personalized or non-personalized advertisements in accordance with applicable laws.
             </p>
           </div>
 
