@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Bell, BellRing, Heart, User, LogOut, Crown, Star, Gift } from "lucide-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
@@ -27,12 +27,19 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { cn } from "@/lib/utils";
 
+// Pages where footer should be hidden (header-only layout)
+const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
+
 export default function AppLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+
+  // Check if current route should hide footer
+  const hideFooter = HEADER_ONLY_ROUTES.some(route => location.pathname.startsWith(route));
 
   const getPlanBadge = () => {
     switch (plan) {
@@ -204,8 +211,8 @@ export default function AppLayout() {
               <Outlet />
             </div>
             
-            {/* Footer - inside scrollable area, visible on all devices */}
-            <Footer />
+            {/* Footer - inside scrollable area, hidden on Live Scores and AI Predictions */}
+            {!hideFooter && <Footer />}
           </main>
 
           {/* Mobile Bottom Navigation - Fixed at bottom */}
