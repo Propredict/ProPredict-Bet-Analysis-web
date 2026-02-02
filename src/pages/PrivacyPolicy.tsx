@@ -97,24 +97,27 @@ const PrivacyPolicy = () => {
           {/* 3 */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">3. Third-Party Services</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">We use trusted third-party services:</p>
+            <p className="text-xs text-muted-foreground mb-1.5">We use trusted third-party services, including:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
               <li>Google Analytics / Firebase – analytics & performance</li>
               <li>Supabase – authentication & database</li>
-              <li>Google AdMob – ads in the mobile app</li>
-              <li>Google AdSense – ads on the website</li>
+              <li>Google AdMob – advertisements in the mobile application</li>
+              <li>Ezoic – advertisements on the website</li>
             </ul>
-            <p className="text-xs text-muted-foreground mb-1">
-              Google may use cookies or device identifiers to display personalized or non-personalized ads.
+            <p className="text-xs text-muted-foreground mb-1.5">
+              Ezoic may use cookies or similar technologies to display personalized or non-personalized advertisements.
             </p>
-            <a
-              href="https://policies.google.com/technologies/ads"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline"
-            >
-              Learn more about Google ads and data usage
-            </a>
+            <p className="text-xs text-muted-foreground">
+              Learn more about Ezoic's privacy practices:{" "}
+              <a
+                href="https://www.ezoic.com/privacy-policy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                https://www.ezoic.com/privacy-policy/
+              </a>
+            </p>
           </div>
 
           {/* Advertising & Consent */}
