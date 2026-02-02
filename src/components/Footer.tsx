@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info } from "lucide-react";
-import { FooterAd } from "@/components/ads/EzoicAd";
 import { usePlatform } from "@/hooks/usePlatform";
 
 export function Footer() {
@@ -18,14 +17,6 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
-        
-        {/* Ezoic Footer Banner */}
-        {!isAndroidApp && (
-          <div className="mb-4">
-            <FooterAd />
-          </div>
-        )}
-
         {/* Google Play - small square button (right aligned) */}
         <div className="flex justify-end mb-2">
           <div className="flex flex-col items-center gap-1">
