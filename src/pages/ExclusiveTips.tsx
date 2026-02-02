@@ -81,8 +81,8 @@ export default function ExclusiveTips() {
                 <Crown className="h-4 w-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Subscribe & Unlock All Tips</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €3.99/month</p>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Unlock Pro Tips</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Get PRO for €3.99/month</p>
               </div>
             </div>
             <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
