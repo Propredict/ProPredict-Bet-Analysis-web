@@ -39,13 +39,13 @@ import {
 
 const tipsItems = [
   { title: "Daily Tips", url: "/daily-tips", icon: Lightbulb },
-  { title: "Pro Tips", url: "/exclusive-tips", icon: Star },
+  { title: "Exclusive Tips", url: "/exclusive-tips", icon: Star },
   { title: "Premium Tips", url: "/premium-tips", icon: Crown },
 ];
 
 const ticketsItems = [
   { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
-  { title: "Pro Tickets", url: "/exclusive-tickets", icon: Ticket },
+  { title: "Exclusive Tickets", url: "/exclusive-tickets", icon: Ticket },
   { title: "Premium Tickets", url: "/premium-tickets", icon: Crown },
   { title: "Winning History", url: "/all-tickets", icon: Layers },
 ];
