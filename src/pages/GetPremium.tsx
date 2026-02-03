@@ -535,32 +535,35 @@ export default function GetPremium() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-2 sm:gap-4">
         {stats.map((stat, index) => (
-          <div key={index} className="text-center py-3">
+          <Card 
+            key={index} 
+            className="text-center py-4 px-2 bg-gradient-to-b from-primary/10 via-card to-card border-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.1)]"
+          >
             <div className="flex items-center justify-center gap-1">
-              <span className="text-lg sm:text-xl font-bold text-foreground">{stat.value}</span>
-              {stat.isStar && <Star className="h-4 w-4 text-warning fill-warning" />}
+              <span className="text-xl sm:text-2xl font-bold text-primary">{stat.value}</span>
+              {stat.isStar && <Star className="h-4 w-4 sm:h-5 sm:w-5 text-warning fill-warning" />}
             </div>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-          </div>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1">{stat.label}</p>
+          </Card>
         ))}
       </div>
 
       {/* FAQ Section */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground text-center">Frequently Asked Questions</h2>
-        <Accordion type="single" collapsible className="space-y-1">
+      <div className="space-y-4">
+        <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions</h2>
+        <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq, index) => (
             <AccordionItem
               key={index}
               value={`faq-${index}`}
-              className="border border-primary/30 rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-3 shadow-[0_0_10px_rgba(15,155,142,0.1)]"
+              className="border border-primary/30 rounded-lg bg-gradient-to-r from-primary/15 via-primary/5 to-transparent px-4 shadow-[0_0_12px_rgba(15,155,142,0.12)] hover:border-primary/50 transition-colors"
             >
-              <AccordionTrigger className="text-xs font-medium text-foreground py-3 hover:no-underline">
+              <AccordionTrigger className="text-xs sm:text-sm font-medium text-foreground py-4 hover:no-underline">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-[11px] text-muted-foreground pb-3">
+              <AccordionContent className="text-[11px] sm:text-xs text-muted-foreground pb-4 leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
