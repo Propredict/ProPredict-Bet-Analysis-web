@@ -9,6 +9,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchPreviewSelector } from "@/components/match-previews/MatchPreviewSelector";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
+import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
@@ -242,11 +243,18 @@ export default function MatchPreviews() {
 
             {/* Analysis Section */}
             {(analysis || isGenerating) && generatedMatch && (
-              <MatchPreviewAnalysis
-                match={generatedMatch}
-                analysis={analysis}
-                isLoading={isGenerating}
-              />
+              <>
+                <MatchPreviewAnalysis
+                  match={generatedMatch}
+                  analysis={analysis}
+                  isLoading={isGenerating}
+                />
+                
+                {/* Match Stats Tabs - H2H, Stats, Lineups, Events */}
+                {analysis && (
+                  <MatchPreviewStats match={generatedMatch} />
+                )}
+              </>
             )}
 
             {/* Empty state when no match selected */}
