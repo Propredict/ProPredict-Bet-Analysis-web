@@ -65,23 +65,10 @@ export default function AllTickets() {
   const getTabStyles = (tabId: string, isActive: boolean) => {
     const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
     
-    // Each tier always shows its color - stronger when active, subtle when inactive
-    switch (tabId) {
-      case "daily":
-        return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-yellow-500/25 border-amber-500/60 text-amber-400 shadow-amber-500/25")
-          : cn(baseStyles, "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 border-amber-500/30 text-amber-400/70 hover:border-amber-500/50 hover:text-amber-400");
-      case "exclusive":
-        return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-violet-500/25 via-purple-500/20 to-indigo-500/25 border-violet-500/60 text-violet-400 shadow-violet-500/25")
-          : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-indigo-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
-      case "premium":
-        return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-yellow-500/25 via-amber-500/20 to-orange-500/25 border-yellow-500/60 text-yellow-400 shadow-yellow-500/30 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
-          : cn(baseStyles, "bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/10 border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400");
-      default:
-        return cn(baseStyles, "bg-card border-border text-muted-foreground");
-    }
+    // All tabs use primary green color - stronger when active, subtle when inactive
+    return isActive 
+      ? cn(baseStyles, "bg-primary/20 border-primary/60 text-primary shadow-primary/25")
+      : cn(baseStyles, "bg-primary/5 border-primary/20 text-primary/70 hover:border-primary/40 hover:text-primary");
   };
 
 

@@ -6,35 +6,15 @@ interface AllTicketsStatCardProps {
   icon: LucideIcon;
   count: number;
   label: string;
-  accentColor: "primary" | "accent" | "warning";
+  accentColor?: "primary" | "accent" | "warning"; // kept for backwards compatibility but not used
 }
 
-const colorClasses = {
-  primary: {
-    bg: "bg-primary/10",
-    border: "border-primary/20",
-    icon: "text-primary",
-  },
-  accent: {
-    bg: "bg-accent/10",
-    border: "border-accent/20",
-    icon: "text-accent",
-  },
-  warning: {
-    bg: "bg-warning/10",
-    border: "border-warning/20",
-    icon: "text-warning",
-  },
-};
-
-export function AllTicketsStatCard({ icon: Icon, count, label, accentColor }: AllTicketsStatCardProps) {
-  const colors = colorClasses[accentColor];
-
+export function AllTicketsStatCard({ icon: Icon, count, label }: AllTicketsStatCardProps) {
   return (
-    <Card className={cn("p-2.5 sm:p-3 bg-card/80 border-border/50 hover:border-border transition-colors", colors.border)}>
+    <Card className="p-2.5 sm:p-3 bg-card/80 border-primary/20 hover:border-primary/40 transition-colors">
       <div className="flex items-center gap-2">
-        <div className={cn("p-1.5 rounded-md", colors.bg)}>
-          <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", colors.icon)} />
+        <div className="p-1.5 rounded-md bg-primary/10">
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
         </div>
         <div>
           <p className="text-base sm:text-lg font-bold text-foreground">{count}</p>
