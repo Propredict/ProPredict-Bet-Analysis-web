@@ -95,7 +95,7 @@ export default function AppLayout() {
                 onClick={() => navigate("/")}
               >
                 <span className="text-xs font-bold text-primary-foreground leading-tight">ProPredict</span>
-                <span className="text-[8px] text-primary-foreground/70 leading-tight">AI Predictions & Analysis</span>
+                <span className="text-[8px] font-semibold text-primary-foreground/80 leading-tight">AI Predictions & Analysis</span>
               </div>
               
               {/* Desktop Logo */}
