@@ -114,7 +114,7 @@ export default function AppLayout() {
           {/* FIXED Header - Always visible */}
           <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8 [&>svg]:h-5 [&>svg]:w-5" />
+              <SidebarTrigger className="md:hidden text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8 [&>svg]:h-5 [&>svg]:w-5" />
               
               {/* Mobile Branding - Text */}
               <div 
