@@ -45,9 +45,9 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
   const displayTeams = standings.slice(0, 8);
 
   return (
-    <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
+    <Card className="bg-gradient-to-br from-primary/15 via-primary/10 to-card border-primary/20 overflow-hidden">
       {/* Header */}
-      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-white/10 flex items-center gap-2">
+      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-primary/20 flex items-center gap-2">
         <Trophy className="h-4 w-4 text-primary flex-shrink-0" />
         <span className="font-semibold text-xs sm:text-sm">Standings</span>
         <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{flag} {leagueName}</span>
@@ -113,7 +113,7 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
       )}
 
       {/* Legend - wrap on mobile */}
-      <div className="px-3 sm:px-4 py-2 border-t border-white/5 flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-muted-foreground">
+      <div className="px-3 sm:px-4 py-2 border-t border-primary/20 flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-green-500"></span>
           UCL
@@ -143,7 +143,7 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
   return (
     <div className="space-y-4">
       {/* League Header */}
-      <Card className="p-3 sm:p-4 bg-[#0E1627] border-white/10">
+      <Card className="p-3 sm:p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-card border-primary/20">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
@@ -163,7 +163,7 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
 
       {/* Filter Tabs */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as "all" | "home" | "away")}>
-        <TabsList className="w-full bg-[#0E1627] border border-white/10 p-1 h-auto">
+        <TabsList className="w-full bg-card border border-primary/20 p-1 h-auto">
           <TabsTrigger 
             value="all" 
             className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -185,7 +185,7 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
         </TabsList>
 
         <TabsContent value={filter} className="mt-4">
-          <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
+          <Card className="bg-gradient-to-br from-primary/15 via-primary/10 to-card border-primary/20 overflow-hidden">
             {/* Table Header */}
             <div className="px-4 py-3 bg-primary/20 text-center font-semibold text-sm">
               {leagueName}
@@ -385,7 +385,7 @@ export function LeagueStatsStandingsTab({ leagueId, leagueName }: LeagueStatsSta
     return (
       <div className="space-y-6">
         {/* Header */}
-        <Card className="p-4 bg-[#0E1627] border-white/10">
+        <Card className="p-4 bg-gradient-to-br from-primary/15 via-primary/10 to-card border-primary/20">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
             <span className="font-semibold">All Leagues Standings</span>
