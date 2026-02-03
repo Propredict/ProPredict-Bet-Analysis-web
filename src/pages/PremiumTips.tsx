@@ -58,18 +58,18 @@ export default function PremiumTips() {
     </Helmet>
     <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.15)]">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
         <div className="flex items-center gap-1.5">
-          <div className="p-1.5 rounded-md bg-yellow-500/20">
-            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
+          <div className="p-1.5 rounded-md bg-violet-500/20">
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
           </div>
           <div>
-            <h1 className="text-xs text-foreground font-semibold sm:text-lg">Premium Tips</h1>
+            <h1 className="text-xs text-violet-400 font-semibold sm:text-lg">Premium Tips</h1>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">Our highest confidence picks</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[9px] px-1.5 py-0.5">
+          <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[9px] px-1.5 py-0.5">
             <Crown className="h-2.5 w-2.5 mr-0.5" />
             Premium
           </Badge>
@@ -87,10 +87,10 @@ export default function PremiumTips() {
       </div>
 
       {/* Premium Upgrade Banner */}
-      {showUpgradeBanner && <Card className="p-3 sm:p-4 bg-gradient-to-r from-warning/20 via-accent/20 to-primary/20 border-warning/30">
+      {showUpgradeBanner && <Card className="p-3 sm:p-4 bg-gradient-to-r from-violet-500/20 via-purple-500/15 to-violet-500/10 border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
-            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-warning/30 to-accent/30">
-              <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-warning" />
+            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-violet-500/30 to-purple-500/30">
+              <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-violet-400" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-bold text-foreground">Unlock Premium Predictions</h2>
@@ -100,15 +100,15 @@ export default function PremiumTips() {
             </div>
             <div className="flex items-center gap-3 text-[9px] sm:text-[10px] text-muted-foreground">
               <span className="flex items-center gap-0.5">
-                <Sparkles className="h-3 w-3 text-warning" />
+                <Sparkles className="h-3 w-3 text-violet-400" />
                 Highest confidence
               </span>
               <span className="flex items-center gap-0.5">
-                <Sparkles className="h-3 w-3 text-warning" />
+                <Sparkles className="h-3 w-3 text-violet-400" />
                 No ads
               </span>
             </div>
-            <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
+            <Button className="bg-gradient-to-r from-violet-600 to-purple-500 hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
               Get PREMIUM for €5.99/month
             </Button>
           </div>
