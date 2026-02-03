@@ -57,8 +57,8 @@ export function MatchPredictions() {
   const { tips: dbTips = [], isLoading } = tipsQuery;
   const tips = dbTips.map(mapDbTipToTip);
   const filteredTips = tips.filter(t => t.tier === activeTab);
-  const displayedTips = filteredTips.slice(0, 4);
-  const hasMoreTips = filteredTips.length > 4;
+  const displayedTips = filteredTips.slice(0, 3);
+  const hasMoreTips = filteredTips.length > 3;
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
