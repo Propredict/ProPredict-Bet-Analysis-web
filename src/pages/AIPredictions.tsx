@@ -40,6 +40,23 @@ export default function AIPredictions() {
     return { won, lost, pending, accuracy };
   }, [predictions]);
 
+  const { isAdmin, plan } = useUserPlan();
+  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
+  const navigate = useNavigate();
+
+  // Trigger interstitial ad on Android when page loads
+  useInterstitialAd();
+
+  const isPremiumUser = plan === "premium";
+  const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
+
+  // Helper to determine prediction tier - MUST be defined before useMemo that uses it
+  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
+    if (prediction.is_premium && prediction.confidence > 80) return "premium";
+    if (prediction.confidence > 70) return "pro";
+    return "free";
+  };
+
   // Calculate accuracy per tier (FREE, PRO, PREMIUM)
   const tierStats = useMemo(() => {
     const calcTierStats = (tierName: "free" | "pro" | "premium") => {
@@ -57,22 +74,6 @@ export default function AIPredictions() {
       premium: calcTierStats("premium"),
     };
   }, [predictions]);
-  const { isAdmin, plan } = useUserPlan();
-  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
-  const navigate = useNavigate();
-
-  // Trigger interstitial ad on Android when page loads
-  useInterstitialAd();
-
-  const isPremiumUser = plan === "premium";
-  const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
-
-  // Helper to determine prediction tier
-  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    if (prediction.is_premium && prediction.confidence > 80) return "premium";
-    if (prediction.confidence > 70) return "pro";
-    return "free";
-  };
 
   // Count predictions per tier
   const tierCounts = useMemo(() => {
