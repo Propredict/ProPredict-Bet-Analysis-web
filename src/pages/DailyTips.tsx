@@ -99,7 +99,7 @@ export default function DailyTips() {
           </div>
           <div>
             <h1 className="text-xs sm:text-lg font-semibold text-primary">Daily Tips</h1>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Only Daily Tips</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground"></p>
           </div>
         </div>
         <div className="flex items-center gap-1">
