@@ -71,13 +71,14 @@ export function LeagueSearchSelect({
           <ChevronsUpDown className={cn("ml-1 shrink-0 opacity-50", compact ? "h-3 w-3" : "h-4 w-4")} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0 bg-popover border-border z-50" align="end">
+      <PopoverContent className="w-[280px] p-0 bg-popover border-border z-50" align="end">
         <Command className="bg-transparent">
-          <div className="flex items-center border-b border-border px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="flex items-center border-b border-primary/30 bg-primary/5 px-3 py-1">
+            <Search className="mr-2 h-5 w-5 shrink-0 text-primary animate-pulse" />
             <CommandInput
-              placeholder="Search leagues..."
-              className="h-9 border-0 focus:ring-0 text-sm"
+              placeholder="Type to search..."
+              className="h-11 border-0 focus:ring-0 text-sm placeholder:text-primary/50 font-medium"
+              autoFocus
             />
           </div>
           <CommandList className="max-h-[250px]">
