@@ -124,13 +124,13 @@ export function AIPredictionCard({
               </Badge>
             )}
             {isPremiumTier && (
-              <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+              <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Crown className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PREMIUM
               </Badge>
             )}
             {isProTier && !isPremiumTier && (
-              <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PRO
               </Badge>
@@ -277,7 +277,7 @@ export function AIPredictionCard({
               </div>
             ) : unlockMethod.type === "android_premium_only" ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded"
                 onClick={() => {
                   if (isAndroidApp) {
                     if (window.Android?.getPremium) {
@@ -308,7 +308,12 @@ export function AIPredictionCard({
               </Button>
             ) : (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0 font-medium rounded"
+                className={cn(
+                  "w-full h-7 md:h-8 text-[10px] md:text-xs hover:opacity-90 text-white border-0 font-medium rounded",
+                  unlockMethod.type === "upgrade_basic" 
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500" 
+                    : "bg-gradient-to-r from-fuchsia-500 to-pink-500"
+                )}
                 onClick={() => navigate("/get-premium")}
               >
                 {unlockMethod.type === "upgrade_basic" ? (
