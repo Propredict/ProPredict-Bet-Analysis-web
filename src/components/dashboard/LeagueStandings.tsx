@@ -131,14 +131,15 @@ export function LeagueStandings() {
 
         {/* See More CTA */}
         {displayedStandings.length > 0 && (
-          <div className="p-3 border-t border-border/30">
+          <div className="p-3 border-t border-border/30 bg-background/50">
             <Button
-              variant="outline"
-              className="w-full border-border/50 hover:border-primary/50 hover:bg-primary/5 group"
+              variant="ghost"
+              className="w-full bg-primary/10 hover:bg-primary/20 border border-primary/30 group"
               onClick={() => navigate("/league-statistics")}
             >
-              <span className="text-xs">View full standings & more leagues</span>
-              <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+              <Trophy className="h-4 w-4 mr-1.5 text-primary" />
+              <span className="text-xs text-primary">View full standings & more leagues</span>
+              <ChevronRight className="h-4 w-4 ml-1 text-primary transition-transform group-hover:translate-x-0.5" />
             </Button>
           </div>
         )}
