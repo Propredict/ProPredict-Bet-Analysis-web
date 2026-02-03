@@ -1,6 +1,6 @@
 import { useState, Fragment } from "react";
 import { Helmet } from "react-helmet-async";
-import { Ticket, Lightbulb, Calendar, Star, Crown, RefreshCw, Loader2, Trophy, History } from "lucide-react";
+import { Ticket, Lightbulb, Calendar, Star, Crown, RefreshCw, Loader2, Trophy, History, TrendingDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +98,7 @@ export default function AllTickets() {
   const premiumTipsCount = archivedTips.filter(t => t.tier === "premium").length;
   const totalTipsCount = archivedTips.length;
   const wonTipsCount = archivedTips.filter(t => t.result === "won").length;
+  const lostTipsCount = archivedTips.filter(t => t.result === "lost").length;
 
   // Tickets stats (excluding today)
   const dailyTicketsCount = archivedTickets.filter(t => t.tier === "daily").length;
@@ -105,6 +106,20 @@ export default function AllTickets() {
   const premiumTicketsCount = archivedTickets.filter(t => t.tier === "premium").length;
   const totalTicketsCount = archivedTickets.length;
   const wonTicketsCount = archivedTickets.filter(t => t.result === "won").length;
+  const lostTicketsCount = archivedTickets.filter(t => t.result === "lost").length;
+
+  // Calculate win rates
+  const tipsWinRate = wonTipsCount + lostTipsCount > 0 
+    ? Math.round((wonTipsCount / (wonTipsCount + lostTipsCount)) * 100) 
+    : 0;
+  const ticketsWinRate = wonTicketsCount + lostTicketsCount > 0 
+    ? Math.round((wonTicketsCount / (wonTicketsCount + lostTicketsCount)) * 100) 
+    : 0;
+  const globalWon = wonTipsCount + wonTicketsCount;
+  const globalLost = lostTipsCount + lostTicketsCount;
+  const globalWinRate = globalWon + globalLost > 0 
+    ? Math.round((globalWon / (globalWon + globalLost)) * 100) 
+    : 0;
 
   // Get filtered and sorted content (already excludes today via archivedTips/archivedTickets)
   const filteredTips = filterAndSort(archivedTips.filter(tip => tip.tier === activeTab));
@@ -194,6 +209,36 @@ export default function AllTickets() {
             >
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
+          </div>
+        </div>
+
+        {/* Accuracy Stats Section */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Trophy className="h-4 w-4 text-emerald-400" />
+              <span className="text-lg font-bold text-emerald-400">{globalWon}</span>
+            </div>
+            <span className="text-[10px] text-emerald-400/70">Won</span>
+          </div>
+          <div className="bg-gradient-to-br from-red-500/20 via-red-500/10 to-transparent border border-red-500/30 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <TrendingDown className="h-4 w-4 text-red-400" />
+              <span className="text-lg font-bold text-red-400">{globalLost}</span>
+            </div>
+            <span className="text-[10px] text-red-400/70">Lost</span>
+          </div>
+          <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <span className="text-lg font-bold text-primary">{globalWinRate}%</span>
+            </div>
+            <span className="text-[10px] text-primary/70">Win Rate</span>
+          </div>
+          <div className="bg-gradient-to-br from-muted/30 via-muted/20 to-transparent border border-border rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <span className="text-lg font-bold text-foreground">{totalTipsCount + totalTicketsCount}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground">Total</span>
           </div>
         </div>
 
