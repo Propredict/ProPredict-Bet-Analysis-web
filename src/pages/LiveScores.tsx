@@ -596,20 +596,20 @@ function CountrySection({
       <Card className="overflow-hidden bg-card border-border">
         {/* Country Header */}
         <CollapsibleTrigger asChild>
-          <button className="w-full px-2 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-secondary/60 to-secondary/30 border-b border-border flex items-center gap-2 hover:bg-secondary/50 transition-colors">
+          <button className="w-full px-2 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-primary/25 via-primary/15 to-transparent border-b border-primary/30 flex items-center gap-2 hover:from-primary/30 hover:via-primary/20 transition-colors">
             <span className="text-base sm:text-lg">{flag}</span>
             <span className="font-bold text-xs sm:text-sm text-foreground">{country}</span>
             <div className="flex items-center gap-1.5 ml-auto">
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-secondary/50">
+              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/10 border-primary/30 text-primary">
                 {leagueCount} league{leagueCount !== 1 ? "s" : ""}
               </Badge>
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/10 text-primary border-primary/30">
+              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/15 text-primary border-primary/40">
                 {matchCount} match{matchCount !== 1 ? "es" : ""}
               </Badge>
               {isOpen ? (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <ChevronDown className="h-3.5 w-3.5 text-primary" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <ChevronRight className="h-3.5 w-3.5 text-primary" />
               )}
             </div>
           </button>
