@@ -15,6 +15,7 @@ import {
   Settings,
   AlertTriangle,
   Home,
+  Eye,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -57,6 +58,7 @@ const tools = [
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
+  { title: "Match Previews", url: "/match-previews", icon: Eye },
 ];
 
 const adminItems = [
