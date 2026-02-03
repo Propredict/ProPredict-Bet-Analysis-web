@@ -78,7 +78,7 @@ export default function AppLayout() {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true} open={true}>
       {/* Web-only: dynamically inject Ezoic script (never on Android WebView) */}
       <EzoicScript />
       <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw]">
