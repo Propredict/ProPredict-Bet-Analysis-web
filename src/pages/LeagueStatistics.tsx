@@ -60,10 +60,10 @@ export default function LeagueStatistics() {
   const liveCount = filteredMatches.filter(m => m.status === "live" || m.status === "halftime").length;
   return <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-accent/20 via-accent/10 to-transparent border border-accent/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="p-1.5 rounded-md bg-accent/20">
-              <BarChart3 className="h-4 w-4 text-accent sm:h-5 sm:w-5" />
+            <div className="p-1.5 rounded-md bg-primary/20">
+              <BarChart3 className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
             </div>
             <div>
               <h1 className="text-sm font-bold sm:text-base text-foreground">All Leagues Standings</h1>
