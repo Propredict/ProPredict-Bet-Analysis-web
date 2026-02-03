@@ -24,7 +24,7 @@ const Index = () => {
         <GuestBanner />
         
         {/* Welcome Header Section */}
-        <div className="bg-card border border-border rounded-xl p-6 text-center shadow-md">
+        <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-6 text-center shadow-lg shadow-primary/10">
           <h2 className="text-xl font-bold text-foreground mb-3">Welcome to ProPredict</h2>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             ProPredict is a sports analysis platform designed for users who want deeper insights into football matches. Here you can explore match previews, expert analysis, AI-assisted predictions, and track results in one place. Our goal is to provide clear, structured, and informative content to help you better understand upcoming matches and past performance.
