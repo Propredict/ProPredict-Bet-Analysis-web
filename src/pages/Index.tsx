@@ -4,6 +4,7 @@ import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
 import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
 import { TodaysMatches } from "@/components/dashboard/TodaysMatches";
+import { DashboardAIPredictions } from "@/components/dashboard/DashboardAIPredictions";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
@@ -31,6 +32,9 @@ const Index = () => {
           <LeagueStandings />
           <TodaysMatches />
         </div>
+        
+        {/* AI Predictions Section */}
+        <DashboardAIPredictions />
         
         <SidebarAd />
         <BottomCTA />
