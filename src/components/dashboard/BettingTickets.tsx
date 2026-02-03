@@ -74,23 +74,23 @@ export function BettingTickets() {
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    const baseStyles = "relative py-2.5 px-4 rounded-lg text-xs font-semibold transition-all duration-300 border-l-2 bg-card/50";
+    const baseStyles = "relative py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-300 border";
     
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "border-l-primary bg-primary/10")
-          : cn(baseStyles, "border-l-transparent hover:bg-primary/5");
+          ? cn(baseStyles, "border-primary bg-primary/15 shadow-[0_0_10px_rgba(15,155,142,0.2)]")
+          : cn(baseStyles, "border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "border-l-amber-500 bg-amber-500/10")
-          : cn(baseStyles, "border-l-transparent hover:bg-amber-500/5");
+          ? cn(baseStyles, "border-amber-500 bg-amber-500/15 shadow-[0_0_10px_rgba(245,158,11,0.2)]")
+          : cn(baseStyles, "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/50");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "border-l-fuchsia-500 bg-fuchsia-500/10")
-          : cn(baseStyles, "border-l-transparent hover:bg-fuchsia-500/5");
+          ? cn(baseStyles, "border-fuchsia-500 bg-fuchsia-500/15 shadow-[0_0_10px_rgba(217,70,239,0.2)]")
+          : cn(baseStyles, "border-fuchsia-500/30 bg-fuchsia-500/5 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/50");
       default:
-        return cn(baseStyles, "border-l-transparent");
+        return cn(baseStyles, "border-border");
     }
   };
 
