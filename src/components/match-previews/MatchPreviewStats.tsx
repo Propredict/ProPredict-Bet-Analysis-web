@@ -8,13 +8,29 @@ import {
   Users, 
   Target,
   BarChart3,
-  AlertCircle
+  Trophy,
+  Handshake
 } from "lucide-react";
 import { useMatchDetails, type MatchDetails, type H2HMatch } from "@/hooks/useMatchDetails";
 import { useH2H } from "@/hooks/useH2H";
+import { useLeagueScorers, useLeagueAssists, type PlayerStats } from "@/hooks/useLeagueStats";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Match } from "@/hooks/useFixtures";
+
+// League name to API ID mapping
+const LEAGUE_ID_MAP: Record<string, string> = {
+  "premier league": "39",
+  "la liga": "140",
+  "bundesliga": "78",
+  "serie a": "135",
+  "ligue 1": "61",
+  "champions league": "2",
+  "europa league": "3",
+  "eredivisie": "88",
+  "primeira liga": "94",
+  "jupiler pro league": "144",
+};
 
 interface MatchPreviewStatsProps {
   match: Match;
@@ -27,6 +43,19 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
     match.awayTeamId ?? null
   );
   const [activeTab, setActiveTab] = useState("h2h");
+
+  // Get league ID for scorers/assists data
+  const leagueId = useMemo(() => {
+    const leagueLower = match.league?.toLowerCase() || "";
+    for (const [name, id] of Object.entries(LEAGUE_ID_MAP)) {
+      if (leagueLower.includes(name)) return id;
+    }
+    return null;
+  }, [match.league]);
+
+  // Fetch scorers and assists for the league
+  const { data: scorersData, isLoading: scorersLoading } = useLeagueScorers(leagueId || "", "2025");
+  const { data: assistsData, isLoading: assistsLoading } = useLeagueAssists(leagueId || "", "2025");
 
   const loading = detailsLoading || h2hLoading;
 
@@ -112,11 +141,19 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-3 pt-3">
-          <TabsList className="w-full grid grid-cols-4 h-9">
+        <div className="px-3 pt-3 overflow-x-auto">
+          <TabsList className="w-full grid grid-cols-6 h-9 min-w-[400px]">
             <TabsTrigger value="h2h" className="text-xs gap-1">
               <Swords className="h-3 w-3" />
               <span className="hidden sm:inline">H2H</span>
+            </TabsTrigger>
+            <TabsTrigger value="scorers" className="text-xs gap-1">
+              <Trophy className="h-3 w-3" />
+              <span className="hidden sm:inline">Scorers</span>
+            </TabsTrigger>
+            <TabsTrigger value="assists" className="text-xs gap-1">
+              <Handshake className="h-3 w-3" />
+              <span className="hidden sm:inline">Assists</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="text-xs gap-1">
               <BarChart3 className="h-3 w-3" />
@@ -140,6 +177,24 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
               summary={h2hSummary}
               homeTeam={match.homeTeam}
               awayTeam={match.awayTeam}
+            />
+          </TabsContent>
+
+          <TabsContent value="scorers" className="mt-0">
+            <ScorersSection 
+              scorersData={scorersData} 
+              isLoading={scorersLoading}
+              leagueId={leagueId}
+              leagueName={match.league}
+            />
+          </TabsContent>
+
+          <TabsContent value="assists" className="mt-0">
+            <AssistsSection 
+              assistsData={assistsData} 
+              isLoading={assistsLoading}
+              leagueId={leagueId}
+              leagueName={match.league}
             />
           </TabsContent>
 
@@ -445,6 +500,156 @@ function EventsSection({ data }: { data: MatchDetails | null }) {
           {event.team.logo && (
             <img src={event.team.logo} alt="" className="h-4 w-4 object-contain shrink-0" />
           )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Scorers Section
+interface ScorersSectionProps {
+  scorersData: any;
+  isLoading: boolean;
+  leagueId: string | null;
+  leagueName: string;
+}
+
+function ScorersSection({ scorersData, isLoading, leagueId, leagueName }: ScorersSectionProps) {
+  if (!leagueId) {
+    return (
+      <EmptyState 
+        icon={Trophy} 
+        title="Scorers not available" 
+        subtitle={`Top scorers data not supported for ${leagueName}`}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  const players = (scorersData as any)?.players || [];
+
+  if (players.length === 0) {
+    return (
+      <EmptyState 
+        icon={Trophy} 
+        title="No scorers data" 
+        subtitle="Top scorers will appear here"
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground px-2 mb-1">
+        <span>Player</span>
+        <span>Goals</span>
+      </div>
+      {players.slice(0, 10).map((item: PlayerStats, idx: number) => (
+        <div key={item.player.id || idx} className="flex items-center gap-2 p-2 rounded bg-muted/20 hover:bg-muted/30 transition-colors">
+          <span className="text-xs font-bold text-primary w-5">{idx + 1}</span>
+          <img 
+            src={item.player.photo} 
+            alt="" 
+            className="h-7 w-7 rounded-full object-cover bg-muted"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium truncate">{item.player.name}</p>
+            <div className="flex items-center gap-1">
+              {item.team.logo && (
+                <img src={item.team.logo} alt="" className="h-3 w-3 object-contain" />
+              )}
+              <span className="text-[10px] text-muted-foreground truncate">{item.team.name}</span>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-sm font-bold text-primary">{item.goals}</p>
+            <p className="text-[9px] text-muted-foreground">{item.games.appearances} apps</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Assists Section
+interface AssistsSectionProps {
+  assistsData: any;
+  isLoading: boolean;
+  leagueId: string | null;
+  leagueName: string;
+}
+
+function AssistsSection({ assistsData, isLoading, leagueId, leagueName }: AssistsSectionProps) {
+  if (!leagueId) {
+    return (
+      <EmptyState 
+        icon={Handshake} 
+        title="Assists not available" 
+        subtitle={`Top assists data not supported for ${leagueName}`}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  const players = (assistsData as any)?.players || [];
+
+  if (players.length === 0) {
+    return (
+      <EmptyState 
+        icon={Handshake} 
+        title="No assists data" 
+        subtitle="Top assists will appear here"
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground px-2 mb-1">
+        <span>Player</span>
+        <span>Assists</span>
+      </div>
+      {players.slice(0, 10).map((item: PlayerStats, idx: number) => (
+        <div key={item.player.id || idx} className="flex items-center gap-2 p-2 rounded bg-muted/20 hover:bg-muted/30 transition-colors">
+          <span className="text-xs font-bold text-primary w-5">{idx + 1}</span>
+          <img 
+            src={item.player.photo} 
+            alt="" 
+            className="h-7 w-7 rounded-full object-cover bg-muted"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium truncate">{item.player.name}</p>
+            <div className="flex items-center gap-1">
+              {item.team.logo && (
+                <img src={item.team.logo} alt="" className="h-3 w-3 object-contain" />
+              )}
+              <span className="text-[10px] text-muted-foreground truncate">{item.team.name}</span>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-sm font-bold text-primary">{item.assists}</p>
+            <p className="text-[9px] text-muted-foreground">{item.games.appearances} apps</p>
+          </div>
         </div>
       ))}
     </div>
