@@ -162,13 +162,13 @@ export default function AllTickets() {
           content="Browse our complete archive of football betting tips and prediction tickets. Track winning history, analyze past performance, and discover successful betting patterns."
         />
         <meta name="keywords" content="football tips history, betting tips archive, winning predictions, football betting history, sports predictions archive" />
-        <link rel="canonical" href="https://propredictbet.lovable.app/all-tickets" />
+        <link rel="canonical" href="https://propredict.me/winning-history" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Winning Tips History – ProPredict Archive" />
         <meta property="og:description" content="Browse our complete archive of football betting tips and prediction tickets. Track winning history and analyze past performance." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://propredictbet.lovable.app/all-tickets" />
+        <meta property="og:url" content="https://propredict.me/winning-history" />
         
         {/* JSON-LD Breadcrumb */}
         <script type="application/ld+json">
@@ -176,8 +176,8 @@ export default function AllTickets() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propredictbet.lovable.app/" },
-              { "@type": "ListItem", "position": 2, "name": "Winning Tips History", "item": "https://propredictbet.lovable.app/all-tickets" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propredict.me/" },
+              { "@type": "ListItem", "position": 2, "name": "Winning History", "item": "https://propredict.me/winning-history" }
             ]
           })}
         </script>
