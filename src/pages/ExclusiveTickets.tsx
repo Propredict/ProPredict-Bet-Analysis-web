@@ -52,18 +52,18 @@ export default function ExclusiveTickets() {
     </Helmet>
     <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="p-1.5 rounded-md bg-violet-500/20">
-            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
+          <div className="p-1.5 rounded-md bg-amber-500/20">
+            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm text-foreground font-semibold sm:text-lg">Pro Tickets</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Curated multi-bet combinations for members</p>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Exclusive Tickets</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Unlock tickets by watching ads or go Premium for exclusive access</p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+          <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
             <Star className="h-2.5 w-2.5 mr-0.5" />
             Pro
           </Badge>
@@ -74,19 +74,19 @@ export default function ExclusiveTickets() {
       </div>
 
       {/* Upgrade Banner */}
-      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-violet-500/20">
-                <Crown className="h-4 w-4 text-violet-400" />
+              <div className="p-1.5 rounded-md bg-amber-500/20">
+                <Crown className="h-4 w-4 text-amber-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-violet-300">Unlock Pro Tickets</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Get PRO for €3.99/month</p>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Unlock All Tickets</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
               </div>
             </div>
-            <Button className="bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
-              Get PRO
+            <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
+              Subscribe Now
             </Button>
           </div>
         </div>}
