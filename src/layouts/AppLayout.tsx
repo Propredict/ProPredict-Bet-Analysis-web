@@ -98,11 +98,11 @@ export default function AppLayout() {
                 <span className="text-[8px] font-semibold text-primary-foreground/80 leading-tight">AI Predictions & Analysis</span>
               </div>
               
-              {/* Desktop Logo */}
+              {/* Tablet Logo - hidden on mobile and desktop */}
               <img 
                 src={logoImage} 
                 alt="ProPredict" 
-                className="hidden sm:block h-7 w-7 object-contain cursor-pointer flex-shrink-0" 
+                className="hidden sm:block md:hidden h-7 w-7 object-contain cursor-pointer flex-shrink-0" 
                 onClick={() => navigate("/")}
               />
             </div>
