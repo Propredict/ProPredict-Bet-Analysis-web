@@ -145,8 +145,8 @@ export default function LeagueStatistics() {
                   className={`
                     flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-300 whitespace-nowrap max-w-full
                     ${activeTab === value 
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/40 border-2 border-primary scale-[1.02]" 
-                      : "bg-muted/50 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/50 hover:bg-muted hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]"
+                      ? "bg-[hsl(171,77%,36%)] text-white shadow-lg shadow-[rgba(15,155,142,0.4)] border-2 border-[hsl(171,77%,36%)] scale-[1.02]" 
+                      : "bg-muted/50 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/50 hover:bg-muted hover:shadow-[0_0_15px_rgba(15,155,142,0.2)]"
                     }
                   `}
                 >
