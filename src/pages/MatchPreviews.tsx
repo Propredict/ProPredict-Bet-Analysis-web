@@ -123,7 +123,7 @@ export default function MatchPreviews() {
                 <Eye className="h-5 w-5 text-violet-400" />
               </div>
               <div>
-                <h1 className="text-lg font-bold">Match Previews</h1>
+                <h1 className="text-lg font-bold">Your Match Preview</h1>
                 <p className="text-xs text-muted-foreground">
                   AI-powered analysis for top matches
                 </p>
@@ -140,6 +140,24 @@ export default function MatchPreviews() {
             </Button>
           </div>
         </div>
+
+        {/* Description Card */}
+        <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              Select any match directly and instantly view AI-powered analysis and predictions for that specific game.
+            </p>
+            <p>
+              The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.
+            </p>
+            <p>
+              This feature is designed to help you understand the matchup better and follow the analysis in one place.
+            </p>
+            <p className="text-xs text-muted-foreground/70 italic pt-1">
+              For informational and entertainment purposes only.
+            </p>
+          </div>
+        </Card>
 
         {/* Stats Bar */}
         <div className="grid grid-cols-4 gap-2">
