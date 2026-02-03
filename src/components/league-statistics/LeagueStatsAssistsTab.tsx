@@ -15,7 +15,7 @@ export function LeagueStatsAssistsTab({ leagueId, leagueName }: LeagueStatsAssis
   return (
     <div className="space-y-4">
       {/* Header */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
+      <Card className="p-4 bg-card border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
@@ -28,7 +28,7 @@ export function LeagueStatsAssistsTab({ leagueId, leagueName }: LeagueStatsAssis
       </Card>
 
       {/* Table */}
-      <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden">
         {/* Table Header */}
         <div className="px-4 py-3 bg-primary/20 text-center font-semibold text-sm">
           Top Assists
