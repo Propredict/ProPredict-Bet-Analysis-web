@@ -8,6 +8,7 @@ import { InContentAd, SidebarAd } from "@/components/ads/EzoicAd";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
 
 export default function DailyTips() {
@@ -25,6 +26,7 @@ export default function DailyTips() {
     unlockingId,
     handleUnlock
   } = useUnlockHandler();
+  const { isAndroidApp } = usePlatform();
   
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
@@ -99,7 +101,9 @@ export default function DailyTips() {
           </div>
           <div>
             <h1 className="text-xs sm:text-lg font-semibold text-primary">Daily Tips</h1>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground"></p>
+            {isAndroidApp && (
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Unlock tips by watching ads or go Premium for full access</p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1">
