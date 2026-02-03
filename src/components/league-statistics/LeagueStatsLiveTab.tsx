@@ -125,12 +125,12 @@ export function LeagueStatsLiveTab({
         Object.entries(grouped).map(([league, games]) => (
           <Card key={league} className="bg-card border-border overflow-hidden">
             {/* League Header with Standings Link */}
-            <div className="px-4 py-3 border-b border-border bg-secondary/30 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-primary/20 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold text-sm">{league}</span>
+                <Star className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm text-foreground">{league}</span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-primary/70">
                 Standings ▼
               </span>
             </div>
