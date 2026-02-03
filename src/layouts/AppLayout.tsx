@@ -106,6 +106,11 @@ export default function AppLayout() {
                 onClick={() => navigate("/")}
               />
             </div>
+
+            {/* Desktop Center Welcome Text */}
+            <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center">
+              <span className="text-sm font-semibold text-primary-foreground">Welcome to ProPredict</span>
+            </div>
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
               {/* Subscription Badge */}
