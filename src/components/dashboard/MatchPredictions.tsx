@@ -99,13 +99,13 @@ export function MatchPredictions() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-accent/20 via-accent/10 to-transparent border border-accent/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]">
-        <div className="p-1.5 rounded-md bg-accent/20">
-          <TrendingUp className="h-4 w-4 text-accent" />
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
+        <div className="p-1.5 rounded-md bg-primary/20">
+          <TrendingUp className="h-4 w-4 text-primary" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Daily Tips</h2>
-          <p className="text-[9px] text-muted-foreground">AI-powered match predictions</p>
+          <h2 className="text-sm font-semibold text-primary">Daily Tips</h2>
+          <p className="text-[9px] text-muted-foreground">Unlock tips by watching ads or go Premium for exclusive access</p>
         </div>
       </div>
 
