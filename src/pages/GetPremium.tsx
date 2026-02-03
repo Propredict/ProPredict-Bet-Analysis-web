@@ -501,10 +501,10 @@ export default function GetPremium() {
           {benefits.map((benefit, index) => (
             <Card 
               key={index} 
-              className="relative p-3 bg-card border-l-2 border-l-primary border-t border-r border-b border-border/50 hover:border-l-primary hover:border-primary/40 transition-all group overflow-hidden"
+              className="relative p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border border-primary/30 hover:border-primary/50 hover:from-primary/20 hover:via-primary/15 transition-all group overflow-hidden shadow-[0_0_10px_rgba(15,155,142,0.1)]"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 border border-primary/30 group-hover:bg-primary/20 transition-colors">
+                <div className="p-2 rounded-lg bg-primary/20 border border-primary/40 group-hover:bg-primary/30 transition-colors">
                   <benefit.icon className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -540,7 +540,7 @@ export default function GetPremium() {
             <AccordionItem
               key={index}
               value={`faq-${index}`}
-              className="border border-border rounded-lg bg-card/50 px-3"
+              className="border border-primary/30 rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-3 shadow-[0_0_10px_rgba(15,155,142,0.1)]"
             >
               <AccordionTrigger className="text-xs font-medium text-foreground py-3 hover:no-underline">
                 {faq.question}
