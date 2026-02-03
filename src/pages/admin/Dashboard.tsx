@@ -20,17 +20,21 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
+        // Fetch all subscriptions where expires_at is in the future (active)
+        const now = new Date().toISOString();
+        
         const { data, error } = await supabase
           .from("user_subscriptions")
-          .select("plan")
-          .eq("status", "active");
+          .select("plan, expires_at")
+          .gt("expires_at", now);
 
         if (error) {
           console.error("Error fetching subscriptions:", error);
           return;
         }
 
-        const proCount = data?.filter((s) => s.plan === "basic").length || 0;
+        // Filter by plan type - 'pro' for Pro, 'premium' for Premium
+        const proCount = data?.filter((s) => s.plan === "pro" || s.plan === "basic").length || 0;
         const premiumCount = data?.filter((s) => s.plan === "premium").length || 0;
         const totalActive = data?.length || 0;
 
