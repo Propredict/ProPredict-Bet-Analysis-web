@@ -314,10 +314,10 @@ export default function LiveScores() {
           <div className="space-y-1 sm:space-y-1.5">
             {Object.entries(grouped).map(([league, games]) => (
               <Card key={league} className="overflow-hidden bg-card border-border">
-                <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-secondary/30 border-b border-border flex items-center gap-1">
+                <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1">
                   <Trophy className="h-2.5 w-2.5 text-primary" />
-                  <span className="font-semibold text-[9px] sm:text-[10px] truncate">{league}</span>
-                  <Badge variant="outline" className="ml-auto text-[8px] px-0.5">
+                  <span className="font-semibold text-[9px] sm:text-[10px] text-foreground truncate">{league}</span>
+                  <Badge variant="outline" className="ml-auto text-[8px] px-0.5 border-primary/30 text-primary">
                     {games.length}
                   </Badge>
                 </div>
@@ -667,7 +667,7 @@ function LeagueSection({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* League Header */}
       <CollapsibleTrigger asChild>
-        <button className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-secondary/20 flex items-center gap-1.5 hover:bg-secondary/30 transition-colors">
+        <button className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1.5 hover:from-primary/25 hover:via-primary/15 transition-colors">
           {isOpen ? (
             <ChevronDown className="h-3 w-3 text-primary" />
           ) : (
@@ -679,7 +679,7 @@ function LeagueSection({
             <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
           )}
           <span className="font-semibold text-[10px] sm:text-xs text-foreground truncate">{league}</span>
-          <Badge variant="outline" className="ml-auto text-[8px] px-1 bg-muted/30">
+          <Badge variant="outline" className="ml-auto text-[8px] px-1 border-primary/30 text-primary bg-primary/10">
             {matches.length}
           </Badge>
         </button>
