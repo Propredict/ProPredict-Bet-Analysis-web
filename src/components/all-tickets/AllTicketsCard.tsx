@@ -19,31 +19,34 @@ interface AllTicketsCardProps {
 }
 
 function getTierBadge(tier: string) {
+  // All tiers use primary green styling for consistency
+  const baseStyles = "gap-1 bg-primary/20 text-primary border-primary/30";
+  
   switch (tier) {
     case "free":
       return (
-        <Badge variant="secondary" className="gap-1 bg-muted text-muted-foreground">
+        <Badge variant="secondary" className={baseStyles}>
           <Gift className="h-3 w-3" />
           Free
         </Badge>
       );
     case "daily":
       return (
-        <Badge variant="secondary" className="gap-1 bg-accent/20 text-accent border-accent/30">
+        <Badge variant="secondary" className={baseStyles}>
           <Sparkles className="h-3 w-3" />
           Daily
         </Badge>
       );
     case "exclusive":
       return (
-        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary border-primary/30">
+        <Badge variant="secondary" className={baseStyles}>
           <Star className="h-3 w-3" />
           Pro
         </Badge>
       );
     case "premium":
       return (
-        <Badge variant="secondary" className="gap-1 bg-warning/20 text-warning border-warning/30">
+        <Badge variant="secondary" className={baseStyles}>
           <Crown className="h-3 w-3" />
           Premium
         </Badge>
@@ -342,7 +345,7 @@ export function AllTicketsCard({
   // Unlocked State - Compact
   return (
     <Card 
-      className="group bg-card overflow-hidden transition-all border-success/30 cursor-pointer hover:border-success/50"
+      className="group bg-card overflow-hidden transition-all border-primary/30 cursor-pointer hover:border-primary/50"
       onClick={handleCardClick}
     >
       {/* Header */}
@@ -355,7 +358,7 @@ export function AllTicketsCard({
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Badge className="gap-0.5 bg-success/20 text-success border-success/30 text-[10px] px-1.5">
+            <Badge className="gap-0.5 bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
               <CheckCircle2 className="h-2.5 w-2.5" />
               Unlocked
             </Badge>
@@ -418,7 +421,7 @@ export function AllTicketsCard({
 
       {/* Unlocked badge footer */}
       <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
-        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-success/20 text-success border-success/30 text-xs">
+        <Badge className="w-full justify-center gap-1.5 py-1.5 bg-primary/20 text-primary border-primary/30 text-xs">
           <CheckCircle2 className="h-3.5 w-3.5" />
           Ticket Unlocked
         </Badge>
