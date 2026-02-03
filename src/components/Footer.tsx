@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info } from "lucide-react";
+import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info, Brain } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
 
 export function Footer() {
@@ -7,6 +7,7 @@ export function Footer() {
 
   const legalLinks = [
     { label: "About Us", path: "/about-us", icon: Info },
+    { label: "How AI Works", path: "/how-ai-works", icon: Brain },
     { label: "Disclaimer", path: "/disclaimer", icon: Shield },
     { label: "Privacy Policy", path: "/privacy-policy", icon: FileText },
     { label: "Cookie Policy", path: "/cookie-policy", icon: Cookie },
