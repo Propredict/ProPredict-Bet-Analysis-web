@@ -68,30 +68,38 @@ export function BettingTickets() {
   });
 
   const tabs = [
-    { id: "daily", label: "Daily", icon: Sparkles },
-    { id: "exclusive", label: "Pro", icon: Star },
-    { id: "premium", label: "Premium", icon: Crown },
+    { id: "daily", label: "Daily", subtitle: "Free with Ads", icon: Sparkles },
+    { id: "exclusive", label: "Exclusive", subtitle: "Higher Confidence", icon: Star },
+    { id: "premium", label: "Premium", subtitle: "Members Only", icon: Crown },
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
+    const baseStyles = "relative py-2.5 px-4 rounded-lg text-xs font-semibold transition-all duration-300 border-l-2 bg-card/50";
     
-    // Synchronized colors: Daily=Green, Pro=Yellow, Premium=Purple
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-primary/25 via-primary/20 to-primary/25 border-primary/60 text-primary shadow-primary/25")
-          : cn(baseStyles, "bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 border-primary/30 text-primary/70 hover:border-primary/50 hover:text-primary");
+          ? cn(baseStyles, "border-l-primary bg-primary/10")
+          : cn(baseStyles, "border-l-transparent hover:bg-primary/5");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-amber-500/25 via-yellow-500/20 to-amber-500/25 border-amber-500/60 text-amber-400 shadow-amber-500/25")
-          : cn(baseStyles, "bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-amber-500/10 border-amber-500/30 text-amber-400/70 hover:border-amber-500/50 hover:text-amber-400");
+          ? cn(baseStyles, "border-l-amber-500 bg-amber-500/10")
+          : cn(baseStyles, "border-l-transparent hover:bg-amber-500/5");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-violet-500/25 via-purple-500/20 to-violet-500/25 border-violet-500/60 text-violet-400 shadow-violet-500/25 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
-          : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-violet-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
+          ? cn(baseStyles, "border-l-violet-500 bg-violet-500/10")
+          : cn(baseStyles, "border-l-transparent hover:bg-violet-500/5");
       default:
-        return cn(baseStyles, "bg-card border-border text-muted-foreground");
+        return cn(baseStyles, "border-l-transparent");
+    }
+  };
+
+  const getTextColor = (tabId: string) => {
+    switch (tabId) {
+      case "daily": return "text-primary";
+      case "exclusive": return "text-amber-400";
+      case "premium": return "text-violet-400";
+      default: return "text-muted-foreground";
     }
   };
 
@@ -124,11 +132,12 @@ export function BettingTickets() {
         )}
       </div>
 
-      {/* Tab Navigation - Card-like styling */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* Tab Navigation */}
+      <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-secondary/30">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const count = tickets.filter((t) => t.tier === tab.id).length;
+          const textColor = getTextColor(tab.id);
           
           return (
             <button
@@ -136,20 +145,18 @@ export function BettingTickets() {
               onClick={() => setActiveTab(tab.id as TabType)}
               className={getTabStyles(tab.id, isActive)}
             >
-              <div className="flex flex-col items-center gap-1">
-                <tab.icon className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  isActive && "scale-110 drop-shadow-lg"
-                )} />
-                <span>{tab.label}</span>
-                {count > 0 && (
+              <div className="flex flex-col items-start gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <tab.icon className={cn("h-3.5 w-3.5", textColor)} />
+                  <span className={cn("font-semibold", textColor)}>{tab.label}</span>
                   <span className={cn(
-                    "text-[9px] px-1.5 py-0.5 rounded-full",
-                    isActive ? "bg-background/20" : "bg-muted/50"
+                    "text-[10px] px-1.5 py-0.5 rounded-md bg-muted/50",
+                    textColor
                   )}>
                     {count}
                   </span>
-                )}
+                </div>
+                <span className={cn("text-[9px] opacity-70", textColor)}>{tab.subtitle}</span>
               </div>
             </button>
           );
