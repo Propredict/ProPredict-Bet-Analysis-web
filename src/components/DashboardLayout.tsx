@@ -108,7 +108,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 ) : (
                   <Bell className="h-3.5 w-3.5" />
                 )}
-                <span className="hidden sm:inline">Notifications</span>
+                <span>Notifications</span>
               </Button>
               
               {/* Favourites Button */}
@@ -119,7 +119,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               >
                 <Star className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Favourites</span>
+                <span>Favourites</span>
               </Button>
 
               {/* Login/User Button */}
@@ -132,7 +132,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                       className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                     >
                       <User className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Account</span>
+                      <span>Account</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40 bg-popover border-border z-[60]">
@@ -155,7 +155,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                   className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                 >
                   <User className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Login</span>
+                  <span>Login</span>
                 </Button>
               )}
             </div>
