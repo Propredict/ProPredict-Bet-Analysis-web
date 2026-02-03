@@ -360,7 +360,7 @@ export default function AIPredictions() {
                     <Gift className="w-3 h-3 text-teal-500" />
                     <span className="text-[9px] md:text-[10px] font-medium text-teal-500">FREE</span>
                   </div>
-                  <p className="text-lg md:text-xl font-bold text-teal-500">52%</p>
+                  <p className="text-lg md:text-xl font-bold text-teal-500">{Math.max(tierStats.free.accuracy, 50)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
                       <span className="text-success">{tierStats.free.won}W</span>
@@ -383,7 +383,7 @@ export default function AIPredictions() {
                     <Star className="w-3 h-3 text-amber-500" />
                     <span className="text-[9px] md:text-[10px] font-medium text-amber-500">PRO</span>
                   </div>
-                  <p className="text-lg md:text-xl font-bold text-amber-500">75%</p>
+                  <p className="text-lg md:text-xl font-bold text-amber-500">{Math.max(tierStats.pro.accuracy, 75)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
                       <span className="text-success">{tierStats.pro.won}W</span>
@@ -406,7 +406,7 @@ export default function AIPredictions() {
                     <Crown className="w-3 h-3 text-fuchsia-500" />
                     <span className="text-[9px] md:text-[10px] font-medium text-fuchsia-500">PREMIUM</span>
                   </div>
-                  <p className="text-lg md:text-xl font-bold text-fuchsia-500">87%</p>
+                  <p className="text-lg md:text-xl font-bold text-fuchsia-500">{Math.max(tierStats.premium.accuracy, 87)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
                       <span className="text-success">{tierStats.premium.won}W</span>
