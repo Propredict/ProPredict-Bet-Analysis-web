@@ -8,6 +8,7 @@ import { InContentAd, SidebarAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export default function DailyTickets() {
     unlockingId,
     handleUnlock
   } = useUnlockHandler();
+  const { isAndroidApp } = usePlatform();
   
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
@@ -100,7 +102,9 @@ export default function DailyTickets() {
           </div>
           <div>
             <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Tickets</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Unlock tickets by watching ads or go Premium for exclusive access</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Multi-bet combinations"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
