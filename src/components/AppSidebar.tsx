@@ -75,7 +75,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="p-3 border-b border-primary/30 bg-primary">
+      <SidebarHeader className="h-12 sm:h-14 px-3 flex items-center bg-primary">
         <div className="flex items-center gap-2">
           <img 
             src={logoImage} 
