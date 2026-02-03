@@ -142,7 +142,7 @@ export default function AppLayout() {
             </div>
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
-              {/* Subscription Badge - visible on all screens */}
+              {/* Subscription Badge */}
               <Badge 
                 variant="outline" 
                 className={cn(
@@ -155,13 +155,13 @@ export default function AppLayout() {
                 <span className="font-medium">{planBadge.label}</span>
               </Badge>
 
-              {/* Notifications Button - hidden on desktop */}
+              {/* Notifications Button */}
               <Button 
                 variant="outline" 
                 size="icon"
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 md:hidden border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
+                  "h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
                   alertSettings.enabled 
                     ? "text-primary-foreground" 
                     : "text-primary-foreground/80"
@@ -172,18 +172,18 @@ export default function AppLayout() {
                 ) : (
                   <Bell className="h-4 w-4" />
                 )}
-                <span className="hidden sm:inline md:hidden text-xs">Notifications</span>
+                <span className="hidden sm:inline text-xs">Notifications</span>
               </Button>
               
-              {/* Favourites Button - hidden on desktop */}
+              {/* Favourites Button */}
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate("/favorites")}
-                className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 md:hidden text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               >
                 <Star className="h-4 w-4" />
-                <span className="hidden sm:inline md:hidden text-xs">Favourites</span>
+                <span className="hidden sm:inline text-xs">Favourites</span>
               </Button>
 
               {/* Login/User Button */}
