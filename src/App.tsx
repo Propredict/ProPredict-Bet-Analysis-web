@@ -38,6 +38,7 @@ import PremiumTickets from "./pages/PremiumTickets";
 import AIPredictions from "./pages/AIPredictions";
 import BettingTips from "./pages/BettingTips";
 import LeagueStatistics from "./pages/LeagueStatistics";
+import MatchPreviews from "./pages/MatchPreviews";
 
 // Admin
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -94,6 +95,7 @@ const App = () => {
                   <Route path="/ai-predictions" element={<AIPredictions />} />
                   <Route path="/betting-tips" element={<BettingTips />} />
                   <Route path="/league-statistics" element={<LeagueStatistics />} />
+                  <Route path="/match-previews" element={<MatchPreviews />} />
 
                   {/* Protected */}
                   <Route
