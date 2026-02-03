@@ -65,8 +65,8 @@ export default function ExclusiveTips() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-xs font-semibold sm:text-lg text-amber-400">Exclusive Tips</h1>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Exclusive Tips</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Unlock tips by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
             </p>
           </div>

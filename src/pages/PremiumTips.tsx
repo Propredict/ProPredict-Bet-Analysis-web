@@ -70,8 +70,8 @@ export default function PremiumTips() {
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-xs text-fuchsia-400 font-semibold sm:text-lg">Premium Tips</h1>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Our highest confidence picks</p>
+            <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Premium Tips</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Our highest confidence picks</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
