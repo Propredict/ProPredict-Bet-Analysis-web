@@ -134,7 +134,7 @@ export function LeagueStandings() {
           <div className="p-3 border-t border-border/30 bg-background/50">
             <Button
               variant="ghost"
-              className="w-full bg-primary/10 hover:bg-primary/20 border border-primary/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(15,155,142,0.4)]"
+              className="w-full bg-primary/10 hover:bg-primary/20 border border-primary/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(15,155,142,0.4)] animate-[pulse_3s_ease-in-out_infinite]"
               onClick={() => navigate("/league-statistics")}
             >
               <Trophy className="h-4 w-4 mr-1.5 text-primary" />
