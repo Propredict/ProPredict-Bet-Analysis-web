@@ -123,32 +123,32 @@ export default function AppLayout() {
               {/* Notifications Button */}
               <Button 
                 variant="outline" 
-                size="sm"
+                size="icon"
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
+                  "h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
                   alertSettings.enabled 
                     ? "text-primary-foreground" 
                     : "text-primary-foreground/80"
                 )}
               >
                 {alertSettings.enabled ? (
-                  <BellRing className="h-3.5 w-3.5" />
+                  <BellRing className="h-4 w-4" />
                 ) : (
-                  <Bell className="h-3.5 w-3.5" />
+                  <Bell className="h-4 w-4" />
                 )}
-                <span>Notifications</span>
+                <span className="hidden sm:inline text-xs">Notifications</span>
               </Button>
               
               {/* Favourites Button */}
               <Button 
                 variant="ghost" 
-                size="sm"
+                size="icon"
                 onClick={() => navigate("/favorites")}
-                className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               >
-                <Star className="h-3.5 w-3.5" />
-                <span>Favourites</span>
+                <Star className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">Favourites</span>
               </Button>
 
               {/* Login/User Button */}
@@ -157,11 +157,11 @@ export default function AppLayout() {
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="outline" 
-                      size="sm"
-                      className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
+                      size="icon"
+                      className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                     >
-                      <User className="h-3.5 w-3.5" />
-                      <span>Account</span>
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline text-xs">Account</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40 bg-popover border-border z-[60]">
@@ -179,12 +179,12 @@ export default function AppLayout() {
               ) : (
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="icon"
                   onClick={() => navigate("/login")}
-                  className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
+                  className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                 >
-                  <User className="h-3.5 w-3.5" />
-                  <span>Login</span>
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline text-xs">Login</span>
                 </Button>
               )}
             </div>
