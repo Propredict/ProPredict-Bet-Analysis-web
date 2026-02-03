@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { SidebarAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -193,9 +192,6 @@ export default function PremiumTickets() {
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
       })}
       </div>
-      
-      {/* Sidebar Ad */}
-      <SidebarAd className="mt-4" />
     </div>
   </>;
 }

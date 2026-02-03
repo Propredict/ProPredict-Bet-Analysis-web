@@ -16,7 +16,6 @@ import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback"
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
-import { useInterstitialAd } from "@/hooks/useInterstitialAd";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -29,9 +28,6 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 
 export default function LiveScores() {
   console.log("🔥 LiveScores mounted");
-  
-  // Trigger interstitial ad on Android when page loads
-  useInterstitialAd();
   
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");

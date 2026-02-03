@@ -3,12 +3,10 @@ import { Helmet } from "react-helmet-async";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
-import { InContentAd } from "@/components/ads/EzoicAd";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useInterstitialAd } from "@/hooks/useInterstitialAd";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +41,6 @@ export default function AIPredictions() {
   const { isAdmin, plan } = useUserPlan();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
-
-  // Trigger interstitial ad on Android when page loads
-  useInterstitialAd();
 
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
@@ -499,24 +494,19 @@ export default function AIPredictions() {
                 <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                {featuredPredictions.map((prediction, index) => {
-                  const predTier = getPredictionTier(prediction);
-                  // Show ads after every 4th card for Free & Pro tiers only (not Premium)
-                  const showAdAfter = predTier !== "premium" && tierFilter !== "premium" && (index + 1) % 4 === 0 && index < featuredPredictions.length - 1;
+                {featuredPredictions.map((prediction) => {
                   return (
-                    <React.Fragment key={prediction.id}>
-                      <AIPredictionCard
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                      />
-                      {showAdAfter && <InContentAd />}
-                    </React.Fragment>
+                    <AIPredictionCard
+                      key={prediction.id}
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
                   );
                 })}
               </div>
@@ -553,24 +543,19 @@ export default function AIPredictions() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-                {regularPredictions.map((prediction, index) => {
-                  // Show ads after every 4th card for Free tier only (regular predictions are free tier)
-                  // No ads when Premium filter is active
-                  const showAdAfter = tierFilter !== "premium" && (index + 1) % 4 === 0 && index < regularPredictions.length - 1;
+                {regularPredictions.map((prediction) => {
                   return (
-                    <React.Fragment key={prediction.id}>
-                      <AIPredictionCard
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                      />
-                      {showAdAfter && <InContentAd />}
-                    </React.Fragment>
+                    <AIPredictionCard
+                      key={prediction.id}
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
                   );
                 })}
               </div>

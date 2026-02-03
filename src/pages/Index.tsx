@@ -8,7 +8,6 @@ import { DashboardAIPredictions } from "@/components/dashboard/DashboardAIPredic
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
-import { SidebarAd } from "@/components/ads/EzoicAd";
 
 const Index = () => {
   return (
@@ -32,7 +31,6 @@ const Index = () => {
         </div>
 
         <FeaturedPredictions />
-        <SidebarAd />
         <MatchPredictions />
         <BettingTickets />
         
@@ -45,7 +43,6 @@ const Index = () => {
         {/* AI Predictions Section */}
         <DashboardAIPredictions />
         
-        <SidebarAd />
         <BottomCTA />
       </div>
       <GuestSignInModal />

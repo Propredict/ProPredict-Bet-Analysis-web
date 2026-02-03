@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, Lightbulb, Calendar, Star, Crown, RefreshCw, Loader2, Trophy, History, TrendingDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import { useTips } from "@/hooks/useTips";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
-import { SidebarAd, InlineListAd } from "@/components/ads/EzoicAd";
 import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
@@ -343,8 +342,6 @@ export default function AllTickets() {
           })}
         </div>
 
-        {/* Ad Banner */}
-        <SidebarAd />
 
         {/* Content Grid */}
         {isLoading ? (
@@ -355,53 +352,48 @@ export default function AllTickets() {
           /* Tips Content */
           filteredTips.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {filteredTips.map((tip, index) => {
-              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTips.length - 1;
-              
+            {filteredTips.map((tip) => {
               return (
-                <Fragment key={tip.id}>
-                  <Card className="p-4 bg-card border-border hover:border-primary/30 transition-colors border-l-4 border-l-primary flex flex-col gap-2">
-                    {/* Header: League & Date */}
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-muted-foreground/30">
-                        {tip.league}
-                      </Badge>
-                      <div className="flex items-center gap-2">
-                        {tip.tip_date && (
-                          <span className="text-[9px] text-muted-foreground">
-                            {format(parseISO(tip.tip_date), "dd MMM")}
-                          </span>
+                <Card key={tip.id} className="p-4 bg-card border-border hover:border-primary/30 transition-colors border-l-4 border-l-primary flex flex-col gap-2">
+                  {/* Header: League & Date */}
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-muted-foreground/30">
+                      {tip.league}
+                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {tip.tip_date && (
+                        <span className="text-[9px] text-muted-foreground">
+                          {format(parseISO(tip.tip_date), "dd MMM")}
+                        </span>
+                      )}
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[9px] px-1.5 py-0.5",
+                          tip.result === "won" && "bg-green-500/20 border-green-500/40 text-green-400",
+                          tip.result === "lost" && "bg-red-500/20 border-red-500/40 text-red-400",
+                          tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
                         )}
-                        <Badge 
-                          variant="outline" 
-                          className={cn(
-                            "text-[9px] px-1.5 py-0.5",
-                            tip.result === "won" && "bg-green-500/20 border-green-500/40 text-green-400",
-                            tip.result === "lost" && "bg-red-500/20 border-red-500/40 text-red-400",
-                            tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
-                          )}
-                        >
-                          {tip.result}
-                        </Badge>
-                      </div>
+                      >
+                        {tip.result}
+                      </Badge>
                     </div>
-                    
-                    {/* Match */}
-                    <p className="text-sm font-medium text-foreground">
-                      {tip.home_team} vs {tip.away_team}
-                    </p>
-                    
-                    {/* Prediction & Odds */}
-                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-muted-foreground">Tip:</span>
-                        <span className="text-xs font-semibold text-primary">{tip.prediction}</span>
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground">@{tip.odds}</span>
+                  </div>
+                  
+                  {/* Match */}
+                  <p className="text-sm font-medium text-foreground">
+                    {tip.home_team} vs {tip.away_team}
+                  </p>
+                  
+                  {/* Prediction & Odds */}
+                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">Tip:</span>
+                      <span className="text-xs font-semibold text-primary">{tip.prediction}</span>
                     </div>
-                  </Card>
-                  {showAdAfter && <InlineListAd />}
-                </Fragment>
+                    <span className="text-xs font-medium text-muted-foreground">@{tip.odds}</span>
+                  </div>
+                </Card>
               );
             })}
           </div>
@@ -420,20 +412,16 @@ export default function AllTickets() {
         /* Tickets Content - All archived tickets are unlocked */
         filteredTickets.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {filteredTickets.map((ticket, index) => {
-              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTickets.length - 1;
-              
+            {filteredTickets.map((ticket) => {
               return (
-                <Fragment key={ticket.id}>
-                  <AllTicketsCard 
-                    ticket={ticket} 
-                    isLocked={false}
-                    unlockMethod={{ type: "unlocked" }}
-                    onUnlockClick={() => {}} 
-                    isUnlocking={false} 
-                  />
-                  {showAdAfter && <InlineListAd />}
-                </Fragment>
+                <AllTicketsCard 
+                  key={ticket.id}
+                  ticket={ticket} 
+                  isLocked={false}
+                  unlockMethod={{ type: "unlocked" }}
+                  onUnlockClick={() => {}} 
+                  isUnlocking={false} 
+                />
               );
             })}
             </div>
@@ -449,9 +437,6 @@ export default function AllTickets() {
             </Card>
           )
         )}
-
-        {/* Bottom Ad */}
-        <SidebarAd className="mt-4" />
 
         <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
       </div>
