@@ -418,8 +418,8 @@ export default function AIPredictions() {
               className={cn(
                 "h-8 md:h-9 px-2.5 md:px-4 text-[10px] md:text-xs font-medium rounded-full transition-all duration-300 flex-shrink-0 gap-1",
                 tierFilter === "premium"
-                  ? "bg-violet-500/20 text-violet-400 border-2 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-                  : "bg-violet-500/10 text-violet-400/70 border border-violet-500/30 hover:bg-violet-500/20 hover:text-violet-400 hover:border-violet-500/50 hover:shadow-[0_0_10px_rgba(139,92,246,0.15)]"
+                  ? "bg-fuchsia-500/20 text-fuchsia-400 border-2 border-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.3)]"
+                  : "bg-fuchsia-500/10 text-fuchsia-400/70 border border-fuchsia-500/30 hover:bg-fuchsia-500/20 hover:text-fuchsia-400 hover:border-fuchsia-500/50 hover:shadow-[0_0_10px_rgba(217,70,239,0.15)]"
               )}
               onClick={() => setTierFilter("premium")}
             >
