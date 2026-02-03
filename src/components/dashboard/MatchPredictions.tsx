@@ -61,7 +61,7 @@ export function MatchPredictions() {
   const hasMoreTips = filteredTips.length > 4;
 
   const tabs = [
-    { id: "daily", label: "Daily", subtitle: "Free with Ads", icon: Sparkles },
+    { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
     { id: "exclusive", label: "Exclusive", subtitle: "Higher Confidence", icon: Star },
     { id: "premium", label: "Premium", subtitle: "Members Only", icon: Crown }
   ];
@@ -96,6 +96,15 @@ export function MatchPredictions() {
     }
   };
 
+  const getSubtitleColor = (tabId: string) => {
+    switch (tabId) {
+      case "daily": return "text-muted-foreground";
+      case "exclusive": return "text-amber-400/70";
+      case "premium": return "text-violet-400/70";
+      default: return "text-muted-foreground";
+    }
+  };
+
   const getCtaLabel = () => {
     switch (activeTab) {
       case "daily": return "See all Daily tips";
@@ -123,6 +132,7 @@ export function MatchPredictions() {
           const isActive = activeTab === tab.id;
           const count = tips.filter(t => t.tier === tab.id).length;
           const textColor = getTextColor(tab.id);
+          const subtitleColor = getSubtitleColor(tab.id);
           
           return (
             <button
@@ -130,7 +140,7 @@ export function MatchPredictions() {
               onClick={() => setActiveTab(tab.id as TabType)}
               className={getTabStyles(tab.id, isActive)}
             >
-              <div className="flex flex-col items-start gap-0.5">
+              <div className="flex flex-col items-center gap-0.5">
                 <div className="flex items-center gap-1.5">
                   <tab.icon className={cn("h-3.5 w-3.5", textColor)} />
                   <span className={cn("font-semibold", textColor)}>{tab.label}</span>
@@ -141,7 +151,7 @@ export function MatchPredictions() {
                     {count}
                   </span>
                 </div>
-                <span className={cn("text-[9px] opacity-70", textColor)}>{tab.subtitle}</span>
+                <span className={cn("text-[9px]", subtitleColor)}>{tab.subtitle}</span>
               </div>
             </button>
           );
