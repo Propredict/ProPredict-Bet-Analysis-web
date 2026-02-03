@@ -278,96 +278,87 @@ export default function AllTickets() {
         ) : contentType === "tips" ? (
           /* Tips Content */
           filteredTips.length > 0 ? (
-            <div className="space-y-3">
-              {filteredTips.map((tip, index) => {
-                const isLocked = !canAccess(tip.tier as ContentTier, "tip", tip.id);
-                const unlockMethod = getUnlockMethod(tip.tier as ContentTier, "tip", tip.id);
-                const isUnlocking = unlockingId === tip.id;
-                const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTips.length - 1;
-                
-                return (
-                  <Fragment key={tip.id}>
-                    <Card className="p-3 bg-card border-border hover:border-primary/30 transition-colors">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
-                              {tip.league}
-                            </Badge>
-                            {tip.tip_date && (
-                              <span className="text-[9px] text-muted-foreground">
-                                {format(parseISO(tip.tip_date), "dd MMM")}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs font-medium text-foreground truncate">
-                            {tip.home_team} vs {tip.away_team}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] text-muted-foreground">Prediction:</span>
-                            <span className={cn(
-                              "text-[10px] font-medium",
-                              isLocked ? "blur-sm select-none" : "text-primary"
-                            )}>
-                              {isLocked ? "••••••" : tip.prediction}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge 
-                            variant="outline" 
-                            className={cn(
-                              "text-[9px] px-1.5 py-0",
-                              tip.result === "won" && "bg-green-500/20 border-green-500/40 text-green-400",
-                              tip.result === "lost" && "bg-red-500/20 border-red-500/40 text-red-400",
-                              tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
-                            )}
-                          >
-                            {tip.result}
+          <div className="space-y-3">
+            {filteredTips.map((tip, index) => {
+              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTips.length - 1;
+              
+              return (
+                <Fragment key={tip.id}>
+                  <Card className="p-3 bg-card border-border hover:border-primary/30 transition-colors border-l-4 border-l-primary">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
+                            {tip.league}
                           </Badge>
-                          <span className="text-[10px] text-muted-foreground">@{tip.odds}</span>
+                          {tip.tip_date && (
+                            <span className="text-[9px] text-muted-foreground">
+                              {format(parseISO(tip.tip_date), "dd MMM")}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-foreground truncate">
+                          {tip.home_team} vs {tip.away_team}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-muted-foreground">Prediction:</span>
+                          <span className="text-[10px] font-medium text-primary">
+                            {tip.prediction}
+                          </span>
                         </div>
                       </div>
-                    </Card>
-                    {showAdAfter && <InlineListAd />}
-                  </Fragment>
-                );
-              })}
-            </div>
-          ) : (
-            <Card className="empty-state-compact bg-card/50 border-border/50">
-              <div className="flex flex-col items-center gap-2 py-6">
-                <Lightbulb className="h-6 w-6 text-muted-foreground/40" />
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} tips in archive</p>
-                  <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
-                </div>
-              </div>
-            </Card>
-          )
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-[9px] px-1.5 py-0",
+                            tip.result === "won" && "bg-green-500/20 border-green-500/40 text-green-400",
+                            tip.result === "lost" && "bg-red-500/20 border-red-500/40 text-red-400",
+                            tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
+                          )}
+                        >
+                          {tip.result}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">@{tip.odds}</span>
+                      </div>
+                    </div>
+                  </Card>
+                  {showAdAfter && <InlineListAd />}
+                </Fragment>
+              );
+            })}
+          </div>
         ) : (
-          /* Tickets Content */
-          filteredTickets.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {filteredTickets.map((ticket, index) => {
-                const isLocked = !canAccess(ticket.tier as ContentTier, "ticket", ticket.id);
-                const unlockMethod = getUnlockMethod(ticket.tier as ContentTier, "ticket", ticket.id);
-                const isUnlocking = unlockingId === ticket.id;
-                const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTickets.length - 1;
-                
-                return (
-                  <Fragment key={ticket.id}>
-                    <AllTicketsCard 
-                      ticket={ticket} 
-                      isLocked={isLocked} 
-                      unlockMethod={unlockMethod} 
-                      onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier as ContentTier)} 
-                      isUnlocking={isUnlocking} 
-                    />
-                    {showAdAfter && <InlineListAd />}
-                  </Fragment>
-                );
-              })}
+          <Card className="empty-state-compact bg-card/50 border-border/50">
+            <div className="flex flex-col items-center gap-2 py-6">
+              <Lightbulb className="h-6 w-6 text-muted-foreground/40" />
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} tips in archive</p>
+                <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
+              </div>
+            </div>
+          </Card>
+        )
+      ) : (
+        /* Tickets Content - All archived tickets are unlocked */
+        filteredTickets.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredTickets.map((ticket, index) => {
+              const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTickets.length - 1;
+              
+              return (
+                <Fragment key={ticket.id}>
+                  <AllTicketsCard 
+                    ticket={ticket} 
+                    isLocked={false}
+                    unlockMethod={{ type: "unlocked" }}
+                    onUnlockClick={() => {}} 
+                    isUnlocking={false} 
+                  />
+                  {showAdAfter && <InlineListAd />}
+                </Fragment>
+              );
+            })}
             </div>
           ) : (
             <Card className="empty-state-compact bg-card/50 border-border/50">
