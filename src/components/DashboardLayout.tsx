@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Footer } from "@/components/Footer";
-import { Bell, BellRing, Heart, User, LogOut, LogIn, Crown, Sparkles, Star } from "lucide-react";
+import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -38,14 +38,14 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
         return {
           label: "Premium",
           icon: Crown,
-          className: "bg-gradient-to-r from-accent to-primary text-white border-0",
+          className: "bg-[#F5C451]/20 text-[#F5C451] border-[#F5C451]/40",
           showUpgrade: false,
         };
       case "basic":
         return {
-          label: "Basic",
+          label: "Pro",
           icon: Star,
-          className: "bg-primary/20 text-primary border-primary/30",
+          className: "bg-[#2FBF9B]/20 text-[#2FBF9B] border-[#2FBF9B]/40",
           showUpgrade: true,
           upgradeLabel: "Go Premium",
         };
@@ -53,7 +53,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
         return {
           label: "Free",
           icon: Sparkles,
-          className: "bg-muted text-muted-foreground border-border",
+          className: "bg-[#6B7280]/20 text-[#6B7280] border-[#6B7280]/40",
           showUpgrade: true,
           upgradeLabel: "Upgrade",
         };
@@ -77,70 +77,62 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
           <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-primary/30 flex items-center justify-between px-1.5 sm:px-3 bg-primary md:left-[var(--sidebar-width,0)]">
             <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-7 w-7" />
             
-            <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
-              {/* Subscription Badge - hidden on very small screens */}
-              <div className="hidden xs:flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-                <Badge 
-                  variant="outline" 
-                  className={cn(
-                    "flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 cursor-pointer hover:opacity-80 transition-opacity text-[9px] sm:text-[10px]",
-                    planBadge.className
-                  )}
-                  onClick={() => navigate("/get-premium")}
-                >
-                  <planBadge.icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  <span className="font-medium">{planBadge.label}</span>
-                </Badge>
-                {planBadge.showUpgrade && (
-                  <Button
-                    size="sm"
-                    onClick={() => navigate("/get-premium")}
-                    className="hidden sm:flex text-[10px] bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0 px-2 h-6"
-                  >
-                    {planBadge.upgradeLabel}
-                  </Button>
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
+              {/* Subscription Badge */}
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity text-[10px] sm:text-xs border",
+                  planBadge.className
                 )}
-              </div>
+                onClick={() => navigate("/get-premium")}
+              >
+                <planBadge.icon className="h-3 w-3" />
+                <span className="font-medium">{planBadge.label}</span>
+              </Badge>
 
+              {/* Notifications Button */}
               <Button 
-                variant="ghost" 
-                size="icon" 
+                variant="outline" 
+                size="sm"
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "relative transition-all h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0",
+                  "gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
                   alertSettings.enabled 
-                    ? "text-primary-foreground hover:text-primary-foreground/80" 
-                    : "text-primary-foreground/70 hover:text-primary-foreground"
+                    ? "text-primary-foreground" 
+                    : "text-primary-foreground/80"
                 )}
               >
                 {alertSettings.enabled ? (
-                  <>
-                    <BellRing className="h-3.5 w-3.5" />
-                    <span className="absolute top-0 right-0 h-1 w-1 rounded-full bg-primary-foreground animate-pulse" />
-                  </>
+                  <BellRing className="h-3.5 w-3.5" />
                 ) : (
                   <Bell className="h-3.5 w-3.5" />
                 )}
+                <span className="hidden sm:inline">Notifications</span>
               </Button>
               
+              {/* Favourites Button */}
               <Button 
                 variant="ghost" 
-                size="icon" 
+                size="sm"
                 onClick={() => navigate("/favorites")}
-                className="text-primary-foreground/70 hover:text-primary-foreground transition-colors h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               >
-                <Heart className="h-3.5 w-3.5" />
+                <Star className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Favourites</span>
               </Button>
 
+              {/* Login/User Button */}
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-primary-foreground/70 hover:text-primary-foreground h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                      variant="outline" 
+                      size="sm"
+                      className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                     >
                       <User className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Account</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40 bg-popover border-border z-[60]">
@@ -157,13 +149,13 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 </DropdownMenu>
               ) : (
                 <Button 
-                  variant="secondary" 
+                  variant="outline" 
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="gap-0.5 h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs flex-shrink-0 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                  className="gap-1.5 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0"
                 >
-                  <LogIn className="h-3 w-3" />
-                  <span className="hidden xs:inline">Sign In</span>
+                  <User className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Login</span>
                 </Button>
               )}
             </div>
