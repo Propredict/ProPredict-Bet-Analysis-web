@@ -54,7 +54,7 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
   return (
     <div className="space-y-4">
       {/* Header */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
+      <Card className="p-4 bg-card border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5 text-primary" />
@@ -67,7 +67,7 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
       </Card>
 
       {/* Rounds List */}
-      <Card className="bg-[#0E1627] border-white/10 overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
