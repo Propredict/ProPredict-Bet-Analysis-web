@@ -79,8 +79,8 @@ export function BettingTickets() {
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "border-primary bg-primary/15 shadow-[0_0_10px_rgba(15,155,142,0.2)]")
-          : cn(baseStyles, "border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50");
+          ? cn(baseStyles, "border-white/50 bg-white/15 shadow-[0_0_10px_rgba(255,255,255,0.15)]")
+          : cn(baseStyles, "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40");
       case "exclusive":
         return isActive 
           ? cn(baseStyles, "border-amber-500 bg-amber-500/15 shadow-[0_0_10px_rgba(245,158,11,0.2)]")
@@ -96,7 +96,7 @@ export function BettingTickets() {
 
   const getTextColor = (tabId: string) => {
     switch (tabId) {
-      case "daily": return "text-primary";
+      case "daily": return "text-white";
       case "exclusive": return "text-amber-400";
       case "premium": return "text-fuchsia-400";
       default: return "text-muted-foreground";
@@ -105,7 +105,7 @@ export function BettingTickets() {
 
   const getSubtitleColor = (tabId: string) => {
     switch (tabId) {
-      case "daily": return "text-muted-foreground";
+      case "daily": return "text-white/60";
       case "exclusive": return "text-amber-400/70";
       case "premium": return "text-fuchsia-400/70";
       default: return "text-muted-foreground";
