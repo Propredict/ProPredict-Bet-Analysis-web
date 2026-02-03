@@ -115,8 +115,8 @@ export default function DailyTips() {
       </div>
 
       {/* Description */}
-      <Card className="p-3 bg-card/50 border-border/50">
-        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+      <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
+        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
           Daily Tips provide carefully selected match predictions for today, based on form, statistics, and AI analysis. These tips are updated daily and are designed for quick insights into the most promising matches.
         </p>
       </Card>
