@@ -278,40 +278,28 @@ export default function AllTickets() {
         ) : contentType === "tips" ? (
           /* Tips Content */
           filteredTips.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredTips.map((tip, index) => {
               const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < filteredTips.length - 1;
               
               return (
                 <Fragment key={tip.id}>
-                  <Card className="p-3 bg-card border-border hover:border-primary/30 transition-colors border-l-4 border-l-primary">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-muted-foreground/30">
-                            {tip.league}
-                          </Badge>
-                          {tip.tip_date && (
-                            <span className="text-[9px] text-muted-foreground">
-                              {format(parseISO(tip.tip_date), "dd MMM")}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs font-medium text-foreground truncate">
-                          {tip.home_team} vs {tip.away_team}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-muted-foreground">Prediction:</span>
-                          <span className="text-[10px] font-medium text-primary">
-                            {tip.prediction}
+                  <Card className="p-4 bg-card border-border hover:border-primary/30 transition-colors border-l-4 border-l-primary flex flex-col gap-2">
+                    {/* Header: League & Date */}
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-muted-foreground/30">
+                        {tip.league}
+                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {tip.tip_date && (
+                          <span className="text-[9px] text-muted-foreground">
+                            {format(parseISO(tip.tip_date), "dd MMM")}
                           </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
+                        )}
                         <Badge 
                           variant="outline" 
                           className={cn(
-                            "text-[9px] px-1.5 py-0",
+                            "text-[9px] px-1.5 py-0.5",
                             tip.result === "won" && "bg-green-500/20 border-green-500/40 text-green-400",
                             tip.result === "lost" && "bg-red-500/20 border-red-500/40 text-red-400",
                             tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
@@ -319,8 +307,21 @@ export default function AllTickets() {
                         >
                           {tip.result}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground">@{tip.odds}</span>
                       </div>
+                    </div>
+                    
+                    {/* Match */}
+                    <p className="text-sm font-medium text-foreground">
+                      {tip.home_team} vs {tip.away_team}
+                    </p>
+                    
+                    {/* Prediction & Odds */}
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">Tip:</span>
+                        <span className="text-xs font-semibold text-primary">{tip.prediction}</span>
+                      </div>
+                      <span className="text-xs font-medium text-muted-foreground">@{tip.odds}</span>
                     </div>
                   </Card>
                   {showAdAfter && <InlineListAd />}
