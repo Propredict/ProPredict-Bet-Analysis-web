@@ -427,20 +427,20 @@ export default function GetPremium() {
               key={plan.id}
               className={`relative p-4 transition-all ${
                 isPremium
-                  ? "bg-gradient-to-b from-warning/10 via-card to-card border-warning/30 ring-1 ring-warning/20"
+                  ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
                   : isPopular
-                  ? "bg-gradient-to-b from-primary/10 via-card to-card border-primary/30"
+                  ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/30"
                   : "bg-card border-border"
               }`}
             >
               {isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-warning via-accent to-primary text-white border-0 text-[9px] px-2">
+                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
                   <Crown className="h-2.5 w-2.5 mr-1" />
                   Best Value
                 </Badge>
               )}
               {isPopular && !isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground border-0 text-[9px] px-2">
+                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-black border-0 text-[9px] px-2">
                   <Sparkles className="h-2.5 w-2.5 mr-1" />
                   Popular
                 </Badge>
@@ -461,9 +461,9 @@ export default function GetPremium() {
               <Button
                 className={`w-full mt-4 h-8 text-xs ${
                   isPremium && !isCurrentPlan
-                    ? "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0"
+                    ? "bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 hover:opacity-90 text-white border-0"
                     : isPopular && !isCurrentPlan
-                    ? "bg-primary hover:bg-primary/90"
+                    ? "bg-amber-500 hover:bg-amber-600 text-black font-semibold"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
