@@ -179,7 +179,7 @@ export function BettingTickets() {
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       ) : displayedTickets.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {displayedTickets.map((ticket, index) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
