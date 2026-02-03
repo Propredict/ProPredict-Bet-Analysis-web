@@ -86,25 +86,26 @@ export default function AppLayout() {
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
           <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
-            <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8" />
-            
-            {/* Center Branding with Logo - mobile only */}
-            <div className="flex sm:hidden absolute left-1/2 -translate-x-1/2 items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8 [&>svg]:h-5 [&>svg]:w-5" />
+              
+              {/* Mobile Branding - Text */}
+              <div 
+                className="flex sm:hidden flex-col cursor-pointer" 
+                onClick={() => navigate("/")}
+              >
+                <span className="text-xs font-bold text-primary-foreground leading-tight">ProPredict</span>
+                <span className="text-[8px] text-primary-foreground/70 leading-tight">AI Predictions & Analysis</span>
+              </div>
+              
+              {/* Desktop Logo */}
               <img 
                 src={logoImage} 
                 alt="ProPredict" 
-                className="h-6 w-6 object-contain cursor-pointer flex-shrink-0" 
+                className="hidden sm:block h-7 w-7 object-contain cursor-pointer flex-shrink-0" 
                 onClick={() => navigate("/")}
               />
             </div>
-            
-            {/* Desktop Logo - visible on sm+ */}
-            <img 
-              src={logoImage} 
-              alt="ProPredict" 
-              className="hidden sm:block h-7 w-7 object-contain cursor-pointer flex-shrink-0 ml-2" 
-              onClick={() => navigate("/")}
-            />
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
               {/* Subscription Badge */}
