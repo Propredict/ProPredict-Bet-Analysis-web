@@ -1,17 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Eye, Calendar, Trophy, TrendingUp, Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { Eye, Calendar, Trophy, Loader2, RefreshCw, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFixtures, type Match } from "@/hooks/useFixtures";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { MatchPreviewSelector } from "@/components/match-previews/MatchPreviewSelector";
+import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
+import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 // Top leagues to display
 const TOP_LEAGUES = [
   "Premier League",
-  "La Liga", 
+  "La Liga",
   "Serie A",
   "Bundesliga",
   "Ligue 1",
@@ -23,203 +28,56 @@ const TOP_LEAGUES = [
   "Conference League",
 ];
 
-interface MatchPreviewCardProps {
-  match: Match;
-}
-
-function MatchPreviewCard({ match }: MatchPreviewCardProps) {
-  const [expanded, setExpanded] = useState(false);
-  
-  // Generate mock preview data (in production this would come from API/AI)
-  const generatePreview = () => {
-    const homeStrength = Math.random() > 0.5;
-    const prediction = homeStrength ? "1" : Math.random() > 0.5 ? "X" : "2";
-    const confidence = Math.floor(60 + Math.random() * 35);
-    
-    return {
-      prediction,
-      confidence,
-      homeForm: ["W", "D", "W", "L", "W"].slice(0, 5),
-      awayForm: ["L", "W", "D", "W", "L"].slice(0, 5),
-      keyFactor: homeStrength 
-        ? `${match.homeTeam} has strong home record this season`
-        : `${match.awayTeam} showing excellent away form recently`,
-      btts: Math.random() > 0.4 ? "Yes" : "No",
-      over25: Math.random() > 0.45 ? "Yes" : "No",
-    };
-  };
-  
-  const preview = generatePreview();
-  
-  const getPredictionLabel = (pred: string) => {
-    switch(pred) {
-      case "1": return match.homeTeam;
-      case "X": return "Draw";
-      case "2": return match.awayTeam;
-      default: return pred;
-    }
-  };
-
-  const getFormColor = (result: string) => {
-    switch(result) {
-      case "W": return "bg-emerald-500 text-white";
-      case "D": return "bg-amber-500 text-white";
-      case "L": return "bg-red-500 text-white";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
-  return (
-    <Card className="overflow-hidden">
-      <div 
-        className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
-              {match.startTime}
-            </Badge>
-            {match.status === "live" && (
-              <Badge className="bg-red-500 text-white text-[10px] animate-pulse">
-                LIVE {match.minute}'
-              </Badge>
-            )}
-          </div>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              {match.homeLogo && (
-                <img src={match.homeLogo} alt="" className="h-5 w-5 object-contain" />
-              )}
-              <span className="font-medium text-sm truncate">{match.homeTeam}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {match.awayLogo && (
-                <img src={match.awayLogo} alt="" className="h-5 w-5 object-contain" />
-              )}
-              <span className="font-medium text-sm truncate">{match.awayTeam}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground mb-0.5">Prediction</div>
-              <Badge className="bg-gradient-to-r from-primary/30 to-primary/20 text-primary border border-primary/30">
-                {getPredictionLabel(preview.prediction)}
-              </Badge>
-            </div>
-            <div className="text-right">
-              <div className="text-[10px] text-muted-foreground mb-0.5">Confidence</div>
-              <span className={cn(
-                "text-sm font-bold",
-                preview.confidence >= 80 ? "text-emerald-400" :
-                preview.confidence >= 65 ? "text-amber-400" : "text-red-400"
-              )}>
-                {preview.confidence}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {expanded && (
-        <div className="border-t border-border p-4 bg-muted/20 space-y-4">
-          {/* Form Comparison */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-xs text-muted-foreground mb-2">{match.homeTeam} Form</div>
-              <div className="flex gap-1">
-                {preview.homeForm.map((r, i) => (
-                  <span key={i} className={cn("w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center", getFormColor(r))}>
-                    {r}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-2">{match.awayTeam} Form</div>
-              <div className="flex gap-1">
-                {preview.awayForm.map((r, i) => (
-                  <span key={i} className={cn("w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center", getFormColor(r))}>
-                    {r}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          {/* Key Factor */}
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <div>
-                <div className="text-xs font-medium text-primary mb-1">Key Factor</div>
-                <p className="text-xs text-muted-foreground">{preview.keyFactor}</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Additional Markets */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground mb-1">Both Teams Score</div>
-              <span className={cn(
-                "text-sm font-bold",
-                preview.btts === "Yes" ? "text-emerald-400" : "text-red-400"
-              )}>
-                {preview.btts}
-              </span>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground mb-1">Over 2.5 Goals</div>
-              <span className={cn(
-                "text-sm font-bold",
-                preview.over25 === "Yes" ? "text-emerald-400" : "text-red-400"
-              )}>
-                {preview.over25}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
+const FREE_PREVIEW_LIMIT = 3;
 
 export default function MatchPreviews() {
   const { matches, isLoading, error, refetch } = useFixtures("today");
-  
+  const { plan } = useUserPlan();
+  const { isAdmin } = useAdminAccess();
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [previewCount, setPreviewCount] = useState(0);
+  const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
+
   // Filter to top leagues only
-  const topLeagueMatches = matches.filter(match => 
-    TOP_LEAGUES.some(league => 
+  const topLeagueMatches = matches.filter((match) =>
+    TOP_LEAGUES.some((league) =>
       match.league?.toLowerCase().includes(league.toLowerCase())
     )
   );
-  
-  // Group by league
-  const matchesByLeague = topLeagueMatches.reduce((acc, match) => {
-    const league = match.league || "Other";
-    if (!acc[league]) acc[league] = [];
-    acc[league].push(match);
-    return acc;
-  }, {} as Record<string, Match[]>);
-  
-  const leagueCount = Object.keys(matchesByLeague).length;
+
+  // Check if user can generate more previews
+  const isPremiumUser = plan === "basic" || plan === "premium" || isAdmin;
+  const canGenerate = isPremiumUser || previewCount < FREE_PREVIEW_LIMIT;
+  const remainingPreviews = FREE_PREVIEW_LIMIT - previewCount;
+
+  const handleGenerate = async () => {
+    if (!selectedMatch || !canGenerate) return;
+    
+    await generate(selectedMatch);
+    
+    if (!isPremiumUser) {
+      setPreviewCount((prev) => prev + 1);
+    }
+  };
+
+  const handleMatchSelect = (match: Match | null) => {
+    setSelectedMatch(match);
+    reset();
+  };
+
+  const leagueCount = new Set(topLeagueMatches.map((m) => m.league)).size;
   const matchCount = topLeagueMatches.length;
 
   return (
     <>
       <Helmet>
         <title>Match Previews | ProPredict</title>
-        <meta name="description" content="Expert analysis and predictions for today's top football matches from Premier League, La Liga, Serie A, Bundesliga and more." />
+        <meta
+          name="description"
+          content="Expert AI analysis and predictions for today's top football matches from Premier League, La Liga, Serie A, Bundesliga and more."
+        />
       </Helmet>
-      
+
       <div className="page-content space-y-4">
         {/* Header */}
         <div className="page-header">
@@ -230,12 +88,14 @@ export default function MatchPreviews() {
               </div>
               <div>
                 <h1 className="text-lg font-bold">Match Previews</h1>
-                <p className="text-xs text-muted-foreground">Expert analysis for top matches</p>
+                <p className="text-xs text-muted-foreground">
+                  AI-powered analysis for top matches
+                </p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => refetch()}
               disabled={isLoading}
               className="h-8"
@@ -244,13 +104,15 @@ export default function MatchPreviews() {
             </Button>
           </div>
         </div>
-        
+
         {/* Stats Bar */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-gradient-to-br from-violet-500/20 via-violet-500/10 to-transparent border border-violet-500/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <Calendar className="h-4 w-4 text-violet-400" />
-              <span className="text-lg font-bold text-violet-400">{format(new Date(), "dd MMM")}</span>
+              <span className="text-lg font-bold text-violet-400">
+                {format(new Date(), "dd MMM")}
+              </span>
             </div>
             <span className="text-[10px] text-violet-400/70">Today</span>
           </div>
@@ -266,10 +128,28 @@ export default function MatchPreviews() {
               <Eye className="h-4 w-4 text-amber-400" />
               <span className="text-lg font-bold text-amber-400">{matchCount}</span>
             </div>
-            <span className="text-[10px] text-amber-400/70">Previews</span>
+            <span className="text-[10px] text-amber-400/70">Matches</span>
           </div>
         </div>
-        
+
+        {/* Free User Limit Banner */}
+        {!isPremiumUser && (
+          <Card className="p-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-amber-400" />
+                <span className="text-sm">
+                  <span className="font-medium text-amber-400">{remainingPreviews}</span>
+                  <span className="text-muted-foreground"> free previews remaining today</span>
+                </span>
+              </div>
+              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">
+                Upgrade for unlimited
+              </Badge>
+            </div>
+          </Card>
+        )}
+
         {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -285,37 +165,43 @@ export default function MatchPreviews() {
         ) : matchCount === 0 ? (
           <Card className="p-6 text-center">
             <Eye className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No top league matches scheduled for today</p>
+            <p className="text-sm text-muted-foreground">
+              No top league matches scheduled for today
+            </p>
           </Card>
         ) : (
           <div className="space-y-4">
-            {Object.entries(matchesByLeague).map(([league, leagueMatches]) => (
-              <div key={league} className="space-y-2">
-                {/* League Header */}
-                <div className="flex items-center gap-2 px-1">
-                  {leagueMatches[0]?.leagueLogo && (
-                    <img 
-                      src={leagueMatches[0].leagueLogo} 
-                      alt="" 
-                      className="h-5 w-5 object-contain"
-                    />
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">{league}</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      {leagueMatches.length} {leagueMatches.length === 1 ? "match" : "matches"}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {/* Matches */}
-                <div className="space-y-2">
-                  {leagueMatches.map((match) => (
-                    <MatchPreviewCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </div>
-            ))}
+            {/* Match Selector */}
+            <MatchPreviewSelector
+              matches={topLeagueMatches}
+              selectedMatch={selectedMatch}
+              onMatchSelect={handleMatchSelect}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              canGenerate={canGenerate}
+            />
+
+            {/* Analysis Section */}
+            {(analysis || isGenerating) && generatedMatch && (
+              <MatchPreviewAnalysis
+                match={generatedMatch}
+                analysis={analysis}
+                isLoading={isGenerating}
+              />
+            )}
+
+            {/* Empty state when no match selected */}
+            {!selectedMatch && !analysis && (
+              <Card className="p-8 text-center border-dashed">
+                <Eye className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="font-medium text-muted-foreground mb-1">
+                  Select a match to preview
+                </h3>
+                <p className="text-xs text-muted-foreground/70">
+                  Choose a league and match above, then generate AI analysis
+                </p>
+              </Card>
+            )}
           </div>
         )}
       </div>
