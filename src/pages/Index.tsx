@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions";
 import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
 import { BettingTickets } from "@/components/dashboard/BettingTickets";
+import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
@@ -23,6 +24,7 @@ const Index = () => {
         <SidebarAd />
         <MatchPredictions />
         <BettingTickets />
+        <LeagueStandings />
         <SidebarAd />
         <BottomCTA />
       </div>

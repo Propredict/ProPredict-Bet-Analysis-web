@@ -50,8 +50,8 @@ export function BettingTickets() {
 
   const tickets = dbTickets.map(mapDbTicket);
   const filtered = tickets.filter((t) => t.tier === activeTab);
-  const displayedTickets = filtered.slice(0, 4);
-  const hasMoreTickets = filtered.length > 4;
+  const displayedTickets = filtered.slice(0, 3);
+  const hasMoreTickets = filtered.length > 3;
 
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
