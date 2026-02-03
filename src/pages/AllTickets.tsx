@@ -198,29 +198,57 @@ export default function AllTickets() {
         </div>
 
         {/* Content Type Tabs - Tips vs Tickets */}
-        <Tabs value={contentType} onValueChange={(v) => setContentType(v as ContentType)} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-12 bg-card border border-border">
-            <TabsTrigger 
-              value="tips" 
-              className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setContentType("tips")}
+            className={cn(
+              "relative flex items-center justify-center gap-3 py-4 px-4 rounded-xl border-2 transition-all duration-300 font-semibold",
+              contentType === "tips"
+                ? "bg-gradient-to-br from-primary/30 via-primary/20 to-primary/10 border-primary text-primary shadow-lg shadow-primary/20"
+                : "bg-gradient-to-br from-card via-card to-muted/20 border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            )}
+          >
+            <Lightbulb className={cn("h-5 w-5", contentType === "tips" && "drop-shadow-lg")} />
+            <span className="text-base">Tips</span>
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-xs px-2 py-0.5",
+                contentType === "tips" 
+                  ? "bg-primary/20 border-primary/40 text-primary" 
+                  : "bg-muted/50 border-muted-foreground/30"
+              )}
             >
-              <Lightbulb className="h-4 w-4" />
-              <span className="font-medium">Tips</span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{totalTipsCount}</Badge>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="tickets" 
-              className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
+              {totalTipsCount}
+            </Badge>
+          </button>
+          <button
+            onClick={() => setContentType("tickets")}
+            className={cn(
+              "relative flex items-center justify-center gap-3 py-4 px-4 rounded-xl border-2 transition-all duration-300 font-semibold",
+              contentType === "tickets"
+                ? "bg-gradient-to-br from-primary/30 via-primary/20 to-primary/10 border-primary text-primary shadow-lg shadow-primary/20"
+                : "bg-gradient-to-br from-card via-card to-muted/20 border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            )}
+          >
+            <Ticket className={cn("h-5 w-5", contentType === "tickets" && "drop-shadow-lg")} />
+            <span className="text-base">Tickets</span>
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-xs px-2 py-0.5",
+                contentType === "tickets" 
+                  ? "bg-primary/20 border-primary/40 text-primary" 
+                  : "bg-muted/50 border-muted-foreground/30"
+              )}
             >
-              <Ticket className="h-4 w-4" />
-              <span className="font-medium">Tickets</span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{totalTicketsCount}</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+              {totalTicketsCount}
+            </Badge>
+          </button>
+        </div>
 
         {/* Tier Tabs */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {currentTabs.map(tab => {
             const isActive = activeTab === tab.id;
             
@@ -228,18 +256,23 @@ export default function AllTickets() {
               <button 
                 key={tab.id} 
                 onClick={() => setActiveTab(tab.id)} 
-                className={getTabStyles(tab.id, isActive)}
+                className={cn(
+                  "relative py-4 px-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2",
+                  isActive 
+                    ? "bg-gradient-to-br from-primary/30 via-primary/20 to-transparent border-primary text-primary shadow-lg shadow-primary/25"
+                    : "bg-gradient-to-br from-card via-card/80 to-muted/10 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
               >
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-1.5">
                   <tab.icon className={cn(
-                    "h-4 w-4 transition-transform duration-200",
+                    "h-5 w-5 transition-transform duration-200",
                     isActive && "scale-110 drop-shadow-lg"
                   )} />
                   <span>{tab.label}</span>
                   {tab.count > 0 && (
                     <span className={cn(
-                      "text-[9px] px-1.5 py-0.5 rounded-full",
-                      isActive ? "bg-background/20" : "bg-muted/50"
+                      "text-xs font-bold",
+                      isActive ? "text-primary" : "text-muted-foreground"
                     )}>
                       {tab.count}
                     </span>
