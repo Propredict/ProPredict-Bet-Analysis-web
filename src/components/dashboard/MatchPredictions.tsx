@@ -191,18 +191,6 @@ export function MatchPredictions() {
               </Fragment>
             );
           })}
-          
-          {/* See All CTA */}
-          {(hasMoreTips || filteredTips.length > 0) && (
-            <Button
-              variant="outline"
-              className="w-full mt-3 border-border/50 hover:border-primary/50 hover:bg-primary/5 group"
-              onClick={() => navigate(TAB_ROUTES[activeTab])}
-            >
-              <span>{getCtaLabel()}</span>
-              <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
-            </Button>
-          )}
         </div>
       ) : (
         <Card className="empty-state-compact bg-card/50 border-border/50">
@@ -215,6 +203,20 @@ export function MatchPredictions() {
             </p>
           </div>
         </Card>
+      )}
+
+      {/* Centered See All CTA */}
+      {filteredTips.length > 0 && (
+        <div className="flex justify-center">
+          <Button
+            variant="default"
+            className="px-8 group"
+            onClick={() => navigate(TAB_ROUTES[activeTab])}
+          >
+            <span>{getCtaLabel()}</span>
+            <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+          </Button>
+        </div>
       )}
 
       <PricingModal 
