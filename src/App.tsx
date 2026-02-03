@@ -26,6 +26,7 @@ import Disclaimer from "./pages/Disclaimer";
 import DataDeletion from "./pages/DataDeletion";
 import HelpSupport from "./pages/HelpSupport";
 import AboutUs from "./pages/AboutUs";
+import HowAIWorks from "./pages/HowAIWorks";
 import NotFound from "./pages/NotFound";
 
 // Tier pages
@@ -79,6 +80,7 @@ const App = () => {
               {/* All other pages with AppLayout */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
+                  <Route path="/how-ai-works" element={<HowAIWorks />} />
                   <Route path="/live-scores" element={<LiveScores />} />
                   <Route path="/favorites" element={<MyFavorites />} />
                   <Route path="/all-tickets" element={<AllTickets />} />
