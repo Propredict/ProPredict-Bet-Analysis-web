@@ -45,12 +45,6 @@ interface H2HResponse {
 }
 
 async function fetchH2H(team1Id: number, team2Id: number): Promise<H2HResponse> {
-  const { data, error } = await supabase.functions.invoke("league-h2h", {
-    body: null,
-    headers: {},
-  });
-
-  // Use query params approach
   const response = await fetch(
     `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/league-h2h?team1=${team1Id}&team2=${team2Id}&last=20`,
     {
