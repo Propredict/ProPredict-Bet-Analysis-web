@@ -9,6 +9,7 @@ import { SidebarAd, InContentAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ export default function ExclusiveTickets() {
     handleUnlock,
     handleSecondaryUnlock
   } = useUnlockHandler();
+  const { isAndroidApp } = usePlatform();
   
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
@@ -64,7 +66,9 @@ export default function ExclusiveTickets() {
           </div>
           <div>
             <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Exclusive Tickets</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Unlock tickets by watching ads or go Premium for exclusive access</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">

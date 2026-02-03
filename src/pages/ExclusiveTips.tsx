@@ -9,6 +9,7 @@ import { SidebarAd, InContentAd } from "@/components/ads/EzoicAd";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ export default function ExclusiveTips() {
     handleUnlock,
     handleSecondaryUnlock
   } = useUnlockHandler();
+  const { isAndroidApp } = usePlatform();
   
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
@@ -64,7 +66,9 @@ export default function ExclusiveTips() {
           </div>
           <div>
             <h1 className="text-xs font-semibold sm:text-lg text-amber-400">Exclusive Tips</h1>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Unlock tips by watching ads or go Premium for exclusive access</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground">
+              {isAndroidApp ? "Unlock tips by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
