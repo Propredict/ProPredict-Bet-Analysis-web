@@ -13,6 +13,7 @@ interface AIPrediction {
   result_status: string;
   home_team: string;
   away_team: string;
+  match_date: string | null;
 }
 
 interface FixtureResponse {
@@ -40,19 +41,22 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch pending predictions from yesterday and today
+    // Get date range - last 3 days to catch any missed updates
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
     const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
+    // Fetch pending predictions with valid match_date in the last 3 days
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, prediction, result_status, home_team, away_team")
+      .select("id, match_id, prediction, result_status, home_team, away_team, match_date")
       .eq("result_status", "pending")
-      .gte("match_date", formatDate(yesterday))
-      .lte("match_date", formatDate(today));
+      .not("match_date", "is", null)
+      .gte("match_date", formatDate(threeDaysAgo))
+      .lte("match_date", formatDate(today))
+      .limit(50); // Process max 50 at a time to avoid timeout
 
     if (fetchError) {
       console.error("Error fetching predictions:", fetchError);
@@ -70,15 +74,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Found ${pendingPredictions.length} pending predictions`);
+    console.log(`Found ${pendingPredictions.length} pending predictions to check`);
 
     let updatedCount = 0;
+    let skippedCount = 0;
     const results: { id: string; status: string; reason: string }[] = [];
 
     for (const prediction of pendingPredictions as AIPrediction[]) {
       try {
         // Fetch match result from API-Football
         const fixtureId = prediction.match_id;
+        
+        // Skip if match_id is not a valid number
+        if (!fixtureId || isNaN(Number(fixtureId))) {
+          console.log(`Skipping invalid match_id: ${fixtureId}`);
+          skippedCount++;
+          continue;
+        }
+
         const apiUrl = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
 
         const apiResponse = await fetch(apiUrl, {
@@ -89,6 +102,7 @@ Deno.serve(async (req) => {
 
         if (!apiResponse.ok) {
           console.error(`API error for fixture ${fixtureId}:`, apiResponse.status);
+          skippedCount++;
           continue;
         }
 
@@ -97,6 +111,7 @@ Deno.serve(async (req) => {
 
         if (!fixture) {
           console.log(`No fixture data for ${fixtureId}`);
+          skippedCount++;
           continue;
         }
 
@@ -104,6 +119,7 @@ Deno.serve(async (req) => {
         const finishedStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
         if (!finishedStatuses.includes(fixture.fixture.status.short)) {
           console.log(`Match ${fixtureId} not finished yet (${fixture.fixture.status.short})`);
+          skippedCount++;
           continue;
         }
 
@@ -112,6 +128,7 @@ Deno.serve(async (req) => {
 
         if (homeGoals === null || awayGoals === null) {
           console.log(`No goals data for fixture ${fixtureId}`);
+          skippedCount++;
           continue;
         }
 
@@ -146,25 +163,26 @@ Deno.serve(async (req) => {
             reason: `Predicted: ${prediction.prediction}, Actual: ${actualResult} (${homeGoals}-${awayGoals})`,
           });
           console.log(
-            `Updated ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
+            `✓ ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
           );
         }
 
-        // Small delay to avoid API rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        // Small delay to avoid API rate limiting (100ms)
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (err) {
         console.error(`Error processing prediction ${prediction.id}:`, err);
         results.push({ id: prediction.id, status: "error", reason: String(err) });
       }
     }
 
-    console.log(`Updated ${updatedCount} predictions`);
+    console.log(`Completed: ${updatedCount} updated, ${skippedCount} skipped`);
 
     return new Response(
       JSON.stringify({
         message: "Prediction results updated",
-        total_pending: pendingPredictions.length,
+        total_checked: pendingPredictions.length,
         updated: updatedCount,
+        skipped: skippedCount,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
