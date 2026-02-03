@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight } from "lucide-react";
 
@@ -13,7 +13,6 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
-import { InlineListAd } from "@/components/ads/EzoicAd";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -180,24 +179,20 @@ export function BettingTickets() {
         </div>
       ) : displayedTickets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {displayedTickets.map((ticket, index) => {
+          {displayedTickets.map((ticket) => {
             const isLocked = !canAccess(ticket.tier, "ticket", ticket.id);
             const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
-            // Show ads after every 3rd card for Daily & Pro tabs only (not Premium)
-            const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
             return (
-              <Fragment key={ticket.id}>
-                <TicketCard
-                  ticket={ticket}
-                  isLocked={isLocked}
-                  unlockMethod={unlockMethod}
-                  isUnlocking={unlockingId === ticket.id}
-                  onUnlockClick={() =>
-                    handleUnlock("ticket", ticket.id, ticket.tier)
-                  }
-                />
-                {showAdAfter && <InlineListAd />}
-              </Fragment>
+              <TicketCard
+                key={ticket.id}
+                ticket={ticket}
+                isLocked={isLocked}
+                unlockMethod={unlockMethod}
+                isUnlocking={unlockingId === ticket.id}
+                onUnlockClick={() =>
+                  handleUnlock("ticket", ticket.id, ticket.tier)
+                }
+              />
             );
           })}
         </div>

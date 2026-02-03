@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { SidebarAd } from "@/components/ads/EzoicAd";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -276,9 +275,6 @@ export default function BettingTips() {
           </div>
         </Card>
       )}
-      
-      {/* Sidebar Ad */}
-      <SidebarAd className="mt-4" />
     </div>
   );
 }

@@ -1,11 +1,9 @@
-import { Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { SidebarAd, InContentAd } from "@/components/ads/EzoicAd";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -161,46 +159,39 @@ export default function ExclusiveTips() {
             </div>
           </Card>
         ) : (
-          exclusiveTips.map((tip, index) => {
+          exclusiveTips.map((tip) => {
             const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
             const isLocked = unlockMethod?.type !== "unlocked";
             const isUnlocking = unlockingId === tip.id;
-            // Show ads after every 3rd card
-            const showAdAfter = (index + 1) % 3 === 0 && index < exclusiveTips.length - 1;
             return (
-              <Fragment key={tip.id}>
-                <TipCard 
-                  tip={{
-                    id: tip.id,
-                    homeTeam: tip.home_team,
-                    awayTeam: tip.away_team,
-                    league: tip.league,
-                    prediction: tip.prediction,
-                    odds: tip.odds,
-                    confidence: tip.confidence ?? 0,
-                    kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric"
-                    }) : "",
-                    tier: tip.tier,
-                    result: tip.result
-                  }}
-                  isLocked={isLocked} 
-                  unlockMethod={unlockMethod} 
-                  onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
-                  onSecondaryUnlock={handleSecondaryUnlock}
-                  isUnlocking={isUnlocking} 
-                />
-                {showAdAfter && <InContentAd />}
-              </Fragment>
+              <TipCard 
+                key={tip.id}
+                tip={{
+                  id: tip.id,
+                  homeTeam: tip.home_team,
+                  awayTeam: tip.away_team,
+                  league: tip.league,
+                  prediction: tip.prediction,
+                  odds: tip.odds,
+                  confidence: tip.confidence ?? 0,
+                  kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric"
+                  }) : "",
+                  tier: tip.tier,
+                  result: tip.result
+                }}
+                isLocked={isLocked} 
+                unlockMethod={unlockMethod} 
+                onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
+                onSecondaryUnlock={handleSecondaryUnlock}
+                isUnlocking={isUnlocking} 
+              />
             );
           })
         )}
       </div>
-      
-      {/* Sidebar Ad */}
-      <SidebarAd className="mt-4" />
     </div>
   </>;
 }

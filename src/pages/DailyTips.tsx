@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
-import { InContentAd, SidebarAd } from "@/components/ads/EzoicAd";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -42,15 +41,14 @@ export default function DailyTips() {
     toast.success("Tips refreshed");
   };
 
-  // Helper to insert ads every 3-4 cards
-  const renderTipsWithAds = () => {
-    const elements: React.ReactNode[] = [];
-    dailyTips.forEach((tip, index) => {
+  // Render tips without ads
+  const renderTips = () => {
+    return dailyTips.map((tip) => {
       const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
       const isLocked = unlockMethod?.type !== "unlocked";
       const isUnlocking = unlockingId === tip.id;
       
-      elements.push(
+      return (
         <TipCard 
           key={tip.id} 
           tip={{
@@ -75,13 +73,7 @@ export default function DailyTips() {
           isUnlocking={isUnlocking} 
         />
       );
-      
-      // Insert ad after every 3rd card (indices 2, 5, 8, etc.)
-      if ((index + 1) % 3 === 0 && index < dailyTips.length - 1) {
-        elements.push(<InContentAd key={`ad-${index}`} />);
-      }
     });
-    return elements;
   };
 
   return <>
@@ -178,12 +170,9 @@ export default function DailyTips() {
             </div>
           </Card>
         ) : (
-          renderTipsWithAds()
+          renderTips()
         )}
       </div>
-      
-      {/* Sidebar Ad */}
-      <SidebarAd className="mt-4" />
     </div>
   </>;
 }

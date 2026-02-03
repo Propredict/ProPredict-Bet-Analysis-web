@@ -7,7 +7,6 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
-import { EzoicScript } from "@/components/ads/EzoicScript";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,8 +105,6 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider defaultOpen={true} open={true}>
-      {/* Web-only: dynamically inject Ezoic script (never on Android WebView) */}
-      <EzoicScript />
       <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw]">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">

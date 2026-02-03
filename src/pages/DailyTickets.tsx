@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
-import { InContentAd, SidebarAd } from "@/components/ads/EzoicAd";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -44,15 +43,14 @@ export default function DailyTickets() {
     toast.success("Tickets refreshed");
   };
 
-  // Helper to insert ads every 3-4 cards
-  const renderTicketsWithAds = () => {
-    const elements: React.ReactNode[] = [];
-    dailyTickets.forEach((ticket, index) => {
+  // Render tickets without ads
+  const renderTickets = () => {
+    return dailyTickets.map((ticket) => {
       const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
       const isLocked = unlockMethod?.type !== "unlocked";
       const isUnlocking = unlockingId === ticket.id;
       
-      elements.push(
+      return (
         <TicketCard 
           key={ticket.id} 
           ticket={{
@@ -76,13 +74,7 @@ export default function DailyTickets() {
           isUnlocking={isUnlocking} 
         />
       );
-      
-      // Insert ad after every 3rd card (indices 2, 5, 8, etc.)
-      if ((index + 1) % 3 === 0 && index < dailyTickets.length - 1) {
-        elements.push(<InContentAd key={`ad-${index}`} />);
-      }
     });
-    return elements;
   };
 
   return <>
@@ -184,12 +176,9 @@ export default function DailyTickets() {
             </div>
           </Card>
         ) : (
-          renderTicketsWithAds()
+          renderTickets()
         )}
       </div>
-      
-      {/* Sidebar Ad */}
-      <SidebarAd className="mt-4" />
     </div>
   </>;
 }
