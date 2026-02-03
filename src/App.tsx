@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import LiveScores from "./pages/LiveScores";
 import MyFavorites from "./pages/MyFavorites";
-import AllTickets from "./pages/AllTickets";
+import WinningHistory from "./pages/WinningHistory";
 import TicketDetails from "./pages/TicketDetails";
 import GetPremium from "./pages/GetPremium";
 import Settings from "./pages/Settings";
@@ -83,7 +83,7 @@ const App = () => {
                   <Route path="/how-ai-works" element={<HowAIWorks />} />
                   <Route path="/live-scores" element={<LiveScores />} />
                   <Route path="/favorites" element={<MyFavorites />} />
-                  <Route path="/winning-history" element={<AllTickets />} />
+                  <Route path="/winning-history" element={<WinningHistory />} />
                   <Route path="/tickets/:id" element={<TicketDetails />} />
                   <Route path="/get-premium" element={<GetPremium />} />
 
