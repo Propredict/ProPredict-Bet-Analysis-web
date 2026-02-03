@@ -252,15 +252,33 @@ export default function AllTickets() {
           {currentTabs.map(tab => {
             const isActive = activeTab === tab.id;
             
+            // Tier-specific colors
+            const getTierStyles = () => {
+              if (tab.id === "daily") {
+                return isActive
+                  ? "bg-gradient-to-br from-emerald-500/30 via-emerald-500/20 to-emerald-500/5 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                  : "bg-gradient-to-br from-emerald-500/15 via-emerald-500/10 to-transparent border-emerald-500/30 text-emerald-400/70 hover:border-emerald-500/50";
+              }
+              if (tab.id === "exclusive") {
+                return isActive
+                  ? "bg-gradient-to-br from-amber-500/30 via-amber-500/20 to-amber-500/5 border-amber-500 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.4)]"
+                  : "bg-gradient-to-br from-amber-500/15 via-amber-500/10 to-transparent border-amber-500/30 text-amber-400/70 hover:border-amber-500/50";
+              }
+              if (tab.id === "premium") {
+                return isActive
+                  ? "bg-gradient-to-br from-fuchsia-500/30 via-fuchsia-500/20 to-fuchsia-500/5 border-fuchsia-500 text-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.4)]"
+                  : "bg-gradient-to-br from-fuchsia-500/15 via-fuchsia-500/10 to-transparent border-fuchsia-500/30 text-fuchsia-400/70 hover:border-fuchsia-500/50";
+              }
+              return "";
+            };
+            
             return (
               <button 
                 key={tab.id} 
                 onClick={() => setActiveTab(tab.id)} 
                 className={cn(
                   "relative py-4 px-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2",
-                  isActive 
-                    ? "bg-gradient-to-br from-primary/30 via-primary/20 to-transparent border-primary text-primary shadow-lg shadow-primary/25"
-                    : "bg-gradient-to-br from-card via-card/80 to-muted/10 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  getTierStyles()
                 )}
               >
                 <div className="flex flex-col items-center gap-1.5">
@@ -270,10 +288,7 @@ export default function AllTickets() {
                   )} />
                   <span>{tab.label}</span>
                   {tab.count > 0 && (
-                    <span className={cn(
-                      "text-xs font-bold",
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    )}>
+                    <span className="text-xs font-bold">
                       {tab.count}
                     </span>
                   )}
