@@ -28,7 +28,7 @@ const TOP_LEAGUES = [
   "Conference League",
 ];
 
-const FREE_PREVIEW_LIMIT = 3;
+const PRO_PREVIEW_LIMIT = 5;
 
 export default function MatchPreviews() {
   // Fetch both today and tomorrow matches
@@ -67,17 +67,29 @@ export default function MatchPreviews() {
     TOP_LEAGUES.some((league) => match.league?.toLowerCase().includes(league.toLowerCase()))
   ).length;
 
-  // Check if user can generate more previews
-  const isPremiumUser = plan === "basic" || plan === "premium" || isAdmin;
-  const canGenerate = isPremiumUser || previewCount < FREE_PREVIEW_LIMIT;
-  const remainingPreviews = FREE_PREVIEW_LIMIT - previewCount;
+  // Access rules: Free = 0, Pro (basic) = 5, Premium = unlimited
+  const isPremiumUser = plan === "premium" || isAdmin;
+  const isProUser = plan === "basic";
+  const isFreeUser = plan === "free";
+  
+  // Calculate remaining previews and access
+  const getPreviewLimit = () => {
+    if (isPremiumUser) return Infinity;
+    if (isProUser) return PRO_PREVIEW_LIMIT;
+    return 0; // Free users
+  };
+  
+  const previewLimit = getPreviewLimit();
+  const remainingPreviews = Math.max(0, previewLimit - previewCount);
+  const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
 
   const handleGenerate = async () => {
     if (!selectedMatch || !canGenerate) return;
     
     await generate(selectedMatch);
     
-    if (!isPremiumUser) {
+    // Only track count for Pro users (Premium is unlimited, Free can't generate)
+    if (isProUser) {
       setPreviewCount((prev) => prev + 1);
     }
   };
@@ -160,19 +172,35 @@ export default function MatchPreviews() {
           </div>
         </div>
 
-        {/* Free User Limit Banner */}
-        {!isPremiumUser && (
-          <Card className="p-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
+        {/* Access Banner */}
+        {isFreeUser && (
+          <Card className="p-3 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border-red-500/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-amber-400" />
-                <span className="text-sm">
-                  <span className="font-medium text-amber-400">{remainingPreviews}</span>
-                  <span className="text-muted-foreground"> free previews remaining today</span>
+                <Lock className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-muted-foreground">
+                  Match previews require a Pro or Premium subscription
                 </span>
               </div>
               <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">
-                Upgrade for unlimited
+                Upgrade to Pro
+              </Badge>
+            </div>
+          </Card>
+        )}
+        
+        {isProUser && (
+          <Card className="p-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-amber-400" />
+                <span className="text-sm">
+                  <span className="font-medium text-amber-400">{remainingPreviews}</span>
+                  <span className="text-muted-foreground"> of {PRO_PREVIEW_LIMIT} previews remaining today</span>
+                </span>
+              </div>
+              <Badge variant="outline" className="text-[10px] bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40">
+                Premium = Unlimited
               </Badge>
             </div>
           </Card>
@@ -207,6 +235,9 @@ export default function MatchPreviews() {
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
               canGenerate={canGenerate}
+              isFreeUser={isFreeUser}
+              isProUser={isProUser}
+              remainingPreviews={remainingPreviews}
             />
 
             {/* Analysis Section */}

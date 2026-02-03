@@ -18,6 +18,9 @@ interface MatchPreviewSelectorProps {
   onGenerate: () => void;
   isGenerating: boolean;
   canGenerate: boolean;
+  isFreeUser: boolean;
+  isProUser: boolean;
+  remainingPreviews: number;
 }
 
 export function MatchPreviewSelector({
@@ -27,6 +30,9 @@ export function MatchPreviewSelector({
   onGenerate,
   isGenerating,
   canGenerate,
+  isFreeUser,
+  isProUser,
+  remainingPreviews,
 }: MatchPreviewSelectorProps) {
   const [selectedLeague, setSelectedLeague] = useState<string>("");
 
@@ -121,9 +127,15 @@ export function MatchPreviewSelector({
         )}
       </Button>
 
-      {!canGenerate && selectedMatch && (
+      {isFreeUser && selectedMatch && (
+        <p className="text-xs text-center text-red-400">
+          Match previews require a Pro or Premium subscription.
+        </p>
+      )}
+      
+      {isProUser && !canGenerate && selectedMatch && (
         <p className="text-xs text-center text-amber-400">
-          You've reached your free preview limit. Upgrade to Pro for unlimited previews.
+          You've used all {5} daily previews. Upgrade to Premium for unlimited.
         </p>
       )}
     </Card>
