@@ -75,17 +75,17 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="p-2 border-b border-sidebar-border">
-        <div className="flex items-center gap-1.5">
+      <SidebarHeader className="p-3 border-b border-primary/30 bg-primary">
+        <div className="flex items-center gap-2">
           <img 
             src={logoImage} 
             alt="ProPredict" 
-            className="h-6 w-6 object-contain rounded-md"
+            className="h-8 w-8 object-contain rounded-lg"
           />
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-xs font-semibold text-foreground">ProPredict</span>
-              <span className="text-[9px] text-muted-foreground">AI Predictions & Analysis</span>
+              <span className="text-base font-bold text-primary-foreground">ProPredict</span>
+              <span className="text-xs text-primary-foreground/80">AI Predictions & Analysis</span>
             </div>
           )}
         </div>
