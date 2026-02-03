@@ -3,6 +3,7 @@ import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions"
 import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
 import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
+import { TodaysMatches } from "@/components/dashboard/TodaysMatches";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
@@ -24,7 +25,13 @@ const Index = () => {
         <SidebarAd />
         <MatchPredictions />
         <BettingTickets />
-        <LeagueStandings />
+        
+        {/* Two-column layout for Standings and Live Scores */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <LeagueStandings />
+          <TodaysMatches />
+        </div>
+        
         <SidebarAd />
         <BottomCTA />
       </div>

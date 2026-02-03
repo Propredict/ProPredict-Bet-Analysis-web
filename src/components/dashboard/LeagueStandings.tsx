@@ -1,18 +1,31 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Loader2, Flag } from "lucide-react";
+import { Trophy, ChevronRight, Loader2, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLeagueStandings, type StandingsResponse } from "@/hooks/useLeagueStats";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const PREMIER_LEAGUE_ID = "39";
+const POPULAR_LEAGUES = [
+  { id: "39", name: "Premier League", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+  { id: "140", name: "La Liga", country: "Spain", flag: "🇪🇸" },
+  { id: "135", name: "Serie A", country: "Italy", flag: "🇮🇹" },
+  { id: "78", name: "Bundesliga", country: "Germany", flag: "🇩🇪" },
+  { id: "61", name: "Ligue 1", country: "France", flag: "🇫🇷" },
+];
 
 export function LeagueStandings() {
   const navigate = useNavigate();
-  const { data, isLoading, error } = useLeagueStandings(PREMIER_LEAGUE_ID, "2024");
+  const [selectedLeague, setSelectedLeague] = useState(POPULAR_LEAGUES[0]);
+  const { data, isLoading, error } = useLeagueStandings(selectedLeague.id, "2024");
 
   const standings = (data as StandingsResponse)?.standings ?? [];
   const displayedStandings = standings.slice(0, 5);
-  const league = (data as StandingsResponse)?.league;
 
   return (
     <section className="space-y-4">
@@ -22,25 +35,36 @@ export function LeagueStandings() {
           <div className="p-1.5 rounded-md bg-primary/20">
             <Trophy className="h-4 w-4 text-primary" />
           </div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground">League Standings</h2>
-            {league && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-card/50 border border-border/50">
-                <Flag className="h-3 w-3 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">{league.name}</span>
-              </div>
-            )}
-          </div>
+          <h2 className="text-sm font-semibold text-foreground">League Standings</h2>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs text-primary hover:bg-primary/10"
-          onClick={() => navigate("/league-statistics")}
-        >
-          Premier League
-          <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
-        </Button>
+
+        {/* League Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs bg-card/50 border-border/50 hover:bg-secondary/50"
+            >
+              <span className="mr-1">{selectedLeague.flag}</span>
+              <span className="hidden sm:inline">{selectedLeague.name}</span>
+              <span className="sm:hidden">{selectedLeague.name.split(" ")[0]}</span>
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-card border-border z-50">
+            {POPULAR_LEAGUES.map((league) => (
+              <DropdownMenuItem
+                key={league.id}
+                onClick={() => setSelectedLeague(league)}
+                className="text-xs cursor-pointer"
+              >
+                <span className="mr-2">{league.flag}</span>
+                {league.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Standings Table */}
