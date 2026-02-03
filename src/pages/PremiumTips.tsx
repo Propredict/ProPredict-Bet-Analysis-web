@@ -31,7 +31,13 @@ export default function PremiumTips() {
     unlockingId,
     handleUnlock
   } = useUnlockHandler();
-  const premiumTips = tips.filter(tip => tip.tier === "premium");
+  
+  // Get today's date in Belgrade timezone (YYYY-MM-DD)
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+  
+  const premiumTips = tips.filter(tip => tip.tier === "premium" && tip.tip_date === todayBelgrade);
   const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
   const showUpgradeBanner = plan !== "premium";
 

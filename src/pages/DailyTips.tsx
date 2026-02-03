@@ -26,7 +26,12 @@ export default function DailyTips() {
     handleUnlock
   } = useUnlockHandler();
   
-  const dailyTips = tips.filter(tip => tip.tier === "daily");
+  // Get today's date in Belgrade timezone (YYYY-MM-DD)
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+  
+  const dailyTips = tips.filter(tip => tip.tier === "daily" && tip.tip_date === todayBelgrade);
   const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
 
   const handleRefresh = () => {

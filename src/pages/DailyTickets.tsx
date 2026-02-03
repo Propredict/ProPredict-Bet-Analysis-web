@@ -28,7 +28,12 @@ export default function DailyTickets() {
     handleUnlock
   } = useUnlockHandler();
   
-  const dailyTickets = tickets.filter(ticket => ticket.tier === "daily");
+  // Get today's date in Belgrade timezone (YYYY-MM-DD)
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+  
+  const dailyTickets = tickets.filter(ticket => ticket.tier === "daily" && ticket.ticket_date === todayBelgrade);
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
 
   const handleRefresh = () => {

@@ -31,7 +31,13 @@ export default function PremiumTickets() {
     unlockingId,
     handleUnlock
   } = useUnlockHandler();
-  const premiumTickets = tickets.filter(ticket => ticket.tier === "premium");
+  
+  // Get today's date in Belgrade timezone (YYYY-MM-DD)
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+  
+  const premiumTickets = tickets.filter(ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade);
   const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
   const showUpgradeBanner = plan !== "premium";
 
