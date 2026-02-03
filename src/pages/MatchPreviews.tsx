@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Eye, Calendar, Trophy, Loader2, RefreshCw, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { MatchPreviewSelector } from "@/components/match-previews/MatchPreviewSe
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 
 // Top leagues to display
 const TOP_LEAGUES = [
@@ -31,19 +31,41 @@ const TOP_LEAGUES = [
 const FREE_PREVIEW_LIMIT = 3;
 
 export default function MatchPreviews() {
-  const { matches, isLoading, error, refetch } = useFixtures("today");
+  // Fetch both today and tomorrow matches
+  const { matches: todayMatches, isLoading: loadingToday, error: errorToday, refetch: refetchToday } = useFixtures("today");
+  const { matches: tomorrowMatches, isLoading: loadingTomorrow, error: errorTomorrow, refetch: refetchTomorrow } = useFixtures("tomorrow");
+  
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [previewCount, setPreviewCount] = useState(0);
   const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
 
-  // Filter to top leagues only
-  const topLeagueMatches = matches.filter((match) =>
-    TOP_LEAGUES.some((league) =>
-      match.league?.toLowerCase().includes(league.toLowerCase())
-    )
-  );
+  const isLoading = loadingToday || loadingTomorrow;
+  const error = errorToday || errorTomorrow;
+  
+  const refetch = () => {
+    refetchToday();
+    refetchTomorrow();
+  };
+
+  // Combine and filter matches from both days to top leagues only
+  const topLeagueMatches = useMemo(() => {
+    const allMatches = [...todayMatches, ...tomorrowMatches];
+    return allMatches.filter((match) =>
+      TOP_LEAGUES.some((league) =>
+        match.league?.toLowerCase().includes(league.toLowerCase())
+      )
+    );
+  }, [todayMatches, tomorrowMatches]);
+  
+  const todayCount = todayMatches.filter((match) =>
+    TOP_LEAGUES.some((league) => match.league?.toLowerCase().includes(league.toLowerCase()))
+  ).length;
+  
+  const tomorrowCount = tomorrowMatches.filter((match) =>
+    TOP_LEAGUES.some((league) => match.league?.toLowerCase().includes(league.toLowerCase()))
+  ).length;
 
   // Check if user can generate more previews
   const isPremiumUser = plan === "basic" || plan === "premium" || isAdmin;
@@ -67,6 +89,7 @@ export default function MatchPreviews() {
 
   const leagueCount = new Set(topLeagueMatches.map((m) => m.league)).size;
   const matchCount = topLeagueMatches.length;
+  const tomorrow = addDays(new Date(), 1);
 
   return (
     <>
@@ -106,29 +129,34 @@ export default function MatchPreviews() {
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <div className="bg-gradient-to-br from-violet-500/20 via-violet-500/10 to-transparent border border-violet-500/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <Calendar className="h-4 w-4 text-violet-400" />
-              <span className="text-lg font-bold text-violet-400">
-                {format(new Date(), "dd MMM")}
-              </span>
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Calendar className="h-3.5 w-3.5 text-violet-400" />
+              <span className="text-sm font-bold text-violet-400">{todayCount}</span>
             </div>
             <span className="text-[10px] text-violet-400/70">Today</span>
           </div>
           <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <Trophy className="h-4 w-4 text-primary" />
-              <span className="text-lg font-bold text-primary">{leagueCount}</span>
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Calendar className="h-3.5 w-3.5 text-primary" />
+              <span className="text-sm font-bold text-primary">{tomorrowCount}</span>
             </div>
-            <span className="text-[10px] text-primary/70">Leagues</span>
+            <span className="text-[10px] text-primary/70">Tomorrow</span>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Trophy className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-sm font-bold text-emerald-400">{leagueCount}</span>
+            </div>
+            <span className="text-[10px] text-emerald-400/70">Leagues</span>
           </div>
           <div className="bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent border border-amber-500/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <Eye className="h-4 w-4 text-amber-400" />
-              <span className="text-lg font-bold text-amber-400">{matchCount}</span>
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Eye className="h-3.5 w-3.5 text-amber-400" />
+              <span className="text-sm font-bold text-amber-400">{matchCount}</span>
             </div>
-            <span className="text-[10px] text-amber-400/70">Matches</span>
+            <span className="text-[10px] text-amber-400/70">Total</span>
           </div>
         </div>
 
