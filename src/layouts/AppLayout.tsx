@@ -63,7 +63,7 @@ export default function AppLayout() {
         return {
           icon: Sparkles,
           label: "Free",
-          className: "bg-[#6B7280]/20 text-[#6B7280] border-[#6B7280]/40",
+          className: "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/40",
           showUpgrade: true,
           upgradeLabel: "Upgrade",
         };
@@ -85,8 +85,8 @@ export default function AppLayout() {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
-          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-primary/30 flex items-center justify-between px-1.5 sm:px-3 bg-primary md:left-[var(--sidebar-width,0)]">
-            <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-7 w-7" />
+          <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
+            <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8" />
             
             {/* Center Branding with Logo - mobile only */}
             <div className="flex sm:hidden absolute left-1/2 -translate-x-1/2 items-center gap-1.5">
@@ -191,7 +191,7 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-10 sm:mt-11 pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
+          <main className="flex-1 flex flex-col mt-12 sm:mt-14 pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
             <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>
