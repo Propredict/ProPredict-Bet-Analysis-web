@@ -63,12 +63,12 @@ export default function AllTickets() {
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
+    const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border shadow-lg";
     
-    // All tabs use primary green color - stronger when active, subtle when inactive
+    // All tabs use primary green color with glow - like header bar
     return isActive 
-      ? cn(baseStyles, "bg-primary/20 border-primary/60 text-primary shadow-primary/25")
-      : cn(baseStyles, "bg-primary/5 border-primary/20 text-primary/70 hover:border-primary/40 hover:text-primary");
+      ? cn(baseStyles, "bg-[#1f9e4d] border-[#1f9e4d]/80 text-white shadow-[0_0_20px_rgba(31,158,77,0.5)]")
+      : cn(baseStyles, "bg-[#1f9e4d]/20 border-[#1f9e4d]/40 text-[#1f9e4d] hover:bg-[#1f9e4d]/30 hover:border-[#1f9e4d]/60");
   };
 
 
