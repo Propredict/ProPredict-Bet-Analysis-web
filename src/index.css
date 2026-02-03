@@ -7,44 +7,45 @@
    ===================================================== */
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Dark Teal Theme - Refreshed for better AdSense approval */
+    --background: 165 33% 8%;
+    --foreground: 162 35% 94%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 168 24% 11%;
+    --card-foreground: 162 35% 94%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 158 64% 40%;
+    --primary-foreground: 162 35% 98%;
 
-    --secondary: 222 47% 12%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 168 22% 15%;
+    --secondary-foreground: 162 35% 94%;
 
-    --muted: 222 30% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 166 18% 18%;
+    --muted-foreground: 162 15% 58%;
 
-    --border: 222 30% 18%;
-    --ring: 142 76% 36%;
+    --border: 166 18% 22%;
+    --ring: 158 64% 40%;
 
     --accent: 25 95% 53%;
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 162 35% 98%;
     
     --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
+    --warning-foreground: 162 35% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 162 35% 98%;
 
-    --success: 142 76% 36%;
+    --success: 158 64% 40%;
     --pending: 38 92% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 222 47% 5%;
-    --sidebar-border: 222 30% 15%;
+    --sidebar-background: 165 33% 6%;
+    --sidebar-border: 166 18% 18%;
     
-    --input: 222 30% 18%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --input: 166 18% 20%;
+    --popover: 168 24% 11%;
+    --popover-foreground: 162 35% 94%;
   }
 
   html {
@@ -68,13 +69,13 @@
     max-width: 100vw;
   }
 
-  /* SAFE TYPOGRAPHY – NE DIRATI div, span */
+  /* TYPOGRAPHY - Improved readability */
   h1 {
-    @apply text-xl md:text-2xl font-bold leading-tight;
+    @apply text-xl md:text-2xl font-bold leading-tight tracking-tight;
   }
 
   h2 {
-    @apply text-lg md:text-xl font-semibold;
+    @apply text-lg md:text-xl font-semibold tracking-tight;
   }
 
   h3 {
@@ -90,12 +91,12 @@
   }
 
   .text-muted-foreground {
-    @apply text-xs;
+    @apply text-sm;
   }
 }
 
 /* =====================================================
-   LAYOUT & DENSITY UTILITIES
+   LAYOUT & SPACING UTILITIES - Improved for readability
    ===================================================== */
 @layer utilities {
   .page-wrapper {
@@ -107,27 +108,27 @@
   }
 
   .page-content {
-    @apply w-full max-w-7xl mx-auto px-4 py-4 md:py-6 space-y-4;
+    @apply w-full max-w-7xl mx-auto px-4 py-5 md:py-8 space-y-5;
   }
 
   .card-compact {
-    @apply p-3 md:p-4;
+    @apply p-4 md:p-5;
   }
 
   .stats-card {
-    @apply flex items-center gap-3 p-3 rounded-md border;
+    @apply flex items-center gap-4 p-4 rounded-xl border shadow-md shadow-black/10;
   }
 
   .btn-compact {
-    @apply h-8 px-3 text-xs;
+    @apply h-9 px-4 text-sm;
   }
 
   .chip {
-    @apply h-7 px-3 rounded-full text-xs flex items-center;
+    @apply h-8 px-4 rounded-full text-sm flex items-center font-medium;
   }
 
   .ticket-status {
-    @apply mt-3 h-8 flex items-center justify-center rounded-md text-xs;
+    @apply mt-4 h-9 flex items-center justify-center rounded-lg text-sm font-medium;
   }
 
   .ticket-status--success {
@@ -140,7 +141,7 @@
 
   /* Section gap for consistent spacing */
   .section-gap {
-    @apply space-y-3 sm:space-y-4;
+    @apply space-y-4 sm:space-y-6;
   }
 
   /* Premium gradient backgrounds */
@@ -164,16 +165,16 @@
      TIER CARD SYSTEM - Global Premium Card Styles
      ===================================================== */
   
-  /* Base tier card */
+  /* Base tier card - Enhanced shadows */
   .tier-card {
     @apply relative bg-card rounded-xl border overflow-hidden transition-all duration-300;
-    box-shadow: 0 4px 20px -8px hsl(var(--background) / 0.8);
+    box-shadow: 0 4px 24px -8px hsl(0 0% 0% / 0.4);
   }
 
   .tier-card:hover {
-    @apply border-primary/40;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 30px -12px hsl(var(--background) / 0.6);
+    @apply border-primary/50;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px -10px hsl(0 0% 0% / 0.5);
   }
 
   /* Tier accent borders (top border glow) */
