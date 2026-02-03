@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   AlertTriangle,
+  Home,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -105,10 +106,10 @@ export function AppSidebar() {
                 <NavLink 
                   to="/" 
                   end 
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-sidebar-accent"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
                   activeClassName="bg-primary text-primary-foreground hover:bg-primary"
                 >
-                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  <Home className="h-4 w-4 text-primary" />
                   {!collapsed && <span>Dashboard</span>}
                 </NavLink>
               </SidebarMenuButton>
