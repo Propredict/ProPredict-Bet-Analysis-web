@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-import { DashboardTipCard, type Tip } from "./DashboardTipCard";
+import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
 import { InlineListAd } from "@/components/ads/EzoicAd";
@@ -180,7 +180,7 @@ export function MatchPredictions() {
             const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTips.length - 1;
             return (
               <Fragment key={tip.id}>
-                <DashboardTipCard
+                <TipCard
                   tip={tip}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}

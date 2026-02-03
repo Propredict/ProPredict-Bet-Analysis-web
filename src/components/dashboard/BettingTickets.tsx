@@ -11,7 +11,7 @@ import { useTicketAccuracy } from "@/hooks/useTicketAccuracy";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 
-import { DashboardTicketCard, type BettingTicket } from "./DashboardTicketCard";
+import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
 import { InlineListAd } from "@/components/ads/EzoicAd";
 
@@ -187,7 +187,7 @@ export function BettingTickets() {
             const showAdAfter = activeTab !== "premium" && (index + 1) % 3 === 0 && index < displayedTickets.length - 1;
             return (
               <Fragment key={ticket.id}>
-                <DashboardTicketCard
+                <TicketCard
                   ticket={ticket}
                   isLocked={isLocked}
                   unlockMethod={unlockMethod}
