@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, forwardRef } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -215,16 +215,19 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
   );
 }
 
-// Empty state component
-function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
-  return (
-    <div className="text-center py-6">
-      <Icon className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
-    </div>
-  );
-}
+// Empty state component - wrapped with forwardRef for Radix UI compatibility
+const EmptyState = forwardRef<HTMLDivElement, { icon: any; title: string; subtitle: string }>(
+  ({ icon: Icon, title, subtitle }, ref) => {
+    return (
+      <div ref={ref} className="text-center py-6">
+        <Icon className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
+      </div>
+    );
+  }
+);
+EmptyState.displayName = "EmptyState";
 
 // H2H Section with better data handling
 interface H2HSectionProps {
