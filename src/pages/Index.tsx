@@ -33,6 +33,14 @@ const Index = () => {
           <TodaysMatches />
         </div>
         
+        {/* Welcome Header Section */}
+        <div className="text-center py-8 px-4">
+          <h2 className="text-2xl font-bold text-foreground mb-3">Welcome to ProPredict</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            ProPredict is a football analysis platform created for fans who want deeper insights into matches, teams, and performance trends. Here you can explore daily match analysis, AI-assisted predictions, and track match results — all in one place.
+          </p>
+        </div>
+
         {/* AI Predictions Section */}
         <DashboardAIPredictions />
         
