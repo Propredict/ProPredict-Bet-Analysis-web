@@ -15,6 +15,7 @@ import {
   Settings,
   AlertTriangle,
   Home,
+  HelpCircle,
   Eye,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -115,6 +116,18 @@ export function AppSidebar() {
                 >
                   <Home className="h-4 w-4 text-primary" />
                   {!collapsed && <span>Dashboard</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/how-ai-works" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  {!collapsed && <span>How AI Works</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
