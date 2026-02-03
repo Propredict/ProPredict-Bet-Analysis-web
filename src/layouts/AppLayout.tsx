@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -25,6 +26,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 // Pages where footer should be hidden (header-only layout)
@@ -38,7 +40,32 @@ export default function AppLayout() {
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
 
-  // Check if current route should hide footer
+  // Fetch user profile for welcome message
+  const { data: profile } = useQuery({
+    queryKey: ["user-profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, username")
+        .eq("user_id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get display name for welcome message
+  const getDisplayName = () => {
+    if (!user) return null;
+    if (profile?.full_name) return profile.full_name.split(" ")[0]; // First name only
+    if (profile?.username) return profile.username;
+    if (user.email) return user.email.split("@")[0]; // Fallback to email prefix
+    return "User";
+  };
+
+  const displayName = getDisplayName();
   const hideFooter = HEADER_ONLY_ROUTES.some(route => location.pathname.startsWith(route));
 
   const getPlanBadge = () => {
@@ -109,7 +136,9 @@ export default function AppLayout() {
 
             {/* Desktop Center Welcome Text */}
             <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center">
-              <span className="text-sm font-semibold text-primary-foreground">Welcome to ProPredict</span>
+              <span className="text-sm font-semibold text-primary-foreground">
+                {user && displayName ? `Welcome, ${displayName}` : "Welcome to ProPredict"}
+              </span>
             </div>
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
