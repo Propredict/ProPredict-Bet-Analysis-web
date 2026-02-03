@@ -69,15 +69,15 @@ export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: Leag
     <div className="space-y-4">
       {/* Header with green bullet */}
       <div className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-green-500" />
-        <span className="font-semibold text-white">{config.title}</span>
+        <div className="h-2 w-2 rounded-full bg-primary" />
+        <span className="font-semibold text-foreground">{config.title}</span>
       </div>
 
       {/* Empty State Card */}
-      <Card className="p-12 text-center bg-[#0E1627] border-white/10">
+      <Card className="p-12 text-center bg-gradient-to-br from-primary/15 via-primary/10 to-card border-primary/20">
         <div className="flex flex-col items-center gap-6">
-          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center">
-            <Icon className="h-8 w-8 text-muted-foreground/40" />
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Icon className="h-8 w-8 text-primary/50" />
           </div>
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-white">
@@ -91,10 +91,10 @@ export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: Leag
           {/* League Selector Dropdown */}
           {onSelectLeague && (
             <Select onValueChange={onSelectLeague}>
-              <SelectTrigger className="w-[200px] bg-[#1A2537] border-white/10">
+              <SelectTrigger className="w-[200px] bg-card border-primary/20">
                 <SelectValue placeholder="Select a League" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1A2537] border-white/10">
+              <SelectContent className="bg-card border-primary/20">
                 {LEAGUES.map((league) => (
                   <SelectItem key={league.id} value={league.id}>
                     {league.name}
