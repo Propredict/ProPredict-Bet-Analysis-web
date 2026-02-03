@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Trophy, Target, Users, Calendar, RotateCcw, Swords } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
@@ -7,16 +8,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLiveScores } from "@/hooks/useLiveScores";
 
-const LEAGUES = [
-  { id: "39", name: "Premier League" },
-  { id: "140", name: "La Liga" },
-  { id: "78", name: "Bundesliga" },
-  { id: "135", name: "Serie A" },
-  { id: "61", name: "Ligue 1" },
-  { id: "2", name: "Champions League" },
-  { id: "3", name: "Europa League" },
-];
+// Known league ID mappings for API-Football
+const LEAGUE_ID_MAP: Record<string, string> = {
+  "Premier League": "39",
+  "La Liga": "140",
+  "Bundesliga": "78",
+  "Serie A": "135",
+  "Ligue 1": "61",
+  "Champions League": "2",
+  "Europa League": "3",
+  "Eredivisie": "88",
+  "Primeira Liga": "94",
+  "Super Lig": "203",
+  "Scottish Premiership": "179",
+  "Championship": "40",
+  "League One": "41",
+  "League Two": "42",
+  "FA Cup": "45",
+  "EFL Cup": "48",
+  "Copa del Rey": "143",
+  "DFB Pokal": "81",
+  "Coppa Italia": "137",
+  "Coupe de France": "66",
+  "MLS": "253",
+  "A-League": "188",
+  "Saudi Pro League": "307",
+  "World Cup": "1",
+  "Euro Championship": "4",
+  "Conference League": "848",
+};
 
 interface LeagueStatsEmptyStateProps {
   type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "default";
@@ -65,6 +87,43 @@ export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: Leag
   const config = typeConfig[type];
   const Icon = config.icon;
 
+  // Fetch today's matches to get dynamic leagues
+  const { matches } = useLiveScores({
+    dateMode: "today",
+    statusFilter: "all",
+  });
+
+  // Extract unique leagues from today's matches dynamically
+  const dynamicLeagues = useMemo(() => {
+    const leagueMap = new Map<string, { id: string; name: string; matchCount: number }>();
+    
+    matches.forEach((match) => {
+      const leagueName = match.league;
+      if (!leagueName) return;
+      
+      // Try to find a known league ID, otherwise use the league name as ID
+      const leagueId = LEAGUE_ID_MAP[leagueName] || leagueName.toLowerCase().replace(/\s+/g, "-");
+      
+      if (leagueMap.has(leagueName)) {
+        const existing = leagueMap.get(leagueName)!;
+        existing.matchCount++;
+      } else {
+        leagueMap.set(leagueName, { id: leagueId, name: leagueName, matchCount: 1 });
+      }
+    });
+
+    // Sort by match count (most matches first), then alphabetically
+    return Array.from(leagueMap.values()).sort((a, b) => {
+      if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
+      return a.name.localeCompare(b.name);
+    });
+  }, [matches]);
+
+  // Combined leagues list: "All Leagues" + dynamic leagues from today
+  const allLeagues = useMemo(() => {
+    return [{ id: "all", name: "All Leagues", matchCount: matches.length }, ...dynamicLeagues];
+  }, [dynamicLeagues, matches.length]);
+
   return (
     <div className="space-y-4">
       {/* Header with green bullet */}
@@ -91,13 +150,13 @@ export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: Leag
           {/* League Selector Dropdown */}
           {onSelectLeague && (
             <Select onValueChange={onSelectLeague}>
-              <SelectTrigger className="w-[200px] bg-card border-primary/20">
+              <SelectTrigger className="w-[220px] bg-card border-primary/20">
                 <SelectValue placeholder="Select a League" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-primary/20">
-                {LEAGUES.map((league) => (
+              <SelectContent className="bg-popover border-border max-h-[300px] z-50">
+                {allLeagues.map((league) => (
                   <SelectItem key={league.id} value={league.id}>
-                    {league.name}
+                    {league.name} {league.id !== "all" && `(${league.matchCount})`}
                   </SelectItem>
                 ))}
               </SelectContent>
