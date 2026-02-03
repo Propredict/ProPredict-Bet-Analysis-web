@@ -80,8 +80,8 @@ export default function ExclusiveTips() {
       </div>
 
       {/* Description */}
-      <Card className="p-3 bg-card/50 border-border/50">
-        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+      <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
+        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
           Exclusive Tips offer advanced match predictions with deeper analysis, higher confidence levels, and enhanced statistical insights. This section is intended for users who want more detailed and reliable predictions.
         </p>
       </Card>

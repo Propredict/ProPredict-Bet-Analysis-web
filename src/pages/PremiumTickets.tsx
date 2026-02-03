@@ -92,8 +92,8 @@ export default function PremiumTickets() {
       </div>
 
       {/* Description */}
-      <Card className="p-3 bg-card/50 border-border/50">
-        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+      <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
+        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
           Premium Tickets feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
         </p>
       </Card>
