@@ -46,13 +46,13 @@ export function LeagueSearchSelect({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
+          <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "justify-between bg-card border-border hover:bg-secondary/50",
-            compact ? "h-6 sm:h-7 text-[9px] sm:text-[10px] px-2" : "h-9 text-sm px-3",
+            "justify-between bg-gradient-to-r from-primary/20 to-primary/10 border-2 border-primary/50 hover:border-primary hover:bg-primary/20 shadow-lg shadow-primary/20 animate-pulse hover:animate-none transition-all duration-300",
+            compact ? "h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4 font-semibold" : "h-11 text-base px-4 font-semibold",
             className
           )}
         >
