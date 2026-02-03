@@ -83,7 +83,7 @@ const App = () => {
                   <Route path="/how-ai-works" element={<HowAIWorks />} />
                   <Route path="/live-scores" element={<LiveScores />} />
                   <Route path="/favorites" element={<MyFavorites />} />
-                  <Route path="/all-tickets" element={<AllTickets />} />
+                  <Route path="/winning-history" element={<AllTickets />} />
                   <Route path="/tickets/:id" element={<TicketDetails />} />
                   <Route path="/get-premium" element={<GetPremium />} />
 

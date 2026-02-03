@@ -47,7 +47,7 @@ const ticketsItems = [
   { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
   { title: "Exclusive Tickets", url: "/exclusive-tickets", icon: Ticket },
   { title: "Premium Tickets", url: "/premium-tickets", icon: Crown },
-  { title: "Winning History", url: "/all-tickets", icon: Layers },
+  { title: "Winning History", url: "/winning-history", icon: Layers },
 ];
 
 const packagesItems = [

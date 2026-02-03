@@ -20,10 +20,10 @@ export function BottomCTA() {
         <Button 
           variant="ghost" 
           className="gap-1.5 h-8 text-[10px] sm:text-xs px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50" 
-          onClick={() => navigate("/all-tickets")}
+          onClick={() => navigate("/winning-history")}
         >
           <Trophy className="h-3.5 w-3.5" />
-          Winning Tips History
+          Winning History
         </Button>
         <Button 
           className="gap-1.5 h-8 text-[10px] sm:text-xs px-4 gradient-premium text-white font-medium glow-primary hover:opacity-90 transition-opacity" 
