@@ -25,8 +25,8 @@ const NAV_ITEMS: NavItem[] = [
   { 
     label: "Tickets", 
     icon: Ticket, 
-    path: "/all-tickets",
-    matchPaths: ["/all-tickets", "/daily-tickets", "/exclusive-tickets", "/premium-tickets", "/daily-tips", "/exclusive-tips", "/premium-tips", "/betting-tips"]
+    path: "/winning-history",
+    matchPaths: ["/winning-history", "/daily-tickets", "/exclusive-tickets", "/premium-tickets", "/daily-tips", "/exclusive-tips", "/premium-tips", "/betting-tips"]
   },
   { 
     label: "Profile", 
