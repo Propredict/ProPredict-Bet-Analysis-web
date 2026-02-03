@@ -67,14 +67,14 @@ export function FeaturedPredictions() {
       {/* Stats Card */}
       <Card className="p-3 bg-gradient-to-b from-card to-card/80 border-border/50 shadow-card">
         {/* Accuracy Header */}
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/50">
-          <span className="text-xs font-medium text-muted-foreground">Global Win Rate</span>
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-primary/20">
+          <span className="text-xs font-medium text-primary/80">Global Win Rate</span>
           <div className="flex items-center gap-1.5">
             <span className="text-lg font-bold text-primary">
               {isLoading ? "—" : `${accuracy}%`}
             </span>
             {!isLoading && accuracy >= 70 && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-medium">
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
                 HOT
               </span>
             )}
@@ -83,20 +83,20 @@ export function FeaturedPredictions() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-2">
-          <div className="flex flex-col items-center p-2 rounded-md bg-success/5 border border-success/10">
-            <Check className="h-3.5 w-3.5 text-success mb-1" />
+          <div className="flex flex-col items-center p-2 rounded-md bg-primary/10 border border-primary/20">
+            <Check className="h-3.5 w-3.5 text-primary mb-1" />
             <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : won}
             </p>
-            <p className="text-[9px] text-muted-foreground">Won</p>
+            <p className="text-[9px] text-primary/70">Won</p>
           </div>
 
-          <div className="flex flex-col items-center p-2 rounded-md bg-destructive/5 border border-destructive/10">
+          <div className="flex flex-col items-center p-2 rounded-md bg-destructive/10 border border-destructive/20">
             <X className="h-3.5 w-3.5 text-destructive mb-1" />
             <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : lost}
             </p>
-            <p className="text-[9px] text-muted-foreground">Lost</p>
+            <p className="text-[9px] text-destructive/70">Lost</p>
           </div>
 
           <div className="flex flex-col items-center p-2 rounded-md bg-muted/30 border border-border/50">
@@ -107,12 +107,12 @@ export function FeaturedPredictions() {
             <p className="text-[9px] text-muted-foreground">Pending</p>
           </div>
 
-          <div className="flex flex-col items-center p-2 rounded-md bg-accent/5 border border-accent/10">
-            <Flame className="h-3.5 w-3.5 text-accent mb-1" />
+          <div className="flex flex-col items-center p-2 rounded-md bg-primary/10 border border-primary/20">
+            <Flame className="h-3.5 w-3.5 text-primary mb-1" />
             <p className="text-xs font-semibold text-foreground">
               {!isLoading && accuracy >= 70 ? "🔥" : "—"}
             </p>
-            <p className="text-[9px] text-muted-foreground">Trend</p>
+            <p className="text-[9px] text-primary/70">Trend</p>
           </div>
         </div>
       </Card>
