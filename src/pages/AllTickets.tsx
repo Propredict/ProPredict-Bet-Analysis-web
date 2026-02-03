@@ -219,23 +219,6 @@ export default function AllTickets() {
           </TabsList>
         </Tabs>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-2">
-          {contentType === "tips" ? (
-            <>
-              <AllTicketsStatCard icon={Calendar} count={dailyTipsCount} label="Daily" accentColor="accent" />
-              <AllTicketsStatCard icon={Star} count={exclusiveTipsCount} label="Pro" accentColor="primary" />
-              <AllTicketsStatCard icon={Crown} count={premiumTipsCount} label="Premium" accentColor="warning" />
-            </>
-          ) : (
-            <>
-              <AllTicketsStatCard icon={Calendar} count={dailyTicketsCount} label="Daily" accentColor="accent" />
-              <AllTicketsStatCard icon={Star} count={exclusiveTicketsCount} label="Pro" accentColor="primary" />
-              <AllTicketsStatCard icon={Crown} count={premiumTicketsCount} label="Premium" accentColor="warning" />
-            </>
-          )}
-        </div>
-
         {/* Tier Tabs */}
         <div className="grid grid-cols-3 gap-2">
           {currentTabs.map(tab => {
