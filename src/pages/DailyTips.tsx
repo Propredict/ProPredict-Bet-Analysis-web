@@ -100,9 +100,9 @@ export default function DailyTips() {
             <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xs sm:text-lg font-semibold text-primary">Daily Tips</h1>
+            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Tips</h1>
             {isAndroidApp && (
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Unlock tips by watching ads or go Premium for full access</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Unlock tips by watching ads or go Premium for full access</p>
             )}
           </div>
         </div>
