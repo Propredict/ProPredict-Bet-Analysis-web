@@ -157,6 +157,24 @@ export default function MatchPreviews() {
               For informational and entertainment purposes only.
             </li>
           </ul>
+          
+          {/* Access Tiers */}
+          <div className="mt-4 pt-3 border-t border-border/50 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+              <span className="text-sm">
+                <span className="font-semibold text-amber-400">PRO</span>
+                <span className="text-muted-foreground"> — Limited to 5 Match Previews daily</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-fuchsia-500"></span>
+              <span className="text-sm">
+                <span className="font-semibold text-fuchsia-400">PREMIUM</span>
+                <span className="text-muted-foreground"> — Unlimited Match Previews</span>
+              </span>
+            </div>
+          </div>
         </Card>
 
         {/* Stats Bar */}
