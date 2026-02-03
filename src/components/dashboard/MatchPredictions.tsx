@@ -69,20 +69,20 @@ export function MatchPredictions() {
   const getTabStyles = (tabId: string, isActive: boolean) => {
     const baseStyles = "relative py-3 px-3 rounded-xl text-xs font-semibold transition-all duration-300 border-2 shadow-md";
     
-    // Each tier always shows its color - stronger when active, subtle when inactive
+    // Synchronized colors: Daily=Green, Pro=Yellow, Premium=Purple
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-yellow-500/25 border-amber-500/60 text-amber-400 shadow-amber-500/25")
-          : cn(baseStyles, "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 border-amber-500/30 text-amber-400/70 hover:border-amber-500/50 hover:text-amber-400");
+          ? cn(baseStyles, "bg-gradient-to-br from-primary/25 via-primary/20 to-primary/25 border-primary/60 text-primary shadow-primary/25")
+          : cn(baseStyles, "bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 border-primary/30 text-primary/70 hover:border-primary/50 hover:text-primary");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-violet-500/25 via-purple-500/20 to-indigo-500/25 border-violet-500/60 text-violet-400 shadow-violet-500/25")
-          : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-indigo-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
+          ? cn(baseStyles, "bg-gradient-to-br from-amber-500/25 via-yellow-500/20 to-amber-500/25 border-amber-500/60 text-amber-400 shadow-amber-500/25")
+          : cn(baseStyles, "bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-amber-500/10 border-amber-500/30 text-amber-400/70 hover:border-amber-500/50 hover:text-amber-400");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "bg-gradient-to-br from-yellow-500/25 via-amber-500/20 to-orange-500/25 border-yellow-500/60 text-yellow-400 shadow-yellow-500/30 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
-          : cn(baseStyles, "bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-orange-500/10 border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400");
+          ? cn(baseStyles, "bg-gradient-to-br from-violet-500/25 via-purple-500/20 to-violet-500/25 border-violet-500/60 text-violet-400 shadow-violet-500/25 glow-warning animate-[pulse_3s_ease-in-out_infinite]")
+          : cn(baseStyles, "bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-violet-500/10 border-violet-500/30 text-violet-400/70 hover:border-violet-500/50 hover:text-violet-400");
       default:
         return cn(baseStyles, "bg-card border-border text-muted-foreground");
     }
@@ -190,9 +190,9 @@ export function MatchPredictions() {
       ) : (
         <Card className="empty-state-compact bg-card/50 border-border/50">
           <div className="flex flex-col items-center gap-1">
-            {activeTab === "daily" && <Sparkles className="h-5 w-5 text-amber-500/50" />}
-            {activeTab === "exclusive" && <Star className="h-5 w-5 text-violet-500/50" />}
-            {activeTab === "premium" && <Crown className="h-5 w-5 text-yellow-500/50" />}
+            {activeTab === "daily" && <Sparkles className="h-5 w-5 text-primary/50" />}
+            {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
+            {activeTab === "premium" && <Crown className="h-5 w-5 text-violet-500/50" />}
             <p className="text-[10px] text-muted-foreground">
               No {activeTab === "exclusive" ? "Pro" : activeTab} tips available
             </p>
