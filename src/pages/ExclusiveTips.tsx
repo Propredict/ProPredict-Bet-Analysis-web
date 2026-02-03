@@ -32,7 +32,12 @@ export default function ExclusiveTips() {
     handleSecondaryUnlock
   } = useUnlockHandler();
   
-  const exclusiveTips = tips.filter(tip => tip.tier === "exclusive");
+  // Get today's date in Belgrade timezone (YYYY-MM-DD)
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Belgrade",
+  });
+  
+  const exclusiveTips = tips.filter(tip => tip.tier === "exclusive" && tip.tip_date === todayBelgrade);
   const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
