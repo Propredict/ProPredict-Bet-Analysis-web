@@ -12,31 +12,36 @@ import { LeagueStatsAssistsTab } from "@/components/league-statistics/LeagueStat
 import { LeagueStatsFixturesTab } from "@/components/league-statistics/LeagueStatsFixturesTab";
 import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStatsRoundsTab";
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
-const LEAGUES = [{
-  id: "all",
-  name: "All Leagues"
-}, {
-  id: "39",
-  name: "Premier League"
-}, {
-  id: "140",
-  name: "La Liga"
-}, {
-  id: "78",
-  name: "Bundesliga"
-}, {
-  id: "135",
-  name: "Serie A"
-}, {
-  id: "61",
-  name: "Ligue 1"
-}, {
-  id: "2",
-  name: "Champions League"
-}, {
-  id: "3",
-  name: "Europa League"
-}];
+// Known league ID mappings for API-Football
+const LEAGUE_ID_MAP: Record<string, string> = {
+  "Premier League": "39",
+  "La Liga": "140",
+  "Bundesliga": "78",
+  "Serie A": "135",
+  "Ligue 1": "61",
+  "Champions League": "2",
+  "Europa League": "3",
+  "Eredivisie": "88",
+  "Primeira Liga": "94",
+  "Super Lig": "203",
+  "Scottish Premiership": "179",
+  "Championship": "40",
+  "League One": "41",
+  "League Two": "42",
+  "FA Cup": "45",
+  "EFL Cup": "48",
+  "Copa del Rey": "143",
+  "DFB Pokal": "81",
+  "Coppa Italia": "137",
+  "Coupe de France": "66",
+  "MLS": "253",
+  "A-League": "188",
+  "Saudi Pro League": "307",
+  "World Cup": "1",
+  "Euro Championship": "4",
+  "Conference League": "848",
+};
+
 export default function LeagueStatistics() {
   const [selectedLeagueId, setSelectedLeagueId] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("live");
@@ -48,14 +53,46 @@ export default function LeagueStatistics() {
     dateMode: "today",
     statusFilter: "all"
   });
-  const selectedLeague = LEAGUES.find(l => l.id === selectedLeagueId);
+
+  // Extract unique leagues from today's matches dynamically
+  const dynamicLeagues = useMemo(() => {
+    const leagueMap = new Map<string, { id: string; name: string; matchCount: number }>();
+    
+    matches.forEach((match) => {
+      const leagueName = match.league;
+      if (!leagueName) return;
+      
+      // Try to find a known league ID, otherwise use the league name as ID
+      const leagueId = LEAGUE_ID_MAP[leagueName] || leagueName.toLowerCase().replace(/\s+/g, "-");
+      
+      if (leagueMap.has(leagueName)) {
+        const existing = leagueMap.get(leagueName)!;
+        existing.matchCount++;
+      } else {
+        leagueMap.set(leagueName, { id: leagueId, name: leagueName, matchCount: 1 });
+      }
+    });
+
+    // Sort by match count (most matches first), then alphabetically
+    return Array.from(leagueMap.values()).sort((a, b) => {
+      if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
+      return a.name.localeCompare(b.name);
+    });
+  }, [matches]);
+
+  // Combined leagues list: "All Leagues" + dynamic leagues from today
+  const allLeagues = useMemo(() => {
+    return [{ id: "all", name: "All Leagues", matchCount: matches.length }, ...dynamicLeagues];
+  }, [dynamicLeagues, matches.length]);
+
+  const selectedLeague = allLeagues.find(l => l.id === selectedLeagueId);
   const isAllLeagues = selectedLeagueId === "all";
 
   // Filter matches for Live tab
   const filteredMatches = useMemo(() => {
     if (isAllLeagues) return matches;
     const leagueName = selectedLeague?.name || "";
-    return matches.filter(m => m.league.toLowerCase().includes(leagueName.toLowerCase()));
+    return matches.filter(m => m.league.toLowerCase() === leagueName.toLowerCase());
   }, [matches, isAllLeagues, selectedLeague]);
   const liveCount = filteredMatches.filter(m => m.status === "live" || m.status === "halftime").length;
   return <div className="section-gap max-w-full overflow-x-hidden">
@@ -76,10 +113,12 @@ export default function LeagueStatistics() {
             <SelectTrigger className="w-full sm:w-[140px] h-6 sm:h-7 text-[9px] sm:text-[10px] bg-card border-border">
               <SelectValue placeholder="Select League" />
             </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              {LEAGUES.map(league => <SelectItem key={league.id} value={league.id} className="text-[10px]">
-                  {league.name}
-                </SelectItem>)}
+            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+              {allLeagues.map(league => (
+                <SelectItem key={league.id} value={league.id} className="text-[10px]">
+                  {league.name} {league.id !== "all" && `(${league.matchCount})`}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -121,7 +160,7 @@ export default function LeagueStatistics() {
             </div>
             <div className="min-w-0">
               <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Leagues</p>
-              <p className="text-[10px] sm:text-xs font-bold text-primary">{LEAGUES.length - 1}</p>
+              <p className="text-[10px] sm:text-xs font-bold text-primary">{dynamicLeagues.length}</p>
             </div>
           </Card>
         </div>
