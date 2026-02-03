@@ -1,14 +1,8 @@
 import { useMemo } from "react";
 import { Trophy, Target, Users, Calendar, RotateCcw, Swords } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useLiveScores } from "@/hooks/useLiveScores";
+import { LeagueSearchSelect } from "./LeagueSearchSelect";
 
 // Known league ID mappings for API-Football
 const LEAGUE_ID_MAP: Record<string, string> = {
@@ -147,20 +141,15 @@ export function LeagueStatsEmptyState({ type = "default", onSelectLeague }: Leag
             </p>
           </div>
           
-          {/* League Selector Dropdown */}
+          {/* Searchable League Selector */}
           {onSelectLeague && (
-            <Select onValueChange={onSelectLeague}>
-              <SelectTrigger className="w-[220px] bg-card border-primary/20">
-                <SelectValue placeholder="Select a League" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border max-h-[300px] z-50">
-                {allLeagues.map((league) => (
-                  <SelectItem key={league.id} value={league.id}>
-                    {league.name} {league.id !== "all" && `(${league.matchCount})`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LeagueSearchSelect
+              leagues={allLeagues}
+              value=""
+              onValueChange={onSelectLeague}
+              placeholder="Search leagues..."
+              className="w-[220px]"
+            />
           )}
         </div>
       </Card>

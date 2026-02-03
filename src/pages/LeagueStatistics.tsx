@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
 import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLiveScores, Match } from "@/hooks/useLiveScores";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useLiveScores } from "@/hooks/useLiveScores";
 import { LeagueStatsLiveTab } from "@/components/league-statistics/LeagueStatsLiveTab";
 import { LeagueStatsEmptyState } from "@/components/league-statistics/LeagueStatsEmptyState";
 import { LeagueStatsStandingsTab } from "@/components/league-statistics/LeagueStatsStandingsTab";
@@ -12,6 +11,7 @@ import { LeagueStatsAssistsTab } from "@/components/league-statistics/LeagueStat
 import { LeagueStatsFixturesTab } from "@/components/league-statistics/LeagueStatsFixturesTab";
 import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStatsRoundsTab";
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
+import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 // Known league ID mappings for API-Football
 const LEAGUE_ID_MAP: Record<string, string> = {
   "Premier League": "39",
@@ -108,19 +108,15 @@ export default function LeagueStatistics() {
             </div>
           </div>
 
-          {/* League Selector - Compact */}
-          <Select value={selectedLeagueId} onValueChange={setSelectedLeagueId}>
-            <SelectTrigger className="w-full sm:w-[140px] h-6 sm:h-7 text-[9px] sm:text-[10px] bg-card border-border">
-              <SelectValue placeholder="Select League" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-              {allLeagues.map(league => (
-                <SelectItem key={league.id} value={league.id} className="text-[10px]">
-                  {league.name} {league.id !== "all" && `(${league.matchCount})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* League Selector - Searchable */}
+          <LeagueSearchSelect
+            leagues={allLeagues}
+            value={selectedLeagueId}
+            onValueChange={setSelectedLeagueId}
+            placeholder="Select League"
+            className="w-full sm:w-[160px]"
+            compact
+          />
         </div>
 
         {/* Stats Summary - COMPACT cards */}
