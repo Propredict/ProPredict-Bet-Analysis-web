@@ -87,8 +87,8 @@ export function BettingTickets() {
           : cn(baseStyles, "border-l-transparent hover:bg-amber-500/5");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "border-l-violet-500 bg-violet-500/10")
-          : cn(baseStyles, "border-l-transparent hover:bg-violet-500/5");
+          ? cn(baseStyles, "border-l-fuchsia-500 bg-fuchsia-500/10")
+          : cn(baseStyles, "border-l-transparent hover:bg-fuchsia-500/5");
       default:
         return cn(baseStyles, "border-l-transparent");
     }
@@ -98,7 +98,7 @@ export function BettingTickets() {
     switch (tabId) {
       case "daily": return "text-primary";
       case "exclusive": return "text-amber-400";
-      case "premium": return "text-violet-400";
+      case "premium": return "text-fuchsia-400";
       default: return "text-muted-foreground";
     }
   };
@@ -107,7 +107,7 @@ export function BettingTickets() {
     switch (tabId) {
       case "daily": return "text-muted-foreground";
       case "exclusive": return "text-amber-400/70";
-      case "premium": return "text-violet-400/70";
+      case "premium": return "text-fuchsia-400/70";
       default: return "text-muted-foreground";
     }
   };
@@ -218,7 +218,7 @@ export function BettingTickets() {
           <div className="flex flex-col items-center gap-1">
             {activeTab === "daily" && <Sparkles className="h-5 w-5 text-primary/50" />}
             {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
-            {activeTab === "premium" && <Crown className="h-5 w-5 text-violet-500/50" />}
+            {activeTab === "premium" && <Crown className="h-5 w-5 text-fuchsia-500/50" />}
             <p className="text-[10px] text-muted-foreground">
               No {activeTab === "exclusive" ? "Pro" : activeTab} tickets available
             </p>

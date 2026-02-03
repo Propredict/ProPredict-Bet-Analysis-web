@@ -58,18 +58,18 @@ export default function PremiumTickets() {
     </Helmet>
     <div className="section-gap">
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-pink-500/10 to-transparent border border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="p-1.5 rounded-md bg-violet-500/20">
-            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
+          <div className="p-1.5 rounded-md bg-fuchsia-500/20">
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-sm text-violet-400 sm:text-lg font-semibold">Premium Tickets</h1>
+            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Tickets</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest value picks for subscribers</p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+          <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
             <Crown className="h-2.5 w-2.5 mr-0.5" />
             Premium
           </Badge>
@@ -87,18 +87,18 @@ export default function PremiumTickets() {
 
       {/* Premium Unlock Banner - Above Stats */}
       {showUpgradeBanner && (
-        <Card className="p-2 sm:p-3 bg-gradient-to-r from-violet-500/20 via-purple-500/15 to-violet-500/10 border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+        <Card className="p-2 sm:p-3 bg-gradient-to-r from-fuchsia-500/20 via-purple-500/15 to-fuchsia-500/10 border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.1)]">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-violet-500/20">
-                <Lock className="h-4 w-4 text-violet-400" />
+              <div className="p-1.5 rounded bg-fuchsia-500/20">
+                <Lock className="h-4 w-4 text-fuchsia-400" />
               </div>
               <div>
                 <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Premium Access</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium tickets</p>
               </div>
             </div>
-            <Button size="sm" className="bg-gradient-to-r from-violet-600 to-purple-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
+            <Button size="sm" className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
               <Sparkles className="h-3 w-3" />
               Get PREMIUM
             </Button>
