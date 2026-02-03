@@ -114,6 +114,13 @@ export default function DailyTickets() {
         </div>
       </div>
 
+      {/* Description */}
+      <Card className="p-3 bg-card/50 border-border/50">
+        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+          Daily Tickets combine multiple daily predictions into structured betting-style tickets, created for informational and analytical purposes only. Each ticket is generated based on AI analysis and match statistics.
+        </p>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
         <Card className="p-1.5 sm:p-2 bg-card border-border">
