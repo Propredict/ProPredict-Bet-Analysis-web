@@ -4,6 +4,7 @@ import {
   Ticket, 
   Calendar,
   Lightbulb,
+  Layers,
   Star,
   Crown,
   Sparkles,
@@ -44,6 +45,7 @@ const ticketsItems = [
   { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
   { title: "Pro Tickets", url: "/exclusive-tickets", icon: Ticket },
   { title: "Premium Tickets", url: "/premium-tickets", icon: Crown },
+  { title: "All Tickets", url: "/all-tickets", icon: Layers },
 ];
 
 const packagesItems = [
