@@ -54,6 +54,7 @@ const androidPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
+        { text: "Match Previews", included: false },
         { text: "Exclusive tips", included: false },
         { text: "Premium tickets", included: false },
         { text: "Ad-free experience", included: false },
@@ -74,6 +75,7 @@ const androidPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "No ads for tips", included: true },
+        { text: "5 Match Previews daily", included: true },
         { text: "Premium tickets", included: false },
         { text: "VIP analysis", included: false },
       ],
@@ -91,6 +93,7 @@ const androidPlans = {
         { text: "All premium match insights", included: true },
         { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
+        { text: "Unlimited Match Previews", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
       ],
@@ -110,6 +113,7 @@ const androidPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
+        { text: "Match Previews", included: false },
         { text: "Exclusive tips", included: false },
         { text: "Premium tickets", included: false },
         { text: "Ad-free experience", included: false },
@@ -131,6 +135,7 @@ const androidPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "No ads for tips", included: true },
+        { text: "5 Match Previews daily", included: true },
         { text: "Premium tickets", included: false },
         { text: "VIP analysis", included: false },
       ],
@@ -149,6 +154,7 @@ const androidPlans = {
         { text: "All premium match insights", included: true },
         { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
+        { text: "Unlimited Match Previews", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
       ],
@@ -173,6 +179,7 @@ const webPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ads supported", included: true },
+        { text: "Match Previews", included: false },
         { text: "Exclusive content", included: false },
         { text: "Premium content", included: false },
       ],
@@ -192,6 +199,7 @@ const webPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ad-free tips/ticket experience", included: true },
+        { text: "5 Match Previews daily", included: true },
         { text: "Premium insights", included: false },
         { text: "VIP analysis", included: false },
       ],
@@ -209,6 +217,7 @@ const webPlans = {
         { text: "Premium match insights", included: true },
         { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
+        { text: "Unlimited Match Previews", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
       ],
@@ -229,6 +238,7 @@ const webPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ads supported", included: true },
+        { text: "Match Previews", included: false },
         { text: "Exclusive content", included: false },
         { text: "Premium content", included: false },
       ],
@@ -249,6 +259,7 @@ const webPlans = {
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
         { text: "Ad-free tips/ticket experience", included: true },
+        { text: "5 Match Previews daily", included: true },
         { text: "Premium insights", included: false },
         { text: "VIP analysis", included: false },
       ],
@@ -267,6 +278,7 @@ const webPlans = {
         { text: "Premium match insights", included: true },
         { text: "VIP multi-match analysis", included: true },
         { text: "Full AI analysis", included: true },
+        { text: "Unlimited Match Previews", included: true },
         { text: "Priority support", included: true },
         { text: "Ad-free experience", included: true },
       ],
@@ -421,6 +433,7 @@ export default function GetPremium() {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
           const isPopular = plan.popular;
+          const isFree = plan.id === "free";
 
           return (
             <Card
@@ -430,6 +443,8 @@ export default function GetPremium() {
                   ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
                   : isPopular
                   ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/30"
+                  : isFree
+                  ? "bg-gradient-to-b from-primary/15 via-card to-card border-primary/30"
                   : "bg-card border-border"
               }`}
             >
