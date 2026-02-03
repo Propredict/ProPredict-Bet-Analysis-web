@@ -122,7 +122,7 @@ export function MatchPredictions() {
         </div>
         <div>
           <h2 className="text-sm font-semibold text-primary">Daily Tips</h2>
-          <p className="text-[9px] text-muted-foreground">Unlock tips by watching ads or go Premium for exclusive access</p>
+          <p className="text-[9px] text-muted-foreground">Only Daily Tips</p>
         </div>
       </div>
 
