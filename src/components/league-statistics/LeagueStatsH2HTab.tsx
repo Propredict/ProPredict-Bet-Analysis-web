@@ -64,7 +64,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
 
   if (matchesLoading) {
     return (
-      <Card className="bg-[#0E1627] border-white/10 p-6">
+      <Card className="bg-card border-border p-6">
         <Skeleton className="h-32 w-full bg-white/5" />
       </Card>
     );
@@ -73,7 +73,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
   return (
     <div className="space-y-4">
       {/* Header */}
-      <Card className="p-4 bg-[#0E1627] border-white/10">
+      <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2">
           <Swords className="h-5 w-5 text-primary" />
           <span className="font-semibold">Head to Head Comparison</span>
@@ -81,7 +81,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
       </Card>
 
       {/* Team Selectors */}
-      <Card className="p-3 sm:p-6 bg-[#0E1627] border-white/10">
+      <Card className="p-3 sm:p-6 bg-card border-border">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
           {/* Team 1 */}
           <div className="space-y-1.5 sm:space-y-2">
@@ -90,10 +90,10 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
               value={team1Id?.toString() || ""}
               onValueChange={(val) => setTeam1Id(val ? parseInt(val) : null)}
             >
-              <SelectTrigger className="bg-[#0E1627] border-white/10 text-xs sm:text-sm h-9 sm:h-10">
+              <SelectTrigger className="bg-card border-border text-xs sm:text-sm h-9 sm:h-10">
                 <SelectValue placeholder="Select first team..." />
               </SelectTrigger>
-              <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
+              <SelectContent className="bg-popover border-border max-h-[300px]">
                 {team1Options.length > 0 ? (
                   team1Options.map((team) => (
                     <SelectItem key={team.id} value={team.id.toString()} className="text-xs sm:text-sm">
@@ -116,10 +116,10 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
               value={team2Id?.toString() || ""}
               onValueChange={(val) => setTeam2Id(val ? parseInt(val) : null)}
             >
-              <SelectTrigger className="bg-[#0E1627] border-white/10 text-xs sm:text-sm h-9 sm:h-10">
+              <SelectTrigger className="bg-card border-border text-xs sm:text-sm h-9 sm:h-10">
                 <SelectValue placeholder="Select second team..." />
               </SelectTrigger>
-              <SelectContent className="bg-[#0E1627] border-white/10 max-h-[300px]">
+              <SelectContent className="bg-popover border-border max-h-[300px]">
                 {team2Options.length > 0 ? (
                   team2Options.map((team) => (
                     <SelectItem key={team.id} value={team.id.toString()} className="text-xs sm:text-sm">
@@ -140,7 +140,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
       {/* H2H Results */}
       {team1Id && team2Id ? (
         h2hLoading ? (
-          <Card className="p-6 bg-[#0E1627] border-white/10">
+          <Card className="p-6 bg-card border-border">
             <div className="space-y-4">
               <Skeleton className="h-24 w-full bg-white/5" />
               <Skeleton className="h-16 w-full bg-white/5" />
@@ -148,13 +148,13 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
             </div>
           </Card>
         ) : h2hError ? (
-          <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+          <Card className="p-8 text-center bg-card border-border">
             <p className="text-red-400">Failed to load H2H data. Please try again.</p>
           </Card>
         ) : h2hData ? (
           <div className="space-y-4">
             {/* Summary Stats */}
-            <Card className="p-6 bg-[#0E1627] border-white/10">
+            <Card className="p-6 bg-card border-border">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold">
                   {h2hData.team1.name} vs {h2hData.team2.name}
@@ -181,7 +181,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
 
             {/* Match History by Season */}
             {h2hData.seasons.map((seasonData) => (
-              <Card key={seasonData.season} className="bg-[#0E1627] border-white/10 overflow-hidden">
+              <Card key={seasonData.season} className="bg-card border-border overflow-hidden">
                 {/* Season Header */}
                 <div className="px-4 py-3 bg-white/5 border-b border-white/10 flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-primary" />
@@ -201,14 +201,14 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
             ))}
 
             {h2hData.seasons.length === 0 && (
-              <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+              <Card className="p-8 text-center bg-card border-border">
                 <p className="text-muted-foreground">No historical matches found between these teams.</p>
               </Card>
             )}
           </div>
         ) : null
       ) : (
-        <Card className="p-8 text-center bg-[#0E1627] border-white/10">
+        <Card className="p-8 text-center bg-card border-border">
           <Swords className="h-12 w-12 text-primary/50 mx-auto mb-4" />
           <h3 className="text-lg font-semibold">Select Two Teams to Compare</h3>
           <p className="text-sm text-muted-foreground mt-2">
