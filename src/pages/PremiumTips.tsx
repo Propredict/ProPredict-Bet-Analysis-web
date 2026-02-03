@@ -92,6 +92,13 @@ export default function PremiumTips() {
         </div>
       </div>
 
+      {/* Description */}
+      <Card className="p-3 bg-card/50 border-border/50">
+        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+          Premium Tips represent our highest-confidence predictions, combining AI models, in-depth match analysis, and expert insights. These tips are limited and carefully selected for maximum quality.
+        </p>
+      </Card>
+
       {/* Premium Upgrade Banner */}
       {showUpgradeBanner && <Card className="p-3 sm:p-4 bg-gradient-to-r from-fuchsia-500/20 via-purple-500/15 to-fuchsia-500/10 border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.1)]">
           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">

@@ -78,6 +78,13 @@ export default function ExclusiveTickets() {
         </div>
       </div>
 
+      {/* Description */}
+      <Card className="p-3 bg-card/50 border-border/50">
+        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
+          Exclusive Tickets include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
+        </p>
+      </Card>
+
       {/* Upgrade Banner */}
       {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
           <div className="flex items-center justify-between gap-2">
