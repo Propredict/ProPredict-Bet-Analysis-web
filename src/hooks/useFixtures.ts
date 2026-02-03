@@ -8,6 +8,8 @@ export interface Match {
   id: string;
   homeTeam: string;
   awayTeam: string;
+  homeTeamId?: number;
+  awayTeamId?: number;
   homeScore: number | null;
   awayScore: number | null;
   status: MatchStatus;
