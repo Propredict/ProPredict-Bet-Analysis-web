@@ -150,7 +150,8 @@
   }
 
   .gradient-premium {
-    @apply bg-gradient-to-r from-warning via-accent to-primary;
+    /* Premium (pink/fuchsia) */
+    background: linear-gradient(to right, hsl(292 84% 61%), hsl(330 81% 60%));
   }
 
   .gradient-card {
@@ -187,11 +188,12 @@
   }
 
   .tier-card--pro {
-    border-top: 3px solid hsl(280 70% 55%);
+    /* Pro/Exclusive (yellow/amber) */
+    border-top: 3px solid hsl(45 93% 47%);
   }
 
   .tier-card--pro:hover {
-    box-shadow: 0 -4px 20px -8px hsl(280 70% 55% / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
+    box-shadow: 0 -4px 20px -8px hsl(45 93% 47% / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--premium {
@@ -222,9 +224,10 @@
   }
 
   .tier-badge--pro {
-    background: hsl(280 70% 55% / 0.2);
-    color: hsl(280 70% 65%);
-    border-color: hsl(280 70% 55% / 0.3);
+    /* Pro/Exclusive (yellow/amber) */
+    background: hsl(45 93% 47% / 0.2);
+    color: hsl(45 93% 58%);
+    border-color: hsl(45 93% 47% / 0.3);
   }
 
   .tier-badge--premium {
@@ -252,7 +255,8 @@
   }
 
   .glow-pro {
-    box-shadow: 0 0 20px hsl(280 70% 55% / 0.3);
+    /* Pro/Exclusive (yellow/amber) */
+    box-shadow: 0 0 20px hsl(45 93% 47% / 0.3);
   }
 
   /* Soft shadows for depth */
