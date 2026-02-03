@@ -5,7 +5,7 @@ import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
 import { InContentAd } from "@/components/ads/EzoicAd";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
-import { useAIPredictionStats } from "@/hooks/useAIPredictionStats";
+// Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useInterstitialAd } from "@/hooks/useInterstitialAd";
@@ -30,7 +30,15 @@ export default function AIPredictions() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const { predictions, loading } = useAIPredictions(day);
-  const { stats, loading: statsLoading } = useAIPredictionStats();
+  // Calculate stats from current day's predictions (not global view)
+  const dayStats = useMemo(() => {
+    const won = predictions.filter((p) => p.result_status === "won").length;
+    const lost = predictions.filter((p) => p.result_status === "lost").length;
+    const pending = predictions.filter((p) => p.result_status === "pending" || !p.result_status).length;
+    const total = won + lost;
+    const accuracy = total > 0 ? Math.round((won / total) * 100) : 0;
+    return { won, lost, pending, accuracy };
+  }, [predictions]);
   const { isAdmin, plan } = useUserPlan();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
@@ -129,7 +137,7 @@ export default function AIPredictions() {
   }, [predictions]);
 
   // Total matches analyzed
-  const totalAnalyzed = stats.won + stats.lost + stats.pending;
+  const totalAnalyzed = dayStats.won + dayStats.lost + dayStats.pending;
 
   const handleRefresh = () => {
     // UI only refresh - just triggers a visual feedback
@@ -289,7 +297,7 @@ export default function AIPredictions() {
               <div>
                 <p className="text-[9px] md:text-[10px] text-muted-foreground">Accuracy</p>
                 <p className="text-xs md:text-sm font-bold text-success">
-                  {statsLoading ? "..." : `${stats.accuracy}%`}
+                  {loading ? "..." : `${dayStats.accuracy}%`}
                 </p>
               </div>
             </Card>
@@ -300,7 +308,7 @@ export default function AIPredictions() {
               <div>
                 <p className="text-[9px] md:text-[10px] text-muted-foreground">Active</p>
                 <p className="text-xs md:text-sm font-bold text-primary">
-                  {statsLoading ? "..." : stats.pending}
+                  {loading ? "..." : dayStats.pending}
                 </p>
               </div>
             </Card>
@@ -311,7 +319,7 @@ export default function AIPredictions() {
               <div>
                 <p className="text-[9px] md:text-[10px] text-muted-foreground">Analyzed</p>
                 <p className="text-xs md:text-sm font-bold text-accent">
-                  {statsLoading ? "..." : totalAnalyzed.toLocaleString()}
+                  {loading ? "..." : totalAnalyzed.toLocaleString()}
                 </p>
               </div>
             </Card>
@@ -326,7 +334,7 @@ export default function AIPredictions() {
                   <span className="text-[10px] md:text-xs font-medium text-foreground">AI Accuracy</span>
                 </div>
                 <Badge className="bg-success/10 text-success border-success/20 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded">
-                  {stats.accuracy}%
+                  {dayStats.accuracy}%
                 </Badge>
               </div>
               
@@ -335,17 +343,17 @@ export default function AIPredictions() {
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-success" />
                   <span className="text-[9px] md:text-[10px] text-muted-foreground">Won</span>
-                  <span className="text-[10px] md:text-xs font-semibold text-success">{stats.won}</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-success">{dayStats.won}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-destructive" />
                   <span className="text-[9px] md:text-[10px] text-muted-foreground">Lost</span>
-                  <span className="text-[10px] md:text-xs font-semibold text-destructive">{stats.lost}</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-destructive">{dayStats.lost}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-warning" />
                   <span className="text-[9px] md:text-[10px] text-muted-foreground">Pending</span>
-                  <span className="text-[10px] md:text-xs font-semibold text-warning">{stats.pending}</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-warning">{dayStats.pending}</span>
                 </div>
               </div>
 
@@ -354,15 +362,15 @@ export default function AIPredictions() {
                 <div className="h-1 md:h-1.5 bg-secondary rounded-full overflow-hidden flex">
                   <div
                     className="h-full bg-success"
-                    style={{ width: `${(stats.won / totalAnalyzed) * 100}%` }}
+                    style={{ width: `${(dayStats.won / totalAnalyzed) * 100}%` }}
                   />
                   <div
                     className="h-full bg-destructive"
-                    style={{ width: `${(stats.lost / totalAnalyzed) * 100}%` }}
+                    style={{ width: `${(dayStats.lost / totalAnalyzed) * 100}%` }}
                   />
                   <div
                     className="h-full bg-warning"
-                    style={{ width: `${(stats.pending / totalAnalyzed) * 100}%` }}
+                    style={{ width: `${(dayStats.pending / totalAnalyzed) * 100}%` }}
                   />
                 </div>
               )}
