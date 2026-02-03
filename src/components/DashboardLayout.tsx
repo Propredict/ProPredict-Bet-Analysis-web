@@ -74,8 +74,8 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
         
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
           {/* FIXED Header - ULTRA COMPACT */}
-          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-border flex items-center justify-between px-1.5 sm:px-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:left-[var(--sidebar-width,0)]">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground flex-shrink-0 h-7 w-7" />
+          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-primary/30 flex items-center justify-between px-1.5 sm:px-3 bg-primary md:left-[var(--sidebar-width,0)]">
+            <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-7 w-7" />
             
             <div className="flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto">
               {/* Subscription Badge - hidden on very small screens */}
@@ -109,14 +109,14 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 className={cn(
                   "relative transition-all h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0",
                   alertSettings.enabled 
-                    ? "text-green-400 hover:text-green-300" 
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-primary-foreground hover:text-primary-foreground/80" 
+                    : "text-primary-foreground/70 hover:text-primary-foreground"
                 )}
               >
                 {alertSettings.enabled ? (
                   <>
                     <BellRing className="h-3.5 w-3.5" />
-                    <span className="absolute top-0 right-0 h-1 w-1 rounded-full bg-green-500 animate-pulse" />
+                    <span className="absolute top-0 right-0 h-1 w-1 rounded-full bg-primary-foreground animate-pulse" />
                   </>
                 ) : (
                   <Bell className="h-3.5 w-3.5" />
@@ -127,7 +127,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 variant="ghost" 
                 size="icon" 
                 onClick={() => navigate("/favorites")}
-                className="text-muted-foreground hover:text-pink-400 transition-colors h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                className="text-primary-foreground/70 hover:text-primary-foreground transition-colors h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
               >
                 <Heart className="h-3.5 w-3.5" />
               </Button>
@@ -138,7 +138,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-muted-foreground hover:text-foreground h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
+                      className="text-primary-foreground/70 hover:text-primary-foreground h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0"
                     >
                       <User className="h-3.5 w-3.5" />
                     </Button>
@@ -157,10 +157,10 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
                 </DropdownMenu>
               ) : (
                 <Button 
-                  variant="default" 
+                  variant="secondary" 
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="gap-0.5 h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs flex-shrink-0"
+                  className="gap-0.5 h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs flex-shrink-0 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                 >
                   <LogIn className="h-3 w-3" />
                   <span className="hidden xs:inline">Sign In</span>
