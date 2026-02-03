@@ -52,11 +52,19 @@ export default function AllTickets() {
     toast.success(`${contentType === "tips" ? "Tips" : "Tickets"} refreshed`);
   };
 
-  // Sort function - last 3 days first, then by date descending
-  const sortByDateDesc = <T extends { tip_date?: string | null; ticket_date?: string | null }>(items: T[]): T[] => {
-    const threeDaysAgo = subDays(new Date(), 3);
+  // Filter to exclude today and sort by date descending (last 3 days first)
+  const filterAndSort = <T extends { tip_date?: string | null; ticket_date?: string | null }>(items: T[]): T[] => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const threeDaysAgo = subDays(new Date(), 4); // 4 days ago to include last 3 days before today
     
-    return [...items].sort((a, b) => {
+    // Filter out today's items
+    const filtered = items.filter(item => {
+      const itemDate = item.tip_date || item.ticket_date;
+      if (!itemDate) return true;
+      return itemDate !== today;
+    });
+    
+    return filtered.sort((a, b) => {
       const dateA = a.tip_date || a.ticket_date;
       const dateB = b.tip_date || b.ticket_date;
       
@@ -67,7 +75,7 @@ export default function AllTickets() {
       const parsedA = parseISO(dateA);
       const parsedB = parseISO(dateB);
       
-      // Recent items (last 3 days) come first
+      // Recent items (last 3 days, excluding today) come first
       const aIsRecent = isAfter(parsedA, threeDaysAgo);
       const bIsRecent = isAfter(parsedB, threeDaysAgo);
       
@@ -79,23 +87,28 @@ export default function AllTickets() {
     });
   };
 
-  // Tips stats
-  const dailyTipsCount = tips.filter(t => t.tier === "daily").length;
-  const exclusiveTipsCount = tips.filter(t => t.tier === "exclusive").length;
-  const premiumTipsCount = tips.filter(t => t.tier === "premium").length;
-  const totalTipsCount = tips.length;
-  const wonTipsCount = tips.filter(t => t.result === "won").length;
+  // Filter out today's content first
+  const today = format(new Date(), "yyyy-MM-dd");
+  const archivedTips = tips.filter(t => t.tip_date !== today);
+  const archivedTickets = tickets.filter(t => t.ticket_date !== today);
 
-  // Tickets stats
-  const dailyTicketsCount = tickets.filter(t => t.tier === "daily").length;
-  const exclusiveTicketsCount = tickets.filter(t => t.tier === "exclusive").length;
-  const premiumTicketsCount = tickets.filter(t => t.tier === "premium").length;
-  const totalTicketsCount = tickets.length;
-  const wonTicketsCount = tickets.filter(t => t.result === "won").length;
+  // Tips stats (excluding today)
+  const dailyTipsCount = archivedTips.filter(t => t.tier === "daily").length;
+  const exclusiveTipsCount = archivedTips.filter(t => t.tier === "exclusive").length;
+  const premiumTipsCount = archivedTips.filter(t => t.tier === "premium").length;
+  const totalTipsCount = archivedTips.length;
+  const wonTipsCount = archivedTips.filter(t => t.result === "won").length;
 
-  // Get filtered and sorted content
-  const filteredTips = sortByDateDesc(tips.filter(tip => tip.tier === activeTab));
-  const filteredTickets = sortByDateDesc(tickets.filter(ticket => ticket.tier === activeTab));
+  // Tickets stats (excluding today)
+  const dailyTicketsCount = archivedTickets.filter(t => t.tier === "daily").length;
+  const exclusiveTicketsCount = archivedTickets.filter(t => t.tier === "exclusive").length;
+  const premiumTicketsCount = archivedTickets.filter(t => t.tier === "premium").length;
+  const totalTicketsCount = archivedTickets.length;
+  const wonTicketsCount = archivedTickets.filter(t => t.result === "won").length;
+
+  // Get filtered and sorted content (already excludes today via archivedTips/archivedTickets)
+  const filteredTips = filterAndSort(archivedTips.filter(tip => tip.tier === activeTab));
+  const filteredTickets = filterAndSort(archivedTickets.filter(ticket => ticket.tier === activeTab));
 
   const getTabLabel = (tab: TabType) => {
     switch (tab) {
