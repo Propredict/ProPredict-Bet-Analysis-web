@@ -195,11 +195,12 @@
   }
 
   .tier-card--premium {
-    border-top: 3px solid hsl(var(--warning));
+    /* Premium (pink/fuchsia) */
+    border-top: 3px solid hsl(292 84% 61%);
   }
 
   .tier-card--premium:hover {
-    box-shadow: 0 -4px 20px -8px hsl(var(--warning) / 0.5), 0 8px 30px -12px hsl(var(--background) / 0.6);
+    box-shadow: 0 -4px 20px -8px hsl(292 84% 61% / 0.5), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--free {
@@ -227,7 +228,10 @@
   }
 
   .tier-badge--premium {
-    @apply bg-warning/20 text-warning border-warning/30;
+    /* Premium (pink/fuchsia) */
+    background: hsl(292 84% 61% / 0.2);
+    color: hsl(292 84% 70%);
+    border-color: hsl(292 84% 61% / 0.3);
   }
 
   .tier-badge--free {
