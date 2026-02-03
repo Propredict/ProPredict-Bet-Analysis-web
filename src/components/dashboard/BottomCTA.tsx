@@ -1,4 +1,4 @@
-import { TrendingUp, Ticket, Crown } from "lucide-react";
+import { TrendingUp, Trophy, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -22,8 +22,8 @@ export function BottomCTA() {
           className="gap-1.5 h-8 text-[10px] sm:text-xs px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50" 
           onClick={() => navigate("/all-tickets")}
         >
-          <Ticket className="h-3.5 w-3.5" />
-          All Tickets
+          <Trophy className="h-3.5 w-3.5" />
+          Winning Tips History
         </Button>
         <Button 
           className="gap-1.5 h-8 text-[10px] sm:text-xs px-4 gradient-premium text-white font-medium glow-primary hover:opacity-90 transition-opacity" 
