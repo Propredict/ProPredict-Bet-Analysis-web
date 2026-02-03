@@ -143,20 +143,20 @@ export default function MatchPreviews() {
 
         {/* Description Card */}
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
+          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+            <li>
               Select any match directly and instantly view AI-powered analysis and predictions for that specific game.
-            </p>
-            <p>
+            </li>
+            <li>
               The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.
-            </p>
-            <p>
+            </li>
+            <li>
               This feature is designed to help you understand the matchup better and follow the analysis in one place.
-            </p>
-            <p className="text-xs text-muted-foreground/70 italic pt-1">
+            </li>
+            <li className="text-xs text-muted-foreground/70 italic">
               For informational and entertainment purposes only.
-            </p>
-          </div>
+            </li>
+          </ul>
         </Card>
 
         {/* Stats Bar */}
