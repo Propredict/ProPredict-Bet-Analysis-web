@@ -217,13 +217,13 @@ function TicketCard({
       return "bg-primary hover:bg-primary/90 text-white border-0";
     }
     if (unlockMethod.type === "android_premium_only") {
-      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
-      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
     }
     return "";
   };
