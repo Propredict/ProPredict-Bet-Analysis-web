@@ -83,27 +83,17 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         setUnlockingId(contentId);
         pendingUnlockRef.current = { contentType, contentId };
 
-        // Call Android native bridge to show rewarded ad
-        if (window.Android?.watchRewardedAd) {
+        // Direct JS bridge call - window.Android.watchRewardedAd()
+        if (window.Android && typeof window.Android.watchRewardedAd === "function") {
           window.Android.watchRewardedAd();
         }
 
         return false; // Will be unlocked via AD_UNLOCK_SUCCESS message callback
       }
 
-      // Android: Premium only - call native purchase flow
+      // Android: Premium only - navigate to paywall (no direct purchase)
       if (method.type === "android_premium_only") {
-        if (isAndroidApp) {
-          // HARD BLOCK - NO Stripe, NO redirects on Android
-          if (window.Android?.getPremium) {
-            window.Android.getPremium();
-          } else if (window.Android?.buyPremium) {
-            window.Android.buyPremium();
-          }
-          // Always return on Android - never fall through to web
-          return false;
-        }
-        // Web-only fallback
+        // Navigate to Get Premium paywall for both Android and Web
         navigate("/get-premium");
         return false;
       }
@@ -135,26 +125,16 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
 
   /**
    * Secondary handler for Android "Get Pro" button (used in android_watch_ad_or_pro layout)
-   * Calls native purchase flow for Pro subscription
+   * Navigates to Get Premium paywall
    */
   const handleSecondaryUnlock = useCallback(() => {
-    // Android: HARD BLOCK - NO Stripe, NO redirects
-    if (isAndroidApp) {
-      if (window.Android?.getPro) {
-        window.Android.getPro();
-      } else if (window.Android?.buyPro) {
-        window.Android.buyPro();
-      }
-      // Always return on Android - never fall through to web
-      return;
-    }
-    // Web-only fallback
+    // Navigate to Get Premium paywall for both Android and Web
     if (options.onUpgradeBasic) {
       options.onUpgradeBasic();
     } else {
       navigate("/get-premium");
     }
-  }, [navigate, options, isAndroidApp]);
+  }, [navigate, options]);
 
   return {
     unlockingId,
