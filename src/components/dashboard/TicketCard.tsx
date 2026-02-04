@@ -142,11 +142,16 @@ function TicketCard({
     : "";
 
   const handleUnlockClick = () => {
-    // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
+    // Android: Navigate to paywall for premium content (no direct purchase)
+    if (unlockMethod?.type === "android_premium_only") {
+      navigate("/get-premium");
+      return;
+    }
+    
+    // Android-specific unlock types - call onUnlockClick (triggers native bridge for ads)
     if (
       unlockMethod?.type === "watch_ad" ||
-      unlockMethod?.type === "android_watch_ad_or_pro" ||
-      unlockMethod?.type === "android_premium_only"
+      unlockMethod?.type === "android_watch_ad_or_pro"
     ) {
       onUnlockClick();
       return;
