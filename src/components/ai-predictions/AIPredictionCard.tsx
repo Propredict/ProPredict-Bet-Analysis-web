@@ -277,17 +277,7 @@ export function AIPredictionCard({
             ) : unlockMethod.type === "android_premium_only" ? (
               <Button
                 className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded"
-                onClick={() => {
-                  if (isAndroidApp) {
-                    if (window.Android?.getPremium) {
-                      window.Android.getPremium();
-                    } else if (window.Android?.buyPremium) {
-                      window.Android.buyPremium();
-                    }
-                  } else {
-                    navigate("/get-premium");
-                  }
-                }}
+                onClick={() => navigate("/get-premium")}
               >
                 <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 {unlockMethod.message}
