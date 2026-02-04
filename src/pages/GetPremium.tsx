@@ -364,27 +364,36 @@ export default function GetPremium() {
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
 
-    // Android: HARD BLOCK - NO Stripe, NO redirects. Native RevenueCat only.
-    if (isAndroidApp) {
-      if (!window.Android) {
-        toast.error("Native purchase is unavailable. Please use the Android app version.");
-        return;
-      }
-
-      // Use native bridge methods to trigger RevenueCat purchase flow
+    // Android: HARD BLOCK - Check window.Android directly for native bridge
+    // This ensures we catch the bridge even if platform detection has issues
+    if (window.Android) {
+      // Direct JS bridge calls - NO Stripe, NO redirects
       if (planId === "basic") {
-        if (window.Android.getPro) {
+        if (typeof window.Android.getPro === "function") {
           window.Android.getPro();
-        } else if (window.Android.buyPro) {
-          window.Android.buyPro();
+          return;
         }
-      } else if (planId === "premium") {
-        if (window.Android.getPremium) {
-          window.Android.getPremium();
-        } else if (window.Android.buyPremium) {
-          window.Android.buyPremium();
+        if (typeof window.Android.buyPro === "function") {
+          window.Android.buyPro();
+          return;
         }
       }
+      if (planId === "premium") {
+        if (typeof window.Android.getPremium === "function") {
+          window.Android.getPremium();
+          return;
+        }
+        if (typeof window.Android.buyPremium === "function") {
+          window.Android.buyPremium();
+          return;
+        }
+      }
+      return;
+    }
+
+    // Additional Android check via platform flag
+    if (isAndroidApp) {
+      toast.error("Native purchase bridge unavailable. Please restart the app.");
       return;
     }
 
