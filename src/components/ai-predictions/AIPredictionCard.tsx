@@ -266,12 +266,11 @@ export function AIPredictionCard({
                   {unlockMethod.primaryMessage}
                 </Button>
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="w-full h-6 text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground"
-                  onClick={handleSecondaryUnlock}
+                  className="w-full h-7 text-[9px] md:text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded"
+                  onClick={() => navigate("/get-premium")}
                 >
-                  <ShoppingCart className="w-2 md:w-2.5 h-2 md:h-2.5 mr-1" />
+                  <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-1 fill-current" />
                   {unlockMethod.secondaryMessage}
                 </Button>
               </div>

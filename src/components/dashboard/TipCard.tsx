@@ -256,15 +256,20 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                   )}
                 </Button>
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground"
+                  className={cn(
+                    "w-full h-7 text-[10px] font-medium",
+                    getIsAndroidApp()
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  variant={getIsAndroidApp() ? "default" : "ghost"}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSecondaryClick();
                   }}
                 >
-                  <Star className="h-3 w-3 mr-1" />
+                  <Star className="h-3 w-3 mr-1 fill-current" />
                   {unlockMethod.secondaryMessage}
                 </Button>
               </div>
