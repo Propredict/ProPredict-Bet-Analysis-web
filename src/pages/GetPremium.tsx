@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   X,
@@ -25,6 +25,19 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
+// Android RevenueCat package IDs
+const REVENUECAT_PACKAGES = {
+  basic: {
+    monthly: "propredict_pro_monthly",
+    annual: "propredict_pro_annual",
+  },
+  premium: {
+    monthly: "propredict_premium_monthly",
+    annual: "propredict_premium_annual",
+  },
+};
 
 // Web-only: Stripe price IDs
 const STRIPE_PRICES = {
@@ -311,11 +324,42 @@ const faqs = [
 export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [isLoading, setIsLoading] = useState(false);
-  const { plan: currentPlan } = useUserPlan();
+  const { plan: currentPlan, refetch: refetchPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+  const navigate = useNavigate();
 
   // Both Android and Web now support monthly/annual toggle
   const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans[billingPeriod];
+
+  // Listen for RevenueCat purchase success on Android
+  useEffect(() => {
+    if (!isAndroidApp) return;
+
+    const handlePurchaseSuccess = (event: CustomEvent<{ entitlements?: { pro?: boolean; premium?: boolean } }>) => {
+      toast.success("Subscription activated successfully!");
+      // Refresh entitlements
+      refetchPlan();
+      // Navigate back after successful purchase
+      setTimeout(() => navigate(-1), 500);
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      const { type } = event.data || {};
+      if (type === "REVENUECAT_PURCHASE_SUCCESS" || type === "REVENUECAT_ENTITLEMENTS_UPDATE") {
+        toast.success("Subscription activated successfully!");
+        refetchPlan();
+        setTimeout(() => navigate(-1), 500);
+      }
+    };
+
+    window.addEventListener("revenuecat-purchase-success", handlePurchaseSuccess as EventListener);
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("revenuecat-purchase-success", handlePurchaseSuccess as EventListener);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [isAndroidApp, refetchPlan, navigate]);
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
@@ -327,18 +371,28 @@ export default function GetPremium() {
         return;
       }
 
-      if (planId === "basic") {
-        if (window.Android.getPro) window.Android.getPro();
-        else if (window.Android.buyPro) window.Android.buyPro();
-        return;
-      }
+      // Get the correct RevenueCat package ID based on plan and billing period
+      const packageId = planId === "basic" 
+        ? REVENUECAT_PACKAGES.basic[billingPeriod]
+        : planId === "premium"
+        ? REVENUECAT_PACKAGES.premium[billingPeriod]
+        : null;
 
-      if (planId === "premium") {
-        if (window.Android.getPremium) window.Android.getPremium();
-        else if (window.Android.buyPremium) window.Android.buyPremium();
-        return;
-      }
+      if (!packageId) return;
 
+      // Call native purchaseProduct with the correct package ID
+      if (window.Android.purchaseProduct) {
+        window.Android.purchaseProduct(packageId);
+      } else {
+        // Fallback to legacy methods if purchaseProduct not available
+        if (planId === "basic") {
+          if (window.Android.getPro) window.Android.getPro();
+          else if (window.Android.buyPro) window.Android.buyPro();
+        } else if (planId === "premium") {
+          if (window.Android.getPremium) window.Android.getPremium();
+          else if (window.Android.buyPremium) window.Android.buyPremium();
+        }
+      }
       return;
     }
 
