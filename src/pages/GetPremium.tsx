@@ -371,26 +371,18 @@ export default function GetPremium() {
         return;
       }
 
-      // Get the correct RevenueCat package ID based on plan and billing period
-      const packageId = planId === "basic" 
-        ? REVENUECAT_PACKAGES.basic[billingPeriod]
-        : planId === "premium"
-        ? REVENUECAT_PACKAGES.premium[billingPeriod]
-        : null;
-
-      if (!packageId) return;
-
-      // Call native purchaseProduct with the correct package ID
-      if (window.Android.purchaseProduct) {
-        window.Android.purchaseProduct(packageId);
-      } else {
-        // Fallback to legacy methods if purchaseProduct not available
-        if (planId === "basic") {
-          if (window.Android.getPro) window.Android.getPro();
-          else if (window.Android.buyPro) window.Android.buyPro();
-        } else if (planId === "premium") {
-          if (window.Android.getPremium) window.Android.getPremium();
-          else if (window.Android.buyPremium) window.Android.buyPremium();
+      // Use native bridge methods to trigger RevenueCat purchase flow
+      if (planId === "basic") {
+        if (window.Android.getPro) {
+          window.Android.getPro();
+        } else if (window.Android.buyPro) {
+          window.Android.buyPro();
+        }
+      } else if (planId === "premium") {
+        if (window.Android.getPremium) {
+          window.Android.getPremium();
+        } else if (window.Android.buyPremium) {
+          window.Android.buyPremium();
         }
       }
       return;
