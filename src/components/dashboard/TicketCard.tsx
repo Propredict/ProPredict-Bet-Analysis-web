@@ -163,14 +163,9 @@ function TicketCard({
   };
 
   const handleSecondaryClick = () => {
-    // Android: HARD BLOCK - NO Stripe, NO redirects
+    // Android: Navigate to paywall (no direct purchase trigger)
     if (getIsAndroidApp()) {
-      if (window.Android?.getPro) {
-        window.Android.getPro();
-      } else if (window.Android?.buyPro) {
-        window.Android.buyPro();
-      }
-      // Always return on Android - never fall through to web
+      navigate("/get-premium");
       return;
     }
     
