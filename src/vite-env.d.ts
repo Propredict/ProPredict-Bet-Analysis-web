@@ -9,8 +9,8 @@ interface AndroidBridge {
   // Interstitial Ads
   showInterstitial?: () => void;
   
-  // RevenueCat Subscriptions
-  purchaseProduct?: (productId: string) => void;
+  // RevenueCat Subscriptions (uses Purchases.getOfferings() + purchasePackage)
+  purchasePackage?: (packageId: string) => void;
   requestEntitlements?: () => void;
   
   // Legacy purchase methods (fallback)

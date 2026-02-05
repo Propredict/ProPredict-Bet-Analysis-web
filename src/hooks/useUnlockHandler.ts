@@ -155,7 +155,7 @@ declare global {
       getPro?: () => void;
       getPremium?: () => void;
       requestEntitlements?: () => void;
-      purchaseProduct?: (productId: string) => void;
+      purchasePackage?: (packageId: string) => void;
     };
   }
 }
