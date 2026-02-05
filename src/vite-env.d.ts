@@ -9,7 +9,8 @@ interface AndroidBridge {
   // Interstitial Ads
   showInterstitial?: () => void;
   
-  // RevenueCat Subscriptions (uses Purchases.getOfferings() + purchasePackage)
+  // RevenueCat Subscriptions (SDK 7.x)
+  // Native flow: getOfferings() -> find package -> purchase(PurchaseParams.Builder(activity, pkg).build())
   purchasePackage?: (packageId: string) => void;
   requestEntitlements?: () => void;
   
