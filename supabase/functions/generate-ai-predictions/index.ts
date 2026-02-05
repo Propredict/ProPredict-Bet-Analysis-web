@@ -9,6 +9,13 @@
    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
  };
  
+ // ============ PREMIUM TIER CRITERIA ============
+ const PREMIUM_MIN_CONFIDENCE = 85;
+ const PREMIUM_MAX_DRAWS = 1;
+ const PREMIUM_MAX_COUNT = 5;
+ const PREMIUM_MIN_COUNT = 3;
+ const PREMIUM_ALLOWED_RISK = ["low", "medium"];
+ 
  // ============ WEIGHTING CONSTANTS ============
  const WEIGHT_FORM = 0.40;         // 40% - Recent form (last 3 matches)
  const WEIGHT_QUALITY = 0.25;      // 25% - Team quality
@@ -345,15 +352,21 @@
    );
    
    // === CALCULATE CONFIDENCE ===
-   // Max confidence: 78% for clear favorites, min: 50%
+   // Max confidence: 92% for very clear favorites, min: 50%
    const maxProb = Math.max(homeWin, awayWin, draw);
    let confidence: number;
    
-   if (maxProb >= 65) {
-     confidence = Math.min(78, 70 + (maxProb - 65) * 0.5);
+   if (maxProb >= 70) {
+     // Very clear favorite: 85-92% confidence
+     confidence = Math.min(92, 85 + (maxProb - 70) * 0.7);
+   } else if (maxProb >= 65) {
+     // Clear favorite: 78-85% confidence
+     confidence = 78 + (maxProb - 65) * 1.4;
    } else if (maxProb >= 50) {
-     confidence = 60 + (maxProb - 50) * 0.5;
+     // Moderate favorite: 60-78% confidence
+     confidence = 60 + (maxProb - 50) * 1.2;
    } else {
+     // Balanced match: 50-60% confidence
      confidence = Math.max(50, 50 + (maxProb - 33));
    }
    confidence = Math.round(confidence);
@@ -494,6 +507,97 @@
  }
  
  /**
+  * Assign is_premium tier to qualifying predictions
+  * Criteria:
+  * - confidence >= 85%
+  * - Not a draw prediction (max 1 draw allowed)
+  * - Low or Medium risk only
+  * - Keep top 3-5 by confidence if more qualify
+  */
+ async function assignPremiumTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ assigned: number }> {
+   // First, reset all premium flags for today/tomorrow
+   await supabase
+     .from("ai_predictions")
+     .update({ is_premium: false })
+     .in("match_date", [todayStr, tomorrowStr]);
+   
+   // Fetch all predictions for today and tomorrow
+   const { data: allPredictions, error } = await supabase
+     .from("ai_predictions")
+     .select("*")
+     .in("match_date", [todayStr, tomorrowStr])
+     .eq("result_status", "pending")
+     .order("confidence", { ascending: false });
+   
+   if (error || !allPredictions) {
+     console.error("Error fetching predictions for premium assignment:", error);
+     return { assigned: 0 };
+   }
+   
+   // Filter candidates: confidence >= 85%, low/medium risk
+   const premiumCandidates = allPredictions.filter((p: any) => 
+     p.confidence >= PREMIUM_MIN_CONFIDENCE &&
+     PREMIUM_ALLOWED_RISK.includes(p.risk_level)
+   );
+   
+   console.log(`Found ${premiumCandidates.length} premium candidates (confidence >= ${PREMIUM_MIN_CONFIDENCE}%, low/medium risk)`);
+   
+   if (premiumCandidates.length === 0) {
+     return { assigned: 0 };
+   }
+   
+   // Separate draws and non-draws
+   const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X");
+   const draws = premiumCandidates.filter((p: any) => p.prediction === "X");
+   
+   // Build premium list: prioritize non-draws, allow max 1 draw
+   let premiumList: any[] = [];
+   
+   // Add non-draws first (sorted by confidence)
+   premiumList.push(...nonDraws.slice(0, PREMIUM_MAX_COUNT));
+   
+   // If we have room and there are qualifying draws, add max 1
+   if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) {
+     premiumList.push(draws[0]); // Only 1 draw max
+   }
+   
+   // Trim to max 5
+   premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT);
+   
+   // Sort final list by confidence
+   premiumList.sort((a: any, b: any) => b.confidence - a.confidence);
+   
+   // Keep minimum 3 if possible
+   if (premiumList.length < PREMIUM_MIN_COUNT && premiumList.length > 0) {
+     console.log(`Only ${premiumList.length} premium matches qualify (min target: ${PREMIUM_MIN_COUNT})`);
+   }
+   
+   if (premiumList.length === 0) {
+     return { assigned: 0 };
+   }
+   
+   // Update is_premium = true for selected predictions
+   const premiumIds = premiumList.map((p: any) => p.id);
+   
+   const { error: updateError } = await supabase
+     .from("ai_predictions")
+     .update({ is_premium: true })
+     .in("id", premiumIds);
+   
+   if (updateError) {
+     console.error("Error assigning premium tier:", updateError);
+     return { assigned: 0 };
+   }
+   
+   console.log(`Assigned Premium tier to ${premiumIds.length} predictions:`);
+   premiumList.forEach((p: any) => {
+     console.log(`  - ${p.home_team} vs ${p.away_team}: ${p.prediction} (${p.confidence}%, ${p.risk_level})`);
+   });
+   
+   return { assigned: premiumIds.length };
+ }
+ 
+ /**
   * Regenerate predictions for existing matches in database
   */
  async function handleRegenerate(apiKey: string): Promise<Response> {
@@ -627,11 +731,16 @@
      }
    }
    
+   // After regeneration, assign premium tiers
+   console.log("Assigning Premium tiers...");
+   const premiumResult = await assignPremiumTiers(supabase, todayStr, tomorrowStr);
+   
    return new Response(
      JSON.stringify({
        message: `Regeneration complete`,
        total: predictions.length,
        updated,
+       premiumAssigned: premiumResult.assigned,
        errors: errors.length > 0 ? errors : undefined,
      }),
      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
