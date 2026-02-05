@@ -155,11 +155,13 @@ export function useRevenueCat(): UseRevenueCatResult {
 }
 
 /**
- * Trigger a RevenueCat purchase flow on Android using purchasePackage
- * The Android layer will:
- * 1. Fetch offerings via Purchases.getOfferings()
+ * Trigger a RevenueCat purchase flow on Android (SDK 7.x)
+ * The Android native layer will:
+ * 1. Fetch offerings: Purchases.sharedInstance.getOfferings { offerings -> }
  * 2. Find the package matching packageId from offerings.current.availablePackages
- * 3. Call Purchases.sharedInstance.purchasePackage(activity, selectedPackage)
+ * 3. Call: Purchases.sharedInstance.purchase(PurchaseParams.Builder(activity, pkg).build())
+ * 
+ * Note: purchasePackage(activity, pkg) was used in 6.x but removed in 7.x
  */
 export function purchasePackage(packageId: string): void {
   const android = window.Android as AndroidBridge | undefined;
