@@ -41,7 +41,7 @@ declare global {
 interface AndroidBridge {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
-  purchaseProduct?: (productId: string) => void;
+  purchasePackage?: (packageId: string) => void;
 }
 
 /**
@@ -155,11 +155,18 @@ export function useRevenueCat(): UseRevenueCatResult {
 }
 
 /**
- * Trigger a RevenueCat purchase flow on Android
+ * Trigger a RevenueCat purchase flow on Android using purchasePackage
+ * The Android layer will:
+ * 1. Fetch offerings via Purchases.getOfferings()
+ * 2. Find the package matching packageId from offerings.current.availablePackages
+ * 3. Call Purchases.sharedInstance.purchasePackage(activity, selectedPackage)
  */
-export function purchaseProduct(productId: string): void {
+export function purchasePackage(packageId: string): void {
   const android = window.Android as AndroidBridge | undefined;
-  if (getIsAndroidApp() && android?.purchaseProduct) {
-    android.purchaseProduct(productId);
+  if (getIsAndroidApp() && android?.purchasePackage) {
+    console.log("[RevenueCat] Requesting purchase for package:", packageId);
+    android.purchasePackage(packageId);
+  } else {
+    console.warn("[RevenueCat] purchasePackage not available on Android bridge");
   }
 }
