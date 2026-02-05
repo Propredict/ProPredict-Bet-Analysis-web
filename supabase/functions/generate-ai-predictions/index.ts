@@ -519,14 +519,16 @@
   * - PRO (exclusive): confidence >= 65% AND < 85% 
   * - PREMIUM: confidence >= 85%, low/medium risk only, max 1 draw, top 5-10
   */
- async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ free: number; pro: number; premium: number }> {
-   // Fetch all predictions for today and tomorrow
-   const { data: allPredictions, error } = await supabase
-     .from("ai_predictions")
-     .select("*")
-     .in("match_date", [todayStr, tomorrowStr])
-     .eq("result_status", "pending")
-     .order("confidence", { ascending: false });
+async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ free: number; pro: number; premium: number }> {
+    // Fetch ONLY unlocked predictions for today and tomorrow
+    // Locked predictions have missing API data and should NOT receive tier assignment
+    const { data: allPredictions, error } = await supabase
+      .from("ai_predictions")
+      .select("*")
+      .in("match_date", [todayStr, tomorrowStr])
+      .eq("result_status", "pending")
+      .eq("is_locked", false) // Only assign tiers to unlocked predictions
+      .order("confidence", { ascending: false });
    
    if (error || !allPredictions) {
      console.error("Error fetching predictions for premium assignment:", error);
@@ -662,118 +664,160 @@
    
    console.log(`Found ${predictions.length} predictions to regenerate`);
    
-   let updated = 0;
-   const errors: string[] = [];
-   
-   // Process each prediction (with rate limiting)
-   for (const pred of predictions) {
-     try {
-       const fixtureId = pred.match_id;
-       
-       // Fetch fixture details from API-Football
-       const fixtureRes = await fetch(
-         `${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`,
-         { headers: { "x-apisports-key": apiKey } }
-       );
-       
-       if (!fixtureRes.ok) {
-         errors.push(`Fixture ${fixtureId}: API fetch failed`);
-         continue;
-       }
-       
-       const fixtureData = await fixtureRes.json();
-       const fixture = fixtureData.response?.[0];
-       
-       if (!fixture) {
-         errors.push(`Fixture ${fixtureId}: Not found in API`);
-         continue;
-       }
-       
-       const homeTeamId = fixture.teams?.home?.id;
-       const awayTeamId = fixture.teams?.away?.id;
-       const homeTeamName = fixture.teams?.home?.name || pred.home_team;
-       const awayTeamName = fixture.teams?.away?.name || pred.away_team;
-       const leagueId = fixture.league?.id;
-       const season = fixture.league?.season || new Date().getFullYear();
-       
-       if (!homeTeamId || !awayTeamId) {
-         errors.push(`Fixture ${fixtureId}: Invalid team data`);
-         continue;
-       }
-       
-       // Fetch all data in parallel
-       const [homeForm, awayForm, h2h, homeStats, awayStats] = await Promise.all([
-         fetchTeamForm(homeTeamId, apiKey, 3),
-         fetchTeamForm(awayTeamId, apiKey, 3),
-         fetchH2H(homeTeamId, awayTeamId, apiKey, 3),
-         leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
-         leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
-       ]);
-       
-       // Calculate new prediction
-       const newPrediction = calculatePrediction(
-         homeForm,
-         awayForm,
-         homeStats,
-         awayStats,
-         h2h,
-         homeTeamId,
-         awayTeamId,
-         homeTeamName,
-         awayTeamName
-       );
-       
-       // Update prediction in database
-       const { error: updateError } = await supabase
-         .from("ai_predictions")
-         .update({
-           prediction: newPrediction.prediction,
-           predicted_score: newPrediction.predicted_score,
-           confidence: newPrediction.confidence,
-           home_win: newPrediction.home_win,
-           draw: newPrediction.draw,
-           away_win: newPrediction.away_win,
-           risk_level: newPrediction.risk_level,
-           analysis: newPrediction.analysis,
-           updated_at: new Date().toISOString(),
-         })
-         .eq("id", pred.id);
-       
-       if (updateError) {
-         errors.push(`Fixture ${fixtureId}: Update failed - ${updateError.message}`);
-         continue;
-       }
-       
-       updated++;
-       console.log(`Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`);
-       
-       // Rate limiting: wait 200ms between API calls to avoid hitting limits
-       await new Promise(resolve => setTimeout(resolve, 200));
-       
-     } catch (e) {
-       errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
-     }
-   }
-   
-   // After regeneration, assign all tiers based on confidence
-   console.log("\n=== Assigning tiers based on confidence... ===");
-   const tierResult = await assignTiers(supabase, todayStr, tomorrowStr);
-   
-   return new Response(
-     JSON.stringify({
-       message: `Regeneration complete`,
-       total: predictions.length,
-       updated,
-       tiers: {
-         free: tierResult.free,
-         pro: tierResult.pro,
-         premium: tierResult.premium,
-       },
-       errors: errors.length > 0 ? errors : undefined,
-     }),
-     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-   );
- }
+    let updated = 0;
+    let locked = 0;
+    const errors: string[] = [];
+    
+    // Process each prediction (with rate limiting)
+    for (const pred of predictions) {
+      try {
+        const fixtureId = pred.match_id;
+        
+        // Fetch fixture details from API-Football
+        const fixtureRes = await fetch(
+          `${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`,
+          { headers: { "x-apisports-key": apiKey } }
+        );
+        
+        if (!fixtureRes.ok) {
+          // API fetch failed - mark as locked (pending data)
+          await supabase
+            .from("ai_predictions")
+            .update({ is_locked: true, updated_at: new Date().toISOString() })
+            .eq("id", pred.id);
+          locked++;
+          errors.push(`Fixture ${fixtureId}: API fetch failed - marked as locked`);
+          continue;
+        }
+        
+        const fixtureData = await fixtureRes.json();
+        const fixture = fixtureData.response?.[0];
+        
+        if (!fixture) {
+          // Fixture not found in API - mark as locked (pending data)
+          // Do NOT apply tier assignment or use old probabilities
+          await supabase
+            .from("ai_predictions")
+            .update({ is_locked: true, updated_at: new Date().toISOString() })
+            .eq("id", pred.id);
+          locked++;
+          console.log(`Fixture ${fixtureId}: Not found in API - marked as locked (pending data)`);
+          continue;
+        }
+        
+        const homeTeamId = fixture.teams?.home?.id;
+        const awayTeamId = fixture.teams?.away?.id;
+        const homeTeamName = fixture.teams?.home?.name || pred.home_team;
+        const awayTeamName = fixture.teams?.away?.name || pred.away_team;
+        const leagueId = fixture.league?.id;
+        const season = fixture.league?.season || new Date().getFullYear();
+        
+        if (!homeTeamId || !awayTeamId) {
+          // Invalid team data - mark as locked
+          await supabase
+            .from("ai_predictions")
+            .update({ is_locked: true, updated_at: new Date().toISOString() })
+            .eq("id", pred.id);
+          locked++;
+          errors.push(`Fixture ${fixtureId}: Invalid team data - marked as locked`);
+          continue;
+        }
+        
+        // Fetch all data in parallel
+        const [homeForm, awayForm, h2h, homeStats, awayStats] = await Promise.all([
+          fetchTeamForm(homeTeamId, apiKey, 3),
+          fetchTeamForm(awayTeamId, apiKey, 3),
+          fetchH2H(homeTeamId, awayTeamId, apiKey, 3),
+          leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+          leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+        ]);
+        
+        // Check if we have sufficient data to calculate prediction
+        // If no form data available, mark as locked
+        if (homeForm.length === 0 && awayForm.length === 0 && !homeStats && !awayStats) {
+          await supabase
+            .from("ai_predictions")
+            .update({ is_locked: true, updated_at: new Date().toISOString() })
+            .eq("id", pred.id);
+          locked++;
+          console.log(`Fixture ${fixtureId}: Insufficient data - marked as locked`);
+          continue;
+        }
+        
+        // Calculate new prediction using full AI engine
+        const newPrediction = calculatePrediction(
+          homeForm,
+          awayForm,
+          homeStats,
+          awayStats,
+          h2h,
+          homeTeamId,
+          awayTeamId,
+          homeTeamName,
+          awayTeamName
+        );
+        
+        // Update prediction in database - unlock since we have valid data
+        const { error: updateError } = await supabase
+          .from("ai_predictions")
+          .update({
+            prediction: newPrediction.prediction,
+            predicted_score: newPrediction.predicted_score,
+            confidence: newPrediction.confidence,
+            home_win: newPrediction.home_win,
+            draw: newPrediction.draw,
+            away_win: newPrediction.away_win,
+            risk_level: newPrediction.risk_level,
+            analysis: newPrediction.analysis,
+            is_locked: false, // Unlock - data is now valid
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", pred.id);
+        
+        if (updateError) {
+          errors.push(`Fixture ${fixtureId}: Update failed - ${updateError.message}`);
+          continue;
+        }
+        
+        updated++;
+        console.log(`Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`);
+        
+        // Rate limiting: wait 200ms between API calls to avoid hitting limits
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (e) {
+        // On error, mark as locked
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, updated_at: new Date().toISOString() })
+          .eq("id", pred.id);
+        locked++;
+        errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
+      }
+    }
+    
+    // After regeneration, assign tiers ONLY for unlocked predictions
+    // Locked predictions (no data) should NOT receive tier assignments based on old data
+    console.log(`\n=== Summary: ${updated} updated, ${locked} locked (pending data) ===`);
+    console.log("\n=== Assigning tiers based on confidence (unlocked predictions only)... ===");
+    const tierResult = await assignTiers(supabase, todayStr, tomorrowStr);
+    
+    return new Response(
+      JSON.stringify({
+        message: `Regeneration complete`,
+        total: predictions.length,
+        updated,
+        locked,
+        tiers: {
+          free: tierResult.free,
+          pro: tierResult.pro,
+          premium: tierResult.premium,
+        },
+        errors: errors.length > 0 ? errors : undefined,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
  
  serve(async (req: Request) => {
    if (req.method === "OPTIONS") {
