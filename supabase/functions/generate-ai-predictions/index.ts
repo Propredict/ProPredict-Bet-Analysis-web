@@ -9,11 +9,18 @@
    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
  };
  
- // ============ PREMIUM TIER CRITERIA ============
+ // ============ TIER CRITERIA ============
+ // FREE: confidence < 65%
+ // PRO (exclusive): confidence >= 65% AND < 85%
+ // PREMIUM: confidence >= 85%
+ const FREE_MAX_CONFIDENCE = 64;
+ const PRO_MIN_CONFIDENCE = 65;
+ const PRO_MAX_CONFIDENCE = 84;
  const PREMIUM_MIN_CONFIDENCE = 85;
+ 
  const PREMIUM_MAX_DRAWS = 1;
- const PREMIUM_MAX_COUNT = 5;
- const PREMIUM_MIN_COUNT = 3;
+ const PREMIUM_MAX_COUNT = 10;
+ const PREMIUM_MIN_COUNT = 5;
  const PREMIUM_ALLOWED_RISK = ["low", "medium"];
  
  // ============ WEIGHTING CONSTANTS ============
@@ -507,20 +514,12 @@
  }
  
  /**
-  * Assign is_premium tier to qualifying predictions
-  * Criteria:
-  * - confidence >= 85%
-  * - Not a draw prediction (max 1 draw allowed)
-  * - Low or Medium risk only
-  * - Keep top 3-5 by confidence if more qualify
+  * Assign tiers to all predictions based on confidence:
+  * - FREE: confidence < 65%
+  * - PRO (exclusive): confidence >= 65% AND < 85% 
+  * - PREMIUM: confidence >= 85%, low/medium risk only, max 1 draw, top 5-10
   */
- async function assignPremiumTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ assigned: number }> {
-   // First, reset all premium flags for today/tomorrow
-   await supabase
-     .from("ai_predictions")
-     .update({ is_premium: false })
-     .in("match_date", [todayStr, tomorrowStr]);
-   
+ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ free: number; pro: number; premium: number }> {
    // Fetch all predictions for today and tomorrow
    const { data: allPredictions, error } = await supabase
      .from("ai_predictions")
@@ -531,70 +530,95 @@
    
    if (error || !allPredictions) {
      console.error("Error fetching predictions for premium assignment:", error);
-     return { assigned: 0 };
+     return { free: 0, pro: 0, premium: 0 };
    }
    
-   // Filter candidates: confidence >= 85%, low/medium risk
+   // === TIER ASSIGNMENT ===
+   // 1. FREE: confidence < 65%
+   const freeTier = allPredictions.filter((p: any) => p.confidence <= FREE_MAX_CONFIDENCE);
+   
+   // 2. PRO: confidence >= 65% AND < 85%
+   const proTier = allPredictions.filter((p: any) => 
+     p.confidence >= PRO_MIN_CONFIDENCE && p.confidence <= PRO_MAX_CONFIDENCE
+   );
+   
+   // 3. PREMIUM candidates: confidence >= 85%, low/medium risk only
    const premiumCandidates = allPredictions.filter((p: any) => 
      p.confidence >= PREMIUM_MIN_CONFIDENCE &&
      PREMIUM_ALLOWED_RISK.includes(p.risk_level)
    );
    
-   console.log(`Found ${premiumCandidates.length} premium candidates (confidence >= ${PREMIUM_MIN_CONFIDENCE}%, low/medium risk)`);
+   console.log(`Tier distribution - FREE (conf<65%): ${freeTier.length}, PRO (65-84%): ${proTier.length}, PREMIUM candidates (>=85%, low/med risk): ${premiumCandidates.length}`);
    
-   if (premiumCandidates.length === 0) {
-     return { assigned: 0 };
-   }
-   
-   // Separate draws and non-draws
-   const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X");
-   const draws = premiumCandidates.filter((p: any) => p.prediction === "X");
-   
-   // Build premium list: prioritize non-draws, allow max 1 draw
+   // === BUILD PREMIUM LIST ===
    let premiumList: any[] = [];
    
-   // Add non-draws first (sorted by confidence)
-   premiumList.push(...nonDraws.slice(0, PREMIUM_MAX_COUNT));
-   
-   // If we have room and there are qualifying draws, add max 1
-   if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) {
-     premiumList.push(draws[0]); // Only 1 draw max
+   if (premiumCandidates.length > 0) {
+     // Separate draws and non-draws
+     const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X");
+     const draws = premiumCandidates.filter((p: any) => p.prediction === "X");
+     
+     // Add non-draws first (sorted by confidence)
+     premiumList.push(...nonDraws.slice(0, PREMIUM_MAX_COUNT));
+     
+     // If we have room and there are qualifying draws, add max 1
+     if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) {
+       premiumList.push(draws[0]); // Only 1 draw max
+     }
+     
+     // Trim to max 10
+     premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT);
+     
+     // Sort final list by confidence
+     premiumList.sort((a: any, b: any) => b.confidence - a.confidence);
+     
+     // Keep minimum 5 if possible
+     if (premiumList.length < PREMIUM_MIN_COUNT && premiumList.length > 0) {
+       console.log(`Only ${premiumList.length} premium matches qualify (min target: ${PREMIUM_MIN_COUNT})`);
+     }
    }
    
-   // Trim to max 5
-   premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT);
-   
-   // Sort final list by confidence
-   premiumList.sort((a: any, b: any) => b.confidence - a.confidence);
-   
-   // Keep minimum 3 if possible
-   if (premiumList.length < PREMIUM_MIN_COUNT && premiumList.length > 0) {
-     console.log(`Only ${premiumList.length} premium matches qualify (min target: ${PREMIUM_MIN_COUNT})`);
-   }
-   
-   if (premiumList.length === 0) {
-     return { assigned: 0 };
-   }
-   
-   // Update is_premium = true for selected predictions
    const premiumIds = premiumList.map((p: any) => p.id);
+   const proIds = proTier.map((p: any) => p.id);
+   const freeIds = freeTier.map((p: any) => p.id);
    
-   const { error: updateError } = await supabase
+   // === UPDATE ALL TIERS IN DATABASE ===
+   // First reset all to not premium
+   await supabase
      .from("ai_predictions")
-     .update({ is_premium: true })
-     .in("id", premiumIds);
+     .update({ is_premium: false })
+     .in("match_date", [todayStr, tomorrowStr]);
    
-   if (updateError) {
-     console.error("Error assigning premium tier:", updateError);
-     return { assigned: 0 };
+   // Set Premium tier (is_premium = true)
+   if (premiumIds.length > 0) {
+     const { error: premiumError } = await supabase
+       .from("ai_predictions")
+       .update({ is_premium: true })
+       .in("id", premiumIds);
+     
+     if (premiumError) {
+       console.error("Error assigning premium tier:", premiumError);
+     }
    }
    
-   console.log(`Assigned Premium tier to ${premiumIds.length} predictions:`);
-   premiumList.forEach((p: any) => {
-     console.log(`  - ${p.home_team} vs ${p.away_team}: ${p.prediction} (${p.confidence}%, ${p.risk_level})`);
-   });
+   // Log tier assignments
+   console.log(`\n=== TIER ASSIGNMENTS ===`);
+   console.log(`FREE (confidence < 65%): ${freeIds.length} matches`);
+   console.log(`PRO (confidence 65-84%): ${proIds.length} matches`);
+   console.log(`PREMIUM (confidence >= 85%, low/med risk): ${premiumIds.length} matches`);
    
-   return { assigned: premiumIds.length };
+   if (premiumList.length > 0) {
+     console.log(`\nPremium matches:`);
+   premiumList.forEach((p: any) => {
+       console.log(`  - ${p.home_team} vs ${p.away_team}: ${p.prediction} (${p.confidence}%, ${p.risk_level})`);
+     });
+   }
+   
+   return { 
+     free: freeIds.length, 
+     pro: proIds.length, 
+     premium: premiumIds.length 
+   };
  }
  
  /**
@@ -731,16 +755,20 @@
      }
    }
    
-   // After regeneration, assign premium tiers
-   console.log("Assigning Premium tiers...");
-   const premiumResult = await assignPremiumTiers(supabase, todayStr, tomorrowStr);
+   // After regeneration, assign all tiers based on confidence
+   console.log("\n=== Assigning tiers based on confidence... ===");
+   const tierResult = await assignTiers(supabase, todayStr, tomorrowStr);
    
    return new Response(
      JSON.stringify({
        message: `Regeneration complete`,
        total: predictions.length,
        updated,
-       premiumAssigned: premiumResult.assigned,
+       tiers: {
+         free: tierResult.free,
+         pro: tierResult.pro,
+         premium: tierResult.premium,
+       },
        errors: errors.length > 0 ? errors : undefined,
      }),
      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
