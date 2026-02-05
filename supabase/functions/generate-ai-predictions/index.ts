@@ -1,4 +1,5 @@
  import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  
  const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
  
@@ -492,6 +493,151 @@
    return analysis;
  }
  
+ /**
+  * Regenerate predictions for existing matches in database
+  */
+ async function handleRegenerate(apiKey: string): Promise<Response> {
+   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+   const supabase = createClient(supabaseUrl, supabaseKey);
+   
+   // Fetch pending predictions for today and tomorrow
+   const today = new Date();
+   const tomorrow = new Date(today);
+   tomorrow.setDate(tomorrow.getDate() + 1);
+   
+   const todayStr = today.toISOString().split("T")[0];
+   const tomorrowStr = tomorrow.toISOString().split("T")[0];
+   
+   console.log(`Fetching predictions for ${todayStr} and ${tomorrowStr}`);
+   
+   const { data: predictions, error: fetchError } = await supabase
+     .from("ai_predictions")
+     .select("*")
+     .in("match_date", [todayStr, tomorrowStr])
+     .eq("result_status", "pending");
+   
+   if (fetchError) {
+     console.error("Error fetching predictions:", fetchError);
+     return new Response(
+       JSON.stringify({ error: "Failed to fetch predictions", details: fetchError.message }),
+       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+     );
+   }
+   
+   if (!predictions || predictions.length === 0) {
+     return new Response(
+       JSON.stringify({ message: "No pending predictions found to regenerate", updated: 0 }),
+       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+     );
+   }
+   
+   console.log(`Found ${predictions.length} predictions to regenerate`);
+   
+   let updated = 0;
+   const errors: string[] = [];
+   
+   // Process each prediction (with rate limiting)
+   for (const pred of predictions) {
+     try {
+       const fixtureId = pred.match_id;
+       
+       // Fetch fixture details from API-Football
+       const fixtureRes = await fetch(
+         `${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`,
+         { headers: { "x-apisports-key": apiKey } }
+       );
+       
+       if (!fixtureRes.ok) {
+         errors.push(`Fixture ${fixtureId}: API fetch failed`);
+         continue;
+       }
+       
+       const fixtureData = await fixtureRes.json();
+       const fixture = fixtureData.response?.[0];
+       
+       if (!fixture) {
+         errors.push(`Fixture ${fixtureId}: Not found in API`);
+         continue;
+       }
+       
+       const homeTeamId = fixture.teams?.home?.id;
+       const awayTeamId = fixture.teams?.away?.id;
+       const homeTeamName = fixture.teams?.home?.name || pred.home_team;
+       const awayTeamName = fixture.teams?.away?.name || pred.away_team;
+       const leagueId = fixture.league?.id;
+       const season = fixture.league?.season || new Date().getFullYear();
+       
+       if (!homeTeamId || !awayTeamId) {
+         errors.push(`Fixture ${fixtureId}: Invalid team data`);
+         continue;
+       }
+       
+       // Fetch all data in parallel
+       const [homeForm, awayForm, h2h, homeStats, awayStats] = await Promise.all([
+         fetchTeamForm(homeTeamId, apiKey, 3),
+         fetchTeamForm(awayTeamId, apiKey, 3),
+         fetchH2H(homeTeamId, awayTeamId, apiKey, 3),
+         leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+         leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+       ]);
+       
+       // Calculate new prediction
+       const newPrediction = calculatePrediction(
+         homeForm,
+         awayForm,
+         homeStats,
+         awayStats,
+         h2h,
+         homeTeamId,
+         awayTeamId,
+         homeTeamName,
+         awayTeamName
+       );
+       
+       // Update prediction in database
+       const { error: updateError } = await supabase
+         .from("ai_predictions")
+         .update({
+           prediction: newPrediction.prediction,
+           predicted_score: newPrediction.predicted_score,
+           confidence: newPrediction.confidence,
+           home_win: newPrediction.home_win,
+           draw: newPrediction.draw,
+           away_win: newPrediction.away_win,
+           risk_level: newPrediction.risk_level,
+           analysis: newPrediction.analysis,
+           updated_at: new Date().toISOString(),
+         })
+         .eq("id", pred.id);
+       
+       if (updateError) {
+         errors.push(`Fixture ${fixtureId}: Update failed - ${updateError.message}`);
+         continue;
+       }
+       
+       updated++;
+       console.log(`Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`);
+       
+       // Rate limiting: wait 200ms between API calls to avoid hitting limits
+       await new Promise(resolve => setTimeout(resolve, 200));
+       
+     } catch (e) {
+       errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
+     }
+   }
+   
+   return new Response(
+     JSON.stringify({
+       message: `Regeneration complete`,
+       total: predictions.length,
+       updated,
+       errors: errors.length > 0 ? errors : undefined,
+     }),
+     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+   );
+ }
+ 
  serve(async (req: Request) => {
    if (req.method === "OPTIONS") {
      return new Response(null, { headers: corsHeaders });
@@ -508,6 +654,13 @@
      
      // Parse request body
      const body = await req.json().catch(() => ({}));
+     
+     // Check for regenerate mode
+     if (body.regenerate === true) {
+       return handleRegenerate(apiKey);
+     }
+     
+     // Single fixture mode
      const fixtureId = body.fixtureId;
      
      if (!fixtureId) {
