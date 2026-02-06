@@ -16,6 +16,7 @@ interface AndroidBridge {
   // Native flow: getOfferings() -> find package -> purchase(PurchaseParams.Builder(activity, pkg).build())
   purchasePackage?: (packageId: string) => void;
   requestEntitlements?: () => void;
+  restorePurchases?: () => void;
   
   // Unified purchase method — preferred entry point for Android WebView
   // Calls native RevenueCat purchase flow with the given planId ("basic" | "premium")
@@ -29,6 +30,9 @@ interface AndroidBridge {
   
   // User sync — sends Supabase UUID to native for RevenueCat login
   syncUser?: (userId: string) => void;
+
+  // Subscription management — opens Google Play subscription management
+  manageSubscription?: () => void;
 }
 
 declare global {
