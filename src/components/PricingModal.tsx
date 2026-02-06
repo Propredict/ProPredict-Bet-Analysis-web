@@ -84,6 +84,12 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
     // Android: HARD BLOCK - never navigate to Stripe flows
     if (getIsAndroidApp()) {
       if (!window.Android) return;
+      // Preferred: unified purchasePlan method
+      if (window.Android.purchasePlan) {
+        window.Android.purchasePlan(planId);
+        return;
+      }
+      // Fallback: legacy per-plan bridge methods
       if (planId === "basic") {
         if (window.Android.getPro) window.Android.getPro();
         else if (window.Android.buyPro) window.Android.buyPro();

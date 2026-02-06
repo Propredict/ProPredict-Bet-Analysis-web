@@ -14,6 +14,10 @@ interface AndroidBridge {
   purchasePackage?: (packageId: string) => void;
   requestEntitlements?: () => void;
   
+  // Unified purchase method — preferred entry point for Android WebView
+  // Calls native RevenueCat purchase flow with the given planId ("basic" | "premium")
+  purchasePlan?: (planId: string) => void;
+  
   // Legacy purchase methods (fallback)
   getPro?: () => void;
   buyPro?: () => void;
