@@ -30,132 +30,198 @@
  const WEIGHT_HOME = 0.10;         // 10% - Home advantage (MAX)
  const WEIGHT_H2H = 0.10;          // 10% - Head-to-Head history
  
- interface TeamStats {
-   played: number;
-   wins: number;
-   draws: number;
-   losses: number;
-   goalsFor: number;
-   goalsAgainst: number;
-   form: string; // e.g., "WWDLW"
- }
+interface TeamStats {
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  form: string; // e.g., "WWDLW"
+}
+
+interface H2HMatch {
+  homeTeamId: number;
+  awayTeamId: number;
+  homeGoals: number;
+  awayGoals: number;
+}
+
+interface FormMatch {
+  result: "W" | "D" | "L";
+  goalsFor: number;
+  goalsAgainst: number;
+  isHome: boolean;
+}
+
+interface PredictionResult {
+  prediction: string;
+  predicted_score: string;
+  confidence: number;
+  home_win: number;
+  draw: number;
+  away_win: number;
+  risk_level: "low" | "medium" | "high";
+  analysis: string;
+}
+
+// ============ API RESILIENCE (rate limit safe) ============
+const MIN_API_INTERVAL_MS = 220; // ~272 req/min worst-case, stays under 300/min
+let lastApiCallAt = 0;
+
+async function throttleApi() {
+  const now = Date.now();
+  const waitMs = lastApiCallAt + MIN_API_INTERVAL_MS - now;
+  if (waitMs > 0) await new Promise((r) => setTimeout(r, waitMs));
+  lastApiCallAt = Date.now();
+}
+
+async function fetchJsonWithRetry(
+  url: string,
+  apiKey: string,
+  opts?: { retries?: number; baseDelayMs?: number }
+): Promise<any | null> {
+  const retries = opts?.retries ?? 3;
+  const baseDelayMs = opts?.baseDelayMs ?? 600;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    await throttleApi();
+    const res = await fetch(url, { headers: { "x-apisports-key": apiKey } });
+
+    // 429: respect rate limits with exponential backoff
+    if (res.status === 429) {
+      const retryAfterHeader = res.headers.get("retry-after");
+      const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : 0;
+      const backoffMs = Math.round(baseDelayMs * Math.pow(2, attempt));
+      const waitMs = Math.max(retryAfterMs, backoffMs);
+      console.warn(`API-Football rate limit (429). Waiting ${waitMs}ms then retrying: ${url}`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+
+    if (!res.ok) {
+      // transient 5xx: retry
+      if (res.status >= 500 && attempt < retries) {
+        const waitMs = Math.round(baseDelayMs * Math.pow(2, attempt));
+        console.warn(`API-Football ${res.status}. Waiting ${waitMs}ms then retrying: ${url}`);
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
+      return null;
+    }
+
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+// Simple in-memory caches (per function invocation) to reduce API calls
+const teamFormCache = new Map<number, FormMatch[]>();
+const h2hCache = new Map<string, H2HMatch[]>();
+const teamStatsCache = new Map<string, TeamStats | null>();
  
- interface H2HMatch {
-   homeTeamId: number;
-   awayTeamId: number;
-   homeGoals: number;
-   awayGoals: number;
- }
- 
- interface FormMatch {
-   result: "W" | "D" | "L";
-   goalsFor: number;
-   goalsAgainst: number;
-   isHome: boolean;
- }
- 
- interface PredictionResult {
-   prediction: string;
-   predicted_score: string;
-   confidence: number;
-   home_win: number;
-   draw: number;
-   away_win: number;
-   risk_level: "low" | "medium" | "high";
-   analysis: string;
- }
- 
- /**
-  * Fetch team's last N matches form
-  */
- async function fetchTeamForm(teamId: number, apiKey: string, count: number = 3): Promise<FormMatch[]> {
-   try {
-     const response = await fetch(
-       `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN`,
-       { headers: { "x-apisports-key": apiKey } }
-     );
-     
-     if (!response.ok) return [];
-     
-     const data = await response.json();
-     const matches = data.response || [];
-     
-     return matches.map((m: any) => {
-       const isHome = m.teams.home.id === teamId;
-       const goalsFor = isHome ? m.goals.home : m.goals.away;
-       const goalsAgainst = isHome ? m.goals.away : m.goals.home;
-       const won = isHome ? m.teams.home.winner : m.teams.away.winner;
-       
-       let result: "W" | "D" | "L" = "D";
-       if (won === true) result = "W";
-       else if (won === false) result = "L";
-       
-       return { result, goalsFor, goalsAgainst, isHome };
-     });
-   } catch (e) {
-     console.error("Error fetching team form:", e);
-     return [];
-   }
- }
- 
- /**
-  * Fetch head-to-head matches between two teams
-  */
- async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 3): Promise<H2HMatch[]> {
-   try {
-     const response = await fetch(
-       `${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=${count}`,
-       { headers: { "x-apisports-key": apiKey } }
-     );
-     
-     if (!response.ok) return [];
-     
-     const data = await response.json();
-     const matches = data.response || [];
-     
-     return matches.map((m: any) => ({
-       homeTeamId: m.teams.home.id,
-       awayTeamId: m.teams.away.id,
-       homeGoals: m.goals.home ?? 0,
-       awayGoals: m.goals.away ?? 0,
-     }));
-   } catch (e) {
-     console.error("Error fetching H2H:", e);
-     return [];
-   }
- }
- 
- /**
-  * Fetch team statistics for current season
-  */
- async function fetchTeamStats(teamId: number, leagueId: number, season: number, apiKey: string): Promise<TeamStats | null> {
-   try {
-     const response = await fetch(
-       `${API_FOOTBALL_URL}/teams/statistics?team=${teamId}&league=${leagueId}&season=${season}`,
-       { headers: { "x-apisports-key": apiKey } }
-     );
-     
-     if (!response.ok) return null;
-     
-     const data = await response.json();
-     const stats = data.response;
-     
-     if (!stats) return null;
-     
-     return {
-       played: stats.fixtures?.played?.total ?? 0,
-       wins: stats.fixtures?.wins?.total ?? 0,
-       draws: stats.fixtures?.draws?.total ?? 0,
-       losses: stats.fixtures?.loses?.total ?? 0,
-       goalsFor: stats.goals?.for?.total?.total ?? 0,
-       goalsAgainst: stats.goals?.against?.total?.total ?? 0,
-       form: stats.form ?? "",
-     };
-   } catch (e) {
-     console.error("Error fetching team stats:", e);
-     return null;
-   }
- }
+/**
+ * Fetch team's last N matches form
+ */
+async function fetchTeamForm(teamId: number, apiKey: string, count: number = 3): Promise<FormMatch[]> {
+  const cached = teamFormCache.get(teamId);
+  if (cached && cached.length >= count) return cached.slice(0, count);
+
+  try {
+    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 4, baseDelayMs: 700 });
+    if (!data?.response) return [];
+
+    const matches = data.response || [];
+    const normalized: FormMatch[] = matches.map((m: any) => {
+      const isHome = m.teams.home.id === teamId;
+      const goalsFor = isHome ? m.goals.home : m.goals.away;
+      const goalsAgainst = isHome ? m.goals.away : m.goals.home;
+      const won = isHome ? m.teams.home.winner : m.teams.away.winner;
+
+      let result: "W" | "D" | "L" = "D";
+      if (won === true) result = "W";
+      else if (won === false) result = "L";
+
+      return { result, goalsFor, goalsAgainst, isHome };
+    });
+
+    teamFormCache.set(teamId, normalized);
+    return normalized;
+  } catch (e) {
+    console.error("Error fetching team form:", e);
+    return [];
+  }
+}
+
+/**
+ * Fetch head-to-head matches between two teams
+ */
+async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 3): Promise<H2HMatch[]> {
+  const key = `${homeTeamId}-${awayTeamId}-${count}`;
+  const cached = h2hCache.get(key);
+  if (cached) return cached;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=${count}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 4, baseDelayMs: 700 });
+    if (!data?.response) return [];
+
+    const matches = data.response || [];
+    const normalized: H2HMatch[] = matches.map((m: any) => ({
+      homeTeamId: m.teams.home.id,
+      awayTeamId: m.teams.away.id,
+      homeGoals: m.goals.home ?? 0,
+      awayGoals: m.goals.away ?? 0,
+    }));
+
+    h2hCache.set(key, normalized);
+    return normalized;
+  } catch (e) {
+    console.error("Error fetching H2H:", e);
+    return [];
+  }
+}
+
+/**
+ * Fetch team statistics for current season
+ */
+async function fetchTeamStats(teamId: number, leagueId: number, season: number, apiKey: string): Promise<TeamStats | null> {
+  const cacheKey = `${teamId}:${leagueId}:${season}`;
+  if (teamStatsCache.has(cacheKey)) return teamStatsCache.get(cacheKey) ?? null;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/teams/statistics?team=${teamId}&league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 4, baseDelayMs: 700 });
+    const stats = data?.response;
+    if (!stats) {
+      teamStatsCache.set(cacheKey, null);
+      return null;
+    }
+
+    const normalized: TeamStats = {
+      played: stats.fixtures?.played?.total ?? 0,
+      wins: stats.fixtures?.wins?.total ?? 0,
+      draws: stats.fixtures?.draws?.total ?? 0,
+      losses: stats.fixtures?.loses?.total ?? 0,
+      goalsFor: stats.goals?.for?.total?.total ?? 0,
+      goalsAgainst: stats.goals?.against?.total?.total ?? 0,
+      form: stats.form ?? "",
+    };
+
+    teamStatsCache.set(cacheKey, normalized);
+    return normalized;
+  } catch (e) {
+    console.error("Error fetching team stats:", e);
+    teamStatsCache.set(cacheKey, null);
+    return null;
+  }
+}
  
   /**
    * Calculate form score (0-100) from last 3 matches using points + goal diff.
@@ -535,157 +601,77 @@
   }
 
  /**
-  * Assign tiers to all predictions based on confidence:
+  * Assign tiers to all predictions based on confidence (STRICT):
   * - FREE: confidence < 65%
-  * - PRO (exclusive): confidence >= 65% AND < 85% 
-  * - PREMIUM: confidence >= 85%, low/medium risk only, max 1 draw, top 5-10
+  * - PRO: 65–84%
+  * - PREMIUM: >= 85%
+  * No exceptions (risk/draw caps must NOT downgrade >=85% into PRO).
+  * Tier assignment must run AFTER regeneration.
   */
-async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string): Promise<{ free: number; pro: number; premium: number }> {
-    // Fetch ONLY unlocked predictions for today and tomorrow
-    // Locked predictions have missing API data and should NOT receive tier assignment
-    const { data: allPredictions, error } = await supabase
+async function assignTiers(
+  supabase: any,
+  todayStr: string,
+  tomorrowStr: string
+): Promise<{ free: number; pro: number; premium: number }> {
+  // Fetch unlocked predictions for today and tomorrow
+  // Include both "pending" and NULL (some rows may be NULL historically)
+  const { data: allPredictions, error } = await supabase
+    .from("ai_predictions")
+    .select("id, confidence, is_locked, result_status")
+    .in("match_date", [todayStr, tomorrowStr])
+    .in("result_status", ["pending", null])
+    .eq("is_locked", false)
+    .order("confidence", { ascending: false });
+
+  if (error || !allPredictions) {
+    console.error("Error fetching predictions for tier assignment:", error);
+    return { free: 0, pro: 0, premium: 0 };
+  }
+
+  const premiumIds = allPredictions
+    .filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE)
+    .map((p: any) => p.id);
+
+  const proIds = allPredictions
+    .filter(
+      (p: any) =>
+        (p.confidence ?? 0) >= PRO_MIN_CONFIDENCE && (p.confidence ?? 0) <= PRO_MAX_CONFIDENCE
+    )
+    .map((p: any) => p.id);
+
+  const freeIds = allPredictions
+    .filter((p: any) => (p.confidence ?? 0) <= FREE_MAX_CONFIDENCE)
+    .map((p: any) => p.id);
+
+  console.log(`\n=== STRICT TIER ASSIGNMENT (by confidence only) ===`);
+  console.log(`FREE (<65%): ${freeIds.length}`);
+  console.log(`PRO (65–84%): ${proIds.length}`);
+  console.log(`PREMIUM (>=85%): ${premiumIds.length}`);
+
+  // Reset all to not premium for the two dates, then set premium = true
+  // (Other tiers are derived from confidence, but PREMIUM must be explicit in DB.)
+  const { error: resetError } = await supabase
+    .from("ai_predictions")
+    .update({ is_premium: false })
+    .in("match_date", [todayStr, tomorrowStr]);
+
+  if (resetError) {
+    console.error("Error resetting premium flags:", resetError);
+  }
+
+  if (premiumIds.length > 0) {
+    const { error: premiumError } = await supabase
       .from("ai_predictions")
-      .select("*")
-      .in("match_date", [todayStr, tomorrowStr])
-      .eq("result_status", "pending")
-      .eq("is_locked", false) // Only assign tiers to unlocked predictions
-      .order("confidence", { ascending: false });
-   
-   if (error || !allPredictions) {
-     console.error("Error fetching predictions for premium assignment:", error);
-     return { free: 0, pro: 0, premium: 0 };
-   }
-   
-   // === TIER ASSIGNMENT ===
-   // 1. FREE: confidence < 65%
-   const freeTier = allPredictions.filter((p: any) => p.confidence <= FREE_MAX_CONFIDENCE);
-   
-   // 2. PRO: confidence >= 65% AND < 85%
-   const proTier = allPredictions.filter((p: any) => 
-     p.confidence >= PRO_MIN_CONFIDENCE && p.confidence <= PRO_MAX_CONFIDENCE
-   );
-   
-    // 3. PREMIUM candidates: confidence >= 85%, low/medium risk only
-    const premiumCandidates = allPredictions.filter((p: any) =>
-      p.confidence >= PREMIUM_MIN_CONFIDENCE &&
-      PREMIUM_ALLOWED_RISK.includes(p.risk_level)
-    );
+      .update({ is_premium: true })
+      .in("id", premiumIds);
 
-    console.log(
-      `Tier distribution - FREE (conf<65%): ${freeTier.length}, PRO (65-84%): ${proTier.length}, PREMIUM candidates (>=85%, low/med risk): ${premiumCandidates.length}`
-    );
-
-    // === BUILD PREMIUM LIST (guaranteed 5–10 daily) ===
-    // Rule: Premium must be top picks, low/medium risk only, max 1 draw.
-    // If not enough 85%+ candidates exist, we backfill from best PRO (still low/medium risk)
-    // and bump their confidence to 85 so tier rules remain consistent in DB.
-    let premiumList: any[] = [];
-    const bumpConfidenceIds: string[] = [];
-
-    const sortByConfidenceDesc = (a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0);
-
-    const addPremium = (p: any) => {
-      if (!p?.id) return;
-      if (premiumList.some((x: any) => x.id === p.id)) return;
-
-      const hasDrawAlready = premiumList.some((x: any) => x.prediction === "X");
-      if (p.prediction === "X" && hasDrawAlready) return;
-
-      premiumList.push(p);
-
-      if ((p.confidence ?? 0) < PREMIUM_MIN_CONFIDENCE) {
-        bumpConfidenceIds.push(p.id);
-      }
-    };
-
-    // 1) Add true premium candidates first
-    if (premiumCandidates.length > 0) {
-      const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X").sort(sortByConfidenceDesc);
-      const draws = premiumCandidates.filter((p: any) => p.prediction === "X").sort(sortByConfidenceDesc);
-
-      nonDraws.slice(0, PREMIUM_MAX_COUNT).forEach(addPremium);
-      if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) addPremium(draws[0]);
+    if (premiumError) {
+      console.error("Error assigning premium flags:", premiumError);
     }
+  }
 
-    // 2) Backfill to guarantee at least 5 premium matches
-    if (premiumList.length < PREMIUM_MIN_COUNT) {
-      const fillPool = allPredictions
-        .filter((p: any) => PREMIUM_ALLOWED_RISK.includes(p.risk_level))
-        .sort(sortByConfidenceDesc);
-
-      for (const p of fillPool) {
-        if (premiumList.length >= PREMIUM_MIN_COUNT) break;
-        addPremium(p);
-      }
-
-      if (premiumList.length > 0) {
-        console.log(
-          `Backfilled premium list to ${premiumList.length} matches (min target: ${PREMIUM_MIN_COUNT}).`
-        );
-      }
-    }
-
-    // Finalize list
-    premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT).sort(sortByConfidenceDesc);
-
-    const premiumIds = premiumList.map((p: any) => p.id);
-    const premiumIdSet = new Set(premiumIds);
-
-    // PRO/FREE are derived from confidence, but must exclude PREMIUM selections
-    const proIds = proTier.filter((p: any) => !premiumIdSet.has(p.id)).map((p: any) => p.id);
-    const freeIds = freeTier.filter((p: any) => !premiumIdSet.has(p.id)).map((p: any) => p.id);
-   
-   // === UPDATE ALL TIERS IN DATABASE ===
-   // First reset all to not premium
-   await supabase
-     .from("ai_predictions")
-     .update({ is_premium: false })
-     .in("match_date", [todayStr, tomorrowStr]);
-   
-    // Set Premium tier (is_premium = true)
-    if (premiumIds.length > 0) {
-      const { error: premiumError } = await supabase
-        .from("ai_predictions")
-        .update({ is_premium: true })
-        .in("id", premiumIds);
-
-      if (premiumError) {
-        console.error("Error assigning premium tier:", premiumError);
-      }
-
-      // Enforce "PREMIUM >= 85%" rule in DB (only for backfilled items)
-      if (bumpConfidenceIds.length > 0) {
-        const { error: bumpError } = await supabase
-          .from("ai_predictions")
-          .update({ confidence: PREMIUM_MIN_CONFIDENCE })
-          .in("id", bumpConfidenceIds)
-          .lt("confidence", PREMIUM_MIN_CONFIDENCE);
-
-        if (bumpError) {
-          console.error("Error bumping premium confidence to 85%:", bumpError);
-        }
-      }
-    }
-   
-   // Log tier assignments
-   console.log(`\n=== TIER ASSIGNMENTS ===`);
-   console.log(`FREE (confidence < 65%): ${freeIds.length} matches`);
-   console.log(`PRO (confidence 65-84%): ${proIds.length} matches`);
-   console.log(`PREMIUM (confidence >= 85%, low/med risk): ${premiumIds.length} matches`);
-   
-   if (premiumList.length > 0) {
-     console.log(`\nPremium matches:`);
-   premiumList.forEach((p: any) => {
-       console.log(`  - ${p.home_team} vs ${p.away_team}: ${p.prediction} (${p.confidence}%, ${p.risk_level})`);
-     });
-   }
-   
-   return { 
-     free: freeIds.length, 
-     pro: proIds.length, 
-     premium: premiumIds.length 
-   };
- }
+  return { free: freeIds.length, pro: proIds.length, premium: premiumIds.length };
+}
   
   async function markPredictionLocked(
     supabase: any,
@@ -737,102 +723,246 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
    console.log(`\n=== REGENERATING PREDICTIONS FOR ${todayStr} AND ${tomorrowStr} ===`);
    console.log(`Using NEW weighted algorithm: Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%`);
    
-   // Fetch ALL predictions for today and tomorrow (regardless of result_status)
-   // Only skip matches that already have final results (won/lost)
-   const { data: predictions, error: fetchError } = await supabase
-     .from("ai_predictions")
-     .select("*")
-     .in("match_date", [todayStr, tomorrowStr])
-     .in("result_status", ["pending", null]); // Only regenerate pending, skip won/lost
-   
-   if (fetchError) {
-     console.error("Error fetching predictions:", fetchError);
-     return new Response(
-       JSON.stringify({ error: "Failed to fetch predictions", details: fetchError.message }),
-       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-     );
-   }
-   
-   if (!predictions || predictions.length === 0) {
-     return new Response(
-       JSON.stringify({ message: "No predictions found to regenerate for today/tomorrow", updated: 0 }),
-       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-     );
-   }
-   
-   console.log(`Found ${predictions.length} predictions to regenerate (today + tomorrow)`);
-   console.log(`Matches will be recalculated using NEW algorithm - no fallback to old values`);
-   
-   let updated = 0;
-   let locked = 0;
-   let skipped = 0; // Track matches skipped due to already having results
-   const errors: string[] = [];
-   
-   // Process each prediction (with rate limiting)
+    // Fetch fixture lists once (TODAY + TOMORROW) to avoid per-fixture requests.
+    // This also lets us guarantee that TOMORROW fixtures exist in DB (no silent missing data).
+    const [todayFixturesJson, tomorrowFixturesJson] = await Promise.all([
+      fetchJsonWithRetry(`${API_FOOTBALL_URL}/fixtures?date=${todayStr}`, apiKey, { retries: 4, baseDelayMs: 800 }),
+      fetchJsonWithRetry(`${API_FOOTBALL_URL}/fixtures?date=${tomorrowStr}`, apiKey, { retries: 4, baseDelayMs: 800 }),
+    ]);
+
+    const todayFixtures = todayFixturesJson?.response ?? [];
+    const tomorrowFixtures = tomorrowFixturesJson?.response ?? [];
+
+    const fixtureById = new Map<string, any>();
+    const expectedDateByFixtureId = new Map<string, string>();
+
+    for (const f of [...todayFixtures, ...tomorrowFixtures]) {
+      const idStr = String(f?.fixture?.id ?? "");
+      if (!idStr) continue;
+      fixtureById.set(idStr, f);
+      const d = String(f?.fixture?.date ?? "").split("T")[0];
+      expectedDateByFixtureId.set(idStr, d || todayStr);
+    }
+
+    const fixtureIds = Array.from(fixtureById.keys());
+
+    // If fixture listing failed (rate limit/outage), we still regenerate whatever is already in DB.
+    const shouldUseFixtureList = fixtureIds.length > 0;
+
+    // Fetch existing predictions for TODAY + TOMORROW (small query; avoids huge URL from match_id IN (...))
+    const { data: predictionsFromDb, error: fetchError } = await supabase
+      .from("ai_predictions")
+      .select("*")
+      .in("match_date", [todayStr, tomorrowStr])
+      .in("result_status", ["pending", null]);
+
+    if (fetchError) {
+      console.error("Error fetching predictions:", fetchError);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch predictions", details: fetchError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let predictions = predictionsFromDb ?? [];
+
+    // Ensure fixtures exist in DB (especially TOMORROW).
+    // - Never silently fall back: if we can't fetch fixtures, we won't insert anything.
+    // - If DB is missing a fixture row, we insert a locked placeholder.
+    if (shouldUseFixtureList) {
+      const existingMatchIds = new Set(predictions.map((p: any) => String(p.match_id)));
+      let missingFixtureIds = fixtureIds.filter((id) => !existingMatchIds.has(String(id)));
+
+      // 1) Try to "rescue" historical rows that exist but have NULL match_date (so UI couldn't show TOMORROW)
+      // Do this in chunks to avoid enormous URLs.
+      if (missingFixtureIds.length > 0) {
+        const CHUNK = 150;
+        const idsToSetToday: string[] = [];
+        const idsToSetTomorrow: string[] = [];
+
+        for (let i = 0; i < missingFixtureIds.length; i += CHUNK) {
+          const chunk = missingFixtureIds.slice(i, i + CHUNK);
+
+          const { data: nullDateRows, error: nullDateError } = await supabase
+            .from("ai_predictions")
+            .select("id, match_id")
+            .in("match_id", chunk)
+            .is("match_date", null)
+            .in("result_status", ["pending", null]);
+
+          if (nullDateError) {
+            console.error("Error fetching NULL match_date rows:", nullDateError);
+            continue;
+          }
+
+          for (const r of nullDateRows ?? []) {
+            const expected = expectedDateByFixtureId.get(String(r.match_id));
+            if (expected === todayStr) idsToSetToday.push(String(r.id));
+            else if (expected === tomorrowStr) idsToSetTomorrow.push(String(r.id));
+          }
+        }
+
+        if (idsToSetToday.length > 0) {
+          await supabase.from("ai_predictions").update({ match_date: todayStr }).in("id", idsToSetToday);
+        }
+        if (idsToSetTomorrow.length > 0) {
+          await supabase.from("ai_predictions").update({ match_date: tomorrowStr }).in("id", idsToSetTomorrow);
+        }
+
+        // Re-fetch after rescue so regenerated set includes rescued rows
+        const { data: refetched } = await supabase
+          .from("ai_predictions")
+          .select("*")
+          .in("match_date", [todayStr, tomorrowStr])
+          .in("result_status", ["pending", null]);
+
+        predictions = refetched ?? predictions;
+        const refreshedMatchIds = new Set(predictions.map((p: any) => String(p.match_id)));
+        missingFixtureIds = fixtureIds.filter((id) => !refreshedMatchIds.has(String(id)));
+      }
+
+      // 2) Insert remaining missing fixtures as locked placeholders (chunked)
+      if (missingFixtureIds.length > 0) {
+        console.log(`Missing fixtures in DB after rescue: ${missingFixtureIds.length}. Inserting locked placeholders...`);
+
+        const CHUNK = 100;
+        for (let i = 0; i < missingFixtureIds.length; i += CHUNK) {
+          const chunk = missingFixtureIds.slice(i, i + CHUNK);
+
+          const inserts = chunk.map((id) => {
+            const f = fixtureById.get(String(id));
+            const matchDate = expectedDateByFixtureId.get(String(id)) ?? todayStr;
+            const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
+
+            return {
+              match_id: String(id),
+              league: f?.league?.name ?? null,
+              home_team: f?.teams?.home?.name ?? "Home",
+              away_team: f?.teams?.away?.name ?? "Away",
+              match_date: matchDate,
+              match_time: matchTime,
+              result_status: "pending",
+              is_premium: false,
+              is_locked: true,
+              prediction: "X",
+              predicted_score: null,
+              confidence: 50,
+              home_win: 33,
+              draw: 34,
+              away_win: 33,
+              risk_level: "high",
+              analysis: "Pending data from API-Football (placeholder inserted during regeneration).",
+            };
+          });
+
+          const { data: insertedRows, error: insertError } = await supabase
+            .from("ai_predictions")
+            .insert(inserts)
+            .select("*");
+
+          if (insertError) {
+            console.error("Error inserting missing fixtures:", insertError);
+          } else if (insertedRows?.length) {
+            predictions = [...predictions, ...insertedRows];
+          }
+        }
+      }
+    }
+
+    if (!predictions || predictions.length === 0) {
+      return new Response(
+        JSON.stringify({ message: "No predictions found to regenerate for today/tomorrow", updated: 0 }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Found ${predictions.length} predictions to regenerate (today + tomorrow)`);
+    console.log(`Matches will be recalculated using NEW algorithm - no fallback to old values`);
+
+    // Build pseudo-form from TeamStats (avoids 2 extra API calls per match)
+    const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
+      if (!stats?.form) return [];
+
+      const avgScored = stats.played > 0 ? stats.goalsFor / stats.played : 1.0;
+      const avgConceded = stats.played > 0 ? stats.goalsAgainst / stats.played : 1.0;
+
+      const recent = stats.form.slice(-3).split("");
+      return recent.map((ch) => {
+        const result = ch === "W" ? "W" : ch === "L" ? "L" : "D";
+        return {
+          result,
+          goalsFor: avgScored,
+          goalsAgainst: avgConceded,
+          isHome: true,
+        };
+      });
+    };
+
+    let updated = 0;
+    let locked = 0;
+    let skipped = 0; // Track matches skipped due to already having results
+    const errors: string[] = [];
+
+    // Process each prediction
     for (const pred of predictions) {
       try {
         const fixtureId = pred.match_id;
         
-        // Fetch fixture details from API-Football
-        const fixtureRes = await fetch(
-          `${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`,
-          { headers: { "x-apisports-key": apiKey } }
-        );
-        
-        if (!fixtureRes.ok) {
-          // API fetch failed - mark as locked (pending data)
-          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: API fetch failed`);
-          locked++;
-          errors.push(`Fixture ${fixtureId}: API fetch failed - marked as locked`);
-          continue;
-        }
-        
-        const fixtureData = await fixtureRes.json();
-        const fixture = fixtureData.response?.[0];
-        
+        const fixtureIdStr = String(fixtureId);
+
+        // Prefer fixture list lookup (2 calls total per run). Fallback to by-id fetch with retry if needed.
+        let fixture = fixtureById.get(fixtureIdStr);
         if (!fixture) {
-          // Fixture not found in API - mark as locked (pending data)
-          // Do NOT apply tier assignment or use old probabilities
-          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Not found in API`);
+          const byId = await fetchJsonWithRetry(
+            `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
+            apiKey,
+            { retries: 4, baseDelayMs: 800 }
+          );
+          fixture = byId?.response?.[0];
+        }
+
+        if (!fixture) {
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Not found in API`);
           locked++;
-          console.log(`Fixture ${fixtureId}: Not found in API - marked as locked (pending data)`);
+          console.log(`Fixture ${fixtureIdStr}: Not found in API - marked as locked (pending data)`);
           continue;
         }
-        
+
         const homeTeamId = fixture.teams?.home?.id;
         const awayTeamId = fixture.teams?.away?.id;
         const homeTeamName = fixture.teams?.home?.name || pred.home_team;
         const awayTeamName = fixture.teams?.away?.name || pred.away_team;
         const leagueId = fixture.league?.id;
         const season = fixture.league?.season || new Date().getFullYear();
-        
-        if (!homeTeamId || !awayTeamId) {
-          // Invalid team data - mark as locked
-          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Invalid team data`);
+
+        if (!homeTeamId || !awayTeamId || !leagueId) {
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Invalid fixture data`);
           locked++;
-          errors.push(`Fixture ${fixtureId}: Invalid team data - marked as locked`);
+          errors.push(`Fixture ${fixtureIdStr}: Invalid fixture data - marked as locked`);
           continue;
         }
-        
-        // Fetch all data in parallel
-        const [homeForm, awayForm, h2h, homeStats, awayStats] = await Promise.all([
-          fetchTeamForm(homeTeamId, apiKey, 3),
-          fetchTeamForm(awayTeamId, apiKey, 3),
-          fetchH2H(homeTeamId, awayTeamId, apiKey, 3),
-          leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
-          leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
-        ]);
-        
-        // Check if we have sufficient data to calculate prediction
-        // If no form data available, mark as locked
-        if (homeForm.length === 0 && awayForm.length === 0 && !homeStats && !awayStats) {
-          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Insufficient data`);
+
+        // Fetch core data (STRICT: if we can't fetch, we lock & overwrite neutral values; never keep old output)
+        // NOTE: We intentionally avoid calling fetchTeamForm here to keep API usage under rate limits.
+        const homeStats = await fetchTeamStats(homeTeamId, leagueId, season, apiKey);
+        const awayStats = await fetchTeamStats(awayTeamId, leagueId, season, apiKey);
+        const h2h = await fetchH2H(homeTeamId, awayTeamId, apiKey, 3);
+
+        if (!homeStats || !awayStats) {
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats (rate limit or no data)`);
           locked++;
-          console.log(`Fixture ${fixtureId}: Insufficient data - marked as locked`);
           continue;
         }
-        
-        // Calculate new prediction using full AI engine
+
+        const homeForm = buildPseudoFormFromStats(homeStats);
+        const awayForm = buildPseudoFormFromStats(awayStats);
+
+        if (homeForm.length === 0 && awayForm.length === 0) {
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`);
+          locked++;
+          continue;
+        }
+
         const newPrediction = calculatePrediction(
           homeForm,
           awayForm,
@@ -844,8 +974,7 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
           homeTeamName,
           awayTeamName
         );
-        
-        // Update prediction in database - unlock since we have valid data
+
         const { error: updateError } = await supabase
           .from("ai_predictions")
           .update({
@@ -857,21 +986,20 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
             away_win: newPrediction.away_win,
             risk_level: newPrediction.risk_level,
             analysis: newPrediction.analysis,
-            is_locked: false, // Unlock - data is now valid
+            is_locked: false,
             updated_at: new Date().toISOString(),
           })
           .eq("id", pred.id);
-        
+
         if (updateError) {
-          errors.push(`Fixture ${fixtureId}: Update failed - ${updateError.message}`);
+          errors.push(`Fixture ${fixtureIdStr}: Update failed - ${updateError.message}`);
           continue;
         }
-        
+
         updated++;
-        console.log(`Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`);
-        
-        // Rate limiting: wait 200ms between API calls to avoid hitting limits
-        await new Promise(resolve => setTimeout(resolve, 200));
+        console.log(
+          `Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`
+        );
         
       } catch (e) {
         // On error, mark as locked
