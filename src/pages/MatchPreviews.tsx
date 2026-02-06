@@ -11,6 +11,7 @@ import { MatchPreviewSelector } from "@/components/match-previews/MatchPreviewSe
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 
@@ -41,6 +42,7 @@ export default function MatchPreviews() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [previewCount, setPreviewCount] = useState(0);
   const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
+  const { maybeShowInterstitial } = useAndroidInterstitial();
 
   const isLoading = loadingToday || loadingTomorrow;
   const error = errorToday || errorTomorrow;
@@ -86,6 +88,9 @@ export default function MatchPreviews() {
 
   const handleGenerate = async () => {
     if (!selectedMatch || !canGenerate) return;
+    
+    // Android only: show interstitial on match preview generation (if not already shown this session)
+    maybeShowInterstitial("match_preview");
     
     await generate(selectedMatch);
     
