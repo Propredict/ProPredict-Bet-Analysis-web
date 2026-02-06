@@ -41,6 +41,7 @@ declare global {
 interface AndroidBridge {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
+  purchasePlan?: (planId: string) => void;
   purchasePackage?: (packageId: string) => void;
 }
 
