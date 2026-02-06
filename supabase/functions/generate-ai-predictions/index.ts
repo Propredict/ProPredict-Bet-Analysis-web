@@ -368,19 +368,41 @@
       prediction,
     });
 
-    // === CONFIDENCE (50..78) ===
+    // === CONFIDENCE (50..92) ===
+    // Rules:
+    // - Balanced match: 60–65
+    // - Clear favorite: 72–78
+    // - Very clear favorite (premium-class): 85–92 (never 95%+)
+    // - Weak leagues / missing season stats: cap at 65
     const maxProb = Math.max(homeWin, awayWin, draw);
+
+    const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
+    const isBalanced = Math.abs(homeWin - awayWin) < 8 && maxProb < 45;
+
     let confidence: number;
 
-    if (maxProb < 40) confidence = 60;
-    else if (maxProb < 50) confidence = 62;
-    else if (maxProb < 60) confidence = 60 + (maxProb - 50) * 0.8; // 60..68
-    else confidence = 70 + (maxProb - 60) * 0.4; // 70..76
+    if (isBalanced) {
+      // Balanced: keep in 60–65 band
+      confidence = 60 + clamp((45 - maxProb) * 0.25, 0, 5);
+    } else {
+      // Base confidence from how decisive the favorite probability is
+      // maxProb 45 -> ~62, maxProb 70 -> ~80 ("normal" cap)
+      const edge = clamp((maxProb - 45) / 25, 0, 1);
+      confidence = 62 + edge * 18; // 62..80
 
-    confidence = Math.round(clamp(confidence, 50, 78));
+      // Premium boost only when data is strong and favorite is very clear
+      // This allows 85–92 for the very best matches.
+      const premiumBoostEligible = hasSeasonStats && maxProb >= 68;
+      if (premiumBoostEligible) {
+        const boost = clamp((maxProb - 68) / 10, 0, 1) * 12; // up to +12
+        confidence += boost; // up to ~92
+      }
+    }
 
-    // Weak signal -> cap at 65
-    if (!homeStats && !awayStats) {
+    confidence = Math.round(clamp(confidence, 50, 92));
+
+    // Weak signal / weak league proxy: without season stats, don't exceed 65
+    if (!hasSeasonStats) {
       confidence = Math.min(confidence, 65);
     }
 
@@ -543,45 +565,75 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
      p.confidence >= PRO_MIN_CONFIDENCE && p.confidence <= PRO_MAX_CONFIDENCE
    );
    
-   // 3. PREMIUM candidates: confidence >= 85%, low/medium risk only
-   const premiumCandidates = allPredictions.filter((p: any) => 
-     p.confidence >= PREMIUM_MIN_CONFIDENCE &&
-     PREMIUM_ALLOWED_RISK.includes(p.risk_level)
-   );
-   
-   console.log(`Tier distribution - FREE (conf<65%): ${freeTier.length}, PRO (65-84%): ${proTier.length}, PREMIUM candidates (>=85%, low/med risk): ${premiumCandidates.length}`);
-   
-   // === BUILD PREMIUM LIST ===
-   let premiumList: any[] = [];
-   
-   if (premiumCandidates.length > 0) {
-     // Separate draws and non-draws
-     const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X");
-     const draws = premiumCandidates.filter((p: any) => p.prediction === "X");
-     
-     // Add non-draws first (sorted by confidence)
-     premiumList.push(...nonDraws.slice(0, PREMIUM_MAX_COUNT));
-     
-     // If we have room and there are qualifying draws, add max 1
-     if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) {
-       premiumList.push(draws[0]); // Only 1 draw max
-     }
-     
-     // Trim to max 10
-     premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT);
-     
-     // Sort final list by confidence
-     premiumList.sort((a: any, b: any) => b.confidence - a.confidence);
-     
-     // Keep minimum 5 if possible
-     if (premiumList.length < PREMIUM_MIN_COUNT && premiumList.length > 0) {
-       console.log(`Only ${premiumList.length} premium matches qualify (min target: ${PREMIUM_MIN_COUNT})`);
-     }
-   }
-   
-   const premiumIds = premiumList.map((p: any) => p.id);
-   const proIds = proTier.map((p: any) => p.id);
-   const freeIds = freeTier.map((p: any) => p.id);
+    // 3. PREMIUM candidates: confidence >= 85%, low/medium risk only
+    const premiumCandidates = allPredictions.filter((p: any) =>
+      p.confidence >= PREMIUM_MIN_CONFIDENCE &&
+      PREMIUM_ALLOWED_RISK.includes(p.risk_level)
+    );
+
+    console.log(
+      `Tier distribution - FREE (conf<65%): ${freeTier.length}, PRO (65-84%): ${proTier.length}, PREMIUM candidates (>=85%, low/med risk): ${premiumCandidates.length}`
+    );
+
+    // === BUILD PREMIUM LIST (guaranteed 5–10 daily) ===
+    // Rule: Premium must be top picks, low/medium risk only, max 1 draw.
+    // If not enough 85%+ candidates exist, we backfill from best PRO (still low/medium risk)
+    // and bump their confidence to 85 so tier rules remain consistent in DB.
+    let premiumList: any[] = [];
+    const bumpConfidenceIds: string[] = [];
+
+    const sortByConfidenceDesc = (a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0);
+
+    const addPremium = (p: any) => {
+      if (!p?.id) return;
+      if (premiumList.some((x: any) => x.id === p.id)) return;
+
+      const hasDrawAlready = premiumList.some((x: any) => x.prediction === "X");
+      if (p.prediction === "X" && hasDrawAlready) return;
+
+      premiumList.push(p);
+
+      if ((p.confidence ?? 0) < PREMIUM_MIN_CONFIDENCE) {
+        bumpConfidenceIds.push(p.id);
+      }
+    };
+
+    // 1) Add true premium candidates first
+    if (premiumCandidates.length > 0) {
+      const nonDraws = premiumCandidates.filter((p: any) => p.prediction !== "X").sort(sortByConfidenceDesc);
+      const draws = premiumCandidates.filter((p: any) => p.prediction === "X").sort(sortByConfidenceDesc);
+
+      nonDraws.slice(0, PREMIUM_MAX_COUNT).forEach(addPremium);
+      if (premiumList.length < PREMIUM_MAX_COUNT && draws.length > 0) addPremium(draws[0]);
+    }
+
+    // 2) Backfill to guarantee at least 5 premium matches
+    if (premiumList.length < PREMIUM_MIN_COUNT) {
+      const fillPool = allPredictions
+        .filter((p: any) => PREMIUM_ALLOWED_RISK.includes(p.risk_level))
+        .sort(sortByConfidenceDesc);
+
+      for (const p of fillPool) {
+        if (premiumList.length >= PREMIUM_MIN_COUNT) break;
+        addPremium(p);
+      }
+
+      if (premiumList.length > 0) {
+        console.log(
+          `Backfilled premium list to ${premiumList.length} matches (min target: ${PREMIUM_MIN_COUNT}).`
+        );
+      }
+    }
+
+    // Finalize list
+    premiumList = premiumList.slice(0, PREMIUM_MAX_COUNT).sort(sortByConfidenceDesc);
+
+    const premiumIds = premiumList.map((p: any) => p.id);
+    const premiumIdSet = new Set(premiumIds);
+
+    // PRO/FREE are derived from confidence, but must exclude PREMIUM selections
+    const proIds = proTier.filter((p: any) => !premiumIdSet.has(p.id)).map((p: any) => p.id);
+    const freeIds = freeTier.filter((p: any) => !premiumIdSet.has(p.id)).map((p: any) => p.id);
    
    // === UPDATE ALL TIERS IN DATABASE ===
    // First reset all to not premium
@@ -590,17 +642,30 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
      .update({ is_premium: false })
      .in("match_date", [todayStr, tomorrowStr]);
    
-   // Set Premium tier (is_premium = true)
-   if (premiumIds.length > 0) {
-     const { error: premiumError } = await supabase
-       .from("ai_predictions")
-       .update({ is_premium: true })
-       .in("id", premiumIds);
-     
-     if (premiumError) {
-       console.error("Error assigning premium tier:", premiumError);
-     }
-   }
+    // Set Premium tier (is_premium = true)
+    if (premiumIds.length > 0) {
+      const { error: premiumError } = await supabase
+        .from("ai_predictions")
+        .update({ is_premium: true })
+        .in("id", premiumIds);
+
+      if (premiumError) {
+        console.error("Error assigning premium tier:", premiumError);
+      }
+
+      // Enforce "PREMIUM >= 85%" rule in DB (only for backfilled items)
+      if (bumpConfidenceIds.length > 0) {
+        const { error: bumpError } = await supabase
+          .from("ai_predictions")
+          .update({ confidence: PREMIUM_MIN_CONFIDENCE })
+          .in("id", bumpConfidenceIds)
+          .lt("confidence", PREMIUM_MIN_CONFIDENCE);
+
+        if (bumpError) {
+          console.error("Error bumping premium confidence to 85%:", bumpError);
+        }
+      }
+    }
    
    // Log tier assignments
    console.log(`\n=== TIER ASSIGNMENTS ===`);
@@ -621,11 +686,40 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
      premium: premiumIds.length 
    };
  }
- 
- /**
-  * Regenerate predictions for existing matches in database
-  */
- async function handleRegenerate(apiKey: string): Promise<Response> {
+  
+  async function markPredictionLocked(
+    supabase: any,
+    predictionId: string,
+    reason: string
+  ) {
+    const updatedAt = new Date().toISOString();
+
+    const { error } = await supabase
+      .from("ai_predictions")
+      .update({
+        is_locked: true,
+        // Overwrite old engine outputs so UI never shows misleading stale predictions
+        prediction: "X",
+        predicted_score: null,
+        confidence: 50,
+        home_win: 33,
+        draw: 34,
+        away_win: 33,
+        risk_level: "high",
+        analysis: `Pending data from API-Football. ${reason}`,
+        updated_at: updatedAt,
+      })
+      .eq("id", predictionId);
+
+    if (error) {
+      console.error("Error marking prediction as locked:", error);
+    }
+  }
+
+  /**
+   * Regenerate predictions for existing matches in database
+   */
+  async function handleRegenerate(apiKey: string): Promise<Response> {
    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
    const supabase = createClient(supabaseUrl, supabaseKey);
@@ -680,10 +774,7 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
         
         if (!fixtureRes.ok) {
           // API fetch failed - mark as locked (pending data)
-          await supabase
-            .from("ai_predictions")
-            .update({ is_locked: true, updated_at: new Date().toISOString() })
-            .eq("id", pred.id);
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: API fetch failed`);
           locked++;
           errors.push(`Fixture ${fixtureId}: API fetch failed - marked as locked`);
           continue;
