@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -326,6 +327,7 @@ export default function GetPremium() {
   const [isLoading, setIsLoading] = useState(false);
   const { plan: currentPlan, refetch: refetchPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Both Android and Web now support monthly/annual toggle
@@ -367,6 +369,13 @@ export default function GetPremium() {
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
+
+    // Auth guard: block purchases for non-authenticated users
+    if (!user) {
+      toast.error("Please sign in to subscribe.");
+      navigate("/login");
+      return;
+    }
 
     // Android: HARD BLOCK - call native bridge, never Stripe
     if (window.Android) {
