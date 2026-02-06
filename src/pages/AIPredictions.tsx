@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
@@ -21,13 +23,17 @@ type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
 
 export default function AIPredictions() {
+  const queryClient = useQueryClient();
+
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
-  const { predictions, loading } = useAIPredictions(day);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const { predictions, loading, refetch } = useAIPredictions(day);
   // Calculate stats from current day's predictions (not global view)
   const dayStats = useMemo(() => {
     const won = predictions.filter((p) => p.result_status === "won").length;
@@ -45,10 +51,10 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Helper to determine prediction tier - MUST be defined before useMemo that uses it
+  // Tier rules (must match backend tier thresholds)
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    if (prediction.is_premium && prediction.confidence > 80) return "premium";
-    if (prediction.confidence > 70) return "pro";
+    if (prediction.is_premium && prediction.confidence >= 85) return "premium";
+    if (prediction.confidence >= 65) return "pro";
     return "free";
   };
 
@@ -136,14 +142,15 @@ export default function AIPredictions() {
     return sortPredictions(result);
   }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
 
-  // Separate featured (premium/high confidence) from regular predictions
+  // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => p.is_premium || p.confidence > 70);
+    return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
   }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => !p.is_premium && p.confidence <= 70);
+    return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
+
 
   // Calculate live count from predictions
   const liveCount = useMemo(() => {
@@ -153,9 +160,30 @@ export default function AIPredictions() {
   // Total matches analyzed
   const totalAnalyzed = dayStats.won + dayStats.lost + dayStats.pending;
 
-  const handleRefresh = () => {
-    // UI only refresh - just triggers a visual feedback
-    window.location.reload();
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
+    await refetch();
+  };
+
+  const handleRegenerate = async () => {
+    if (!isAdmin || isRegenerating) return;
+
+    setIsRegenerating(true);
+    try {
+      const response = await supabase.functions.invoke("generate-ai-predictions", {
+        body: { regenerate: true },
+      });
+
+      if (response.error) {
+        console.error("Regenerate predictions error:", response.error);
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
+      await refetch();
+    } finally {
+      setIsRegenerating(false);
+    }
   };
 
   return (

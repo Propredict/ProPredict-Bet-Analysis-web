@@ -157,362 +157,361 @@
    }
  }
  
- /**
-  * Calculate form score (0-100) from last 3 matches
-  * W = 33.3 points, D = 16.7 points, L = 0 points
-  */
- function calculateFormScore(form: FormMatch[]): number {
-   if (form.length === 0) return 50; // Neutral if no data
-   
-   let score = 0;
-   const perMatch = 100 / 3;
-   
-   for (const match of form.slice(0, 3)) {
-     if (match.result === "W") score += perMatch;
-     else if (match.result === "D") score += perMatch / 2;
-     // L adds 0
-   }
-   
-   return Math.min(100, score);
- }
- 
- /**
-  * Calculate goal scoring rate from last 3 matches
-  */
- function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: number } {
-   if (form.length === 0) return { scored: 1.0, conceded: 1.0 };
-   
-   let scored = 0;
-   let conceded = 0;
-   
-   for (const match of form.slice(0, 3)) {
-     scored += match.goalsFor;
-     conceded += match.goalsAgainst;
-   }
-   
-   return {
-     scored: scored / form.length,
-     conceded: conceded / form.length,
-   };
- }
- 
- /**
-  * Calculate team quality score (0-100) from season stats
-  */
- function calculateQualityScore(stats: TeamStats | null): number {
-   if (!stats || stats.played === 0) return 50; // Neutral if no data
-   
-   const winRate = stats.wins / stats.played;
-   const drawRate = stats.draws / stats.played;
-   const goalDiff = (stats.goalsFor - stats.goalsAgainst) / stats.played;
-   
-   // Win rate contributes 60%, goal difference 40%
-   const winScore = winRate * 100;
-   const gdScore = Math.min(100, Math.max(0, 50 + goalDiff * 10));
-   
-   return winScore * 0.6 + gdScore * 0.4;
- }
- 
- /**
-  * Calculate H2H score from perspective of team A vs team B
-  * Returns 0-100 where 50 = neutral
-  */
- function calculateH2HScore(h2h: H2HMatch[], teamAId: number, teamBId: number): number {
-   if (h2h.length === 0) return 50; // Neutral if no H2H data
-   
-   let teamAWins = 0;
-   let teamBWins = 0;
-   let draws = 0;
-   
-   for (const match of h2h.slice(0, 3)) {
-     const isTeamAHome = match.homeTeamId === teamAId;
-     const teamAGoals = isTeamAHome ? match.homeGoals : match.awayGoals;
-     const teamBGoals = isTeamAHome ? match.awayGoals : match.homeGoals;
-     
-     if (teamAGoals > teamBGoals) teamAWins++;
-     else if (teamBGoals > teamAGoals) teamBWins++;
-     else draws++;
-   }
-   
-   // Score: win = 33.3, draw = 16.7, loss = 0
-   const perMatch = 100 / 3;
-   return teamAWins * perMatch + draws * (perMatch / 2);
- }
- 
- /**
-  * Main prediction calculation using weighted factors
-  */
- function calculatePrediction(
-   homeForm: FormMatch[],
-   awayForm: FormMatch[],
-   homeStats: TeamStats | null,
-   awayStats: TeamStats | null,
-   h2h: H2HMatch[],
-   homeTeamId: number,
-   awayTeamId: number,
-   homeTeamName: string,
-   awayTeamName: string
- ): PredictionResult {
-   
-   // === FORM SCORES (40%) ===
-   const homeFormScore = calculateFormScore(homeForm);
-   const awayFormScore = calculateFormScore(awayForm);
-   
-   // === QUALITY SCORES (25%) ===
-   const homeQualityScore = calculateQualityScore(homeStats);
-   const awayQualityScore = calculateQualityScore(awayStats);
-   
-   // === SQUAD SCORE (15%) - Using goal rate as proxy ===
-   const homeGoalRate = calculateGoalRate(homeForm);
-   const awayGoalRate = calculateGoalRate(awayForm);
-   const homeSquadScore = Math.min(100, (homeGoalRate.scored * 30) + (100 - homeGoalRate.conceded * 20));
-   const awaySquadScore = Math.min(100, (awayGoalRate.scored * 30) + (100 - awayGoalRate.conceded * 20));
-   
-   // === HOME ADVANTAGE (10% MAX) ===
-   const homeAdvantageScore = 60; // Fixed slight advantage, never dominant
-   const awayAdvantageScore = 40;
-   
-   // === H2H SCORES (10%) ===
-   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
-   const awayH2HScore = 100 - homeH2HScore;
-   
-   // === WEIGHTED TOTAL ===
-   const homeTotal = 
-     (homeFormScore * WEIGHT_FORM) +
-     (homeQualityScore * WEIGHT_QUALITY) +
-     (homeSquadScore * WEIGHT_SQUAD) +
-     (homeAdvantageScore * WEIGHT_HOME) +
-     (homeH2HScore * WEIGHT_H2H);
-   
-   const awayTotal = 
-     (awayFormScore * WEIGHT_FORM) +
-     (awayQualityScore * WEIGHT_QUALITY) +
-     (awaySquadScore * WEIGHT_SQUAD) +
-     (awayAdvantageScore * WEIGHT_HOME) +
-     (awayH2HScore * WEIGHT_H2H);
-   
-   // === CALCULATE PROBABILITIES ===
-   const diff = homeTotal - awayTotal;
-   
-   // Base probabilities adjusted by difference
-   // Neutral = 33/33/33, adjusted based on strength difference
-   let homeWin: number;
-   let draw: number;
-   let awayWin: number;
-   
-   if (Math.abs(diff) < 5) {
-     // Very balanced - increased draw probability
-     homeWin = 32 + diff * 0.5;
-     awayWin = 32 - diff * 0.5;
-     draw = 36;
-   } else if (Math.abs(diff) < 15) {
-     // Moderate difference
-     if (diff > 0) {
-       homeWin = 40 + diff * 0.8;
-       awayWin = 30 - diff * 0.6;
-       draw = 30 - diff * 0.2;
-     } else {
-       awayWin = 40 + Math.abs(diff) * 0.8;
-       homeWin = 30 - Math.abs(diff) * 0.6;
-       draw = 30 - Math.abs(diff) * 0.2;
-     }
-   } else {
-     // Clear favorite
-     if (diff > 0) {
-       homeWin = Math.min(75, 45 + diff * 1.0);
-       awayWin = Math.max(10, 25 - diff * 0.5);
-       draw = 100 - homeWin - awayWin;
-     } else {
-       awayWin = Math.min(75, 45 + Math.abs(diff) * 1.0);
-       homeWin = Math.max(10, 25 - Math.abs(diff) * 0.5);
-       draw = 100 - homeWin - awayWin;
-     }
-   }
-   
-   // Ensure probabilities are valid and sum to 100
-   homeWin = Math.max(5, Math.min(80, homeWin));
-   awayWin = Math.max(5, Math.min(80, awayWin));
-   draw = Math.max(10, Math.min(40, draw));
-   
-   const total = homeWin + draw + awayWin;
-   homeWin = Math.round((homeWin / total) * 100);
-   draw = Math.round((draw / total) * 100);
-   awayWin = 100 - homeWin - draw;
-   
-   // === DETERMINE PREDICTION ===
-   let prediction: string;
-   if (homeWin > awayWin && homeWin > draw) {
-     prediction = "1";
-   } else if (awayWin > homeWin && awayWin > draw) {
-     prediction = "2";
-   } else {
-     prediction = "X";
-   }
-   
-   // === PREDICT SCORE ===
-   const predictedScore = predictScore(
-     homeGoalRate.scored,
-     awayGoalRate.scored,
-     homeGoalRate.conceded,
-     awayGoalRate.conceded,
-     prediction
-   );
-   
-   // === CALCULATE CONFIDENCE ===
-   // Max confidence: 92% for very clear favorites, min: 50%
-   const maxProb = Math.max(homeWin, awayWin, draw);
-   let confidence: number;
-   
-   if (maxProb >= 70) {
-     // Very clear favorite: 85-92% confidence
-     confidence = Math.min(92, 85 + (maxProb - 70) * 0.7);
-   } else if (maxProb >= 65) {
-     // Clear favorite: 78-85% confidence
-     confidence = 78 + (maxProb - 65) * 1.4;
-   } else if (maxProb >= 50) {
-     // Moderate favorite: 60-78% confidence
-     confidence = 60 + (maxProb - 50) * 1.2;
-   } else {
-     // Balanced match: 50-60% confidence
-     confidence = Math.max(50, 50 + (maxProb - 33));
-   }
-   confidence = Math.round(confidence);
-   
-   // === RISK LEVEL ===
-   let riskLevel: "low" | "medium" | "high";
-   if (confidence >= 70 && maxProb >= 60) {
-     riskLevel = "low";
-   } else if (confidence >= 60 || maxProb >= 45) {
-     riskLevel = "medium";
-   } else {
-     riskLevel = "high";
-   }
-   
-   // === GENERATE ANALYSIS ===
-   const analysis = generateAnalysis(
-     homeTeamName,
-     awayTeamName,
-     prediction,
-     homeFormScore,
-     awayFormScore,
-     homeQualityScore,
-     awayQualityScore,
-     confidence
-   );
-   
-   return {
-     prediction,
-     predicted_score: predictedScore,
-     confidence,
-     home_win: homeWin,
-     draw,
-     away_win: awayWin,
-     risk_level: riskLevel,
-     analysis,
-   };
- }
- 
- /**
-  * Predict realistic score based on goal rates and prediction
-  */
- function predictScore(
-   homeScoringRate: number,
-   awayScoringRate: number,
-   homeConcedingRate: number,
-   awayConcedingRate: number,
-   prediction: string
- ): string {
-   // Expected goals calculation
-   let homeExpected = (homeScoringRate + awayConcedingRate) / 2;
-   let awayExpected = (awayScoringRate + homeConcedingRate) / 2;
-   
-   // Adjust based on prediction
-   if (prediction === "1") {
-     homeExpected = Math.max(homeExpected, awayExpected + 0.5);
-   } else if (prediction === "2") {
-     awayExpected = Math.max(awayExpected, homeExpected + 0.5);
-   } else {
-     // Draw - equalize
-     const avg = (homeExpected + awayExpected) / 2;
-     homeExpected = avg;
-     awayExpected = avg;
-   }
-   
-   // Round to realistic scores
-   let homeGoals = Math.round(homeExpected);
-   let awayGoals = Math.round(awayExpected);
-   
-   // Ensure prediction matches score
-   if (prediction === "1" && homeGoals <= awayGoals) {
-     homeGoals = awayGoals + 1;
-   } else if (prediction === "2" && awayGoals <= homeGoals) {
-     awayGoals = homeGoals + 1;
-   } else if (prediction === "X") {
-     homeGoals = Math.round((homeGoals + awayGoals) / 2);
-     awayGoals = homeGoals;
-   }
-   
-   // Cap at reasonable values
-   homeGoals = Math.min(4, Math.max(0, homeGoals));
-   awayGoals = Math.min(4, Math.max(0, awayGoals));
-   
-   return `${homeGoals}-${awayGoals}`;
- }
- 
- /**
-  * Generate match-specific analysis text
-  */
- function generateAnalysis(
-   homeTeam: string,
-   awayTeam: string,
-   prediction: string,
-   homeFormScore: number,
-   awayFormScore: number,
-   homeQuality: number,
-   awayQuality: number,
-   confidence: number
- ): string {
-   const formDiff = homeFormScore - awayFormScore;
-   const qualityDiff = homeQuality - awayQuality;
-   
-   let analysis = "";
-   
-   if (prediction === "1") {
-     if (formDiff > 20) {
-       analysis = `${homeTeam} enters in strong recent form, winning consistently while ${awayTeam} has struggled. `;
-     } else if (qualityDiff > 15) {
-       analysis = `${homeTeam} has the overall quality advantage with better season stats. `;
-     } else {
-       analysis = `${homeTeam} holds a slight edge with home advantage and marginally better form. `;
-     }
-   } else if (prediction === "2") {
-     if (formDiff < -20) {
-       analysis = `${awayTeam} arrives in excellent form, looking confident despite playing away. ${homeTeam} has been inconsistent recently. `;
-     } else if (qualityDiff < -15) {
-       analysis = `${awayTeam} is the stronger side overall this season and should overcome the home factor. `;
-     } else {
-       analysis = `${awayTeam} has shown better quality and form, making them slight favorites despite playing away. `;
-     }
-   } else {
-     if (Math.abs(formDiff) < 10 && Math.abs(qualityDiff) < 10) {
-       analysis = `Evenly matched contest with both teams showing similar form and quality. `;
-     } else {
-       analysis = `Balanced matchup where neither side has a clear advantage. Both teams capable of scoring. `;
-     }
-   }
-   
-   // Add confidence context
-   if (confidence >= 70) {
-     analysis += "Strong statistical indicators support this outcome.";
-   } else if (confidence >= 60) {
-     analysis += "Moderate certainty based on available data.";
-   } else {
-     analysis += "Competitive fixture with inherent uncertainty.";
-   }
-   
-   return analysis;
- }
- 
+  /**
+   * Calculate form score (0-100) from last 3 matches using points + goal diff.
+   * - Win=3, Draw=1, Loss=0 (max 9)
+   * - Goal impact is a small stabilizer
+   */
+  function calculateFormScore(form: FormMatch[]): number {
+    if (form.length === 0) return 50;
+
+    const matches = form.slice(0, 3);
+    let points = 0;
+    let gf = 0;
+    let ga = 0;
+
+    for (const m of matches) {
+      if (m.result === "W") points += 3;
+      else if (m.result === "D") points += 1;
+      gf += m.goalsFor;
+      ga += m.goalsAgainst;
+    }
+
+    const pointsScore = (points / 9) * 100; // 0..100
+    const goalDiff = gf - ga;
+    const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 8));
+
+    return Math.round(pointsScore * 0.75 + gdScore * 0.25);
+  }
+
+  /**
+   * Average goals (scored/conceded) from last 3 matches.
+   */
+  function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: number } {
+    if (form.length === 0) return { scored: 1.0, conceded: 1.0 };
+
+    const matches = form.slice(0, 3);
+    let scored = 0;
+    let conceded = 0;
+
+    for (const match of matches) {
+      scored += match.goalsFor;
+      conceded += match.goalsAgainst;
+    }
+
+    return {
+      scored: scored / matches.length,
+      conceded: conceded / matches.length,
+    };
+  }
+
+  /**
+   * Calculate team quality score (0-100) from season stats.
+   */
+  function calculateQualityScore(stats: TeamStats | null): number {
+    if (!stats || stats.played === 0) return 50;
+
+    const winRate = stats.wins / stats.played;
+    const goalDiffPerGame = (stats.goalsFor - stats.goalsAgainst) / stats.played;
+
+    const winScore = winRate * 100;
+    const gdScore = Math.max(0, Math.min(100, 50 + goalDiffPerGame * 12));
+
+    return Math.round(winScore * 0.65 + gdScore * 0.35);
+  }
+
+  /**
+   * Calculate H2H score from perspective of team A vs team B (0-100, 50 neutral)
+   */
+  function calculateH2HScore(h2h: H2HMatch[], teamAId: number, teamBId: number): number {
+    if (h2h.length === 0) return 50;
+
+    const matches = h2h.slice(0, 3);
+    let points = 0;
+
+    for (const match of matches) {
+      const isTeamAHome = match.homeTeamId === teamAId;
+      const teamAGoals = isTeamAHome ? match.homeGoals : match.awayGoals;
+      const teamBGoals = isTeamAHome ? match.awayGoals : match.homeGoals;
+
+      if (teamAGoals > teamBGoals) points += 3;
+      else if (teamAGoals === teamBGoals) points += 1;
+    }
+
+    return Math.round((points / 9) * 100);
+  }
+
+  function clamp(n: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function sigmoid(x: number) {
+    return 1 / (1 + Math.exp(-x));
+  }
+
+  /**
+   * Main prediction calculation using required weights:
+   * Form 40%, Quality 25%, Squad 15%, Home 10% max, H2H 10%.
+   *
+   * Constraints:
+   * - Home advantage is minor (never dominant)
+   * - Probabilities always sum to 100
+   * - Confidence capped at 78% (no 90%+)
+   */
+  function calculatePrediction(
+    homeForm: FormMatch[],
+    awayForm: FormMatch[],
+    homeStats: TeamStats | null,
+    awayStats: TeamStats | null,
+    h2h: H2HMatch[],
+    homeTeamId: number,
+    awayTeamId: number,
+    homeTeamName: string,
+    awayTeamName: string
+  ): PredictionResult {
+    // === FORM (40%) ===
+    const homeFormScore = calculateFormScore(homeForm);
+    const awayFormScore = calculateFormScore(awayForm);
+
+    // === QUALITY (25%) ===
+    const homeQualityScore = calculateQualityScore(homeStats);
+    const awayQualityScore = calculateQualityScore(awayStats);
+
+    // === SQUAD / AVAILABILITY (15%) ===
+    // Conservative proxy from last-3 attacking output + defensive stability.
+    const homeGoalRate = calculateGoalRate(homeForm);
+    const awayGoalRate = calculateGoalRate(awayForm);
+
+    const homeSquadScore = clamp(
+      50 + (homeGoalRate.scored - homeGoalRate.conceded) * 18,
+      0,
+      100
+    );
+    const awaySquadScore = clamp(
+      50 + (awayGoalRate.scored - awayGoalRate.conceded) * 18,
+      0,
+      100
+    );
+
+    // === HOME ADVANTAGE (10% MAX, MINOR) ===
+    const homeAdvantageScore = 52;
+    const awayAdvantageScore = 48;
+
+    // === H2H (10%, secondary) ===
+    const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
+    const awayH2HScore = 100 - homeH2HScore;
+
+    const homeTotal =
+      homeFormScore * WEIGHT_FORM +
+      homeQualityScore * WEIGHT_QUALITY +
+      homeSquadScore * WEIGHT_SQUAD +
+      homeAdvantageScore * WEIGHT_HOME +
+      homeH2HScore * WEIGHT_H2H;
+
+    const awayTotal =
+      awayFormScore * WEIGHT_FORM +
+      awayQualityScore * WEIGHT_QUALITY +
+      awaySquadScore * WEIGHT_SQUAD +
+      awayAdvantageScore * WEIGHT_HOME +
+      awayH2HScore * WEIGHT_H2H;
+
+    // === PROBABILITIES ===
+    const diff = homeTotal - awayTotal;
+    const diffAbs = Math.abs(diff);
+
+    // 0..1 where 0=balanced, 1=clear favorite
+    const strength = clamp(diffAbs / 18, 0, 1);
+
+    // Draw 30% when balanced, down to ~16% when strong favorite
+    let draw = 30 - strength * 14;
+
+    // Home share of non-draw outcomes
+    const homeShare = sigmoid(diff / 7);
+
+    let homeWin = (100 - draw) * homeShare;
+    let awayWin = 100 - draw - homeWin;
+
+    // Normalize + round into realistic ranges
+    homeWin = Math.round(clamp(homeWin, 10, 75));
+    draw = Math.round(clamp(draw, 15, 30));
+    awayWin = 100 - homeWin - draw;
+
+    // Rebalance if rounding pushed bounds
+    if (awayWin < 10) {
+      const delta = 10 - awayWin;
+      awayWin = 10;
+      const takeDraw = Math.min(delta, Math.max(0, draw - 15));
+      draw -= takeDraw;
+      homeWin = 100 - draw - awayWin;
+    }
+    if (homeWin < 10) {
+      const delta = 10 - homeWin;
+      homeWin = 10;
+      const takeDraw = Math.min(delta, Math.max(0, draw - 15));
+      draw -= takeDraw;
+      awayWin = 100 - draw - homeWin;
+    }
+
+    // === OUTCOME ===
+    let prediction: string;
+    if (homeWin > awayWin && homeWin > draw) prediction = "1";
+    else if (awayWin > homeWin && awayWin > draw) prediction = "2";
+    else prediction = "X";
+
+    // === SCORE ===
+    const predictedScore = predictScoreV2({
+      homeGoalRate,
+      awayGoalRate,
+      homeWin,
+      awayWin,
+      draw,
+      prediction,
+    });
+
+    // === CONFIDENCE (50..78) ===
+    const maxProb = Math.max(homeWin, awayWin, draw);
+    let confidence: number;
+
+    if (maxProb < 40) confidence = 60;
+    else if (maxProb < 50) confidence = 62;
+    else if (maxProb < 60) confidence = 60 + (maxProb - 50) * 0.8; // 60..68
+    else confidence = 70 + (maxProb - 60) * 0.4; // 70..76
+
+    confidence = Math.round(clamp(confidence, 50, 78));
+
+    // Weak signal -> cap at 65
+    if (!homeStats && !awayStats) {
+      confidence = Math.min(confidence, 65);
+    }
+
+    // === RISK ===
+    let riskLevel: "low" | "medium" | "high";
+    if (confidence >= 72 && maxProb >= 60) riskLevel = "low";
+    else if (confidence >= 62) riskLevel = "medium";
+    else riskLevel = "high";
+
+    const analysis = generateAnalysisV2({
+      homeTeamName,
+      awayTeamName,
+      prediction,
+      homeWin,
+      draw,
+      awayWin,
+      homeFormScore,
+      awayFormScore,
+      homeQualityScore,
+      awayQualityScore,
+    });
+
+    return {
+      prediction,
+      predicted_score: predictedScore,
+      confidence,
+      home_win: homeWin,
+      draw,
+      away_win: awayWin,
+      risk_level: riskLevel,
+      analysis,
+    };
+  }
+
+  function predictScoreV2(params: {
+    homeGoalRate: { scored: number; conceded: number };
+    awayGoalRate: { scored: number; conceded: number };
+    homeWin: number;
+    awayWin: number;
+    draw: number;
+    prediction: string;
+  }): string {
+    const { homeGoalRate, awayGoalRate, homeWin, awayWin, prediction } = params;
+
+    let homeXg = (homeGoalRate.scored + awayGoalRate.conceded) / 2;
+    let awayXg = (awayGoalRate.scored + homeGoalRate.conceded) / 2;
+
+    const strongHomeFav = prediction === "1" && homeWin >= 65;
+    const strongAwayFav = prediction === "2" && awayWin >= 65;
+    const balanced = prediction === "X";
+
+    if (strongHomeFav) {
+      homeXg += 0.6;
+      awayXg -= 0.2;
+    } else if (strongAwayFav) {
+      awayXg += 0.6;
+      homeXg -= 0.2;
+    } else if (balanced) {
+      const avg = (homeXg + awayXg) / 2;
+      homeXg = avg;
+      awayXg = avg;
+    }
+
+    homeXg = clamp(homeXg, 0, 3.2);
+    awayXg = clamp(awayXg, 0, 3.2);
+
+    let homeGoals = Math.round(homeXg);
+    let awayGoals = Math.round(awayXg);
+
+    if (prediction === "1" && homeGoals <= awayGoals) homeGoals = awayGoals + 1;
+    if (prediction === "2" && awayGoals <= homeGoals) awayGoals = homeGoals + 1;
+
+    if (prediction === "X") {
+      const g = Math.round((homeGoals + awayGoals) / 2);
+      homeGoals = g;
+      awayGoals = g;
+      if (g === 0 && (homeGoalRate.scored >= 1 || awayGoalRate.scored >= 1)) {
+        homeGoals = 1;
+        awayGoals = 1;
+      }
+    }
+
+    homeGoals = clamp(homeGoals, 0, 4);
+    awayGoals = clamp(awayGoals, 0, 4);
+
+    return `${homeGoals}-${awayGoals}`;
+  }
+
+  function generateAnalysisV2(params: {
+    homeTeamName: string;
+    awayTeamName: string;
+    prediction: string;
+    homeWin: number;
+    draw: number;
+    awayWin: number;
+    homeFormScore: number;
+    awayFormScore: number;
+    homeQualityScore: number;
+    awayQualityScore: number;
+  }): string {
+    const {
+      homeTeamName,
+      awayTeamName,
+      prediction,
+      homeWin,
+      draw,
+      awayWin,
+      homeFormScore,
+      awayFormScore,
+      homeQualityScore,
+      awayQualityScore,
+    } = params;
+
+    const formDiff = homeFormScore - awayFormScore;
+    const qualityDiff = homeQualityScore - awayQualityScore;
+
+    if (prediction === "1") {
+      return `${homeTeamName} looks the more reliable side here, with an edge in recent form/overall quality. Home advantage is a minor factor, but the numbers still favor ${homeTeamName} (${homeWin}% vs ${awayWin}%).`;
+    }
+
+    if (prediction === "2") {
+      return `${awayTeamName} enters with stronger recent indicators and can be the favorite even away from home. The model leans toward ${awayTeamName} (${awayWin}% vs ${homeWin}%) with a controlled draw probability (${draw}%).`;
+    }
+
+    const why = Math.abs(formDiff) < 10 && Math.abs(qualityDiff) < 10
+      ? `both teams show similar form and quality`
+      : `neither side has a clear enough advantage`;
+
+    return `This matchup looks balanced: ${why}. The draw is a realistic outcome (${draw}%) with split win probabilities (${homeWin}% / ${awayWin}%).`;
+  }
+
  /**
   * Assign tiers to all predictions based on confidence:
   * - FREE: confidence < 65%
