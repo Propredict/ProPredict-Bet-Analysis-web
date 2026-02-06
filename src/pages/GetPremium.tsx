@@ -345,7 +345,11 @@ export default function GetPremium() {
 
     const handleMessage = (event: MessageEvent) => {
       const { type } = event.data || {};
-      if (type === "REVENUECAT_PURCHASE_SUCCESS" || type === "REVENUECAT_ENTITLEMENTS_UPDATE") {
+      if (
+        type === "PURCHASE_SUCCESS" ||
+        type === "REVENUECAT_PURCHASE_SUCCESS" ||
+        type === "REVENUECAT_ENTITLEMENTS_UPDATE"
+      ) {
         toast.success("Subscription activated successfully!");
         refetchPlan();
         setTimeout(() => navigate(-1), 500);
@@ -367,7 +371,13 @@ export default function GetPremium() {
     // Android: HARD BLOCK - Check window.Android directly for native bridge
     // This ensures we catch the bridge even if platform detection has issues
     if (window.Android) {
-      // Direct JS bridge calls - NO Stripe, NO redirects
+      // Preferred: unified purchasePlan(planId) method
+      if (typeof window.Android.purchasePlan === "function") {
+        window.Android.purchasePlan(planId);
+        return;
+      }
+
+      // Fallback: legacy per-plan bridge methods
       if (planId === "basic") {
         if (typeof window.Android.getPro === "function") {
           window.Android.getPro();
