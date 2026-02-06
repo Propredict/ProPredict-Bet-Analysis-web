@@ -1,59 +1,44 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserPlan, type ContentTier, type ContentType, type UnlockMethod } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { setPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 
 interface UseUnlockHandlerOptions {
   onUpgradeBasic?: () => void;
   onUpgradePremium?: () => void;
 }
 
-interface PendingUnlock {
-  contentType: ContentType;
-  contentId: string;
-}
-
 export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   const navigate = useNavigate();
-  const { getUnlockMethod, unlockContent } = useUserPlan();
+  const { getUnlockMethod } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
-  const pendingUnlockRef = useRef<PendingUnlock | null>(null);
 
-  // Listen for Android WebView messages (AD_UNLOCK_SUCCESS / AD_UNLOCK_CANCELLED)
+  // Listen for AD_UNLOCK_CANCELLED to clear local loading state.
+  // The actual unlock (AD_UNLOCK_SUCCESS) is handled globally in UserPlanProvider.
   useEffect(() => {
     if (!isAndroidApp) return;
 
-    const handleMessage = async (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent) => {
       const { type } = event.data || {};
 
-      if (type === "AD_UNLOCK_SUCCESS" && pendingUnlockRef.current) {
-        const { contentType, contentId } = pendingUnlockRef.current;
-        const success = await unlockContent(contentType, contentId);
-
-        if (success) {
-          toast.success(
-            contentType === "tip" 
-              ? "Thanks for watching! Tip unlocked." 
-              : "Thanks for watching! Ticket unlocked."
-          );
-        }
-        
-        pendingUnlockRef.current = null;
+      if (type === "AD_UNLOCK_SUCCESS") {
+        // Global handler in UserPlanProvider does the actual unlock.
+        // We just clear the local loading state here.
         setUnlockingId(null);
       }
 
       if (type === "AD_UNLOCK_CANCELLED") {
-        // Restore locked state silently - no error toast
-        pendingUnlockRef.current = null;
+        clearPendingAdUnlock();
         setUnlockingId(null);
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isAndroidApp, unlockContent]);
+  }, [isAndroidApp]);
 
   /**
    * Main unlock handler - call this when user clicks the primary unlock button
@@ -81,7 +66,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         if (unlockingId === contentId) return false;
 
         setUnlockingId(contentId);
-        pendingUnlockRef.current = { contentType, contentId };
+        setPendingAdUnlock({ contentType, contentId });
 
         // Direct JS bridge call - window.Android.watchRewardedAd()
         if (window.Android && typeof window.Android.watchRewardedAd === "function") {

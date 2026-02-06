@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
+import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
+import { toast } from "sonner";
 
 /* =====================
    Types
@@ -200,6 +202,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // NOTE: Global AD_UNLOCK_SUCCESS listener is defined below unlockContent.
+
   /* =====================
      Helpers
   ===================== */
@@ -387,6 +391,42 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     },
     [user],
   );
+
+  /* =====================
+     GLOBAL AD_UNLOCK_SUCCESS Listener
+     Android posts { type: "AD_UNLOCK_SUCCESS" } via window.postMessage.
+     This handler runs at the provider level (always mounted) so it
+     never misses the event regardless of which page is active.
+  ===================== */
+  useEffect(() => {
+    if (!isMobileApp) return;
+
+    const handleMessage = async (event: MessageEvent) => {
+      const { type } = event.data || {};
+
+      if (type === "AD_UNLOCK_SUCCESS") {
+        const pending = getPendingAdUnlock();
+        if (!pending) return;
+
+        const { contentType, contentId } = pending;
+        clearPendingAdUnlock();
+
+        // Persist unlock to Supabase + update local state
+        const success = await unlockContent(contentType, contentId);
+
+        if (success) {
+          toast.success(
+            contentType === "tip"
+              ? "Thanks for watching! Tip unlocked."
+              : "Thanks for watching! Ticket unlocked."
+          );
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isMobileApp, unlockContent]);
 
   /* =====================
      Provider
