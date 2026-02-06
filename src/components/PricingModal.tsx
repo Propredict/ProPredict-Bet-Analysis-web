@@ -11,7 +11,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type UserPlan } from "@/hooks/useUserPlan";
-import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -77,15 +76,14 @@ const plans = [
 ];
 
 export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
-  const { plan: currentPlan } = useUserPlan();
-  const { user } = useAuth();
+  const { plan: currentPlan, isAuthenticated } = useUserPlan();
   const navigate = useNavigate();
 
   const handleSelectPlan = (planId: UserPlan) => {
     onOpenChange(false);
 
     // Auth guard: block purchases for non-authenticated users
-    if (!user) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to subscribe.");
       navigate("/login");
       return;
