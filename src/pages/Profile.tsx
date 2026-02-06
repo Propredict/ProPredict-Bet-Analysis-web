@@ -181,9 +181,14 @@ const Profile = () => {
   };
 
   const handleManageSubscription = async () => {
-    // Android: open Google Play subscriptions page directly
+    // Android: use native bridge for subscription management
     if (isAndroidApp) {
-      window.open("https://play.google.com/store/account/subscriptions", "_blank");
+      if ((window as any).Android?.manageSubscription) {
+        (window as any).Android.manageSubscription();
+      } else {
+        // Fallback if bridge method not available yet
+        window.open("https://play.google.com/store/account/subscriptions", "_blank");
+      }
       return;
     }
 
@@ -353,7 +358,8 @@ const Profile = () => {
                 )}
               </Button>
 
-              {plan !== "free" && (
+              {/* Show plan section: Android always, Web only for paid plans */}
+              {(isAndroidApp || plan !== "free") && (
                 <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-muted-foreground">Current Plan</span>
@@ -374,24 +380,27 @@ const Profile = () => {
                       <span className="text-xs">{formatExpiryDate(expiresAt)}</span>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={handleManageSubscription}
-                    disabled={openingPortal}
-                    className="w-full h-8 text-xs mt-2"
-                  >
-                    {openingPortal ? (
-                      <>
-                        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                        Opening...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-1.5 h-3 w-3" />
-                        {isAndroidApp ? "Manage in Google Play" : "Manage Subscription"}
-                      </>
-                    )}
-                  </Button>
+                  {/* Show manage button: Android always (native bridge), Web only for paid */}
+                  {(isAndroidApp || plan !== "free") && (
+                    <Button
+                      variant="outline"
+                      onClick={handleManageSubscription}
+                      disabled={openingPortal}
+                      className="w-full h-8 text-xs mt-2"
+                    >
+                      {openingPortal ? (
+                        <>
+                          <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                          Opening...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="mr-1.5 h-3 w-3" />
+                          {isAndroidApp ? "Manage Subscription" : "Manage Subscription"}
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               )}
 
