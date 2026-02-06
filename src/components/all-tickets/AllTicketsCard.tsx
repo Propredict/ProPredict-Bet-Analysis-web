@@ -106,10 +106,10 @@ export function AllTicketsCard({
   const handleSecondaryClick = () => {
     // Android: HARD BLOCK - NO Stripe, NO redirects
     if (isAndroid) {
-      if (window.Android?.getPro) {
-        window.Android.getPro();
-      } else if (window.Android?.buyPro) {
-        window.Android.buyPro();
+      if ((window as any).Android?.getPro) {
+        (window as any).Android.getPro();
+      } else if ((window as any).Android?.buyPro) {
+        (window as any).Android.buyPro();
       }
       // Always return on Android - never fall through to web
       return;

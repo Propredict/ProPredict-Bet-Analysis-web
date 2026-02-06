@@ -354,6 +354,14 @@ export default function GetPremium() {
         refetchPlan();
         setTimeout(() => navigate(-1), 500);
       }
+      // Handle RESTORE_SUCCESS — re-fetch plan from Supabase after webhook syncs
+      if (type === "RESTORE_SUCCESS") {
+        toast.success("Purchases restored! Updating your plan…");
+        // Give RevenueCat webhook time to write to Supabase
+        setTimeout(() => {
+          refetchPlan();
+        }, 2000);
+      }
     };
 
     window.addEventListener("revenuecat-purchase-success", handlePurchaseSuccess as EventListener);

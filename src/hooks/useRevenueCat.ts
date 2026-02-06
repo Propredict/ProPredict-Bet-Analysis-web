@@ -30,15 +30,8 @@ interface UseRevenueCatResult {
   refetch: () => void;
 }
 
-// Extend Window interface for RevenueCat integration
-declare global {
-  interface Window {
-    __REVENUECAT_ENTITLEMENTS__?: RevenueCatEntitlements;
-  }
-}
-
-// Android interface type (extends the one in useUnlockHandler.ts)
-interface AndroidBridge {
+// Android bridge type for RevenueCat calls
+interface AndroidBridgeRC {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
   purchasePackage?: (packageId: string) => void;
@@ -63,7 +56,7 @@ function getPlanFromEntitlements(entitlements: RevenueCatEntitlements | undefine
  */
 function readEntitlements(): RevenueCatEntitlements | undefined {
   if (typeof window === "undefined") return undefined;
-  return window.__REVENUECAT_ENTITLEMENTS__;
+  return (window as any).__REVENUECAT_ENTITLEMENTS__;
 }
 
 export function useRevenueCat(): UseRevenueCatResult {
@@ -88,7 +81,7 @@ export function useRevenueCat(): UseRevenueCatResult {
       setIsLoading(false);
     } else {
       // Request entitlements from Android if not already set
-      const android = window.Android as AndroidBridge | undefined;
+      const android = (window as any).Android as AndroidBridgeRC | undefined;
       if (android?.requestEntitlements) {
         android.requestEntitlements();
       }
@@ -137,7 +130,7 @@ export function useRevenueCat(): UseRevenueCatResult {
   }, [isAndroidApp]);
 
   const refetch = useCallback(() => {
-    const android = window.Android as AndroidBridge | undefined;
+    const android = (window as any).Android as AndroidBridgeRC | undefined;
     if (isAndroidApp && android?.requestEntitlements) {
       setIsLoading(true);
       android.requestEntitlements();
@@ -165,7 +158,7 @@ export function useRevenueCat(): UseRevenueCatResult {
  * Note: purchasePackage(activity, pkg) was used in 6.x but removed in 7.x
  */
 export function purchasePackage(packageId: string): void {
-  const android = window.Android as AndroidBridge | undefined;
+  const android = (window as any).Android as AndroidBridgeRC | undefined;
   if (getIsAndroidApp() && android?.purchasePackage) {
     console.log("[RevenueCat] Requesting purchase for package:", packageId);
     android.purchasePackage(packageId);
@@ -181,7 +174,7 @@ export function purchasePackage(packageId: string): void {
  * will upsert the subscription into user_subscriptions.
  */
 export function restorePurchases(): void {
-  const android = window.Android as AndroidBridge | undefined;
+  const android = (window as any).Android as AndroidBridgeRC | undefined;
   if (getIsAndroidApp() && android?.restorePurchases) {
     console.log("[RevenueCat] Requesting restore purchases");
     android.restorePurchases();
