@@ -389,9 +389,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      // Add to local state immediately
+      // Add to local state (deduplicated)
       const endOfDay = new Date(today + "T23:59:59Z");
-      setUnlockedContent((prev) => [...prev, { contentType, contentId, expiresAt: endOfDay }]);
+      setUnlockedContent((prev) => {
+        const exists = prev.some(
+          (u) => u.contentType === contentType && u.contentId === contentId
+        );
+        if (exists) return prev;
+        return [...prev, { contentType, contentId, expiresAt: endOfDay }];
+      });
 
       return true;
     },
@@ -407,7 +413,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isMobileApp) return;
 
-    const handleMessage = async (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent) => {
       const { type } = event.data || {};
 
       if (type === "AD_UNLOCK_SUCCESS") {
@@ -417,16 +423,27 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         const { contentType, contentId } = pending;
         clearPendingAdUnlock();
 
-        // Persist unlock to Supabase + update local state
-        const success = await unlockContent(contentType, contentId);
-
-        if (success) {
-          toast.success(
-            contentType === "tip"
-              ? "Thanks for watching! Tip unlocked."
-              : "Thanks for watching! Ticket unlocked."
+        // IMMEDIATELY update local state for instant card re-render
+        const today = new Date().toISOString().split("T")[0];
+        const endOfDay = new Date(today + "T23:59:59Z");
+        setUnlockedContent((prev) => {
+          const exists = prev.some(
+            (u) => u.contentType === contentType && u.contentId === contentId
           );
-        }
+          if (exists) return prev;
+          return [...prev, { contentType, contentId, expiresAt: endOfDay }];
+        });
+
+        toast.success(
+          contentType === "tip"
+            ? "Thanks for watching! Tip unlocked."
+            : "Thanks for watching! Ticket unlocked."
+        );
+
+        // Persist to Supabase in the background (fire-and-forget)
+        unlockContent(contentType, contentId).catch((err) =>
+          console.error("[UserPlan] Failed to persist ad-unlock to DB:", err)
+        );
       }
     };
 
