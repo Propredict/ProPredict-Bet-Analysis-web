@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2, LogIn } from "lucide-react";
+import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,7 +48,10 @@ export default function DailyTickets() {
   // Render tickets without ads
   const renderTickets = () => {
     return dailyTickets.map((ticket) => {
-      const unlockMethod = getUnlockMethod("daily", "ticket", ticket.id);
+      // If not logged in, force login_required lock on every card
+      const unlockMethod = !user 
+        ? { type: "login_required" as const, message: "Sign in to Unlock" }
+        : getUnlockMethod("daily", "ticket", ticket.id);
       const isLocked = unlockMethod?.type !== "unlocked";
       const isUnlocking = unlockingId === ticket.id;
       
@@ -71,7 +74,7 @@ export default function DailyTickets() {
           }} 
           isLocked={isLocked} 
           unlockMethod={unlockMethod} 
-          onUnlockClick={() => handleUnlock("ticket", ticket.id, "daily")} 
+          onUnlockClick={() => !user ? navigate("/login") : handleUnlock("ticket", ticket.id, "daily")} 
           onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
           isUnlocking={isUnlocking} 
         />
@@ -158,22 +161,7 @@ export default function DailyTickets() {
 
       {/* Tickets Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {!user ? (
-          <Card className="col-span-full p-8 bg-card border-border text-center">
-            <div className="flex flex-col items-center justify-center gap-3">
-              <div className="p-3 rounded-full bg-primary/10">
-                <LogIn className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">Sign In for FREE Access</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                Sign in to view daily tickets with multi-bet combinations and AI analysis.
-              </p>
-              <Button onClick={() => navigate("/login")} className="mt-2">
-                Sign In
-              </Button>
-            </div>
-          </Card>
-        ) : isLoading ? (
+        {isLoading ? (
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
