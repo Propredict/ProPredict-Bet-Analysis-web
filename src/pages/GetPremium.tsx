@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -325,9 +324,8 @@ const faqs = [
 export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [isLoading, setIsLoading] = useState(false);
-  const { plan: currentPlan, refetch: refetchPlan } = useUserPlan();
+  const { plan: currentPlan, isAuthenticated, refetch: refetchPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Both Android and Web now support monthly/annual toggle
@@ -371,7 +369,7 @@ export default function GetPremium() {
     if (planId === "free" || currentPlan === planId) return;
 
     // Auth guard: block purchases for non-authenticated users
-    if (!user) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to subscribe.");
       navigate("/login");
       return;
