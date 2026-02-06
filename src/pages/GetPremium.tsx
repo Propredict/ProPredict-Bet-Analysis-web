@@ -376,12 +376,20 @@ export default function GetPremium() {
     }
 
     // Android: HARD BLOCK - call native bridge, never Stripe
-    if (window.Android) {
-      if (planId === "basic" && typeof window.Android.getPro === "function") {
-        window.Android.getPro();
-      }
-      if (planId === "premium" && typeof window.Android.getPremium === "function") {
-        window.Android.getPremium();
+    const android = (window as any).Android;
+    if (android) {
+      const pkgMap: Record<string, Record<string, string>> = REVENUECAT_PACKAGES as any;
+      const packageId = pkgMap[planId]?.[billingPeriod];
+
+      if (packageId && typeof android.purchasePackage === "function") {
+        console.log("[Android] purchasePackage:", packageId);
+        android.purchasePackage(packageId);
+      } else if (planId === "basic" && typeof android.getPro === "function") {
+        // Legacy fallback
+        android.getPro();
+      } else if (planId === "premium" && typeof android.getPremium === "function") {
+        // Legacy fallback
+        android.getPremium();
       }
       return;
     }
@@ -614,6 +622,29 @@ export default function GetPremium() {
           ))}
         </Accordion>
       </div>
+
+      {/* Android: Restore Purchases */}
+      {isAndroidApp && (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground underline"
+            onClick={() => {
+              const android = (window as any).Android;
+              if (android?.restorePurchases) {
+                console.log("[Android] restorePurchases called");
+                android.restorePurchases();
+                toast.info("Restoring purchases…");
+              } else {
+                toast.error("Restore not available on this device.");
+              }
+            }}
+          >
+            Restore Purchases
+          </Button>
+        </div>
+      )}
 
       {/* Footer CTA */}
       <p className="text-center text-xs text-muted-foreground">

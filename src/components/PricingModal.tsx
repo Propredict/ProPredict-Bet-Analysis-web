@@ -90,12 +90,16 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
     }
 
     // Android: HARD BLOCK - never navigate to Stripe flows
-    if (window.Android) {
-      if (planId === "basic" && typeof window.Android.getPro === "function") {
-        window.Android.getPro();
-      }
-      if (planId === "premium" && typeof window.Android.getPremium === "function") {
-        window.Android.getPremium();
+    const android = (window as any).Android;
+    if (android) {
+      if (planId === "basic" && typeof android.purchasePackage === "function") {
+        android.purchasePackage("propredict_pro_monthly");
+      } else if (planId === "premium" && typeof android.purchasePackage === "function") {
+        android.purchasePackage("propredict_premium_monthly");
+      } else if (planId === "basic" && typeof android.getPro === "function") {
+        android.getPro();
+      } else if (planId === "premium" && typeof android.getPremium === "function") {
+        android.getPremium();
       }
       return;
     }

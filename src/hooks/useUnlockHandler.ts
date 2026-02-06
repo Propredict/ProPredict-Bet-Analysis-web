@@ -69,8 +69,9 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         setPendingAdUnlock({ contentType, contentId });
 
         // Direct JS bridge call - window.Android.watchRewardedAd()
-        if (window.Android && typeof window.Android.watchRewardedAd === "function") {
-          window.Android.watchRewardedAd();
+        const android = (window as any).Android;
+        if (android && typeof android.watchRewardedAd === "function") {
+          android.watchRewardedAd();
         }
 
         return false; // Will be unlocked via AD_UNLOCK_SUCCESS message callback
@@ -128,20 +129,4 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     getUnlockMethod,
   };
 }
-
-// Type declaration for Android WebView interface
-declare global {
-  interface Window {
-    Android?: {
-      showInterstitial?: () => void;
-      watchRewardedAd?: () => void;
-      purchasePlan?: (planId: string) => void;
-      buyPro?: () => void;
-      buyPremium?: () => void;
-      getPro?: () => void;
-      getPremium?: () => void;
-      requestEntitlements?: () => void;
-      purchasePackage?: (packageId: string) => void;
-    };
-  }
-}
+// Android bridge types are declared centrally in src/vite-env.d.ts
