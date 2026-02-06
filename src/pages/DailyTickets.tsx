@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
+import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2, LogIn } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,11 +8,13 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     tickets,
     isLoading,
@@ -156,7 +158,22 @@ export default function DailyTickets() {
 
       {/* Tickets Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? (
+        {!user ? (
+          <Card className="col-span-full p-8 bg-card border-border text-center">
+            <div className="flex flex-col items-center justify-center gap-3">
+              <div className="p-3 rounded-full bg-primary/10">
+                <LogIn className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Sign In for FREE Access</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Sign in to view daily tickets with multi-bet combinations and AI analysis.
+              </p>
+              <Button onClick={() => navigate("/login")} className="mt-2">
+                Sign In
+              </Button>
+            </div>
+          </Card>
+        ) : isLoading ? (
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
