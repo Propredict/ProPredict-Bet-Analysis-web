@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,9 +13,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
+import { AndroidNativeAdSlot } from "@/components/live-scores/AndroidNativeAdSlot";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -28,6 +30,14 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 
 export default function LiveScores() {
   console.log("🔥 LiveScores mounted");
+
+  // Android only: notify native layer that Live Scores is visible
+  // so it can prepare inline native ads between match rows
+  useEffect(() => {
+    if (getIsAndroidApp() && (window as any).Android?.onLiveScoresView) {
+      (window as any).Android.onLiveScoresView();
+    }
+  }, []);
   
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
@@ -318,17 +328,22 @@ export default function LiveScores() {
                   </Badge>
                 </div>
                 <div className="divide-y divide-border">
-                  {games.map(m => (
-                    <MatchRow 
-                      key={m.id} 
-                      match={m} 
-                      onSelect={setSelectedMatch}
-                      isFavorite={isFavorite(m.id)}
-                      toggleFavorite={() => toggleFavorite(m.id)}
-                      hasAlert={hasAlert(m.id)}
-                      toggleMatchAlert={() => toggleMatchAlert(m.id)}
-                      hasRecentGoal={hasRecentGoal(m.id)}
-                    />
+                  {games.map((m, idx) => (
+                    <Fragment key={m.id}>
+                      <MatchRow 
+                        match={m} 
+                        onSelect={setSelectedMatch}
+                        isFavorite={isFavorite(m.id)}
+                        toggleFavorite={() => toggleFavorite(m.id)}
+                        hasAlert={hasAlert(m.id)}
+                        toggleMatchAlert={() => toggleMatchAlert(m.id)}
+                        hasRecentGoal={hasRecentGoal(m.id)}
+                      />
+                      {/* Android only: native ad slot after every 4th match */}
+                      {(idx + 1) % 4 === 0 && idx < games.length - 1 && (
+                        <AndroidNativeAdSlot slotIndex={idx + 1} />
+                      )}
+                    </Fragment>
                   ))}
                 </div>
               </Card>
@@ -683,17 +698,22 @@ function LeagueSection({
 
       <CollapsibleContent>
         <div className="divide-y divide-border">
-          {matches.map(m => (
-            <MatchRow
-              key={m.id}
-              match={m}
-              onSelect={onSelectMatch}
-              isFavorite={isFavorite(m.id)}
-              toggleFavorite={() => toggleFavorite(m.id)}
-              hasAlert={hasAlert(m.id)}
-              toggleMatchAlert={() => toggleMatchAlert(m.id)}
-              hasRecentGoal={hasRecentGoal(m.id)}
-            />
+          {matches.map((m, idx) => (
+            <Fragment key={m.id}>
+              <MatchRow
+                match={m}
+                onSelect={onSelectMatch}
+                isFavorite={isFavorite(m.id)}
+                toggleFavorite={() => toggleFavorite(m.id)}
+                hasAlert={hasAlert(m.id)}
+                toggleMatchAlert={() => toggleMatchAlert(m.id)}
+                hasRecentGoal={hasRecentGoal(m.id)}
+              />
+              {/* Android only: native ad slot after every 4th match */}
+              {(idx + 1) % 4 === 0 && idx < matches.length - 1 && (
+                <AndroidNativeAdSlot slotIndex={idx + 1} />
+              )}
+            </Fragment>
           ))}
         </div>
       </CollapsibleContent>

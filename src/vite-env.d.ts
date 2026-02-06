@@ -9,6 +9,9 @@ interface AndroidBridge {
   // Interstitial Ads — context string tells native which placement triggered it
   showInterstitial?: (context: string) => void;
   
+  // Live Scores — notify native layer the page is visible so it can inject inline ads
+  onLiveScoresView?: () => void;
+  
   // RevenueCat Subscriptions (SDK 7.x)
   // Native flow: getOfferings() -> find package -> purchase(PurchaseParams.Builder(activity, pkg).build())
   purchasePackage?: (packageId: string) => void;
@@ -23,6 +26,9 @@ interface AndroidBridge {
   buyPro?: () => void;
   getPremium?: () => void;
   buyPremium?: () => void;
+  
+  // User sync — sends Supabase UUID to native for RevenueCat login
+  syncUser?: (userId: string) => void;
 }
 
 declare global {
