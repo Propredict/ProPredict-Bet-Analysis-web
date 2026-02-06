@@ -240,11 +240,11 @@ const Profile = () => {
       <div className="mx-auto max-w-lg">
         <Button
           variant="ghost"
-          onClick={() => navigate("/settings")}
+          onClick={() => navigate("/")}
           className="mb-3 h-7 text-xs gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to Settings
+          Back to Dashboard
         </Button>
 
         {showPaymentSuccess && (
