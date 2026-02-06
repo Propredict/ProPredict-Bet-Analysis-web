@@ -82,21 +82,12 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
     onOpenChange(false);
 
     // Android: HARD BLOCK - never navigate to Stripe flows
-    if (getIsAndroidApp()) {
-      if (!window.Android) return;
-      // Preferred: unified purchasePlan method
-      if (window.Android.purchasePlan) {
-        window.Android.purchasePlan(planId);
-        return;
+    if (window.Android) {
+      if (planId === "basic" && typeof window.Android.getPro === "function") {
+        window.Android.getPro();
       }
-      // Fallback: legacy per-plan bridge methods
-      if (planId === "basic") {
-        if (window.Android.getPro) window.Android.getPro();
-        else if (window.Android.buyPro) window.Android.buyPro();
-      }
-      if (planId === "premium") {
-        if (window.Android.getPremium) window.Android.getPremium();
-        else if (window.Android.buyPremium) window.Android.buyPremium();
+      if (planId === "premium" && typeof window.Android.getPremium === "function") {
+        window.Android.getPremium();
       }
       return;
     }

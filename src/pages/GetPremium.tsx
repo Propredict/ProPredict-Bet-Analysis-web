@@ -368,42 +368,14 @@ export default function GetPremium() {
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
 
-    // Android: HARD BLOCK - Check window.Android directly for native bridge
-    // This ensures we catch the bridge even if platform detection has issues
+    // Android: HARD BLOCK - call native bridge, never Stripe
     if (window.Android) {
-      // Preferred: unified purchasePlan(planId) method
-      if (typeof window.Android.purchasePlan === "function") {
-        window.Android.purchasePlan(planId);
-        return;
+      if (planId === "basic" && typeof window.Android.getPro === "function") {
+        window.Android.getPro();
       }
-
-      // Fallback: legacy per-plan bridge methods
-      if (planId === "basic") {
-        if (typeof window.Android.getPro === "function") {
-          window.Android.getPro();
-          return;
-        }
-        if (typeof window.Android.buyPro === "function") {
-          window.Android.buyPro();
-          return;
-        }
+      if (planId === "premium" && typeof window.Android.getPremium === "function") {
+        window.Android.getPremium();
       }
-      if (planId === "premium") {
-        if (typeof window.Android.getPremium === "function") {
-          window.Android.getPremium();
-          return;
-        }
-        if (typeof window.Android.buyPremium === "function") {
-          window.Android.buyPremium();
-          return;
-        }
-      }
-      return;
-    }
-
-    // Additional Android check via platform flag
-    if (isAndroidApp) {
-      toast.error("Native purchase bridge unavailable. Please restart the app.");
       return;
     }
 
