@@ -57,8 +57,9 @@ export function AIPredictionCard({
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
 
   // Use centralized access logic from useUserPlan
-  const hasAccess = canAccess(contentTier);
-  const unlockMethod = getUnlockMethod(contentTier);
+  // Pass contentType + contentId so Android ad-unlock state is checked
+  const hasAccess = canAccess(contentTier, "tip", prediction.match_id);
+  const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.match_id);
 
   // Generate dynamic AI analysis
   const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
