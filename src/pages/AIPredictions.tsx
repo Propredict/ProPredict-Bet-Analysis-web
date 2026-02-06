@@ -516,112 +516,109 @@ export default function AIPredictions() {
             </div>
           </Card>
 
-          {/* Guest Login Gate - require sign in to see predictions */}
-          {!user ? (
-            <Card className="p-6 md:p-10 text-center border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
-              <div className="max-w-sm mx-auto space-y-4">
-                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                  <Lock className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-base md:text-lg font-bold text-foreground mb-1">
-                    Sign In to View AI Predictions
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                    Create a free account or sign in to access AI-powered match predictions, statistics, and analysis.
+          {/* Featured (Pro/Premium) - always visible regardless of auth */}
+          {featuredPredictions.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
+                <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
+                <h2 className="text-xs md:text-sm font-semibold text-foreground">Featured</h2>
+                <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                {featuredPredictions.map((prediction) => {
+                  return (
+                    <AIPredictionCard
+                      key={prediction.id}
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Free Predictions Section - gated behind login for guests */}
+          <div>
+            <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
+              <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary" />
+              <h2 className="text-xs md:text-sm font-semibold text-foreground">
+                {day === "today" ? "Daily" : "Tomorrow"} ({regularPredictions.length})
+              </h2>
+            </div>
+
+            {!user ? (
+              /* Guest login gate - only for free predictions */
+              <Card className="p-6 md:p-10 text-center border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
+                <div className="max-w-sm mx-auto space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                    <Lock className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-base md:text-lg font-bold text-foreground mb-1">
+                      Sign In to View Free Predictions
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                      Create a free account or sign in to access {regularPredictions.length} free AI-powered match predictions.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => navigate("/login")}
+                    className="gap-2 px-6 h-10 text-sm font-semibold"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Sign In for FREE Access
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground/60">
+                    Free predictions available instantly after sign in
                   </p>
                 </div>
-                <Button
-                  onClick={() => navigate("/login")}
-                  className="gap-2 px-6 h-10 text-sm font-semibold"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Sign In for FREE Access
-                </Button>
-                <p className="text-[10px] text-muted-foreground/60">
-                  Free predictions available instantly after sign in
+              </Card>
+            ) : loading ? (
+              <div className="text-center py-4 md:py-6">
+                <div className="animate-spin w-5 md:w-6 h-5 md:h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2 md:mb-3" />
+                <p className="text-muted-foreground text-[10px] md:text-xs">Loading...</p>
+              </div>
+            ) : regularPredictions.length === 0 && featuredPredictions.length === 0 ? (
+              <div className="text-center py-4 md:py-6">
+                <Brain className="w-6 md:w-8 h-6 md:h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-[10px] md:text-xs">
+                  No predictions for {day === "today" ? "today" : "tomorrow"}
+                  {selectedLeague ? ` in ${selectedLeague}` : ""}
                 </p>
               </div>
-            </Card>
-          ) : (
-            <>
-              {featuredPredictions.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
-                    <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
-                    <h2 className="text-xs md:text-sm font-semibold text-foreground">Featured</h2>
-                    <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                    {featuredPredictions.map((prediction) => {
-                      return (
-                        <AIPredictionCard
-                          key={prediction.id}
-                          prediction={prediction}
-                          isAdmin={isAdmin}
-                          isPremiumUser={isPremiumUser}
-                          isProUser={isProUser}
-                          isFavorite={isFavorite(prediction.match_id)}
-                          isSavingFavorite={isSaving(prediction.match_id)}
-                          onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                          onGoPremium={() => navigate("/get-premium")}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* All Daily Predictions Section */}
-              <div>
-                <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
-                  <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary" />
-                  <h2 className="text-xs md:text-sm font-semibold text-foreground">
-                    {day === "today" ? "Daily" : "Tomorrow"} ({regularPredictions.length})
-                  </h2>
-                </div>
-
-                {loading ? (
-                  <div className="text-center py-4 md:py-6">
-                    <div className="animate-spin w-5 md:w-6 h-5 md:h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2 md:mb-3" />
-                    <p className="text-muted-foreground text-[10px] md:text-xs">Loading...</p>
-                  </div>
-                ) : regularPredictions.length === 0 && featuredPredictions.length === 0 ? (
-                  <div className="text-center py-4 md:py-6">
-                    <Brain className="w-6 md:w-8 h-6 md:h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground text-[10px] md:text-xs">
-                      No predictions for {day === "today" ? "today" : "tomorrow"}
-                      {selectedLeague ? ` in ${selectedLeague}` : ""}
-                    </p>
-                  </div>
-                ) : regularPredictions.length === 0 ? (
-                  <div className="text-center py-3 md:py-4">
-                    <p className="text-muted-foreground text-[10px] md:text-xs">
-                      All predictions are featured above
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-                    {regularPredictions.map((prediction) => {
-                      return (
-                        <AIPredictionCard
-                          key={prediction.id}
-                          prediction={prediction}
-                          isAdmin={isAdmin}
-                          isPremiumUser={isPremiumUser}
-                          isProUser={isProUser}
-                          isFavorite={isFavorite(prediction.match_id)}
-                          isSavingFavorite={isSaving(prediction.match_id)}
-                          onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                          onGoPremium={() => navigate("/get-premium")}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+            ) : regularPredictions.length === 0 ? (
+              <div className="text-center py-3 md:py-4">
+                <p className="text-muted-foreground text-[10px] md:text-xs">
+                  All predictions are featured above
+                </p>
               </div>
-            </>
-          )}
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
+                {regularPredictions.map((prediction) => {
+                  return (
+                    <AIPredictionCard
+                      key={prediction.id}
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
