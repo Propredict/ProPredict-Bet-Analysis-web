@@ -786,10 +786,7 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
         if (!fixture) {
           // Fixture not found in API - mark as locked (pending data)
           // Do NOT apply tier assignment or use old probabilities
-          await supabase
-            .from("ai_predictions")
-            .update({ is_locked: true, updated_at: new Date().toISOString() })
-            .eq("id", pred.id);
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Not found in API`);
           locked++;
           console.log(`Fixture ${fixtureId}: Not found in API - marked as locked (pending data)`);
           continue;
@@ -804,10 +801,7 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
         
         if (!homeTeamId || !awayTeamId) {
           // Invalid team data - mark as locked
-          await supabase
-            .from("ai_predictions")
-            .update({ is_locked: true, updated_at: new Date().toISOString() })
-            .eq("id", pred.id);
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Invalid team data`);
           locked++;
           errors.push(`Fixture ${fixtureId}: Invalid team data - marked as locked`);
           continue;
@@ -825,10 +819,7 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
         // Check if we have sufficient data to calculate prediction
         // If no form data available, mark as locked
         if (homeForm.length === 0 && awayForm.length === 0 && !homeStats && !awayStats) {
-          await supabase
-            .from("ai_predictions")
-            .update({ is_locked: true, updated_at: new Date().toISOString() })
-            .eq("id", pred.id);
+          await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureId}: Insufficient data`);
           locked++;
           console.log(`Fixture ${fixtureId}: Insufficient data - marked as locked`);
           continue;
@@ -877,10 +868,11 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
         
       } catch (e) {
         // On error, mark as locked
-        await supabase
-          .from("ai_predictions")
-          .update({ is_locked: true, updated_at: new Date().toISOString() })
-          .eq("id", pred.id);
+        await markPredictionLocked(
+          supabase,
+          pred.id,
+          `Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`
+        );
         locked++;
         errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
       }
