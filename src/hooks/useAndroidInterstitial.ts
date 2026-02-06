@@ -3,8 +3,8 @@
  *
  * Rules:
  * - Only fires when running inside the Android WebView wrapper
- * - Only fires for FREE users (Pro & Premium see zero ads)
- * - At most ONE interstitial per app session (tracked via sessionStorage)
+ * - ALL Android users see interstitials (FREE, PRO, PREMIUM)
+ * - Max 1 interstitial per 5-minute cooldown window
  *
  * Usage:
  *   const { maybeShowInterstitial } = useAndroidInterstitial();
@@ -13,13 +13,15 @@
 
 import { useCallback } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { useUserPlan } from "@/hooks/useUserPlan";
 
-const SESSION_KEY = "propredict:interstitial_shown";
+const COOLDOWN_KEY = "propredict:interstitial_ts";
+const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
-function hasShownThisSession(): boolean {
+function isInCooldown(): boolean {
   try {
-    return window.sessionStorage?.getItem(SESSION_KEY) === "1";
+    const ts = window.sessionStorage?.getItem(COOLDOWN_KEY);
+    if (!ts) return false;
+    return Date.now() - Number(ts) < COOLDOWN_MS;
   } catch {
     return false;
   }
@@ -27,36 +29,28 @@ function hasShownThisSession(): boolean {
 
 function markShown(): void {
   try {
-    window.sessionStorage?.setItem(SESSION_KEY, "1");
+    window.sessionStorage?.setItem(COOLDOWN_KEY, String(Date.now()));
   } catch {
     // ignore
   }
 }
 
 export function useAndroidInterstitial() {
-  const { plan } = useUserPlan();
+  const maybeShowInterstitial = useCallback((context: string) => {
+    // Gate 1: Android only
+    if (!getIsAndroidApp()) return;
 
-  const maybeShowInterstitial = useCallback(
-    (context: string) => {
-      // Gate 1: Android only
-      if (!getIsAndroidApp()) return;
+    // Gate 2: 5-minute cooldown between interstitials
+    if (isInCooldown()) return;
 
-      // Gate 2: Free users only — Pro & Premium see zero ads
-      if (plan !== "free") return;
+    // Gate 3: Bridge must exist
+    if (!window.Android?.showInterstitial) return;
 
-      // Gate 3: Max 1 per session
-      if (hasShownThisSession()) return;
-
-      // Gate 4: Bridge must exist
-      if (!window.Android?.showInterstitial) return;
-
-      // Fire the signal — Android handles actual ad logic & frequency caps
-      (window.Android.showInterstitial as (ctx: string) => void)(context);
-      markShown();
-      console.log(`[Android] Interstitial requested: ${context}`);
-    },
-    [plan],
-  );
+    // Fire the signal — Android handles actual ad logic & frequency caps
+    (window.Android.showInterstitial as (ctx: string) => void)(context);
+    markShown();
+    console.log(`[Android] Interstitial requested: ${context}`);
+  }, []);
 
   return { maybeShowInterstitial };
 }

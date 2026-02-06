@@ -8,12 +8,11 @@
  * When the container scrolls into view, it signals the native layer
  * via window.Android.onLiveScoresView() so Android can render the ad.
  *
- * Only shown for FREE users — Pro & Premium see zero ads.
+ * Shown for ALL Android users (FREE, PRO, PREMIUM).
  */
 
 import { useEffect, useRef } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { useUserPlan } from "@/hooks/useUserPlan";
 
 interface AndroidNativeAdSlotProps {
   /** Unique slot id so native layer can target specific positions */
@@ -21,16 +20,15 @@ interface AndroidNativeAdSlotProps {
 }
 
 export function AndroidNativeAdSlot({ slotIndex }: AndroidNativeAdSlotProps) {
-  const { plan } = useUserPlan();
   const slotRef = useRef<HTMLDivElement>(null);
   const hasFiredRef = useRef(false);
 
-  // Gate 1: Android only
+  // Gate: Android only
   const isAndroid = getIsAndroidApp();
 
   // Intersection Observer: signal native layer when slot becomes visible
   useEffect(() => {
-    if (!isAndroid || plan !== "free") return;
+    if (!isAndroid) return;
     if (!slotRef.current) return;
 
     const observer = new IntersectionObserver(
@@ -48,13 +46,10 @@ export function AndroidNativeAdSlot({ slotIndex }: AndroidNativeAdSlotProps) {
     observer.observe(slotRef.current);
 
     return () => observer.disconnect();
-  }, [isAndroid, plan]);
+  }, [isAndroid]);
 
   // Don't render on web
   if (!isAndroid) return null;
-
-  // Don't render for Pro & Premium — zero ads
-  if (plan !== "free") return null;
 
   return (
     <div
