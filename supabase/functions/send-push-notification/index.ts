@@ -26,8 +26,8 @@ serve(async (req) => {
   try {
     const { type, record } = await req.json();
 
-    const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
-    const ONESIGNAL_API_KEY = Deno.env.get("ONESIGNAL_API_KEY");
+    const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").trim();
+    const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").trim();
 
     if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
       console.error("OneSignal credentials not configured");
