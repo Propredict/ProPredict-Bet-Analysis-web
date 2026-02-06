@@ -26,8 +26,14 @@ serve(async (req) => {
   try {
     const { type, record } = await req.json();
 
-    const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").trim();
-    const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").trim();
+    const rawAppId = Deno.env.get("ONESIGNAL_APP_ID") ?? "";
+    const rawApiKey = Deno.env.get("ONESIGNAL_API_KEY") ?? "";
+    
+    // Strip any surrounding quotes and whitespace
+    const ONESIGNAL_APP_ID = rawAppId.replace(/^["'\s]+|["'\s]+$/g, "");
+    const ONESIGNAL_API_KEY = rawApiKey.replace(/^["'\s]+|["'\s]+$/g, "");
+    
+    console.log(`App ID debug: length=${ONESIGNAL_APP_ID.length}, first4=${ONESIGNAL_APP_ID.substring(0, 4)}, last4=${ONESIGNAL_APP_ID.substring(ONESIGNAL_APP_ID.length - 4)}, raw_length=${rawAppId.length}`);
 
     if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
       console.error("OneSignal credentials not configured");
@@ -105,7 +111,15 @@ serve(async (req) => {
 
     if (!osResponse.ok) {
       return new Response(
-        JSON.stringify({ error: "OneSignal API error", details: osResult }),
+        JSON.stringify({ 
+          error: "OneSignal API error", 
+          details: osResult,
+          debug: {
+            app_id_length: ONESIGNAL_APP_ID.length,
+            app_id_preview: `${ONESIGNAL_APP_ID.substring(0, 8)}...${ONESIGNAL_APP_ID.substring(ONESIGNAL_APP_ID.length - 4)}`,
+            raw_length: rawAppId.length,
+          }
+        }),
         { status: osResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
