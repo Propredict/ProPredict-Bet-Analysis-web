@@ -42,6 +42,7 @@ interface AndroidBridge {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
   purchasePackage?: (packageId: string) => void;
+  restorePurchases?: () => void;
 }
 
 /**
@@ -170,5 +171,21 @@ export function purchasePackage(packageId: string): void {
     android.purchasePackage(packageId);
   } else {
     console.warn("[RevenueCat] purchasePackage not available on Android bridge");
+  }
+}
+
+/**
+ * Trigger a RevenueCat restore purchases flow on Android.
+ * Used for legacy users or device reinstalls to recover existing subscriptions.
+ * The native layer will call Purchases.restorePurchases() and the webhook
+ * will upsert the subscription into user_subscriptions.
+ */
+export function restorePurchases(): void {
+  const android = window.Android as AndroidBridge | undefined;
+  if (getIsAndroidApp() && android?.restorePurchases) {
+    console.log("[RevenueCat] Requesting restore purchases");
+    android.restorePurchases();
+  } else {
+    console.warn("[RevenueCat] restorePurchases not available on Android bridge");
   }
 }

@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { restorePurchases } from "@/hooks/useRevenueCat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -401,6 +402,23 @@ const Profile = () => {
                       )}
                     </Button>
                   )}
+                </div>
+              )}
+
+              {/* Restore Purchases - Android only, free plan only */}
+              {isAndroidApp && !!user && plan === "free" && (
+                <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => restorePurchases()}
+                    className="w-full h-8 text-xs"
+                  >
+                    <RotateCcw className="mr-1.5 h-3 w-3" />
+                    Restore Purchases
+                  </Button>
+                  <p className="text-[9px] text-muted-foreground text-center">
+                    Use this if you previously purchased on another device or after reinstalling the app.
+                  </p>
                 </div>
               )}
 
