@@ -724,7 +724,9 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
    const supabase = createClient(supabaseUrl, supabaseKey);
    
-   // Fetch pending predictions for today and tomorrow
+   // === ALWAYS regenerate TODAY and TOMORROW using the NEW algorithm ===
+   // Fetches ALL predictions for these dates (not just "pending"),
+   // so every cron run recalculates with fresh API data.
    const today = new Date();
    const tomorrow = new Date(today);
    tomorrow.setDate(tomorrow.getDate() + 1);
@@ -732,13 +734,16 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
    const todayStr = today.toISOString().split("T")[0];
    const tomorrowStr = tomorrow.toISOString().split("T")[0];
    
-   console.log(`Fetching predictions for ${todayStr} and ${tomorrowStr}`);
+   console.log(`\n=== REGENERATING PREDICTIONS FOR ${todayStr} AND ${tomorrowStr} ===`);
+   console.log(`Using NEW weighted algorithm: Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%`);
    
+   // Fetch ALL predictions for today and tomorrow (regardless of result_status)
+   // Only skip matches that already have final results (won/lost)
    const { data: predictions, error: fetchError } = await supabase
      .from("ai_predictions")
      .select("*")
      .in("match_date", [todayStr, tomorrowStr])
-     .eq("result_status", "pending");
+     .in("result_status", ["pending", null]); // Only regenerate pending, skip won/lost
    
    if (fetchError) {
      console.error("Error fetching predictions:", fetchError);
@@ -750,18 +755,20 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
    
    if (!predictions || predictions.length === 0) {
      return new Response(
-       JSON.stringify({ message: "No pending predictions found to regenerate", updated: 0 }),
+       JSON.stringify({ message: "No predictions found to regenerate for today/tomorrow", updated: 0 }),
        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
      );
    }
    
-   console.log(`Found ${predictions.length} predictions to regenerate`);
+   console.log(`Found ${predictions.length} predictions to regenerate (today + tomorrow)`);
+   console.log(`Matches will be recalculated using NEW algorithm - no fallback to old values`);
    
-    let updated = 0;
-    let locked = 0;
-    const errors: string[] = [];
-    
-    // Process each prediction (with rate limiting)
+   let updated = 0;
+   let locked = 0;
+   let skipped = 0; // Track matches skipped due to already having results
+   const errors: string[] = [];
+   
+   // Process each prediction (with rate limiting)
     for (const pred of predictions) {
       try {
         const fixtureId = pred.match_id;
@@ -880,16 +887,24 @@ async function assignTiers(supabase: any, todayStr: string, tomorrowStr: string)
     
     // After regeneration, assign tiers ONLY for unlocked predictions
     // Locked predictions (no data) should NOT receive tier assignments based on old data
-    console.log(`\n=== Summary: ${updated} updated, ${locked} locked (pending data) ===`);
-    console.log("\n=== Assigning tiers based on confidence (unlocked predictions only)... ===");
+    console.log(`\n=== REGENERATION SUMMARY ===`);
+    console.log(`Total processed: ${predictions.length}`);
+    console.log(`Successfully updated with NEW algorithm: ${updated}`);
+    console.log(`Locked (pending API data): ${locked}`);
+    console.log(`Skipped (already won/lost): ${skipped}`);
+    
+    console.log("\n=== Assigning tiers based on NEW confidence values (unlocked only)... ===");
     const tierResult = await assignTiers(supabase, todayStr, tomorrowStr);
     
     return new Response(
       JSON.stringify({
-        message: `Regeneration complete`,
+        message: `Regeneration complete using NEW weighted algorithm`,
+        algorithm: "Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%",
+        dates: { today: todayStr, tomorrow: tomorrowStr },
         total: predictions.length,
         updated,
         locked,
+        skipped,
         tiers: {
           free: tierResult.free,
           pro: tierResult.pro,
