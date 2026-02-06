@@ -27,15 +27,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-// Android in-app purchase plan IDs
-const ANDROID_PLAN_IDS = {
+// Android RevenueCat package IDs
+const REVENUECAT_PACKAGES = {
   basic: {
-    monthly: "PRO_MONTHLY",
-    annual: "PRO_ANNUAL",
+    monthly: "propredict_pro_monthly",
+    annual: "propredict_pro_annual",
   },
   premium: {
-    monthly: "PREMIUM_MONTHLY",
-    annual: "PREMIUM_ANNUAL",
+    monthly: "propredict_premium_monthly",
+    annual: "propredict_premium_annual",
   },
 };
 
@@ -331,28 +331,32 @@ export default function GetPremium() {
   // Both Android and Web now support monthly/annual toggle
   const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans[billingPeriod];
 
-  // Listen for Android purchase results via postMessage
+  // Listen for RevenueCat purchase success on Android
   useEffect(() => {
     if (!isAndroidApp) return;
 
+    const handlePurchaseSuccess = (event: CustomEvent<{ entitlements?: { pro?: boolean; premium?: boolean } }>) => {
+      toast.success("Subscription activated successfully!");
+      // Refresh entitlements
+      refetchPlan();
+      // Navigate back after successful purchase
+      setTimeout(() => navigate(-1), 500);
+    };
+
     const handleMessage = (event: MessageEvent) => {
       const { type } = event.data || {};
-
-      // Successful purchase - unlock features
-      if (type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS" || type === "REVENUECAT_ENTITLEMENTS_UPDATE") {
+      if (type === "REVENUECAT_PURCHASE_SUCCESS" || type === "REVENUECAT_ENTITLEMENTS_UPDATE") {
         toast.success("Subscription activated successfully!");
         refetchPlan();
         setTimeout(() => navigate(-1), 500);
-        return;
       }
-
-      // User cancelled or purchase failed - do nothing (no unlock)
-      // "USER_CANCELLED" and "PURCHASE_FAILED" are intentionally ignored
     };
 
+    window.addEventListener("revenuecat-purchase-success", handlePurchaseSuccess as EventListener);
     window.addEventListener("message", handleMessage);
 
     return () => {
+      window.removeEventListener("revenuecat-purchase-success", handlePurchaseSuccess as EventListener);
       window.removeEventListener("message", handleMessage);
     };
   }, [isAndroidApp, refetchPlan, navigate]);
@@ -360,24 +364,29 @@ export default function GetPremium() {
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
 
-    // Android: HARD BLOCK - use purchasePlan with correct plan IDs
+    // Android: HARD BLOCK - Check window.Android directly for native bridge
+    // This ensures we catch the bridge even if platform detection has issues
     if (window.Android) {
-      if (typeof window.Android.purchasePlan === "function") {
-        const androidPlanId = planId === "basic"
-          ? ANDROID_PLAN_IDS.basic[billingPeriod]
-          : ANDROID_PLAN_IDS.premium[billingPeriod];
-        window.Android.purchasePlan(androidPlanId);
-        return;
-      }
-
-      // Legacy fallback for older Android app versions
+      // Direct JS bridge calls - NO Stripe, NO redirects
       if (planId === "basic") {
-        if (typeof window.Android.getPro === "function") { window.Android.getPro(); return; }
-        if (typeof window.Android.buyPro === "function") { window.Android.buyPro(); return; }
+        if (typeof window.Android.getPro === "function") {
+          window.Android.getPro();
+          return;
+        }
+        if (typeof window.Android.buyPro === "function") {
+          window.Android.buyPro();
+          return;
+        }
       }
       if (planId === "premium") {
-        if (typeof window.Android.getPremium === "function") { window.Android.getPremium(); return; }
-        if (typeof window.Android.buyPremium === "function") { window.Android.buyPremium(); return; }
+        if (typeof window.Android.getPremium === "function") {
+          window.Android.getPremium();
+          return;
+        }
+        if (typeof window.Android.buyPremium === "function") {
+          window.Android.buyPremium();
+          return;
+        }
       }
       return;
     }
