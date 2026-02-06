@@ -44,10 +44,10 @@ export function useAndroidInterstitial() {
     if (isInCooldown()) return;
 
     // Gate 3: Bridge must exist
-    if (!window.Android?.showInterstitial) return;
+    if (!(window as any).Android?.showInterstitial) return;
 
     // Fire the signal — Android handles actual ad logic & frequency caps
-    (window.Android.showInterstitial as (ctx: string) => void)(context);
+    ((window as any).Android.showInterstitial as (ctx: string) => void)(context);
     markShown();
     console.log(`[Android] Interstitial requested: ${context}`);
   }, []);

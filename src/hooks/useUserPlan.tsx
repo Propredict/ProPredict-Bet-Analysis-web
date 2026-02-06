@@ -445,11 +445,33 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           console.error("[UserPlan] Failed to persist ad-unlock to DB:", err)
         );
       }
+
+      // Handle RESTORE_SUCCESS / PURCHASE_SUCCESS from Android native layer
+      // After a successful restore or purchase, RevenueCat webhook updates Supabase.
+      // We re-fetch user data so the UI reflects the new plan immediately.
+      if (
+        type === "RESTORE_SUCCESS" ||
+        type === "PURCHASE_SUCCESS" ||
+        type === "REVENUECAT_PURCHASE_SUCCESS"
+      ) {
+        console.log("[UserPlan] Received", type, "— refreshing plan data");
+        toast.success(
+          type === "RESTORE_SUCCESS"
+            ? "Purchases restored successfully!"
+            : "Subscription activated!"
+        );
+        // Small delay to let the RevenueCat webhook write to Supabase
+        setTimeout(() => {
+          fetchUserData();
+          // Also refresh RevenueCat entitlements on the JS side
+          revenueCat.refetch();
+        }, 1500);
+      }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobileApp, unlockContent]);
+  }, [isMobileApp, unlockContent, fetchUserData, revenueCat]);
 
   /* =====================
      Provider

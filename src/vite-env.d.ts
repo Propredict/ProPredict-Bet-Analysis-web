@@ -13,13 +13,11 @@ interface AndroidBridge {
   onLiveScoresView?: () => void;
   
   // RevenueCat Subscriptions (SDK 7.x)
-  // Native flow: getOfferings() -> find package -> purchase(PurchaseParams.Builder(activity, pkg).build())
   purchasePackage?: (packageId: string) => void;
   requestEntitlements?: () => void;
   restorePurchases?: () => void;
   
-  // Unified purchase method — preferred entry point for Android WebView
-  // Calls native RevenueCat purchase flow with the given planId ("basic" | "premium")
+  // Unified purchase method
   purchasePlan?: (planId: string) => void;
   
   // Legacy purchase methods (fallback)
@@ -46,3 +44,5 @@ declare global {
     };
   }
 }
+
+export {};
