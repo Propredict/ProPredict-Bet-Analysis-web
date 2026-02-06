@@ -150,6 +150,7 @@ declare global {
     Android?: {
       showInterstitial?: () => void;
       watchRewardedAd?: () => void;
+      purchasePlan?: (planId: string) => void;
       buyPro?: () => void;
       buyPremium?: () => void;
       getPro?: () => void;

@@ -81,9 +81,18 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const handleSelectPlan = (planId: UserPlan) => {
     onOpenChange(false);
 
-    // Android: HARD BLOCK - never navigate to Stripe flows
+    // Android: HARD BLOCK - use purchasePlan, never navigate to Stripe
     if (getIsAndroidApp()) {
       if (!window.Android) return;
+
+      if (typeof window.Android.purchasePlan === "function") {
+        // Default to monthly from modal (user can pick annual on /get-premium)
+        const androidPlanId = planId === "basic" ? "PRO_MONTHLY" : "PREMIUM_MONTHLY";
+        window.Android.purchasePlan(androidPlanId);
+        return;
+      }
+
+      // Legacy fallback
       if (planId === "basic") {
         if (window.Android.getPro) window.Android.getPro();
         else if (window.Android.buyPro) window.Android.buyPro();
