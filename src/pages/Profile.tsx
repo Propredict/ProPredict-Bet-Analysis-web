@@ -181,12 +181,9 @@ const Profile = () => {
   };
 
   const handleManageSubscription = async () => {
-    // Android: HARD BLOCK - no Stripe portal
+    // Android: open Google Play subscriptions page directly
     if (isAndroidApp) {
-      toast({
-        title: "Manage subscription",
-        description: "On Android, subscriptions are managed by Google Play Store.",
-      });
+      window.open("https://play.google.com/store/account/subscriptions", "_blank");
       return;
     }
 
