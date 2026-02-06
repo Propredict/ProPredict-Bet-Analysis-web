@@ -8,6 +8,7 @@ import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsS
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -49,6 +50,9 @@ export default function AIPredictions() {
   const { user } = useAuth();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
+
+  // Single page-level unlock handler for Android rewarded ads (same pattern as DailyTips)
+  const { unlockingId, handleUnlock } = useUnlockHandler();
 
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
@@ -537,6 +541,8 @@ export default function AIPredictions() {
                       isSavingFavorite={isSaving(prediction.match_id)}
                       onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                       onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === prediction.match_id}
                     />
                   );
                 })}
@@ -613,6 +619,8 @@ export default function AIPredictions() {
                       isSavingFavorite={isSaving(prediction.match_id)}
                       onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                       onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === prediction.match_id}
                     />
                   );
                 })}
