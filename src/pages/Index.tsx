@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions";
 import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
@@ -8,8 +9,19 @@ import { DashboardAIPredictions } from "@/components/dashboard/DashboardAIPredic
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 
 const Index = () => {
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const firedRef = useRef(false);
+
+  // Android only: show one interstitial on Home (max 1 per app session)
+  useEffect(() => {
+    if (!firedRef.current) {
+      firedRef.current = true;
+      maybeShowInterstitial("home");
+    }
+  }, [maybeShowInterstitial]);
   return (
     <>
       <Helmet>

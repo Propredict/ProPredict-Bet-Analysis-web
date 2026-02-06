@@ -6,8 +6,8 @@ interface AndroidBridge {
   watchRewardedAd?: () => void;
   showRewardedAd?: () => void;
   
-  // Interstitial Ads
-  showInterstitial?: () => void;
+  // Interstitial Ads — context string tells native which placement triggered it
+  showInterstitial?: (context: string) => void;
   
   // RevenueCat Subscriptions (SDK 7.x)
   // Native flow: getOfferings() -> find package -> purchase(PurchaseParams.Builder(activity, pkg).build())
