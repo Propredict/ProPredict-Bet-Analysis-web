@@ -11,6 +11,9 @@ interface AndroidBridge {
   
   // Live Scores — notify native layer the page is visible so it can inject inline ads
   onLiveScoresView?: () => void;
+
+  // RevenueCat Offerings — request native to fetch and post back current offerings
+  requestOfferings?: () => void;
   
   // RevenueCat Subscriptions (SDK 7.x)
   purchasePackage?: (packageId: string) => void;

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { purchaseSubscription } from "@/hooks/useRevenueCat";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -383,22 +384,11 @@ export default function GetPremium() {
       return;
     }
 
-    // Android: HARD BLOCK - call native bridge, never Stripe
+    // Android: HARD BLOCK - use native bridge, never Stripe
     const android = (window as any).Android;
     if (android) {
-      const pkgMap: Record<string, Record<string, string>> = REVENUECAT_PACKAGES as any;
-      const packageId = pkgMap[planId]?.[billingPeriod];
-
-      if (packageId && typeof android.purchasePackage === "function") {
-        console.log("[Android] purchasePackage:", packageId);
-        android.purchasePackage(packageId);
-      } else if (planId === "basic" && typeof android.getPro === "function") {
-        // Legacy fallback
-        android.getPro();
-      } else if (planId === "premium" && typeof android.getPremium === "function") {
-        // Legacy fallback
-        android.getPremium();
-      }
+      // Use the unified purchaseSubscription which handles offering lookup dynamically
+      purchaseSubscription(planId as "basic" | "premium", billingPeriod);
       return;
     }
 

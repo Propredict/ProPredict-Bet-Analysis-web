@@ -12,6 +12,7 @@
  * The Android app injects entitlement data via:
  * 1. window.__REVENUECAT_ENTITLEMENTS__ (initial state)
  * 2. 'revenuecat-entitlements-updated' custom event (updates)
+ * 3. 'REVENUECAT_OFFERINGS' postMessage with current offerings
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -23,10 +24,27 @@ interface RevenueCatEntitlements {
   premium: boolean;
 }
 
+/** Shape of a single RevenueCat package from native */
+interface RevenueCatPackage {
+  identifier: string;
+  productId: string;
+  // Add more fields as needed (price, title, etc.)
+}
+
+/** Offerings data posted from native side */
+interface RevenueCatOfferings {
+  current?: {
+    identifier: string;
+    availablePackages: RevenueCatPackage[];
+  };
+}
+
 interface UseRevenueCatResult {
   plan: UserPlan;
   isLoading: boolean;
   hasActiveSubscription: boolean;
+  offerings: RevenueCatOfferings | null;
+  offeringsReady: boolean;
   refetch: () => void;
 }
 
@@ -34,8 +52,12 @@ interface UseRevenueCatResult {
 interface AndroidBridgeRC {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
+  requestOfferings?: () => void;
   purchasePackage?: (packageId: string) => void;
+  purchasePlan?: (planId: string) => void;
   restorePurchases?: () => void;
+  getPro?: () => void;
+  getPremium?: () => void;
 }
 
 /**
@@ -66,13 +88,17 @@ export function useRevenueCat(): UseRevenueCatResult {
     isAndroidApp ? readEntitlements() : undefined
   );
   const [isLoading, setIsLoading] = useState(isAndroidApp);
+  const [offerings, setOfferings] = useState<RevenueCatOfferings | null>(null);
+  const [offeringsReady, setOfferingsReady] = useState(false);
 
-  // Request entitlements from Android on mount
+  // Request entitlements AND offerings from Android on mount
   useEffect(() => {
     if (!isAndroidApp) {
       setIsLoading(false);
       return;
     }
+
+    const android = (window as any).Android as AndroidBridgeRC | undefined;
 
     // Read initial entitlements
     const initial = readEntitlements();
@@ -81,7 +107,6 @@ export function useRevenueCat(): UseRevenueCatResult {
       setIsLoading(false);
     } else {
       // Request entitlements from Android if not already set
-      const android = (window as any).Android as AndroidBridgeRC | undefined;
       if (android?.requestEntitlements) {
         android.requestEntitlements();
       }
@@ -93,9 +118,15 @@ export function useRevenueCat(): UseRevenueCatResult {
 
       return () => clearTimeout(timeout);
     }
+
+    // Request offerings so we have dynamic product data
+    if (android?.requestOfferings) {
+      console.log("[RevenueCat] Requesting offerings from native");
+      android.requestOfferings();
+    }
   }, [isAndroidApp]);
 
-  // Listen for entitlement updates from Android
+  // Listen for entitlement updates AND offerings from Android
   useEffect(() => {
     if (!isAndroidApp) return;
 
@@ -104,13 +135,20 @@ export function useRevenueCat(): UseRevenueCatResult {
       setIsLoading(false);
     };
 
-    // Also listen for window object changes via message
+    // Listen for window object changes via message
     const handleMessage = (event: MessageEvent) => {
-      const { type, entitlements: newEntitlements } = event.data || {};
+      const { type, entitlements: newEntitlements, offerings: newOfferings } = event.data || {};
       
       if (type === "REVENUECAT_ENTITLEMENTS_UPDATE" && newEntitlements) {
         setEntitlements(newEntitlements);
         setIsLoading(false);
+      }
+
+      // Native posts offerings data after requestOfferings() or on app start
+      if (type === "REVENUECAT_OFFERINGS" && newOfferings) {
+        console.log("[RevenueCat] Received offerings from native:", newOfferings);
+        setOfferings(newOfferings);
+        setOfferingsReady(true);
       }
     };
 
@@ -135,6 +173,10 @@ export function useRevenueCat(): UseRevenueCatResult {
       setIsLoading(true);
       android.requestEntitlements();
     }
+    // Also refresh offerings
+    if (isAndroidApp && android?.requestOfferings) {
+      android.requestOfferings();
+    }
   }, [isAndroidApp]);
 
   const plan = getPlanFromEntitlements(entitlements);
@@ -144,34 +186,65 @@ export function useRevenueCat(): UseRevenueCatResult {
     plan,
     isLoading,
     hasActiveSubscription,
+    offerings,
+    offeringsReady,
     refetch,
   };
 }
 
 /**
- * Trigger a RevenueCat purchase flow on Android (SDK 7.x)
- * The Android native layer will:
- * 1. Fetch offerings: Purchases.sharedInstance.getOfferings { offerings -> }
- * 2. Find the package matching packageId from offerings.current.availablePackages
- * 3. Call: Purchases.sharedInstance.purchase(PurchaseParams.Builder(activity, pkg).build())
+ * Purchase a subscription plan via the Android native bridge.
  * 
- * Note: purchasePackage(activity, pkg) was used in 6.x but removed in 7.x
+ * Uses a priority chain:
+ * 1. purchasePlan(planKey) — native handles offering lookup dynamically
+ * 2. purchasePackage(packageId) — legacy hardcoded IDs
+ * 3. getPro()/getPremium() — oldest fallback
+ * 
+ * planKey format: "pro_monthly", "pro_annual", "premium_monthly", "premium_annual"
  */
-export function purchasePackage(packageId: string): void {
+export function purchaseSubscription(planId: "basic" | "premium", period: "monthly" | "annual"): void {
   const android = (window as any).Android as AndroidBridgeRC | undefined;
-  if (getIsAndroidApp() && android?.purchasePackage) {
-    console.log("[RevenueCat] Requesting purchase for package:", packageId);
+  if (!getIsAndroidApp() || !android) {
+    console.warn("[RevenueCat] Android bridge not available");
+    return;
+  }
+
+  // Build a plan key the native side can map to the correct RevenueCat offering
+  const planKey = `${planId === "basic" ? "pro" : "premium"}_${period}`;
+
+  // Priority 1: purchasePlan — native resolves the correct offering dynamically
+  if (typeof android.purchasePlan === "function") {
+    console.log("[RevenueCat] purchasePlan:", planKey);
+    android.purchasePlan(planKey);
+    return;
+  }
+
+  // Priority 2: purchasePackage with hardcoded IDs (legacy)
+  const LEGACY_PACKAGES: Record<string, Record<string, string>> = {
+    basic: { monthly: "propredict_pro_monthly", annual: "propredict_pro_annual" },
+    premium: { monthly: "propredict_premium_monthly", annual: "propredict_premium_annual" },
+  };
+  const packageId = LEGACY_PACKAGES[planId]?.[period];
+  if (packageId && typeof android.purchasePackage === "function") {
+    console.log("[RevenueCat] purchasePackage (legacy):", packageId);
     android.purchasePackage(packageId);
+    return;
+  }
+
+  // Priority 3: getPro/getPremium (oldest fallback)
+  if (planId === "basic" && typeof android.getPro === "function") {
+    console.log("[RevenueCat] getPro (legacy fallback)");
+    android.getPro();
+  } else if (planId === "premium" && typeof android.getPremium === "function") {
+    console.log("[RevenueCat] getPremium (legacy fallback)");
+    android.getPremium();
   } else {
-    console.warn("[RevenueCat] purchasePackage not available on Android bridge");
+    console.warn("[RevenueCat] No purchase method available on Android bridge");
   }
 }
 
 /**
  * Trigger a RevenueCat restore purchases flow on Android.
- * Used for legacy users or device reinstalls to recover existing subscriptions.
- * The native layer will call Purchases.restorePurchases() and the webhook
- * will upsert the subscription into user_subscriptions.
  */
 export function restorePurchases(): void {
   const android = (window as any).Android as AndroidBridgeRC | undefined;
