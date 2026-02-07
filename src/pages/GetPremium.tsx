@@ -418,7 +418,7 @@ export default function GetPremium() {
       const response = await supabase.functions.invoke("create-checkout-session", {
         body: {
           priceId,
-          successUrl: `${window.location.origin}/profile?payment=success`,
+          successUrl: `${window.location.origin}/profile?payment=success&purchased_plan=${planId}&billing=${billingPeriod}`,
           cancelUrl: `${window.location.origin}/get-premium`,
         },
       });

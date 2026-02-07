@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { restorePurchases } from "@/hooks/useRevenueCat";
-import { sendPurchaseConfirmationEmail } from "@/lib/sendPurchaseEmail";
+import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,18 +40,34 @@ const Profile = () => {
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
       setShowPaymentSuccess(true);
-      // Remove the query param from URL without navigation
+
+      // Read plan details from URL for order confirmation
+      const purchasedPlan = searchParams.get("purchased_plan"); // "basic" or "premium"
+      const billing = searchParams.get("billing"); // "monthly" or "annual"
+
+      // Remove query params from URL without navigation
       searchParams.delete("payment");
+      searchParams.delete("purchased_plan");
+      searchParams.delete("billing");
       setSearchParams(searchParams, { replace: true });
 
-      // Send purchase confirmation email (once)
-      if (!purchaseEmailSent.current && user?.email) {
+      // Send order confirmation email (once)
+      if (!purchaseEmailSent.current && user?.email && purchasedPlan) {
         purchaseEmailSent.current = true;
-        const displayName = fullName || username || user.email.split("@")[0];
-        sendPurchaseConfirmationEmail(displayName, user.email);
+
+        const priceMap: Record<string, Record<string, string>> = {
+          basic: { monthly: "€3.99", annual: "€39.99" },
+          premium: { monthly: "€5.99", annual: "€59.99" },
+        };
+        const planNameMap: Record<string, string> = { basic: "Pro", premium: "Premium" };
+
+        const planName = planNameMap[purchasedPlan] || "Pro";
+        const price = priceMap[purchasedPlan]?.[billing || "monthly"] || "€3.99";
+
+        sendOrderConfirmationEmail({ email: user.email, planName, price });
       }
     }
-  }, [searchParams, setSearchParams, user, fullName, username]);
+  }, [searchParams, setSearchParams, user]);
 
   useEffect(() => {
     if (user) {

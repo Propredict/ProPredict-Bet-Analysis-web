@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Chrome, ArrowRight, CheckCircle2 } from "lucide-react";
-import emailjs from "@emailjs/browser";
+import { sendWelcomeEmail } from "@/lib/sendPurchaseEmail";
 import logo from "@/assets/logo.png";
 
 const Login = () => {
@@ -39,24 +39,9 @@ const Login = () => {
 
         if (error) throw error;
 
-        // Send welcome email via EmailJS
-        try {
-          const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-          const welcomeTemplateId = import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID;
-          const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-          if (serviceId && publicKey) {
-            await emailjs.send(serviceId, welcomeTemplateId, {
-              email: email,
-              to_email: email,
-              user_email: email,
-              reply_to: email,
-            }, publicKey);
-          }
-        } catch (emailError) {
-          console.error("Welcome email failed:", emailError);
-          // Don't block signup if email fails
-        }
+        // Send welcome email (fire-and-forget)
+        const displayName = email.split("@")[0];
+        sendWelcomeEmail(displayName, email);
 
         setSignUpSuccess(true);
       } else {
