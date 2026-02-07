@@ -47,8 +47,8 @@ export interface OrderEmailParams {
   email: string;
   /** Plan display name: "Pro" or "Premium" */
   planName: string;
-  /** e.g. "€3.99" */
-  price: string;
+  /** e.g. "3.99" — mapped to {{total_price}} in the template */
+  totalPrice: string;
 }
 
 export async function sendOrderConfirmationEmail(
@@ -68,8 +68,7 @@ export async function sendOrderConfirmationEmail(
       {
         order_id: orderId,
         name: params.planName,
-        price: params.price,
-        "cost.total": params.price,
+        total_price: params.totalPrice,
         email: params.email,
         to_email: params.email,
       },

@@ -64,7 +64,7 @@ const Profile = () => {
         const planName = planNameMap[purchasedPlan] || "Pro";
         const price = priceMap[purchasedPlan]?.[billing || "monthly"] || "€3.99";
 
-        sendOrderConfirmationEmail({ email: user.email, planName, price });
+        sendOrderConfirmationEmail({ email: user.email, planName, totalPrice: price });
       }
     }
   }, [searchParams, setSearchParams, user]);
