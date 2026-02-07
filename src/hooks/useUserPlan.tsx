@@ -474,7 +474,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           const planName = planNameMap[purchasedPlan] || "Pro";
           const price = priceMap[purchasedPlan] || "€3.99";
 
-          sendOrderConfirmationEmail({ email: user.email, planName, price });
+          sendOrderConfirmationEmail({ email: user.email, planName, totalPrice: price });
         }
 
         // Small delay to let the RevenueCat webhook write to Supabase
