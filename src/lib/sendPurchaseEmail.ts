@@ -33,7 +33,7 @@ export async function sendWelcomeEmail(
 /* =====================
    Order Confirmation Email (on purchase)
    Template: template_vpp8vok
-   Variables: {{order_id}}, {{name}}, {{price}}, {{cost.total}}, {{email}}
+   Variables: {{order_id}}, {{name}}, {{total_price}}, {{email}}
 ===================== */
 
 /** Generate a unique order ID: PP-<timestamp>-<random> */
