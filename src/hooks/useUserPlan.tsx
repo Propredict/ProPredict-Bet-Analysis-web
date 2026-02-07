@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
-import { sendPurchaseConfirmationEmail } from "@/lib/sendPurchaseEmail";
+import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { toast } from "sonner";
 
 /* =====================
@@ -463,11 +463,18 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             : "Subscription activated!"
         );
 
-        // Send purchase confirmation email (fire-and-forget, once per session)
+        // Send order confirmation email (fire-and-forget, once per session)
         if (user && user.email && !purchaseEmailSentRef.current) {
           purchaseEmailSentRef.current = true;
-          const displayName = (user.user_metadata?.full_name as string) || user.email.split("@")[0];
-          sendPurchaseConfirmationEmail(displayName, user.email);
+
+          // Determine plan from RevenueCat or message data
+          const purchasedPlan = revenueCat.plan; // "basic" or "premium" after entitlements refresh
+          const planNameMap: Record<string, string> = { basic: "Pro", premium: "Premium" };
+          const priceMap: Record<string, string> = { basic: "€3.99", premium: "€5.99" };
+          const planName = planNameMap[purchasedPlan] || "Pro";
+          const price = priceMap[purchasedPlan] || "€3.99";
+
+          sendOrderConfirmationEmail({ email: user.email, planName, price });
         }
 
         // Small delay to let the RevenueCat webhook write to Supabase
