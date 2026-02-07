@@ -16,8 +16,8 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   const { isAndroidApp } = usePlatform();
   const [unlockingId, setUnlockingId] = useState<string | null>(null);
 
-  // Listen for AD_UNLOCK_CANCELLED to clear local loading state.
-  // The actual unlock (AD_UNLOCK_SUCCESS) is handled globally in UserPlanProvider.
+  // Listen for ad result messages and clear loading state.
+  // Also enforce a safety timeout so the spinner never gets stuck forever.
   useEffect(() => {
     if (!isAndroidApp) return;
 
@@ -30,7 +30,11 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         setUnlockingId(null);
       }
 
-      if (type === "AD_UNLOCK_CANCELLED") {
+      if (
+        type === "AD_UNLOCK_CANCELLED" ||
+        type === "RESET_AD_BUTTON" ||
+        type === "AD_LOAD_FAILED"
+      ) {
         clearPendingAdUnlock();
         setUnlockingId(null);
       }
@@ -39,6 +43,18 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, [isAndroidApp]);
+
+  // Safety timeout: reset spinner after 30s if no response from native layer
+  useEffect(() => {
+    if (!unlockingId) return;
+
+    const timeout = setTimeout(() => {
+      clearPendingAdUnlock();
+      setUnlockingId(null);
+    }, 30_000);
+
+    return () => clearTimeout(timeout);
+  }, [unlockingId]);
 
   /**
    * Main unlock handler - call this when user clicks the primary unlock button
