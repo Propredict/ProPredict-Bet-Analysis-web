@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
@@ -54,6 +55,7 @@ const UserPlanContext = createContext<UserPlanContextType | undefined>(undefined
 
 export function UserPlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const isMobileApp = getIsMobileApp();
   
   // RevenueCat integration for Android - source of truth for mobile subscriptions
@@ -482,13 +484,20 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           fetchUserData();
           // Also refresh RevenueCat entitlements on the JS side
           revenueCat.refetch();
+          // Invalidate React Query caches so UI updates immediately
+          queryClient.invalidateQueries({ queryKey: ["tips"] });
+          queryClient.invalidateQueries({ queryKey: ["tickets"] });
+          queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
+          queryClient.invalidateQueries({ queryKey: ["tip-accuracy"] });
+          queryClient.invalidateQueries({ queryKey: ["tip-counts"] });
+          queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
         }, 1500);
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobileApp, unlockContent, fetchUserData, revenueCat]);
+  }, [isMobileApp, unlockContent, fetchUserData, revenueCat, queryClient]);
 
   /* =====================
      Provider
