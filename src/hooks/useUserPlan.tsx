@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
+import { sendPurchaseConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { toast } from "sonner";
 
 /* =====================
@@ -62,6 +63,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
+  const purchaseEmailSentRef = useRef(false);
 
   /* =====================
      Fetch User Data
@@ -460,6 +462,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             ? "Purchases restored successfully!"
             : "Subscription activated!"
         );
+
+        // Send purchase confirmation email (fire-and-forget, once per session)
+        if (user && user.email && !purchaseEmailSentRef.current) {
+          purchaseEmailSentRef.current = true;
+          const displayName = (user.user_metadata?.full_name as string) || user.email.split("@")[0];
+          sendPurchaseConfirmationEmail(displayName, user.email);
+        }
+
         // Small delay to let the RevenueCat webhook write to Supabase
         setTimeout(() => {
           fetchUserData();
