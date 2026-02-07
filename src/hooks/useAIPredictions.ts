@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays } from "date-fns";
 import { useEffect } from "react";
 
 export interface AIPrediction {
@@ -27,11 +26,13 @@ export interface AIPrediction {
 }
 
 /**
- * Calculate date string for a given day offset
+ * Calculate date string for a given day offset, using UTC
+ * to match the backend edge function which also uses UTC dates.
  */
 function getDateString(dayOffset: number = 0): string {
-  const date = dayOffset === 0 ? new Date() : addDays(new Date(), dayOffset);
-  return format(date, "yyyy-MM-dd");
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + dayOffset));
+  return utcDate.toISOString().split("T")[0];
 }
 
 /**
