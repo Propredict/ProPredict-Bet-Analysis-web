@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { restorePurchases } from "@/hooks/useRevenueCat";
+import { sendPurchaseConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,14 +34,24 @@ const Profile = () => {
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
+  // Track whether we already sent the purchase email this mount
+  const purchaseEmailSent = useRef(false);
+
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
       setShowPaymentSuccess(true);
       // Remove the query param from URL without navigation
       searchParams.delete("payment");
       setSearchParams(searchParams, { replace: true });
+
+      // Send purchase confirmation email (once)
+      if (!purchaseEmailSent.current && user?.email) {
+        purchaseEmailSent.current = true;
+        const displayName = fullName || username || user.email.split("@")[0];
+        sendPurchaseConfirmationEmail(displayName, user.email);
+      }
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, user, fullName, username]);
 
   useEffect(() => {
     if (user) {
