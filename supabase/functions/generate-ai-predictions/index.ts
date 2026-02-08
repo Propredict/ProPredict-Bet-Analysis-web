@@ -907,15 +907,28 @@ async function handleBatchRegenerate(
     const fixtureUrl = `${API_FOOTBALL_URL}/fixtures?date=${matchDate}`;
     console.log(`[DEBUG] Fetching fixtures from: ${fixtureUrl}`);
     
-    const fixturesJson = await fetchJsonWithRetry(
+    // Try fetching fixtures with extra resilience — if first attempt fails,
+    // wait 5 seconds and retry (handles rate-limit from concurrent batch triggers)
+    let fixturesJson = await fetchJsonWithRetry(
       fixtureUrl,
       apiKey,
       { retries: 4, baseDelayMs: 800 }
     );
 
+    // If the first attempt returned empty/null, wait and retry once more
+    if (!fixturesJson || !fixturesJson.response || fixturesJson.response.length === 0) {
+      console.warn(`[DEBUG] First fixture fetch returned empty for ${matchDate}. Retrying after 5s delay...`);
+      await new Promise((r) => setTimeout(r, 5000));
+      fixturesJson = await fetchJsonWithRetry(
+        fixtureUrl,
+        apiKey,
+        { retries: 4, baseDelayMs: 1200 }
+      );
+    }
+
     // Debug: log raw API response structure
     if (!fixturesJson) {
-      console.error(`[DEBUG] fixturesJson is NULL - API call failed completely`);
+      console.error(`[DEBUG] fixturesJson is NULL after retry - API call failed completely for ${matchDate}`);
     } else {
       console.log(`[DEBUG] API errors: ${JSON.stringify(fixturesJson.errors ?? {})}`);
       console.log(`[DEBUG] API results count: ${fixturesJson.results ?? 'N/A'}`);
@@ -933,24 +946,28 @@ async function handleBatchRegenerate(
     // Insert missing fixtures as locked placeholders
     const fixtureIds = Array.from(fixtureById.keys());
     if (fixtureIds.length > 0) {
-      const { data: existingPreds, error: existingError } = await supabase
+      // Check existing predictions for this date AND globally by match_id
+      const { data: existingByDate } = await supabase
         .from("ai_predictions")
         .select("match_id")
         .eq("match_date", matchDate);
 
-      if (existingError) {
-        console.error(`[DEBUG] Error fetching existing predictions:`, existingError);
-      }
+      const { data: existingGlobal } = await supabase
+        .from("ai_predictions")
+        .select("match_id")
+        .in("match_id", fixtureIds.slice(0, 500)); // Check first 500
 
-      const existingMatchIds = new Set((existingPreds ?? []).map((p: any) => String(p.match_id)));
-      const missingIds = fixtureIds.filter((id) => !existingMatchIds.has(id));
+      const existingDateIds = new Set((existingByDate ?? []).map((p: any) => String(p.match_id)));
+      const existingGlobalIds = new Set((existingGlobal ?? []).map((p: any) => String(p.match_id)));
+      
+      // Only insert IDs that don't exist ANYWHERE in the table
+      const missingIds = fixtureIds.filter((id) => !existingDateIds.has(id) && !existingGlobalIds.has(id));
 
-      console.log(`[DEBUG] Existing predictions: ${existingMatchIds.size}, Missing: ${missingIds.length}`);
+      console.log(`[DEBUG] Date predictions: ${existingDateIds.size}, Global matches: ${existingGlobalIds.size}, Truly missing: ${missingIds.length}`);
 
       if (missingIds.length > 0) {
-        console.log(`Inserting ${missingIds.length} missing fixtures as placeholders...`);
+        console.log(`Inserting ${missingIds.length} missing fixtures as placeholders for ${matchDate}...`);
         
-        // Determine match_day based on date comparison
         const today = new Date();
         const todayStr = today.toISOString().split("T")[0];
         const tomorrow = new Date(today);
@@ -984,26 +1001,49 @@ async function handleBatchRegenerate(
           };
         });
 
-        // Insert in chunks of 100 to avoid payload limits
         const CHUNK_SIZE = 100;
         let totalInserted = 0;
         let insertErrors: string[] = [];
         
         for (let i = 0; i < inserts.length; i += CHUNK_SIZE) {
           const chunk = inserts.slice(i, i + CHUNK_SIZE);
-          const { error: insertError } = await supabase.from("ai_predictions").insert(chunk);
+          const { error: insertError, data: insertData } = await supabase.from("ai_predictions").insert(chunk).select("id");
           if (insertError) {
-            console.error(`[DEBUG] Insert chunk ${i}-${i + chunk.length} error:`, insertError.message);
-            insertErrors.push(insertError.message);
+            console.error(`[DEBUG] Insert chunk ${i}-${i + chunk.length} error:`, insertError.message, insertError.details, insertError.hint);
+            insertErrors.push(`${insertError.message} | ${insertError.details || ''} | ${insertError.hint || ''}`);
           } else {
-            totalInserted += chunk.length;
+            totalInserted += (insertData?.length ?? chunk.length);
           }
         }
         
-        console.log(`[DEBUG] Insert complete: ${totalInserted}/${inserts.length} rows. Errors: ${insertErrors.length}`);
+        console.log(`[DEBUG] Insert complete for ${matchDate}: ${totalInserted}/${inserts.length} rows. Errors: ${insertErrors.length}`);
         if (insertErrors.length > 0) {
           console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
         }
+      } else if (existingDateIds.size === 0 && existingGlobalIds.size > 0) {
+        // match_ids exist but for different dates - update them to this date
+        console.log(`[DEBUG] Found ${existingGlobalIds.size} match_ids from other dates. Updating match_date to ${matchDate}...`);
+        const idsToUpdate = fixtureIds.filter((id) => existingGlobalIds.has(id) && !existingDateIds.has(id));
+        for (const mid of idsToUpdate) {
+          const f = fixtureById.get(mid);
+          const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
+          const matchDay = matchDate === new Date().toISOString().split("T")[0] ? "today" : "tomorrow";
+          
+          await supabase
+            .from("ai_predictions")
+            .update({
+              match_date: matchDate,
+              match_day: matchDay,
+              match_time: matchTime,
+              result_status: "pending",
+              is_locked: true,
+              league: f?.league?.name ?? null,
+              home_team: f?.teams?.home?.name ?? "Home",
+              away_team: f?.teams?.away?.name ?? "Away",
+            })
+            .eq("match_id", mid);
+        }
+        console.log(`[DEBUG] Updated ${idsToUpdate.length} predictions to match_date=${matchDate}`);
       }
     } else {
       console.log(`[DEBUG] fixtureIds is empty - no fixtures from API`);
@@ -1116,42 +1156,61 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
   console.log(`Run ID: ${runId}`);
   console.log(`Using NEW weighted algorithm: Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%`);
 
-  // Trigger first batch for TODAY
-  const todayResponse = await fetch(`${supabaseUrl}/functions/v1/generate-ai-predictions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      batchMode: true,
-      matchDate: todayStr,
-      offset: 0,
-      runId,
-    }),
-  });
+  // Trigger today and tomorrow batch chains STAGGERED (not parallel!)
+  // Both batches at offset 0 fetch fixture lists from API-Football.
+  // Firing them simultaneously causes one to get rate-limited (429) and fail silently.
+  // Solution: fire today first, wait 3s, then fire tomorrow.
+  const batchUrl = `${supabaseUrl}/functions/v1/generate-ai-predictions`;
+  const batchHeaders = {
+    "Authorization": `Bearer ${supabaseKey}`,
+    "Content-Type": "application/json",
+  };
 
-  // Trigger first batch for TOMORROW
-  const tomorrowResponse = await fetch(`${supabaseUrl}/functions/v1/generate-ai-predictions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      batchMode: true,
-      matchDate: tomorrowStr,
-      offset: 0,
-      runId,
-    }),
-  });
+  // Fire TODAY batch (fire-and-forget - don't await the full processing)
+  let todayOk = false;
+  let tomorrowOk = false;
 
-  const todayOk = todayResponse.ok;
-  const tomorrowOk = tomorrowResponse.ok;
+  try {
+    const todayResponse = await fetch(batchUrl, {
+      method: "POST",
+      headers: batchHeaders,
+      body: JSON.stringify({
+        batchMode: true,
+        matchDate: todayStr,
+        offset: 0,
+        runId,
+      }),
+    });
+    todayOk = todayResponse.ok;
+    console.log(`Today batch triggered: ${todayOk}`);
+  } catch (e) {
+    console.error("Failed to trigger today batch:", e);
+  }
+
+  // Stagger: wait 3 seconds to avoid API rate limit collision
+  await new Promise((r) => setTimeout(r, 3000));
+
+  // Fire TOMORROW batch
+  try {
+    const tomorrowResponse = await fetch(batchUrl, {
+      method: "POST",
+      headers: batchHeaders,
+      body: JSON.stringify({
+        batchMode: true,
+        matchDate: tomorrowStr,
+        offset: 0,
+        runId,
+      }),
+    });
+    tomorrowOk = tomorrowResponse.ok;
+    console.log(`Tomorrow batch triggered: ${tomorrowOk}`);
+  } catch (e) {
+    console.error("Failed to trigger tomorrow batch:", e);
+  }
 
   return new Response(
     JSON.stringify({
-      message: "Batch regeneration initiated for TODAY and TOMORROW",
+      message: "Batch regeneration initiated for TODAY and TOMORROW (staggered)",
       runId,
       dates: { today: todayStr, tomorrow: tomorrowStr },
       todayBatchTriggered: todayOk,
@@ -1180,11 +1239,33 @@ serve(async (req: Request) => {
     // Parse request body
     const body = await req.json().catch(() => ({}));
 
-    // Debug mode - test API connectivity and return raw info
+    // Debug mode - test API connectivity and DB state
     if (body.debug === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
       const testDate = body.matchDate || new Date().toISOString().split("T")[0];
       const testUrl = `${API_FOOTBALL_URL}/fixtures?date=${testDate}`;
       
+      // Check DB state for this date
+      const { data: dbPreds, error: dbError } = await supabase
+        .from("ai_predictions")
+        .select("id, match_id, match_date, result_status, is_locked, confidence")
+        .eq("match_date", testDate)
+        .limit(5);
+      
+      const { count: totalCount } = await supabase
+        .from("ai_predictions")
+        .select("*", { count: "exact", head: true })
+        .eq("match_date", testDate);
+      
+      const { count: pendingCount } = await supabase
+        .from("ai_predictions")
+        .select("*", { count: "exact", head: true })
+        .eq("match_date", testDate)
+        .or("result_status.eq.pending,result_status.is.null");
+
       try {
         await throttleApi();
         const res = await fetch(testUrl, {
@@ -1207,7 +1288,20 @@ serve(async (req: Request) => {
             apiResults: parsed?.results ?? null,
             fixtureCount: parsed?.response?.length ?? 0,
             firstFixture: parsed?.response?.[0]?.teams ?? null,
-            rawPreview: rawText.slice(0, 500),
+            db: {
+              date: testDate,
+              totalPredictions: totalCount,
+              pendingPredictions: pendingCount,
+              dbError: dbError?.message ?? null,
+              sampleRows: dbPreds?.map(p => ({
+                id: p.id,
+                match_id: p.match_id,
+                match_date: p.match_date,
+                result_status: p.result_status,
+                is_locked: p.is_locked,
+                confidence: p.confidence,
+              })) ?? [],
+            },
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
