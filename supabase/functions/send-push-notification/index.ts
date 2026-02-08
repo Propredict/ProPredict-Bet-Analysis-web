@@ -128,10 +128,11 @@ serve(async (req) => {
       JSON.stringify({ success: true, onesignal: osResult }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Push notification error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: msg }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
