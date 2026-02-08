@@ -10,10 +10,20 @@ export const useAuth = () => {
   useEffect(() => {
     // Set up auth state listener BEFORE checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Track login event in Google Analytics
+        if (event === 'SIGNED_IN' && session?.user) {
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'login', {
+              method: 'Supabase',
+              user_id: session.user.id,
+            });
+          }
+        }
       }
     );
 
