@@ -236,7 +236,11 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     (tier: ContentTier, contentType?: ContentType, contentId?: string) => {
       if (isAdmin) return true;
 
-      if (tier === "free") return true;
+      // Free tier: guests must sign in first
+      if (tier === "free") {
+        if (!user) return false;
+        return true;
+      }
 
       const isMobileApp = getIsMobileApp();
 
