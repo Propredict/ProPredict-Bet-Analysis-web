@@ -89,7 +89,12 @@ async function fetchJsonWithRetry(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     await throttleApi();
-    const res = await fetch(url, { headers: { "x-apisports-key": apiKey } });
+    const res = await fetch(url, {
+      headers: {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": apiKey,
+      },
+    });
 
     // 429: respect rate limits with exponential backoff
     if (res.status === 429) {
@@ -899,11 +904,23 @@ async function handleBatchRegenerate(
   let fixtureById = new Map<string, any>();
   
   if (offset === 0) {
+    const fixtureUrl = `${API_FOOTBALL_URL}/fixtures?date=${matchDate}`;
+    console.log(`[DEBUG] Fetching fixtures from: ${fixtureUrl}`);
+    
     const fixturesJson = await fetchJsonWithRetry(
-      `${API_FOOTBALL_URL}/fixtures?date=${matchDate}`,
+      fixtureUrl,
       apiKey,
       { retries: 4, baseDelayMs: 800 }
     );
+
+    // Debug: log raw API response structure
+    if (!fixturesJson) {
+      console.error(`[DEBUG] fixturesJson is NULL - API call failed completely`);
+    } else {
+      console.log(`[DEBUG] API errors: ${JSON.stringify(fixturesJson.errors ?? {})}`);
+      console.log(`[DEBUG] API results count: ${fixturesJson.results ?? 'N/A'}`);
+      console.log(`[DEBUG] API response array length: ${fixturesJson.response?.length ?? 'N/A (no response key)'}`);
+    }
 
     const fixtures = fixturesJson?.response ?? [];
     for (const f of fixtures) {
@@ -916,17 +933,31 @@ async function handleBatchRegenerate(
     // Insert missing fixtures as locked placeholders
     const fixtureIds = Array.from(fixtureById.keys());
     if (fixtureIds.length > 0) {
-      const { data: existingPreds } = await supabase
+      const { data: existingPreds, error: existingError } = await supabase
         .from("ai_predictions")
         .select("match_id")
         .eq("match_date", matchDate);
 
+      if (existingError) {
+        console.error(`[DEBUG] Error fetching existing predictions:`, existingError);
+      }
+
       const existingMatchIds = new Set((existingPreds ?? []).map((p: any) => String(p.match_id)));
       const missingIds = fixtureIds.filter((id) => !existingMatchIds.has(id));
+
+      console.log(`[DEBUG] Existing predictions: ${existingMatchIds.size}, Missing: ${missingIds.length}`);
 
       if (missingIds.length > 0) {
         console.log(`Inserting ${missingIds.length} missing fixtures as placeholders...`);
         
+        // Determine match_day based on date comparison
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0];
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split("T")[0];
+        const matchDay = matchDate === todayStr ? "today" : matchDate === tomorrowStr ? "tomorrow" : "today";
+
         const inserts = missingIds.map((id) => {
           const f = fixtureById.get(id);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
@@ -937,6 +968,7 @@ async function handleBatchRegenerate(
             home_team: f?.teams?.home?.name ?? "Home",
             away_team: f?.teams?.away?.name ?? "Away",
             match_date: matchDate,
+            match_day: matchDay,
             match_time: matchTime,
             result_status: "pending",
             is_premium: false,
@@ -952,17 +984,39 @@ async function handleBatchRegenerate(
           };
         });
 
-        await supabase.from("ai_predictions").insert(inserts);
+        // Insert in chunks of 100 to avoid payload limits
+        const CHUNK_SIZE = 100;
+        let totalInserted = 0;
+        let insertErrors: string[] = [];
+        
+        for (let i = 0; i < inserts.length; i += CHUNK_SIZE) {
+          const chunk = inserts.slice(i, i + CHUNK_SIZE);
+          const { error: insertError } = await supabase.from("ai_predictions").insert(chunk);
+          if (insertError) {
+            console.error(`[DEBUG] Insert chunk ${i}-${i + chunk.length} error:`, insertError.message);
+            insertErrors.push(insertError.message);
+          } else {
+            totalInserted += chunk.length;
+          }
+        }
+        
+        console.log(`[DEBUG] Insert complete: ${totalInserted}/${inserts.length} rows. Errors: ${insertErrors.length}`);
+        if (insertErrors.length > 0) {
+          console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
+        }
       }
+    } else {
+      console.log(`[DEBUG] fixtureIds is empty - no fixtures from API`);
     }
   }
 
   // Fetch batch of predictions for this date
+  // Use .or() to also catch NULL result_status (SQL IN doesn't match NULL)
   const { data: predictions, error } = await supabase
     .from("ai_predictions")
     .select("*")
     .eq("match_date", matchDate)
-    .in("result_status", ["pending", null])
+    .or("result_status.eq.pending,result_status.is.null")
     .order("id", { ascending: true })
     .range(offset, offset + BATCH_SIZE - 1);
 
@@ -1126,6 +1180,45 @@ serve(async (req: Request) => {
     // Parse request body
     const body = await req.json().catch(() => ({}));
 
+    // Debug mode - test API connectivity and return raw info
+    if (body.debug === true) {
+      const testDate = body.matchDate || new Date().toISOString().split("T")[0];
+      const testUrl = `${API_FOOTBALL_URL}/fixtures?date=${testDate}`;
+      
+      try {
+        await throttleApi();
+        const res = await fetch(testUrl, {
+          headers: {
+            "x-rapidapi-host": "v3.football.api-sports.io",
+            "x-rapidapi-key": apiKey,
+          },
+        });
+        
+        const rawText = await res.text();
+        let parsed;
+        try { parsed = JSON.parse(rawText); } catch { parsed = null; }
+        
+        return new Response(
+          JSON.stringify({
+            debug: true,
+            testUrl,
+            httpStatus: res.status,
+            apiErrors: parsed?.errors ?? null,
+            apiResults: parsed?.results ?? null,
+            fixtureCount: parsed?.response?.length ?? 0,
+            firstFixture: parsed?.response?.[0]?.teams ?? null,
+            rawPreview: rawText.slice(0, 500),
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (e) {
+        return new Response(
+          JSON.stringify({ debug: true, error: e instanceof Error ? e.message : "Unknown" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Batch mode - process a single batch for a specific date
     if (body.batchMode === true && body.matchDate && typeof body.offset === "number") {
       return handleBatchRegenerate(apiKey, body.matchDate, body.offset, body.runId || "manual");
@@ -1149,7 +1242,12 @@ serve(async (req: Request) => {
     // Fetch fixture details
     const fixtureRes = await fetch(
       `${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`,
-      { headers: { "x-apisports-key": apiKey } }
+      {
+        headers: {
+          "x-rapidapi-host": "v3.football.api-sports.io",
+          "x-rapidapi-key": apiKey,
+        },
+      }
     );
 
     if (!fixtureRes.ok) {
