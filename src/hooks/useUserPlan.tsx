@@ -241,10 +241,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       const isMobileApp = getIsMobileApp();
 
       // Daily tier access rules:
-      // - WEB: Always accessible (monetized via AdSense)
+      // - Guests (not logged in): Must sign in first (both web & Android)
+      // - WEB (logged in): Always accessible (monetized via AdSense)
       // - ANDROID: Requires Pro/Premium OR ad-unlock (checked via isContentUnlocked)
       if (tier === "daily") {
-        // Web: always accessible
+        // Guests must sign in to access daily content
+        if (!user) return false;
+
+        // Web: accessible once logged in
         if (!isMobileApp) return true;
         
         // Android: Pro/Premium users have full access
