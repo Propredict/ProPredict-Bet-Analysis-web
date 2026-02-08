@@ -242,61 +242,6 @@ export default function AIPredictions() {
               </div>
             </div>
             
-            {/* Controls Row */}
-            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-              {/* Search - Enhanced visibility with gradient border */}
-              <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
-                <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
-                <div className="relative flex items-center bg-card rounded-lg">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search teams..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 h-8 md:h-9 text-xs bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70"
-                  />
-                </div>
-              </div>
-              
-              {/* Sort Dropdown */}
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-[90px] md:w-[120px] h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded">
-                  <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
-                  <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff</SelectItem>
-                  <SelectItem value="risk" className="text-[10px] md:text-xs">Risk</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {/* Favorites Toggle */}
-              <Toggle
-                pressed={showFavoritesOnly}
-                onPressedChange={setShowFavoritesOnly}
-                className="h-7 w-7 md:h-8 md:w-8 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded"
-                aria-label="Show favorites only"
-              >
-                <Heart className={cn("w-3 md:w-3.5 h-3 md:h-3.5", showFavoritesOnly && "fill-current")} />
-              </Toggle>
-              
-              {/* ML Badge */}
-              <Badge className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0.5 text-[9px] md:text-[10px] hidden sm:flex rounded">
-                <Sparkles className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
-                ML
-              </Badge>
-              
-              {/* Refresh */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-7 w-7 md:h-8 md:w-8 border-border rounded"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="w-3 md:w-3.5 h-3 md:h-3.5" />
-              </Button>
-            </div>
           </div>
 
           {/* Mobile Day Selector - Bordered tabs with hover glow */}
@@ -454,6 +399,53 @@ export default function AIPredictions() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Search & Controls Row - Above Tier Filter */}
+          <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+            <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
+              <div className="relative flex items-center bg-card rounded-lg">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search teams..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 md:h-9 text-xs bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70"
+                />
+              </div>
+            </div>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="w-[90px] md:w-[120px] h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded">
+                <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
+                <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff</SelectItem>
+                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk</SelectItem>
+              </SelectContent>
+            </Select>
+            <Toggle
+              pressed={showFavoritesOnly}
+              onPressedChange={setShowFavoritesOnly}
+              className="h-7 w-7 md:h-8 md:w-8 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded"
+              aria-label="Show favorites only"
+            >
+              <Heart className={cn("w-3 md:w-3.5 h-3 md:h-3.5", showFavoritesOnly && "fill-current")} />
+            </Toggle>
+            <Badge className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0.5 text-[9px] md:text-[10px] hidden sm:flex rounded">
+              <Sparkles className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
+              ML
+            </Badge>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 md:h-8 md:w-8 border-border rounded"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="w-3 md:w-3.5 h-3 md:h-3.5" />
+            </Button>
+          </div>
 
           {/* Tier Filter Tabs - In Gradient Card */}
           <Card className="p-3 md:p-4 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20">
