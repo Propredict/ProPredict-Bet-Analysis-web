@@ -2,7 +2,7 @@ import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CommentsSection } from "./CommentsSection";
 import { deriveMarkets } from "@/components/ai-predictions/utils/marketDerivation";
@@ -49,11 +49,16 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
   }, [prediction.match_date, prediction.match_time]);
-  const { userPick, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
+  const { userPick, userStatus, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
     prediction.match_id, seasonId, matchTimestamp,
     { dailyUsed, dailyLimit, tier: userTier }
   );
   const isLocked = !!userPick; // prediction confirmed & saved to DB
+
+  // Clear pendingPick when userPick is set (after submit or load)
+  useEffect(() => {
+    if (userPick) setPendingPick(null);
+  }, [userPick]);
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
   const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
 
@@ -296,11 +301,33 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             </div>
           ) : isLocked ? (
             /* Prediction already confirmed & saved */
-            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 text-center space-y-1.5">
-              <CheckCircle2 className="h-4 w-4 mx-auto text-primary" />
-              <p className="text-[10px] font-semibold text-primary">Prediction locked. Good luck! 🍀</p>
-              <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">
-                Your pick: {userPick}
+            <div className={`p-3 rounded-lg border text-center space-y-1.5 ${
+              userStatus === "won" ? "bg-success/10 border-success/30" :
+              userStatus === "lost" ? "bg-destructive/10 border-destructive/30" :
+              "bg-primary/5 border-primary/20"
+            }`}>
+              {userStatus === "won" ? (
+                <CheckCircle2 className="h-4 w-4 mx-auto text-success" />
+              ) : userStatus === "lost" ? (
+                <XCircle className="h-4 w-4 mx-auto text-destructive" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mx-auto text-primary" />
+              )}
+              <p className={`text-[10px] font-semibold ${
+                userStatus === "won" ? "text-success" :
+                userStatus === "lost" ? "text-destructive" :
+                "text-primary"
+              }`}>
+                {userStatus === "won" ? "You predicted correctly! +1 Point 🎉" :
+                 userStatus === "lost" ? "Your prediction was incorrect" :
+                 "Prediction locked. Good luck! 🍀"}
+              </p>
+              <Badge className={`text-[9px] ${
+                userStatus === "won" ? "bg-success/15 text-success border-success/30" :
+                userStatus === "lost" ? "bg-destructive/15 text-destructive border-destructive/30" :
+                "bg-primary/15 text-primary border-primary/30"
+              }`}>
+                Your pick: {userPick} • {userStatus === "won" ? "WIN" : userStatus === "lost" ? "LOSS" : "PENDING"}
               </Badge>
             </div>
           ) : isKickedOff ? (
