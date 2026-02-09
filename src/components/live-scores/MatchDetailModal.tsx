@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, DollarSign, History } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -120,7 +120,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                   value="odds" 
                   className="text-xs sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <DollarSign className="h-3.5 w-3.5 mr-1" /> Odds
+                  <TrendingUp className="h-3.5 w-3.5 mr-1" /> Probabilities
                 </TabsTrigger>
                 <TabsTrigger 
                   value="h2h" 
