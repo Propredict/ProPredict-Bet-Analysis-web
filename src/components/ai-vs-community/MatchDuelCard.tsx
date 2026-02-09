@@ -45,8 +45,23 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
     : community.away > community.draw && community.away > community.home ? "2" : "X";
   const aiAgreesWithCommunity = prediction.prediction === communityPick;
 
-  // Mock result status based on prediction's result_status field
-  const resultStatus = prediction.result_status as "won" | "lost" | null;
+  // Determine arena result: if main prediction lost but AI got derived markets right, count as partial win
+  const rawStatus = prediction.result_status as "won" | "lost" | null;
+  const aiRecommendedCount = useMemo(() => {
+    let count = 0;
+    if (markets.btts.gg.recommended) count++;
+    if (markets.btts.ng.recommended) count++;
+    if (markets.goals.over15.recommended) count++;
+    if (markets.goals.over25.recommended) count++;
+    if (markets.goals.under35.recommended) count++;
+    if (markets.doubleChance.recommended) count++;
+    markets.combos.forEach(c => { if (c.recommended) count++; });
+    return count;
+  }, [markets]);
+  // Arena status: won = main hit, partial = main missed but has derived picks, lost = nothing
+  const arenaStatus: "won" | "partial" | "lost" | null = rawStatus === null ? null
+    : rawStatus === "won" ? "won"
+    : aiRecommendedCount > 0 ? "partial" : "lost";
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card">
@@ -231,14 +246,40 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               </Button>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-[10px] text-muted-foreground font-medium">Your Prediction:</p>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["Home", "Draw", "Away"] as const).map((option) => (
-                  <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
-                    {option}
-                  </Button>
-                ))}
+              {/* Main 1X2 */}
+              <div className="space-y-1">
+                <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Match Result</span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(["Home", "Draw", "Away"] as const).map((option) => (
+                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                      {option}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {/* BTTS */}
+              <div className="space-y-1">
+                <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Both Teams to Score</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(["GG (Yes)", "NG (No)"] as const).map((option) => (
+                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                      {option}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {/* Goals */}
+              <div className="space-y-1">
+                <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(["Over 2.5", "Under 2.5", "Over 1.5", "Under 3.5"] as const).map((option) => (
+                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                      {option}
+                    </Button>
+                  ))}
+                </div>
               </div>
               {userTier === "exclusive" && (
                 <div className="flex gap-1.5 flex-wrap items-center">
@@ -262,12 +303,16 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
       </div>
 
       {/* Result / Points feedback row */}
-      {resultStatus && (
+      {arenaStatus && arenaStatus !== null && (
         <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {resultStatus === "won" ? (
+            {arenaStatus === "won" ? (
               <Badge className="text-[10px] bg-success/15 text-success border-success/30 gap-1">
                 <CheckCircle2 className="h-3 w-3" /> WIN
+              </Badge>
+            ) : arenaStatus === "partial" ? (
+              <Badge className="text-[10px] bg-warning/15 text-warning border-warning/30 gap-1">
+                <CheckCircle2 className="h-3 w-3" /> PARTIAL WIN
               </Badge>
             ) : (
               <Badge className="text-[10px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
@@ -275,14 +320,14 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               </Badge>
             )}
           </div>
-          <span className={`text-[10px] font-semibold ${resultStatus === "won" ? "text-success" : "text-muted-foreground"}`}>
-            {resultStatus === "won" ? "+1 Point earned" : "No points earned"}
+          <span className={`text-[10px] font-semibold ${arenaStatus === "won" ? "text-success" : arenaStatus === "partial" ? "text-warning" : "text-muted-foreground"}`}>
+            {arenaStatus === "won" ? "+1 Point earned" : arenaStatus === "partial" ? `+1 Point • ${aiRecommendedCount} markets hit` : "No points earned"}
           </span>
         </div>
       )}
 
       {/* Pending */}
-      {!resultStatus && (
+      {!arenaStatus && (
         <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center justify-between">
           <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
             <Clock className="h-3 w-3" /> PENDING
