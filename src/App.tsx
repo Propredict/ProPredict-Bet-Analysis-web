@@ -37,6 +37,7 @@ import ExclusiveTickets from "./pages/ExclusiveTickets";
 import PremiumTips from "./pages/PremiumTips";
 import PremiumTickets from "./pages/PremiumTickets";
 import AIPredictions from "./pages/AIPredictions";
+import AIvsCommunity from "./pages/AIvsCommunity";
 import BettingTips from "./pages/BettingTips";
 import LeagueStatistics from "./pages/LeagueStatistics";
 import MatchPreviews from "./pages/MatchPreviews";
@@ -95,6 +96,7 @@ const App = () => {
                   <Route path="/premium-tips" element={<PremiumTips />} />
                   <Route path="/premium-tickets" element={<PremiumTickets />} />
                   <Route path="/ai-predictions" element={<AIPredictions />} />
+                  <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                   <Route path="/betting-tips" element={<BettingTips />} />
                   <Route path="/league-statistics" element={<LeagueStatistics />} />
                   <Route path="/match-previews" element={<MatchPreviews />} />

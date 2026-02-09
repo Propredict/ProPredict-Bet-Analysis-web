@@ -17,6 +17,7 @@ import {
   Home,
   HelpCircle,
   Eye,
+  Swords,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -56,6 +57,7 @@ const packagesItems = [
 
 const tools = [
   { title: "AI Predictions", url: "/ai-predictions", icon: Brain },
+  { title: "AI vs Community", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
