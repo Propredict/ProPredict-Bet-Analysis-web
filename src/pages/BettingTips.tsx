@@ -171,7 +171,7 @@ export default function BettingTips() {
               <p className="font-bold text-sm">
                 {unlockedCount}/{tips.length}
               </p>
-              <p className="text-[10px] text-muted-foreground">Unlocked</p>
+              <p className="text-[10px] text-muted-foreground">Available</p>
             </div>
           </div>
         </Card>
