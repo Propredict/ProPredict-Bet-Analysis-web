@@ -749,6 +749,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_arena_prediction: {
+        Args: { p_market_type: string; p_match_id: string; p_selection: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
