@@ -24,23 +24,35 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
   const isPending = (p: typeof predictions[0]) =>
     !p.result_status || p.result_status === "pending";
 
-  // Premium first (≥85%), then Pro (65-84%)
-  const premium = predictions.filter((p) =>
+  // Step 1: Try top European leagues first (Premium ≥85%, then Pro ≥65%)
+  const topPremium = predictions.filter((p) =>
     p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 85
   ).sort((a, b) => b.confidence - a.confidence);
 
-  const pro = predictions.filter((p) =>
+  const topPro = predictions.filter((p) =>
     p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
-    !premium.some((pr) => pr.id === p.id)
+    !topPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
 
-  // Fill from premium first, then backfill from pro. Max 2 per league.
+  // Step 2: If not enough from top leagues, backfill from ANY league (highest confidence pending)
+  const allPremium = predictions.filter((p) =>
+    p.league && isPending(p) && p.confidence >= 85 &&
+    !topPremium.some((pr) => pr.id === p.id)
+  ).sort((a, b) => b.confidence - a.confidence);
+
+  const allPro = predictions.filter((p) =>
+    p.league && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
+    !topPro.some((pr) => pr.id === p.id) && !allPremium.some((pr) => pr.id === p.id)
+  ).sort((a, b) => b.confidence - a.confidence);
+
+  // Fill: top premium → top pro → any premium → any pro. Max 2 per league, up to 8.
   const leagueCount: Record<string, number> = {};
   const curated: typeof predictions = [];
 
-  for (const pool of [premium, pro]) {
+  for (const pool of [topPremium, topPro, allPremium, allPro]) {
     for (const p of pool) {
       if (curated.length >= 8) break;
+      if (curated.some((c) => c.id === p.id)) continue;
       const key = (p.league || "").toLowerCase();
       leagueCount[key] = (leagueCount[key] || 0) + 1;
       if (leagueCount[key] <= 2) {
