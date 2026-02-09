@@ -1,4 +1,4 @@
-import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown, Goal } from "lucide-react";
+import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown, Goal, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CommentsSection } from "./CommentsSection";
 import { deriveMarkets } from "@/components/ai-predictions/utils/marketDerivation";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
+import { cn } from "@/lib/utils";
 
 function generateCommunityVotes(prediction: AIPrediction) {
   const seed = prediction.match_id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -38,6 +39,7 @@ interface MatchDuelCardProps {
 
 export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
+  const [userPick, setUserPick] = useState<string | null>(null);
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
   const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
 
@@ -58,10 +60,29 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
     markets.combos.forEach(c => { if (c.recommended) count++; });
     return count;
   }, [markets]);
-  // Arena status: won = main hit, partial = main missed but has derived picks, lost = nothing
-  const arenaStatus: "won" | "partial" | "lost" | null = rawStatus === null ? null
-    : rawStatus === "won" ? "won"
-    : aiRecommendedCount > 0 ? "partial" : "lost";
+  // Determine what the actual winning outcome was (for user pick evaluation)
+  // If match is finished (rawStatus exists), derive the actual result from AI's result
+  const matchFinished = rawStatus !== null;
+  const actualOutcome = useMemo(() => {
+    if (!matchFinished) return null;
+    // If AI won, the AI prediction IS the correct outcome
+    if (rawStatus === "won") return prediction.prediction;
+    // If AI lost, the correct outcome is NOT the AI prediction — infer from probabilities
+    const probs = { "1": prediction.home_win, "X": prediction.draw, "2": prediction.away_win };
+    // Remove AI's wrong pick, pick the highest remaining
+    const remaining = Object.entries(probs).filter(([k]) => k !== prediction.prediction);
+    remaining.sort((a, b) => b[1] - a[1]);
+    return remaining[0]?.[0] || null;
+  }, [matchFinished, rawStatus, prediction]);
+
+  // User's personal result
+  const userResult: "won" | "lost" | null = useMemo(() => {
+    if (!matchFinished || !userPick || !actualOutcome) return null;
+    // Map user picks to outcome codes
+    const pickMap: Record<string, string> = { "Home": "1", "Draw": "X", "Away": "2" };
+    const userCode = pickMap[userPick] || userPick;
+    return userCode === actualOutcome ? "won" : "lost";
+  }, [matchFinished, userPick, actualOutcome]);
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card">
@@ -247,13 +268,23 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-[10px] text-muted-foreground font-medium">Your Prediction:</p>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-muted-foreground font-medium">Your Prediction</p>
+                <span className="text-[8px] text-muted-foreground/60 italic">Used for points & rewards</span>
+              </div>
               {/* Main 1X2 */}
               <div className="space-y-1">
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Match Result</span>
                 <div className="grid grid-cols-3 gap-1.5">
                   {(["Home", "Draw", "Away"] as const).map((option) => (
-                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                    <Button
+                      key={option}
+                      size="sm"
+                      variant={userPick === option ? "default" : "outline"}
+                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
+                      onClick={() => !matchFinished && setUserPick(option)}
+                      disabled={matchFinished}
+                    >
                       {option}
                     </Button>
                   ))}
@@ -264,7 +295,14 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Both Teams to Score</span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(["GG (Yes)", "NG (No)"] as const).map((option) => (
-                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                    <Button
+                      key={option}
+                      size="sm"
+                      variant={userPick === option ? "default" : "outline"}
+                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
+                      onClick={() => !matchFinished && setUserPick(option)}
+                      disabled={matchFinished}
+                    >
                       {option}
                     </Button>
                   ))}
@@ -275,7 +313,14 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(["Over 2.5", "Under 2.5", "Over 1.5", "Under 3.5"] as const).map((option) => (
-                    <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                    <Button
+                      key={option}
+                      size="sm"
+                      variant={userPick === option ? "default" : "outline"}
+                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
+                      onClick={() => !matchFinished && setUserPick(option)}
+                      disabled={matchFinished}
+                    >
                       {option}
                     </Button>
                   ))}
@@ -302,17 +347,13 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
         </div>
       </div>
 
-      {/* Result / Points feedback row */}
-      {arenaStatus && arenaStatus !== null && (
+      {/* User-centric result / Points feedback row */}
+      {matchFinished && userPick && userResult && (
         <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {arenaStatus === "won" ? (
+            {userResult === "won" ? (
               <Badge className="text-[10px] bg-success/15 text-success border-success/30 gap-1">
                 <CheckCircle2 className="h-3 w-3" /> WIN
-              </Badge>
-            ) : arenaStatus === "partial" ? (
-              <Badge className="text-[10px] bg-warning/15 text-warning border-warning/30 gap-1">
-                <CheckCircle2 className="h-3 w-3" /> PARTIAL WIN
               </Badge>
             ) : (
               <Badge className="text-[10px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
@@ -320,21 +361,46 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               </Badge>
             )}
           </div>
-          <span className={`text-[10px] font-semibold ${arenaStatus === "won" ? "text-success" : arenaStatus === "partial" ? "text-warning" : "text-muted-foreground"}`}>
-            {arenaStatus === "won" ? "+1 Point earned" : arenaStatus === "partial" ? `+1 Point • ${aiRecommendedCount} markets hit` : "No points earned"}
+          <span className={`text-[10px] font-semibold ${userResult === "won" ? "text-success" : "text-muted-foreground"}`}>
+            {userResult === "won" ? "You predicted this correctly • +1 Point" : "Your prediction was not correct"}
           </span>
         </div>
       )}
 
-      {/* Pending */}
-      {!arenaStatus && (
+      {/* Match finished but user didn't pick */}
+      {matchFinished && !userPick && (
         <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center justify-between">
           <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
-            <Clock className="h-3 w-3" /> PENDING
+            <Clock className="h-3 w-3" /> FINISHED
+          </Badge>
+          <span className="text-[9px] text-muted-foreground/60">No prediction made</span>
+        </div>
+      )}
+
+      {/* Pending */}
+      {!matchFinished && userPick && (
+        <div className="px-4 py-2 border-t border-border/30 bg-primary/5 flex items-center justify-between">
+          <Badge variant="outline" className="text-[10px] text-primary border-primary/30 gap-1">
+            <Clock className="h-3 w-3" /> YOUR PICK: {userPick}
           </Badge>
           <span className="text-[9px] text-muted-foreground/60">Points awarded after full-time</span>
         </div>
       )}
+
+      {!matchFinished && !userPick && (
+        <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center justify-between">
+          <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
+            <Clock className="h-3 w-3" /> PENDING
+          </Badge>
+          <span className="text-[9px] text-muted-foreground/60">Make your prediction above</span>
+        </div>
+      )}
+
+      {/* Individual results disclaimer */}
+      <div className="px-4 py-1.5 border-t border-border/20 bg-muted/5 flex items-center gap-1.5">
+        <Info className="h-2.5 w-2.5 text-muted-foreground/50 shrink-0" />
+        <span className="text-[8px] text-muted-foreground/50">Points are awarded based on your own prediction. Other users may see a different result for the same match.</span>
+      </div>
 
       <div className="border-t border-border/30">
         <button
