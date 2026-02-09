@@ -395,14 +395,14 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground">Monthly Points</span>
-                  <span className="text-lg font-bold text-primary">67</span>
+                  <span className="text-lg font-bold text-primary">0</span>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="text-foreground font-medium">67 / 100</span>
+                    <span className="text-foreground font-medium">0 / 100</span>
                   </div>
-                  <Progress value={67} className="h-2.5" />
+                  <Progress value={0} className="h-2.5" />
                 </div>
                 <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
                   🎯 Collect 100 points in a month to unlock 1 free month of Pro access. Points reset every month.
