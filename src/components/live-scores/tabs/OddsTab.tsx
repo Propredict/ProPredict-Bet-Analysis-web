@@ -69,10 +69,10 @@ export function OddsTab({ odds, loading }: OddsTabProps) {
     return (
       <div className="p-8 text-center">
         <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-          <DollarSign className="w-7 h-7 text-muted-foreground" />
-        </div>
-        <p className="text-sm font-medium text-foreground mb-1">Odds not available</p>
-        <p className="text-xs text-muted-foreground">Odds data is not available for this match</p>
+           <DollarSign className="w-7 h-7 text-muted-foreground" />
+         </div>
+         <p className="text-sm font-medium text-foreground mb-1">Probability data not available</p>
+         <p className="text-xs text-muted-foreground">Probability data is not available for this match</p>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export function OddsTab({ odds, loading }: OddsTabProps) {
         <div className="p-4 border-b border-border/30">
           <div className="flex items-center gap-2 text-sm font-medium text-primary mb-4">
             <TrendingUp className="w-4 h-4" />
-            Live Odds
+             Live Probabilities
           </div>
           <div className="space-y-4">
             {liveOdds.slice(0, 4).map((bet, idx) => (
@@ -121,7 +121,7 @@ export function OddsTab({ odds, loading }: OddsTabProps) {
         <div className="p-4 space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <DollarSign className="w-4 h-4 text-muted-foreground" />
-            Pre-Match Odds
+             Pre-Match Probabilities
           </div>
 
           {/* Match Winner 1X2 */}
