@@ -321,12 +321,12 @@ export function AIPredictionCard({
           </div>
         )}
 
-        {/* Unlocked indicator - shows for Pro/Premium tiers, AND daily tier on Android after ad unlock */}
+        {/* Available indicator - shows for Pro/Premium tiers, AND daily tier on Android after ad unlock */}
         {hasAccess && !isAdmin && (isProTier || isPremiumTier || (isAndroidApp && isDailyTier)) && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <div className="flex items-center justify-center gap-2 py-2 px-3 bg-green-500/10 rounded-lg border border-green-500/20">
               <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-              <span className="text-[10px] md:text-xs font-medium text-green-400">Tip Unlocked</span>
+              <span className="text-[10px] md:text-xs font-medium text-green-400">AI Prediction Available</span>
             </div>
           </div>
         )}
