@@ -252,11 +252,26 @@ Deno.serve(async (req) => {
 
                     // Auto-grant free Pro month at 100 points (once per season)
                     if (newPoints >= 100 && !stats.reward_granted) {
-                      // Mark reward as granted
+                      // Mark reward as granted + log in arena_rewards
                       await supabase
                         .from("arena_user_stats")
                         .update({ reward_granted: true })
                         .eq("id", stats.id);
+
+                      // Insert arena_rewards record
+                      const { data: seasonData } = await supabase
+                        .from("arena_user_stats")
+                        .select("season_id")
+                        .eq("id", stats.id)
+                        .single();
+
+                      if (seasonData) {
+                        await supabase.from("arena_rewards").insert({
+                          user_id: ap.user_id,
+                          season_id: seasonData.season_id,
+                          reward_type: "free_pro_month",
+                        });
+                      }
 
                       // Extend or create Pro subscription for 30 days
                       const expiresAt = new Date();
