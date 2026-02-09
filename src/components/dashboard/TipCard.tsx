@@ -228,7 +228,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Value</span>
-              <span className="blur-sm opacity-50 font-bold text-primary">@{tip.odds.toFixed(2)}</span>
+              <span className="blur-sm opacity-50 font-bold text-primary">{tip.odds.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -340,7 +340,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-xs text-muted-foreground">Value</span>
-            <span className="font-bold text-base text-primary">@{tip.odds.toFixed(2)}</span>
+            <span className="font-bold text-base text-primary">{tip.odds.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -349,7 +349,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       <div className="p-3 sm:p-4 pt-0">
         <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-success/10 rounded-lg border border-success/20">
            <CheckCircle2 className="h-4 w-4 text-success" />
-           <span className="text-xs font-medium text-success">Pick Unlocked</span>
+           <span className="text-xs font-medium text-success">AI Pick Unlocked</span>
          </div>
       </div>
     </div>

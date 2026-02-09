@@ -140,7 +140,7 @@ export function AdminTicketCard({
             </Badge>
           )}
           <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 ml-auto">
-            @{ticket.total_odds?.toFixed(2) || "1.00"}
+            {ticket.total_odds?.toFixed(2) || "1.00"}
           </Badge>
         </div>
 
@@ -177,7 +177,7 @@ export function AdminTicketCard({
                       {match.prediction}
                     </Badge>
                     <span className="text-sm font-medium text-muted-foreground">
-                      @{match.odds.toFixed(2)}
+                      {match.odds.toFixed(2)}
                     </span>
                   </div>
                 </div>
