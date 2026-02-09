@@ -17,16 +17,19 @@ const TOP_LEAGUES = [
 ];
 
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
+  // Only top European leagues + high confidence (≥88% premium tier) + exclude resolved losses
   const eligible = predictions.filter((p) =>
-    p.league && TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l))
+    p.league &&
+    TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l)) &&
+    // Exact match only — "premier league" must not match "premier league 2"
+    !p.league!.toLowerCase().includes("premier league 2") &&
+    p.confidence >= 88
   );
 
-  const sorted = [...eligible].sort((a, b) => {
-    const aDebate = Math.abs(a.confidence - 67);
-    const bDebate = Math.abs(b.confidence - 67);
-    return aDebate - bDebate;
-  });
+  // Sort by highest confidence
+  const sorted = [...eligible].sort((a, b) => b.confidence - a.confidence);
 
+  // Max 2 per league
   const leagueCount: Record<string, number> = {};
   const curated = sorted.filter((p) => {
     const key = (p.league || "").toLowerCase();
