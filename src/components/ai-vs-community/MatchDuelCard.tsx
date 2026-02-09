@@ -44,6 +44,7 @@ interface MatchDuelCardProps {
 
 export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, dailyLimit, onPredictionMade }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
+  const [pendingPick, setPendingPick] = useState<string | null>(null);
   const matchTimestamp = useMemo(() => {
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
@@ -52,6 +53,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
     prediction.match_id, seasonId, matchTimestamp,
     { dailyUsed, dailyLimit, tier: userTier }
   );
+  const isLocked = !!userPick; // prediction confirmed & saved to DB
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
   const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
 
@@ -292,13 +294,24 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                 </Button>
               )}
             </div>
+          ) : isLocked ? (
+            /* Prediction already confirmed & saved */
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 text-center space-y-1.5">
+              <CheckCircle2 className="h-4 w-4 mx-auto text-primary" />
+              <p className="text-[10px] font-semibold text-primary">Prediction locked. Good luck! 🍀</p>
+              <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">
+                Your pick: {userPick}
+              </Badge>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] text-muted-foreground font-medium">Your Prediction</p>
                 <span className="text-[8px] text-muted-foreground/60 italic">{dailyUsed}/{dailyLimit} used today</span>
               </div>
-              {/* Main 1X2 */}
+
+              {/* All prediction options — radio-group behavior via pendingPick */}
+              {/* Match Result 1X2 */}
               <div className="space-y-1">
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Match Result</span>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -306,16 +319,21 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     <Button
                       key={option}
                       size="sm"
-                      variant={userPick === option ? "default" : "outline"}
-                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
-                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
+                      variant={pendingPick === option ? "default" : "outline"}
+                      className={cn(
+                        "h-7 text-[10px] transition-all",
+                        pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                        pendingPick && pendingPick !== option && "opacity-60"
+                      )}
+                      onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>
                   ))}
                 </div>
               </div>
+
               {/* BTTS */}
               <div className="space-y-1">
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Both Teams to Score</span>
@@ -324,16 +342,21 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     <Button
                       key={option}
                       size="sm"
-                      variant={userPick === option ? "default" : "outline"}
-                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
-                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
+                      variant={pendingPick === option ? "default" : "outline"}
+                      className={cn(
+                        "h-7 text-[10px] transition-all",
+                        pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                        pendingPick && pendingPick !== option && "opacity-60"
+                      )}
+                      onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>
                   ))}
                 </div>
               </div>
+
               {/* Goals */}
               <div className="space-y-1">
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
@@ -342,16 +365,42 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     <Button
                       key={option}
                       size="sm"
-                      variant={userPick === option ? "default" : "outline"}
-                      className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
-                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
+                      variant={pendingPick === option ? "default" : "outline"}
+                      className={cn(
+                        "h-7 text-[10px] transition-all",
+                        pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                        pendingPick && pendingPick !== option && "opacity-60"
+                      )}
+                      onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>
                   ))}
                 </div>
               </div>
+
+              {/* Confirm Prediction button — only visible when a pick is pending */}
+              {pendingPick && (
+                <Button
+                  className="w-full h-8 text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_12px_rgba(15,155,142,0.3)]"
+                  onClick={async () => {
+                    if (canPick && pendingPick) {
+                      await submitPick(pendingPick);
+                      onPredictionMade?.();
+                      setPendingPick(null);
+                    }
+                  }}
+                  disabled={submitting || !canPick}
+                >
+                  {submitting ? (
+                    <><Loader2 className="h-3 w-3 animate-spin" /> Confirming...</>
+                  ) : (
+                    <><CheckCircle2 className="h-3 w-3" /> Confirm Prediction: {pendingPick}</>
+                  )}
+                </Button>
+              )}
+
               {userTier === "exclusive" && (
                 <div className="flex gap-1.5 flex-wrap items-center">
                   <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30 gap-0.5">
@@ -403,22 +452,25 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
         </div>
       )}
 
-      {/* Pending */}
-      {!matchFinished && userPick && (
+      {/* Pending - locked prediction */}
+      {!matchFinished && isLocked && (
         <div className="px-4 py-2 border-t border-border/30 bg-primary/5 flex items-center justify-between">
           <Badge variant="outline" className="text-[10px] text-primary border-primary/30 gap-1">
-            <Clock className="h-3 w-3" /> YOUR PICK: {userPick}
+            <Lock className="h-3 w-3" /> LOCKED: {userPick}
           </Badge>
           <span className="text-[9px] text-muted-foreground/60">Points awarded after full-time</span>
         </div>
       )}
 
-      {!matchFinished && !userPick && (
+      {/* Pending - no pick yet */}
+      {!matchFinished && !isLocked && (
         <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center justify-between">
           <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
             <Clock className="h-3 w-3" /> PENDING
           </Badge>
-          <span className="text-[9px] text-muted-foreground/60">Make your prediction above</span>
+          <span className="text-[9px] text-muted-foreground/60">
+            {pendingPick ? "Confirm your selection above" : "Make your prediction above"}
+          </span>
         </div>
       )}
 
