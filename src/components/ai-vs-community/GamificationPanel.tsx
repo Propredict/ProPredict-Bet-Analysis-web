@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export function GamificationPanel() {
-  const stats = { accuracy: 72, streak: 5, monthlyWins: 67, monthlyGoal: 100 };
+  const stats = { accuracy: 72, streak: 5, monthlyWins: 0, monthlyGoal: 100 };
 
   const milestones = [
     { wins: 20, label: "Analyst", reached: true, Icon: Target, tooltip: "20 correct predictions – Analyst badge earned!" },
