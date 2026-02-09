@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Ticket, User } from "lucide-react";
+import { Zap, Heart, Ticket, User, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -21,6 +21,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: Heart, 
     path: "/favorites",
     matchPaths: ["/favorites"]
+  },
+  { 
+    label: "Arena", 
+    icon: Swords, 
+    path: "/ai-vs-community",
+    matchPaths: ["/ai-vs-community"]
   },
   { 
     label: "AI Picks", 
