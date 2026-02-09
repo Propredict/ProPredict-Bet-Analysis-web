@@ -235,19 +235,77 @@ Deno.serve(async (req) => {
                   });
                 }
 
-                // Update arena user stats
+                // Update arena user stats + check for 100-point reward
                 if (arenaWon) {
                   const { data: stats } = await supabase
                     .from("arena_user_stats")
-                    .select("id, points, wins")
+                    .select("id, points, wins, reward_granted")
                     .eq("user_id", ap.user_id)
                     .maybeSingle();
 
                   if (stats) {
+                    const newPoints = stats.points + 1;
                     await supabase
                       .from("arena_user_stats")
-                      .update({ points: stats.points + 1, wins: stats.wins + 1 })
+                      .update({ points: newPoints, wins: stats.wins + 1 })
                       .eq("id", stats.id);
+
+                    // Auto-grant free Pro month at 100 points (once per season)
+                    if (newPoints >= 100 && !stats.reward_granted) {
+                      // Mark reward as granted
+                      await supabase
+                        .from("arena_user_stats")
+                        .update({ reward_granted: true })
+                        .eq("id", stats.id);
+
+                      // Extend or create Pro subscription for 30 days
+                      const expiresAt = new Date();
+                      expiresAt.setDate(expiresAt.getDate() + 30);
+
+                      const { data: existingSub } = await supabase
+                        .from("user_subscriptions")
+                        .select("id, plan, expires_at, status")
+                        .eq("user_id", ap.user_id)
+                        .maybeSingle();
+
+                      if (existingSub) {
+                        // Only upgrade if currently free — don't downgrade Pro/Premium
+                        if (existingSub.plan === "free" || existingSub.status !== "active") {
+                          await supabase
+                            .from("user_subscriptions")
+                            .update({
+                              plan: "basic",
+                              status: "active",
+                              expires_at: expiresAt.toISOString(),
+                              source: "arena_reward",
+                            })
+                            .eq("id", existingSub.id);
+                          console.log(`🎉 Arena reward: granted free Pro month to ${ap.user_id}`);
+                        } else {
+                          console.log(`ℹ️ Arena reward: user ${ap.user_id} already has ${existingSub.plan}, skipping upgrade`);
+                        }
+                      } else {
+                        // No subscription row — create one
+                        await supabase
+                          .from("user_subscriptions")
+                          .insert({
+                            user_id: ap.user_id,
+                            plan: "basic",
+                            status: "active",
+                            expires_at: expiresAt.toISOString(),
+                          });
+                        console.log(`🎉 Arena reward: created free Pro month for ${ap.user_id}`);
+                      }
+
+                      // Send reward notification
+                      await supabase.from("arena_notifications").insert({
+                        user_id: ap.user_id,
+                        type: "win",
+                        title: "🎉 Free Pro Month Unlocked!",
+                        message: "Congratulations! You reached 100 Arena points and earned a free Pro month. Enjoy Pro access for 30 days!",
+                        match_id: fixtureId,
+                      });
+                    }
                   }
                 } else {
                   const { data: stats } = await supabase
