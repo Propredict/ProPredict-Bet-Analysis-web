@@ -215,8 +215,8 @@ const HelpSupport = () => {
   return (
     <>
       <Helmet>
-        <title>Help & Support – ProPredict | FAQs & Contact</title>
-        <meta name="description" content="Get help with ProPredict. Browse FAQs about subscriptions, predictions, and technical issues, or contact our support team directly." />
+        <title>Help & Support – AI Sports Predictions | ProPredict</title>
+        <meta name="description" content="Get help with ProPredict. Browse FAQs about subscriptions, AI predictions, and technical issues, or contact our support team." />
       </Helmet>
       <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
       {/* Back Button */}

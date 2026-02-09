@@ -156,17 +156,17 @@ export default function AllTickets() {
   return (
     <>
       <Helmet>
-        <title>Winning Tips History – ProPredict Archive</title>
+        <title>Winning History – AI Sports Predictions | ProPredict</title>
         <meta
           name="description"
-          content="Browse our complete archive of football betting tips and prediction tickets. Track winning history, analyze past performance, and discover successful betting patterns."
+          content="Browse our complete archive of AI sports predictions and analysis. Track winning history and analyze past performance."
         />
-        <meta name="keywords" content="football tips history, betting tips archive, winning predictions, football betting history, sports predictions archive" />
+        <meta name="keywords" content="AI predictions history, sports analysis archive, winning predictions, sports predictions history" />
         <link rel="canonical" href="https://propredict.me/winning-history" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Winning Tips History – ProPredict Archive" />
-        <meta property="og:description" content="Browse our complete archive of football betting tips and prediction tickets. Track winning history and analyze past performance." />
+        <meta property="og:title" content="Winning History – AI Sports Predictions | ProPredict" />
+        <meta property="og:description" content="Browse our complete archive of AI sports predictions and analysis. Track winning history and analyze past performance." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://propredict.me/winning-history" />
         

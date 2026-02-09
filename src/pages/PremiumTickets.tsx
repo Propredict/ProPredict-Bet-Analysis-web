@@ -58,7 +58,7 @@ export default function PremiumTickets() {
       <title>Premium AI Combos – ProPredict</title>
       <meta
         name="description"
-        content="Premium multi-bet ticket combinations with highest value picks. For entertainment and informational use only."
+        content="Premium AI-powered match combinations with highest confidence selections. For informational and entertainment purposes only."
       />
     </Helmet>
     <div className="section-gap">

@@ -9,8 +9,8 @@ const Disclaimer = () => {
   return (
     <>
       <Helmet>
-        <title>Disclaimer – ProPredict | Legal Notice & Age Restriction</title>
-        <meta name="description" content="Important legal disclaimer for ProPredict. This app is for informational and entertainment purposes only. 18+ age restriction applies." />
+        <title>Disclaimer – AI Sports Predictions | ProPredict</title>
+        <meta name="description" content="Important legal disclaimer for ProPredict. AI-powered sports analysis for informational and entertainment purposes only. 18+ age restriction applies." />
       </Helmet>
       <div className="section-gap">
       <Button

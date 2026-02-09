@@ -185,7 +185,7 @@ const HowAIWorks = () => {
                 <div className="p-1.5 rounded-md bg-violet-500/20">
                   <Layers className="h-4 w-4 text-violet-500" />
                 </div>
-                <h3 className="text-xs md:text-sm font-semibold text-foreground">Smart Tickets & Combined Analysis</h3>
+                <h3 className="text-xs md:text-sm font-semibold text-foreground">AI Combos & Combined Analysis</h3>
               </div>
               <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
                 ProPredict groups matches into structured combinations by evaluating:

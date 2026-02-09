@@ -98,8 +98,8 @@ const Settings = () => {
   return (
     <>
       <Helmet>
-        <title>Settings – ProPredict | App Preferences & Legal</title>
-        <meta name="description" content="Manage your ProPredict account settings, preferences, and access legal information including privacy policy and terms of service." />
+        <title>Settings – AI Sports Predictions | ProPredict</title>
+        <meta name="description" content="Manage your ProPredict account settings, preferences, and access legal information. AI-powered sports analysis platform." />
       </Helmet>
       <div className="section-gap max-w-2xl mx-auto">
       {/* Header */}

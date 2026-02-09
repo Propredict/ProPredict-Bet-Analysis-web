@@ -112,10 +112,10 @@ export default function MatchPreviews() {
   return (
     <>
       <Helmet>
-        <title>Match Previews | ProPredict</title>
+        <title>Match Previews – AI Sports Predictions | ProPredict</title>
         <meta
           name="description"
-          content="Expert AI analysis and predictions for today's top football matches from Premier League, La Liga, Serie A, Bundesliga and more."
+          content="AI-powered match analysis and predictions for today's top football matches. For informational and entertainment purposes only."
         />
       </Helmet>
 
