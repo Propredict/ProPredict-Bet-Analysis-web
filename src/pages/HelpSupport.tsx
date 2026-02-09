@@ -100,7 +100,7 @@ const HelpSupport = () => {
         },
         {
           q: "How do I unlock tips?",
-          a: "Free users can access Daily tips. To unlock Exclusive and Premium tips, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
+          a: "Free users can access Daily AI Picks. To unlock Pro and Premium AI Picks, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
         },
         {
           q: "When are new tips posted?",

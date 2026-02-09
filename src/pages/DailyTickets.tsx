@@ -84,7 +84,7 @@ export default function DailyTickets() {
 
   return <>
     <Helmet>
-      <title>Daily Tickets – ProPredict</title>
+      <title>Daily AI Combos – ProPredict</title>
       <meta
         name="description"
         content="Explore daily sports tickets and AI-based analysis. Entertainment and informational use only."
@@ -98,7 +98,7 @@ export default function DailyTickets() {
             <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Tickets</h1>
+            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Multi-bet combinations"}
             </p>
@@ -118,7 +118,7 @@ export default function DailyTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Daily Tickets combine multiple daily predictions into structured betting-style tickets, created for informational and analytical purposes only. Each ticket is generated based on AI analysis and match statistics.
+          Daily AI Combos combine multiple daily predictions into structured multi-match combinations, created for informational and analytical purposes only. Each combo is generated based on AI analysis and match statistics.
         </p>
       </Card>
 
@@ -172,7 +172,7 @@ export default function DailyTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No daily tickets available</p>
+              <p className="text-primary mb-1">No daily AI combos available</p>
               <p className="text-sm">Check back later for new picks</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -184,6 +184,11 @@ export default function DailyTickets() {
           renderTickets()
         )}
       </div>
+
+      {/* Compliance Disclaimer */}
+      <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
+        These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
+      </p>
     </div>
   </>;
 }

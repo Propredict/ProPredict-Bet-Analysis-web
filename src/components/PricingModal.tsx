@@ -30,7 +30,7 @@ const plans = [
     icon: Sparkles,
     description: "Basic access to get started",
     features: [
-      "Full access to daily tips/tickets",
+      "Full access to Daily AI Picks/Combos",
       "Free AI Basic predictions",
       "Live scores & standings",
       "Ads supported",
@@ -47,10 +47,10 @@ const plans = [
     description: "Full access to daily & exclusive",
     popular: true,
     features: [
-      "Daily & Pro tips/tickets unlocked",
+      "Daily & Pro AI Picks/Combos unlocked",
       "Basic & Pro AI predictions",
       "Live scores & standings",
-      "Ad-free tips/ticket experience",
+      "Ad-free AI Picks/Combos experience",
     ],
     buttonText: "Upgrade to Pro",
     buttonVariant: "default" as const,
@@ -115,7 +115,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             Upgrade Your Plan
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            Choose the plan that fits your betting style
+            Choose the plan that fits your style
           </DialogDescription>
         </DialogHeader>
 
