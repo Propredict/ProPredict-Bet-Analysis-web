@@ -134,7 +134,7 @@ export default function DailyTips() {
           </div>
           <div>
             <p className="text-sm sm:text-base font-bold text-foreground">{dailyTips.length}</p>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Today's Tips</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
           </div>
         </Card>
         <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
