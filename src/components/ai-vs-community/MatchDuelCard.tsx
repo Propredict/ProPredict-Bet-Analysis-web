@@ -50,7 +50,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
   }, [prediction.match_date, prediction.match_time]);
-  const { userPick, userStatus, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
+  const { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
     prediction.match_id, seasonId, matchTimestamp,
     { dailyUsed, dailyLimit, tier: userTier }
   );
@@ -303,12 +303,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
           ) : isLocked ? (
             /* Prediction already confirmed & saved — show user's market + selection */
             (() => {
-              // Derive market label from user pick
-              const marketLabel = ["Home", "Draw", "Away"].includes(userPick!)
-                ? "Match Result"
-                : userPick!.startsWith("GG") || userPick!.startsWith("NG")
-                ? "Both Teams to Score"
-                : "Goals";
+              // Use market label from hook (derived from DB data)
+              const marketLabel = userMarketLabel || "Match Result";
 
               // Check if AI prediction aligns with user pick
               const aiPickMapped = prediction.prediction === "1" ? "Home" : prediction.prediction === "X" ? "Draw" : prediction.prediction === "2" ? "Away" : prediction.prediction;
@@ -493,22 +489,10 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                 </Button>
               )}
 
-              {userTier === "exclusive" && (
-                <div className="flex gap-1.5 flex-wrap items-center">
-                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30 gap-0.5">
-                    <Crown className="h-2.5 w-2.5" />
-                    {prediction.prediction === communityPick ? "AI agrees with this user" : "User challenges the AI"}
-                  </Badge>
-                </div>
+              {/* "Make your prediction above" hint when no pick selected */}
+              {!pendingPick && (
+                <p className="text-[9px] text-muted-foreground/60 text-right italic">Make your prediction above</p>
               )}
-              <div className="flex gap-1.5 flex-wrap">
-                <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">🔵 Pro Pick: {predictionLabel(communityPick)}</Badge>
-                {userTier === "exclusive" && (
-                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30 gap-0.5">
-                    <Crown className="h-2.5 w-2.5" /> Exclusive
-                  </Badge>
-                )}
-              </div>
             </div>
           )}
         </div>
