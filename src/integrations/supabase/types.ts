@@ -101,6 +101,126 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_predictions: {
+        Row: {
+          created_at: string | null
+          id: string
+          match_id: string
+          prediction: string
+          season_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          match_id: string
+          prediction: string
+          season_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          match_id?: string
+          prediction?: string
+          season_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_predictions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "active_arena_season"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_predictions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "arena_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      arena_seasons: {
+        Row: {
+          created_at: string | null
+          ends_at: string
+          id: string
+          season_key: string
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          season_key: string
+          starts_at: string
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          season_key?: string
+          starts_at?: string
+        }
+        Relationships: []
+      }
+      arena_user_stats: {
+        Row: {
+          current_streak: number
+          id: string
+          losses: number
+          points: number
+          reward_granted: boolean
+          season_id: string
+          updated_at: string | null
+          user_id: string
+          wins: number
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          losses?: number
+          points?: number
+          reward_granted?: boolean
+          season_id: string
+          updated_at?: string | null
+          user_id: string
+          wins?: number
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          losses?: number
+          points?: number
+          reward_granted?: boolean
+          season_id?: string
+          updated_at?: string | null
+          user_id?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_user_stats_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "active_arena_season"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_user_stats_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "arena_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -468,6 +588,16 @@ export type Database = {
       }
     }
     Views: {
+      active_arena_season: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          id: string | null
+          season_key: string | null
+          starts_at: string | null
+        }
+        Relationships: []
+      }
       ai_prediction_leagues: {
         Row: {
           league: string | null
@@ -611,6 +741,7 @@ export type Database = {
       }
     }
     Functions: {
+      ensure_arena_user_stats: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
