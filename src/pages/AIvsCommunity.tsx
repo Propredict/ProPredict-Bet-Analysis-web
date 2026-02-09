@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Swords, Brain, Loader2, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -84,8 +85,19 @@ function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
 }
 
 export default function AIvsCommunity() {
-  const { predictions: todayPredictions, loading: loadingToday } = useAIPredictions("today");
-  const { predictions: tomorrowPredictions, loading: loadingTomorrow } = useAIPredictions("tomorrow");
+  const { predictions: todayPredictions, loading: loadingToday, refetch: refetchToday } = useAIPredictions("today");
+  const { predictions: tomorrowPredictions, loading: loadingTomorrow, refetch: refetchTomorrow } = useAIPredictions("tomorrow");
+
+  // Auto-refresh every 10 minutes to rotate out started matches
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchToday();
+      refetchTomorrow();
+      setTick((t) => t + 1); // force re-evaluation of isUpcoming filters
+    }, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refetchToday, refetchTomorrow]);
   const { plan } = useUserPlan();
   const arenaStats = useArenaStats();
   const userTier: "free" | "pro" | "exclusive" = plan === "premium" ? "exclusive" : plan === "basic" ? "pro" : "free";
