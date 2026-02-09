@@ -151,8 +151,8 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
           {userTier === "free" ? (
             <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
               <Lock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
-              <p className="text-[10px] text-muted-foreground">Upgrade to Pro to challenge the AI</p>
-              <p className="text-[9px] text-muted-foreground/70">Earn points, track your accuracy, and unlock free Pro access.</p>
+              <p className="text-[10px] font-semibold text-foreground">Challenge the AI</p>
+              <p className="text-[9px] text-muted-foreground/70 leading-relaxed">Earn points for correct predictions, track your accuracy, and unlock a free Pro month.</p>
               <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
                 <Sparkles className="h-3 w-3" /> Get Pro Access
               </Button>
@@ -188,7 +188,7 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
         </div>
       </div>
 
-      {/* Result badge row (shown when match is resolved) */}
+      {/* Result / Points feedback row */}
       {resultStatus && (
         <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -201,20 +201,20 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                 <XCircle className="h-3 w-3" /> LOSS
               </Badge>
             )}
-            <span className="text-[10px] text-muted-foreground">Result: FT</span>
           </div>
-          {resultStatus === "won" && (
-            <span className="text-[10px] font-semibold text-success">Points earned: +1</span>
-          )}
+          <span className={`text-[10px] font-semibold ${resultStatus === "won" ? "text-success" : "text-muted-foreground"}`}>
+            {resultStatus === "won" ? "+1 Point earned" : "No points earned"}
+          </span>
         </div>
       )}
 
-      {/* Pending badge for unresolved matches */}
+      {/* Pending */}
       {!resultStatus && (
-        <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center gap-2">
+        <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center justify-between">
           <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
             <Clock className="h-3 w-3" /> PENDING
           </Badge>
+          <span className="text-[9px] text-muted-foreground/60">Points awarded after full-time</span>
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import { Trophy, Flame, Target, Brain, Crown, Info } from "lucide-react";
+import { Trophy, Flame, Target, Brain, Crown, Info, Award } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -26,7 +26,7 @@ export function GamificationPanel() {
           <h3 className="text-sm font-semibold text-foreground">Your Arena Stats</h3>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <div className="text-center p-2.5 bg-muted/20 rounded-lg">
             <Target className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold text-foreground">{stats.accuracy}%</p>
@@ -42,9 +42,24 @@ export function GamificationPanel() {
             <p className="text-lg font-bold text-foreground">{stats.monthlyWins}</p>
             <p className="text-[9px] text-muted-foreground">Monthly Wins</p>
           </div>
+          <div className="text-center p-2.5 bg-muted/20 rounded-lg relative">
+            <div className="flex items-center justify-center gap-0.5 mb-1">
+              <Award className="h-4 w-4 text-amber-400" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-2.5 w-2.5 text-muted-foreground/50 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[220px] text-[10px]">
+                  <p>Every correct prediction earns 1 point. Reach 100 points in a month to unlock 1 free Pro month.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <p className="text-lg font-bold text-amber-400">{stats.monthlyWins}</p>
+            <p className="text-[9px] text-muted-foreground">Points</p>
+          </div>
         </div>
 
-        {/* Monthly Progress with info tooltip */}
+        {/* Monthly Progress */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-center text-[10px]">
             <div className="flex items-center gap-1">
@@ -61,9 +76,12 @@ export function GamificationPanel() {
             <span className="text-foreground font-medium">{stats.monthlyWins} / {stats.monthlyGoal}</span>
           </div>
           <Progress value={(stats.monthlyWins / stats.monthlyGoal) * 100} className="h-2.5" />
+          <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
+            🎯 Every correct prediction = 1 point. Collect 100 points in a month to unlock 1 free month of Pro access.
+          </p>
         </div>
 
-        {/* Reward Milestones with icons and hover */}
+        {/* Reward Milestones */}
         <div className="space-y-2">
           <span className="text-[10px] text-muted-foreground font-medium">Reward Milestones</span>
           <div className="flex gap-2 flex-wrap">
@@ -90,6 +108,9 @@ export function GamificationPanel() {
               </Tooltip>
             ))}
           </div>
+          <p className="text-[9px] text-muted-foreground/60">
+            Milestones reset monthly. Only winning predictions count toward rewards.
+          </p>
         </div>
       </Card>
     </TooltipProvider>
