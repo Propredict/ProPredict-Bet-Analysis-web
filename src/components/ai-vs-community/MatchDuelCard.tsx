@@ -1,10 +1,11 @@
-import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown } from "lucide-react";
+import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown, Goal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { CommentsSection } from "./CommentsSection";
+import { deriveMarkets } from "@/components/ai-predictions/utils/marketDerivation";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 
 function generateCommunityVotes(prediction: AIPrediction) {
@@ -38,6 +39,7 @@ interface MatchDuelCardProps {
 export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
+  const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
 
   const communityPick = community.home > community.draw && community.home > community.away ? "1"
     : community.away > community.draw && community.away > community.home ? "2" : "X";
@@ -76,6 +78,8 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
             </div>
             <span className="text-xs font-semibold text-primary">AI Analysis</span>
           </div>
+
+          {/* Main prediction */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-muted-foreground">Prediction</span>
@@ -94,6 +98,75 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               </div>
             )}
           </div>
+
+          {/* All AI Derived Markets */}
+          <div className="p-2.5 bg-muted/20 rounded-lg border border-border/30 space-y-2.5">
+            <div className="flex items-center gap-1.5">
+              <Goal className="h-3 w-3 text-primary" />
+              <span className="text-[10px] font-semibold text-foreground">AI Market Predictions</span>
+            </div>
+
+            {/* BTTS */}
+            <div className="space-y-1">
+              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Both Teams to Score</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className={`flex items-center justify-between px-2 py-1.5 rounded border ${markets.btts.gg.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">GG (Both Score)</span>
+                  {markets.btts.gg.recommended && <Badge className="text-[7px] px-1 py-0 bg-primary/20 text-primary border-primary/30">AI</Badge>}
+                </div>
+                <div className={`flex items-center justify-between px-2 py-1.5 rounded border ${markets.btts.ng.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">NG (No Goal from One)</span>
+                  {markets.btts.ng.recommended && <Badge className="text-[7px] px-1 py-0 bg-primary/20 text-primary border-primary/30">AI</Badge>}
+                </div>
+              </div>
+            </div>
+
+            {/* Goals */}
+            <div className="space-y-1">
+              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.over15.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">Over 1.5</span>
+                  <span className={`text-[8px] ${markets.goals.over15.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.over15.value}</span>
+                </div>
+                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.over25.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">Over 2.5</span>
+                  <span className={`text-[8px] ${markets.goals.over25.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.over25.value}</span>
+                </div>
+                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.under35.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">Under 3.5</span>
+                  <span className={`text-[8px] ${markets.goals.under35.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.under35.value}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Double Chance */}
+            <div className="space-y-1">
+              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Double Chance</span>
+              <div className="flex gap-1.5">
+                <Badge variant="outline" className={`text-[9px] ${markets.doubleChance.recommended ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/30"}`}>
+                  {markets.doubleChance.option}
+                  {markets.doubleChance.recommended && " ⭐"}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Combos */}
+            {markets.combos.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Combo</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {markets.combos.map((c, i) => (
+                    <Badge key={i} variant="outline" className={`text-[9px] ${c.recommended ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/30"}`}>
+                      {c.label} {c.recommended && "⭐"}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI Analysis text */}
           <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/10">
             <p className="text-[10px] text-muted-foreground leading-relaxed">
               {prediction.analysis
