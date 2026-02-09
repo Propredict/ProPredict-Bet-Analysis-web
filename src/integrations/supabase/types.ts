@@ -105,6 +105,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          match_id: string | null
           message: string
           read: boolean | null
           title: string
@@ -114,6 +115,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          match_id?: string | null
           message: string
           read?: boolean | null
           title: string
@@ -123,6 +125,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          match_id?: string | null
           message?: string
           read?: boolean | null
           title?: string
