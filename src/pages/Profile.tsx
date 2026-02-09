@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useArenaStats } from "@/hooks/useArenaStats";
 import { restorePurchases } from "@/hooks/useRevenueCat";
 import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const Profile = () => {
   const { user, signOut, session } = useAuth();
   const { plan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+  const arenaStats = useArenaStats();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -390,20 +392,35 @@ const Profile = () => {
               {/* Arena Points Section */}
               <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Diamond className="h-4 w-4 text-primary" />
+                  <Diamond className="h-4 w-4 text-amber-400" />
                   <span className="text-xs font-semibold text-foreground">Arena Points</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground">Monthly Points</span>
-                  <span className="text-lg font-bold text-primary">0</span>
+                  <span className="text-lg font-bold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">{arenaStats.points}</span>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="text-foreground font-medium">0 / 100</span>
+                    <span className="text-foreground font-medium">{arenaStats.points} / 100</span>
                   </div>
-                  <Progress value={0} className="h-2.5" />
+                  <Progress value={Math.min((arenaStats.points / 100) * 100, 100)} className="h-2.5" />
+                  {arenaStats.points < 100 && (
+                    <p className="text-[9px] text-amber-400/80 font-medium">
+                      🔥 {100 - arenaStats.points} points left to unlock a free Pro month!
+                    </p>
+                  )}
                 </div>
+                {arenaStats.points >= 100 && !arenaStats.rewardGranted && (
+                  <div className="p-2 rounded bg-amber-500/15 border border-amber-400/30 text-center">
+                    <p className="text-[10px] font-semibold text-amber-400">🎉 100 points reached! Reward coming soon.</p>
+                  </div>
+                )}
+                {arenaStats.rewardGranted && (
+                  <div className="p-2 rounded bg-success/10 border border-success/30 text-center">
+                    <p className="text-[10px] text-success font-medium">✅ Free Pro month granted!</p>
+                  </div>
+                )}
                 <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
                   🎯 Collect 100 points in a month to unlock 1 free month of Pro access. Points reset every month.
                 </p>

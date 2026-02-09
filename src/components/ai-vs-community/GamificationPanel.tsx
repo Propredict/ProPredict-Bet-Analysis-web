@@ -1,4 +1,4 @@
-import { Trophy, Flame, Target, Brain, Crown, Info, Award } from "lucide-react";
+import { Trophy, Flame, Target, Brain, Crown, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,15 +8,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useArenaStats } from "@/hooks/useArenaStats";
+import { Loader2 } from "lucide-react";
 
 export function GamificationPanel() {
-  const stats = { accuracy: 72, streak: 5, monthlyWins: 0, monthlyGoal: 100 };
+  const stats = useArenaStats();
+
+  const monthlyGoal = 100;
+  const pointsLeft = monthlyGoal - stats.points;
+  const progressPercent = Math.min((stats.points / monthlyGoal) * 100, 100);
 
   const milestones = [
-    { wins: 20, label: "Analyst", reached: true, Icon: Target, tooltip: "20 correct predictions – Analyst badge earned!" },
-    { wins: 50, label: "Expert", reached: true, Icon: Brain, tooltip: "50 correct predictions – Expert status achieved!" },
-    { wins: 100, label: "Free Pro Month", reached: false, Icon: Crown, tooltip: "100 Wins in a Month → Free Pro Access (30 days)" },
+    { wins: 20, label: "Analyst", reached: stats.points >= 20, Icon: Target, tooltip: "20 correct predictions – Analyst badge earned!" },
+    { wins: 50, label: "Expert", reached: stats.points >= 50, Icon: Brain, tooltip: "50 correct predictions – Expert status achieved!" },
+    { wins: 100, label: "Free Pro Month", reached: stats.points >= 100, Icon: Crown, tooltip: "100 Wins in a Month → Free Pro Access (30 days)" },
   ];
+
+  if (stats.loading) {
+    return (
+      <Card className="p-4 bg-card border-border/50 flex items-center justify-center py-8">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+      </Card>
+    );
+  }
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -29,17 +43,21 @@ export function GamificationPanel() {
         <div className="grid grid-cols-4 gap-2">
           <div className="text-center p-2.5 bg-muted/20 rounded-lg">
             <Target className="h-4 w-4 mx-auto mb-1 text-primary" />
-            <p className="text-lg font-bold text-foreground">{stats.accuracy}%</p>
+            <p className="text-lg font-bold text-foreground">
+              {stats.wins + stats.losses > 0
+                ? Math.round((stats.wins / (stats.wins + stats.losses)) * 100)
+                : 0}%
+            </p>
             <p className="text-[9px] text-muted-foreground">Accuracy</p>
           </div>
           <div className="text-center p-2.5 bg-muted/20 rounded-lg">
             <Flame className="h-4 w-4 mx-auto mb-1 text-destructive" />
-            <p className="text-lg font-bold text-foreground">{stats.streak}</p>
+            <p className="text-lg font-bold text-foreground">{stats.currentStreak}</p>
             <p className="text-[9px] text-muted-foreground">Win Streak</p>
           </div>
           <div className="text-center p-2.5 bg-muted/20 rounded-lg">
             <Trophy className="h-4 w-4 mx-auto mb-1 text-primary" />
-            <p className="text-lg font-bold text-foreground">{stats.monthlyWins}</p>
+            <p className="text-lg font-bold text-foreground">{stats.wins}</p>
             <p className="text-[9px] text-muted-foreground">Monthly Wins</p>
           </div>
           <div className="text-center p-2.5 rounded-lg relative bg-amber-500/10 border border-amber-400/20 shadow-[0_0_12px_rgba(251,191,36,0.1)]">
@@ -54,10 +72,25 @@ export function GamificationPanel() {
                 </TooltipContent>
               </Tooltip>
             </div>
-            <p className="text-lg font-bold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">{stats.monthlyWins}</p>
+            <p className="text-lg font-bold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">{stats.points}</p>
             <p className="text-[9px] text-amber-400/70 font-medium">Points</p>
           </div>
         </div>
+
+        {/* Reward reached banner */}
+        {stats.points >= 100 && !stats.rewardGranted && (
+          <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30 text-center space-y-1">
+            <Crown className="h-5 w-5 mx-auto text-amber-400" />
+            <p className="text-xs font-semibold text-amber-400">🎉 You've reached 100 points!</p>
+            <p className="text-[9px] text-muted-foreground">Your free Pro month reward will be applied soon.</p>
+          </div>
+        )}
+
+        {stats.rewardGranted && (
+          <div className="p-2.5 rounded-lg bg-success/10 border border-success/30 text-center">
+            <p className="text-[10px] text-success font-medium">✅ Free Pro month reward granted this season!</p>
+          </div>
+        )}
 
         {/* Monthly Progress */}
         <div className="space-y-1.5">
@@ -73,12 +106,14 @@ export function GamificationPanel() {
                 </TooltipContent>
               </Tooltip>
             </div>
-            <span className="text-foreground font-medium">{stats.monthlyWins} / {stats.monthlyGoal}</span>
+            <span className="text-foreground font-medium">{stats.points} / {monthlyGoal}</span>
           </div>
-          <Progress value={(stats.monthlyWins / stats.monthlyGoal) * 100} className="h-2.5" />
-          <p className="text-[9px] text-amber-400/80 font-medium leading-relaxed">
-            🔥 {stats.monthlyGoal - stats.monthlyWins} points left to unlock a free Pro month!
-          </p>
+          <Progress value={progressPercent} className="h-2.5" />
+          {pointsLeft > 0 && (
+            <p className="text-[9px] text-amber-400/80 font-medium leading-relaxed">
+              🔥 {pointsLeft} points left to unlock a free Pro month!
+            </p>
+          )}
           <p className="text-[9px] text-muted-foreground/60 leading-relaxed">
             Points reset every month. Each correct prediction earns 1 point.
           </p>

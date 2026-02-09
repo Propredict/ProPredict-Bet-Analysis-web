@@ -1,4 +1,4 @@
-import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown, Goal, Info } from "lucide-react";
+import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown, Goal, Info, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,7 @@ import { CommentsSection } from "./CommentsSection";
 import { deriveMarkets } from "@/components/ai-predictions/utils/marketDerivation";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { cn } from "@/lib/utils";
+import { useArenaPrediction } from "@/hooks/useArenaPrediction";
 
 function generateCommunityVotes(prediction: AIPrediction) {
   const seed = prediction.match_id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -35,11 +36,19 @@ function predictionLabel(pred: string): string {
 interface MatchDuelCardProps {
   prediction: AIPrediction;
   userTier: "free" | "pro" | "exclusive";
+  seasonId: string | null;
 }
 
-export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
+export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
-  const [userPick, setUserPick] = useState<string | null>(null);
+  // Build a rough timestamp from match_date + match_time for kickoff check
+  const matchTimestamp = useMemo(() => {
+    if (!prediction.match_date || !prediction.match_time) return null;
+    return `${prediction.match_date}T${prediction.match_time}:00`;
+  }, [prediction.match_date, prediction.match_time]);
+  const { userPick, submitPick, submitting, canPick, isKickedOff } = useArenaPrediction(
+    prediction.match_id, seasonId, matchTimestamp
+  );
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
   const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
 
@@ -282,8 +291,8 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => !matchFinished && setUserPick(option)}
-                      disabled={matchFinished}
+                      onClick={() => canPick && submitPick(option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>
@@ -300,8 +309,8 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => !matchFinished && setUserPick(option)}
-                      disabled={matchFinished}
+                      onClick={() => canPick && submitPick(option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>
@@ -318,8 +327,8 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => !matchFinished && setUserPick(option)}
-                      disabled={matchFinished}
+                      onClick={() => canPick && submitPick(option)}
+                      disabled={matchFinished || isKickedOff || submitting}
                     >
                       {option}
                     </Button>

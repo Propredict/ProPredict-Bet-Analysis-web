@@ -5,6 +5,7 @@ import { MatchDuelCard } from "@/components/ai-vs-community/MatchDuelCard";
 import { GamificationPanel } from "@/components/ai-vs-community/GamificationPanel";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useArenaStats } from "@/hooks/useArenaStats";
 
 const TOP_LEAGUES = [
   "premier league",
@@ -68,6 +69,7 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
 export default function AIvsCommunity() {
   const { predictions, loading } = useAIPredictions("today");
   const { plan } = useUserPlan();
+  const arenaStats = useArenaStats();
   const userTier: "free" | "pro" | "exclusive" = plan === "premium" ? "exclusive" : plan === "basic" ? "pro" : "free";
 
   const curated = curateMatches(predictions);
@@ -113,7 +115,7 @@ export default function AIvsCommunity() {
         ) : curated.length > 0 ? (
           <div className="space-y-4">
             {curated.map((prediction) => (
-              <MatchDuelCard key={prediction.id} prediction={prediction} userTier={userTier} />
+              <MatchDuelCard key={prediction.id} prediction={prediction} userTier={userTier} seasonId={arenaStats.seasonId} />
             ))}
           </div>
         ) : (
