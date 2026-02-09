@@ -62,7 +62,7 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
   }, [markets]);
   // Determine what the actual winning outcome was (for user pick evaluation)
   // If match is finished (rawStatus exists), derive the actual result from AI's result
-  const matchFinished = rawStatus !== null;
+  const matchFinished = rawStatus === "won" || rawStatus === "lost";
   const actualOutcome = useMemo(() => {
     if (!matchFinished) return null;
     // If AI won, the AI prediction IS the correct outcome
