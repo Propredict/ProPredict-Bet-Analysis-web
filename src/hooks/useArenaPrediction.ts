@@ -24,6 +24,7 @@ export function useArenaPrediction(
 ) {
   const { user } = useAuth();
   const [userPick, setUserPick] = useState<string | null>(null);
+  const [userStatus, setUserStatus] = useState<string | null>(null); // "pending" | "won" | "lost"
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -43,12 +44,15 @@ export function useArenaPrediction(
 
     (supabase as any)
       .from("arena_predictions")
-      .select("prediction")
+      .select("prediction, status")
       .eq("user_id", user.id)
       .eq("match_id", matchId)
       .maybeSingle()
       .then(({ data }: any) => {
-        if (data?.prediction) setUserPick(data.prediction);
+        if (data?.prediction) {
+          setUserPick(data.prediction);
+          setUserStatus(data.status || "pending");
+        }
         setLoaded(true);
       });
   }, [user, matchId]);
@@ -81,5 +85,5 @@ export function useArenaPrediction(
 
   const canPick = !isKickedOff && !!user && !isFree && !limitReached && !userPick;
 
-  return { userPick, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
+  return { userPick, userStatus, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
 }
