@@ -58,7 +58,7 @@ export default function PremiumTips() {
       <title>Premium AI Picks – ProPredict</title>
       <meta
         name="description"
-        content="Premium AI sports tips with highest confidence predictions. For entertainment and informational purposes only."
+        content="Premium AI-powered sports predictions with highest confidence analysis. For entertainment and informational purposes only."
       />
     </Helmet>
     <div className="section-gap">
