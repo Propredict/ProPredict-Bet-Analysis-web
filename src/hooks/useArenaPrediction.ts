@@ -62,22 +62,58 @@ export function useArenaPrediction(
     if (userPick) return;
     if (limitReached) return;
     setSubmitting(true);
+
+    // Optimistic lock — immediately show as locked so UI can't re-submit
+    setUserPick(pick);
+    setUserStatus("pending");
+
     try {
+      // Try RPC first
       const { error } = await (supabase as any).rpc("insert_arena_prediction", {
         p_match_id: matchId,
         p_market_type: deriveMarketType(pick),
         p_selection: pick,
       });
-      if (!error) {
-        setUserPick(pick);
-      } else if (error.code === "23505") {
-        // Unique constraint — already predicted, just lock it
-        setUserPick(pick);
-      } else {
-        console.error("Arena prediction RPC error:", error);
+      if (error) {
+        if (error.code === "23505") {
+          // Already exists — keep locked
+          console.log("Arena: duplicate prediction, keeping locked");
+        } else {
+          console.warn("Arena RPC failed, trying direct insert:", error.message);
+          // Fallback: direct table insert (handles text match_id)
+          const { data: season } = await (supabase as any)
+            .from("active_arena_season")
+            .select("id")
+            .maybeSingle();
+
+          if (season?.id) {
+            const { error: insertError } = await (supabase as any)
+              .from("arena_predictions")
+              .insert({
+                user_id: user.id,
+                match_id: matchId,
+                prediction: pick,
+                season_id: season.id,
+                status: "pending",
+              });
+            if (insertError && insertError.code !== "23505") {
+              console.error("Arena direct insert error:", insertError);
+              // Rollback optimistic update
+              setUserPick(null);
+              setUserStatus(null);
+            }
+          } else {
+            console.error("No active arena season found");
+            setUserPick(null);
+            setUserStatus(null);
+          }
+        }
       }
     } catch (e) {
       console.error("Arena prediction submit error:", e);
+      // Rollback optimistic update
+      setUserPick(null);
+      setUserStatus(null);
     } finally {
       setSubmitting(false);
     }
