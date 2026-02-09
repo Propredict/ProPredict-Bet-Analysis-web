@@ -106,13 +106,13 @@ export default function PremiumTickets() {
                 <Lock className="h-4 w-4 text-fuchsia-400" />
               </div>
               <div>
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Premium Access</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium tickets</p>
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground">Access Premium AI Predictions</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium AI combos</p>
               </div>
             </div>
             <Button size="sm" className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
               <Sparkles className="h-3 w-3" />
-              Get PREMIUM
+              Upgrade to Premium
             </Button>
           </div>
         </Card>
@@ -138,7 +138,7 @@ export default function PremiumTickets() {
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{premiumTickets.length}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tickets</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
             </div>
           </div>
         </Card>
