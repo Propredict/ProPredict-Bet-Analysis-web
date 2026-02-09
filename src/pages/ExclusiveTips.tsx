@@ -96,7 +96,7 @@ export default function ExclusiveTips() {
                 <Crown className="h-4 w-4 text-amber-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Unlock All Tips</h3>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Pro AI Predictions</h3>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function ExclusiveTips() {
           </div>
           <div>
             <p className="text-sm sm:text-base font-bold text-foreground">{exclusiveTips.length}</p>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tips</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
           </div>
         </Card>
         <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">

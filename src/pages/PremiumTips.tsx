@@ -70,7 +70,7 @@ export default function PremiumTips() {
           </div>
           <div>
             <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Premium AI Picks</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Our highest confidence picks</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Our highest-confidence AI predictions</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -105,9 +105,9 @@ export default function PremiumTips() {
               <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-fuchsia-400" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-foreground">Unlock Premium Predictions</h2>
+              <h2 className="text-sm sm:text-base font-bold text-foreground">Access Premium AI Predictions</h2>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">
-                Get access to our highest confidence picks
+                Access our highest-confidence AI predictions
               </p>
             </div>
             <div className="flex items-center gap-3 text-[9px] sm:text-[10px] text-muted-foreground">
@@ -121,7 +121,7 @@ export default function PremiumTips() {
               </span>
             </div>
             <Button className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
-              Get PREMIUM for €5.99/month
+              Upgrade to Premium – €5.99/month
             </Button>
           </div>
         </Card>}
@@ -143,7 +143,7 @@ export default function PremiumTips() {
           </div>
           <div>
             <p className="text-sm sm:text-base font-bold text-foreground">{premiumTips.length}</p>
-            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tips</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
           </div>
         </Card>
         <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
