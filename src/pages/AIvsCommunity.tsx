@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MatchDuelCard } from "@/components/ai-vs-community/MatchDuelCard";
 import { GamificationPanel } from "@/components/ai-vs-community/GamificationPanel";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useUserPlan } from "@/hooks/useUserPlan";
 
 const TOP_LEAGUES = [
   "premier league",
@@ -38,7 +39,8 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
 
 export default function AIvsCommunity() {
   const { predictions, loading } = useAIPredictions("today");
-  const userTier: "free" | "pro" | "exclusive" = "free";
+  const { plan } = useUserPlan();
+  const userTier: "free" | "pro" | "exclusive" = plan === "premium" ? "exclusive" : plan === "basic" ? "pro" : "free";
 
   const curated = curateMatches(predictions);
 
