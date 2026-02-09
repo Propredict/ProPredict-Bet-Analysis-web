@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Swords, Brain, Loader2, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MatchDuelCard } from "@/components/ai-vs-community/MatchDuelCard";
 import { GamificationPanel } from "@/components/ai-vs-community/GamificationPanel";
+import { ArenaResults } from "@/components/ai-vs-community/ArenaResults";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useArenaStats } from "@/hooks/useArenaStats";
@@ -151,31 +153,44 @@ export default function AIvsCommunity() {
 
         <GamificationPanel />
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : curated.length > 0 ? (
-          <div className="space-y-4">
-            {curated.map((prediction) => (
-              <MatchDuelCard
-                key={prediction.id}
-                prediction={prediction}
-                userTier={userTier}
-                seasonId={arenaStats.seasonId}
-                dailyUsed={dailyCount}
-                dailyLimit={dailyLimit}
-                onPredictionMade={increment}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <Brain className="h-8 w-8 text-primary/40" />
-            <p className="text-sm text-muted-foreground">No arena matches available today</p>
-            <p className="text-[10px] text-muted-foreground">Check back later for curated predictions from top European leagues.</p>
-          </div>
-        )}
+        <Tabs defaultValue="upcoming" className="w-full">
+          <TabsList className="w-full grid grid-cols-2 h-9">
+            <TabsTrigger value="upcoming" className="text-xs">Upcoming</TabsTrigger>
+            <TabsTrigger value="results" className="text-xs">Results</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="upcoming" className="mt-3">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : curated.length > 0 ? (
+              <div className="space-y-4">
+                {curated.map((prediction) => (
+                  <MatchDuelCard
+                    key={prediction.id}
+                    prediction={prediction}
+                    userTier={userTier}
+                    seasonId={arenaStats.seasonId}
+                    dailyUsed={dailyCount}
+                    dailyLimit={dailyLimit}
+                    onPredictionMade={increment}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 py-12 text-center">
+                <Brain className="h-8 w-8 text-primary/40" />
+                <p className="text-sm text-muted-foreground">No arena matches available today</p>
+                <p className="text-[10px] text-muted-foreground">Check back later for curated predictions from top European leagues.</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="results" className="mt-3">
+            <ArenaResults />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
