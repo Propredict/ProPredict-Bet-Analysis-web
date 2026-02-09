@@ -136,7 +136,7 @@ export default function ExclusiveTickets() {
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Access</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Available</p>
             </div>
           </div>
         </Card>
