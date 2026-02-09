@@ -9,6 +9,7 @@ import { deriveMarkets } from "@/components/ai-predictions/utils/marketDerivatio
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { cn } from "@/lib/utils";
 import { useArenaPrediction } from "@/hooks/useArenaPrediction";
+import { Swords, Bot as BotIcon } from "lucide-react";
 
 function generateCommunityVotes(prediction: AIPrediction) {
   const seed = prediction.match_id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -300,36 +301,93 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
               )}
             </div>
           ) : isLocked ? (
-            /* Prediction already confirmed & saved */
-            <div className={`p-3 rounded-lg border text-center space-y-1.5 ${
-              userStatus === "won" ? "bg-success/10 border-success/30" :
-              userStatus === "lost" ? "bg-destructive/10 border-destructive/30" :
-              "bg-primary/5 border-primary/20"
-            }`}>
-              {userStatus === "won" ? (
-                <CheckCircle2 className="h-4 w-4 mx-auto text-success" />
-              ) : userStatus === "lost" ? (
-                <XCircle className="h-4 w-4 mx-auto text-destructive" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4 mx-auto text-primary" />
-              )}
-              <p className={`text-[10px] font-semibold ${
-                userStatus === "won" ? "text-success" :
-                userStatus === "lost" ? "text-destructive" :
-                "text-primary"
-              }`}>
-                {userStatus === "won" ? "You predicted correctly! +1 Point 🎉" :
-                 userStatus === "lost" ? "Your prediction was incorrect" :
-                 "Prediction locked. Good luck! 🍀"}
-              </p>
-              <Badge className={`text-[9px] ${
-                userStatus === "won" ? "bg-success/15 text-success border-success/30" :
-                userStatus === "lost" ? "bg-destructive/15 text-destructive border-destructive/30" :
-                "bg-primary/15 text-primary border-primary/30"
-              }`}>
-                Your pick: {userPick} • {userStatus === "won" ? "WIN" : userStatus === "lost" ? "LOSS" : "PENDING"}
-              </Badge>
-            </div>
+            /* Prediction already confirmed & saved — show user's market + selection */
+            (() => {
+              // Derive market label from user pick
+              const marketLabel = ["Home", "Draw", "Away"].includes(userPick!)
+                ? "Match Result"
+                : userPick!.startsWith("GG") || userPick!.startsWith("NG")
+                ? "Both Teams to Score"
+                : "Goals";
+
+              // Check if AI prediction aligns with user pick
+              const aiPickMapped = prediction.prediction === "1" ? "Home" : prediction.prediction === "X" ? "Draw" : prediction.prediction === "2" ? "Away" : prediction.prediction;
+              const aiAgreesWithUser = userPick === aiPickMapped;
+
+              return (
+                <div className={`p-3 rounded-lg border space-y-2.5 ${
+                  userStatus === "won" ? "bg-success/10 border-success/30" :
+                  userStatus === "lost" ? "bg-destructive/10 border-destructive/30" :
+                  "bg-primary/5 border-primary/20"
+                }`}>
+                  {/* Status icon + headline */}
+                  <div className="flex items-center gap-2">
+                    {userStatus === "won" ? (
+                      <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                    ) : userStatus === "lost" ? (
+                      <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-primary shrink-0" />
+                    )}
+                    <p className={`text-[10px] font-semibold ${
+                      userStatus === "won" ? "text-success" :
+                      userStatus === "lost" ? "text-destructive" :
+                      "text-primary"
+                    }`}>
+                      {userStatus === "won" ? "You predicted correctly! +1 Point 🎉" :
+                       userStatus === "lost" ? "Your prediction was incorrect" :
+                       "Prediction locked"}
+                    </p>
+                  </div>
+
+                  {/* User's market & selection */}
+                  <div className="space-y-1 pl-6">
+                    <p className="text-[9px] text-muted-foreground">You have predicted:</p>
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] text-foreground">
+                        <span className="text-muted-foreground">Market:</span>{" "}
+                        <span className="font-semibold">{marketLabel}</span>
+                      </p>
+                      <p className="text-[10px] text-foreground">
+                        <span className="text-muted-foreground">Selection:</span>{" "}
+                        <span className="font-semibold">{userPick}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status badge */}
+                  <Badge className={`text-[9px] ${
+                    userStatus === "won" ? "bg-success/15 text-success border-success/30" :
+                    userStatus === "lost" ? "bg-destructive/15 text-destructive border-destructive/30" :
+                    "bg-primary/15 text-primary border-primary/30"
+                  }`}>
+                    {userStatus === "won" ? "WIN" : userStatus === "lost" ? "LOSS" : "PENDING"}
+                  </Badge>
+
+                  {/* AI agreement badge */}
+                  {userStatus !== "won" && userStatus !== "lost" && (
+                    <div className="pt-0.5">
+                      {aiAgreesWithUser ? (
+                        <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20 gap-1">
+                          <Bot className="h-3 w-3" /> AI agrees with your prediction
+                        </Badge>
+                      ) : (
+                        <Badge className="text-[9px] bg-accent/10 text-accent border-accent/20 gap-1">
+                          <Swords className="h-3 w-3" /> You challenged the AI
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Evaluation note for pending */}
+                  {userStatus !== "won" && userStatus !== "lost" && (
+                    <p className="text-[8px] text-muted-foreground/60 italic">
+                      Result will be evaluated after full-time.
+                    </p>
+                  )}
+                </div>
+              );
+            })()
           ) : isKickedOff ? (
             /* Match already started — too late to predict, but comments stay open */
             <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
