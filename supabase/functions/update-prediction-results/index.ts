@@ -166,18 +166,109 @@ Deno.serve(async (req) => {
             `✓ ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
           );
 
-          // Resolve Arena predictions for this finished match
+          // --- Arena: insert FT notifications + resolve predictions ---
           try {
-            const { error: arenaError } = await supabase.rpc("resolve_arena_match", {
-              p_match_id: fixtureId,
-            });
-            if (arenaError) {
-              console.error(`Arena resolve error for ${fixtureId}:`, arenaError.message);
-            } else {
-              console.log(`✓ Arena resolved for match ${fixtureId}`);
+            // Get all users who have arena predictions on this match
+            const { data: arenaPreds } = await supabase
+              .from("arena_predictions")
+              .select("id, user_id, prediction, status")
+              .eq("match_id", fixtureId)
+              .eq("status", "pending");
+
+            if (arenaPreds && arenaPreds.length > 0) {
+              const matchLabel = `${prediction.home_team} vs ${prediction.away_team}`;
+
+              // Insert FT notifications
+              const ftNotifications = arenaPreds.map((ap: any) => ({
+                user_id: ap.user_id,
+                type: "ft",
+                title: "Match finished",
+                message: `Match finished: ${matchLabel}. Your prediction is being evaluated.`,
+                match_id: fixtureId,
+              }));
+
+              await supabase.from("arena_notifications").insert(ftNotifications);
+              console.log(`✓ Inserted ${ftNotifications.length} FT notifications for match ${fixtureId}`);
+
+              // Resolve each arena prediction
+              for (const ap of arenaPreds) {
+                let arenaWon = false;
+                const pick = ap.prediction;
+
+                // Match Result picks
+                if (["Home", "1"].includes(pick)) arenaWon = homeGoals > awayGoals;
+                else if (["Draw", "X"].includes(pick)) arenaWon = homeGoals === awayGoals;
+                else if (["Away", "2"].includes(pick)) arenaWon = homeGoals < awayGoals;
+                // BTTS picks
+                else if (pick === "GG (Yes)") arenaWon = homeGoals > 0 && awayGoals > 0;
+                else if (pick === "NG (No)") arenaWon = homeGoals === 0 || awayGoals === 0;
+                // Goals picks
+                else if (pick === "Over 2.5") arenaWon = (homeGoals + awayGoals) > 2;
+                else if (pick === "Under 2.5") arenaWon = (homeGoals + awayGoals) < 3;
+                else if (pick === "Over 1.5") arenaWon = (homeGoals + awayGoals) > 1;
+                else if (pick === "Under 3.5") arenaWon = (homeGoals + awayGoals) < 4;
+
+                const arenaStatus = arenaWon ? "won" : "lost";
+
+                // Update arena prediction status
+                await supabase
+                  .from("arena_predictions")
+                  .update({ status: arenaStatus })
+                  .eq("id", ap.id);
+
+                // Insert WIN/LOSS notification
+                if (arenaWon) {
+                  await supabase.from("arena_notifications").insert({
+                    user_id: ap.user_id,
+                    type: "win",
+                    title: "You won! 🎉",
+                    message: `Your prediction ${pick} was correct. +1 point added to your Arena score.`,
+                    match_id: fixtureId,
+                  });
+                } else {
+                  await supabase.from("arena_notifications").insert({
+                    user_id: ap.user_id,
+                    type: "loss",
+                    title: "Prediction lost ❌",
+                    message: `Your prediction ${pick} was not correct. Better luck next match!`,
+                    match_id: fixtureId,
+                  });
+                }
+
+                // Update arena user stats
+                if (arenaWon) {
+                  const { data: stats } = await supabase
+                    .from("arena_user_stats")
+                    .select("id, points, wins")
+                    .eq("user_id", ap.user_id)
+                    .maybeSingle();
+
+                  if (stats) {
+                    await supabase
+                      .from("arena_user_stats")
+                      .update({ points: stats.points + 1, wins: stats.wins + 1 })
+                      .eq("id", stats.id);
+                  }
+                } else {
+                  const { data: stats } = await supabase
+                    .from("arena_user_stats")
+                    .select("id, losses")
+                    .eq("user_id", ap.user_id)
+                    .maybeSingle();
+
+                  if (stats) {
+                    await supabase
+                      .from("arena_user_stats")
+                      .update({ losses: stats.losses + 1 })
+                      .eq("id", stats.id);
+                  }
+                }
+
+                console.log(`✓ Arena ${ap.user_id}: ${pick} → ${arenaStatus}`);
+              }
             }
           } catch (arenaErr) {
-            console.error(`Arena resolve exception for ${fixtureId}:`, arenaErr);
+            console.error(`Arena resolve/notify error for ${fixtureId}:`, arenaErr);
           }
         }
 
