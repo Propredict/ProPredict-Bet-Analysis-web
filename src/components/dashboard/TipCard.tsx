@@ -349,7 +349,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       <div className="p-3 sm:p-4 pt-0">
         <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-success/10 rounded-lg border border-success/20">
            <CheckCircle2 className="h-4 w-4 text-success" />
-           <span className="text-xs font-medium text-success">AI Pick Unlocked</span>
+           <span className="text-xs font-medium text-success">AI Pick Available</span>
          </div>
       </div>
     </div>

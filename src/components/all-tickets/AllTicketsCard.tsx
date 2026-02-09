@@ -360,7 +360,7 @@ export function AllTicketsCard({
           <div className="flex items-center gap-1.5">
             <Badge className="gap-0.5 bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
               <CheckCircle2 className="h-2.5 w-2.5" />
-              AI Analysis Available
+              Available
             </Badge>
             <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-[10px] px-1.5">
               {totalOdds.toFixed(2)}
@@ -423,7 +423,7 @@ export function AllTicketsCard({
       <div className="px-2.5 sm:px-3 py-2 border-t border-border/50">
          <Badge className="w-full justify-center gap-1.5 py-1.5 bg-primary/20 text-primary border-primary/30 text-xs">
            <CheckCircle2 className="h-3.5 w-3.5" />
-           AI Combo Unlocked
+           AI Combo Available
          </Badge>
       </div>
     </Card>

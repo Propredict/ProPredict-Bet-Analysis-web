@@ -363,7 +363,7 @@ export default function TicketDetails() {
                 ) : (
                   <Badge className="gap-1 bg-success/20 text-success border-success/30">
                     <CheckCircle2 className="h-3 w-3" />
-                    AI Analysis Available
+                    Available
                   </Badge>
                 )}
                 {!isLocked && (
@@ -457,7 +457,7 @@ export default function TicketDetails() {
             <div className="px-4 py-3 border-t border-border/50">
                <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
                  <CheckCircle2 className="h-4 w-4" />
-                 AI Combo Unlocked
+                 AI Combo Available
                </Badge>
             </div>
           )}
