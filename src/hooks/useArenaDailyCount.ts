@@ -13,15 +13,17 @@ export function useArenaDailyCount(seasonId: string | null) {
   useEffect(() => {
     if (!user || !seasonId) { setLoading(false); return; }
 
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const localStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const localEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     (supabase as any)
       .from("arena_predictions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("season_id", seasonId)
-      .gte("created_at", `${today}T00:00:00`)
-      .lt("created_at", `${today}T23:59:59.999`)
+      .gte("created_at", localStart.toISOString())
+      .lte("created_at", localEnd.toISOString())
       .then(({ count: c }: any) => {
         setCount(c ?? 0);
         setLoading(false);

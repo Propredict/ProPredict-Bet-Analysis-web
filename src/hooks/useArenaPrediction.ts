@@ -24,7 +24,14 @@ export function useArenaPrediction(
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  const isKickedOff = matchTimestamp ? new Date(matchTimestamp) <= new Date() : false;
+  // Parse as local time to avoid UTC shift
+  const isKickedOff = (() => {
+    if (!matchTimestamp) return false;
+    const parts = matchTimestamp.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!parts) return false;
+    const local = new Date(+parts[1], +parts[2] - 1, +parts[3], +parts[4], +parts[5]);
+    return local <= new Date();
+  })();
   const isFree = options.tier === "free";
   const limitReached = options.dailyUsed >= options.dailyLimit;
 

@@ -71,14 +71,29 @@ function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
 }
 
 export default function AIvsCommunity() {
-  const { predictions, loading } = useAIPredictions("today");
+  const { predictions: todayPredictions, loading: loadingToday } = useAIPredictions("today");
+  const { predictions: tomorrowPredictions, loading: loadingTomorrow } = useAIPredictions("tomorrow");
   const { plan } = useUserPlan();
   const arenaStats = useArenaStats();
   const userTier: "free" | "pro" | "exclusive" = plan === "premium" ? "exclusive" : plan === "basic" ? "pro" : "free";
   const dailyLimit = getDailyLimit(userTier);
   const { dailyCount, increment } = useArenaDailyCount(arenaStats.seasonId);
 
-  const curated = curateMatches(predictions);
+  const loading = loadingToday || loadingTomorrow;
+
+  // Curate from today first; if all today's matches are kicked off, include tomorrow's
+  const todayCurated = curateMatches(todayPredictions);
+  const hasUpcoming = todayCurated.some((p) => {
+    if (!p.match_date || !p.match_time) return true;
+    const [y, mo, d] = p.match_date.split("-").map(Number);
+    const [h, m] = p.match_time.split(":").map(Number);
+    return new Date(y, mo - 1, d, h, m) > new Date();
+  });
+
+  // If no upcoming matches from today, mix in tomorrow's
+  const curated = hasUpcoming
+    ? todayCurated
+    : [...todayCurated, ...curateMatches(tomorrowPredictions)].slice(0, 8);
 
   return (
     <>
