@@ -87,7 +87,7 @@ export default function DailyTickets() {
       <title>Daily AI Combos – ProPredict</title>
       <meta
         name="description"
-        content="Explore daily sports tickets and AI-based analysis. Entertainment and informational use only."
+        content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only."
       />
     </Helmet>
     <div className="section-gap">
@@ -100,7 +100,7 @@ export default function DailyTickets() {
           <div>
             <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Multi-bet combinations"}
+              {isAndroidApp ? "Unlock combos by watching ads or go Premium for exclusive access" : "AI-powered match combinations"}
             </p>
           </div>
         </div>

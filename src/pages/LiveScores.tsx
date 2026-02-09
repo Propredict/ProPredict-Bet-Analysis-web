@@ -153,10 +153,10 @@ export default function LiveScores() {
   return (
     <>
       <Helmet>
-        <title>Live Scores – ProPredict</title>
+        <title>Live Scores – AI Sports Predictions | ProPredict</title>
         <meta
           name="description"
-          content="Real-time live scores from all major football leagues. Track matches, goals, and results as they happen."
+          content="Real-time live scores from all major football leagues. Track matches, goals, and results. AI-powered sports analysis platform."
         />
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">

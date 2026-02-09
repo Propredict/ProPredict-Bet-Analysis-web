@@ -29,8 +29,8 @@ const DataDeletion = () => {
   return (
     <>
       <Helmet>
-        <title>Data Deletion – ProPredict | Request Account Removal</title>
-        <meta name="description" content="Request deletion of your personal data from ProPredict. Learn about your privacy rights and how we handle data removal requests." />
+        <title>Data Deletion – AI Sports Predictions | ProPredict</title>
+        <meta name="description" content="Request deletion of your personal data from ProPredict. AI-powered sports analysis platform. Learn about your privacy rights." />
       </Helmet>
       <div className="section-gap">
       <Button 

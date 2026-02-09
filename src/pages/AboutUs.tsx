@@ -9,7 +9,7 @@ const AboutUs = () => {
   return (
     <>
       <Helmet>
-        <title>About Us – ProPredict | AI Sports Analysis Platform</title>
+        <title>About Us – AI Sports Predictions | ProPredict</title>
         <meta name="description" content="ProPredict is an AI-powered sports analysis platform providing match insights, predictions, and statistics for informational and entertainment purposes." />
       </Helmet>
       <div className="section-gap">
@@ -49,13 +49,13 @@ const AboutUs = () => {
           </div>
 
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">No Betting Policy</h3>
+            <h3 className="font-semibold text-sm mb-1.5">No Gambling Policy</h3>
             <p className="text-xs text-muted-foreground font-medium mb-1.5">
-              ProPredict does NOT provide betting or gambling services.
+              ProPredict does NOT provide gambling services of any kind.
             </p>
             <p className="text-xs text-muted-foreground">
-              We do not accept bets, process payments for wagering, or partner with bookmakers. All content is
-              informational only.
+              We do not facilitate real-money transactions, process wagers, or connect to any gambling operators. All content is
+              for informational and entertainment purposes only.
             </p>
           </div>
 

@@ -52,7 +52,7 @@ export default function ExclusiveTickets() {
       <title>Pro AI Combos – ProPredict</title>
       <meta
         name="description"
-        content="Pro-level multi-bet ticket combinations with AI-based analysis. For entertainment and informational use only."
+        content="Pro-level AI-powered match combinations with advanced analysis. For informational and entertainment purposes only."
       />
     </Helmet>
     <div className="section-gap">
@@ -65,7 +65,7 @@ export default function ExclusiveTickets() {
           <div>
             <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
+              {isAndroidApp ? "Unlock combos by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
             </p>
           </div>
         </div>

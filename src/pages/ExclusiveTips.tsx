@@ -65,7 +65,7 @@ export default function ExclusiveTips() {
           <div>
             <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro AI Picks</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Unlock tips by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
+              {isAndroidApp ? "Unlock picks by watching ads or go Premium for exclusive access" : "Advanced match predictions with higher confidence selections"}
             </p>
           </div>
         </div>

@@ -117,8 +117,8 @@ export default function BettingTips() {
             <Target className="h-4 w-4 text-accent" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Betting Tips</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Expert curated recommendations</p>
+            <h1 className="text-sm sm:text-base font-semibold text-foreground">AI Picks</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">AI-powered match predictions</p>
           </div>
         </div>
 
@@ -159,7 +159,7 @@ export default function BettingTips() {
             <BarChart3 className="h-4 w-4 text-accent" />
             <div>
               <p className="font-bold text-sm">{avgOdds}</p>
-              <p className="text-[10px] text-muted-foreground">Avg Odds</p>
+              <p className="text-[10px] text-muted-foreground">Avg Value</p>
             </div>
           </div>
         </Card>

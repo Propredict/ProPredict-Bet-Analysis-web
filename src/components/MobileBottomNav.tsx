@@ -23,7 +23,7 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/favorites"]
   },
   { 
-    label: "Tickets", 
+    label: "AI Picks", 
     icon: Ticket, 
     path: "/winning-history",
     matchPaths: ["/winning-history", "/daily-tickets", "/exclusive-tickets", "/premium-tickets", "/daily-tips", "/exclusive-tips", "/premium-tips", "/betting-tips"]
