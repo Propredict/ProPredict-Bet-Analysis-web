@@ -303,6 +303,13 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                 Your pick: {userPick}
               </Badge>
             </div>
+          ) : isKickedOff ? (
+            /* Match already started — too late to predict */
+            <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
+              <Clock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
+              <p className="text-[10px] font-semibold text-foreground">Match In Progress</p>
+              <p className="text-[9px] text-muted-foreground/70 leading-relaxed">Predictions are locked after kickoff. Come back for the next match!</p>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
