@@ -753,6 +753,7 @@ export type Database = {
         Args: { p_market_type: string; p_match_id: string; p_selection: string }
         Returns: undefined
       }
+      resolve_arena_match: { Args: { p_match_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
