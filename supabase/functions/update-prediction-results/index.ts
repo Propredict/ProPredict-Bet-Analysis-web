@@ -269,21 +269,21 @@ Deno.serve(async (req) => {
                         .maybeSingle();
 
                       if (existingSub) {
-                        // Only upgrade if currently free — don't downgrade Pro/Premium
-                        if (existingSub.plan === "free" || existingSub.status !== "active") {
-                          await supabase
-                            .from("user_subscriptions")
-                            .update({
-                              plan: "basic",
-                              status: "active",
-                              expires_at: expiresAt.toISOString(),
-                              source: "arena_reward",
-                            })
-                            .eq("id", existingSub.id);
-                          console.log(`🎉 Arena reward: granted free Pro month to ${ap.user_id}`);
-                        } else {
-                          console.log(`ℹ️ Arena reward: user ${ap.user_id} already has ${existingSub.plan}, skipping upgrade`);
-                        }
+                        // Extend current plan by 30 days (never downgrade)
+                        const currentPlan = (existingSub.plan === "free" || existingSub.status !== "active") ? "basic" : existingSub.plan;
+                        const baseDate = existingSub.expires_at && new Date(existingSub.expires_at) > new Date() ? new Date(existingSub.expires_at) : new Date();
+                        baseDate.setDate(baseDate.getDate() + 30);
+
+                        await supabase
+                          .from("user_subscriptions")
+                          .update({
+                            plan: currentPlan,
+                            status: "active",
+                            expires_at: baseDate.toISOString(),
+                            source: "arena_reward",
+                          })
+                          .eq("id", existingSub.id);
+                        console.log(`🎉 Arena reward: extended ${currentPlan} by 30 days for ${ap.user_id}`);
                       } else {
                         // No subscription row — create one
                         await supabase

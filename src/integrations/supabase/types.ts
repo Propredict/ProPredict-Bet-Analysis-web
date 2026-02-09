@@ -179,6 +179,30 @@ export type Database = {
           },
         ]
       }
+      arena_rewards: {
+        Row: {
+          created_at: string | null
+          id: string
+          reward_type: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reward_type: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reward_type?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       arena_seasons: {
         Row: {
           created_at: string | null
