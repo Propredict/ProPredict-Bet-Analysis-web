@@ -81,7 +81,7 @@ export default function DailyTips() {
       <title>Daily AI Picks – ProPredict</title>
       <meta
         name="description"
-        content="Daily AI-powered sports tips and match insights. Free predictions for informational and entertainment purposes."
+        content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes."
       />
     </Helmet>
     <div className="section-gap">
