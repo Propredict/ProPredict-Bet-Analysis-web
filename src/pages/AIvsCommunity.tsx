@@ -17,49 +17,40 @@ const TOP_LEAGUES = [
 ];
 
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
-  // Only active (pending) matches from top European leagues with high confidence
-  const eligible = predictions.filter((p) =>
-    p.league &&
-    TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l)) &&
-    !p.league!.toLowerCase().includes("premier league 2") &&
-    p.confidence >= 88 &&
-    (!p.result_status || p.result_status === "pending") // Exclude finished matches
-  );
+  const isTopLeague = (league: string) =>
+    TOP_LEAGUES.some((l) => league.toLowerCase().includes(l)) &&
+    !league.toLowerCase().includes("premier league 2");
 
-  // Sort by highest confidence
-  const sorted = [...eligible].sort((a, b) => b.confidence - a.confidence);
+  const isPending = (p: typeof predictions[0]) =>
+    !p.result_status || p.result_status === "pending";
 
-  // Max 2 per league
+  // Premium first (≥85%), then Pro (65-84%)
+  const premium = predictions.filter((p) =>
+    p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 85
+  ).sort((a, b) => b.confidence - a.confidence);
+
+  const pro = predictions.filter((p) =>
+    p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
+    !premium.some((pr) => pr.id === p.id)
+  ).sort((a, b) => b.confidence - a.confidence);
+
+  // Fill from premium first, then backfill from pro. Max 2 per league.
   const leagueCount: Record<string, number> = {};
-  const curated = sorted.filter((p) => {
-    const key = (p.league || "").toLowerCase();
-    leagueCount[key] = (leagueCount[key] || 0) + 1;
-    return leagueCount[key] <= 2;
-  });
+  const curated: typeof predictions = [];
 
-  // If fewer than 5, backfill from slightly lower confidence (≥82%) still pending
-  if (curated.length < 5) {
-    const backfillEligible = predictions.filter((p) =>
-      p.league &&
-      TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l)) &&
-      !p.league!.toLowerCase().includes("premier league 2") &&
-      p.confidence >= 82 &&
-      p.confidence < 88 &&
-      (!p.result_status || p.result_status === "pending") &&
-      !curated.some((c) => c.id === p.id)
-    ).sort((a, b) => b.confidence - a.confidence);
-
-    for (const p of backfillEligible) {
+  for (const pool of [premium, pro]) {
+    for (const p of pool) {
+      if (curated.length >= 8) break;
       const key = (p.league || "").toLowerCase();
       leagueCount[key] = (leagueCount[key] || 0) + 1;
       if (leagueCount[key] <= 2) {
         curated.push(p);
-        if (curated.length >= 8) break;
       }
     }
+    if (curated.length >= 8) break;
   }
 
-  return curated.slice(0, 8);
+  return curated;
 }
 
 export default function AIvsCommunity() {
