@@ -65,7 +65,7 @@ export default function ExclusiveTickets() {
           <div>
             <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Unlock combos by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
+              {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "Advanced match combinations with higher confidence selections"}
             </p>
           </div>
         </div>

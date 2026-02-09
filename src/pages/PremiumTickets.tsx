@@ -46,7 +46,7 @@ export default function PremiumTickets() {
       await Promise.all([refetch(), refetchPlan()]);
       toast({
         title: "Data refreshed",
-        description: "Premium tickets have been updated.",
+        description: "Premium AI Combos have been updated.",
       });
     } finally {
       setIsRefreshing(false);
