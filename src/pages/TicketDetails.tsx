@@ -363,12 +363,12 @@ export default function TicketDetails() {
                 ) : (
                   <Badge className="gap-1 bg-success/20 text-success border-success/30">
                     <CheckCircle2 className="h-3 w-3" />
-                    Unlocked
+                    AI Analysis Available
                   </Badge>
                 )}
                 {!isLocked && (
                   <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                    @{ticket.total_odds?.toFixed(2) || "1.00"}
+                    {ticket.total_odds?.toFixed(2) || "1.00"}
                   </Badge>
                 )}
               </div>
@@ -399,12 +399,12 @@ export default function TicketDetails() {
                             <span className="text-xs text-muted-foreground">{parsed.league}</span>
                           )}
                         </div>
-                        {/* Prediction & Odds - BLURRED */}
+                        {/* Prediction & Confidence - BLURRED */}
                         <div className="flex items-center gap-2 blur-sm opacity-50">
                           <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
                             {match.prediction}
                           </Badge>
-                          <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                          <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -430,7 +430,7 @@ export default function TicketDetails() {
                         <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
                           {match.prediction}
                         </Badge>
-                        <span className="text-sm font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                        <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
                       </div>
                     </div>
                   );
@@ -439,15 +439,15 @@ export default function TicketDetails() {
             )}
           </div>
 
-          {/* Combined Value - Blurred when locked */}
+          {/* Combined Confidence Score - Blurred when locked */}
           <div className="px-4 py-3 bg-muted/20 border-t border-border/50">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Combined Value</span>
+              <span className="text-sm text-muted-foreground">Combined Confidence Score</span>
               <span className={cn(
                 "font-bold text-lg text-primary",
                 isLocked && "blur-sm opacity-50"
               )}>
-                @{ticket.total_odds?.toFixed(2) || "1.00"}
+                {ticket.total_odds?.toFixed(2) || "1.00"}
               </span>
             </div>
           </div>
@@ -457,7 +457,7 @@ export default function TicketDetails() {
             <div className="px-4 py-3 border-t border-border/50">
                <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
                  <CheckCircle2 className="h-4 w-4" />
-                 Combo Unlocked
+                 AI Combo Unlocked
                </Badge>
             </div>
           )}
@@ -474,7 +474,7 @@ export default function TicketDetails() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Share2 className="h-4 w-4" />
-                <span>Share this combo</span>
+                <span>Share this AI Combo</span>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">

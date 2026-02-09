@@ -391,7 +391,7 @@ export default function AllTickets() {
                        <span className="text-[10px] text-muted-foreground">Pick:</span>
                       <span className="text-xs font-semibold text-primary">{tip.prediction}</span>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">@{tip.odds}</span>
+                    <span className="text-xs font-medium text-muted-foreground">{tip.odds}</span>
                   </div>
                 </Card>
               );

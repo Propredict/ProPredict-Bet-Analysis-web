@@ -289,7 +289,7 @@ function TicketCard({
                     <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
                       {match.prediction || "???"}
                     </Badge>
-                    <span className="text-xs font-medium text-primary">@{match.odds.toFixed(2)}</span>
+                    <span className="text-xs font-medium text-primary">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -307,8 +307,8 @@ function TicketCard({
         {/* Combined Value - Blurred */}
         <div className="mx-3 sm:mx-4 mb-3 p-3 bg-muted/20 rounded-lg border border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Combined Value</span>
-            <span className="font-bold text-base text-primary blur-sm opacity-50">@{ticket.totalOdds.toFixed(2)}</span>
+            <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
+            <span className="font-bold text-base text-primary blur-sm opacity-50">{ticket.totalOdds.toFixed(2)}</span>
           </div>
         </div>
 
@@ -431,7 +431,7 @@ function TicketCard({
                   <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">
                     {match.prediction}
                   </Badge>
-                  <span className="text-xs font-bold text-primary">@{match.odds.toFixed(2)}</span>
+                  <span className="text-xs font-bold text-primary">{match.odds.toFixed(2)}</span>
                 </div>
               </div>
             );
@@ -450,9 +450,9 @@ function TicketCard({
 
       {/* Combined Value Footer */}
       <div className="mx-3 sm:mx-4 mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Combined Value</span>
-          <span className="font-bold text-base text-primary">@{ticket.totalOdds.toFixed(2)}</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
+            <span className="font-bold text-base text-primary">{ticket.totalOdds.toFixed(2)}</span>
         </div>
       </div>
 
@@ -460,7 +460,7 @@ function TicketCard({
       <div className="p-3 sm:p-4 pt-0">
         <div className="flex items-center justify-center gap-2 py-2.5 px-3 bg-success/10 rounded-lg border border-success/20">
            <CheckCircle2 className="h-4 w-4 text-success" />
-           <span className="text-xs font-medium text-success">Combo Unlocked</span>
+           <span className="text-xs font-medium text-success">AI Combo Unlocked</span>
          </div>
       </div>
     </div>
