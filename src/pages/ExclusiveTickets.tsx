@@ -49,7 +49,7 @@ export default function ExclusiveTickets() {
 
   return <>
     <Helmet>
-      <title>Pro Tickets – ProPredict</title>
+      <title>Pro AI Combos – ProPredict</title>
       <meta
         name="description"
         content="Pro-level multi-bet ticket combinations with AI-based analysis. For entertainment and informational use only."
@@ -63,7 +63,7 @@ export default function ExclusiveTickets() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Exclusive Tickets</h1>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Unlock tickets by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
             </p>
@@ -83,7 +83,7 @@ export default function ExclusiveTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Exclusive Tickets include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
+          Pro AI Combos include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
         </p>
       </Card>
 
@@ -155,7 +155,7 @@ export default function ExclusiveTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No pro tickets available</p>
+              <p className="text-primary mb-1">No pro AI combos available</p>
               <p className="text-sm">Check back later for new picks</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -197,6 +197,11 @@ export default function ExclusiveTickets() {
           })
         )}
       </div>
+
+      {/* Compliance Disclaimer */}
+      <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
+        These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
+      </p>
     </div>
   </>;
 }

@@ -55,7 +55,7 @@ export default function PremiumTickets() {
 
   return <>
     <Helmet>
-      <title>Premium Tickets – ProPredict</title>
+      <title>Premium AI Combos – ProPredict</title>
       <meta
         name="description"
         content="Premium multi-bet ticket combinations with highest value picks. For entertainment and informational use only."
@@ -69,7 +69,7 @@ export default function PremiumTickets() {
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Tickets</h1>
+            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest value picks for subscribers</p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function PremiumTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Premium Tickets feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
+          Premium AI Combos feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
         </p>
       </Card>
 
@@ -164,7 +164,7 @@ export default function PremiumTickets() {
           </Card> : premiumTickets.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-warning mb-1">No premium tickets available</p>
+              <p className="text-warning mb-1">No premium AI combos available</p>
               <p className="text-sm">Check back later for new picks</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -192,6 +192,11 @@ export default function PremiumTickets() {
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
       })}
       </div>
+
+      {/* Compliance Disclaimer */}
+      <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
+        These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
+      </p>
     </div>
   </>;
 }

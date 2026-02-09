@@ -38,15 +38,15 @@ import {
 } from "@/components/ui/sidebar";
 
 const tipsItems = [
-  { title: "Daily Tips", url: "/daily-tips", icon: Lightbulb },
-  { title: "Exclusive Tips", url: "/exclusive-tips", icon: Star },
-  { title: "Premium Tips", url: "/premium-tips", icon: Crown },
+  { title: "Daily AI Picks", url: "/daily-tips", icon: Lightbulb },
+  { title: "Pro AI Picks", url: "/exclusive-tips", icon: Star },
+  { title: "Premium AI Picks", url: "/premium-tips", icon: Crown },
 ];
 
 const ticketsItems = [
-  { title: "Daily Tickets", url: "/daily-tickets", icon: Calendar },
-  { title: "Exclusive Tickets", url: "/exclusive-tickets", icon: Ticket },
-  { title: "Premium Tickets", url: "/premium-tickets", icon: Crown },
+  { title: "Daily AI Combos", url: "/daily-tickets", icon: Calendar },
+  { title: "Pro AI Combos", url: "/exclusive-tickets", icon: Ticket },
+  { title: "Premium AI Combos", url: "/premium-tickets", icon: Crown },
   { title: "Winning History", url: "/winning-history", icon: Layers },
 ];
 
@@ -137,7 +137,7 @@ export function AppSidebar() {
         {/* Tips */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Tips"}
+            {!collapsed && "AI Picks"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -162,7 +162,7 @@ export function AppSidebar() {
         {/* Tickets */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Tickets"}
+            {!collapsed && "AI Combos"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

@@ -49,7 +49,7 @@ export default function ExclusiveTips() {
 
   return <>
     <Helmet>
-      <title>Pro Tips – ProPredict</title>
+      <title>Pro AI Picks – ProPredict</title>
       <meta
         name="description"
         content="Pro-level AI sports tips with higher confidence predictions. For entertainment and informational purposes only."
@@ -63,7 +63,7 @@ export default function ExclusiveTips() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Exclusive Tips</h1>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro AI Picks</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Unlock tips by watching ads or go Premium for exclusive access" : "Advanced match combinations with higher confidence selections"}
             </p>
@@ -84,7 +84,7 @@ export default function ExclusiveTips() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Exclusive Tips offer advanced match predictions with deeper analysis, higher confidence levels, and enhanced statistical insights. This section is intended for users who want more detailed and reliable predictions.
+          Pro AI Picks offer advanced match predictions with deeper analysis, higher confidence levels, and enhanced statistical insights. This section is intended for users who want more detailed and reliable predictions.
         </p>
       </Card>
 
@@ -150,7 +150,7 @@ export default function ExclusiveTips() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No pro tips available</p>
+              <p className="text-primary mb-1">No Pro AI Picks available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -192,6 +192,11 @@ export default function ExclusiveTips() {
           })
         )}
       </div>
+
+      {/* Compliance Disclaimer */}
+      <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
+        These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
+      </p>
     </div>
   </>;
 }

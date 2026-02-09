@@ -113,9 +113,9 @@ export function BettingTickets() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily tickets";
-      case "exclusive": return "See all Pro tickets";
-      case "premium": return "See all Premium tickets";
+      case "daily": return "See all Daily AI Combos";
+      case "exclusive": return "See all Pro AI Combos";
+      case "premium": return "See all Premium AI Combos";
     }
   };
 
@@ -128,7 +128,7 @@ export function BettingTickets() {
             <Ticket className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Daily Tickets</h2>
+            <h2 className="text-sm font-semibold text-foreground">Daily AI Combos</h2>
             <p className="text-[9px] text-muted-foreground">Multi-bet combinations</p>
           </div>
         </div>

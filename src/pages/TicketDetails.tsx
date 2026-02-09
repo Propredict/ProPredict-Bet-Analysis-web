@@ -173,12 +173,12 @@ export default function TicketDetails() {
   const getTierBreadcrumb = () => {
     switch (ticket.tier) {
       case "premium":
-        return { label: "Premium Tickets", path: "/premium-tickets" };
+        return { label: "Premium AI Combos", path: "/premium-tickets" };
       case "exclusive":
-        return { label: "Pro Tickets", path: "/exclusive-tickets" };
+        return { label: "Pro AI Combos", path: "/exclusive-tickets" };
       case "daily":
       default:
-        return { label: "Daily Tickets", path: "/daily-tickets" };
+        return { label: "Daily AI Combos", path: "/daily-tickets" };
     }
   };
   const tierBreadcrumb = getTierBreadcrumb();
