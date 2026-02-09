@@ -42,20 +42,20 @@ export function GamificationPanel() {
             <p className="text-lg font-bold text-foreground">{stats.monthlyWins}</p>
             <p className="text-[9px] text-muted-foreground">Monthly Wins</p>
           </div>
-          <div className="text-center p-2.5 bg-muted/20 rounded-lg relative">
+          <div className="text-center p-2.5 rounded-lg relative bg-amber-500/10 border border-amber-400/20 shadow-[0_0_12px_rgba(251,191,36,0.1)]">
             <div className="flex items-center justify-center gap-0.5 mb-1">
-              <Award className="h-4 w-4 text-amber-400" />
+              <span className="text-sm">💎</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-2.5 w-2.5 text-muted-foreground/50 cursor-help" />
+                  <Info className="h-2.5 w-2.5 text-amber-400/50 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
                    <p>Points reset every month. Each correct prediction earns 1 point. Reach 100 to unlock 1 free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
-            <p className="text-lg font-bold text-amber-400">{stats.monthlyWins}</p>
-            <p className="text-[9px] text-muted-foreground">Points</p>
+            <p className="text-lg font-bold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">{stats.monthlyWins}</p>
+            <p className="text-[9px] text-amber-400/70 font-medium">Points</p>
           </div>
         </div>
 
