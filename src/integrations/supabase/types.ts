@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       arena_predictions: {
         Row: {
           created_at: string | null
