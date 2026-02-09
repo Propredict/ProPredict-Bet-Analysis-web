@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X, RotateCcw } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X, RotateCcw, Diamond } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -385,6 +386,28 @@ const Profile = () => {
                   "Save Changes"
                 )}
               </Button>
+
+              {/* Arena Points Section */}
+              <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Diamond className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Arena Points</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Monthly Points</span>
+                  <span className="text-lg font-bold text-primary">67</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="text-foreground font-medium">67 / 100</span>
+                  </div>
+                  <Progress value={67} className="h-2.5" />
+                </div>
+                <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
+                  🎯 Collect 100 points in a month to unlock 1 free month of Pro access. Points reset every month.
+                </p>
+              </div>
 
               {/* Show plan section: Android always, Web only for paid plans */}
               {(isAndroidApp || plan !== "free") && (

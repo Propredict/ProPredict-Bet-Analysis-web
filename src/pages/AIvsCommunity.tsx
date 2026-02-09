@@ -17,13 +17,13 @@ const TOP_LEAGUES = [
 ];
 
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
-  // Only top European leagues + high confidence (≥88% premium tier) + exclude resolved losses
+  // Only active (pending) matches from top European leagues with high confidence
   const eligible = predictions.filter((p) =>
     p.league &&
     TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l)) &&
-    // Exact match only — "premier league" must not match "premier league 2"
     !p.league!.toLowerCase().includes("premier league 2") &&
-    p.confidence >= 88
+    p.confidence >= 88 &&
+    (!p.result_status || p.result_status === "pending") // Exclude finished matches
   );
 
   // Sort by highest confidence
@@ -36,6 +36,28 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
     leagueCount[key] = (leagueCount[key] || 0) + 1;
     return leagueCount[key] <= 2;
   });
+
+  // If fewer than 5, backfill from slightly lower confidence (≥82%) still pending
+  if (curated.length < 5) {
+    const backfillEligible = predictions.filter((p) =>
+      p.league &&
+      TOP_LEAGUES.some((l) => p.league!.toLowerCase().includes(l)) &&
+      !p.league!.toLowerCase().includes("premier league 2") &&
+      p.confidence >= 82 &&
+      p.confidence < 88 &&
+      (!p.result_status || p.result_status === "pending") &&
+      !curated.some((c) => c.id === p.id)
+    ).sort((a, b) => b.confidence - a.confidence);
+
+    for (const p of backfillEligible) {
+      const key = (p.league || "").toLowerCase();
+      leagueCount[key] = (leagueCount[key] || 0) + 1;
+      if (leagueCount[key] <= 2) {
+        curated.push(p);
+        if (curated.length >= 8) break;
+      }
+    }
+  }
 
   return curated.slice(0, 8);
 }
