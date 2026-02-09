@@ -142,7 +142,7 @@ export default function DailyTickets() {
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{dailyTickets.length}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Tickets</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
             </div>
           </div>
         </Card>
@@ -153,7 +153,7 @@ export default function DailyTickets() {
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Access</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Available</p>
             </div>
           </div>
         </Card>
