@@ -6,6 +6,7 @@ import { GamificationPanel } from "@/components/ai-vs-community/GamificationPane
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useArenaStats } from "@/hooks/useArenaStats";
+import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 
 const TOP_LEAGUES = [
   "premier league",
@@ -25,7 +26,6 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
   const isPending = (p: typeof predictions[0]) =>
     !p.result_status || p.result_status === "pending";
 
-  // Step 1: Try top European leagues first (Premium ≥85%, then Pro ≥65%)
   const topPremium = predictions.filter((p) =>
     p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 85
   ).sort((a, b) => b.confidence - a.confidence);
@@ -35,7 +35,6 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
     !topPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
 
-  // Step 2: If not enough from top leagues, backfill from ANY league (highest confidence pending)
   const allPremium = predictions.filter((p) =>
     p.league && isPending(p) && p.confidence >= 85 &&
     !topPremium.some((pr) => pr.id === p.id)
@@ -46,7 +45,6 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
     !topPro.some((pr) => pr.id === p.id) && !allPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
 
-  // Fill: top premium → top pro → any premium → any pro. Max 2 per league, up to 8.
   const leagueCount: Record<string, number> = {};
   const curated: typeof predictions = [];
 
@@ -66,11 +64,19 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
   return curated;
 }
 
+function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
+  if (tier === "exclusive") return 10;
+  if (tier === "pro") return 5;
+  return 0;
+}
+
 export default function AIvsCommunity() {
   const { predictions, loading } = useAIPredictions("today");
   const { plan } = useUserPlan();
   const arenaStats = useArenaStats();
   const userTier: "free" | "pro" | "exclusive" = plan === "premium" ? "exclusive" : plan === "basic" ? "pro" : "free";
+  const dailyLimit = getDailyLimit(userTier);
+  const { dailyCount, increment } = useArenaDailyCount(arenaStats.seasonId);
 
   const curated = curateMatches(predictions);
 
@@ -115,7 +121,15 @@ export default function AIvsCommunity() {
         ) : curated.length > 0 ? (
           <div className="space-y-4">
             {curated.map((prediction) => (
-              <MatchDuelCard key={prediction.id} prediction={prediction} userTier={userTier} seasonId={arenaStats.seasonId} />
+              <MatchDuelCard
+                key={prediction.id}
+                prediction={prediction}
+                userTier={userTier}
+                seasonId={arenaStats.seasonId}
+                dailyUsed={dailyCount}
+                dailyLimit={dailyLimit}
+                onPredictionMade={increment}
+              />
             ))}
           </div>
         ) : (

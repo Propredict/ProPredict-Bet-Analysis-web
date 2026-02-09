@@ -37,17 +37,20 @@ interface MatchDuelCardProps {
   prediction: AIPrediction;
   userTier: "free" | "pro" | "exclusive";
   seasonId: string | null;
+  dailyUsed: number;
+  dailyLimit: number;
+  onPredictionMade?: () => void;
 }
 
-export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardProps) {
+export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, dailyLimit, onPredictionMade }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
-  // Build a rough timestamp from match_date + match_time for kickoff check
   const matchTimestamp = useMemo(() => {
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
   }, [prediction.match_date, prediction.match_time]);
-  const { userPick, submitPick, submitting, canPick, isKickedOff } = useArenaPrediction(
-    prediction.match_id, seasonId, matchTimestamp
+  const { userPick, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
+    prediction.match_id, seasonId, matchTimestamp,
+    { dailyUsed, dailyLimit, tier: userTier }
   );
   const community = useMemo(() => generateCommunityVotes(prediction), [prediction]);
   const markets = useMemo(() => deriveMarkets(prediction), [prediction]);
@@ -266,7 +269,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardP
           </div>
 
           {/* Voting / CTA section */}
-          {userTier === "free" ? (
+          {isFree ? (
             <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
               <Lock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
               <p className="text-[10px] font-semibold text-foreground">Challenge the AI</p>
@@ -275,11 +278,25 @@ export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardP
                 <Sparkles className="h-3 w-3" /> Get Pro Access
               </Button>
             </div>
+          ) : limitReached && !userPick ? (
+            <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
+              <Info className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
+              <p className="text-[10px] font-semibold text-foreground">Daily Limit Reached</p>
+              <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
+                You've used {dailyUsed}/{dailyLimit} predictions today.
+                {userTier === "pro" && " Upgrade to Premium for 10 daily predictions."}
+              </p>
+              {userTier === "pro" && (
+                <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
+                  <Crown className="h-3 w-3" /> Get Premium
+                </Button>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] text-muted-foreground font-medium">Your Prediction</p>
-                <span className="text-[8px] text-muted-foreground/60 italic">Used for points & rewards</span>
+                <span className="text-[8px] text-muted-foreground/60 italic">{dailyUsed}/{dailyLimit} used today</span>
               </div>
               {/* Main 1X2 */}
               <div className="space-y-1">
@@ -291,8 +308,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardP
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => canPick && submitPick(option)}
-                      disabled={matchFinished || isKickedOff || submitting}
+                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
+                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
                     >
                       {option}
                     </Button>
@@ -309,8 +326,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardP
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => canPick && submitPick(option)}
-                      disabled={matchFinished || isKickedOff || submitting}
+                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
+                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
                     >
                       {option}
                     </Button>
@@ -327,8 +344,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId }: MatchDuelCardP
                       size="sm"
                       variant={userPick === option ? "default" : "outline"}
                       className={cn("h-7 text-[10px]", userPick === option && "bg-primary text-primary-foreground")}
-                      onClick={() => canPick && submitPick(option)}
-                      disabled={matchFinished || isKickedOff || submitting}
+                      onClick={async () => { if (canPick) { await submitPick(option); onPredictionMade?.(); } }}
+                      disabled={matchFinished || isKickedOff || submitting || !!userPick}
                     >
                       {option}
                     </Button>

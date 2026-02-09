@@ -2,18 +2,31 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+interface UseArenaPredictionOptions {
+  dailyUsed: number;
+  dailyLimit: number;
+  tier: "free" | "pro" | "exclusive";
+}
+
 /**
  * Manages a single user's arena prediction for a given match.
  * Loads existing prediction, allows submitting one, and locks after kickoff.
+ * Enforces daily limits per tier.
  */
-export function useArenaPrediction(matchId: string, seasonId: string | null, matchTimestamp: string | null) {
+export function useArenaPrediction(
+  matchId: string,
+  seasonId: string | null,
+  matchTimestamp: string | null,
+  options: UseArenaPredictionOptions
+) {
   const { user } = useAuth();
   const [userPick, setUserPick] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Check if match has kicked off
   const isKickedOff = matchTimestamp ? new Date(matchTimestamp) <= new Date() : false;
+  const isFree = options.tier === "free";
+  const limitReached = options.dailyUsed >= options.dailyLimit;
 
   // Load existing prediction
   useEffect(() => {
@@ -33,9 +46,9 @@ export function useArenaPrediction(matchId: string, seasonId: string | null, mat
   }, [user, matchId, seasonId]);
 
   const submitPick = useCallback(async (pick: string) => {
-    if (!user || !seasonId || isKickedOff || submitting) return;
-    // Don't allow changing an existing prediction
+    if (!user || !seasonId || isKickedOff || submitting || isFree) return;
     if (userPick) return;
+    if (limitReached) return;
     setSubmitting(true);
     try {
       const { error } = await (supabase as any)
@@ -48,10 +61,9 @@ export function useArenaPrediction(matchId: string, seasonId: string | null, mat
     } finally {
       setSubmitting(false);
     }
-  }, [user, matchId, seasonId, isKickedOff, submitting, userPick]);
+  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, isFree, limitReached]);
 
-  const locked = isKickedOff && !!userPick;
-  const canPick = !isKickedOff && !!seasonId && !!user;
+  const canPick = !isKickedOff && !!seasonId && !!user && !isFree && !limitReached && !userPick;
 
-  return { userPick, submitPick, submitting, locked, canPick, isKickedOff, loaded };
+  return { userPick, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
 }
