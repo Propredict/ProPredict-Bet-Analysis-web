@@ -493,7 +493,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
           className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
         >
           <MessageSquare className="h-3 w-3" />
-          Discussion
+          Leave your AI prediction comment
           {showComments ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
         {showComments && (
