@@ -315,7 +315,7 @@ export function AIPredictionCard({
                 ) : (
                   <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 )}
-                {unlockMethod.type === "upgrade_basic" ? "Unlock with Pro" : "Unlock with Premium"}
+                {unlockMethod.type === "upgrade_basic" ? "Pro Access Required" : "Premium Access Required"}
               </Button>
             )}
           </div>
