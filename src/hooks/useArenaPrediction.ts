@@ -8,12 +8,12 @@ interface UseArenaPredictionOptions {
   tier: "free" | "pro" | "exclusive";
 }
 
-/** Derive market_type from the user's pick string */
-function deriveMarketType(pick: string): string {
-  if (["Home", "Draw", "Away"].includes(pick)) return "match_result";
-  if (pick.startsWith("GG") || pick.startsWith("NG")) return "btts";
-  if (pick.startsWith("Over") || pick.startsWith("Under")) return "goals";
-  return "match_result";
+/** Derive market_type label from the user's pick string (client-side only) */
+function deriveMarketLabel(pick: string): string {
+  if (["Home", "Draw", "Away"].includes(pick)) return "Match Result";
+  if (pick.startsWith("GG") || pick.startsWith("NG")) return "Both Teams to Score";
+  if (pick.startsWith("Over") || pick.startsWith("Under")) return "Goals";
+  return "Match Result";
 }
 
 export function useArenaPrediction(
@@ -25,6 +25,7 @@ export function useArenaPrediction(
   const { user } = useAuth();
   const [userPick, setUserPick] = useState<string | null>(null);
   const [userStatus, setUserStatus] = useState<string | null>(null); // "pending" | "won" | "lost"
+  const [userMarketLabel, setUserMarketLabel] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -38,88 +39,110 @@ export function useArenaPrediction(
   const isFree = options.tier === "free";
   const limitReached = options.dailyUsed >= options.dailyLimit;
 
-  // Load existing prediction (persist on refresh)
-  useEffect(() => {
-    if (!user) { setLoaded(true); return; }
-
-    (supabase as any)
+  /** Fetch existing prediction from DB — used on load AND after insert */
+  const fetchExisting = useCallback(async () => {
+    if (!user) return null;
+    const { data } = await (supabase as any)
       .from("arena_predictions")
       .select("prediction, status")
       .eq("user_id", user.id)
       .eq("match_id", matchId)
-      .maybeSingle()
-      .then(({ data }: any) => {
-        if (data?.prediction) {
-          setUserPick(data.prediction);
-          setUserStatus(data.status || "pending");
-        }
-        setLoaded(true);
-      });
+      .maybeSingle();
+    return data as { prediction: string; status: string } | null;
   }, [user, matchId]);
+
+  // Load existing prediction on mount (persist on refresh)
+  useEffect(() => {
+    if (!user) { setLoaded(true); return; }
+
+    fetchExisting().then((data) => {
+      if (data?.prediction) {
+        setUserPick(data.prediction);
+        setUserStatus(data.status || "pending");
+        setUserMarketLabel(deriveMarketLabel(data.prediction));
+      }
+      setLoaded(true);
+    });
+  }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string) => {
     if (!user || isKickedOff || submitting || isFree) return;
-    if (userPick) return;
+    if (userPick) return; // already locked
     if (limitReached) return;
     setSubmitting(true);
 
-    // Optimistic lock — immediately show as locked so UI can't re-submit
+    // Optimistic lock — immediately show as locked
     setUserPick(pick);
     setUserStatus("pending");
+    setUserMarketLabel(deriveMarketLabel(pick));
 
     try {
-      // Try RPC first
-      const { error } = await (supabase as any).rpc("insert_arena_prediction", {
-        p_match_id: matchId,
-        p_market_type: deriveMarketType(pick),
-        p_selection: pick,
-      });
-      if (error) {
-        if (error.code === "23505") {
-          // Already exists — keep locked
-          console.log("Arena: duplicate prediction, keeping locked");
-        } else {
-          console.warn("Arena RPC failed, trying direct insert:", error.message);
-          // Fallback: direct table insert (handles text match_id)
-          const { data: season } = await (supabase as any)
-            .from("active_arena_season")
-            .select("id")
-            .maybeSingle();
+      // Get active season for season_id (required FK)
+      const { data: season } = await (supabase as any)
+        .from("active_arena_season")
+        .select("id")
+        .maybeSingle();
 
-          if (season?.id) {
-            const { error: insertError } = await (supabase as any)
-              .from("arena_predictions")
-              .insert({
-                user_id: user.id,
-                match_id: matchId,
-                prediction: pick,
-                season_id: season.id,
-                status: "pending",
-              });
-            if (insertError && insertError.code !== "23505") {
-              console.error("Arena direct insert error:", insertError);
-              // Rollback optimistic update
-              setUserPick(null);
-              setUserStatus(null);
-            }
-          } else {
-            console.error("No active arena season found");
-            setUserPick(null);
-            setUserStatus(null);
-          }
+      if (!season?.id) {
+        console.error("No active arena season found — cannot save prediction");
+        // Rollback
+        setUserPick(null);
+        setUserStatus(null);
+        setUserMarketLabel(null);
+        setSubmitting(false);
+        return;
+      }
+
+      // Direct insert using correct table columns
+      const { error: insertError } = await (supabase as any)
+        .from("arena_predictions")
+        .insert({
+          user_id: user.id,
+          match_id: matchId,
+          prediction: pick,
+          season_id: season.id,
+          status: "pending",
+        });
+
+      if (insertError) {
+        if (insertError.code === "23505") {
+          // Unique constraint — already exists, keep locked
+          console.log("Arena: duplicate prediction (23505), keeping locked");
+        } else {
+          console.error("Arena insert error:", insertError);
+          // Rollback
+          setUserPick(null);
+          setUserStatus(null);
+          setUserMarketLabel(null);
+          setSubmitting(false);
+          return;
         }
+      }
+
+      // Post-insert verification: refetch from DB to confirm persistence
+      const verified = await fetchExisting();
+      if (verified?.prediction) {
+        setUserPick(verified.prediction);
+        setUserStatus(verified.status || "pending");
+        setUserMarketLabel(deriveMarketLabel(verified.prediction));
+      } else {
+        // DB doesn't have it — rollback
+        console.error("Arena: post-insert verification failed, prediction not found in DB");
+        setUserPick(null);
+        setUserStatus(null);
+        setUserMarketLabel(null);
       }
     } catch (e) {
       console.error("Arena prediction submit error:", e);
-      // Rollback optimistic update
       setUserPick(null);
       setUserStatus(null);
+      setUserMarketLabel(null);
     } finally {
       setSubmitting(false);
     }
-  }, [user, matchId, isKickedOff, submitting, userPick, isFree, limitReached]);
+  }, [user, matchId, isKickedOff, submitting, userPick, isFree, limitReached, fetchExisting]);
 
   const canPick = !isKickedOff && !!user && !isFree && !limitReached && !userPick;
 
-  return { userPick, userStatus, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
+  return { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
 }
