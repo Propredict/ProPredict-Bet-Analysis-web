@@ -49,8 +49,8 @@ export function GamificationPanel() {
                 <TooltipTrigger asChild>
                   <Info className="h-2.5 w-2.5 text-muted-foreground/50 cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                  <p>Every correct prediction earns 1 point. Reach 100 points in a month to unlock 1 free Pro month.</p>
+                 <TooltipContent side="top" className="max-w-[220px] text-[10px]">
+                   <p>Points reset every month. Each correct prediction earns 1 point. Reach 100 to unlock 1 free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -68,8 +68,8 @@ export function GamificationPanel() {
                 <TooltipTrigger asChild>
                   <Info className="h-3 w-3 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                  <p>🏆 Every correct prediction earns 1 point. Reach 100 points in a month to unlock 1 free month of Pro access.</p>
+                 <TooltipContent side="top" className="max-w-[220px] text-[10px]">
+                   <p>🏆 Points reset every month. Each correct prediction earns 1 point. Incorrect = 0 points. Based only on your own prediction.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -77,7 +77,7 @@ export function GamificationPanel() {
           </div>
           <Progress value={(stats.monthlyWins / stats.monthlyGoal) * 100} className="h-2.5" />
           <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-            🎯 Every correct prediction = 1 point. Collect 100 points in a month to unlock 1 free month of Pro access.
+            🎯 Points reset every month. Each correct prediction earns 1 point. Collect 100 to unlock 1 free month of Pro access.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export function GamificationPanel() {
             ))}
           </div>
           <p className="text-[9px] text-muted-foreground/60">
-            Milestones reset monthly. Only winning predictions count toward rewards.
+            All users start each month at 0 points. Only your own correct predictions count toward rewards.
           </p>
         </div>
       </Card>
