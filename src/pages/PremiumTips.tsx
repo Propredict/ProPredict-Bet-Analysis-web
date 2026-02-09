@@ -46,7 +46,7 @@ export default function PremiumTips() {
       await Promise.all([refetch(), refetchPlan()]);
       toast({
         title: "Data refreshed",
-        description: "Premium tips have been updated.",
+        description: "Premium AI Picks have been updated.",
       });
     } finally {
       setIsRefreshing(false);

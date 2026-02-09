@@ -100,7 +100,7 @@ export default function DailyTickets() {
           <div>
             <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Combos</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Unlock combos by watching ads or go Premium for exclusive access" : "AI-powered match combinations"}
+              {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "AI-powered match combinations"}
             </p>
           </div>
         </div>

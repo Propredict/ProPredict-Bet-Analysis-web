@@ -94,7 +94,7 @@ export default function DailyTips() {
           <div>
             <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Picks</h1>
             {isAndroidApp && (
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Unlock tips by watching ads or go Premium for full access</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Watch ads to access predictions or go Premium for full access</p>
             )}
           </div>
         </div>

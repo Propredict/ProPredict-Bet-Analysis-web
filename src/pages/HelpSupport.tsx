@@ -99,8 +99,8 @@ const HelpSupport = () => {
           a: "Our AI predictions are based on comprehensive statistical analysis of team performance, historical data, and current form. While we strive for high accuracy, remember that sports outcomes are inherently unpredictable."
         },
         {
-          q: "How do I unlock tips?",
-          a: "Free users can access Daily AI Picks. To unlock Pro and Premium AI Picks, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
+          q: "How do I access predictions?",
+          a: "Free users can access Daily AI Picks. To access Pro and Premium AI Picks, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
         },
         {
           q: "When are new tips posted?",
