@@ -144,7 +144,7 @@ export default function TicketDetails() {
   if (!ticket) {
     return (
       <div className="section-gap text-center py-20">
-        <p className="text-muted-foreground mb-4">Ticket not found</p>
+        <p className="text-muted-foreground mb-4">Combo not found</p>
         <Button variant="outline" onClick={() => navigate(-1)}>
           Go Back
         </Button>
@@ -167,7 +167,7 @@ export default function TicketDetails() {
   const ogImage = getTierOgImage(ticket.tier);
 
   const ogTitle = `${matchTitle} Prediction – ProPredict`;
-  const ogDescription = `AI-powered ${tierName} ticket with ${matchCount} match${matchCount !== 1 ? 'es' : ''} for ${leagueName}. Informational purposes only.`;
+  const ogDescription = `AI-powered ${tierName} combo with ${matchCount} match${matchCount !== 1 ? 'es' : ''} for ${leagueName}. Informational purposes only.`;
 
   // Tier-specific breadcrumb path
   const getTierBreadcrumb = () => {
@@ -455,10 +455,10 @@ export default function TicketDetails() {
           {/* Unlocked badge footer - only when unlocked */}
           {!isLocked && (
             <div className="px-4 py-3 border-t border-border/50">
-              <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
-                <CheckCircle2 className="h-4 w-4" />
-                Ticket Unlocked
-              </Badge>
+               <Badge className="w-full justify-center gap-2 py-2 bg-success/20 text-success border-success/30">
+                 <CheckCircle2 className="h-4 w-4" />
+                 Combo Unlocked
+               </Badge>
             </div>
           )}
 
@@ -474,7 +474,7 @@ export default function TicketDetails() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Share2 className="h-4 w-4" />
-                <span>Share this ticket</span>
+                <span>Share this combo</span>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">

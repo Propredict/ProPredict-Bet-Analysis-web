@@ -48,7 +48,7 @@ export default function AllTickets() {
       refetchTickets();
     }
     refetchPlan();
-    toast.success(`${contentType === "tips" ? "Tips" : "Tickets"} refreshed`);
+    toast.success(`${contentType === "tips" ? "AI Picks" : "AI Combos"} refreshed`);
   };
 
   // Filter to exclude today and sort by date descending (last 3 days first)
@@ -191,8 +191,8 @@ export default function AllTickets() {
               <History className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h1 className="text-sm sm:text-base font-semibold text-foreground">Winning Tips History</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse our archive of tips & tickets</p>
+               <h1 className="text-sm sm:text-base font-semibold text-foreground">Winning History</h1>
+               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse our archive of AI Picks & AI Combos</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -253,7 +253,7 @@ export default function AllTickets() {
             )}
           >
             <Lightbulb className={cn("h-5 w-5", contentType === "tips" && "drop-shadow-lg")} />
-            <span className="text-base">Tips</span>
+            <span className="text-base">AI Picks</span>
             <Badge 
               variant="outline" 
               className={cn(
@@ -276,7 +276,7 @@ export default function AllTickets() {
             )}
           >
             <Ticket className={cn("h-5 w-5", contentType === "tickets" && "drop-shadow-lg")} />
-            <span className="text-base">Tickets</span>
+            <span className="text-base">AI Combos</span>
             <Badge 
               variant="outline" 
               className={cn(
@@ -385,10 +385,10 @@ export default function AllTickets() {
                     {tip.home_team} vs {tip.away_team}
                   </p>
                   
-                  {/* Prediction & Odds */}
-                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">Tip:</span>
+                   {/* Prediction & Value */}
+                   <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+                     <div className="flex items-center gap-1.5">
+                       <span className="text-[10px] text-muted-foreground">Pick:</span>
                       <span className="text-xs font-semibold text-primary">{tip.prediction}</span>
                     </div>
                     <span className="text-xs font-medium text-muted-foreground">@{tip.odds}</span>
@@ -402,14 +402,14 @@ export default function AllTickets() {
             <div className="flex flex-col items-center gap-2 py-6">
               <Lightbulb className="h-6 w-6 text-muted-foreground/40" />
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} tips in archive</p>
+                <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} AI Picks in archive</p>
                 <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
               </div>
             </div>
           </Card>
         )
       ) : (
-        /* Tickets Content - All archived tickets are unlocked */
+        /* AI Combos Content - All archived combos are unlocked */
         filteredTickets.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredTickets.map((ticket) => {
@@ -430,7 +430,7 @@ export default function AllTickets() {
               <div className="flex flex-col items-center gap-2 py-6">
                 <Ticket className="h-6 w-6 text-muted-foreground/40" />
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} tickets in archive</p>
+                  <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} AI Combos in archive</p>
                   <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
                 </div>
               </div>
