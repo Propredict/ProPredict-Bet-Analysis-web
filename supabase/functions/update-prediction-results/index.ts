@@ -165,6 +165,20 @@ Deno.serve(async (req) => {
           console.log(
             `✓ ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
           );
+
+          // Resolve Arena predictions for this finished match
+          try {
+            const { error: arenaError } = await supabase.rpc("resolve_arena_match", {
+              p_match_id: fixtureId,
+            });
+            if (arenaError) {
+              console.error(`Arena resolve error for ${fixtureId}:`, arenaError.message);
+            } else {
+              console.log(`✓ Arena resolved for match ${fixtureId}`);
+            }
+          } catch (arenaErr) {
+            console.error(`Arena resolve exception for ${fixtureId}:`, arenaErr);
+          }
         }
 
         // Small delay to avoid API rate limiting (100ms)
