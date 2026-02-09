@@ -18,29 +18,42 @@ const TOP_LEAGUES = [
   "europa league",
 ];
 
+/** Check if a match kickoff is still in the future (with 5-min buffer) */
+function isUpcoming(p: { match_date: string | null; match_time: string | null }): boolean {
+  if (!p.match_date || !p.match_time) return true; // no time info → treat as upcoming
+  const [y, mo, d] = p.match_date.split("-").map(Number);
+  const [h, m] = p.match_time.split(":").map(Number);
+  const kickoff = new Date(y, mo - 1, d, h, m);
+  const bufferMs = 5 * 60 * 1000; // 5 minutes
+  return kickoff.getTime() > Date.now() + bufferMs;
+}
+
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
   const isTopLeague = (league: string) =>
     TOP_LEAGUES.some((l) => league.toLowerCase().includes(l)) &&
     !league.toLowerCase().includes("premier league 2");
 
+  // Only show upcoming matches (kickoff > now + 5 min)
+  const upcoming = predictions.filter((p) => isUpcoming(p));
+
   const isPending = (p: typeof predictions[0]) =>
     !p.result_status || p.result_status === "pending";
 
-  const topPremium = predictions.filter((p) =>
+  const topPremium = upcoming.filter((p) =>
     p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 85
   ).sort((a, b) => b.confidence - a.confidence);
 
-  const topPro = predictions.filter((p) =>
+  const topPro = upcoming.filter((p) =>
     p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
     !topPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
 
-  const allPremium = predictions.filter((p) =>
+  const allPremium = upcoming.filter((p) =>
     p.league && isPending(p) && p.confidence >= 85 &&
     !topPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
 
-  const allPro = predictions.filter((p) =>
+  const allPro = upcoming.filter((p) =>
     p.league && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
     !topPro.some((pr) => pr.id === p.id) && !allPremium.some((pr) => pr.id === p.id)
   ).sort((a, b) => b.confidence - a.confidence);
@@ -81,19 +94,16 @@ export default function AIvsCommunity() {
 
   const loading = loadingToday || loadingTomorrow;
 
-  // Curate from today first; if all today's matches are kicked off, include tomorrow's
+  // Curate from today (only upcoming). If none left, pull from tomorrow.
   const todayCurated = curateMatches(todayPredictions);
-  const hasUpcoming = todayCurated.some((p) => {
-    if (!p.match_date || !p.match_time) return true;
-    const [y, mo, d] = p.match_date.split("-").map(Number);
-    const [h, m] = p.match_time.split(":").map(Number);
-    return new Date(y, mo - 1, d, h, m) > new Date();
-  });
+  const tomorrowCurated = curateMatches(tomorrowPredictions);
 
-  // If no upcoming matches from today, mix in tomorrow's
-  const curated = hasUpcoming
-    ? todayCurated
-    : [...todayCurated, ...curateMatches(tomorrowPredictions)].slice(0, 8);
+  // Always try to fill with upcoming matches
+  const curated = todayCurated.length > 0
+    ? todayCurated.length < 5
+      ? [...todayCurated, ...tomorrowCurated].slice(0, 8)
+      : todayCurated
+    : tomorrowCurated;
 
   return (
     <>
