@@ -41,9 +41,10 @@ interface MatchDuelCardProps {
   dailyUsed: number;
   dailyLimit: number;
   onPredictionMade?: () => void;
+  onViewMyPredictions?: () => void;
 }
 
-export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, dailyLimit, onPredictionMade }: MatchDuelCardProps) {
+export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, dailyLimit, onPredictionMade, onViewMyPredictions }: MatchDuelCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [pendingPick, setPendingPick] = useState<string | null>(null);
   const matchTimestamp = useMemo(() => {
@@ -534,7 +535,12 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
           <Badge variant="outline" className="text-[10px] text-primary border-primary/30 gap-1">
             <Lock className="h-3 w-3" /> LOCKED: {userPick}
           </Badge>
-          <span className="text-[9px] text-muted-foreground/60">Points awarded after full-time</span>
+          <button
+            onClick={onViewMyPredictions}
+            className="text-[9px] text-primary hover:text-primary/80 underline underline-offset-2 transition-colors flex items-center gap-1"
+          >
+            📊 View my prediction details
+          </button>
         </div>
       )}
 

@@ -106,6 +106,7 @@ export default function AIvsCommunity() {
   const dailyLimit = getDailyLimit(userTier);
   const { dailyCount, increment } = useArenaDailyCount(arenaStats.seasonId);
 
+  const [activeTab, setActiveTab] = useState("upcoming");
   const loading = loadingToday || loadingTomorrow;
 
   // Curate from today (only upcoming). If none left, pull from tomorrow.
@@ -153,10 +154,10 @@ export default function AIvsCommunity() {
 
         <GamificationPanel />
 
-        <Tabs defaultValue="upcoming" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full grid grid-cols-2 h-9">
             <TabsTrigger value="upcoming" className="text-xs">Upcoming</TabsTrigger>
-            <TabsTrigger value="results" className="text-xs">Results</TabsTrigger>
+            <TabsTrigger value="my-predictions" className="text-xs">My Predictions vs AI</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="mt-3">
@@ -167,7 +168,7 @@ export default function AIvsCommunity() {
             ) : curated.length > 0 ? (
               <div className="space-y-4">
                 {curated.map((prediction) => (
-                  <MatchDuelCard
+                   <MatchDuelCard
                     key={prediction.id}
                     prediction={prediction}
                     userTier={userTier}
@@ -175,6 +176,7 @@ export default function AIvsCommunity() {
                     dailyUsed={dailyCount}
                     dailyLimit={dailyLimit}
                     onPredictionMade={increment}
+                    onViewMyPredictions={() => setActiveTab("my-predictions")}
                   />
                 ))}
               </div>
@@ -187,7 +189,7 @@ export default function AIvsCommunity() {
             )}
           </TabsContent>
 
-          <TabsContent value="results" className="mt-3">
+          <TabsContent value="my-predictions" className="mt-3">
             <ArenaResults />
           </TabsContent>
         </Tabs>
