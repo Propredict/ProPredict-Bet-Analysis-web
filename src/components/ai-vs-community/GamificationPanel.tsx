@@ -76,8 +76,11 @@ export function GamificationPanel() {
             <span className="text-foreground font-medium">{stats.monthlyWins} / {stats.monthlyGoal}</span>
           </div>
           <Progress value={(stats.monthlyWins / stats.monthlyGoal) * 100} className="h-2.5" />
-          <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-            🎯 Points reset every month. Each correct prediction earns 1 point. Collect 100 to unlock 1 free month of Pro access.
+          <p className="text-[9px] text-amber-400/80 font-medium leading-relaxed">
+            🔥 {stats.monthlyGoal - stats.monthlyWins} points left to unlock a free Pro month!
+          </p>
+          <p className="text-[9px] text-muted-foreground/60 leading-relaxed">
+            Points reset every month. Each correct prediction earns 1 point.
           </p>
         </div>
 
