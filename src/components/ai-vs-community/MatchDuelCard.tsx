@@ -1,4 +1,4 @@
-import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Vote, Lock, Sparkles } from "lucide-react";
+import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Lock, Sparkles, CheckCircle2, XCircle, Clock, Crown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,7 +8,6 @@ import { CommentsSection } from "./CommentsSection";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 
 function generateCommunityVotes(prediction: AIPrediction) {
-  // Deterministic pseudo-random based on match_id to avoid re-renders changing values
   const seed = prediction.match_id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const noise = (s: number) => ((s * 9301 + 49297) % 233280) / 233280 * 12 - 6;
   let home = Math.max(5, Math.min(85, prediction.home_win + Math.round(noise(seed))));
@@ -43,6 +42,9 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
   const communityPick = community.home > community.draw && community.home > community.away ? "1"
     : community.away > community.draw && community.away > community.home ? "2" : "X";
   const aiAgreesWithCommunity = prediction.prediction === communityPick;
+
+  // Mock result status based on prediction's result_status field
+  const resultStatus = prediction.result_status as "won" | "lost" | null;
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card">
@@ -144,11 +146,13 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               <Progress value={community.away} className="h-2" />
             </div>
           </div>
+
           {/* Voting / CTA section */}
           {userTier === "free" ? (
             <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
               <Lock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
               <p className="text-[10px] text-muted-foreground">Upgrade to Pro to challenge the AI</p>
+              <p className="text-[9px] text-muted-foreground/70">Earn points, track your accuracy, and unlock free Pro access.</p>
               <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
                 <Sparkles className="h-3 w-3" /> Get Pro Access
               </Button>
@@ -164,8 +168,9 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
                 ))}
               </div>
               {userTier === "exclusive" && (
-                <div className="flex gap-1.5 flex-wrap">
-                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">
+                <div className="flex gap-1.5 flex-wrap items-center">
+                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30 gap-0.5">
+                    <Crown className="h-2.5 w-2.5" />
                     {prediction.prediction === communityPick ? "AI agrees with this user" : "User challenges the AI"}
                   </Badge>
                 </div>
@@ -173,13 +178,45 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               <div className="flex gap-1.5 flex-wrap">
                 <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">🔵 Pro Pick: {predictionLabel(communityPick)}</Badge>
                 {userTier === "exclusive" && (
-                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">🟣 Exclusive</Badge>
+                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30 gap-0.5">
+                    <Crown className="h-2.5 w-2.5" /> Exclusive
+                  </Badge>
                 )}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Result badge row (shown when match is resolved) */}
+      {resultStatus && (
+        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {resultStatus === "won" ? (
+              <Badge className="text-[10px] bg-success/15 text-success border-success/30 gap-1">
+                <CheckCircle2 className="h-3 w-3" /> WIN
+              </Badge>
+            ) : (
+              <Badge className="text-[10px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
+                <XCircle className="h-3 w-3" /> LOSS
+              </Badge>
+            )}
+            <span className="text-[10px] text-muted-foreground">Result: FT</span>
+          </div>
+          {resultStatus === "won" && (
+            <span className="text-[10px] font-semibold text-success">Points earned: +1</span>
+          )}
+        </div>
+      )}
+
+      {/* Pending badge for unresolved matches */}
+      {!resultStatus && (
+        <div className="px-4 py-2 border-t border-border/30 bg-muted/5 flex items-center gap-2">
+          <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/50 gap-1">
+            <Clock className="h-3 w-3" /> PENDING
+          </Badge>
+        </div>
+      )}
 
       <div className="border-t border-border/30">
         <button

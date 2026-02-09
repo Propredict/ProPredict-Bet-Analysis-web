@@ -51,7 +51,7 @@ export default function AIvsCommunity() {
         <meta name="description" content="Compare AI predictions with community analysis on top European football matches." />
       </Helmet>
 
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-5">
+      <div className="w-full px-3 sm:px-4 lg:px-6 py-4 space-y-5">
         <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-md bg-primary/20">
