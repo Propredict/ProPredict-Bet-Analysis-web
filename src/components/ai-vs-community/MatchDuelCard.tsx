@@ -1,8 +1,9 @@
-import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Bot, Users, TrendingUp, Minus, TrendingDown, MessageSquare, ChevronDown, ChevronUp, Vote, Lock, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { CommentsSection } from "./CommentsSection";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 
@@ -143,12 +144,38 @@ export function MatchDuelCard({ prediction, userTier }: MatchDuelCardProps) {
               <Progress value={community.away} className="h-2" />
             </div>
           </div>
-          {userTier !== "free" && (
-            <div className="flex gap-1.5 flex-wrap">
-              <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">🔵 Pro Pick: {predictionLabel(communityPick)}</Badge>
+          {/* Voting / CTA section */}
+          {userTier === "free" ? (
+            <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
+              <Lock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
+              <p className="text-[10px] text-muted-foreground">Upgrade to Pro to challenge the AI</p>
+              <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
+                <Sparkles className="h-3 w-3" /> Get Pro Access
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[10px] text-muted-foreground font-medium">Your Prediction:</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {(["Home", "Draw", "Away"] as const).map((option) => (
+                  <Button key={option} size="sm" variant="outline" className="h-7 text-[10px]">
+                    {option}
+                  </Button>
+                ))}
+              </div>
               {userTier === "exclusive" && (
-                <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">🟣 Exclusive</Badge>
+                <div className="flex gap-1.5 flex-wrap">
+                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">
+                    {prediction.prediction === communityPick ? "AI agrees with this user" : "User challenges the AI"}
+                  </Badge>
+                </div>
               )}
+              <div className="flex gap-1.5 flex-wrap">
+                <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30">🔵 Pro Pick: {predictionLabel(communityPick)}</Badge>
+                {userTier === "exclusive" && (
+                  <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">🟣 Exclusive</Badge>
+                )}
+              </div>
             </div>
           )}
         </div>
