@@ -94,7 +94,7 @@ export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSec
           <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Share your analysis..."
+            placeholder="What do you think about this AI prediction?"
             className="text-xs min-h-[60px] resize-none"
           />
           <Button size="sm" className="text-xs h-7" disabled={!newComment.trim()}>
