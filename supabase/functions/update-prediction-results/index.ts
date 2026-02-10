@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
             // Get all users who have arena predictions on this match
             const { data: arenaPreds } = await supabase
               .from("arena_predictions")
-              .select("id, user_id, prediction, status")
+              .select("id, user_id, prediction, status, season_id")
               .eq("match_id", fixtureId)
               .eq("status", "pending");
 
@@ -211,10 +211,14 @@ Deno.serve(async (req) => {
                 const arenaStatus = arenaWon ? "won" : "lost";
 
                 // Update arena prediction status
-                await supabase
+                const { error: arenaUpdateErr } = await supabase
                   .from("arena_predictions")
                   .update({ status: arenaStatus })
                   .eq("id", ap.id);
+
+                if (arenaUpdateErr) {
+                  console.error(`❌ Arena update FAILED for ${ap.id}:`, arenaUpdateErr);
+                }
 
                 // Insert WIN/LOSS notification
                 if (arenaWon) {
@@ -236,11 +240,13 @@ Deno.serve(async (req) => {
                 }
 
                 // Update arena user stats + check for 100-point reward
+                const apSeasonId = (ap as any).season_id;
                 if (arenaWon) {
                   const { data: stats } = await supabase
                     .from("arena_user_stats")
                     .select("id, points, wins, reward_granted")
                     .eq("user_id", ap.user_id)
+                    .eq("season_id", apSeasonId)
                     .maybeSingle();
 
                   if (stats) {
@@ -327,6 +333,7 @@ Deno.serve(async (req) => {
                     .from("arena_user_stats")
                     .select("id, losses")
                     .eq("user_id", ap.user_id)
+                    .eq("season_id", apSeasonId)
                     .maybeSingle();
 
                   if (stats) {
@@ -361,7 +368,7 @@ Deno.serve(async (req) => {
     try {
       const { data: orphanedArena } = await supabase
         .from("arena_predictions")
-        .select("id, user_id, match_id, prediction, status")
+        .select("id, user_id, match_id, prediction, status, season_id")
         .eq("status", "pending")
         .limit(100);
 
@@ -410,64 +417,73 @@ Deno.serve(async (req) => {
 
             const arenaStatus = arenaWon ? "won" : "lost";
 
-            await supabase
+            const { error: orphanUpdateErr, count: orphanUpdateCount } = await supabase
               .from("arena_predictions")
               .update({ status: arenaStatus })
-              .eq("id", ap.id);
+              .eq("id", ap.id)
+              .select("id");
 
-            // Notifications
-            const matchInfo = matchInfoMap.get(ap.match_id);
-            const matchLabel = matchInfo ? `${matchInfo.home_team} vs ${matchInfo.away_team}` : `Fixture ${ap.match_id}`;
-
-            await supabase.from("arena_notifications").insert([
-              {
-                user_id: ap.user_id,
-                type: "ft",
-                title: "Match finished",
-                message: `Match finished: ${matchLabel} (${hg}-${ag}). Your prediction has been evaluated.`,
-                match_id: fixtureId,
-              },
-              {
-                user_id: ap.user_id,
-                type: arenaWon ? "win" : "loss",
-                title: arenaWon ? "You won! 🎉" : "Prediction lost ❌",
-                message: arenaWon
-                  ? `Your prediction ${pick} was correct. +1 point added to your Arena score.`
-                  : `Your prediction ${pick} was not correct. Better luck next match!`,
-                match_id: fixtureId,
-              },
-            ]);
-
-            // Update arena_user_stats
-            if (arenaWon) {
-              const { data: stats } = await supabase
-                .from("arena_user_stats")
-                .select("id, points, wins")
-                .eq("user_id", ap.user_id)
-                .maybeSingle();
-              if (stats) {
-                await supabase
-                  .from("arena_user_stats")
-                  .update({ points: stats.points + 1, wins: stats.wins + 1 })
-                  .eq("id", stats.id);
-              }
+            if (orphanUpdateErr) {
+              console.error(`❌ Orphan arena update FAILED for ${ap.id}:`, orphanUpdateErr);
             } else {
-              const { data: stats } = await supabase
-                .from("arena_user_stats")
-                .select("id, losses")
-                .eq("user_id", ap.user_id)
-                .maybeSingle();
-              if (stats) {
-                await supabase
+              console.log(`✓ Orphan arena update OK for ${ap.id}: ${arenaStatus}`);
+
+              // Notifications
+              const matchInfo = matchInfoMap.get(ap.match_id);
+              const matchLabel = matchInfo ? `${matchInfo.home_team} vs ${matchInfo.away_team}` : `Fixture ${ap.match_id}`;
+
+              await supabase.from("arena_notifications").insert([
+                {
+                  user_id: ap.user_id,
+                  type: "ft",
+                  title: "Match finished",
+                  message: `Match finished: ${matchLabel} (${hg}-${ag}). Your prediction has been evaluated.`,
+                  match_id: fixtureId,
+                },
+                {
+                  user_id: ap.user_id,
+                  type: arenaWon ? "win" : "loss",
+                  title: arenaWon ? "You won! 🎉" : "Prediction lost ❌",
+                  message: arenaWon
+                    ? `Your prediction ${pick} was correct. +1 point added to your Arena score.`
+                    : `Your prediction ${pick} was not correct. Better luck next match!`,
+                  match_id: fixtureId,
+                },
+              ]);
+
+              // Update arena_user_stats (filter by season_id to avoid maybeSingle conflicts)
+              const seasonId = (ap as any).season_id;
+              if (arenaWon) {
+                const { data: stats } = await supabase
                   .from("arena_user_stats")
-                  .update({ losses: stats.losses + 1 })
-                  .eq("id", stats.id);
+                  .select("id, points, wins")
+                  .eq("user_id", ap.user_id)
+                  .eq("season_id", seasonId)
+                  .maybeSingle();
+                if (stats) {
+                  await supabase
+                    .from("arena_user_stats")
+                    .update({ points: stats.points + 1, wins: stats.wins + 1 })
+                    .eq("id", stats.id);
+                }
+              } else {
+                const { data: stats } = await supabase
+                  .from("arena_user_stats")
+                  .select("id, losses")
+                  .eq("user_id", ap.user_id)
+                  .eq("season_id", seasonId)
+                  .maybeSingle();
+                if (stats) {
+                  await supabase
+                    .from("arena_user_stats")
+                    .update({ losses: stats.losses + 1 })
+                    .eq("id", stats.id);
+                }
               }
+
+              arenaOrphanResolved++;
+              console.log(`✓ Orphan arena ${ap.user_id}: ${pick} → ${arenaStatus} (${matchLabel}, ${hg}-${ag})`);
             }
-
-            arenaOrphanResolved++;
-            console.log(`✓ Orphan arena ${ap.user_id}: ${pick} → ${arenaStatus} (${matchLabel}, ${hg}-${ag})`);
-
             await new Promise((resolve) => setTimeout(resolve, 100));
           } catch (orphanErr) {
             console.error(`Orphan arena error for ${ap.id}:`, orphanErr);
