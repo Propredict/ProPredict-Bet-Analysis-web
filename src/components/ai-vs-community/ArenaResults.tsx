@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye, X } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -26,6 +26,9 @@ interface ArenaPredictionResult {
   home_team?: string;
   away_team?: string;
   league?: string;
+  match_time?: string;
+  match_date?: string;
+  ai_result_status?: string;
 }
 
 const HIDDEN_KEY = "arena_hidden_results";
@@ -41,70 +44,100 @@ function setHiddenIds(ids: Set<string>) {
   localStorage.setItem(HIDDEN_KEY, JSON.stringify([...ids]));
 }
 
+/** Show a human-friendly match status label */
+function getMatchStatusLabel(result: ArenaPredictionResult): { label: string; color: string } | null {
+  if (result.status !== "pending") return null;
+  
+  const aiStatus = result.ai_result_status;
+  if (!aiStatus || aiStatus === "pending") {
+    // Match not resolved yet — show time if available
+    if (result.match_time) {
+      return { label: `⏰ ${result.match_time}`, color: "text-muted-foreground" };
+    }
+    return { label: "Awaiting result", color: "text-muted-foreground" };
+  }
+  // AI prediction resolved but arena still pending (edge case — should auto-resolve soon)
+  return { label: "Processing...", color: "text-yellow-500" };
+}
+
 export function ArenaResults() {
   const { user } = useAuth();
   const [results, setResults] = useState<ArenaPredictionResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [hiddenIds, setHiddenIdsState] = useState<Set<string>>(getHiddenIds);
   const [showHidden, setShowHidden] = useState(false);
   const mountedRef = useRef(true);
+
+  const fetchResults = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data: predictions } = await (supabase as any)
+        .from("arena_predictions")
+        .select("id, match_id, prediction, status, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (!mountedRef.current) return;
+
+      if (!predictions || predictions.length === 0) {
+        setResults([]);
+        return;
+      }
+
+      const matchIds = predictions.map((p: any) => p.match_id);
+      const { data: matches } = await (supabase as any)
+        .from("ai_predictions")
+        .select("match_id, home_team, away_team, league, match_time, match_date, result_status")
+        .in("match_id", matchIds);
+
+      if (!mountedRef.current) return;
+
+      const matchMap = new Map<string, any>();
+      (matches || []).forEach((m: any) => {
+        matchMap.set(m.match_id, m);
+      });
+
+      const enriched: ArenaPredictionResult[] = predictions.map((p: any) => {
+        const m = matchMap.get(p.match_id);
+        return {
+          ...p,
+          home_team: m?.home_team || "Unknown",
+          away_team: m?.away_team || "Unknown",
+          league: m?.league || "",
+          match_time: m?.match_time || null,
+          match_date: m?.match_date || null,
+          ai_result_status: m?.result_status || null,
+        };
+      });
+
+      setResults(enriched);
+    } catch (err) {
+      console.error("Arena results fetch error:", err);
+    }
+  }, [user]);
 
   useEffect(() => {
     mountedRef.current = true;
     if (!user) { setLoading(false); return; }
 
-    const fetchResults = async () => {
-      try {
-        const { data: predictions } = await (supabase as any)
-          .from("arena_predictions")
-          .select("id, match_id, prediction, status, created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(50);
+    fetchResults().finally(() => {
+      if (mountedRef.current) setLoading(false);
+    });
 
-        if (!mountedRef.current) return;
-
-        if (!predictions || predictions.length === 0) {
-          setResults([]);
-          setLoading(false);
-          return;
-        }
-
-        const matchIds = predictions.map((p: any) => p.match_id);
-        const { data: matches } = await (supabase as any)
-          .from("ai_predictions")
-          .select("match_id, home_team, away_team, league")
-          .in("match_id", matchIds);
-
-        if (!mountedRef.current) return;
-
-        const matchMap = new Map<string, { home_team: string; away_team: string; league: string }>();
-        (matches || []).forEach((m: any) => {
-          matchMap.set(m.match_id, { home_team: m.home_team, away_team: m.away_team, league: m.league });
-        });
-
-        const enriched: ArenaPredictionResult[] = predictions.map((p: any) => ({
-          ...p,
-          home_team: matchMap.get(p.match_id)?.home_team || "Unknown",
-          away_team: matchMap.get(p.match_id)?.away_team || "Unknown",
-          league: matchMap.get(p.match_id)?.league || "",
-        }));
-
-        setResults(enriched);
-      } catch (err) {
-        console.error("Arena results fetch error:", err);
-      } finally {
-        if (mountedRef.current) setLoading(false);
-      }
-    };
-
-    fetchResults();
-    const interval = setInterval(fetchResults, 60_000);
+    const interval = setInterval(fetchResults, 30_000); // refresh every 30s
     return () => {
       mountedRef.current = false;
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, fetchResults]);
+
+  const handleManualRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchResults();
+    setRefreshing(false);
+  }, [fetchResults]);
 
   const toggleHide = useCallback((id: string) => {
     setHiddenIdsState(prev => {
@@ -124,7 +157,6 @@ export function ArenaResults() {
       .eq("user_id", user.id);
     if (!error) {
       setResults(prev => prev.filter(r => r.id !== id));
-      // Also remove from hidden if present
       setHiddenIdsState(prev => {
         const next = new Set(prev);
         next.delete(id);
@@ -161,7 +193,6 @@ export function ArenaResults() {
     );
   }
 
-  // Stats are based on ALL results (hidden ones still count)
   const wonCount = results.filter(r => r.status === "won").length;
   const lostCount = results.filter(r => r.status === "lost").length;
   const pendingCount = results.filter(r => r.status === "pending").length;
@@ -173,20 +204,32 @@ export function ArenaResults() {
 
   return (
     <div className="space-y-4">
-      {/* Stats summary */}
-      <div className="grid grid-cols-3 gap-2">
-        <Card className="p-3 text-center bg-success/5 border-success/20">
-          <p className="text-lg font-bold text-success">{wonCount}</p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Won</p>
-        </Card>
-        <Card className="p-3 text-center bg-destructive/5 border-destructive/20">
-          <p className="text-lg font-bold text-destructive">{lostCount}</p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Lost</p>
-        </Card>
-        <Card className="p-3 text-center bg-primary/5 border-primary/20">
-          <p className="text-lg font-bold text-primary">{pendingCount}</p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pending</p>
-        </Card>
+      {/* Stats summary + refresh */}
+      <div className="flex items-center justify-between">
+        <div className="grid grid-cols-3 gap-2 flex-1">
+          <Card className="p-3 text-center bg-success/5 border-success/20">
+            <p className="text-lg font-bold text-success">{wonCount}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Won</p>
+          </Card>
+          <Card className="p-3 text-center bg-destructive/5 border-destructive/20">
+            <p className="text-lg font-bold text-destructive">{lostCount}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Lost</p>
+          </Card>
+          <Card className="p-3 text-center bg-primary/5 border-primary/20">
+            <p className="text-lg font-bold text-primary">{pendingCount}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pending</p>
+          </Card>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+          className="ml-2 shrink-0"
+          title="Refresh results"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
       </div>
 
       {/* Hidden toggle */}
@@ -204,6 +247,7 @@ export function ArenaResults() {
       <div className="space-y-2">
         {visibleResults.map((result) => {
           const isHidden = hiddenIds.has(result.id);
+          const matchStatus = getMatchStatusLabel(result);
           return (
             <Card
               key={result.id}
@@ -218,9 +262,14 @@ export function ArenaResults() {
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  {result.league && (
-                    <p className="text-[9px] text-muted-foreground truncate mb-0.5">{result.league}</p>
-                  )}
+                  <div className="flex items-center gap-2 mb-0.5">
+                    {result.league && (
+                      <p className="text-[9px] text-muted-foreground truncate">{result.league}</p>
+                    )}
+                    {matchStatus && (
+                      <span className={`text-[9px] ${matchStatus.color}`}>{matchStatus.label}</span>
+                    )}
+                  </div>
                   <p className="text-xs font-medium truncate">
                     {result.home_team} vs {result.away_team}
                   </p>
