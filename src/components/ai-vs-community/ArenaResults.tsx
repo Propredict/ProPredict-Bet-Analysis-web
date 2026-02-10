@@ -5,6 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ArenaPredictionResult {
   id: string;
@@ -242,13 +253,30 @@ export function ArenaResults() {
                       <EyeOff className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground" />
                     )}
                   </button>
-                  <button
-                    onClick={() => deletePrediction(result.id)}
-                    className="p-1 rounded hover:bg-destructive/20 transition-colors"
-                    title="Remove from list"
-                  >
-                    <X className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        className="p-1 rounded hover:bg-destructive/20 transition-colors"
+                        title="Remove from list"
+                      >
+                        <X className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete prediction?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently remove your prediction for {result.home_team} vs {result.away_team}. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deletePrediction(result.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </Card>
