@@ -41,15 +41,12 @@ export function useFixtures(
 
   const fetchFixtures = useCallback(
     async (silent: boolean = false) => {
-      // Cancel any in-flight request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       abortControllerRef.current = new AbortController();
 
-      if (!silent) {
-        setIsLoading(true);
-      }
+      if (!silent) setIsLoading(true);
       setError(null);
 
       try {
@@ -77,52 +74,28 @@ export function useFixtures(
         }
 
         const result = await response.json();
-
-        if (result?.error) {
-          throw new Error(result.error);
-        }
-
         setMatches(result.fixtures || []);
       } catch (err) {
-        // Ignore abort errors
-        if (err instanceof Error && err.name === "AbortError") {
-          return;
-        }
-
+        if (err instanceof Error && err.name === "AbortError") return;
         console.error("Error fetching fixtures:", err);
-
         if (!silent) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch fixtures"
-          );
+          setError(err instanceof Error ? err.message : "Failed to fetch fixtures");
           setMatches([]);
         }
       } finally {
-        if (!silent) {
-          setIsLoading(false);
-        }
+        if (!silent) setIsLoading(false);
       }
     },
     [dateFilter, fetchLiveOnly]
   );
 
-  const refetch = useCallback(
-    () => fetchFixtures(false),
-    [fetchFixtures]
-  );
-
-  const silentRefetch = useCallback(
-    () => fetchFixtures(true),
-    [fetchFixtures]
-  );
+  const refetch = useCallback(() => fetchFixtures(false), [fetchFixtures]);
+  const silentRefetch = useCallback(() => fetchFixtures(true), [fetchFixtures]);
 
   useEffect(() => {
     fetchFixtures(false);
-
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      abortControllerRef.current?.abort();
     };
   }, [fetchFixtures]);
 
