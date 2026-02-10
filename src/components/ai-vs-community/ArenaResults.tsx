@@ -29,7 +29,6 @@ export function ArenaResults() {
 
     const fetchResults = async () => {
       try {
-        // Fetch user's arena predictions
         const { data: predictions } = await (supabase as any)
           .from("arena_predictions")
           .select("id, match_id, prediction, status, created_at")
@@ -43,7 +42,6 @@ export function ArenaResults() {
           return;
         }
 
-        // Fetch team names from ai_predictions
         const matchIds = predictions.map((p: any) => p.match_id);
         const { data: matches } = await (supabase as any)
           .from("ai_predictions")
@@ -71,6 +69,8 @@ export function ArenaResults() {
     };
 
     fetchResults();
+    const interval = setInterval(fetchResults, 60_000); // auto-refresh every 60s
+    return () => clearInterval(interval);
   }, [user]);
 
   if (loading) {
