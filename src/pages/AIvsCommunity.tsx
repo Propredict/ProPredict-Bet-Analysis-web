@@ -12,70 +12,76 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useArenaStats } from "@/hooks/useArenaStats";
 import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 
-const TOP_LEAGUES = [
-  "premier league",
-  "la liga",
-  "serie a",
-  "bundesliga",
-  "ligue 1",
-  "champions league",
-  "europa league",
+/** Priority leagues with target quotas (filled first, in order) */
+const PRIORITY_LEAGUES: { pattern: string; max: number }[] = [
+  { pattern: "premier league", max: 3 },
+  { pattern: "championship", max: 2 },
+  { pattern: "serie a", max: 2 },
+  { pattern: "serie b", max: 2 },
+  { pattern: "bundesliga", max: 3 },
 ];
+
+const EXCLUDED_PATTERNS = ["premier league 2", "u21", "u23", "women", "reserve"];
+
+const MAX_ARENA_MATCHES = 10;
 
 /** Check if a match kickoff is still in the future (with 5-min buffer) */
 function isUpcoming(p: { match_date: string | null; match_time: string | null }): boolean {
-  if (!p.match_date || !p.match_time) return true; // no time info → treat as upcoming
+  if (!p.match_date || !p.match_time) return true;
   const [y, mo, d] = p.match_date.split("-").map(Number);
   const [h, m] = p.match_time.split(":").map(Number);
   const kickoff = new Date(y, mo - 1, d, h, m);
-  const bufferMs = 5 * 60 * 1000; // 5 minutes
+  const bufferMs = 5 * 60 * 1000;
   return kickoff.getTime() > Date.now() + bufferMs;
 }
 
+function matchesPattern(league: string, pattern: string): boolean {
+  return league.toLowerCase().includes(pattern);
+}
+
+function isExcluded(league: string): boolean {
+  return EXCLUDED_PATTERNS.some((ex) => league.toLowerCase().includes(ex));
+}
+
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
-  const isTopLeague = (league: string) =>
-    TOP_LEAGUES.some((l) => league.toLowerCase().includes(l)) &&
-    !league.toLowerCase().includes("premier league 2");
+  const upcoming = predictions.filter(
+    (p) => isUpcoming(p) && p.league && !isExcluded(p.league) && (!p.result_status || p.result_status === "pending")
+  );
 
-  // Only show upcoming matches (kickoff > now + 5 min)
-  const upcoming = predictions.filter((p) => isUpcoming(p));
-
-  const isPending = (p: typeof predictions[0]) =>
-    !p.result_status || p.result_status === "pending";
-
-  const topPremium = upcoming.filter((p) =>
-    p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 85
-  ).sort((a, b) => b.confidence - a.confidence);
-
-  const topPro = upcoming.filter((p) =>
-    p.league && isTopLeague(p.league) && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
-    !topPremium.some((pr) => pr.id === p.id)
-  ).sort((a, b) => b.confidence - a.confidence);
-
-  const allPremium = upcoming.filter((p) =>
-    p.league && isPending(p) && p.confidence >= 85 &&
-    !topPremium.some((pr) => pr.id === p.id)
-  ).sort((a, b) => b.confidence - a.confidence);
-
-  const allPro = upcoming.filter((p) =>
-    p.league && isPending(p) && p.confidence >= 65 && p.confidence < 85 &&
-    !topPro.some((pr) => pr.id === p.id) && !allPremium.some((pr) => pr.id === p.id)
-  ).sort((a, b) => b.confidence - a.confidence);
-
-  const leagueCount: Record<string, number> = {};
   const curated: typeof predictions = [];
+  const used = new Set<string>();
 
-  for (const pool of [topPremium, topPro, allPremium, allPro]) {
+  // Phase 1: Fill priority leagues in order
+  for (const { pattern, max } of PRIORITY_LEAGUES) {
+    const pool = upcoming
+      .filter((p) => matchesPattern(p.league!, pattern) && !used.has(p.id))
+      .sort((a, b) => b.confidence - a.confidence);
+
+    let added = 0;
     for (const p of pool) {
-      if (curated.length >= 8) break;
-      if (curated.some((c) => c.id === p.id)) continue;
+      if (curated.length >= MAX_ARENA_MATCHES || added >= max) break;
+      curated.push(p);
+      used.add(p.id);
+      added++;
+    }
+  }
+
+  // Phase 2: Fill remaining slots with other leagues (max 2 per league)
+  if (curated.length < MAX_ARENA_MATCHES) {
+    const leagueCount: Record<string, number> = {};
+    const others = upcoming
+      .filter((p) => !used.has(p.id))
+      .sort((a, b) => b.confidence - a.confidence);
+
+    for (const p of others) {
+      if (curated.length >= MAX_ARENA_MATCHES) break;
       const key = (p.league || "").toLowerCase();
       leagueCount[key] = (leagueCount[key] || 0) + 1;
       if (leagueCount[key] <= 2) {
         curated.push(p);
+        used.add(p.id);
       }
     }
-    if (curated.length >= 8) break;
   }
 
   return curated;
