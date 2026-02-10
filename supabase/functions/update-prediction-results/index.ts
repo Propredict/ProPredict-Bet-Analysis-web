@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
                 else if (pick === "Over 1.5") arenaWon = (homeGoals + awayGoals) > 1;
                 else if (pick === "Under 3.5") arenaWon = (homeGoals + awayGoals) < 4;
 
-                const arenaStatus = arenaWon ? "won" : "lost";
+                const arenaStatus = arenaWon ? "win" : "loss";
 
                 // Update arena prediction status
                 const { error: arenaUpdateErr } = await supabase
@@ -432,7 +432,7 @@ Deno.serve(async (req) => {
             else if (pick === "Over 2.5") arenaWon = (hg + ag) > 2;
             else if (pick === "Under 2.5") arenaWon = (hg + ag) < 3;
 
-            const arenaStatus = arenaWon ? "won" : "lost";
+            const arenaStatus = arenaWon ? "win" : "loss";
 
             const { error: orphanUpdateErr, count: orphanUpdateCount } = await supabase
               .from("arena_predictions")
