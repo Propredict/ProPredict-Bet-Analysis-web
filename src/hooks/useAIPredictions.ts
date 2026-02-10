@@ -10,9 +10,9 @@ export interface AIPrediction {
   away_team: string;
   match_date: string;
   match_time: string;
-  prediction: string;
+  prediction: string | null;
   predicted_score: string | null;
-  confidence: number;
+  confidence: number | null;
   home_win: number;
   draw: number;
   away_win: number;

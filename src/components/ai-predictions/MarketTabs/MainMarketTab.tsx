@@ -19,6 +19,7 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
   const markets = deriveMarkets(prediction);
   
   const getPredictedOutcome = () => {
+    if (!prediction.prediction) return "unknown";
     if (prediction.prediction === "1") return "home";
     if (prediction.prediction === "2") return "away";
     return "draw";
