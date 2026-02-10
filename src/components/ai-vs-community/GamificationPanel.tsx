@@ -68,7 +68,7 @@ export function GamificationPanel() {
                   <Info className="h-2.5 w-2.5 text-amber-400/50 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>Points reset every month. Each correct prediction earns 1 point. Reach 1000 to unlock 1 free Pro month.</p>
+                   <p>Points reset to 0 after reaching 1000. Each correct prediction earns 1 point. Reach 1000 to unlock 1 free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -102,7 +102,7 @@ export function GamificationPanel() {
                   <Info className="h-3 w-3 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>🏆 Points reset every month. Each correct prediction earns 1 point. Incorrect = 0 points. Reach 1000 to unlock a free Pro month.</p>
+                   <p>🏆 Points reset to 0 after reaching 1000. Each correct prediction earns 1 point. Incorrect = 0 points. Reach 1000 to unlock a free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -115,7 +115,7 @@ export function GamificationPanel() {
             </p>
           )}
           <p className="text-[9px] text-muted-foreground/60 leading-relaxed">
-            Points reset every month. Each correct prediction earns 1 point.
+            Points reset to 0 after reaching 1000. Each correct prediction earns 1 point.
           </p>
         </div>
 
@@ -147,7 +147,7 @@ export function GamificationPanel() {
             ))}
           </div>
           <p className="text-[9px] text-muted-foreground/60">
-            All users start each month at 0 points. Only your own correct predictions count toward rewards.
+            Points reset to 0 after you reach 1000 and claim your reward. Only your own correct predictions count.
           </p>
         </div>
       </Card>
