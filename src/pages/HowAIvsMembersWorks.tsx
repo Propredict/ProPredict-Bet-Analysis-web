@@ -159,14 +159,14 @@ export default function HowAIvsMembersWorks() {
             </div>
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground italic">
-            Arena Points reset with each new Arena season.
+            Points reset to 0 after reaching 1000 and claiming the reward. Each new cycle starts fresh.
           </p>
         </Section>
 
         {/* Free Pro Month */}
         <Section icon={Gift} iconColor="bg-violet-500/20 text-violet-500" title="Free Pro Month Reward (1000 Points)">
           <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
-            When a user reaches <span className="text-primary font-semibold">1000 Arena Points</span> in a season:
+            When a user reaches <span className="text-primary font-semibold">1000 Arena Points</span>:
           </p>
           <div className="p-2.5 rounded-md bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 mb-2.5">
             <p className="text-[10px] md:text-xs text-amber-500 font-semibold mb-1.5">🎉 A Free Pro Month reward is granted automatically!</p>
@@ -177,7 +177,7 @@ export default function HowAIvsMembersWorks() {
             </ul>
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground italic">
-            No billing cycles are changed or reset. The reward is granted once per season.
+            No billing cycles are changed or reset. After the reward is granted, points reset to 0 and the cycle begins again.
           </p>
         </Section>
 
