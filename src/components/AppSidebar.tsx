@@ -57,7 +57,6 @@ const packagesItems = [
 
 const tools = [
   { title: "AI Predictions", url: "/ai-predictions", icon: Brain },
-  { title: "AI vs Community", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
@@ -118,6 +117,18 @@ export function AppSidebar() {
                 >
                   <Home className="h-4 w-4 text-primary" />
                   {!collapsed && <span>Dashboard</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/ai-vs-community" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Swords className="h-4 w-4" />
+                  {!collapsed && <span>AI vs Members</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
