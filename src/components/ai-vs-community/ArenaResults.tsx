@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, Clock, Loader2, Trophy } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ArenaPredictionResult {
   id: string;
@@ -16,16 +17,30 @@ interface ArenaPredictionResult {
   league?: string;
 }
 
+const HIDDEN_KEY = "arena_hidden_results";
+
+function getHiddenIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(HIDDEN_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+
+function setHiddenIds(ids: Set<string>) {
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify([...ids]));
+}
+
 export function ArenaResults() {
   const { user } = useAuth();
   const [results, setResults] = useState<ArenaPredictionResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hiddenIds, setHiddenIdsState] = useState<Set<string>>(getHiddenIds);
+  const [showHidden, setShowHidden] = useState(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    mountedRef.current = true;
+    if (!user) { setLoading(false); return; }
 
     const fetchResults = async () => {
       try {
@@ -35,6 +50,8 @@ export function ArenaResults() {
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(50);
+
+        if (!mountedRef.current) return;
 
         if (!predictions || predictions.length === 0) {
           setResults([]);
@@ -47,6 +64,8 @@ export function ArenaResults() {
           .from("ai_predictions")
           .select("match_id, home_team, away_team, league")
           .in("match_id", matchIds);
+
+        if (!mountedRef.current) return;
 
         const matchMap = new Map<string, { home_team: string; away_team: string; league: string }>();
         (matches || []).forEach((m: any) => {
@@ -64,14 +83,26 @@ export function ArenaResults() {
       } catch (err) {
         console.error("Arena results fetch error:", err);
       } finally {
-        setLoading(false);
+        if (mountedRef.current) setLoading(false);
       }
     };
 
     fetchResults();
-    const interval = setInterval(fetchResults, 60_000); // auto-refresh every 60s
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchResults, 60_000);
+    return () => {
+      mountedRef.current = false;
+      clearInterval(interval);
+    };
   }, [user]);
+
+  const toggleHide = useCallback((id: string) => {
+    setHiddenIdsState(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      setHiddenIds(next);
+      return next;
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -100,9 +131,15 @@ export function ArenaResults() {
     );
   }
 
+  // Stats are based on ALL results (hidden ones still count)
   const wonCount = results.filter(r => r.status === "won").length;
   const lostCount = results.filter(r => r.status === "lost").length;
   const pendingCount = results.filter(r => r.status === "pending").length;
+  const hiddenCount = results.filter(r => hiddenIds.has(r.id)).length;
+
+  const visibleResults = showHidden
+    ? results
+    : results.filter(r => !hiddenIds.has(r.id));
 
   return (
     <div className="space-y-4">
@@ -122,49 +159,75 @@ export function ArenaResults() {
         </Card>
       </div>
 
+      {/* Hidden toggle */}
+      {hiddenCount > 0 && (
+        <button
+          onClick={() => setShowHidden(!showHidden)}
+          className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {showHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          {showHidden ? "Hide" : "Show"} {hiddenCount} hidden {hiddenCount === 1 ? "result" : "results"}
+        </button>
+      )}
+
       {/* Results list */}
       <div className="space-y-2">
-        {results.map((result) => (
-          <Card
-            key={result.id}
-            className={`p-3 border ${
-              result.status === "won"
-                ? "border-success/30 bg-success/5"
-                : result.status === "lost"
-                ? "border-destructive/30 bg-destructive/5"
-                : "border-border/40 bg-muted/10"
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                {result.league && (
-                  <p className="text-[9px] text-muted-foreground truncate mb-0.5">{result.league}</p>
-                )}
-                <p className="text-xs font-medium truncate">
-                  {result.home_team} vs {result.away_team}
-                </p>
+        {visibleResults.map((result) => {
+          const isHidden = hiddenIds.has(result.id);
+          return (
+            <Card
+              key={result.id}
+              className={`p-3 border ${
+                isHidden ? "opacity-50 border-border/20 bg-muted/5" :
+                result.status === "won"
+                  ? "border-success/30 bg-success/5"
+                  : result.status === "lost"
+                  ? "border-destructive/30 bg-destructive/5"
+                  : "border-border/40 bg-muted/10"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  {result.league && (
+                    <p className="text-[9px] text-muted-foreground truncate mb-0.5">{result.league}</p>
+                  )}
+                  <p className="text-xs font-medium truncate">
+                    {result.home_team} vs {result.away_team}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Badge variant="outline" className="text-[9px] px-1.5 py-0.5">
+                    {result.prediction === "1" ? "Home" : result.prediction === "X" ? "Draw" : result.prediction === "2" ? "Away" : result.prediction}
+                  </Badge>
+                  {result.status === "won" ? (
+                    <Badge className="text-[9px] bg-success/15 text-success border-success/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> WIN
+                    </Badge>
+                  ) : result.status === "lost" ? (
+                    <Badge className="text-[9px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
+                      <XCircle className="h-3 w-3" /> LOSS
+                    </Badge>
+                  ) : (
+                    <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30 gap-1">
+                      <Clock className="h-3 w-3" /> PENDING
+                    </Badge>
+                  )}
+                  <button
+                    onClick={() => toggleHide(result.id)}
+                    className="p-1 rounded hover:bg-muted/50 transition-colors"
+                    title={isHidden ? "Show result" : "Hide result"}
+                  >
+                    {isHidden ? (
+                      <Eye className="h-3 w-3 text-muted-foreground" />
+                    ) : (
+                      <EyeOff className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground" />
+                    )}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge variant="outline" className="text-[9px] px-1.5 py-0.5">
-                  {result.prediction === "1" ? "Home" : result.prediction === "X" ? "Draw" : result.prediction === "2" ? "Away" : result.prediction}
-                </Badge>
-                {result.status === "won" ? (
-                  <Badge className="text-[9px] bg-success/15 text-success border-success/30 gap-1">
-                    <CheckCircle2 className="h-3 w-3" /> WIN
-                  </Badge>
-                ) : result.status === "lost" ? (
-                  <Badge className="text-[9px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
-                    <XCircle className="h-3 w-3" /> LOSS
-                  </Badge>
-                ) : (
-                  <Badge className="text-[9px] bg-primary/15 text-primary border-primary/30 gap-1">
-                    <Clock className="h-3 w-3" /> PENDING
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
