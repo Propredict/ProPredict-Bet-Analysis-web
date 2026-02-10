@@ -114,7 +114,7 @@ type LeagueStatsResponse =
   | FixturesResponse 
   | RoundsResponse;
 
-const SUPABASE_URL = "https://tczettddxmlcmhdhgebw.supabase.co";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 async function fetchLeagueStats(
   leagueId: string,

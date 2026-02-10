@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 const EDGE_FUNCTION_URL =
-  "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-match-details";
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-match-details`;
 
 // In-memory cache to avoid refetching for the same fixtureId
 const detailsCache = new Map<string, MatchDetails>();
