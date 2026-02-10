@@ -163,7 +163,7 @@ export default function AIvsCommunity() {
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="text-[8px] text-muted-foreground/60">New here?</span>
+            <span className="text-[9px] text-foreground font-medium">Check the instructions</span>
             <Link
               to="/how-ai-vs-members-works"
               className="flex items-center gap-1.5 shrink-0 text-xs text-primary-foreground bg-primary/90 hover:bg-primary px-3 py-1.5 rounded-md font-medium transition-colors shadow-sm"
