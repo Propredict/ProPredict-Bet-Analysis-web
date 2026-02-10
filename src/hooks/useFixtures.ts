@@ -30,72 +30,79 @@ interface UseFixturesResult {
   silentRefetch: () => Promise<void>;
 }
 
-export function useFixtures(
-  dateFilter: DateFilter,
-  fetchLiveOnly: boolean = false
-): UseFixturesResult {
+export function useFixtures(dateFilter: DateFilter, fetchLiveOnly: boolean = false): UseFixturesResult {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchFixtures = useCallback(
-    async (silent: boolean = false) => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      abortControllerRef.current = new AbortController();
+  const fetchFixtures = useCallback(async (silent: boolean = false) => {
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
-      if (!silent) setIsLoading(true);
-      setError(null);
+    if (!silent) {
+      setIsLoading(true);
+    }
+    setError(null);
 
-      try {
-        const mode = fetchLiveOnly ? "live" : dateFilter;
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    try {
+      const mode = fetchLiveOnly ? "live" : dateFilter;
 
-        const session = await supabase.auth.getSession();
-        const accessToken = session.data.session?.access_token;
-
-        const response = await fetch(
-          ${supabaseUrl}/functions/v1/get-fixtures?mode=${mode},
-          {
-            headers: {
-              "Content-Type": "application/json",
-              ...(accessToken
-                ? { Authorization: Bearer ${accessToken} }
-                : {}),
-            },
-            signal: abortControllerRef.current.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(Failed to fetch fixtures: ${response.status});
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/get-fixtures?mode=${mode}`,
+        {
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,
+            "Content-Type": "application/json",
+          },
+          signal: abortControllerRef.current.signal,
         }
+      );
 
-        const result = await response.json();
-        setMatches(result.fixtures || []);
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        console.error("Error fetching fixtures:", err);
-        if (!silent) {
-          setError(err instanceof Error ? err.message : "Failed to fetch fixtures");
-          setMatches([]);
-        }
-      } finally {
-        if (!silent) setIsLoading(false);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch fixtures: ${response.status}`);
       }
-    },
-    [dateFilter, fetchLiveOnly]
-  );
+
+      const result = await response.json();
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      setMatches(result.fixtures || []);
+    } catch (err) {
+      // Ignore abort errors
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
+      console.error("Error fetching fixtures:", err);
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "Failed to fetch fixtures");
+      }
+      if (!silent) {
+        setMatches([]);
+      }
+    } finally {
+      if (!silent) {
+        setIsLoading(false);
+      }
+    }
+  }, [dateFilter, fetchLiveOnly]);
 
   const refetch = useCallback(() => fetchFixtures(false), [fetchFixtures]);
   const silentRefetch = useCallback(() => fetchFixtures(true), [fetchFixtures]);
 
   useEffect(() => {
     fetchFixtures(false);
+    
     return () => {
-      abortControllerRef.current?.abort();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [fetchFixtures]);
 
