@@ -17,8 +17,8 @@ export function useAILiveStatus() {
   const { data: predictions = [] } = useQuery({
     queryKey: ["ai-predictions-live-status"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ai_predictions")
+      const { data, error } = await (supabase
+        .from as any)("ai_predictions_public")
         .select("home_team, away_team, prediction, match_id")
         .eq("match_day", "today");
 

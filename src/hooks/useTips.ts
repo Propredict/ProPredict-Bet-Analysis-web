@@ -40,8 +40,8 @@ export function useTips(includeAll = false) {
   } = useQuery({
     queryKey: ["tips", includeAll],
     queryFn: async () => {
-      let query = supabase
-        .from("tips")
+      let query = (supabase
+        .from as any)("tips_public")
         .select("*")
         .order("created_at_ts", { ascending: false });
 
