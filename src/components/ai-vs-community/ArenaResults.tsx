@@ -65,6 +65,7 @@ export function ArenaResults() {
   const [results, setResults] = useState<ArenaPredictionResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [hiddenIds, setHiddenIdsState] = useState<Set<string>>(getHiddenIds);
   const [showHidden, setShowHidden] = useState(false);
   const mountedRef = useRef(true);
@@ -117,6 +118,30 @@ export function ArenaResults() {
       console.error("Arena results fetch error:", err);
     }
   }, [user]);
+
+  const resolveResults = useCallback(async () => {
+    setResolving(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-prediction-results`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log("Resolve results:", data);
+      // Refetch after resolving
+      await fetchResults();
+    } catch (err) {
+      console.error("Resolve error:", err);
+    } finally {
+      setResolving(false);
+    }
+  }, [fetchResults]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -193,8 +218,8 @@ export function ArenaResults() {
     );
   }
 
-  const wonCount = results.filter(r => r.status === "won").length;
-  const lostCount = results.filter(r => r.status === "lost").length;
+  const wonCount = results.filter(r => r.status === "won" || r.status === "win").length;
+  const lostCount = results.filter(r => r.status === "lost" || r.status === "loss").length;
   const pendingCount = results.filter(r => r.status === "pending").length;
   const hiddenCount = results.filter(r => hiddenIds.has(r.id)).length;
 
@@ -220,16 +245,31 @@ export function ArenaResults() {
             <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pending</p>
           </Card>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleManualRefresh}
-          disabled={refreshing}
-          className="ml-2 shrink-0"
-          title="Refresh results"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-        </Button>
+        <div className="flex items-center gap-1 ml-2 shrink-0">
+          {pendingCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resolveResults}
+              disabled={resolving}
+              className="text-[10px] h-7 px-2 gap-1"
+              title="Check finished matches and resolve results"
+            >
+              {resolving ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+              Resolve
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleManualRefresh}
+            disabled={refreshing}
+            className="shrink-0 h-7 w-7"
+            title="Refresh results"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
       </div>
 
       {/* Hidden toggle */}
@@ -253,9 +293,9 @@ export function ArenaResults() {
               key={result.id}
               className={`p-3 border ${
                 isHidden ? "opacity-50 border-border/20 bg-muted/5" :
-                result.status === "won"
+                (result.status === "won" || result.status === "win")
                   ? "border-success/30 bg-success/5"
-                  : result.status === "lost"
+                  : (result.status === "lost" || result.status === "loss")
                   ? "border-destructive/30 bg-destructive/5"
                   : "border-border/40 bg-muted/10"
               }`}
@@ -278,11 +318,11 @@ export function ArenaResults() {
                   <Badge variant="outline" className="text-[9px] px-1.5 py-0.5">
                     {result.prediction === "1" ? "Home" : result.prediction === "X" ? "Draw" : result.prediction === "2" ? "Away" : result.prediction}
                   </Badge>
-                  {result.status === "won" ? (
+                  {(result.status === "won" || result.status === "win") ? (
                     <Badge className="text-[9px] bg-success/15 text-success border-success/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" /> WIN
                     </Badge>
-                  ) : result.status === "lost" ? (
+                  ) : (result.status === "lost" || result.status === "loss") ? (
                     <Badge className="text-[9px] bg-destructive/15 text-destructive border-destructive/30 gap-1">
                       <XCircle className="h-3 w-3" /> LOSS
                     </Badge>

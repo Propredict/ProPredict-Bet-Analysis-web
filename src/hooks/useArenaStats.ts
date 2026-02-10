@@ -61,8 +61,8 @@ export function useArenaStats(): ArenaStats {
       if (!mountedRef.current) return;
 
       const predictions = predictionsResult.data || [];
-      const wins = predictions.filter((p: any) => p.status === "won").length;
-      const losses = predictions.filter((p: any) => p.status === "lost").length;
+      const wins = predictions.filter((p: any) => p.status === "won" || p.status === "win").length;
+      const losses = predictions.filter((p: any) => p.status === "lost" || p.status === "loss").length;
 
       setStats({
         points: wins, // 1 point per win, derived from actual predictions
