@@ -256,8 +256,8 @@ Deno.serve(async (req) => {
                       .update({ points: newPoints, wins: stats.wins + 1 })
                       .eq("id", stats.id);
 
-                    // Auto-grant free Pro month at 100 points (once per season)
-                    if (newPoints >= 100 && !stats.reward_granted) {
+                    // Auto-grant free Pro month at 1000 points (once per season)
+                    if (newPoints >= 1000 && !stats.reward_granted) {
                       // Mark reward as granted + log in arena_rewards
                       await supabase
                         .from("arena_user_stats")
