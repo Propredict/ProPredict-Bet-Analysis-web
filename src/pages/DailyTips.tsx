@@ -74,7 +74,7 @@ export default function DailyTips() {
             onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} 
             isUnlocking={isUnlocking} 
           />
-          {(idx + 1) % 5 === 0 && idx < dailyTips.length - 1 && (
+          {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < dailyTips.length - 1 && (
             <div className="col-span-full">
               <AdSlot />
             </div>
