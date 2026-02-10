@@ -43,21 +43,33 @@ export function useArenaStats(): ArenaStats {
         return;
       }
 
-      const { data } = await (supabase as any)
-        .from("arena_user_stats")
-        .select("points, wins, losses, current_streak, reward_granted")
-        .eq("user_id", user.id)
-        .eq("season_id", season.id)
-        .maybeSingle();
+      // Derive stats directly from arena_predictions for consistency
+      const [predictionsResult, statsResult] = await Promise.all([
+        (supabase as any)
+          .from("arena_predictions")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("season_id", season.id),
+        (supabase as any)
+          .from("arena_user_stats")
+          .select("current_streak, reward_granted")
+          .eq("user_id", user.id)
+          .eq("season_id", season.id)
+          .maybeSingle(),
+      ]);
 
       if (!mountedRef.current) return;
 
+      const predictions = predictionsResult.data || [];
+      const wins = predictions.filter((p: any) => p.status === "won").length;
+      const losses = predictions.filter((p: any) => p.status === "lost").length;
+
       setStats({
-        points: data?.points ?? 0,
-        wins: data?.wins ?? 0,
-        losses: data?.losses ?? 0,
-        currentStreak: data?.current_streak ?? 0,
-        rewardGranted: data?.reward_granted ?? false,
+        points: wins, // 1 point per win, derived from actual predictions
+        wins,
+        losses,
+        currentStreak: statsResult.data?.current_streak ?? 0,
+        rewardGranted: statsResult.data?.reward_granted ?? false,
         seasonId: season.id,
         loading: false,
       });
