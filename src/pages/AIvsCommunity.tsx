@@ -25,6 +25,10 @@ const PRIORITY_LEAGUES: { exact: string[]; max: number }[] = [
   { exact: ["bundesliga"], max: 2 },                            // Germany
   { exact: ["ligue 1"], max: 2 },                               // France
   { exact: ["primeira liga", "liga portugal"], max: 2 },        // Portugal
+  { exact: ["eredivisie"], max: 2 },                            // Netherlands
+  { exact: ["brasileirão", "brasileirao", "serie a brazil"], max: 2 }, // Brazil
+  { exact: ["primera división", "primera division", "liga profesional"], max: 2 }, // Argentina
+  { exact: ["mls", "major league soccer"], max: 2 },            // USA
   { exact: ["uefa champions league"], max: 2 },
   { exact: ["uefa europa league"], max: 2 },
 ];
