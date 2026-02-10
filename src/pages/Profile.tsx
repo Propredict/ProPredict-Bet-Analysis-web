@@ -402,18 +402,18 @@ const Profile = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="text-foreground font-medium">{arenaStats.points} / 100</span>
+                    <span className="text-foreground font-medium">{arenaStats.points} / 1000</span>
                   </div>
-                  <Progress value={Math.min((arenaStats.points / 100) * 100, 100)} className="h-2.5" />
-                  {arenaStats.points < 100 && (
+                  <Progress value={Math.min((arenaStats.points / 1000) * 100, 100)} className="h-2.5" />
+                  {arenaStats.points < 1000 && (
                     <p className="text-[9px] text-amber-400/80 font-medium">
-                      🔥 {100 - arenaStats.points} points left to unlock a free Pro month!
+                      🔥 {1000 - arenaStats.points} points left to unlock a free Pro month!
                     </p>
                   )}
                 </div>
-                {arenaStats.points >= 100 && !arenaStats.rewardGranted && (
+                {arenaStats.points >= 1000 && !arenaStats.rewardGranted && (
                   <div className="p-2 rounded bg-amber-500/15 border border-amber-400/30 text-center">
-                    <p className="text-[10px] font-semibold text-amber-400">🎉 100 points reached! Reward coming soon.</p>
+                    <p className="text-[10px] font-semibold text-amber-400">🎉 1000 points reached! Reward coming soon.</p>
                   </div>
                 )}
                 {arenaStats.rewardGranted && (
@@ -422,7 +422,7 @@ const Profile = () => {
                   </div>
                 )}
                 <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-                  🎯 Collect 100 points in a month to unlock 1 free month of Pro access. Points reset every month.
+                  🎯 Collect 1000 points in a month to unlock 1 free month of Pro access. Points reset every month.
                 </p>
               </div>
 
