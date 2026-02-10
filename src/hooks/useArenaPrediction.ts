@@ -51,18 +51,24 @@ export function useArenaPrediction(
     return data as { prediction: string; status: string } | null;
   }, [user, matchId]);
 
-  // Load existing prediction on mount (persist on refresh)
+  // Load existing prediction on mount + periodic refresh for status changes
   useEffect(() => {
     if (!user) { setLoaded(true); return; }
 
-    fetchExisting().then((data) => {
-      if (data?.prediction) {
-        setUserPick(data.prediction);
-        setUserStatus(data.status || "pending");
-        setUserMarketLabel(deriveMarketLabel(data.prediction));
-      }
-      setLoaded(true);
-    });
+    const refresh = () => {
+      fetchExisting().then((data) => {
+        if (data?.prediction) {
+          setUserPick(data.prediction);
+          setUserStatus(data.status || "pending");
+          setUserMarketLabel(deriveMarketLabel(data.prediction));
+        }
+        setLoaded(true);
+      });
+    };
+
+    refresh();
+    const interval = setInterval(refresh, 60_000); // refresh status every 60s
+    return () => clearInterval(interval);
   }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string) => {
