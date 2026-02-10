@@ -13,15 +13,15 @@ import { useArenaStats } from "@/hooks/useArenaStats";
 import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 
 /** Priority leagues with target quotas (filled first, in order) */
-const PRIORITY_LEAGUES: { pattern: string; max: number }[] = [
-  { pattern: "premier league", max: 3 },
-  { pattern: "championship", max: 2 },
-  { pattern: "serie a", max: 2 },
-  { pattern: "serie b", max: 2 },
-  { pattern: "bundesliga", max: 3 },
+const PRIORITY_LEAGUES: { pattern: string; exclude?: string[]; max: number }[] = [
+  { pattern: "premier league", exclude: ["premier league 2", "sudan"], max: 3 },
+  { pattern: "la liga", max: 2 },
+  { pattern: "serie a", exclude: ["serie a2"], max: 2 },
+  { pattern: "bundesliga", max: 2 },
+  { pattern: "primeira liga", max: 2 },
 ];
 
-const EXCLUDED_PATTERNS = ["premier league 2", "u21", "u23", "women", "reserve"];
+const EXCLUDED_PATTERNS = ["premier league 2", "u21", "u23", "women", "reserve", "sudan", "youth"];
 
 const MAX_ARENA_MATCHES = 10;
 
@@ -35,8 +35,11 @@ function isUpcoming(p: { match_date: string | null; match_time: string | null })
   return kickoff.getTime() > Date.now() + bufferMs;
 }
 
-function matchesPattern(league: string, pattern: string): boolean {
-  return league.toLowerCase().includes(pattern);
+function matchesPriority(league: string, entry: typeof PRIORITY_LEAGUES[0]): boolean {
+  const l = league.toLowerCase();
+  if (!l.includes(entry.pattern)) return false;
+  if (entry.exclude?.some((ex) => l.includes(ex))) return false;
+  return true;
 }
 
 function isExcluded(league: string): boolean {
@@ -52,14 +55,14 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
   const used = new Set<string>();
 
   // Phase 1: Fill priority leagues in order
-  for (const { pattern, max } of PRIORITY_LEAGUES) {
+  for (const entry of PRIORITY_LEAGUES) {
     const pool = upcoming
-      .filter((p) => matchesPattern(p.league!, pattern) && !used.has(p.id))
+      .filter((p) => matchesPriority(p.league!, entry) && !used.has(p.id))
       .sort((a, b) => b.confidence - a.confidence);
 
     let added = 0;
     for (const p of pool) {
-      if (curated.length >= MAX_ARENA_MATCHES || added >= max) break;
+      if (curated.length >= MAX_ARENA_MATCHES || added >= entry.max) break;
       curated.push(p);
       used.add(p.id);
       added++;
