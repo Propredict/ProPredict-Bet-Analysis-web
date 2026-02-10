@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -539,7 +539,7 @@ export default function AIPredictions() {
                       />
                       {(idx + 1) % 6 === 0 && idx < featuredPredictions.length - 1 && (
                         <div className="col-span-full">
-                          <WebAdBanner className="my-1" />
+                          <AdSlot />
                         </div>
                       )}
                     </React.Fragment>
@@ -623,7 +623,7 @@ export default function AIPredictions() {
                       />
                       {(idx + 1) % 6 === 0 && idx < regularPredictions.length - 1 && (
                         <div className="col-span-full">
-                          <WebAdBanner className="my-1" />
+                          <AdSlot />
                         </div>
                       )}
                     </React.Fragment>

@@ -10,7 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 export default function DailyTips() {
   const {
@@ -74,9 +74,9 @@ export default function DailyTips() {
             onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} 
             isUnlocking={isUnlocking} 
           />
-          {(idx + 1) % 3 === 0 && idx < dailyTips.length - 1 && (
+          {(idx + 1) % 5 === 0 && idx < dailyTips.length - 1 && (
             <div className="col-span-full">
-              <WebAdBanner className="my-1" />
+              <AdSlot />
             </div>
           )}
         </React.Fragment>

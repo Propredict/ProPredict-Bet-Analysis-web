@@ -14,7 +14,7 @@ import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 // Top leagues to display
 const TOP_LEAGUES = [
@@ -315,7 +315,7 @@ export default function MatchPreviews() {
         )}
 
         {/* Footer Ad */}
-        <WebAdBanner className="mt-4" />
+        <AdSlot />
       </div>
     </>
   );

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { AllTicketsCard } from "@/components/all-tickets/AllTicketsCard";
 import { AllTicketsStatCard } from "@/components/all-tickets/AllTicketsStatCard";
 import { format, parseISO, isAfter, subDays } from "date-fns";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 type ContentType = "tips" | "tickets";
 type TabType = "daily" | "exclusive" | "premium";
@@ -440,7 +440,7 @@ export default function AllTickets() {
         )}
 
         {/* Footer Ad */}
-        <WebAdBanner className="mt-4" />
+        <AdSlot />
 
         <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
       </div>

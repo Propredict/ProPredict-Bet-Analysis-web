@@ -10,7 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
@@ -196,9 +196,9 @@ export default function PremiumTips() {
           tier: tip.tier,
           result: tip.result
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />
-          {(idx + 1) % 3 === 0 && idx < premiumTips.length - 1 && (
+          {(idx + 1) % 5 === 0 && idx < premiumTips.length - 1 && (
             <div className="col-span-full">
-              <WebAdBanner className="my-1" />
+              <AdSlot />
             </div>
           )}
         </React.Fragment>;
