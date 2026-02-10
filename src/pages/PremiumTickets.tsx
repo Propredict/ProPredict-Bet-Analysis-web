@@ -192,7 +192,7 @@ export default function PremiumTickets() {
           })),
           createdAt: ticket.created_at_ts
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
-          {(idx + 1) % 5 === 0 && idx < premiumTickets.length - 1 && (
+          {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTickets.length - 1 && (
             <div className="col-span-full">
               <AdSlot />
             </div>
