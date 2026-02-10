@@ -422,7 +422,7 @@ const Profile = () => {
                   </div>
                 )}
                 <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-                  🎯 Collect 1000 points in a month to unlock 1 free month of Pro access. Points reset every month.
+                  🎯 Collect 1000 points to unlock 1 free month of Pro access. Points reset to 0 after reaching 1000.
                 </p>
               </div>
 
