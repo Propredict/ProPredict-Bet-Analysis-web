@@ -51,7 +51,7 @@ export function useFixtures(dateFilter: DateFilter, fetchLiveOnly: boolean = fal
     try {
       const mode = fetchLiveOnly ? "live" : dateFilter;
 
-      const supabaseUrl = "https://tczettddxmlcmhdhgebw.supabase.co";
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(
         `${supabaseUrl}/functions/v1/get-fixtures?mode=${mode}`,
         {

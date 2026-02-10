@@ -55,13 +55,6 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // ✅ TEMP: Stripe key check
-  if (!getIsAndroidApp()) {
-    console.log(
-      "Stripe key:",
-      import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
-    );
-  }
 
   return (
     <HelmetProvider>

@@ -45,12 +45,14 @@ interface H2HResponse {
 }
 
 async function fetchH2H(team1Id: number, team2Id: number): Promise<H2HResponse> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const response = await fetch(
-    `https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/league-h2h?team1=${team1Id}&team2=${team2Id}&last=20`,
+    `${supabaseUrl}/functions/v1/league-h2h?team1=${team1Id}&team2=${team2Id}&last=20`,
     {
       headers: {
         "Content-Type": "application/json",
-        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA",
+        "apikey": supabaseKey,
       },
     }
   );
