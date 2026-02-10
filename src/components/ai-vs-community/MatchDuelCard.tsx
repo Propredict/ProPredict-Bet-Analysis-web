@@ -181,18 +181,14 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             {/* Goals */}
             <div className="space-y-1">
               <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.over15.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
-                  <span className="text-[9px] text-foreground">Over 1.5</span>
-                  <span className={`text-[8px] ${markets.goals.over15.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.over15.value}</span>
-                </div>
+              <div className="grid grid-cols-2 gap-1.5">
                 <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.over25.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
                   <span className="text-[9px] text-foreground">Over 2.5</span>
                   <span className={`text-[8px] ${markets.goals.over25.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.over25.value}</span>
                 </div>
-                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${markets.goals.under35.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
-                  <span className="text-[9px] text-foreground">Under 3.5</span>
-                  <span className={`text-[8px] ${markets.goals.under35.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.under35.value}</span>
+                <div className={`flex flex-col items-center px-2 py-1.5 rounded border ${!markets.goals.over25.recommended ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border/30"}`}>
+                  <span className="text-[9px] text-foreground">Under 2.5</span>
+                  <span className={`text-[8px] ${!markets.goals.over25.recommended ? "text-primary font-semibold" : "text-muted-foreground"}`}>{markets.goals.over25.recommended ? "No" : "Yes"}</span>
                 </div>
               </div>
             </div>
@@ -450,7 +446,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
               <div className="space-y-1">
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {(["Over 2.5", "Under 2.5", "Over 1.5", "Under 3.5"] as const).map((option) => (
+                  {(["Over 2.5", "Under 2.5"] as const).map((option) => (
                     <Button
                       key={option}
                       size="sm"
