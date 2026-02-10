@@ -23,7 +23,7 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/favorites"]
   },
   { 
-    label: "Arena", 
+    label: "Members", 
     icon: Swords, 
     path: "/ai-vs-community",
     matchPaths: ["/ai-vs-community"]

@@ -123,7 +123,7 @@ export default function AIvsCommunity() {
   return (
     <>
       <Helmet>
-        <title>AI vs Community – AI Sports Predictions | ProPredict</title>
+        <title>AI vs Members – AI Sports Predictions | ProPredict</title>
         <meta name="description" content="Compare AI predictions with community analysis on top European football matches." />
       </Helmet>
 
@@ -134,7 +134,7 @@ export default function AIvsCommunity() {
               <Swords className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-primary">AI vs Community</h1>
+              <h1 className="text-sm font-semibold text-primary">AI vs Members</h1>
               <p className="text-[9px] text-muted-foreground">Prediction Arena</p>
             </div>
           </div>
