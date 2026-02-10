@@ -12,19 +12,24 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useArenaStats } from "@/hooks/useArenaStats";
 import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 
-/** Priority leagues with target quotas (filled first, in order) */
-const PRIORITY_LEAGUES: { pattern: string; exclude?: string[]; max: number }[] = [
-  { pattern: "premier league", exclude: ["premier league 2", "sudan"], max: 3 },
-  { pattern: "championship", exclude: ["championship 2"], max: 2 },
-  { pattern: "la liga", max: 2 },
-  { pattern: "serie a", exclude: ["serie a2"], max: 2 },
-  { pattern: "bundesliga", max: 2 },
-  { pattern: "primeira liga", max: 2 },
-  { pattern: "champions league", max: 2 },
-  { pattern: "europa league", max: 2 },
+/** Priority leagues — exact names as they appear from API-Football */
+const PRIORITY_LEAGUES: { names: string[]; max: number }[] = [
+  { names: ["premier league"], max: 3 },                      // England
+  { names: ["championship"], max: 2 },                         // England
+  { names: ["la liga"], max: 2 },                              // Spain
+  { names: ["serie a"], max: 2 },                              // Italy
+  { names: ["bundesliga"], max: 2 },                           // Germany
+  { names: ["primeira liga", "liga portugal"], max: 2 },       // Portugal
+  { names: ["uefa champions league", "champions league"], max: 2 },
+  { names: ["uefa europa league", "europa league"], max: 2 },
 ];
 
-const EXCLUDED_PATTERNS = ["premier league 2", "u21", "u23", "women", "reserve", "sudan", "youth"];
+/** Leagues to always exclude */
+const EXCLUDED_PATTERNS = [
+  "premier league 2", "sudan", "u21", "u23", "women", "reserve", "youth",
+  "afc champions", "premyer liqa", "non league", "isthmian", "conference",
+  "national league", "regionalliga", "3. liga",
+];
 
 const MAX_ARENA_MATCHES = 10;
 
@@ -39,14 +44,14 @@ function isUpcoming(p: { match_date: string | null; match_time: string | null })
 }
 
 function matchesPriority(league: string, entry: typeof PRIORITY_LEAGUES[0]): boolean {
-  const l = league.toLowerCase();
-  if (!l.includes(entry.pattern)) return false;
-  if (entry.exclude?.some((ex) => l.includes(ex))) return false;
-  return true;
+  const l = league.toLowerCase().trim();
+  // Must match one of the exact names AND not be excluded
+  return entry.names.some((name) => l === name || l.endsWith(name)) && !isExcluded(l);
 }
 
 function isExcluded(league: string): boolean {
-  return EXCLUDED_PATTERNS.some((ex) => league.toLowerCase().includes(ex));
+  const l = league.toLowerCase();
+  return EXCLUDED_PATTERNS.some((ex) => l.includes(ex));
 }
 
 function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predictions"]) {
