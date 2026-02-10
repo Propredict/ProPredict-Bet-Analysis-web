@@ -60,8 +60,11 @@ export default function AIPredictions() {
 
   // Tier rules (must match backend tier thresholds)
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
+    // When confidence is NULL, the secure view masked it → user lacks access to that tier
+    // If is_premium is true and confidence is null, it's premium tier (masked by view)
+    if (prediction.is_premium && prediction.confidence == null) return "premium";
     if (prediction.is_premium && prediction.confidence >= 85) return "premium";
-    if (prediction.confidence >= 65) return "pro";
+    if (prediction.confidence != null && prediction.confidence >= 65) return "pro";
     return "free";
   };
 
@@ -97,7 +100,8 @@ export default function AIPredictions() {
     return [...preds].sort((a, b) => {
       switch (sortBy) {
         case "confidence":
-          return b.confidence - a.confidence;
+          // Handle null confidence (masked by view) — push to end
+          return (b.confidence ?? 0) - (a.confidence ?? 0);
         case "kickoff":
           // Sort by time string
           const timeA = a.match_time || "99:99";
