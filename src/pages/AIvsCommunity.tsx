@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Swords, Brain, Loader2, Info } from "lucide-react";
+import { Swords, Brain, Loader2, Info, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MatchDuelCard } from "@/components/ai-vs-community/MatchDuelCard";
@@ -145,11 +146,20 @@ export default function AIvsCommunity() {
           )}
         </div>
 
-        <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-muted/30 border border-border/40">
-          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
-            These matches are selected from today's AI predictions based on relevance and expected discussion.
-          </p>
+        <div className="flex items-start justify-between gap-2 px-3 py-2.5 rounded-lg bg-muted/30 border border-border/40">
+          <div className="flex items-start gap-2">
+            <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              These matches are selected from today's AI predictions based on relevance and expected discussion.
+            </p>
+          </div>
+          <Link
+            to="/how-ai-vs-members-works"
+            className="flex items-center gap-1 shrink-0 text-[10px] text-primary hover:text-primary/80 font-medium transition-colors"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">How does it work?</span>
+          </Link>
         </div>
 
         <GamificationPanel />
