@@ -19,7 +19,7 @@ import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 /* -------------------- CONSTANTS -------------------- */
 
@@ -363,7 +363,7 @@ export default function LiveScores() {
 
                 // Insert web ad after the league group that crosses the 5th match threshold
                 if (startCount < 5 && matchCounter >= 5) {
-                  elements.push(<WebAdBanner key={`ad-${league}`} className="my-1.5" />);
+                  elements.push(<AdSlot key={`ad-${league}`} />);
                 }
 
                 return elements;

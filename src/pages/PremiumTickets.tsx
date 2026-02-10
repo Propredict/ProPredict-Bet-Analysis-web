@@ -10,7 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();
@@ -192,9 +192,9 @@ export default function PremiumTickets() {
           })),
           createdAt: ticket.created_at_ts
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
-          {(idx + 1) % 3 === 0 && idx < premiumTickets.length - 1 && (
+          {(idx + 1) % 5 === 0 && idx < premiumTickets.length - 1 && (
             <div className="col-span-full">
-              <WebAdBanner className="my-1" />
+              <AdSlot />
             </div>
           )}
         </React.Fragment>;

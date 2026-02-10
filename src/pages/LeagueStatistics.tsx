@@ -12,7 +12,7 @@ import { LeagueStatsFixturesTab } from "@/components/league-statistics/LeagueSta
 import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStatsRoundsTab";
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 // Known league ID mappings for API-Football
 const LEAGUE_ID_MAP: Record<string, string> = {
   "Premier League": "39",
@@ -227,6 +227,6 @@ export default function LeagueStatistics() {
         </Tabs>
 
         {/* Footer Ad */}
-        <WebAdBanner className="mt-4" />
+        <AdSlot />
       </div>;
 }

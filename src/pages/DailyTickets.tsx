@@ -12,7 +12,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
@@ -79,9 +79,9 @@ export default function DailyTickets() {
             onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
             isUnlocking={isUnlocking} 
           />
-          {(idx + 1) % 3 === 0 && idx < dailyTickets.length - 1 && (
+          {(idx + 1) % 5 === 0 && idx < dailyTickets.length - 1 && (
             <div className="col-span-full">
-              <WebAdBanner className="my-1" />
+              <AdSlot />
             </div>
           )}
         </React.Fragment>

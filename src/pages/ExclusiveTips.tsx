@@ -11,7 +11,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { WebAdBanner } from "@/components/WebAdBanner";
+import AdSlot from "@/components/ads/AdSlot";
 
 export default function ExclusiveTips() {
   const navigate = useNavigate();
@@ -190,9 +190,9 @@ export default function ExclusiveTips() {
                   onSecondaryUnlock={handleSecondaryUnlock}
                   isUnlocking={isUnlocking} 
                 />
-                {(idx + 1) % 3 === 0 && idx < exclusiveTips.length - 1 && (
+                {(idx + 1) % 5 === 0 && idx < exclusiveTips.length - 1 && (
                   <div className="col-span-full">
-                    <WebAdBanner className="my-1" />
+                    <AdSlot />
                   </div>
                 )}
               </React.Fragment>
