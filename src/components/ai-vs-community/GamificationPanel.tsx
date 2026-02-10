@@ -40,7 +40,7 @@ export function GamificationPanel() {
           <h3 className="text-sm font-semibold text-foreground">Your Arena Stats</h3>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div className="text-center p-2.5 bg-muted/20 rounded-lg">
             <Target className="h-4 w-4 mx-auto mb-1 text-primary" />
             <p className="text-lg font-bold text-foreground">
@@ -54,11 +54,6 @@ export function GamificationPanel() {
             <Flame className="h-4 w-4 mx-auto mb-1 text-destructive" />
             <p className="text-lg font-bold text-foreground">{stats.currentStreak}</p>
             <p className="text-[9px] text-muted-foreground">Win Streak</p>
-          </div>
-          <div className="text-center p-2.5 bg-muted/20 rounded-lg">
-            <Trophy className="h-4 w-4 mx-auto mb-1 text-primary" />
-            <p className="text-lg font-bold text-foreground">{stats.wins}</p>
-            <p className="text-[9px] text-muted-foreground">Monthly Wins</p>
           </div>
           <div className="text-center p-2.5 rounded-lg relative bg-amber-500/10 border border-amber-400/20 shadow-[0_0_12px_rgba(251,191,36,0.1)]">
             <div className="flex items-center justify-center gap-0.5 mb-1">
