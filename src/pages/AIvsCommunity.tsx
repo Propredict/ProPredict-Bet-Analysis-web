@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Swords, Brain, Loader2, Info, HelpCircle } from "lucide-react";
+import { Swords, Brain, Loader2, Info, HelpCircle, CircleHelp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MatchDuelCard } from "@/components/ai-vs-community/MatchDuelCard";
@@ -139,11 +139,20 @@ export default function AIvsCommunity() {
               <p className="text-[9px] text-muted-foreground">Prediction Arena</p>
             </div>
           </div>
-          {curated.length > 0 && (
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-              {curated.length} matches
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {curated.length > 0 && (
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                {curated.length} matches
+              </Badge>
+            )}
+            <Link
+              to="/how-ai-vs-members-works#faq"
+              className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/20 hover:bg-primary/30 transition-colors"
+              title="FAQ"
+            >
+              <CircleHelp className="h-4 w-4 text-primary" />
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-start justify-between gap-2 px-3 py-2.5 rounded-lg bg-muted/30 border border-border/40">

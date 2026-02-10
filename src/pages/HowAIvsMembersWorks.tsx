@@ -1,8 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Bot, Users, BarChart3, Trophy, Gift, EyeOff, AlertTriangle, Swords } from "lucide-react";
+import { ArrowLeft, Bot, Users, BarChart3, Trophy, Gift, EyeOff, AlertTriangle, Swords, HelpCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Section = ({
   icon: Icon,
@@ -215,6 +216,71 @@ export default function HowAIvsMembersWorks() {
                 ProPredict does not provide betting or gambling services. All AI-generated predictions are for informational and entertainment purposes only.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* FAQ Section */}
+        <Card className="bg-card border-border">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-md bg-primary/20">
+                <HelpCircle className="h-4 w-4 text-primary" />
+              </div>
+              <h2 className="text-xs md:text-sm font-semibold text-foreground">❓ AI vs Community — FAQ</h2>
+            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="q1" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  Is this a betting platform?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  No. ProPredict is an analysis and comparison platform only. We do not offer betting or gambling services.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="q2" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  Are AI predictions guaranteed?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  No. AI predictions are based on data analysis, not certainty. Match outcomes are unpredictable.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="q3" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  How do I earn Arena points?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  You earn points when your prediction matches the final match result.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="q4" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  Why is my prediction marked as PENDING?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  Predictions remain pending until the match officially finishes.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="q5" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  Can I change my prediction after submitting?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  No. Predictions are locked after submission to ensure fairness.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="q6" className="border-border/50">
+                <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
+                  Do hidden matches affect my points?
+                </AccordionTrigger>
+                <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
+                  No. Hiding a match only affects visibility. Your stats and points remain unchanged.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            <p className="text-[9px] text-muted-foreground/60 mt-3 text-center italic">
+              Predictions are for analysis and entertainment purposes only.
+            </p>
           </CardContent>
         </Card>
 
