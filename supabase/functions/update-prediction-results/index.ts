@@ -365,12 +365,17 @@ Deno.serve(async (req) => {
     // ── SECOND PASS: resolve ALL pending arena predictions directly via API ──
     // No longer depends on ai_predictions being resolved first
     let arenaOrphanResolved = 0;
+    let arenaOrphanFound = 0;
+    const orphanDiag: string[] = [];
     try {
-      const { data: orphanedArena } = await supabase
+      const { data: orphanedArena, error: orphanFetchErr } = await supabase
         .from("arena_predictions")
         .select("id, user_id, match_id, prediction, status, season_id")
         .eq("status", "pending")
         .limit(100);
+
+      arenaOrphanFound = orphanedArena?.length ?? 0;
+      if (orphanFetchErr) orphanDiag.push(`fetch_error: ${orphanFetchErr.message}`);
 
       if (orphanedArena && orphanedArena.length > 0) {
         // Get team names from ai_predictions for notifications (best effort)
@@ -385,20 +390,32 @@ Deno.serve(async (req) => {
         for (const ap of orphanedArena) {
           try {
             const fixtureId = ap.match_id;
-            if (!fixtureId || isNaN(Number(fixtureId))) continue;
+            if (!fixtureId || isNaN(Number(fixtureId))) {
+              orphanDiag.push(`${fixtureId}: invalid_id`);
+              continue;
+            }
 
             const apiUrl = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
             const apiResp = await fetch(apiUrl, {
               headers: { "x-apisports-key": apiFootballKey },
             });
 
-            if (!apiResp.ok) continue;
+            if (!apiResp.ok) {
+              orphanDiag.push(`${fixtureId}: api_error_${apiResp.status}`);
+              continue;
+            }
             const apiJson = await apiResp.json();
             const fix = apiJson.response?.[0] as FixtureResponse | undefined;
-            if (!fix) continue;
+            if (!fix) {
+              orphanDiag.push(`${fixtureId}: no_fixture_data`);
+              continue;
+            }
 
             const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
-            if (!finStatuses.includes(fix.fixture.status.short)) continue;
+            if (!finStatuses.includes(fix.fixture.status.short)) {
+              orphanDiag.push(`${fixtureId}: status_${fix.fixture.status.short}`);
+              continue;
+            }
 
             const hg = fix.goals.home;
             const ag = fix.goals.away;
@@ -504,7 +521,9 @@ Deno.serve(async (req) => {
         total_checked: pendingPredictions.length,
         updated: updatedCount,
         skipped: skippedCount,
+        arena_orphans_found: arenaOrphanFound,
         arena_orphans_resolved: arenaOrphanResolved,
+        arena_orphan_diag: orphanDiag,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
