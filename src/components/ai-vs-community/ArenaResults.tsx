@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Loader2, Trophy, EyeOff, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ArenaPredictionResult {
@@ -103,6 +103,25 @@ export function ArenaResults() {
       return next;
     });
   }, []);
+
+  const deletePrediction = useCallback(async (id: string) => {
+    if (!user) return;
+    const { error } = await (supabase as any)
+      .from("arena_predictions")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+    if (!error) {
+      setResults(prev => prev.filter(r => r.id !== id));
+      // Also remove from hidden if present
+      setHiddenIdsState(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        setHiddenIds(next);
+        return next;
+      });
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -212,7 +231,7 @@ export function ArenaResults() {
                       <Clock className="h-3 w-3" /> PENDING
                     </Badge>
                   )}
-                  <button
+                   <button
                     onClick={() => toggleHide(result.id)}
                     className="p-1 rounded hover:bg-muted/50 transition-colors"
                     title={isHidden ? "Show result" : "Hide result"}
@@ -222,6 +241,13 @@ export function ArenaResults() {
                     ) : (
                       <EyeOff className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground" />
                     )}
+                  </button>
+                  <button
+                    onClick={() => deletePrediction(result.id)}
+                    className="p-1 rounded hover:bg-destructive/20 transition-colors"
+                    title="Remove from list"
+                  >
+                    <X className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
                   </button>
                 </div>
               </div>
