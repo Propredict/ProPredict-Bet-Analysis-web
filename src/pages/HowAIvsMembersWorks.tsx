@@ -164,9 +164,9 @@ export default function HowAIvsMembersWorks() {
         </Section>
 
         {/* Free Pro Month */}
-        <Section icon={Gift} iconColor="bg-violet-500/20 text-violet-500" title="Free Pro Month Reward (100 Points)">
+        <Section icon={Gift} iconColor="bg-violet-500/20 text-violet-500" title="Free Pro Month Reward (1000 Points)">
           <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
-            When a user reaches <span className="text-primary font-semibold">100 Arena Points</span> in a season:
+            When a user reaches <span className="text-primary font-semibold">1000 Arena Points</span> in a season:
           </p>
           <div className="p-2.5 rounded-md bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 mb-2.5">
             <p className="text-[10px] md:text-xs text-amber-500 font-semibold mb-1.5">🎉 A Free Pro Month reward is granted automatically!</p>

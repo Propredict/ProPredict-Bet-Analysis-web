@@ -14,14 +14,14 @@ import { Loader2 } from "lucide-react";
 export function GamificationPanel() {
   const stats = useArenaStats();
 
-  const monthlyGoal = 100;
+  const monthlyGoal = 1000;
   const pointsLeft = monthlyGoal - stats.points;
   const progressPercent = Math.min((stats.points / monthlyGoal) * 100, 100);
 
   const milestones = [
     { wins: 20, label: "Analyst", reached: stats.points >= 20, Icon: Target, tooltip: "20 correct predictions – Analyst badge earned!" },
     { wins: 50, label: "Expert", reached: stats.points >= 50, Icon: Brain, tooltip: "50 correct predictions – Expert status achieved!" },
-    { wins: 100, label: "Free Pro Month", reached: stats.points >= 100, Icon: Crown, tooltip: "100 Wins in a Month → Free Pro Access (30 days)" },
+    { wins: 1000, label: "Free Pro Month", reached: stats.points >= 1000, Icon: Crown, tooltip: "1000 Wins in a Month → Free Pro Access (30 days)" },
   ];
 
   if (stats.loading) {
@@ -68,7 +68,7 @@ export function GamificationPanel() {
                   <Info className="h-2.5 w-2.5 text-amber-400/50 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>Points reset every month. Each correct prediction earns 1 point. Reach 100 to unlock 1 free Pro month.</p>
+                   <p>Points reset every month. Each correct prediction earns 1 point. Reach 1000 to unlock 1 free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -78,10 +78,10 @@ export function GamificationPanel() {
         </div>
 
         {/* Reward reached banner */}
-        {stats.points >= 100 && !stats.rewardGranted && (
+        {stats.points >= 1000 && !stats.rewardGranted && (
           <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30 text-center space-y-1">
             <Crown className="h-5 w-5 mx-auto text-amber-400" />
-            <p className="text-xs font-semibold text-amber-400">🎉 You've reached 100 points!</p>
+            <p className="text-xs font-semibold text-amber-400">🎉 You've reached 1000 points!</p>
             <p className="text-[9px] text-muted-foreground">Your free Pro month reward will be applied soon.</p>
           </div>
         )}
@@ -102,7 +102,7 @@ export function GamificationPanel() {
                   <Info className="h-3 w-3 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>🏆 Points reset every month. Each correct prediction earns 1 point. Incorrect = 0 points. Based only on your own prediction.</p>
+                   <p>🏆 Points reset every month. Each correct prediction earns 1 point. Incorrect = 0 points. Reach 1000 to unlock a free Pro month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
