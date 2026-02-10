@@ -19,6 +19,7 @@ import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 /* -------------------- CONSTANTS -------------------- */
 
@@ -318,36 +319,56 @@ export default function LiveScores() {
         ) : viewMode === "simple" ? (
           /* ==================== SIMPLE VIEW ==================== */
           <div className="space-y-1 sm:space-y-1.5">
-            {Object.entries(grouped).map(([league, games]) => (
-              <Card key={league} className="overflow-hidden bg-card border-border">
-                <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1">
-                  <Trophy className="h-2.5 w-2.5 text-primary" />
-                  <span className="font-semibold text-[9px] sm:text-[10px] text-foreground truncate">{league}</span>
-                  <Badge variant="outline" className="ml-auto text-[8px] px-0.5 border-primary/30 text-primary">
-                    {games.length}
-                  </Badge>
-                </div>
-                <div className="divide-y divide-border">
-                  {games.map((m, idx) => (
-                    <Fragment key={m.id}>
-                      <MatchRow 
-                        match={m} 
-                        onSelect={setSelectedMatch}
-                        isFavorite={isFavorite(m.id)}
-                        toggleFavorite={() => toggleFavorite(m.id)}
-                        hasAlert={hasAlert(m.id)}
-                        toggleMatchAlert={() => toggleMatchAlert(m.id)}
-                        hasRecentGoal={hasRecentGoal(m.id)}
-                      />
-                      {/* Android only: native ad slot after every 4th match */}
-                      {(idx + 1) % 4 === 0 && idx < games.length - 1 && (
-                        <AndroidNativeAdSlot slotIndex={idx + 1} />
-                      )}
-                    </Fragment>
-                  ))}
-                </div>
-              </Card>
-            ))}
+            {(() => {
+              let matchCounter = 0;
+              return Object.entries(grouped).map(([league, games]) => {
+                const elements: React.ReactNode[] = [];
+                // Check if we should insert an ad before this league group
+                if (matchCounter >= 5 && matchCounter < 5 + games.length + 1) {
+                  // Insert ad once after 5th match
+                }
+                const startCount = matchCounter;
+                matchCounter += games.length;
+                
+                elements.push(
+                  <Card key={league} className="overflow-hidden bg-card border-border">
+                    <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1">
+                      <Trophy className="h-2.5 w-2.5 text-primary" />
+                      <span className="font-semibold text-[9px] sm:text-[10px] text-foreground truncate">{league}</span>
+                      <Badge variant="outline" className="ml-auto text-[8px] px-0.5 border-primary/30 text-primary">
+                        {games.length}
+                      </Badge>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {games.map((m, idx) => (
+                        <Fragment key={m.id}>
+                          <MatchRow 
+                            match={m} 
+                            onSelect={setSelectedMatch}
+                            isFavorite={isFavorite(m.id)}
+                            toggleFavorite={() => toggleFavorite(m.id)}
+                            hasAlert={hasAlert(m.id)}
+                            toggleMatchAlert={() => toggleMatchAlert(m.id)}
+                            hasRecentGoal={hasRecentGoal(m.id)}
+                          />
+                          {/* Android only: native ad slot after every 4th match */}
+                          {(idx + 1) % 4 === 0 && idx < games.length - 1 && (
+                            <AndroidNativeAdSlot slotIndex={idx + 1} />
+                          )}
+                        </Fragment>
+                      ))}
+                    </div>
+                  </Card>
+                );
+
+                // Insert web ad after the league group that crosses the 5th match threshold
+                if (startCount < 5 && matchCounter >= 5) {
+                  elements.push(<WebAdBanner key={`ad-${league}`} className="my-1.5" />);
+                }
+
+                return elements;
+              });
+            })()}
           </div>
         ) : (
           /* ==================== STRUCTURED VIEW (Country → League) ==================== */

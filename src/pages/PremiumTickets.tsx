@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Lock, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();
@@ -171,12 +172,13 @@ export default function PremiumTickets() {
                 Try Again
               </Button>
             </div>
-          </Card> : premiumTickets.map(ticket => {
+          </Card> : premiumTickets.map((ticket, idx) => {
         const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
         const isLocked = unlockMethod?.type !== "unlocked";
         const isUnlocking = unlockingId === ticket.id;
         const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
-        return <TicketCard key={ticket.id} ticket={{
+        return <React.Fragment key={ticket.id}>
+          <TicketCard ticket={{
           id: ticket.id,
           title: ticket.title,
           matchCount: ticket.matches?.length ?? 0,
@@ -189,7 +191,13 @@ export default function PremiumTickets() {
             odds: m.odds
           })),
           createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
+          {(idx + 1) % 3 === 0 && idx < premiumTickets.length - 1 && (
+            <div className="col-span-full">
+              <WebAdBanner className="my-1" />
+            </div>
+          )}
+        </React.Fragment>;
       })}
       </div>
 

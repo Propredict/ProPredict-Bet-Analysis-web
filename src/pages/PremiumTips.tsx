@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
@@ -174,11 +175,12 @@ export default function PremiumTips() {
                 Try Again
               </Button>
             </div>
-          </Card> : premiumTips.map(tip => {
+          </Card> : premiumTips.map((tip, idx) => {
         const unlockMethod = getUnlockMethod("premium", "tip", tip.id);
         const isLocked = unlockMethod?.type !== "unlocked";
         const isUnlocking = unlockingId === tip.id;
-        return <TipCard key={tip.id} tip={{
+        return <React.Fragment key={tip.id}>
+          <TipCard tip={{
           id: tip.id,
           homeTeam: tip.home_team,
           awayTeam: tip.away_team,
@@ -193,7 +195,13 @@ export default function PremiumTips() {
           }) : "",
           tier: tip.tier,
           result: tip.result
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />;
+        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />
+          {(idx + 1) % 3 === 0 && idx < premiumTips.length - 1 && (
+            <div className="col-span-full">
+              <WebAdBanner className="my-1" />
+            </div>
+          )}
+        </React.Fragment>;
       })}
       </div>
 
