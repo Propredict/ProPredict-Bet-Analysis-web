@@ -46,16 +46,13 @@ interface H2HResponse {
 
 async function fetchH2H(team1Id: number, team2Id: number): Promise<H2HResponse> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const response = await fetch(
-    `${supabaseUrl}/functions/v1/league-h2h?team1=${team1Id}&team2=${team2Id}&last=20`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": supabaseKey,
-      },
-    }
-  );
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const response = await fetch(`${supabaseUrl}/functions/v1/league-h2h?team1=${team1Id}&team2=${team2Id}&last=20`, {
+    headers: {
+      "Content-Type": "application/json",
+      apikey: supabaseAnonKey,
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch H2H data");
