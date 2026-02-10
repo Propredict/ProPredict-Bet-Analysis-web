@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -23,8 +23,9 @@ export function useArenaPrediction(
   options: UseArenaPredictionOptions
 ) {
   const { user } = useAuth();
+  const mountedRef = useRef(true);
   const [userPick, setUserPick] = useState<string | null>(null);
-  const [userStatus, setUserStatus] = useState<string | null>(null); // "pending" | "won" | "lost"
+  const [userStatus, setUserStatus] = useState<string | null>(null);
   const [userMarketLabel, setUserMarketLabel] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -53,22 +54,27 @@ export function useArenaPrediction(
 
   // Load existing prediction on mount + periodic refresh for status changes
   useEffect(() => {
+    mountedRef.current = true;
     if (!user) { setLoaded(true); return; }
 
     const refresh = () => {
       fetchExisting().then((data) => {
+        if (!mountedRef.current) return;
         if (data?.prediction) {
           setUserPick(data.prediction);
           setUserStatus(data.status || "pending");
           setUserMarketLabel(deriveMarketLabel(data.prediction));
         }
         setLoaded(true);
-      });
+      }).catch(() => {});
     };
 
     refresh();
-    const interval = setInterval(refresh, 60_000); // refresh status every 60s
-    return () => clearInterval(interval);
+    const interval = setInterval(refresh, 60_000);
+    return () => {
+      mountedRef.current = false;
+      clearInterval(interval);
+    };
   }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string) => {

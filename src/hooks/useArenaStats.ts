@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -12,10 +12,11 @@ export interface ArenaStats {
   loading: boolean;
 }
 
-const REFRESH_INTERVAL = 60_000; // 60s auto-refresh
+const REFRESH_INTERVAL = 60_000;
 
 export function useArenaStats(): ArenaStats {
   const { user } = useAuth();
+  const mountedRef = useRef(true);
   const [stats, setStats] = useState<ArenaStats>({
     points: 0, wins: 0, losses: 0, currentStreak: 0,
     rewardGranted: false, seasonId: null, loading: true,
@@ -35,6 +36,8 @@ export function useArenaStats(): ArenaStats {
         .select("id")
         .maybeSingle();
 
+      if (!mountedRef.current) return;
+
       if (!season?.id) {
         setStats(s => ({ ...s, loading: false }));
         return;
@@ -47,6 +50,8 @@ export function useArenaStats(): ArenaStats {
         .eq("season_id", season.id)
         .maybeSingle();
 
+      if (!mountedRef.current) return;
+
       setStats({
         points: data?.points ?? 0,
         wins: data?.wins ?? 0,
@@ -57,15 +62,20 @@ export function useArenaStats(): ArenaStats {
         loading: false,
       });
     } catch (err) {
+      if (!mountedRef.current) return;
       console.error("Arena stats error:", err);
       setStats(s => ({ ...s, loading: false }));
     }
   }, [user]);
 
   useEffect(() => {
+    mountedRef.current = true;
     fetchStats();
     const interval = setInterval(fetchStats, REFRESH_INTERVAL);
-    return () => clearInterval(interval);
+    return () => {
+      mountedRef.current = false;
+      clearInterval(interval);
+    };
   }, [fetchStats]);
 
   return stats;

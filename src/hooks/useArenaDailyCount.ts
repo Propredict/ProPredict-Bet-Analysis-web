@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -9,8 +9,10 @@ export function useArenaDailyCount(seasonId: string | null) {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     if (!user || !seasonId) { setLoading(false); return; }
 
     const now = new Date();
@@ -25,9 +27,13 @@ export function useArenaDailyCount(seasonId: string | null) {
       .gte("created_at", localStart.toISOString())
       .lte("created_at", localEnd.toISOString())
       .then(({ count: c }: any) => {
+        if (!mountedRef.current) return;
         setCount(c ?? 0);
         setLoading(false);
-      });
+      })
+      .catch(() => {});
+
+    return () => { mountedRef.current = false; };
   }, [user, seasonId]);
 
   const increment = () => setCount((prev) => prev + 1);
