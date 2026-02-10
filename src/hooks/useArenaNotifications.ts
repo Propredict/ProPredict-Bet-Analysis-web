@@ -8,7 +8,7 @@ export interface ArenaNotification {
   title: string;
   message: string;
   match_id: string | null;
-  is_read: boolean;
+  read: boolean;
   created_at: string;
 }
 
@@ -29,14 +29,14 @@ export function useArenaNotifications() {
     try {
       const { data } = await (supabase as any)
         .from("arena_notifications")
-        .select("id, type, title, message, match_id, is_read, created_at")
+        .select("id, type, title, message, match_id, read, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(30);
 
       const items: ArenaNotification[] = data || [];
       setNotifications(items);
-      setUnreadCount(items.filter((n) => !n.is_read).length);
+      setUnreadCount(items.filter((n) => !n.read).length);
     } catch (err) {
       console.error("Failed to fetch arena notifications:", err);
     } finally {
@@ -56,12 +56,12 @@ export function useArenaNotifications() {
     if (!user) return;
     await (supabase as any)
       .from("arena_notifications")
-      .update({ is_read: true })
+      .update({ read: true })
       .eq("id", notificationId)
       .eq("user_id", user.id);
 
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, [user]);
@@ -70,11 +70,11 @@ export function useArenaNotifications() {
     if (!user) return;
     await (supabase as any)
       .from("arena_notifications")
-      .update({ is_read: true })
+      .update({ read: true })
       .eq("user_id", user.id)
-      .eq("is_read", false);
+      .eq("read", false);
 
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
   }, [user]);
 

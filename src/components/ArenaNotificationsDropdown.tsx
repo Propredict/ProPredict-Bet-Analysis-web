@@ -71,16 +71,16 @@ export function ArenaNotificationsDropdown() {
               key={notification.id}
               className={cn(
                 "flex items-start gap-2.5 px-3 py-2.5 cursor-pointer",
-                !notification.is_read && "bg-primary/5"
+                !notification.read && "bg-primary/5"
               )}
               onClick={() => {
-                if (!notification.is_read) markAsRead(notification.id);
+                if (!notification.read) markAsRead(notification.id);
                 navigate("/ai-vs-community");
               }}
             >
               <div className="mt-0.5">{getIcon(notification.type)}</div>
               <div className="flex-1 min-w-0 space-y-0.5">
-                <p className={cn("text-[11px] leading-tight", !notification.is_read ? "font-semibold text-foreground" : "text-muted-foreground")}>
+                <p className={cn("text-[11px] leading-tight", !notification.read ? "font-semibold text-foreground" : "text-muted-foreground")}>
                   {notification.title}
                 </p>
                 <p className="text-[9px] text-muted-foreground leading-relaxed line-clamp-2">
@@ -90,7 +90,7 @@ export function ArenaNotificationsDropdown() {
                   {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                 </p>
               </div>
-              {!notification.is_read && (
+              {!notification.read && (
                 <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1" />
               )}
             </DropdownMenuItem>
