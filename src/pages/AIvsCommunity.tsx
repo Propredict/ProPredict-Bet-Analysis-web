@@ -12,23 +12,34 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useArenaStats } from "@/hooks/useArenaStats";
 import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 
-/** Priority leagues — exact names as they appear from API-Football */
-const PRIORITY_LEAGUES: { names: string[]; max: number }[] = [
-  { names: ["premier league"], max: 3 },                      // England
-  { names: ["championship"], max: 2 },                         // England
-  { names: ["la liga"], max: 2 },                              // Spain
-  { names: ["serie a"], max: 2 },                              // Italy
-  { names: ["bundesliga"], max: 2 },                           // Germany
-  { names: ["primeira liga", "liga portugal"], max: 2 },       // Portugal
-  { names: ["uefa champions league", "champions league"], max: 2 },
-  { names: ["uefa europa league", "europa league"], max: 2 },
+/**
+ * WHITELIST approach — only these exact league names are allowed.
+ * Priority order determines which leagues fill first.
+ * Phase 2 fallback uses ANY league not in the excluded list.
+ */
+const PRIORITY_LEAGUES: { exact: string[]; max: number }[] = [
+  { exact: ["premier league"], max: 3 },                        // England
+  { exact: ["championship"], max: 2 },                          // England
+  { exact: ["la liga"], max: 2 },                               // Spain
+  { exact: ["serie a"], max: 2 },                               // Italy
+  { exact: ["bundesliga"], max: 2 },                            // Germany
+  { exact: ["ligue 1"], max: 2 },                               // France
+  { exact: ["primeira liga", "liga portugal"], max: 2 },        // Portugal
+  { exact: ["uefa champions league"], max: 2 },
+  { exact: ["uefa europa league"], max: 2 },
 ];
 
-/** Leagues to always exclude */
+/** Flatten all priority exact names for quick lookup */
+const PRIORITY_EXACT = new Set(
+  PRIORITY_LEAGUES.flatMap((l) => l.exact)
+);
+
+/** Leagues to always exclude from Phase 2 fallback */
 const EXCLUDED_PATTERNS = [
-  "premier league 2", "sudan", "u21", "u23", "women", "reserve", "youth",
-  "afc champions", "premyer liqa", "non league", "isthmian", "conference",
-  "national league", "regionalliga", "3. liga",
+  "u21", "u23", "u19", "u20", "women", "reserve", "youth", "amateur",
+  "non league", "isthmian", "conference", "regional",
+  "faw", "agcff", "gulf", "girabola", "national soccer league",
+  "premyer liqa", "sudan", "afc champions",
 ];
 
 const MAX_ARENA_MATCHES = 10;
@@ -43,10 +54,10 @@ function isUpcoming(p: { match_date: string | null; match_time: string | null })
   return kickoff.getTime() > Date.now() + bufferMs;
 }
 
+/** Strict match: league name must exactly equal one of the entry's names */
 function matchesPriority(league: string, entry: typeof PRIORITY_LEAGUES[0]): boolean {
   const l = league.toLowerCase().trim();
-  // Must match one of the exact names AND not be excluded
-  return entry.names.some((name) => l === name || l.endsWith(name)) && !isExcluded(l);
+  return entry.exact.some((name) => l === name);
 }
 
 function isExcluded(league: string): boolean {
