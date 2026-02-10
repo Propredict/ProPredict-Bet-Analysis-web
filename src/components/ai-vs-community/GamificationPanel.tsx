@@ -19,8 +19,8 @@ export function GamificationPanel() {
   const progressPercent = Math.min((stats.points / monthlyGoal) * 100, 100);
 
   const milestones = [
-    { wins: 20, label: "Analyst", reached: stats.points >= 20, Icon: Target, tooltip: "20 correct predictions – Analyst badge earned!" },
-    { wins: 50, label: "Expert", reached: stats.points >= 50, Icon: Brain, tooltip: "50 correct predictions – Expert status achieved!" },
+    { wins: 500, label: "Analyst", reached: stats.points >= 500, Icon: Target, tooltip: "500 correct predictions – Analyst badge earned!" },
+    { wins: 850, label: "Expert", reached: stats.points >= 850, Icon: Brain, tooltip: "850 correct predictions – Expert status achieved!" },
     { wins: 1000, label: "Free Pro Month", reached: stats.points >= 1000, Icon: Crown, tooltip: "1000 Wins in a Month → Free Pro Access (30 days)" },
   ];
 
