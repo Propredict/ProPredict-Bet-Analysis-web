@@ -4,6 +4,7 @@ import { ArrowLeft, Bot, Users, BarChart3, Trophy, Gift, EyeOff, AlertTriangle, 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 const Section = ({
   icon: Icon,
@@ -283,6 +284,9 @@ export default function HowAIvsMembersWorks() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Footer Ad */}
+        <WebAdBanner className="mt-2" />
 
         {/* Back Button Footer */}
         <div className="flex justify-center pt-2 pb-4">

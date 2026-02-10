@@ -1,3 +1,4 @@
+import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
@@ -47,8 +49,7 @@ export default function DailyTickets() {
 
   // Render tickets without ads
   const renderTickets = () => {
-    return dailyTickets.map((ticket) => {
-      // If not logged in, force login_required lock on every card
+    return dailyTickets.map((ticket, idx) => {
       const unlockMethod = !user 
         ? { type: "login_required" as const, message: "Sign in to Unlock" }
         : getUnlockMethod("daily", "ticket", ticket.id);
@@ -56,28 +57,34 @@ export default function DailyTickets() {
       const isUnlocking = unlockingId === ticket.id;
       
       return (
-        <TicketCard 
-          key={ticket.id} 
-          ticket={{
-            id: ticket.id,
-            title: ticket.title,
-            matchCount: ticket.matches?.length ?? 0,
-            status: ticket.result ?? "pending",
-            totalOdds: ticket.total_odds ?? 0,
-            tier: ticket.tier,
-            matches: (ticket.matches ?? []).map(m => ({
-              name: m.match_name,
-              prediction: m.prediction,
-              odds: m.odds
-            })),
-            createdAt: ticket.created_at_ts
-          }} 
-          isLocked={isLocked} 
-          unlockMethod={unlockMethod} 
-          onUnlockClick={() => !user ? navigate("/login") : handleUnlock("ticket", ticket.id, "daily")} 
-          onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-          isUnlocking={isUnlocking} 
-        />
+        <React.Fragment key={ticket.id}>
+          <TicketCard 
+            ticket={{
+              id: ticket.id,
+              title: ticket.title,
+              matchCount: ticket.matches?.length ?? 0,
+              status: ticket.result ?? "pending",
+              totalOdds: ticket.total_odds ?? 0,
+              tier: ticket.tier,
+              matches: (ticket.matches ?? []).map(m => ({
+                name: m.match_name,
+                prediction: m.prediction,
+                odds: m.odds
+              })),
+              createdAt: ticket.created_at_ts
+            }} 
+            isLocked={isLocked} 
+            unlockMethod={unlockMethod} 
+            onUnlockClick={() => !user ? navigate("/login") : handleUnlock("ticket", ticket.id, "daily")} 
+            onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
+            isUnlocking={isUnlocking} 
+          />
+          {(idx + 1) % 3 === 0 && idx < dailyTickets.length - 1 && (
+            <div className="col-span-full">
+              <WebAdBanner className="my-1" />
+            </div>
+          )}
+        </React.Fragment>
       );
     });
   };

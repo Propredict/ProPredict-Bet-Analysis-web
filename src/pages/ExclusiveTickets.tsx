@@ -1,3 +1,4 @@
+import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
@@ -164,35 +166,41 @@ export default function ExclusiveTickets() {
             </div>
           </Card>
         ) : (
-          exclusiveTickets.map((ticket) => {
+          exclusiveTickets.map((ticket, idx) => {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = unlockMethod?.type !== "unlocked";
             const isUnlocking = unlockingId === ticket.id;
             const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
             return (
-              <TicketCard 
-                key={ticket.id}
-                ticket={{
-                  id: ticket.id,
-                  title: ticket.title,
-                  matchCount: ticket.matches?.length ?? 0,
-                  status: ticket.result ?? "pending",
-                  totalOdds: ticket.total_odds ?? 0,
-                  tier: ticket.tier,
-                  matches: matchesToShow.map(m => ({
-                    name: m.match_name,
-                    prediction: m.prediction,
-                    odds: m.odds
-                  })),
-                  createdAt: ticket.created_at_ts
-                }} 
-                isLocked={isLocked} 
-                unlockMethod={unlockMethod} 
-                onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
-                onSecondaryUnlock={handleSecondaryUnlock}
-                onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-                isUnlocking={isUnlocking} 
-              />
+              <React.Fragment key={ticket.id}>
+                <TicketCard 
+                  ticket={{
+                    id: ticket.id,
+                    title: ticket.title,
+                    matchCount: ticket.matches?.length ?? 0,
+                    status: ticket.result ?? "pending",
+                    totalOdds: ticket.total_odds ?? 0,
+                    tier: ticket.tier,
+                    matches: matchesToShow.map(m => ({
+                      name: m.match_name,
+                      prediction: m.prediction,
+                      odds: m.odds
+                    })),
+                    createdAt: ticket.created_at_ts
+                  }} 
+                  isLocked={isLocked} 
+                  unlockMethod={unlockMethod} 
+                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
+                  onSecondaryUnlock={handleSecondaryUnlock}
+                  onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
+                  isUnlocking={isUnlocking} 
+                />
+                {(idx + 1) % 3 === 0 && idx < exclusiveTickets.length - 1 && (
+                  <div className="col-span-full">
+                    <WebAdBanner className="my-1" />
+                  </div>
+                )}
+              </React.Fragment>
             );
           })
         )}

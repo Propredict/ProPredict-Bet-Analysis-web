@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Brain, Database, Users, GitCompare, Cpu, Layers, Shield, CheckCircle, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 const HowAIWorks = () => {
   return (
@@ -254,6 +255,8 @@ const HowAIWorks = () => {
             </p>
           </CardContent>
         </Card>
+        {/* Footer Ad */}
+        <WebAdBanner className="mt-4" />
       </div>
     </>
   );

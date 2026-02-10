@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WebAdBanner } from "@/components/WebAdBanner";
 
 type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -521,21 +522,27 @@ export default function AIPredictions() {
                 <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                {featuredPredictions.map((prediction) => {
+                {featuredPredictions.map((prediction, idx) => {
                   return (
-                    <AIPredictionCard
-                      key={prediction.id}
-                      prediction={prediction}
-                      isAdmin={isAdmin}
-                      isPremiumUser={isPremiumUser}
-                      isProUser={isProUser}
-                      isFavorite={isFavorite(prediction.match_id)}
-                      isSavingFavorite={isSaving(prediction.match_id)}
-                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                      onGoPremium={() => navigate("/get-premium")}
-                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                      isUnlocking={unlockingId === prediction.match_id}
-                    />
+                    <React.Fragment key={prediction.id}>
+                      <AIPredictionCard
+                        prediction={prediction}
+                        isAdmin={isAdmin}
+                        isPremiumUser={isPremiumUser}
+                        isProUser={isProUser}
+                        isFavorite={isFavorite(prediction.match_id)}
+                        isSavingFavorite={isSaving(prediction.match_id)}
+                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                        onGoPremium={() => navigate("/get-premium")}
+                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                        isUnlocking={unlockingId === prediction.match_id}
+                      />
+                      {(idx + 1) % 6 === 0 && idx < featuredPredictions.length - 1 && (
+                        <div className="col-span-full">
+                          <WebAdBanner className="my-1" />
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -599,21 +606,27 @@ export default function AIPredictions() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-                {regularPredictions.map((prediction) => {
+                {regularPredictions.map((prediction, idx) => {
                   return (
-                    <AIPredictionCard
-                      key={prediction.id}
-                      prediction={prediction}
-                      isAdmin={isAdmin}
-                      isPremiumUser={isPremiumUser}
-                      isProUser={isProUser}
-                      isFavorite={isFavorite(prediction.match_id)}
-                      isSavingFavorite={isSaving(prediction.match_id)}
-                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                      onGoPremium={() => navigate("/get-premium")}
-                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                      isUnlocking={unlockingId === prediction.match_id}
-                    />
+                    <React.Fragment key={prediction.id}>
+                      <AIPredictionCard
+                        prediction={prediction}
+                        isAdmin={isAdmin}
+                        isPremiumUser={isPremiumUser}
+                        isProUser={isProUser}
+                        isFavorite={isFavorite(prediction.match_id)}
+                        isSavingFavorite={isSaving(prediction.match_id)}
+                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                        onGoPremium={() => navigate("/get-premium")}
+                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                        isUnlocking={unlockingId === prediction.match_id}
+                      />
+                      {(idx + 1) % 6 === 0 && idx < regularPredictions.length - 1 && (
+                        <div className="col-span-full">
+                          <WebAdBanner className="my-1" />
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
