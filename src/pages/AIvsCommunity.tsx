@@ -155,10 +155,10 @@ export default function AIvsCommunity() {
           </div>
           <Link
             to="/how-ai-vs-members-works"
-            className="flex items-center gap-1 shrink-0 text-[10px] text-primary hover:text-primary/80 font-medium transition-colors"
+            className="flex items-center gap-1.5 shrink-0 text-xs text-primary-foreground bg-primary/90 hover:bg-primary px-3 py-1.5 rounded-md font-medium transition-colors shadow-sm"
           >
             <HelpCircle className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">How does it work?</span>
+            <span>How it works</span>
           </Link>
         </div>
 
