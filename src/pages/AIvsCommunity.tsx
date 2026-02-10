@@ -162,13 +162,16 @@ export default function AIvsCommunity() {
               These matches are selected from today's AI predictions based on relevance and expected discussion.
             </p>
           </div>
-          <Link
-            to="/how-ai-vs-members-works"
-            className="flex items-center gap-1.5 shrink-0 text-xs text-primary-foreground bg-primary/90 hover:bg-primary px-3 py-1.5 rounded-md font-medium transition-colors shadow-sm"
-          >
-            <HelpCircle className="h-3.5 w-3.5" />
-            <span>How it works</span>
-          </Link>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="text-[8px] text-muted-foreground/60">New here?</span>
+            <Link
+              to="/how-ai-vs-members-works"
+              className="flex items-center gap-1.5 shrink-0 text-xs text-primary-foreground bg-primary/90 hover:bg-primary px-3 py-1.5 rounded-md font-medium transition-colors shadow-sm"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span>How it works</span>
+            </Link>
+          </div>
         </div>
 
         <GamificationPanel />
