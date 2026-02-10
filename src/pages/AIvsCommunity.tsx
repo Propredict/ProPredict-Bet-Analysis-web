@@ -44,6 +44,7 @@ const EXCLUDED_PATTERNS = [
   "non league", "isthmian", "conference", "regional",
   "faw", "agcff", "gulf", "girabola", "national soccer league",
   "premyer liqa", "sudan", "afc champions",
+  "friendlies",
 ];
 
 const MAX_ARENA_MATCHES = 10;
@@ -108,6 +109,18 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
         used.add(p.id);
       }
     }
+  }
+
+  // Phase 3: Last resort — friendlies clubs if still empty
+  if (curated.length === 0) {
+    const allUpcoming = predictions.filter(
+      (p) => isUpcoming(p) && p.league && (!p.result_status || p.result_status === "pending")
+    );
+    const friendlies = allUpcoming
+      .filter((p) => p.league!.toLowerCase().includes("friendlies"))
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, MAX_ARENA_MATCHES);
+    curated.push(...friendlies);
   }
 
   return curated;
