@@ -15,10 +15,13 @@ import { useArenaDailyCount } from "@/hooks/useArenaDailyCount";
 /** Priority leagues with target quotas (filled first, in order) */
 const PRIORITY_LEAGUES: { pattern: string; exclude?: string[]; max: number }[] = [
   { pattern: "premier league", exclude: ["premier league 2", "sudan"], max: 3 },
+  { pattern: "championship", exclude: ["championship 2"], max: 2 },
   { pattern: "la liga", max: 2 },
   { pattern: "serie a", exclude: ["serie a2"], max: 2 },
   { pattern: "bundesliga", max: 2 },
   { pattern: "primeira liga", max: 2 },
+  { pattern: "champions league", max: 2 },
+  { pattern: "europa league", max: 2 },
 ];
 
 const EXCLUDED_PATTERNS = ["premier league 2", "u21", "u23", "women", "reserve", "sudan", "youth"];
