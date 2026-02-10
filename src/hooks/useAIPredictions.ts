@@ -39,8 +39,8 @@ function getDateString(dayOffset: number = 0): string {
  * Fetch predictions from Supabase for a specific date
  */
 async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
-  const { data, error } = await supabase
-    .from("ai_predictions")
+  const { data, error } = await (supabase
+    .from as any)("ai_predictions_public")
     .select("*")
     .eq("match_date", dateStr)
     .order("match_time", { ascending: true });

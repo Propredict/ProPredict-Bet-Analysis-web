@@ -700,6 +700,93 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_predictions_public: {
+        Row: {
+          analysis: string | null
+          away_team: string | null
+          away_win: number | null
+          confidence: number | null
+          created_at: string | null
+          draw: number | null
+          home_team: string | null
+          home_win: number | null
+          id: string | null
+          is_live: boolean | null
+          is_locked: boolean | null
+          is_premium: boolean | null
+          key_factors: string[] | null
+          last_away_goals: number | null
+          last_home_goals: number | null
+          league: string | null
+          match_date: string | null
+          match_day: string | null
+          match_id: string | null
+          match_time: string | null
+          match_timestamp: string | null
+          predicted_score: string | null
+          prediction: string | null
+          result_status: string | null
+          risk_level: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis?: never
+          away_team?: string | null
+          away_win?: number | null
+          confidence?: never
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: never
+          last_away_goals?: number | null
+          last_home_goals?: number | null
+          league?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          predicted_score?: never
+          prediction?: never
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis?: never
+          away_team?: string | null
+          away_win?: number | null
+          confidence?: never
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          key_factors?: never
+          last_away_goals?: number | null
+          last_home_goals?: number | null
+          league?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          predicted_score?: never
+          prediction?: never
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ai_predictions_yesterday: {
         Row: {
           analysis: string | null
@@ -826,6 +913,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tips_public: {
+        Row: {
+          ai_prediction: string | null
+          away_team: string | null
+          confidence: number | null
+          created_at_ts: string | null
+          created_by: string | null
+          home_team: string | null
+          id: string | null
+          league: string | null
+          odds: number | null
+          prediction: string | null
+          result: Database["public"]["Enums"]["ticket_result"] | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+          tip_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_prediction?: never
+          away_team?: string | null
+          confidence?: never
+          created_at_ts?: string | null
+          created_by?: string | null
+          home_team?: string | null
+          id?: string | null
+          league?: string | null
+          odds?: number | null
+          prediction?: never
+          result?: Database["public"]["Enums"]["ticket_result"] | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          tier?: Database["public"]["Enums"]["content_tier"] | null
+          tip_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_prediction?: never
+          away_team?: string | null
+          confidence?: never
+          created_at_ts?: string | null
+          created_by?: string | null
+          home_team?: string | null
+          id?: string | null
+          league?: string | null
+          odds?: number | null
+          prediction?: never
+          result?: Database["public"]["Enums"]["ticket_result"] | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          tier?: Database["public"]["Enums"]["content_tier"] | null
+          tip_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       ensure_arena_user_stats: { Args: never; Returns: undefined }
@@ -841,6 +982,7 @@ export type Database = {
         Returns: undefined
       }
       resolve_arena_match: { Args: { p_match_id: string }; Returns: undefined }
+      user_has_min_plan: { Args: { required_plan: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
