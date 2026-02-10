@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Ticket, User, Swords } from "lucide-react";
+import { Zap, Heart, Swords, Brain, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -17,10 +17,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/live-scores"]
   },
   { 
-    label: "Favorites", 
-    icon: Heart, 
-    path: "/favorites",
-    matchPaths: ["/favorites"]
+    label: "AI Prediction", 
+    icon: Brain, 
+    path: "/ai-predictions",
+    matchPaths: ["/ai-predictions"]
   },
   { 
     label: "Members", 
@@ -29,10 +29,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/ai-vs-community"]
   },
   { 
-    label: "AI Picks", 
-    icon: Ticket, 
-    path: "/winning-history",
-    matchPaths: ["/winning-history", "/daily-tickets", "/exclusive-tickets", "/premium-tickets", "/daily-tips", "/exclusive-tips", "/premium-tips", "/betting-tips"]
+    label: "Favorites", 
+    icon: Heart, 
+    path: "/favorites",
+    matchPaths: ["/favorites"]
   },
   { 
     label: "Profile", 
