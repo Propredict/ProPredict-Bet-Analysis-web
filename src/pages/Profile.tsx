@@ -228,7 +228,7 @@ const Profile = () => {
     setOpeningPortal(true);
     try {
       const response = await fetch(
-        "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/create-portal-session",
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-portal-session`,
         {
           method: "POST",
           headers: {

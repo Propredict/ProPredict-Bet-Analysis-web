@@ -26,7 +26,7 @@ interface ApiResponse {
 }
 
 const AUTO_REFRESH_MS = 30_000;
-const EDGE_URL = "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/get-fixtures";
+const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-fixtures`;
 
 export function useLiveScores({
   dateMode = "today",

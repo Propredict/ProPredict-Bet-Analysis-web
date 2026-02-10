@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const EDGE_FUNCTION_URL =
-  "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/generate-ai-predictions";
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-ai-predictions`;
 
 export interface AIPredictionResult {
   prediction: string; // e.g. "Home Win", "Draw", "Away Win"
