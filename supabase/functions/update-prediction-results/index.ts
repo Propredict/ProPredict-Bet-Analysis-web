@@ -355,12 +355,148 @@ Deno.serve(async (req) => {
 
     console.log(`Completed: ${updatedCount} updated, ${skippedCount} skipped`);
 
+    // ── SECOND PASS: resolve orphaned arena predictions ──
+    // Arena predictions that are still "pending" but whose ai_prediction is already resolved
+    let arenaOrphanResolved = 0;
+    try {
+      const { data: orphanedArena } = await supabase
+        .from("arena_predictions")
+        .select("id, user_id, match_id, prediction, status")
+        .eq("status", "pending")
+        .limit(100);
+
+      if (orphanedArena && orphanedArena.length > 0) {
+        // Get the corresponding ai_predictions that are already resolved
+        const orphanMatchIds = [...new Set(orphanedArena.map((a: any) => a.match_id))];
+        const { data: resolvedAI } = await supabase
+          .from("ai_predictions")
+          .select("match_id, home_team, away_team, result_status")
+          .in("match_id", orphanMatchIds)
+          .in("result_status", ["won", "lost"]);
+
+        if (resolvedAI && resolvedAI.length > 0) {
+          const resolvedMatchIds = new Set(resolvedAI.map((a: any) => a.match_id));
+          const matchInfoMap = new Map(resolvedAI.map((a: any) => [a.match_id, a]));
+
+          for (const ap of orphanedArena.filter((a: any) => resolvedMatchIds.has(a.match_id))) {
+            try {
+              // Fetch actual score from API-Football
+              const fixtureId = ap.match_id;
+              if (!fixtureId || isNaN(Number(fixtureId))) continue;
+
+              const apiUrl = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
+              const apiResp = await fetch(apiUrl, {
+                headers: { "x-apisports-key": apiFootballKey },
+              });
+
+              if (!apiResp.ok) continue;
+              const apiJson = await apiResp.json();
+              const fix = apiJson.response?.[0] as FixtureResponse | undefined;
+              if (!fix) continue;
+
+              const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
+              if (!finStatuses.includes(fix.fixture.status.short)) continue;
+
+              const hg = fix.goals.home;
+              const ag = fix.goals.away;
+              if (hg === null || ag === null) continue;
+
+              // Evaluate pick
+              const pick = ap.prediction;
+              let arenaWon = false;
+              if (["Home", "1"].includes(pick)) arenaWon = hg > ag;
+              else if (["Draw", "X"].includes(pick)) arenaWon = hg === ag;
+              else if (["Away", "2"].includes(pick)) arenaWon = hg < ag;
+              else if (pick === "GG (Yes)") arenaWon = hg > 0 && ag > 0;
+              else if (pick === "NG (No)") arenaWon = hg === 0 || ag === 0;
+              else if (pick === "Over 2.5") arenaWon = (hg + ag) > 2;
+              else if (pick === "Under 2.5") arenaWon = (hg + ag) < 3;
+              else if (pick === "Over 1.5") arenaWon = (hg + ag) > 1;
+              else if (pick === "Under 3.5") arenaWon = (hg + ag) < 4;
+
+              const arenaStatus = arenaWon ? "won" : "lost";
+
+              await supabase
+                .from("arena_predictions")
+                .update({ status: arenaStatus })
+                .eq("id", ap.id);
+
+              // Update stats
+              const matchInfo = matchInfoMap.get(ap.match_id);
+              const matchLabel = matchInfo ? `${matchInfo.home_team} vs ${matchInfo.away_team}` : ap.match_id;
+
+              // FT notification
+              await supabase.from("arena_notifications").insert({
+                user_id: ap.user_id,
+                type: "ft",
+                title: "Match finished",
+                message: `Match finished: ${matchLabel}. Your prediction has been evaluated.`,
+                match_id: fixtureId,
+              });
+
+              // WIN/LOSS notification
+              await supabase.from("arena_notifications").insert({
+                user_id: ap.user_id,
+                type: arenaWon ? "win" : "loss",
+                title: arenaWon ? "You won! 🎉" : "Prediction lost ❌",
+                message: arenaWon
+                  ? `Your prediction ${pick} was correct. +1 point added to your Arena score.`
+                  : `Your prediction ${pick} was not correct. Better luck next match!`,
+                match_id: fixtureId,
+              });
+
+              // Update arena_user_stats
+              if (arenaWon) {
+                const { data: stats } = await supabase
+                  .from("arena_user_stats")
+                  .select("id, points, wins")
+                  .eq("user_id", ap.user_id)
+                  .maybeSingle();
+                if (stats) {
+                  await supabase
+                    .from("arena_user_stats")
+                    .update({ points: stats.points + 1, wins: stats.wins + 1 })
+                    .eq("id", stats.id);
+                }
+              } else {
+                const { data: stats } = await supabase
+                  .from("arena_user_stats")
+                  .select("id, losses")
+                  .eq("user_id", ap.user_id)
+                  .maybeSingle();
+                if (stats) {
+                  await supabase
+                    .from("arena_user_stats")
+                    .update({ losses: stats.losses + 1 })
+                    .eq("id", stats.id);
+                }
+              }
+
+              arenaOrphanResolved++;
+              console.log(`✓ Orphan arena ${ap.user_id}: ${pick} → ${arenaStatus} (${matchLabel})`);
+
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            } catch (orphanErr) {
+              console.error(`Orphan arena error for ${ap.id}:`, orphanErr);
+            }
+          }
+        }
+      }
+    } catch (orphanPassErr) {
+      console.error("Orphan arena pass error:", orphanPassErr);
+    }
+
+    if (arenaOrphanResolved > 0) {
+      console.log(`Orphan arena pass: ${arenaOrphanResolved} resolved`);
+    }
+
     return new Response(
       JSON.stringify({
         message: "Prediction results updated",
         total_checked: pendingPredictions.length,
         updated: updatedCount,
         skipped: skippedCount,
+        arena_orphans_resolved: arenaOrphanResolved,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
