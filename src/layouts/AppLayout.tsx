@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles } from "lucide-react";
 import { ArenaNotificationsDropdown } from "@/components/ArenaNotificationsDropdown";
@@ -28,6 +28,8 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { initOneSignalWeb } from "@/lib/onesignal";
 
 // Pages where footer should be hidden (header-only layout)
 const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
@@ -39,6 +41,14 @@ export default function AppLayout() {
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+
+  // In-app realtime toast notifications for new tips/tickets
+  useRealtimeNotifications();
+
+  // Initialize OneSignal Web Push (once)
+  useEffect(() => {
+    initOneSignalWeb();
+  }, []);
 
   // Fetch user profile for welcome message
   const { data: profile } = useQuery({
