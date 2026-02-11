@@ -28,8 +28,8 @@ export default function MatchPreviews() {
   const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
   const { maybeShowInterstitial } = useAndroidInterstitial();
 
-  // Use all today's matches (no league filter)
-  const allMatches = todayMatches;
+  // Filter out finished matches
+  const allMatches = todayMatches.filter((m) => m.status !== "finished");
   
   const todayCount = allMatches.length;
 
