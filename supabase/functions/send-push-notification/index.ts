@@ -82,13 +82,13 @@ serve(async (req) => {
       included_segments: ["All"],
       headings: { en: headings },
       contents: { en: contents },
-      // Android-only push
+      // Android + Web push
       isAndroid: true,
       isIos: false,
-      isAnyWeb: false,
-      isChromeWeb: false,
-      isFirefox: false,
-      isSafari: false,
+      isAnyWeb: true,
+      isChromeWeb: true,
+      isFirefox: true,
+      isSafari: true,
       isWP_WNS: false,
     };
 
