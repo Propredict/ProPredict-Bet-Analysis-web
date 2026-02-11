@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Check,
   X,
@@ -11,6 +11,7 @@ import {
   Star,
   Crown,
   Sparkles,
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -316,11 +317,77 @@ const stats = [
   { value: "4.9", label: "User Rating", isStar: true },
 ];
 
+const testimonials = [
+  { name: "Luka87", badge: "Analyst", rating: 5, comment: "The AI predictions are incredibly accurate. I've been using ProPredict for 3 months and the insights have been game-changing." },
+  { name: "MilanTips", badge: "Premium", rating: 5, comment: "Best sports analysis platform I've found. The premium combos alone are worth the subscription." },
+  { name: "ProAnalyst", badge: "Expert", rating: 4, comment: "Solid AI analysis with great accuracy. The match previews give me an edge every matchday." },
+  { name: "StefanBet", badge: "Premium", rating: 5, comment: "Upgraded to Premium last month — the VIP insights are next level. Highly recommend!" },
+  { name: "GoalMaster99", badge: "Analyst", rating: 5, comment: "I love how the AI breaks down every match. The confidence ratings are surprisingly reliable." },
+  { name: "TipsterKing", badge: "Expert", rating: 4, comment: "Clean interface, accurate predictions, and great value for money. What more could you ask for?" },
+];
+
 const faqs = [
   { question: "Can I cancel anytime?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period." },
   { question: "How do Premium AI Picks work?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics." },
   { question: "Can I change my plan anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly." },
 ];
+
+function TestimonialsSlider() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const t = testimonials[current];
+  const badgeColor = t.badge === "Premium" 
+    ? "bg-violet-500/20 text-violet-400 border-violet-500/40" 
+    : t.badge === "Expert" 
+    ? "bg-warning/20 text-warning border-warning/40"
+    : "bg-primary/20 text-primary border-primary/40";
+
+  return (
+    <Card className="p-4 bg-gradient-to-b from-card to-card/80 border-border/50 relative overflow-hidden">
+      <div className="flex items-start gap-3 animate-fade-in" key={current}>
+        <Quote className="h-5 w-5 text-primary/40 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-foreground">{t.name}</span>
+            <Badge variant="outline" className={`text-[9px] px-1.5 py-0 border ${badgeColor}`}>
+              {t.badge}
+            </Badge>
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: t.rating }).map((_, i) => (
+                <Star key={i} className="h-3 w-3 text-warning fill-warning" />
+              ))}
+              {Array.from({ length: 5 - t.rating }).map((_, i) => (
+                <Star key={i} className="h-3 w-3 text-muted-foreground/30" />
+              ))}
+            </div>
+          </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed italic">
+            "{t.comment}"
+          </p>
+        </div>
+      </div>
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5 mt-3">
+        {testimonials.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`h-1.5 rounded-full transition-all ${
+              i === current ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30"
+            }`}
+          />
+        ))}
+      </div>
+    </Card>
+  );
+}
 
 export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
@@ -584,12 +651,19 @@ export default function GetPremium() {
         </div>
       </div>
 
+      {/* Animated Social Proof Text */}
+      <p className="text-center text-xs sm:text-sm text-primary/90 font-medium animate-fade-in">
+        Join 10,000+ smart users improving their prediction accuracy daily.
+      </p>
+
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-2 sm:gap-4">
         {stats.map((stat, index) => (
           <Card 
             key={index} 
-            className="text-center py-4 px-2 bg-gradient-to-b from-primary/10 via-card to-card border-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.1)]"
+            className={`text-center py-4 px-2 bg-gradient-to-b from-primary/10 via-card to-card border-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.1)] ${
+              stat.isStar ? "animate-pulse ring-1 ring-warning/30 shadow-[0_0_20px_rgba(245,196,81,0.15)]" : ""
+            }`}
           >
             <div className="flex items-center justify-center gap-1">
               <span className="text-xl sm:text-2xl font-bold text-primary">{stat.value}</span>
@@ -599,6 +673,14 @@ export default function GetPremium() {
           </Card>
         ))}
       </div>
+
+      {/* Testimonials Slider */}
+      <TestimonialsSlider />
+
+      {/* Urgency Line */}
+      <p className="text-center text-[10px] sm:text-xs text-warning/80 font-medium">
+        🔥 Over 247 users upgraded to Premium this month.
+      </p>
 
       {/* FAQ Section */}
       <div className="space-y-4">
