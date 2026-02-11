@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 type AdSlotProps = {
   slot?: string;
@@ -9,14 +10,20 @@ export default function AdSlot({
   slot = "4037677571",
   style,
 }: AdSlotProps) {
+  const isAndroid = getIsAndroidApp();
+
   useEffect(() => {
+    if (isAndroid) return;
     try {
       // @ts-ignore
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (e) {
       console.warn("Adsense error", e);
     }
-  }, []);
+  }, [isAndroid]);
+
+  // Hide AdSense on Android — native AdMob handles ads there
+  if (isAndroid) return null;
 
   return (
     <div
