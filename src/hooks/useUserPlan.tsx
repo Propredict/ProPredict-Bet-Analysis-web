@@ -426,7 +426,9 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     if (!isMobileApp) return;
 
     const handleMessage = (event: MessageEvent) => {
-      const { type } = event.data || {};
+      console.log("[UserPlan] postMessage received:", typeof event.data, JSON.stringify(event.data));
+      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
+      const { type } = data || {};
 
       if (type === "AD_UNLOCK_SUCCESS") {
         const pending = getPendingAdUnlock();

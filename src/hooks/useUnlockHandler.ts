@@ -22,7 +22,9 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     if (!isAndroidApp) return;
 
     const handleMessage = (event: MessageEvent) => {
-      const { type } = event.data || {};
+      console.log("[UnlockHandler] postMessage received:", typeof event.data, JSON.stringify(event.data));
+      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
+      const { type } = data || {};
 
       if (type === "AD_UNLOCK_SUCCESS") {
         // Global handler in UserPlanProvider does the actual unlock.
