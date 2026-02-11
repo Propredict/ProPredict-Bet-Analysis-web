@@ -1,4 +1,4 @@
-import { ThumbsUp, ThumbsDown, Pin, Crown, Star } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Pin, Crown, Star, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ interface Comment {
   upvotes: number;
   downvotes: number;
   pinned: boolean;
+  deletable?: boolean;
 }
 
 interface CommentsSectionProps {
@@ -23,7 +24,7 @@ interface CommentsSectionProps {
 export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSectionProps) {
   const [newComment, setNewComment] = useState("");
 
-  const comments: Comment[] = [
+  const defaultComments: Comment[] = [
     {
       id: "ai-auto",
       user: "AI Model",
@@ -53,6 +54,28 @@ export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSec
     },
   ];
 
+  const [comments, setComments] = useState<Comment[]>(defaultComments);
+
+  const handlePost = () => {
+    if (!newComment.trim()) return;
+    const comment: Comment = {
+      id: `user-${Date.now()}`,
+      user: "You",
+      tier: userTier === "exclusive" ? "exclusive" : "pro",
+      text: newComment.trim(),
+      upvotes: 0,
+      downvotes: 0,
+      pinned: false,
+      deletable: true,
+    };
+    setComments((prev) => [...prev, comment]);
+    setNewComment("");
+  };
+
+  const handleDelete = (id: string) => {
+    setComments((prev) => prev.filter((c) => c.id !== id));
+  };
+
   const getTierBadge = (tier: string) => {
     switch (tier) {
       case "ai":
@@ -69,13 +92,21 @@ export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSec
   return (
     <div className="px-4 pb-4 space-y-3">
       {comments.map((comment) => (
-        <div key={comment.id} className={`p-3 rounded-lg border ${comment.pinned ? "bg-primary/5 border-primary/20" : "bg-muted/20 border-border/30"}`}>
+        <div key={comment.id} className={`p-3 rounded-lg border relative ${comment.pinned ? "bg-primary/5 border-primary/20" : "bg-muted/20 border-border/30"}`}>
+          {comment.deletable && (
+            <button
+              onClick={() => handleDelete(comment.id)}
+              className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
           <div className="flex items-center gap-2 mb-1.5">
             {comment.pinned && <Pin className="h-3 w-3 text-primary" />}
             <span className="text-[11px] font-semibold text-foreground">{comment.user}</span>
             {getTierBadge(comment.tier)}
           </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">{comment.text}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed pr-4">{comment.text}</p>
           {userTier !== "free" && (
             <div className="flex items-center gap-3 mt-2">
               <button className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-success transition-colors">
@@ -97,7 +128,7 @@ export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSec
             placeholder="What do you think about this AI prediction?"
             className="text-xs min-h-[60px] resize-none"
           />
-          <Button size="sm" className="text-xs h-7" disabled={!newComment.trim()}>
+          <Button size="sm" className="text-xs h-7" disabled={!newComment.trim()} onClick={handlePost}>
             Post Comment
           </Button>
         </div>
