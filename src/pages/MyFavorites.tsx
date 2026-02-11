@@ -65,6 +65,7 @@ export default function MyFavorites() {
               <Badge variant="secondary" className="text-[10px]">{games.length}</Badge>
             </div>
 
+            <div className="divide-y divide-border">
             {games.map((m) => (
               <div
                 key={m.id}
@@ -96,6 +97,7 @@ export default function MyFavorites() {
                 </Badge>
               </div>
             ))}
+            </div>
           </Card>
         ))
       ) : (
