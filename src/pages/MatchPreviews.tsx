@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Eye, Calendar, Trophy, Loader2, RefreshCw, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -13,30 +13,13 @@ import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { cn } from "@/lib/utils";
-import { format, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
-
-// Top leagues to display
-const TOP_LEAGUES = [
-  "Premier League",
-  "La Liga",
-  "Serie A",
-  "Bundesliga",
-  "Ligue 1",
-  "Eredivisie",
-  "Jupiler Pro League",
-  "Primeira Liga",
-  "Champions League",
-  "Europa League",
-  "Conference League",
-];
 
 const PRO_PREVIEW_LIMIT = 5;
 
 export default function MatchPreviews() {
-  // Fetch both today and tomorrow matches
-  const { matches: todayMatches, isLoading: loadingToday, error: errorToday, refetch: refetchToday } = useFixtures("today");
-  const { matches: tomorrowMatches, isLoading: loadingTomorrow, error: errorTomorrow, refetch: refetchTomorrow } = useFixtures("tomorrow");
+  // Fetch today's matches only
+  const { matches: todayMatches, isLoading, error, refetch } = useFixtures("today");
   
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
@@ -45,31 +28,10 @@ export default function MatchPreviews() {
   const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
   const { maybeShowInterstitial } = useAndroidInterstitial();
 
-  const isLoading = loadingToday || loadingTomorrow;
-  const error = errorToday || errorTomorrow;
+  // Use all today's matches (no league filter)
+  const allMatches = todayMatches;
   
-  const refetch = () => {
-    refetchToday();
-    refetchTomorrow();
-  };
-
-  // Combine and filter matches from both days to top leagues only
-  const topLeagueMatches = useMemo(() => {
-    const allMatches = [...todayMatches, ...tomorrowMatches];
-    return allMatches.filter((match) =>
-      TOP_LEAGUES.some((league) =>
-        match.league?.toLowerCase().includes(league.toLowerCase())
-      )
-    );
-  }, [todayMatches, tomorrowMatches]);
-  
-  const todayCount = todayMatches.filter((match) =>
-    TOP_LEAGUES.some((league) => match.league?.toLowerCase().includes(league.toLowerCase()))
-  ).length;
-  
-  const tomorrowCount = tomorrowMatches.filter((match) =>
-    TOP_LEAGUES.some((league) => match.league?.toLowerCase().includes(league.toLowerCase()))
-  ).length;
+  const todayCount = allMatches.length;
 
   // Access rules: Free = 0, Pro (basic) = 5, Premium = unlimited
   const isPremiumUser = plan === "premium" || isAdmin;
@@ -106,9 +68,8 @@ export default function MatchPreviews() {
     reset();
   };
 
-  const leagueCount = new Set(topLeagueMatches.map((m) => m.league)).size;
-  const matchCount = topLeagueMatches.length;
-  const tomorrow = addDays(new Date(), 1);
+  const leagueCount = new Set(allMatches.map((m) => m.league)).size;
+  const matchCount = allMatches.length;
 
   return (
     <>
@@ -184,20 +145,13 @@ export default function MatchPreviews() {
         </Card>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div className="bg-gradient-to-br from-violet-500/20 via-violet-500/10 to-transparent border border-violet-500/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Calendar className="h-3.5 w-3.5 text-violet-400" />
               <span className="text-sm font-bold text-violet-400">{todayCount}</span>
             </div>
-            <span className="text-[10px] text-violet-400/70">Today</span>
-          </div>
-          <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Calendar className="h-3.5 w-3.5 text-primary" />
-              <span className="text-sm font-bold text-primary">{tomorrowCount}</span>
-            </div>
-            <span className="text-[10px] text-primary/70">Tomorrow</span>
+            <span className="text-[10px] text-violet-400/70">Matches</span>
           </div>
           <div className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
@@ -272,7 +226,7 @@ export default function MatchPreviews() {
           <div className="space-y-4">
             {/* Match Selector */}
             <MatchPreviewSelector
-              matches={topLeagueMatches}
+              matches={allMatches}
               selectedMatch={selectedMatch}
               onMatchSelect={handleMatchSelect}
               onGenerate={handleGenerate}
