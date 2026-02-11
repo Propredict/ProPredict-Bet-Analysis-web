@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import type { Match } from "@/hooks/useFixtures";
 
 interface MatchPreviewSelectorProps {
@@ -36,13 +37,17 @@ export function MatchPreviewSelector({
 }: MatchPreviewSelectorProps) {
   const [selectedLeague, setSelectedLeague] = useState<string>("");
 
-  // Get unique leagues
-  const leagues = useMemo(() => {
-    const leagueSet = new Set<string>();
+  // Get unique leagues with match counts
+  const leagueOptions = useMemo(() => {
+    const leagueMap = new Map<string, number>();
     matches.forEach((match) => {
-      if (match.league) leagueSet.add(match.league);
+      if (match.league) {
+        leagueMap.set(match.league, (leagueMap.get(match.league) || 0) + 1);
+      }
     });
-    return Array.from(leagueSet).sort();
+    return Array.from(leagueMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ id: name, name, matchCount: count }));
   }, [matches]);
 
   // Filter matches by selected league
@@ -69,21 +74,16 @@ export function MatchPreviewSelector({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {/* League Selector */}
+        {/* League Selector - Searchable */}
         <div className="space-y-1.5">
           <label className="text-xs text-muted-foreground">League</label>
-          <Select value={selectedLeague} onValueChange={handleLeagueChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select league..." />
-            </SelectTrigger>
-            <SelectContent>
-              {leagues.map((league) => (
-                <SelectItem key={league} value={league}>
-                  {league}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <LeagueSearchSelect
+            leagues={leagueOptions}
+            value={selectedLeague}
+            onValueChange={handleLeagueChange}
+            placeholder="Search league..."
+            compact
+          />
         </div>
 
         {/* Match Selector */}
