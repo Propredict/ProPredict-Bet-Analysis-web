@@ -6,6 +6,7 @@ import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
 import { TodaysMatches } from "@/components/dashboard/TodaysMatches";
 import { DashboardAIPredictions } from "@/components/dashboard/DashboardAIPredictions";
+import { DashboardSocialProof } from "@/components/dashboard/DashboardSocialProof";
 import { BottomCTA } from "@/components/dashboard/BottomCTA";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
@@ -41,6 +42,9 @@ const Index = () => {
             ProPredict is a sports analysis platform designed for users who want deeper insights into football matches. Here you can explore match previews, expert analysis, AI-assisted predictions, and track results in one place. Our goal is to provide clear, structured, and informative content to help you better understand upcoming matches and past performance.
           </p>
         </div>
+
+        {/* Social Proof Section */}
+        <DashboardSocialProof />
 
         <FeaturedPredictions />
         <MatchPredictions />
