@@ -412,7 +412,8 @@ export default function GetPremium() {
     };
 
     const handleMessage = (event: MessageEvent) => {
-      const { type } = event.data || {};
+      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
+      const { type } = data || {};
       if (
         type === "PURCHASE_SUCCESS" ||
         type === "REVENUECAT_PURCHASE_SUCCESS" ||
