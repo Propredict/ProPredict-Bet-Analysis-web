@@ -84,7 +84,7 @@ export default function AppLayout() {
         return {
           icon: Crown,
           label: "Premium",
-          className: "bg-[#F5C451]/20 text-[#F5C451] border-[#F5C451]/40",
+          className: "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40",
           showUpgrade: false,
           upgradeLabel: "",
         };
@@ -92,7 +92,7 @@ export default function AppLayout() {
         return {
           icon: Star,
           label: "Pro",
-          className: "bg-[#2FBF9B]/20 text-[#2FBF9B] border-[#2FBF9B]/40",
+          className: "bg-amber-500/20 text-amber-400 border-amber-500/40",
           showUpgrade: true,
           upgradeLabel: "Go Premium",
         };

@@ -38,14 +38,14 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
         return {
           label: "Premium",
           icon: Crown,
-          className: "bg-[#F5C451]/20 text-[#F5C451] border-[#F5C451]/40",
+          className: "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40",
           showUpgrade: false,
         };
       case "basic":
         return {
           label: "Pro",
           icon: Star,
-          className: "bg-[#2FBF9B]/20 text-[#2FBF9B] border-[#2FBF9B]/40",
+          className: "bg-amber-500/20 text-amber-400 border-amber-500/40",
           showUpgrade: true,
           upgradeLabel: "Go Premium",
         };
