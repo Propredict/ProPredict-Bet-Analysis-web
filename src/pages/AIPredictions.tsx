@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
@@ -27,6 +28,15 @@ type TierFilter = "all" | "free" | "pro" | "premium";
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("ai_predictions");
+    }
+  }, [maybeShowInterstitial]);
 
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const [searchQuery, setSearchQuery] = useState("");
