@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { Swords, Brain, Loader2, Info, HelpCircle, CircleHelp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -133,6 +134,16 @@ function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
 }
 
 export default function AIvsCommunity() {
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("ai_vs_members");
+    }
+  }, [maybeShowInterstitial]);
+
   const { predictions: todayPredictions, loading: loadingToday, refetch: refetchToday } = useAIPredictions("today");
   const { predictions: tomorrowPredictions, loading: loadingTomorrow, refetch: refetchTomorrow } = useAIPredictions("tomorrow");
 
