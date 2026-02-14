@@ -1,6 +1,4 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { supabase } from "@/integrations/supabase/client";
 
 // Pages
 import Index from "./pages/Index";
@@ -60,16 +59,19 @@ const queryClient = new QueryClient();
 const App = () => {
   // 🔔 OneSignal → Supabase sync
   useEffect(() => {
-    if (!window.OneSignal) return;
+    const w = window as any;
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function (OneSignal: any) {
+    if (!w.OneSignal) return;
+
+    w.OneSignalDeferred = w.OneSignalDeferred || [];
+
+    w.OneSignalDeferred.push(async function (OneSignal: any) {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
 
       if (!user) return;
 
-      const playerId = await OneSignal.User.PushSubscription.id;
+      const playerId = OneSignal.User.PushSubscription.id;
 
       if (playerId) {
         await supabase.from("users_push_tokens").upsert({
