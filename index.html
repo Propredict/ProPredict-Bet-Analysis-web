@@ -10,7 +10,18 @@
     <script
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4138787612808412"
-      crossorigin="anonymous">
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- ✅ OneSignal Web Push -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "31fc0b24-9d06-42ae-8eae-d224f781a97a",
+        });
+      });
     </script>
 
     <!-- Favicon -->
@@ -35,10 +46,7 @@
     <meta name="author" content="ProPredict" />
 
     <!-- Google Search Console verification -->
-    <meta
-      name="google-site-verification"
-      content="H42oD3hK64ZhEihuCGaH84dTLOnxTwP0q44oR4ksq0o"
-    />
+    <meta name="google-site-verification" content="H42oD3hK64ZhEihuCGaH84dTLOnxTwP0q44oR4ksq0o" />
 
     <!-- ========================= -->
     <!-- Open Graph / Social Preview -->
@@ -70,29 +78,29 @@
 
     <!-- Organization -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "ProPredict",
-      "url": "https://propredict.me",
-      "logo": "https://propredict.me/favicon-32x32.png",
-      "description": "AI-powered sports analysis and predictions for informational and entertainment purposes only.",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "propredictsupp@gmail.com",
-        "contactType": "customer support"
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "ProPredict",
+        "url": "https://propredict.me",
+        "logo": "https://propredict.me/favicon-32x32.png",
+        "description": "AI-powered sports analysis and predictions for informational and entertainment purposes only.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "propredictsupp@gmail.com",
+          "contactType": "customer support"
+        }
       }
-    }
     </script>
 
     <!-- Website -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "ProPredict",
-      "url": "https://propredict.me"
-    }
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ProPredict",
+        "url": "https://propredict.me"
+      }
     </script>
 
     <!-- Google Analytics (GA4) – Website only -->
