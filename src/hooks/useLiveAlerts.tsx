@@ -44,90 +44,45 @@ function getAlertSettings(): AlertSettings {
   return { enabled: false, notifyGoals: true, notifyRedCards: true, soundEnabled: true, favoritesOnly: false };
 }
 
-// Singleton AudioContext — resumed on first user gesture for autoplay policy
-let sharedAudioContext: AudioContext | null = null;
-let audioContextResumed = false;
+// Preloaded audio elements for instant playback
+let goalAudio: HTMLAudioElement | null = null;
+let redCardAudio: HTMLAudioElement | null = null;
 
-function getAudioContext(): AudioContext | null {
+function preloadSounds() {
   try {
-    if (!sharedAudioContext) {
-      sharedAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!goalAudio) {
+      goalAudio = new Audio("/sounds/goal.mp3");
+      goalAudio.preload = "auto";
     }
-    return sharedAudioContext;
+    if (!redCardAudio) {
+      redCardAudio = new Audio("/sounds/red-card.mp3");
+      redCardAudio.preload = "auto";
+    }
   } catch {
-    return null;
+    // Audio not supported
   }
 }
 
-// Resume AudioContext on first user interaction (click/tap/keydown)
-function ensureAudioResumed() {
-  if (audioContextResumed) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
+// Preload as soon as module loads
+preloadSounds();
 
-  const resume = () => {
-    if (ctx.state === "suspended") {
-      ctx.resume().catch(() => {});
-    }
-    audioContextResumed = true;
-    window.removeEventListener("click", resume);
-    window.removeEventListener("touchstart", resume);
-    window.removeEventListener("keydown", resume);
-  };
-
-  if (ctx.state === "running") {
-    audioContextResumed = true;
-  } else {
-    window.addEventListener("click", resume, { once: false });
-    window.addEventListener("touchstart", resume, { once: false });
-    window.addEventListener("keydown", resume, { once: false });
-  }
-}
-
-// Auto-attach listeners as soon as this module loads
-ensureAudioResumed();
-
-// Web Audio API synthesized alert sounds
 function playGoalSound() {
-  const ctx = getAudioContext();
-  if (!ctx) return;
   try {
-    if (ctx.state === "suspended") ctx.resume();
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    notes.forEach((freq, i) => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      oscillator.frequency.value = freq;
-      oscillator.type = "sine";
-      const startTime = ctx.currentTime + i * 0.1;
-      gainNode.gain.setValueAtTime(0.3, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
-      oscillator.start(startTime);
-      oscillator.stop(startTime + 0.2);
-    });
+    if (goalAudio) {
+      goalAudio.currentTime = 0;
+      goalAudio.play().catch(() => {});
+    }
   } catch {
     // Audio not supported
   }
 }
 
 function playRedCardSound() {
-  const ctx = getAudioContext();
-  if (!ctx) return;
   try {
-    if (ctx.state === "suspended") ctx.resume();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    oscillator.frequency.setValueAtTime(600, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
-    oscillator.type = "square";
-    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-    oscillator.start();
-    oscillator.stop(ctx.currentTime + 0.3);
+    if (redCardAudio) {
+      redCardAudio.currentTime = 0;
+      redCardAudio.play().catch(() => {});
+    }
   } catch {
     // Audio not supported
   }
