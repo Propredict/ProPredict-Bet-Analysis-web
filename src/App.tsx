@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -51,35 +54,49 @@ import ManageTickets from "./pages/admin/ManageTickets";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { UserPlanProvider } from "./hooks/useUserPlan";
-import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 
 const queryClient = new QueryClient();
 
-function OneSignalSync() {
-  useOneSignalPlayerSync();
-  return null;
-}
-
 const App = () => {
+  // 🔔 OneSignal → Supabase sync
+  useEffect(() => {
+    if (!window.OneSignal) return;
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function (OneSignal: any) {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+
+      if (!user) return;
+
+      const playerId = await OneSignal.User.PushSubscription.id;
+
+      if (playerId) {
+        await supabase.from("users_push_tokens").upsert({
+          user_id: user.id,
+          onesignal_player_id: playerId,
+          platform: "web",
+        });
+      }
+    });
+  }, []);
 
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <UserPlanProvider>
-          <OneSignalSync />
           <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
               <Routes>
-              {/* Auth pages without layout */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+                {/* Auth pages without layout */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* All other pages with AppLayout */}
+                {/* All other pages with AppLayout */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/how-ai-works" element={<HowAIWorks />} />
