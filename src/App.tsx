@@ -52,8 +52,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 
 const queryClient = new QueryClient();
+
+function OneSignalSync() {
+  useOneSignalPlayerSync();
+  return null;
+}
 
 const App = () => {
 
@@ -61,6 +67,7 @@ const App = () => {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <UserPlanProvider>
+          <OneSignalSync />
           <TooltipProvider>
             <Toaster />
             <Sonner />
