@@ -359,6 +359,27 @@ export type Database = {
         }
         Relationships: []
       }
+      match_scores_cache: {
+        Row: {
+          away_score: number | null
+          home_score: number | null
+          match_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          away_score?: number | null
+          home_score?: number | null
+          match_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          away_score?: number | null
+          home_score?: number | null
+          match_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
