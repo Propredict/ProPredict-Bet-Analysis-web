@@ -65,26 +65,33 @@ const App = () => {
     const w = window as any;
     w.OneSignalDeferred = w.OneSignalDeferred || [];
     w.OneSignalDeferred.push(async function (OneSignal: any) {
-      try {
-        // v16 SDK: use PushSubscription.id instead of deprecated getUserId()
-        const playerId = OneSignal.User?.PushSubscription?.id;
-        if (!playerId) return;
+      const syncPlayerId = async () => {
+        try {
+          const playerId = OneSignal.User?.PushSubscription?.id;
+          if (!playerId) return;
 
-        const { data } = await supabase.auth.getUser();
-        const user = data.user;
-        if (!user) return;
+          const { data } = await supabase.auth.getUser();
+          const user = data.user;
+          if (!user) return;
 
-        await supabase.from("users_push_tokens").upsert(
-          {
-            user_id: user.id,
-            onesignal_player_id: playerId,
-            platform: "web",
-          },
-          { onConflict: "user_id,platform" },
-        );
-      } catch (error) {
-        console.error("OneSignal sync error:", error);
-      }
+          await supabase.from("users_push_tokens").upsert(
+            {
+              user_id: user.id,
+              onesignal_player_id: playerId,
+              platform: "web",
+            },
+            { onConflict: "user_id,platform" },
+          );
+        } catch (error) {
+          console.error("OneSignal sync error:", error);
+        }
+      };
+
+      // Try immediately (if permission already granted)
+      await syncPlayerId();
+
+      // Listen for future subscription changes (user grants permission later)
+      OneSignal.User?.PushSubscription?.addEventListener?.("change", syncPlayerId);
     });
   }, []);
 
