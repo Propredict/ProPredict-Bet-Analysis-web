@@ -92,6 +92,19 @@
       }
     </script>
 
+    <!-- ========================= -->
+    <!-- OneSignal Web Push -->
+    <!-- ========================= -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function (OneSignal) {
+        await OneSignal.init({
+          appId: "31fc0b24-9d06-42ae-8eae-d224f781a97a",
+        });
+      });
+    </script>
+
     <!-- Google Analytics (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7MHF8JGYSZ"></script>
     <script>
