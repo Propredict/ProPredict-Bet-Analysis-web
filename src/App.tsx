@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +9,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { supabase } from "@/integrations/supabase/client";
 
 // Pages
 import Index from "./pages/Index";
@@ -59,26 +60,33 @@ const queryClient = new QueryClient();
 const App = () => {
   // 🔔 OneSignal → Supabase sync
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const w = window as any;
 
     if (!w.OneSignal) return;
 
     w.OneSignalDeferred = w.OneSignalDeferred || [];
-
     w.OneSignalDeferred.push(async function (OneSignal: any) {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
+      try {
+        const playerId = await OneSignal.getUserId();
+        if (!playerId) return;
 
-      if (!user) return;
+        const { data } = await supabase.auth.getUser();
+        const user = data.user;
 
-      const playerId = OneSignal.User.PushSubscription.id;
+        if (!user) return;
 
-      if (playerId) {
-        await supabase.from("users_push_tokens").upsert({
-          user_id: user.id,
-          onesignal_player_id: playerId,
-          platform: "web",
-        });
+        await supabase.from("users_push_tokens").upsert(
+          {
+            user_id: user.id,
+            onesignal_player_id: playerId,
+            platform: "web",
+          },
+          { onConflict: "user_id" },
+        );
+      } catch (error) {
+        console.error("OneSignal sync error:", error);
       }
     });
   }, []);
@@ -93,12 +101,12 @@ const App = () => {
             <BrowserRouter>
               <ScrollToTop />
               <Routes>
-                {/* Auth pages without layout */}
+                {/* Auth pages */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* All other pages with AppLayout */}
+                {/* Layout pages */}
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/how-ai-works" element={<HowAIWorks />} />
@@ -108,7 +116,7 @@ const App = () => {
                   <Route path="/tickets/:id" element={<TicketDetails />} />
                   <Route path="/get-premium" element={<GetPremium />} />
 
-                  {/* Tips & Tickets */}
+                  {/* Tips */}
                   <Route path="/daily-tips" element={<DailyTips />} />
                   <Route path="/daily-tickets" element={<DailyTickets />} />
                   <Route path="/exclusive-tips" element={<ExclusiveTips />} />
@@ -158,7 +166,7 @@ const App = () => {
                     }
                   />
 
-                  {/* Settings & Legal */}
+                  {/* Legal */}
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/cookie-policy" element={<CookiePolicy />} />
@@ -169,7 +177,7 @@ const App = () => {
                   <Route path="/about-us" element={<AboutUs />} />
                 </Route>
 
-                {/* Fallback */}
+                {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
