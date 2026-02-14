@@ -67,8 +67,13 @@ const App = () => {
     w.OneSignalDeferred.push(async function (OneSignal: any) {
       const syncPlayerId = async () => {
         try {
-          const playerId = OneSignal.User?.PushSubscription?.id;
-          if (!playerId) return;
+          // SDK v16: use PushSubscription.id (NOT getUserId)
+          const sub = OneSignal?.User?.PushSubscription;
+          const playerId = sub?.id;
+          if (!playerId) {
+            console.log("[OneSignal Web] No player ID yet, skipping sync");
+            return;
+          }
 
           const { data } = await supabase.auth.getUser();
           const user = data.user;
@@ -82,8 +87,9 @@ const App = () => {
             },
             { onConflict: "user_id,platform" },
           );
+          console.log("[OneSignal Web] Player ID synced:", playerId);
         } catch (error) {
-          console.error("OneSignal sync error:", error);
+          console.error("[OneSignal Web] Sync error:", error);
         }
       };
 
@@ -91,7 +97,11 @@ const App = () => {
       await syncPlayerId();
 
       // Listen for future subscription changes (user grants permission later)
-      OneSignal.User?.PushSubscription?.addEventListener?.("change", syncPlayerId);
+      try {
+        OneSignal?.User?.PushSubscription?.addEventListener?.("change", syncPlayerId);
+      } catch (e) {
+        console.warn("[OneSignal Web] Could not add change listener:", e);
+      }
     });
   }, []);
 
