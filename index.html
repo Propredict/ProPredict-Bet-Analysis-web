@@ -101,6 +101,15 @@
       OneSignalDeferred.push(async function (OneSignal) {
         await OneSignal.init({
           appId: "31fc0b24-9d06-42ae-8eae-d224f781a97a",
+          notifyButton: {
+            enable: true,
+            size: "small",
+            position: "bottom-right",
+          },
+          welcomeNotification: {
+            title: "ProPredict",
+            message: "You'll now receive alerts for new tips & match goals!",
+          },
         });
       });
     </script>
