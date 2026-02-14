@@ -63,18 +63,15 @@ const App = () => {
     if (typeof window === "undefined") return;
 
     const w = window as any;
-
-    if (!w.OneSignal) return;
-
     w.OneSignalDeferred = w.OneSignalDeferred || [];
     w.OneSignalDeferred.push(async function (OneSignal: any) {
       try {
-        const playerId = await OneSignal.getUserId();
+        // v16 SDK: use PushSubscription.id instead of deprecated getUserId()
+        const playerId = OneSignal.User?.PushSubscription?.id;
         if (!playerId) return;
 
         const { data } = await supabase.auth.getUser();
         const user = data.user;
-
         if (!user) return;
 
         await supabase.from("users_push_tokens").upsert(
