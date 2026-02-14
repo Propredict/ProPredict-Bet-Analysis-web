@@ -82,6 +82,8 @@ serve(async (req) => {
       included_segments: ["All"],
       headings: { en: headings },
       contents: { en: contents },
+      // Android custom sound (requires goal.mp3 in res/raw/)
+      android_sound: "goal",
       // Android + Web push
       isAndroid: true,
       isIos: false,
