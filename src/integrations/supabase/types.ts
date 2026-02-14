@@ -673,6 +673,30 @@ export type Database = {
         }
         Relationships: []
       }
+      users_push_tokens: {
+        Row: {
+          created_at: string | null
+          id: string
+          onesignal_player_id: string
+          platform: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          onesignal_player_id: string
+          platform?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          onesignal_player_id?: string
+          platform?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       active_arena_season: {
