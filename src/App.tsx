@@ -83,7 +83,7 @@ const App = () => {
             onesignal_player_id: playerId,
             platform: "web",
           },
-          { onConflict: "user_id" },
+          { onConflict: "user_id,platform" },
         );
       } catch (error) {
         console.error("OneSignal sync error:", error);
