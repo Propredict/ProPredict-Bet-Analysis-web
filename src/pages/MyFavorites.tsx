@@ -112,12 +112,26 @@ export default function MyFavorites() {
                     <span className={cn("truncate", goalFlash && "text-success font-semibold")}>{m.awayTeam}</span>
                   </div>
 
-                  <Badge 
-                    variant={isLive ? "destructive" : "outline"} 
-                    className="text-[10px]"
-                  >
-                    {m.status === "live" ? `${m.minute}'` : m.status === "halftime" ? "HT" : m.startTime}
-                  </Badge>
+                  {m.status === "live" ? (
+                    <div className="flex items-center gap-0.5">
+                      <Badge className="bg-destructive/15 text-destructive border border-destructive/30 font-bold text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive animate-pulse mr-0.5 sm:mr-1" />
+                        {m.minute}'
+                      </Badge>
+                    </div>
+                  ) : m.status === "halftime" ? (
+                    <Badge className="bg-warning/15 text-warning border border-warning/30 font-bold text-[9px] sm:text-[10px] px-1.5 py-0.5">
+                      HT
+                    </Badge>
+                  ) : m.status === "finished" ? (
+                    <Badge className="bg-muted text-muted-foreground border border-border font-semibold text-[9px] sm:text-[10px] px-1.5 py-0.5">
+                      FT
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px]">
+                      {m.startTime}
+                    </Badge>
+                  )}
                 </div>
               );
             })}
