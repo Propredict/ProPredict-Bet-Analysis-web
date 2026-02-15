@@ -130,6 +130,11 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
     // Read alert settings
     const alertSettings = getAlertSettings();
 
+    // Check if any CURRENT live match has a bell (ignore stale IDs from old matches)
+    const anyCurrentBells = alertedMatchIds
+      ? matches.some((m) => alertedMatchIds.has(m.id))
+      : false;
+
     // CHECK – compare current vs previous for live matches only
     matches.forEach((m) => {
       if (m.status !== "live" && m.status !== "halftime") return;
@@ -148,26 +153,22 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           
           // Always track recent goals for UI indicator (regardless of notification settings)
           setRecentGoals((current) => [
-            ...current.filter((g) => g.matchId !== m.id), // Remove old entry for this match
+            ...current.filter((g) => g.matchId !== m.id),
             { matchId: m.id, timestamp: Date.now(), scoringTeam },
           ]);
 
-          // Check per-match selections
           const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
           const hasMatchBell = alertedMatchIds?.has(m.id) ?? false;
           
           // Goal notification logic (Live Scores context):
-          // 1. No bells, no favs → all live matches (notifyGoals)
-          // 2. No bells, has favs → all live + favorites
-          // 3. Bells active on this or other current matches → ONLY bell'd + favorites
+          // 1. No current bells → all live matches (notifyGoals) + favorites
+          // 2. Current bells active → ONLY bell'd matches (+ favorites)
           const shouldNotifyGoal = alertSettings.enabled && (
             context === "favorites"
               ? isFavoriteMatch
-              : hasMatchBell
-                ? true // This match has bell → always notify
-                : isFavoriteMatch
-                  ? true // This match is favorited → always notify
-                  : alertSettings.notifyGoals // No bell, no fav → notify if global goals ON
+              : anyCurrentBells
+                ? (hasMatchBell || isFavoriteMatch) // Selective: only bell'd + favorites
+                : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all or favorites
           );
 
           if (shouldNotifyGoal) {
@@ -216,7 +217,9 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
         const shouldNotifyRedCard = alertSettings.enabled && currRedCards > prev.redCards && (
           context === "favorites"
             ? isFavRC
-            : hasMatchBellRC || isFavRC || alertSettings.notifyRedCards
+            : anyCurrentBells
+              ? (hasMatchBellRC || isFavRC)
+              : (alertSettings.notifyRedCards || isFavRC)
         );
         
         if (shouldNotifyRedCard) {
