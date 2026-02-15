@@ -167,7 +167,7 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
               : alertSettings.favoritesOnly
                 ? (alertSettings.notifyGoals || isFavoriteMatch || hasMatchBell) // Live Scores + favoritesOnly: all live + favorites
                 : anyBellsActive
-                  ? (hasMatchBell || isFavoriteMatch)  // Selective: only bell'd or starred matches
+                  ? hasMatchBell  // Selective: ONLY bell'd matches
                   : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all goals or starred
           );
 
@@ -221,7 +221,7 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
             : alertSettings.favoritesOnly
               ? (alertSettings.notifyRedCards || isFavRC || hasMatchBellRC)
               : anyBellsRC
-                ? (hasMatchBellRC || isFavRC)
+                ? hasMatchBellRC
                 : (alertSettings.notifyRedCards || isFavRC)
         );
         

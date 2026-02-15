@@ -92,8 +92,8 @@ export default function LiveScores() {
       return globalAlertSettings.notifyGoals || isFav || hasBell;
     }
     if (anyBells) {
-      // Selective mode: only bell'd or starred matches
-      return hasBell || isFav;
+      // Selective mode: ONLY bell'd matches
+      return hasBell;
     }
     // Global mode: all matches when notifyGoals ON, or just starred
     if (globalAlertSettings.notifyGoals) return true;
