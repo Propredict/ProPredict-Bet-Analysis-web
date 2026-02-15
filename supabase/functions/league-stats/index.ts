@@ -51,14 +51,37 @@ serve(async (req: Request) => {
       "x-apisports-key": apiKey,
     };
 
-    let apiEndpoint: string;
     let responseData: any;
+
+    // Helper: fetch with fallback season (try requested season, then previous)
+    async function fetchWithFallback(endpoint: string, seasonParam: string): Promise<any> {
+      const primaryUrl = `${API_FOOTBALL_URL}/${endpoint}${endpoint.includes('?') ? '&' : '?'}season=${seasonParam}`;
+      const res = await fetch(primaryUrl, { headers });
+      if (!res.ok) {
+        // Try previous season as fallback
+        const fallbackSeason = String(Number(seasonParam) - 1);
+        console.log(`Primary season ${seasonParam} failed (${res.status}), trying fallback ${fallbackSeason}`);
+        const fallbackUrl = `${API_FOOTBALL_URL}/${endpoint}${endpoint.includes('?') ? '&' : '?'}season=${fallbackSeason}`;
+        const fallbackRes = await fetch(fallbackUrl, { headers });
+        if (!fallbackRes.ok) throw new Error(`API returned ${fallbackRes.status}`);
+        return fallbackRes.json();
+      }
+      const json = await res.json();
+      // If response is empty, try previous season
+      if (!json.response || json.response.length === 0) {
+        const fallbackSeason = String(Number(seasonParam) - 1);
+        console.log(`Season ${seasonParam} returned empty, trying fallback ${fallbackSeason}`);
+        const fallbackUrl = `${API_FOOTBALL_URL}/${endpoint}${endpoint.includes('?') ? '&' : '?'}season=${fallbackSeason}`;
+        const fallbackRes = await fetch(fallbackUrl, { headers });
+        if (!fallbackRes.ok) return json; // return original empty
+        return fallbackRes.json();
+      }
+      return json;
+    }
 
     switch (type) {
       case "standings":
-        apiEndpoint = `${API_FOOTBALL_URL}/standings?league=${league}&season=${season}`;
-        const standingsRes = await fetch(apiEndpoint, { headers });
-        const standingsJson = await standingsRes.json();
+        const standingsJson = await fetchWithFallback(`standings?league=${league}`, season);
         
         // Normalize standings response
         const standings = standingsJson.response?.[0]?.league?.standings?.[0] || [];
@@ -93,11 +116,8 @@ serve(async (req: Request) => {
         break;
 
       case "scorers":
-        apiEndpoint = `${API_FOOTBALL_URL}/players/topscorers?league=${league}&season=${season}`;
-        const scorersRes = await fetch(apiEndpoint, { headers });
-        const scorersJson = await scorersRes.json();
+        const scorersJson = await fetchWithFallback(`players/topscorers?league=${league}`, season);
         
-        // Normalize scorers response
         responseData = {
           type: "scorers",
           players: (scorersJson.response || []).map((item: any) => ({
@@ -126,11 +146,8 @@ serve(async (req: Request) => {
         break;
 
       case "assists":
-        apiEndpoint = `${API_FOOTBALL_URL}/players/topassists?league=${league}&season=${season}`;
-        const assistsRes = await fetch(apiEndpoint, { headers });
-        const assistsJson = await assistsRes.json();
+        const assistsJson = await fetchWithFallback(`players/topassists?league=${league}`, season);
         
-        // Normalize assists response
         responseData = {
           type: "assists",
           players: (assistsJson.response || []).map((item: any) => ({
@@ -158,11 +175,8 @@ serve(async (req: Request) => {
         break;
 
       case "fixtures":
-        apiEndpoint = `${API_FOOTBALL_URL}/fixtures?league=${league}&season=${season}`;
-        const fixturesRes = await fetch(apiEndpoint, { headers });
-        const fixturesJson = await fixturesRes.json();
+        const fixturesJson = await fetchWithFallback(`fixtures?league=${league}`, season);
         
-        // Normalize fixtures response
         responseData = {
           type: "fixtures",
           fixtures: (fixturesJson.response || []).map((item: any) => ({
@@ -192,11 +206,8 @@ serve(async (req: Request) => {
         break;
 
       case "rounds":
-        apiEndpoint = `${API_FOOTBALL_URL}/fixtures/rounds?league=${league}&season=${season}`;
-        const roundsRes = await fetch(apiEndpoint, { headers });
-        const roundsJson = await roundsRes.json();
+        const roundsJson = await fetchWithFallback(`fixtures/rounds?league=${league}`, season);
         
-        // Normalize rounds response
         responseData = {
           type: "rounds",
           rounds: roundsJson.response || [],
