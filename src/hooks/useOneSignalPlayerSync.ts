@@ -54,6 +54,12 @@ export function useOneSignalPlayerSync() {
       const rawData = (event as MessageEvent).data;
 
       console.log("[OneSignal] ANDROID MESSAGE RECEIVED:", rawData);
+      console.log("[OneSignal] rawData type:", typeof rawData);
+      try {
+        console.log("[OneSignal] rawData JSON:", JSON.stringify(rawData));
+      } catch (e) {
+        console.log("[OneSignal] rawData not serializable");
+      }
 
       const data =
         typeof rawData === "string"
@@ -62,7 +68,18 @@ export function useOneSignalPlayerSync() {
             })()
           : rawData;
 
-      if (!data || data.type !== "ONESIGNAL_PLAYER_ID" || !data.playerId) return;
+      if (!data) {
+        console.log("[OneSignal] data is null after parsing");
+        return;
+      }
+      if (data.type !== "ONESIGNAL_PLAYER_ID") {
+        console.log("[OneSignal] Ignoring message type:", data.type);
+        return;
+      }
+      if (!data.playerId) {
+        console.log("[OneSignal] No playerId in message");
+        return;
+      }
 
       const playerId = data.playerId as string;
       console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
