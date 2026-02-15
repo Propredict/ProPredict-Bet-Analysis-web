@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 import { Toaster } from "@/components/ui/toaster";
@@ -10,46 +10,48 @@ import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
-// Pages
+// Lightweight pages - eager import
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import Profile from "./pages/Profile";
-import LiveScores from "./pages/LiveScores";
-import MyFavorites from "./pages/MyFavorites";
-import WinningHistory from "./pages/WinningHistory";
-import TicketDetails from "./pages/TicketDetails";
-import GetPremium from "./pages/GetPremium";
-import Settings from "./pages/Settings";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import CookiePolicy from "./pages/CookiePolicy";
-import TermsOfService from "./pages/TermsOfService";
-import Disclaimer from "./pages/Disclaimer";
-import DataDeletion from "./pages/DataDeletion";
-import HelpSupport from "./pages/HelpSupport";
-import AboutUs from "./pages/AboutUs";
-import HowAIWorks from "./pages/HowAIWorks";
 import NotFound from "./pages/NotFound";
 
-// Tier pages
-import DailyTips from "./pages/DailyTips";
-import DailyTickets from "./pages/DailyTickets";
-import ExclusiveTips from "./pages/ExclusiveTips";
-import ExclusiveTickets from "./pages/ExclusiveTickets";
-import PremiumTips from "./pages/PremiumTips";
-import PremiumTickets from "./pages/PremiumTickets";
-import AIPredictions from "./pages/AIPredictions";
-import AIvsCommunity from "./pages/AIvsCommunity";
-import HowAIvsMembersWorks from "./pages/HowAIvsMembersWorks";
-import BettingTips from "./pages/BettingTips";
-import LeagueStatistics from "./pages/LeagueStatistics";
-import MatchPreviews from "./pages/MatchPreviews";
+// Heavy pages - lazy loaded for faster navigation
+const Profile = lazy(() => import("./pages/Profile"));
+const LiveScores = lazy(() => import("./pages/LiveScores"));
+const MyFavorites = lazy(() => import("./pages/MyFavorites"));
+const WinningHistory = lazy(() => import("./pages/WinningHistory"));
+const TicketDetails = lazy(() => import("./pages/TicketDetails"));
+const GetPremium = lazy(() => import("./pages/GetPremium"));
+const Settings = lazy(() => import("./pages/Settings"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Disclaimer = lazy(() => import("./pages/Disclaimer"));
+const DataDeletion = lazy(() => import("./pages/DataDeletion"));
+const HelpSupport = lazy(() => import("./pages/HelpSupport"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const HowAIWorks = lazy(() => import("./pages/HowAIWorks"));
 
-// Admin
-import AdminDashboard from "./pages/admin/Dashboard";
-import ManageTips from "./pages/admin/ManageTips";
-import ManageTickets from "./pages/admin/ManageTickets";
+// Tier pages - lazy loaded
+const DailyTips = lazy(() => import("./pages/DailyTips"));
+const DailyTickets = lazy(() => import("./pages/DailyTickets"));
+const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
+const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
+const PremiumTips = lazy(() => import("./pages/PremiumTips"));
+const PremiumTickets = lazy(() => import("./pages/PremiumTickets"));
+const AIPredictions = lazy(() => import("./pages/AIPredictions"));
+const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
+const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
+const BettingTips = lazy(() => import("./pages/BettingTips"));
+const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
+const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
+
+// Admin - lazy loaded
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const ManageTips = lazy(() => import("./pages/admin/ManageTips"));
+const ManageTickets = lazy(() => import("./pages/admin/ManageTickets"));
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
@@ -114,6 +116,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>}>
               <Routes>
                 {/* Auth pages */}
                 <Route path="/login" element={<Login />} />
@@ -194,6 +197,7 @@ const App = () => {
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
             </BrowserRouter>
           </TooltipProvider>
         </UserPlanProvider>
