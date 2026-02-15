@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { initOneSignalWeb } from "@/lib/onesignal";
+import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 
 // Pages where footer should be hidden (header-only layout)
 const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
@@ -41,6 +42,9 @@ export default function AppLayout() {
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+
+  // Sync Android OneSignal Player ID to Supabase
+  useOneSignalPlayerSync();
 
   // In-app realtime toast notifications for new tips/tickets
   useRealtimeNotifications();
