@@ -155,19 +155,19 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           // Check per-match selections
           const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
           const hasMatchBell = alertedMatchIds?.has(m.id) ?? false;
-          const anyBellsActive = alertedMatchIds ? alertedMatchIds.size > 0 : false;
           
           // Goal notification logic (Live Scores context):
           // 1. No bells, no favs → all live matches (notifyGoals)
           // 2. No bells, has favs → all live + favorites
-          // 3. Bells active, no favs → ONLY bell'd matches
-          // 4. Bells active + favs → bell'd + favorites
+          // 3. Bells active on this or other current matches → ONLY bell'd + favorites
           const shouldNotifyGoal = alertSettings.enabled && (
             context === "favorites"
               ? isFavoriteMatch
-              : anyBellsActive
-                ? (hasMatchBell || isFavoriteMatch) // Scenarios 3+4: bell'd + favorites
-                : (alertSettings.notifyGoals || isFavoriteMatch) // Scenarios 1+2: all or favorites
+              : hasMatchBell
+                ? true // This match has bell → always notify
+                : isFavoriteMatch
+                  ? true // This match is favorited → always notify
+                  : alertSettings.notifyGoals // No bell, no fav → notify if global goals ON
           );
 
           if (shouldNotifyGoal) {
@@ -213,13 +213,10 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
         // 🟥 RED CARD DETECTION - same selective logic
         const hasMatchBellRC = alertedMatchIds?.has(m.id) ?? false;
         const isFavRC = favoriteMatchIds?.has(m.id) ?? false;
-        const anyBellsRC = alertedMatchIds ? alertedMatchIds.size > 0 : false;
         const shouldNotifyRedCard = alertSettings.enabled && currRedCards > prev.redCards && (
           context === "favorites"
             ? isFavRC
-            : anyBellsRC
-              ? (hasMatchBellRC || isFavRC)
-              : (alertSettings.notifyRedCards || isFavRC)
+            : hasMatchBellRC || isFavRC || alertSettings.notifyRedCards
         );
         
         if (shouldNotifyRedCard) {
