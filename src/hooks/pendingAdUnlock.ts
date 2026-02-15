@@ -19,13 +19,18 @@ interface PendingAdUnlock {
 let pending: PendingAdUnlock | null = null;
 
 export function setPendingAdUnlock(value: PendingAdUnlock | null) {
+  console.log("[PendingAdUnlock] SET:", JSON.stringify(value));
+  console.trace("[PendingAdUnlock] SET stack trace");
   pending = value;
 }
 
 export function getPendingAdUnlock(): PendingAdUnlock | null {
+  console.log("[PendingAdUnlock] GET:", JSON.stringify(pending));
   return pending;
 }
 
 export function clearPendingAdUnlock() {
+  console.log("[PendingAdUnlock] CLEAR (was:", JSON.stringify(pending), ")");
+  console.trace("[PendingAdUnlock] CLEAR stack trace");
   pending = null;
 }
