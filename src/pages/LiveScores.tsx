@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
-import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid } from "lucide-react";
-import { useMemo, useState, useEffect, Fragment } from "react";
+import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2 } from "lucide-react";
+import { useMemo, useState, useEffect, useCallback, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { AndroidNativeAdSlot } from "@/components/live-scores/AndroidNativeAdSlo
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
+import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
@@ -75,6 +76,18 @@ export default function LiveScores() {
   const {
     hasRecentGoal
   } = useLiveAlerts(isUnavailable ? [] : matches, favorites, alertedMatchIds);
+
+  // Global alert settings for sound indicator
+  const { settings: globalAlertSettings } = useGlobalAlertSettings();
+
+  // Check if sound is active for a specific match (3 tiers)
+  const isSoundActive = useCallback((matchId: string) => {
+    if (!globalAlertSettings.enabled) return false;
+    if (globalAlertSettings.notifyGoals) return true; // All matches
+    if (favorites.has(matchId)) return true; // Starred
+    if (alertedMatchIds.has(matchId)) return true; // Bell
+    return false;
+  }, [globalAlertSettings, favorites, alertedMatchIds]);
 
   /* -------------------- CLOCK -------------------- */
 
@@ -351,6 +364,7 @@ export default function LiveScores() {
                             hasAlert={hasAlert(m.id)}
                             toggleMatchAlert={() => toggleMatchAlert(m.id)}
                             hasRecentGoal={hasRecentGoal(m.id)}
+                            soundActive={isSoundActive(m.id)}
                           />
                           {/* Android only: native ad slot after every 4th match */}
                           {(idx + 1) % 4 === 0 && idx < games.length - 1 && (
@@ -391,6 +405,7 @@ export default function LiveScores() {
                   hasAlert={hasAlert}
                   toggleMatchAlert={toggleMatchAlert}
                   hasRecentGoal={hasRecentGoal}
+                  isSoundActive={isSoundActive}
                 />
               );
             })}
@@ -490,7 +505,8 @@ function MatchRow({
   toggleFavorite,
   hasAlert,
   toggleMatchAlert,
-  hasRecentGoal: showGoalIndicator
+  hasRecentGoal: showGoalIndicator,
+  soundActive
 }: {
   match: Match;
   onSelect: (m: Match) => void;
@@ -499,6 +515,7 @@ function MatchRow({
   hasAlert: boolean;
   toggleMatchAlert: () => void;
   hasRecentGoal: boolean;
+  soundActive?: boolean;
 }) {
   const isLive = m.status === "live" || m.status === "halftime";
   const isFinished = m.status === "finished";
@@ -565,8 +582,11 @@ function MatchRow({
           </span>
         </div>
 
-        {/* Status */}
-        <div className="flex justify-end">
+        {/* Status + Sound indicator */}
+        <div className="flex items-center justify-end gap-1">
+          {soundActive && (
+            <Volume2 className="h-2.5 w-2.5 text-primary/60" />
+          )}
           <StatusBadge match={m} />
         </div>
       </div>
@@ -608,7 +628,8 @@ function CountrySection({
   toggleFavorite,
   hasAlert,
   toggleMatchAlert,
-  hasRecentGoal
+  hasRecentGoal,
+  isSoundActive
 }: {
   country: string;
   leagues: Record<string, Match[]>;
@@ -620,6 +641,7 @@ function CountrySection({
   hasAlert: (id: string) => boolean;
   toggleMatchAlert: (id: string) => void;
   hasRecentGoal: (id: string) => boolean;
+  isSoundActive: (id: string) => boolean;
 }) {
   const [isOpen, setIsOpen] = useState(true);
   const flag = COUNTRY_FLAGS[country] || "🏳️";
@@ -662,6 +684,7 @@ function CountrySection({
                 hasAlert={hasAlert}
                 toggleMatchAlert={toggleMatchAlert}
                 hasRecentGoal={hasRecentGoal}
+                isSoundActive={isSoundActive}
               />
             ))}
           </div>
@@ -682,7 +705,8 @@ function LeagueSection({
   toggleFavorite,
   hasAlert,
   toggleMatchAlert,
-  hasRecentGoal
+  hasRecentGoal,
+  isSoundActive
 }: {
   league: string;
   leagueLogo: string | null;
@@ -693,6 +717,7 @@ function LeagueSection({
   hasAlert: (id: string) => boolean;
   toggleMatchAlert: (id: string) => void;
   hasRecentGoal: (id: string) => boolean;
+  isSoundActive: (id: string) => boolean;
 }) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -730,6 +755,7 @@ function LeagueSection({
                 hasAlert={hasAlert(m.id)}
                 toggleMatchAlert={() => toggleMatchAlert(m.id)}
                 hasRecentGoal={hasRecentGoal(m.id)}
+                soundActive={isSoundActive(m.id)}
               />
               {/* Android only: native ad slot after every 4th match */}
               {(idx + 1) % 4 === 0 && idx < matches.length - 1 && (
