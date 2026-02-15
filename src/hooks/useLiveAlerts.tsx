@@ -165,7 +165,7 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
             context === "favorites"
               ? isFavoriteMatch // Favorites page: only starred matches
               : alertSettings.favoritesOnly
-                ? (alertSettings.notifyGoals || isFavoriteMatch || hasMatchBell) // Live Scores + favoritesOnly: all live + favorites
+                ? true // Favorites Only ON on Live Scores = ALL live matches get alerts
                 : anyBellsActive
                   ? hasMatchBell  // Selective: ONLY bell'd matches
                   : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all goals or starred
@@ -219,7 +219,7 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           context === "favorites"
             ? isFavRC
             : alertSettings.favoritesOnly
-              ? (alertSettings.notifyRedCards || isFavRC || hasMatchBellRC)
+              ? true
               : anyBellsRC
                 ? hasMatchBellRC
                 : (alertSettings.notifyRedCards || isFavRC)
