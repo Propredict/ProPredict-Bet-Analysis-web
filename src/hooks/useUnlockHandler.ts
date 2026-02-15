@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserPlan, type ContentTier, type ContentType, type UnlockMethod } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
-import { setPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
+import { setPendingAdUnlock, clearPendingAdUnlock, getPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 
 interface UseUnlockHandlerOptions {
   onUpgradeBasic?: () => void;
@@ -83,12 +83,15 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
         // Prevent repeated clicks while ad is showing
         if (unlockingId === contentId) return false;
 
+        console.log("[UnlockHandler] 🎯 Setting pending ad-unlock:", contentType, contentId);
         setUnlockingId(contentId);
         setPendingAdUnlock({ contentType, contentId });
+        console.log("[UnlockHandler] 🎯 Pending after set:", JSON.stringify(getPendingAdUnlock()));
 
         // Direct JS bridge call - window.Android.watchRewardedAd()
         const android = (window as any).Android;
         if (android && typeof android.watchRewardedAd === "function") {
+          console.log("[UnlockHandler] 📺 Calling Android.watchRewardedAd()");
           android.watchRewardedAd();
         }
 
