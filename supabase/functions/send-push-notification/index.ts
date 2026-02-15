@@ -82,8 +82,11 @@ serve(async (req) => {
       included_segments: ["All"],
       headings: { en: headings },
       contents: { en: contents },
-      // Android custom sound (requires goal.mp3 in res/raw/)
+      // Android: use goal_alerts channel (IMPORTANCE_HIGH, lock screen visible)
+      android_channel_id: "goal_alerts",
       android_sound: "goal",
+      android_priority: 10,
+      android_visibility: 1,
       // Android + Web push
       isAndroid: true,
       isIos: false,
@@ -92,6 +95,8 @@ serve(async (req) => {
       isFirefox: true,
       isSafari: true,
       isWP_WNS: false,
+      // expire in 5 minutes
+      ttl: 300,
     };
 
     console.log("Sending OneSignal notification:", JSON.stringify(payload));
