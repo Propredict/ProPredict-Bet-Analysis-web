@@ -83,14 +83,21 @@ export default function LiveScores() {
   // Check if sound is active for a specific match
   const isSoundActive = useCallback((matchId: string) => {
     if (!globalAlertSettings.enabled) return false;
+    const isFav = favorites.has(matchId);
+    const hasBell = alertedMatchIds.has(matchId);
     const anyBells = alertedMatchIds.size > 0;
+    
+    if (globalAlertSettings.favoritesOnly) {
+      // Favorites Only ON on Live Scores: all live matches + favorites + bells
+      return globalAlertSettings.notifyGoals || isFav || hasBell;
+    }
     if (anyBells) {
       // Selective mode: only bell'd or starred matches
-      return alertedMatchIds.has(matchId) || favorites.has(matchId);
+      return hasBell || isFav;
     }
     // Global mode: all matches when notifyGoals ON, or just starred
     if (globalAlertSettings.notifyGoals) return true;
-    return favorites.has(matchId);
+    return isFav;
   }, [globalAlertSettings, favorites, alertedMatchIds]);
 
   /* -------------------- CLOCK -------------------- */
