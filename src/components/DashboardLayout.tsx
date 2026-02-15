@@ -74,7 +74,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
         
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
           {/* FIXED Header - ULTRA COMPACT */}
-          <header className="fixed top-0 left-0 right-0 z-50 h-10 sm:h-11 border-b border-primary/30 flex items-center justify-between px-1.5 sm:px-3 bg-primary md:left-[var(--sidebar-width,0)]">
+          <header className="fixed top-0 left-0 right-0 z-50 border-b border-primary/30 flex items-center justify-between px-1.5 sm:px-3 bg-primary md:left-[var(--sidebar-width,0)] pt-[env(safe-area-inset-top,0px)] h-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:h-[calc(2.75rem+env(safe-area-inset-top,0px))]">
             <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-7 w-7" />
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
@@ -162,7 +162,7 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
           </header>
 
           {/* Main Content - GLOBAL COMPACT DENSITY padding */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 pb-20 md:pb-6 min-w-0 mt-10 sm:mt-11">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 pb-20 md:pb-6 min-w-0 mt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:mt-[calc(2.75rem+env(safe-area-inset-top,0px))]">
             <div className={cn("mx-auto w-full space-y-4 md:space-y-6", !fullWidth && "max-w-[1200px]")}>
               {children}
             </div>
