@@ -63,9 +63,13 @@ export function useFavorites() {
   }, [fetchFavorites]);
 
   const toggleFavorite = useCallback(async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log("[Favorites] toggleFavorite called for matchId:", matchId);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
+    console.log("[Favorites] Auth check - user:", user?.id, "error:", authError?.message);
+
     if (!user) {
+      console.warn("[Favorites] No user session, redirecting to login");
       toast({
         title: "Sign in required",
         description: "Please sign in to save favorites.",
