@@ -21,7 +21,7 @@ export default function MyFavorites() {
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading } = useFavorites();
 
   // Enable goal/red card alerts on Favorites page
-  const { hasRecentGoal } = useLiveAlerts(matches, favorites);
+  const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");
 
   const favoriteMatches = useMemo(() => matches.filter((m) => favorites.has(m.id)), [matches, favorites]);
 
