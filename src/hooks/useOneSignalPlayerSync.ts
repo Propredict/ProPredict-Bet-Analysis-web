@@ -50,7 +50,6 @@ export function useOneSignalPlayerSync() {
     };
 
     const handleMessage = async (event: MessageEvent | Event) => {
-      // Extract data from either MessageEvent (window) or custom event (document)
       const rawData = (event as MessageEvent).data;
 
       console.log("[OneSignal] ANDROID MESSAGE RECEIVED:", rawData);
@@ -100,6 +99,16 @@ export function useOneSignalPlayerSync() {
         }
       }
     );
+
+    // Also check existing session immediately (WebView may already have a session without firing auth events)
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && pendingPlayerIdRef.current) {
+        console.log("[OneSignal] Syncing saved Android Player ID after session restore");
+        await upsertPlayerToken(pendingPlayerIdRef.current);
+      }
+    };
+    checkExistingSession();
 
     return () => {
       window.removeEventListener("message", handleMessage);
