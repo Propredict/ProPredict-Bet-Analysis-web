@@ -21,6 +21,22 @@ export function useOneSignalPlayerSync() {
 
     console.log("[OneSignal] Android detected, setting up player ID listener");
 
+    // Global debug listener - logs ALL messages to find OneSignal Player ID
+    const debugListener = (event: MessageEvent) => {
+      const d = event.data;
+      if (typeof d === 'string' && d.includes('ONESIGNAL')) {
+        console.log("[DEBUG RAW MESSAGE] string:", d);
+      } else if (typeof d === 'object' && d !== null) {
+        try {
+          const json = JSON.stringify(d);
+          if (json.includes('ONESIGNAL') || json.includes('playerId')) {
+            console.log("[DEBUG RAW MESSAGE] object:", json);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener("message", debugListener);
+
     const upsertPlayerToken = async (playerId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -111,6 +127,7 @@ export function useOneSignalPlayerSync() {
     checkExistingSession();
 
     return () => {
+      window.removeEventListener("message", debugListener);
       window.removeEventListener("message", handleMessage);
       document.removeEventListener("message", handleMessage as EventListener);
       subscription.unsubscribe();
