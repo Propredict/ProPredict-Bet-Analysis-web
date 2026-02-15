@@ -64,16 +64,17 @@ export default function LiveScores() {
   } = useFavorites();
   const {
     hasAlert,
-    toggleMatchAlert
+    toggleMatchAlert,
+    alertedMatchIds
   } = useMatchAlertPreferences();
 
   // Determine if we're in a fallback state (error or loading with no data)
   const isUnavailable = error || isLoading && matches.length === 0;
 
-  // Live alerts detection - pass favorites to filter goal alerts
+  // Live alerts detection - pass favorites + per-match bell alerts
   const {
     hasRecentGoal
-  } = useLiveAlerts(isUnavailable ? [] : matches, favorites);
+  } = useLiveAlerts(isUnavailable ? [] : matches, favorites, alertedMatchIds);
 
   /* -------------------- CLOCK -------------------- */
 

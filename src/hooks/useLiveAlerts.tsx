@@ -88,7 +88,7 @@ function playRedCardSound() {
   }
 }
 
-export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) {
+export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, alertedMatchIds?: Set<string>) {
   const prevSnapshots = useRef<Map<string, MatchSnapshot>>(new Map());
   const initialized = useRef(false);
   const [recentGoals, setRecentGoals] = useState<RecentGoal[]>([]);
@@ -152,13 +152,17 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) 
             { matchId: m.id, timestamp: Date.now(), scoringTeam },
           ]);
 
-          // Check if this match is a favorite
+          // Check per-match selections
           const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
+          const hasMatchBell = alertedMatchIds?.has(m.id) ?? false;
           
-          // Goal notification logic:
-          // When Goals toggle is ON → sound/toast for ALL live goals (no per-match selection needed)
-          // favoritesOnly only affects which matches show in the favorites page, not sound alerts
-          const shouldNotifyGoal = alertSettings.enabled && alertSettings.notifyGoals;
+          // Goal notification logic (3 tiers):
+          // 1. Goals toggle ON → sound/toast for ALL live goals
+          // 2. Bell icon on match → sound for that specific match
+          // 3. Star (favorite) on match → sound for that favorited match
+          const shouldNotifyGoal = alertSettings.enabled && (
+            alertSettings.notifyGoals || hasMatchBell || isFavoriteMatch
+          );
 
           if (shouldNotifyGoal) {
             // Play sound if enabled
@@ -200,8 +204,12 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) 
           }
         }
 
-        // 🟥 RED CARD DETECTION - sound for all matches when enabled
-        const shouldNotifyRedCard = alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards;
+        // 🟥 RED CARD DETECTION - same 3-tier logic
+        const hasMatchBellRC = alertedMatchIds?.has(m.id) ?? false;
+        const isFavRC = favoriteMatchIds?.has(m.id) ?? false;
+        const shouldNotifyRedCard = alertSettings.enabled && currRedCards > prev.redCards && (
+          alertSettings.notifyRedCards || hasMatchBellRC || isFavRC
+        );
         
         if (shouldNotifyRedCard) {
           // Play sound if enabled
