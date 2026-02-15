@@ -38,6 +38,7 @@ export function useOneSignalPlayerSync() {
     window.addEventListener("message", debugListener);
 
     const upsertPlayerToken = async (playerId: string) => {
+      console.log("[OneSignal] upsertPlayerToken called with:", playerId);
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
@@ -46,7 +47,7 @@ export function useOneSignalPlayerSync() {
         return;
       }
 
-      console.log("[OneSignal] Upserting player ID:", playerId, "for user:", user.id, "platform: android");
+      console.log("[OneSignal] ▶ UPSERTING player ID:", playerId, "for user:", user.id, "platform: android");
 
       const { error } = await supabase.from("users_push_tokens").upsert(
         {
@@ -60,7 +61,7 @@ export function useOneSignalPlayerSync() {
       if (error) {
         console.error("[OneSignal] Failed to upsert push token:", error.message);
       } else {
-        console.log("[OneSignal] Android push token saved successfully");
+        console.log("[OneSignal] ✅ Android push token saved successfully");
         pendingPlayerIdRef.current = null;
       }
     };
@@ -109,8 +110,9 @@ export function useOneSignalPlayerSync() {
     // Auth state listener: flush pending player ID on ANY auth event with a session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("[OneSignal] onAuthStateChange:", event, "hasSession:", !!session?.user, "pendingId:", pendingPlayerIdRef.current);
         if (session?.user && pendingPlayerIdRef.current) {
-          console.log("[OneSignal] Auth event:", event, "- flushing pending Android player ID");
+          console.log("[OneSignal] 🔄 Auth event:", event, "- flushing pending Android player ID:", pendingPlayerIdRef.current);
           await upsertPlayerToken(pendingPlayerIdRef.current);
         }
       }
