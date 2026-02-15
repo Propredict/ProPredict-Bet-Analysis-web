@@ -156,15 +156,9 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) 
           const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
           
           // Goal notification logic:
-          // 1. If notifyGoals ON + favoritesOnly OFF → all goals
-          // 2. If notifyGoals ON + favoritesOnly ON → only favorite match goals
-          // 3. If notifyGoals OFF + favoritesOnly ON → only favorite match goals (NEW!)
-          // 4. If notifyGoals OFF + favoritesOnly OFF → no goals
-          const shouldNotifyGoal = alertSettings.enabled && (
-            (alertSettings.notifyGoals && !alertSettings.favoritesOnly) || // All goals
-            (alertSettings.notifyGoals && alertSettings.favoritesOnly && isFavoriteMatch) || // Goals + favorites filter
-            (!alertSettings.notifyGoals && alertSettings.favoritesOnly && isFavoriteMatch) // Favorites only (even without goals toggle)
-          );
+          // When Goals toggle is ON → sound/toast for ALL live goals (no per-match selection needed)
+          // favoritesOnly only affects which matches show in the favorites page, not sound alerts
+          const shouldNotifyGoal = alertSettings.enabled && alertSettings.notifyGoals;
 
           if (shouldNotifyGoal) {
             // Play sound if enabled
@@ -206,11 +200,8 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>) 
           }
         }
 
-        // 🟥 RED CARD DETECTION - Similar logic for favorites
-        const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
-        const shouldNotifyRedCard = alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards && (
-          !alertSettings.favoritesOnly || isFavoriteMatch
-        );
+        // 🟥 RED CARD DETECTION - sound for all matches when enabled
+        const shouldNotifyRedCard = alertSettings.enabled && alertSettings.notifyRedCards && currRedCards > prev.redCards;
         
         if (shouldNotifyRedCard) {
           // Play sound if enabled
