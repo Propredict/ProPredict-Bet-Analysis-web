@@ -106,11 +106,11 @@ export function useOneSignalPlayerSync() {
     window.addEventListener("message", handleMessage);
     document.addEventListener("message", handleMessage as EventListener);
 
-    // Auth state listener: when user logs in, flush any pending player ID
+    // Auth state listener: flush pending player ID on ANY auth event with a session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user && pendingPlayerIdRef.current) {
-          console.log("[OneSignal] User signed in, flushing pending Android player ID");
+        if (session?.user && pendingPlayerIdRef.current) {
+          console.log("[OneSignal] Auth event:", event, "- flushing pending Android player ID");
           await upsertPlayerToken(pendingPlayerIdRef.current);
         }
       }
