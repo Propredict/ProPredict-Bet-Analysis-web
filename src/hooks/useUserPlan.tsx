@@ -431,21 +431,25 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       const { type } = data || {};
 
       if (type === "AD_UNLOCK_SUCCESS") {
+        console.log("[UserPlan] ✅ AD_UNLOCK_SUCCESS received!");
         const pending = getPendingAdUnlock();
-        if (!pending) return;
+        console.log("[UserPlan] pending ad-unlock:", JSON.stringify(pending));
+        if (!pending) {
+          console.warn("[UserPlan] ⚠️ No pending ad-unlock found — was it already cleared?");
+          return;
+        }
 
         const { contentType, contentId } = pending;
         clearPendingAdUnlock();
+        console.log("[UserPlan] 🔓 Unlocking:", contentType, contentId);
 
         // IMMEDIATELY update local state for instant card re-render
         const today = new Date().toISOString().split("T")[0];
         const endOfDay = new Date(today + "T23:59:59Z");
         setUnlockedContent((prev) => {
-          const exists = prev.some(
-            (u) => u.contentType === contentType && u.contentId === contentId
-          );
-          if (exists) return prev;
-          return [...prev, { contentType, contentId, expiresAt: endOfDay }];
+          const next = [...prev, { contentType, contentId, expiresAt: endOfDay }];
+          console.log("[UserPlan] 📦 unlockedContent updated, count:", next.length);
+          return next;
         });
 
         toast.success(
@@ -455,9 +459,11 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         );
 
         // Persist to Supabase in the background (fire-and-forget)
-        unlockContent(contentType, contentId).catch((err) =>
-          console.error("[UserPlan] Failed to persist ad-unlock to DB:", err)
-        );
+        unlockContent(contentType, contentId)
+          .then((ok) => console.log("[UserPlan] 💾 DB persist result:", ok))
+          .catch((err) =>
+            console.error("[UserPlan] ❌ Failed to persist ad-unlock to DB:", err)
+          );
       }
 
       // Handle RESTORE_SUCCESS / PURCHASE_SUCCESS from Android native layer
