@@ -118,6 +118,9 @@ export default function MyFavorites() {
                         <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive animate-pulse mr-0.5 sm:mr-1" />
                         {m.minute}'
                       </Badge>
+                      <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-[9px] sm:text-[10px]">
+                        LIVE
+                      </Badge>
                     </div>
                   ) : m.status === "halftime" ? (
                     <Badge className="bg-warning/15 text-warning border border-warning/30 font-bold text-[9px] sm:text-[10px] px-1.5 py-0.5">
