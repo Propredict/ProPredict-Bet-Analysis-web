@@ -539,15 +539,15 @@ function MatchRow({
     >
       <div className="grid grid-cols-[28px_1fr_52px_1fr_72px] sm:grid-cols-[40px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
         {/* Actions */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           <button 
             onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
             className={cn(
-              "h-7 w-7 sm:h-8 sm:w-8 rounded-md flex items-center justify-center transition-all", 
+              "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-md flex items-center justify-center transition-all", 
               isFav ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80"
             )}
           >
-            <Star className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
+            <Star className={cn("h-4 w-4 sm:h-[18px] sm:w-[18px]", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
           </button>
           <MatchAlertButton 
             hasAlert={hasAlert} 
