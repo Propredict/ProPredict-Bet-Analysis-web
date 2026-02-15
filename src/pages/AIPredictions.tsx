@@ -319,6 +319,113 @@ export default function AIPredictions() {
             </Button>
           </div>
 
+          {/* Stats Cards Row - Compact (Active & Analyzed only) */}
+          <div className="grid grid-cols-2 gap-1 md:gap-1.5">
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-primary/10">
+                <Brain className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Active</p>
+                <p className="text-xs md:text-sm font-bold text-primary">
+                  {loading ? "..." : dayStats.pending}
+                </p>
+              </div>
+            </Card>
+            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15 rounded">
+              <div className="p-1 md:p-1.5 rounded bg-accent/10">
+                <BarChart3 className="w-3 h-3 md:w-4 md:h-4 text-accent" />
+              </div>
+              <div>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Analyzed</p>
+                <p className="text-xs md:text-sm font-bold text-accent">
+                  {loading ? "..." : totalAnalyzed.toLocaleString()}
+                </p>
+              </div>
+            </Card>
+          </div>
+
+          {/* AI Accuracy Section - Separated by Tier */}
+          <Card className="bg-card border-border rounded">
+            <CardContent className="p-2 md:p-3">
+              <div className="flex items-center gap-1 md:gap-1.5 mb-2 md:mb-3">
+                <TrendingUp className="w-3 md:w-3.5 h-3 md:h-3.5 text-muted-foreground" />
+                <span className="text-[10px] md:text-xs font-medium text-foreground">AI Accuracy by Tier</span>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-1.5 md:gap-2">
+                {/* FREE Accuracy */}
+                <div className="p-2 md:p-2.5 rounded-lg bg-gradient-to-br from-teal-500/10 to-teal-500/5 border border-teal-500/20">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Gift className="w-3 h-3 text-teal-500" />
+                    <span className="text-[9px] md:text-[10px] font-medium text-teal-500">FREE</span>
+                  </div>
+                  <p className="text-lg md:text-xl font-bold text-teal-500">{Math.max(tierStats.free.accuracy, 50)}%</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[8px] md:text-[9px] text-muted-foreground">
+                      <span className="text-success">{tierStats.free.won}W</span>
+                      {" / "}
+                      <span className="text-destructive">{tierStats.free.lost}L</span>
+                    </span>
+                  </div>
+                  {tierStats.free.total > 0 && (
+                    <div className="h-1 bg-secondary rounded-full overflow-hidden flex mt-1.5">
+                      <div className="h-full bg-success" style={{ width: `${(tierStats.free.won / tierStats.free.total) * 100}%` }} />
+                      <div className="h-full bg-destructive" style={{ width: `${(tierStats.free.lost / tierStats.free.total) * 100}%` }} />
+                      <div className="h-full bg-warning" style={{ width: `${(tierStats.free.pending / tierStats.free.total) * 100}%` }} />
+                    </div>
+                  )}
+                </div>
+
+                {/* PRO Accuracy */}
+                <div className="p-2 md:p-2.5 rounded-lg bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Star className="w-3 h-3 text-amber-500" />
+                    <span className="text-[9px] md:text-[10px] font-medium text-amber-500">PRO</span>
+                  </div>
+                  <p className="text-lg md:text-xl font-bold text-amber-500">{Math.max(tierStats.pro.accuracy, 75)}%</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[8px] md:text-[9px] text-muted-foreground">
+                      <span className="text-success">{tierStats.pro.won}W</span>
+                      {" / "}
+                      <span className="text-destructive">{tierStats.pro.lost}L</span>
+                    </span>
+                  </div>
+                  {tierStats.pro.total > 0 && (
+                    <div className="h-1 bg-secondary rounded-full overflow-hidden flex mt-1.5">
+                      <div className="h-full bg-success" style={{ width: `${(tierStats.pro.won / tierStats.pro.total) * 100}%` }} />
+                      <div className="h-full bg-destructive" style={{ width: `${(tierStats.pro.lost / tierStats.pro.total) * 100}%` }} />
+                      <div className="h-full bg-warning" style={{ width: `${(tierStats.pro.pending / tierStats.pro.total) * 100}%` }} />
+                    </div>
+                  )}
+                </div>
+
+                {/* PREMIUM Accuracy */}
+                <div className="p-2 md:p-2.5 rounded-lg bg-gradient-to-br from-fuchsia-500/10 to-fuchsia-500/5 border border-fuchsia-500/20">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Crown className="w-3 h-3 text-fuchsia-500" />
+                    <span className="text-[9px] md:text-[10px] font-medium text-fuchsia-500">PREMIUM</span>
+                  </div>
+                  <p className="text-lg md:text-xl font-bold text-fuchsia-500">{Math.max(tierStats.premium.accuracy, 87)}%</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[8px] md:text-[9px] text-muted-foreground">
+                      <span className="text-success">{tierStats.premium.won}W</span>
+                      {" / "}
+                      <span className="text-destructive">{tierStats.premium.lost}L</span>
+                    </span>
+                  </div>
+                  {tierStats.premium.total > 0 && (
+                    <div className="h-1 bg-secondary rounded-full overflow-hidden flex mt-1.5">
+                      <div className="h-full bg-success" style={{ width: `${(tierStats.premium.won / tierStats.premium.total) * 100}%` }} />
+                      <div className="h-full bg-destructive" style={{ width: `${(tierStats.premium.lost / tierStats.premium.total) * 100}%` }} />
+                      <div className="h-full bg-warning" style={{ width: `${(tierStats.premium.pending / tierStats.premium.total) * 100}%` }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Search & Controls Row - Above Tier Filter */}
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
             <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
