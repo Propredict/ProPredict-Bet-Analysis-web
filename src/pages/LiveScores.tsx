@@ -80,13 +80,17 @@ export default function LiveScores() {
   // Global alert settings for sound indicator
   const { settings: globalAlertSettings } = useGlobalAlertSettings();
 
-  // Check if sound is active for a specific match (3 tiers)
+  // Check if sound is active for a specific match
   const isSoundActive = useCallback((matchId: string) => {
     if (!globalAlertSettings.enabled) return false;
-    if (globalAlertSettings.notifyGoals) return true; // All matches
-    if (favorites.has(matchId)) return true; // Starred
-    if (alertedMatchIds.has(matchId)) return true; // Bell
-    return false;
+    const anyBells = alertedMatchIds.size > 0;
+    if (anyBells) {
+      // Selective mode: only bell'd or starred matches
+      return alertedMatchIds.has(matchId) || favorites.has(matchId);
+    }
+    // Global mode: all matches when notifyGoals ON, or just starred
+    if (globalAlertSettings.notifyGoals) return true;
+    return favorites.has(matchId);
   }, [globalAlertSettings, favorites, alertedMatchIds]);
 
   /* -------------------- CLOCK -------------------- */
