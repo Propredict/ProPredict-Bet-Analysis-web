@@ -53,7 +53,7 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
     const timeout = setTimeout(() => {
       clearPendingAdUnlock();
       setUnlockingId(null);
-    }, 30_000);
+    }, 120_000);
 
     return () => clearTimeout(timeout);
   }, [unlockingId]);
