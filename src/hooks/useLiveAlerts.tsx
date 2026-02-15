@@ -155,13 +155,15 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           // Check per-match selections
           const isFavoriteMatch = favoriteMatchIds?.has(m.id) ?? false;
           const hasMatchBell = alertedMatchIds?.has(m.id) ?? false;
+          const anyBellsActive = alertedMatchIds ? alertedMatchIds.size > 0 : false;
           
-          // Goal notification logic (3 tiers):
-          // 1. Goals toggle ON → sound/toast for ALL live goals
-          // 2. Bell icon on match → sound for that specific match
-          // 3. Star (favorite) on match → sound for that favorited match
+          // Goal notification logic:
+          // - If user has bell on ANY match → sound ONLY for bell/star matches (selective mode)
+          // - If no bells active → use global notifyGoals toggle (all matches when ON)
           const shouldNotifyGoal = alertSettings.enabled && (
-            alertSettings.notifyGoals || hasMatchBell || isFavoriteMatch
+            anyBellsActive
+              ? (hasMatchBell || isFavoriteMatch)  // Selective: only bell'd or starred matches
+              : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all goals or starred
           );
 
           if (shouldNotifyGoal) {
@@ -204,11 +206,14 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           }
         }
 
-        // 🟥 RED CARD DETECTION - same 3-tier logic
+        // 🟥 RED CARD DETECTION - same selective logic
         const hasMatchBellRC = alertedMatchIds?.has(m.id) ?? false;
         const isFavRC = favoriteMatchIds?.has(m.id) ?? false;
+        const anyBellsRC = alertedMatchIds ? alertedMatchIds.size > 0 : false;
         const shouldNotifyRedCard = alertSettings.enabled && currRedCards > prev.redCards && (
-          alertSettings.notifyRedCards || hasMatchBellRC || isFavRC
+          anyBellsRC
+            ? (hasMatchBellRC || isFavRC)
+            : (alertSettings.notifyRedCards || isFavRC)
         );
         
         if (shouldNotifyRedCard) {
