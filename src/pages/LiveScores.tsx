@@ -537,9 +537,9 @@ function MatchRow({
         showGoalIndicator && "bg-success/10 border-l-2 border-success"
       )}
     >
-      <div className="grid grid-cols-[28px_1fr_52px_1fr_72px] sm:grid-cols-[40px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
+      <div className="grid grid-cols-[68px_1fr_52px_1fr_72px] sm:grid-cols-[80px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
         {/* Actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button 
             onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
             className={cn(
