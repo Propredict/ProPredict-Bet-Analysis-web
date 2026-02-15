@@ -85,15 +85,11 @@ export default function LiveScores() {
     if (!globalAlertSettings.enabled) return false;
     const isFav = favorites.has(matchId);
     const hasBell = alertedMatchIds.has(matchId);
-    const anyBells = alertedMatchIds.size > 0;
     
-    if (anyBells) {
-      // Bells active: bell'd + favorites
-      return hasBell || isFav;
-    }
-    // No bells: all matches when notifyGoals ON, or just favorites
-    if (globalAlertSettings.notifyGoals) return true;
-    return isFav;
+    // Bell or favorite → always active
+    if (hasBell || isFav) return true;
+    // Otherwise → active if global goals ON
+    return globalAlertSettings.notifyGoals;
   }, [globalAlertSettings, favorites, alertedMatchIds]);
 
   /* -------------------- CLOCK -------------------- */
