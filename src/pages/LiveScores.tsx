@@ -88,8 +88,8 @@ export default function LiveScores() {
     const anyBells = alertedMatchIds.size > 0;
     
     if (globalAlertSettings.favoritesOnly) {
-      // Favorites Only ON on Live Scores: all live matches + favorites + bells
-      return globalAlertSettings.notifyGoals || isFav || hasBell;
+      // Favorites Only ON on Live Scores: ALL live matches get alerts
+      return true;
     }
     if (anyBells) {
       // Selective mode: ONLY bell'd matches
