@@ -3,14 +3,7 @@
  *
  * Polls API-Football for live matches, detects new goals,
  * and sends targeted OneSignal push notifications to users
- * who favorited the match (both Web and Android).
- *
- * Secrets required:
- *   API_FOOTBALL_KEY
- *   ONESIGNAL_APP_ID
- *   ONESIGNAL_API_KEY
- *   SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY
+ * who favorited the match (Web + Android).
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -30,30 +23,31 @@ serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const API_FOOTBALL_KEY = Deno.env.get("API_FOOTBALL_KEY")!;
-  const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
-  const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
+  const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").trim();
+  const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").trim();
 
   if (!API_FOOTBALL_KEY || !ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
     return new Response(
       JSON.stringify({ error: "Missing required secrets" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    // ── 1. Fetch live matches from API-Football ──
-    const apiRes = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
-      headers: { "x-apisports-key": API_FOOTBALL_KEY },
-    });
+    // ================= FETCH LIVE MATCHES =================
+    const apiRes = await fetch(
+      "https://v3.football.api-sports.io/fixtures?live=all",
+      { headers: { "x-apisports-key": API_FOOTBALL_KEY } }
+    );
 
     if (!apiRes.ok) {
       const errText = await apiRes.text();
-      console.error("API-Football error:", errText);
+      console.error("API error:", errText);
       return new Response(
-        JSON.stringify({ error: "API-Football request failed", details: errText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "API-Football failed" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -64,12 +58,12 @@ serve(async (req) => {
     if (fixtures.length === 0) {
       return new Response(
         JSON.stringify({ success: true, goals_detected: 0, message: "No live fixtures" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    let totalGoalsDetected = 0;
-    let totalNotificationsSent = 0;
+    let totalGoals = 0;
+    let totalNotifications = 0;
 
     for (const fixture of fixtures) {
       const matchId = String(fixture.fixture?.id);
@@ -79,7 +73,7 @@ serve(async (req) => {
       const awayScore = fixture.goals?.away ?? 0;
       const elapsed = fixture.fixture?.status?.elapsed ?? 0;
 
-      // ── 2. Compare with cached score ──
+      // ================= CHECK PREVIOUS SCORE =================
       const { data: cached } = await supabase
         .from("match_scores_cache")
         .select("home_score, away_score")
@@ -89,36 +83,24 @@ serve(async (req) => {
       const prevHome = cached?.home_score ?? 0;
       const prevAway = cached?.away_score ?? 0;
 
-      // Detect new goals
       const newHomeGoals = homeScore - prevHome;
       const newAwayGoals = awayScore - prevAway;
 
       if (newHomeGoals <= 0 && newAwayGoals <= 0) {
-        // No new goals — still update cache for score corrections
-        if (cached) {
-          await supabase
-            .from("match_scores_cache")
-            .update({ home_score: homeScore, away_score: awayScore, updated_at: new Date().toISOString() })
-            .eq("match_id", matchId);
-        } else {
-          await supabase
-            .from("match_scores_cache")
-            .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore });
-        }
+        await supabase.from("match_scores_cache").upsert({
+          match_id: matchId,
+          home_score: homeScore,
+          away_score: awayScore,
+          updated_at: new Date().toISOString(),
+        });
         continue;
       }
 
-      // ── 3. Build goal events & check for duplicates ──
+      // ================= DEDUP CHECK =================
       const goalEvents: Array<{ team: string; type: string }> = [];
+      if (newHomeGoals > 0) goalEvents.push({ team: homeTeam, type: "goal_home" });
+      if (newAwayGoals > 0) goalEvents.push({ team: awayTeam, type: "goal_away" });
 
-      if (newHomeGoals > 0) {
-        goalEvents.push({ team: homeTeam, type: "goal_home" });
-      }
-      if (newAwayGoals > 0) {
-        goalEvents.push({ team: awayTeam, type: "goal_away" });
-      }
-
-      // Check dedup: has this exact minute+event already been sent?
       const eventsToSend: typeof goalEvents = [];
 
       for (const ge of goalEvents) {
@@ -132,7 +114,6 @@ serve(async (req) => {
 
         if (!existing) {
           eventsToSend.push(ge);
-          // Record the event to prevent future duplicates
           await supabase.from("match_alert_events").insert({
             match_id: matchId,
             event_type: ge.type,
@@ -144,61 +125,57 @@ serve(async (req) => {
       }
 
       if (eventsToSend.length === 0) {
-        // All events already sent — just update cache
-        await supabase
-          .from("match_scores_cache")
-          .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore });
+        await supabase.from("match_scores_cache").upsert({
+          match_id: matchId,
+          home_score: homeScore,
+          away_score: awayScore,
+          updated_at: new Date().toISOString(),
+        });
         continue;
       }
 
-      totalGoalsDetected += eventsToSend.length;
+      totalGoals += eventsToSend.length;
 
-      // ── 4. Find users who favorited this match ──
-      const { data: favUsers, error: favError } = await supabase
+      // ================= GET USERS WHO FAVORITED =================
+      const { data: favUsers } = await supabase
         .from("favorites")
         .select("user_id")
         .eq("match_id", matchId);
 
-      if (favError) {
-        console.error(`[check-goals] Error fetching favorites for ${matchId}:`, favError.message);
-        continue;
-      }
-
       if (!favUsers || favUsers.length === 0) {
         console.log(`[check-goals] No users favorited match ${matchId}, skipping notification`);
-        // Still update cache
-        await supabase
-          .from("match_scores_cache")
-          .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore });
+        await supabase.from("match_scores_cache").upsert({
+          match_id: matchId,
+          home_score: homeScore,
+          away_score: awayScore,
+          updated_at: new Date().toISOString(),
+        });
         continue;
       }
 
       const userIds = favUsers.map((f) => f.user_id);
 
-      // ── 5. Get push tokens for those users ──
-      const { data: tokens, error: tokenError } = await supabase
+      // ================= GET PLAYER IDS =================
+      const { data: tokens } = await supabase
         .from("users_push_tokens")
         .select("onesignal_player_id")
         .in("user_id", userIds);
 
-      if (tokenError) {
-        console.error(`[check-goals] Error fetching push tokens:`, tokenError.message);
-        continue;
-      }
-
-      const playerIds = (tokens ?? [])
-        .map((t) => t.onesignal_player_id)
-        .filter(Boolean);
+      const playerIds =
+        tokens?.map((t) => t.onesignal_player_id).filter(Boolean) ?? [];
 
       if (playerIds.length === 0) {
         console.log(`[check-goals] No push tokens for match ${matchId} users`);
-        await supabase
-          .from("match_scores_cache")
-          .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore });
+        await supabase.from("match_scores_cache").upsert({
+          match_id: matchId,
+          home_score: homeScore,
+          away_score: awayScore,
+          updated_at: new Date().toISOString(),
+        });
         continue;
       }
 
-      // ── 6. Send targeted OneSignal notification ──
+      // ================= SEND NOTIFICATION =================
       const scorerTeams = eventsToSend.map((e) => e.team).join(", ");
       const scoreText = `${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`;
 
@@ -208,52 +185,66 @@ serve(async (req) => {
         headings: { en: `⚽ GOAL! ${scorerTeams}` },
         contents: { en: `${scoreText} (${elapsed}')` },
         data: { match_id: matchId, type: "goal" },
-        android_sound: "goal",
+
+        // ================= ANDROID HIGH PRIORITY =================
         android_channel_id: "goal_alerts",
+        android_priority: 10,
+        android_visibility: 1,
+        android_sound: "default",
+        priority: 10,
+
+        // expire quickly (live goal)
+        ttl: 60,
       };
 
       console.log(`[check-goals] Sending to ${playerIds.length} users for match ${matchId}`);
 
-      const osRes = await fetch("https://onesignal.com/api/v1/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          Authorization: `Basic ${ONESIGNAL_API_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const osRes = await fetch(
+        "https://onesignal.com/api/v1/notifications",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            Authorization: `Basic ${ONESIGNAL_API_KEY}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const osResult = await osRes.json();
 
-      if (!osRes.ok) {
-        console.error(`[check-goals] OneSignal error for match ${matchId}:`, JSON.stringify(osResult));
-      } else {
-        totalNotificationsSent += playerIds.length;
+      if (osRes.ok) {
+        totalNotifications += playerIds.length;
         console.log(`[check-goals] Notification sent for match ${matchId}:`, JSON.stringify(osResult));
+      } else {
+        console.error(`[check-goals] OneSignal error for match ${matchId}:`, JSON.stringify(osResult));
       }
 
-      // ── 7. Update cache ──
-      await supabase
-        .from("match_scores_cache")
-        .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore });
+      // ================= UPDATE CACHE =================
+      await supabase.from("match_scores_cache").upsert({
+        match_id: matchId,
+        home_score: homeScore,
+        away_score: awayScore,
+        updated_at: new Date().toISOString(),
+      });
     }
 
-    console.log(`[check-goals] Done. Goals: ${totalGoalsDetected}, Notifications: ${totalNotificationsSent}`);
+    console.log(`[check-goals] Done. Goals: ${totalGoals}, Notifications: ${totalNotifications}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        goals_detected: totalGoalsDetected,
-        notifications_sent: totalNotificationsSent,
+        goals_detected: totalGoals,
+        notifications_sent: totalNotifications,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
     console.error("[check-goals] Unexpected error:", error);
     const msg = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
