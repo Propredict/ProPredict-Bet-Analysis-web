@@ -543,11 +543,11 @@ function MatchRow({
           <button 
             onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
             className={cn(
-              "h-5 w-5 sm:h-6 sm:w-6 rounded flex items-center justify-center transition-all", 
+              "h-7 w-7 sm:h-8 sm:w-8 rounded-md flex items-center justify-center transition-all", 
               isFav ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80"
             )}
           >
-            <Star className={cn("h-2.5 w-2.5 sm:h-3 sm:w-3", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
+            <Star className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
           </button>
           <MatchAlertButton 
             hasAlert={hasAlert} 
