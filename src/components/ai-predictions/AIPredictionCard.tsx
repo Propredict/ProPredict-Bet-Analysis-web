@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ interface Props {
   isUnlocking?: boolean;
 }
 
-export function AIPredictionCard({ 
+const AIPredictionCardInner = ({ 
   prediction, 
   isAdmin = false, 
   isPremiumUser = false,
@@ -43,7 +43,7 @@ export function AIPredictionCard({
   onGoPremium,
   onUnlockClick,
   isUnlocking = false,
-}: Props) {
+}: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const { getUnlockMethod, canAccess } = useUserPlan();
@@ -343,4 +343,5 @@ export function AIPredictionCard({
   );
 }
 
+export const AIPredictionCard = React.memo(AIPredictionCardInner);
 export default AIPredictionCard;

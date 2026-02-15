@@ -84,10 +84,10 @@ export function useAIPredictions(day: "today" | "tomorrow") {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["ai-predictions", dateStr],
     queryFn: () => fetchPredictions(dateStr),
-    staleTime: 0, // always consider stale so manual/server updates show immediately
+    staleTime: 2 * 60 * 1000, // 2 minutes — show cached data instantly, refetch in background
     gcTime: 30 * 60 * 1000, // 30 minutes - cache retention
     refetchOnWindowFocus: false, // Better for Android WebView
-    refetchOnMount: "always", // ensure fresh data when returning to tab/page
+    refetchOnMount: true, // use cache first, refetch if stale
   });
 
   return {

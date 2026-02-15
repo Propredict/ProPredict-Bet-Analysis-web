@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
@@ -172,6 +172,38 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
+  // Progressive rendering: show 12 cards initially, load 12 more on scroll
+  const INITIAL_COUNT = 12;
+  const LOAD_MORE_COUNT = 12;
+  const [visibleFeaturedCount, setVisibleFeaturedCount] = useState(INITIAL_COUNT);
+  const [visibleRegularCount, setVisibleRegularCount] = useState(INITIAL_COUNT);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset visible counts when filters/day change
+  useEffect(() => {
+    setVisibleFeaturedCount(INITIAL_COUNT);
+    setVisibleRegularCount(INITIAL_COUNT);
+  }, [day, tierFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleFeaturedCount((c) => Math.min(c + LOAD_MORE_COUNT, featuredPredictions.length));
+          setVisibleRegularCount((c) => Math.min(c + LOAD_MORE_COUNT, regularPredictions.length));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [featuredPredictions.length, regularPredictions.length]);
+
+  const visibleFeatured = featuredPredictions.slice(0, visibleFeaturedCount);
+  const visibleRegular = regularPredictions.slice(0, visibleRegularCount);
 
   // Calculate live count from predictions
   const liveCount = useMemo(() => {
@@ -536,7 +568,7 @@ export default function AIPredictions() {
                 <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                {featuredPredictions.map((prediction, idx) => {
+                {visibleFeatured.map((prediction, idx) => {
                   return (
                     <React.Fragment key={prediction.id}>
                       <AIPredictionCard
@@ -551,7 +583,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {(idx + 1) % 6 === 0 && idx < featuredPredictions.length - 1 && (
+                      {(idx + 1) % 6 === 0 && idx < visibleFeatured.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
                         </div>
@@ -620,7 +652,7 @@ export default function AIPredictions() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
-                {regularPredictions.map((prediction, idx) => {
+                {visibleRegular.map((prediction, idx) => {
                   return (
                     <React.Fragment key={prediction.id}>
                       <AIPredictionCard
@@ -635,7 +667,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {(idx + 1) % 6 === 0 && idx < regularPredictions.length - 1 && (
+                      {(idx + 1) % 6 === 0 && idx < visibleRegular.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
                         </div>
@@ -646,6 +678,13 @@ export default function AIPredictions() {
               </div>
             )}
           </div>
+
+          {/* Infinite scroll sentinel */}
+          {(visibleFeaturedCount < featuredPredictions.length || visibleRegularCount < regularPredictions.length) && (
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
+            </div>
+          )}
         </div>
       </div>
     </>
