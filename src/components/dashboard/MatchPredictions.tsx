@@ -59,6 +59,11 @@ export function MatchPredictions() {
   const displayedTips = filteredTips.slice(0, 3);
   const hasMoreTips = filteredTips.length > 3;
 
+  // Count only today's tips per tier
+  const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const todayTipCountByTier = (tierId: string) =>
+    dbTips.filter((t: any) => t.tier === tierId && t.tip_date === todayDate).length;
+
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
     { id: "exclusive", label: "Exclusive", subtitle: "Higher Confidence", icon: Star },
@@ -129,7 +134,7 @@ export function MatchPredictions() {
       <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-secondary/30">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
-          const count = tips.filter(t => t.tier === tab.id).length;
+          const count = todayTipCountByTier(tab.id);
           const textColor = getTextColor(tab.id);
           const subtitleColor = getSubtitleColor(tab.id);
           

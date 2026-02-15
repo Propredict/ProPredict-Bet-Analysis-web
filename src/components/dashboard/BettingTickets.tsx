@@ -52,6 +52,11 @@ export function BettingTickets() {
   const displayedTickets = filtered.slice(0, 3);
   const hasMoreTickets = filtered.length > 3;
 
+  // Count only today's tickets per tier
+  const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const todayTicketCountByTier = (tierId: string) =>
+    dbTickets.filter((t: any) => t.tier === tierId && t.ticket_date === todayDate).length;
+
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
   const { canAccess, getUnlockMethod } = useUserPlan();
@@ -144,7 +149,7 @@ export function BettingTickets() {
       <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-secondary/30">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const count = tickets.filter((t) => t.tier === tab.id).length;
+          const count = todayTicketCountByTier(tab.id);
           const textColor = getTextColor(tab.id);
           const subtitleColor = getSubtitleColor(tab.id);
           
