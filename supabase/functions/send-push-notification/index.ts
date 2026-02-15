@@ -84,7 +84,7 @@ serve(async (req) => {
       contents: { en: contents },
       // Android: use goal_alerts channel (IMPORTANCE_HIGH, lock screen visible)
       android_channel_id: "goal_alerts",
-      android_sound: "goal",
+      android_sound: "default",
       android_priority: 10,
       android_visibility: 1,
       // Android + Web push
