@@ -88,7 +88,7 @@ function playRedCardSound() {
   }
 }
 
-export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, alertedMatchIds?: Set<string>) {
+export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, alertedMatchIds?: Set<string>, context: "live-scores" | "favorites" = "live-scores") {
   const prevSnapshots = useRef<Map<string, MatchSnapshot>>(new Map());
   const initialized = useRef(false);
   const [recentGoals, setRecentGoals] = useState<RecentGoal[]>([]);
@@ -158,15 +158,17 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
           const anyBellsActive = alertedMatchIds ? alertedMatchIds.size > 0 : false;
           
           // Goal notification logic:
-          // - If favoritesOnly → only favorites/bell matches
-          // - If user has bell on ANY match → sound ONLY for bell/star matches (selective mode)
-          // - If no bells active → use global notifyGoals toggle (all matches when ON)
+          // On favorites page → only favorite matches
+          // On live-scores page with favoritesOnly → all live matches + favorites
+          // On live-scores page without favoritesOnly → selective/global logic
           const shouldNotifyGoal = alertSettings.enabled && (
-            alertSettings.favoritesOnly
-              ? (isFavoriteMatch || hasMatchBell) // Favorites only mode
-              : anyBellsActive
-                ? (hasMatchBell || isFavoriteMatch)  // Selective: only bell'd or starred matches
-                : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all goals or starred
+            context === "favorites"
+              ? isFavoriteMatch // Favorites page: only starred matches
+              : alertSettings.favoritesOnly
+                ? (alertSettings.notifyGoals || isFavoriteMatch || hasMatchBell) // Live Scores + favoritesOnly: all live + favorites
+                : anyBellsActive
+                  ? (hasMatchBell || isFavoriteMatch)  // Selective: only bell'd or starred matches
+                  : (alertSettings.notifyGoals || isFavoriteMatch) // Global: all goals or starred
           );
 
           if (shouldNotifyGoal) {
@@ -214,11 +216,13 @@ export function useLiveAlerts(matches: Match[], favoriteMatchIds?: Set<string>, 
         const isFavRC = favoriteMatchIds?.has(m.id) ?? false;
         const anyBellsRC = alertedMatchIds ? alertedMatchIds.size > 0 : false;
         const shouldNotifyRedCard = alertSettings.enabled && currRedCards > prev.redCards && (
-          alertSettings.favoritesOnly
-            ? (isFavRC || hasMatchBellRC)
-            : anyBellsRC
-              ? (hasMatchBellRC || isFavRC)
-              : (alertSettings.notifyRedCards || isFavRC)
+          context === "favorites"
+            ? isFavRC
+            : alertSettings.favoritesOnly
+              ? (alertSettings.notifyRedCards || isFavRC || hasMatchBellRC)
+              : anyBellsRC
+                ? (hasMatchBellRC || isFavRC)
+                : (alertSettings.notifyRedCards || isFavRC)
         );
         
         if (shouldNotifyRedCard) {
