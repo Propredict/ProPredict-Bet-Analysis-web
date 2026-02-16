@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2 } from "lucide-react";
 import { useMemo, useState, useEffect, useCallback, Fragment } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ export default function LiveScores() {
   }, []);
   
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [dateMode, setDateMode] = useState<DateMode>("today");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
@@ -97,7 +98,28 @@ export default function LiveScores() {
     return isFav;
   }, [globalAlertSettings, favorites, alertedMatchIds, matches]);
 
-  /* -------------------- CLOCK -------------------- */
+  /* -------------------- DEEP LINK FROM PUSH -------------------- */
+  const deepLinkMatchId = searchParams.get("match");
+  const fromGoalPush = searchParams.get("from") === "goal_push";
+
+  useEffect(() => {
+    if (!deepLinkMatchId || matches.length === 0) return;
+    const target = matches.find((m) => m.id === deepLinkMatchId);
+    if (target && !selectedMatch) {
+      setSelectedMatch(target);
+      // Clean URL params after opening
+      setSearchParams({}, { replace: true });
+    }
+  }, [deepLinkMatchId, matches, selectedMatch, setSearchParams]);
+
+  // Custom close handler: go to /live-scores if opened from push
+  const handleModalClose = useCallback(() => {
+    setSelectedMatch(null);
+    if (fromGoalPush) {
+      navigate("/live-scores", { replace: true });
+    }
+  }, [fromGoalPush, navigate]);
+
 
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -420,7 +442,7 @@ export default function LiveScores() {
           </div>
         )}
 
-        <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
+        <MatchDetailModal match={selectedMatch} onClose={handleModalClose} />
       </div>
     </>
   );

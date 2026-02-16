@@ -198,7 +198,7 @@ serve(async (req) => {
         data: {
           match_id: matchId,
           type: "goal",
-          deep_link: `propredict://match/${matchId}`,
+          deep_link: `/live-scores?match=${matchId}&from=goal_push`,
         },
 
         big_picture: "https://propredict.me/android-notification-banner.png",
