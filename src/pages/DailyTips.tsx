@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useSearchParams } from "react-router-dom";
 import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,21 @@ export default function DailyTips() {
     handleUnlock
   } = useUnlockHandler();
   const { isAndroidApp } = usePlatform();
-  
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+
+  useEffect(() => {
+    if (!highlightId) return;
+    const scrollToTip = () => {
+      const el = document.getElementById(`tip-${highlightId}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("push-highlight");
+      setTimeout(() => el.classList.remove("push-highlight"), 4000);
+    };
+    setTimeout(scrollToTip, 400);
+  }, [highlightId]);
+
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
     timeZone: "Europe/Belgrade",
@@ -52,7 +67,8 @@ export default function DailyTips() {
       
       return (
         <React.Fragment key={tip.id}>
-          <TipCard 
+          <div id={`tip-${tip.id}`}>
+          <TipCard
             tip={{
               id: tip.id,
               homeTeam: tip.home_team,
@@ -74,6 +90,7 @@ export default function DailyTips() {
             onUnlockClick={() => handleUnlock("tip", tip.id, "daily")} 
             isUnlocking={isUnlocking} 
           />
+          </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < dailyTips.length - 1 && (
             <div className="col-span-full">
               <AdSlot />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 
@@ -32,7 +32,21 @@ export default function DailyTickets() {
     handleUnlock
   } = useUnlockHandler();
   const { isAndroidApp } = usePlatform();
-  
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+
+  useEffect(() => {
+    if (!highlightId) return;
+    const scrollToTicket = () => {
+      const el = document.getElementById(`ticket-${highlightId}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("push-highlight");
+      setTimeout(() => el.classList.remove("push-highlight"), 4000);
+    };
+    setTimeout(scrollToTicket, 400);
+  }, [highlightId]);
+
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
     timeZone: "Europe/Belgrade",
@@ -58,7 +72,8 @@ export default function DailyTickets() {
       
       return (
         <React.Fragment key={ticket.id}>
-          <TicketCard 
+          <div id={`ticket-${ticket.id}`}>
+          <TicketCard
             ticket={{
               id: ticket.id,
               title: ticket.title,
@@ -79,6 +94,7 @@ export default function DailyTickets() {
             onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
             isUnlocking={isUnlocking} 
           />
+          </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < dailyTickets.length - 1 && (
             <div className="col-span-full">
               <AdSlot />
