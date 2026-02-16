@@ -99,6 +99,8 @@ serve(async (req) => {
 
       big_picture: "https://propredict.me/android-notification-banner.png",
 
+      collapse_id: `${type}_${record.id}`,
+
       data: {
         type,
         id: record.id,
