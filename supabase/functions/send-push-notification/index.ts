@@ -76,14 +76,40 @@ serve(async (req) => {
       );
     }
 
+    /* ── Build tier-aware filters ── */
+    const contentTier = record.tier ?? "free";
+    
+    // Base filter: user must have daily_tips tag enabled
+    const filters: Record<string, unknown>[] = [
+      { field: "tag", key: "daily_tips", relation: "=", value: "true" },
+    ];
+    
+    // Tier-based plan segmentation:
+    // free tier → all plans get it
+    // daily tier → all plans get it  
+    // exclusive tier → pro + premium only
+    // premium tier → premium only
+    if (contentTier === "exclusive") {
+      filters.push({ operator: "AND" });
+      filters.push({
+        field: "tag", key: "plan", relation: "=", value: "pro",
+      });
+      // OR premium
+      filters.push({ operator: "OR" });
+      filters.push({ field: "tag", key: "daily_tips", relation: "=", value: "true" });
+      filters.push({ operator: "AND" });
+      filters.push({ field: "tag", key: "plan", relation: "=", value: "premium" });
+    } else if (contentTier === "premium") {
+      filters.push({ operator: "AND" });
+      filters.push({ field: "tag", key: "plan", relation: "=", value: "premium" });
+    }
+    // free/daily tiers → no additional plan filter (everyone gets it)
+
     /* ── Send via OneSignal REST API ── */
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
 
-      // Tag-based targeting: only users who opted in to daily_tips
-      filters: [
-        { field: "tag", key: "daily_tips", relation: "=", value: "true" },
-      ],
+      filters,
 
       headings: { en: headings },
       contents: { en: contents },

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { setOneSignalTag } from "@/components/AndroidPushModal";
 
 interface Favorite {
   id: string;
@@ -99,6 +100,8 @@ export function useFavorites() {
           next.delete(matchId);
           return next;
         });
+        // Remove OneSignal favorite tag for push targeting
+        setOneSignalTag(`favorite_match_${matchId}`, null);
       } else {
         const { error } = await supabase
           .from("favorites")
@@ -110,6 +113,8 @@ export function useFavorites() {
         if (error) throw error;
 
         setFavorites((prev) => new Set(prev).add(matchId));
+        // Set OneSignal favorite tag for push targeting
+        setOneSignalTag(`favorite_match_${matchId}`, "true");
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
