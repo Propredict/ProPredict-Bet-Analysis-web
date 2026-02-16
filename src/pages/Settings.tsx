@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -14,12 +16,36 @@ import {
   ExternalLink,
   AlertTriangle,
   Scale,
-  Cookie
+  Cookie,
+  Bell,
+  Goal,
+  Lightbulb
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const isAndroid = getIsAndroidApp();
+
+  const [goalEnabled, setGoalEnabled] = useState(() => localStorage.getItem("goal_enabled") === "true");
+  const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
+
+  const handleGoalToggle = (checked: boolean) => {
+    setGoalEnabled(checked);
+    localStorage.setItem("goal_enabled", String(checked));
+    if (checked) {
+      window.Android?.requestPushPermission?.();
+    }
+  };
+
+  const handleTipsToggle = (checked: boolean) => {
+    setTipsEnabled(checked);
+    localStorage.setItem("tips_enabled", String(checked));
+    if (checked) {
+      window.Android?.requestPushPermission?.();
+    }
+  };
 
   const accountItems = [
     { 
@@ -162,6 +188,47 @@ const Settings = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Notifications Section - Android only */}
+      {isAndroid && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+              <Bell className="h-3.5 w-3.5 text-primary" />
+              <h2 className="text-xs font-semibold text-foreground">Push Notifications</h2>
+            </div>
+            <div className="p-1">
+              {/* Goal Alerts */}
+              <div className="flex items-center justify-between p-2 rounded-md">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    <Goal className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">Goal Alerts</p>
+                    <p className="text-[10px] text-muted-foreground">Live goal notifications during matches</p>
+                  </div>
+                </div>
+                <Switch checked={goalEnabled} onCheckedChange={handleGoalToggle} />
+              </div>
+
+              {/* Daily Tips & Tickets */}
+              <div className="flex items-center justify-between p-2 rounded-md">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    <Lightbulb className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">Daily AI Picks & Combos</p>
+                    <p className="text-[10px] text-muted-foreground">New AI predictions delivered to your phone</p>
+                  </div>
+                </div>
+                <Switch checked={tipsEnabled} onCheckedChange={handleTipsToggle} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Legal & Compliance Section */}
       <Card>
