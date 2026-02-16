@@ -44,21 +44,21 @@ export function useTickets(includeAll = false) {
   } = useQuery({
     queryKey: ["tickets", includeAll],
     queryFn: async () => {
+      // Admin → base table (all statuses); Public → secure view (masked premium data)
+      const table = includeAll ? "tickets" : "tickets_public";
+
       let query = supabase
-        .from("tickets")
+        .from(table as any)
         .select("*, matches:ticket_matches(*)")
         .order("created_at_ts", { ascending: false });
 
-      // 👤 PUBLIC VIEW → only show published tickets where ticket_date <= today
       if (!includeAll) {
         const today = getTodayBelgradeDate();
-
-        query = query
-          .eq("status", "published")
-          .lte("ticket_date", today);
+        // View already filters status=published, just filter by date
+        query = query.lte("ticket_date", today);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query as any;
       if (error) throw error;
 
       return (data ?? []).map((ticket: any) => ({
