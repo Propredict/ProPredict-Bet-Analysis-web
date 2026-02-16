@@ -101,7 +101,7 @@ serve(async (req) => {
       priority: 10,
       ttl: 300,
 
-      big_picture: "https://propredict.me/android-notification-banner.png",
+      big_picture: "https://propredict.me/push-feature.jpg",
 
       collapse_id: `${type}_${record.id}`,
 
