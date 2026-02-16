@@ -12,6 +12,9 @@ interface AndroidBridge {
   // Live Scores — notify native layer the page is visible so it can inject inline ads
   onLiveScoresView?: () => void;
 
+  // Push permission — request OneSignal notification permission from web layer
+  requestPushPermission?: () => void;
+
   // RevenueCat Offerings — request native to fetch and post back current offerings
   requestOfferings?: () => void;
   
