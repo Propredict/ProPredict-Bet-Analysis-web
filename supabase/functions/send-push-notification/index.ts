@@ -98,10 +98,8 @@ serve(async (req) => {
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
 
-      // ALL users who opted in — no plan filtering (FOMO conversion model)
-      filters: [
-        { field: "tag", key: "daily_tips", relation: "=", value: "true" },
-      ],
+      // ALL subscribed users — FOMO conversion model (bypasses unreliable tag filters)
+      included_segments: ["Subscribed Users"],
 
       headings: { en: headings },
       contents: { en: contents },
