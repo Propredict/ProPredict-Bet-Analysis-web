@@ -7,6 +7,7 @@ import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { toast } from "sonner";
+import { setOneSignalTag } from "@/components/AndroidPushModal";
 
 /* =====================
    Types
@@ -41,6 +42,17 @@ interface UserPlanContextType {
   unlockContent: (contentType: ContentType, contentId: string) => Promise<boolean>;
   isContentUnlocked: (contentType: ContentType, contentId: string) => boolean;
   refetch: () => Promise<void>;
+}
+
+/* =====================
+   Helpers
+===================== */
+
+/** Sync plan + user_id tags to OneSignal for push segmentation */
+function syncOneSignalPlanTags(plan: UserPlan, userId: string) {
+  const planMap: Record<UserPlan, string> = { free: "free", basic: "pro", premium: "premium" };
+  setOneSignalTag("plan", planMap[plan]);
+  setOneSignalTag("user_id", userId);
 }
 
 /* =====================
@@ -140,7 +152,11 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setPlan(subRes.data.plan as UserPlan);
+      const resolvedPlan = subRes.data.plan as UserPlan;
+      setPlan(resolvedPlan);
+
+      // Sync plan + user_id tags to OneSignal for push segmentation
+      syncOneSignalPlanTags(resolvedPlan, user.id);
     } catch (err) {
       console.error("UserPlan error:", err);
       setPlan("free");
@@ -169,15 +185,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isMobileApp) return;
     
-    // When RevenueCat data is ready on Android, use it as the plan source
     if (!revenueCat.isLoading) {
-      // Only override if user has an active RevenueCat subscription
-      // This takes priority over Supabase (which is synced by backend webhook)
       if (revenueCat.hasActiveSubscription) {
         setPlan(revenueCat.plan);
+        // Sync updated plan tag to OneSignal
+        if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
       }
     }
-  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, revenueCat.hasActiveSubscription]);
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, revenueCat.hasActiveSubscription, user]);
 
   /* =====================
      Android Ad-Unlock Event Listener
