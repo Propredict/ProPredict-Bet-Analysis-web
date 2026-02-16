@@ -124,7 +124,7 @@ export default function AppLayout() {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
-          <header className="fixed top-0 left-0 right-0 z-50 h-12 sm:h-14 flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
+          <header className="fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top,0px)] h-[calc(3rem+env(safe-area-inset-top,0px))] sm:h-[calc(3.5rem+env(safe-area-inset-top,0px))] flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="md:hidden text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-8 w-8 [&>svg]:h-5 [&>svg]:w-5" />
               
@@ -241,7 +241,7 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-12 sm:mt-14 pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
+          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
             <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>
