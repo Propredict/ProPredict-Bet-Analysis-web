@@ -2,8 +2,8 @@
  * send-push-notification
  *
  * Called by a database trigger (via pg_net) whenever a tip or ticket
- * is published.  Sends an Android-only push notification through
- * the OneSignal REST API.
+ * is published. Sends push notifications through OneSignal REST API
+ * using direct player ID targeting (same approach as check-goals).
  *
  * Secrets required (Supabase Vault):
  *   ONESIGNAL_APP_ID
@@ -11,6 +11,7 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,14 +27,10 @@ serve(async (req) => {
   try {
     const { type, record } = await req.json();
 
-    const rawAppId = Deno.env.get("ONESIGNAL_APP_ID") ?? "";
-    const rawApiKey = Deno.env.get("ONESIGNAL_API_KEY") ?? "";
-    
-    // Strip any surrounding quotes and whitespace
-    const ONESIGNAL_APP_ID = rawAppId.replace(/^["'\s]+|["'\s]+$/g, "");
-    const ONESIGNAL_API_KEY = rawApiKey.replace(/^["'\s]+|["'\s]+$/g, "");
-    
-    console.log(`App ID debug: length=${ONESIGNAL_APP_ID.length}, first4=${ONESIGNAL_APP_ID.substring(0, 4)}, last4=${ONESIGNAL_APP_ID.substring(ONESIGNAL_APP_ID.length - 4)}, raw_length=${rawAppId.length}`);
+    const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
+    const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
       console.error("OneSignal credentials not configured");
@@ -79,10 +76,6 @@ serve(async (req) => {
       );
     }
 
-    /* ── FOMO model: send to ALL users with daily_tips tag ── */
-    /* App-side decides what to show based on tier in data payload */
-
-    /* ── Send via OneSignal REST API ── */
     /* ── Build nav_path based on tier ── */
     const tierRouteMap: Record<string, string> = {
       premium: type === "tip" ? "premium-tips" : "premium-tickets",
@@ -93,18 +86,41 @@ serve(async (req) => {
     const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
     const navPath = `/${route}?highlight=${record.id}&plan_required=${contentTier}`;
 
-    console.log(`[send-push] tier=${contentTier}, route=${route}, nav_path=${navPath}`);
+    /* ── Get ALL player IDs from users_push_tokens (same as check-goals) ── */
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: tokens, error: tokensError } = await supabase
+      .from("users_push_tokens")
+      .select("onesignal_player_id");
 
+    if (tokensError) {
+      console.error("Failed to fetch push tokens:", tokensError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch push tokens", details: tokensError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const playerIds = tokens?.map((t) => t.onesignal_player_id).filter(Boolean) ?? [];
+
+    if (playerIds.length === 0) {
+      console.log("[send-push] No push tokens found in database");
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "no push tokens" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    console.log(`[send-push] tier=${contentTier}, route=${route}, targets=${playerIds.length}`);
+
+    /* ── Send via OneSignal REST API using include_player_ids ── */
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
-
-      // ALL subscribed users — FOMO conversion model (bypasses unreliable tag filters)
-      included_segments: ["Subscribed Users"],
+      include_player_ids: playerIds,
 
       headings: { en: headings },
       contents: { en: contents },
 
-      // New Tips & Tickets channel (NOT goal_alerts)
+      // New Tips & Tickets channel
       android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
 
       android_sound: "default",
@@ -112,10 +128,8 @@ serve(async (req) => {
       ttl: 300,
 
       big_picture: "https://propredict.me/push-feature.jpg",
-
       collapse_id: `${type}_${record.id}`,
 
-      // nav_path for in-app WebView navigation (no Chrome)
       data: {
         type,
         id: record.id,
@@ -123,7 +137,6 @@ serve(async (req) => {
         nav_path: navPath,
       },
 
-      // Web push: use nav_path as URL so browser opens correct page
       url: `https://propredictbet.lovable.app${navPath}`,
     };
 
@@ -146,21 +159,13 @@ serve(async (req) => {
 
     if (!osResponse.ok) {
       return new Response(
-        JSON.stringify({ 
-          error: "OneSignal API error", 
-          details: osResult,
-          debug: {
-            app_id_length: ONESIGNAL_APP_ID.length,
-            app_id_preview: `${ONESIGNAL_APP_ID.substring(0, 8)}...${ONESIGNAL_APP_ID.substring(ONESIGNAL_APP_ID.length - 4)}`,
-            raw_length: rawAppId.length,
-          }
-        }),
+        JSON.stringify({ error: "OneSignal API error", details: osResult }),
         { status: osResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ success: true, onesignal: osResult }),
+      JSON.stringify({ success: true, onesignal: osResult, targets: playerIds.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
