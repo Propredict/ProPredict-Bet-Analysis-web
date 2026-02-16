@@ -113,7 +113,7 @@ export function AndroidPushModal() {
             </div>
             <DialogTitle className="text-lg">🔔 Enable Goal Alerts</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Get instant goal alerts directly on your phone.
+              Get instant live goal notifications even when your phone is locked.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2.5 pt-1">
@@ -134,14 +134,14 @@ export function AndroidPushModal() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <Lightbulb className="h-7 w-7 text-primary" />
             </div>
-            <DialogTitle className="text-lg">🔥 Enable Daily Tips & Tickets</DialogTitle>
+            <DialogTitle className="text-lg">🔥 Enable Daily AI Tips</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Receive new AI picks and combos instantly.
+              Receive high-probability AI predictions and ticket updates instantly.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2.5 pt-1">
             <Button onClick={handleTipsEnable} className="w-full">
-              Allow Daily Picks
+              Enable Tips
             </Button>
             <Button variant="ghost" onClick={handleTipsLater} className="w-full text-muted-foreground">
               Maybe Later
