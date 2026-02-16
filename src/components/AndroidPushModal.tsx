@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,67 +7,127 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
+import { Goal, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
+type ModalStep = "goal" | "tips" | null;
+
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+
+function shouldShowPrompt(enabledKey: string, lastShownKey: string): boolean {
+  if (localStorage.getItem(enabledKey) === "true") return false;
+  const lastShown = localStorage.getItem(lastShownKey);
+  if (!lastShown) return true;
+  return Date.now() - parseInt(lastShown, 10) > TWO_DAYS_MS;
+}
+
 export function AndroidPushModal() {
-  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<ModalStep>(null);
   const { user, loading } = useAuth();
 
+  const advanceToNextStep = useCallback((afterGoal: boolean) => {
+    if (afterGoal && shouldShowPrompt("tips_enabled", "tips_prompt_last_shown")) {
+      // Small delay between popups
+      setTimeout(() => setStep("tips"), 600);
+    } else {
+      setStep(null);
+    }
+  }, []);
+
   useEffect(() => {
-    // Only on Android
     const isAndroid = typeof window !== "undefined" && window.Android !== undefined;
-    if (!isAndroid) return;
+    if (!isAndroid || loading || !user) return;
 
-    // Wait for auth to resolve
-    if (loading) return;
-
-    // Only show after user is logged in
-    if (!user) return;
-
-    // Already shown before
-    if (localStorage.getItem("push_prompt_shown") === "true") return;
-
-    // Already has push subscription (OneSignal player ID synced)
+    // Already has push subscription
     if (localStorage.getItem("onesignal_player_id")) return;
 
-    // Small delay after login so the app settles
-    const timer = setTimeout(() => setOpen(true), 2500);
+    const needGoal = shouldShowPrompt("goal_enabled", "goal_prompt_last_shown");
+    const needTips = shouldShowPrompt("tips_enabled", "tips_prompt_last_shown");
+
+    if (!needGoal && !needTips) return;
+
+    const timer = setTimeout(() => {
+      setStep(needGoal ? "goal" : "tips");
+    }, 2500);
+
     return () => clearTimeout(timer);
   }, [user, loading]);
 
-  const handleEnable = () => {
+  // ── Goal Handlers ──
+  const handleGoalEnable = () => {
     window.Android?.requestPushPermission?.();
-    localStorage.setItem("push_prompt_shown", "true");
-    setOpen(false);
+    localStorage.setItem("goal_enabled", "true");
+    localStorage.setItem("goal_prompt_last_shown", String(Date.now()));
+    setStep(null);
+    advanceToNextStep(true);
   };
 
-  const handleLater = () => {
-    localStorage.setItem("push_prompt_shown", "true");
-    setOpen(false);
+  const handleGoalLater = () => {
+    localStorage.setItem("goal_prompt_last_shown", String(Date.now()));
+    setStep(null);
+    advanceToNextStep(true);
+  };
+
+  // ── Tips Handlers ──
+  const handleTipsEnable = () => {
+    window.Android?.requestPushPermission?.();
+    localStorage.setItem("tips_enabled", "true");
+    localStorage.setItem("tips_prompt_last_shown", String(Date.now()));
+    setStep(null);
+  };
+
+  const handleTipsLater = () => {
+    localStorage.setItem("tips_prompt_last_shown", String(Date.now()));
+    setStep(null);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleLater(); }}>
-      <DialogContent className="sm:max-w-[380px] gap-5">
-        <DialogHeader className="items-center text-center gap-3">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Bell className="h-7 w-7 text-primary" />
+    <>
+      {/* ⚽ Goal Alerts Modal */}
+      <Dialog open={step === "goal"} onOpenChange={(v) => { if (!v) handleGoalLater(); }}>
+        <DialogContent className="sm:max-w-[380px] gap-5">
+          <DialogHeader className="items-center text-center gap-3">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Goal className="h-7 w-7 text-primary" />
+            </div>
+            <DialogTitle className="text-lg">⚽ Enable Goal Alerts</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Get instant live goal notifications during matches.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2.5 pt-1">
+            <Button onClick={handleGoalEnable} className="w-full">
+              Allow Goal Alerts
+            </Button>
+            <Button variant="ghost" onClick={handleGoalLater} className="w-full text-muted-foreground">
+              Maybe Later
+            </Button>
           </div>
-          <DialogTitle className="text-lg">Enable Goal Alerts & New AI Picks</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Get instant goal alerts and high-probability AI predictions directly on your phone.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-2.5 pt-1">
-          <Button onClick={handleEnable} className="w-full">
-            Enable Notifications
-          </Button>
-          <Button variant="ghost" onClick={handleLater} className="w-full text-muted-foreground">
-            Maybe Later
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* 🎯 Daily Tips Modal */}
+      <Dialog open={step === "tips"} onOpenChange={(v) => { if (!v) handleTipsLater(); }}>
+        <DialogContent className="sm:max-w-[380px] gap-5">
+          <DialogHeader className="items-center text-center gap-3">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Lightbulb className="h-7 w-7 text-primary" />
+            </div>
+            <DialogTitle className="text-lg">🎯 Enable Daily AI Tips & Tickets</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Receive high-probability AI predictions directly on your phone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2.5 pt-1">
+            <Button onClick={handleTipsEnable} className="w-full">
+              Allow Daily Tips
+            </Button>
+            <Button variant="ghost" onClick={handleTipsLater} className="w-full text-muted-foreground">
+              Maybe Later
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
