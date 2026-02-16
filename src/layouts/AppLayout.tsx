@@ -177,14 +177,19 @@ export default function AppLayout() {
                 size="icon"
                 onClick={() => setShowGlobalAlerts(true)}
                 className={cn(
-                  "h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
+                  "relative h-7 w-7 sm:h-8 sm:w-auto sm:px-3 sm:gap-1.5 border-primary-foreground/30 bg-transparent hover:bg-primary-foreground/10",
                   alertSettings.enabled 
                     ? "text-primary-foreground" 
                     : "text-primary-foreground/80"
                 )}
               >
                 {alertSettings.enabled ? (
-                  <BellRing className="h-4 w-4" />
+                  <>
+                    <BellRing className="h-4 w-4 animate-[pulse_1.5s_ease-in-out_infinite]" />
+                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]">
+                      <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75" />
+                    </span>
+                  </>
                 ) : (
                   <Bell className="h-4 w-4" />
                 )}
