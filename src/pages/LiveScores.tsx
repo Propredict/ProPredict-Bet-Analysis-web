@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2 } from "lucide-react";
-import { useMemo, useState, useEffect, useCallback, Fragment } from "react";
+import { useMemo, useState, useEffect, useCallback, Fragment, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -102,11 +102,28 @@ export default function LiveScores() {
   const deepLinkMatchId = searchParams.get("match");
   const fromGoalPush = searchParams.get("from") === "goal_push";
 
+  // Persist deep-link values in refs so they survive searchParams clearing
+  const deepLinkMatchIdRef = useRef<string | null>(null);
+  const fromGoalPushRef = useRef(false);
+
+  // Capture deep-link params into refs before they get cleared
   useEffect(() => {
-    if (!deepLinkMatchId || matches.length === 0) return;
-    const target = matches.find((m) => m.id === deepLinkMatchId);
+    if (deepLinkMatchId) {
+      deepLinkMatchIdRef.current = deepLinkMatchId;
+    }
+    if (fromGoalPush) {
+      fromGoalPushRef.current = true;
+    }
+  }, [deepLinkMatchId, fromGoalPush]);
+
+  useEffect(() => {
+    const targetId = deepLinkMatchIdRef.current || deepLinkMatchId;
+    if (!targetId || matches.length === 0) return;
+    const target = matches.find((m) => m.id === targetId);
     if (target && !selectedMatch) {
+      console.log("[LiveScores] Opening match from deep link:", targetId);
       setSelectedMatch(target);
+      deepLinkMatchIdRef.current = null;
       // Clean URL params after opening
       setSearchParams({}, { replace: true });
     }
@@ -115,10 +132,11 @@ export default function LiveScores() {
   // Custom close handler: go to /live-scores if opened from push
   const handleModalClose = useCallback(() => {
     setSelectedMatch(null);
-    if (fromGoalPush) {
+    if (fromGoalPushRef.current) {
+      fromGoalPushRef.current = false;
       navigate("/live-scores", { replace: true });
     }
-  }, [fromGoalPush, navigate]);
+  }, [navigate]);
 
 
   useEffect(() => {
