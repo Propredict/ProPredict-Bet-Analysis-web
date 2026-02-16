@@ -101,18 +101,18 @@ serve(async (req) => {
       priority: 10,
       ttl: 300,
 
-      url: `https://propredict.me/${type}/${record.id}?platform=android`,
-
       big_picture: "https://propredict.me/android-notification-banner.png",
 
       collapse_id: `${type}_${record.id}`,
 
-      // Include tier in data so app can show appropriate CTA
+      // nav_path for in-app WebView navigation (no Chrome)
       data: {
         type,
         id: record.id,
         tier: contentTier,
-        deep_link: `propredict://${type}/${record.id}`,
+        nav_path: type === "tip"
+          ? `/daily-tips?highlight=${record.id}&plan_required=${contentTier}`
+          : `/daily-tickets?highlight=${record.id}&plan_required=${contentTier}`,
       },
 
       isAndroid: true,
