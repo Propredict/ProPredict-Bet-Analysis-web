@@ -185,12 +185,15 @@ serve(async (req) => {
         headings: { en: `⚽ GOAL! ${scorerTeams}` },
         contents: { en: `${scoreText} (${elapsed}')` },
 
-        // Goal Alerts channel (separate from tips/tickets)
+        // Goal Alerts channel
         android_channel_id: "64568561-d234-453b-b3da-8de49688731d",
 
         android_sound: "default",
         priority: 10,
         ttl: 120,
+
+        // Collapse duplicate goal notifications for same match
+        collapse_id: `goal_${matchId}`,
 
         data: {
           match_id: matchId,

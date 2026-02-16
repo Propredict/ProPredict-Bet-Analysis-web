@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { setOneSignalTag } from "@/components/AndroidPushModal";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const Settings = () => {
   const handleGoalToggle = (checked: boolean) => {
     setGoalEnabled(checked);
     localStorage.setItem("goal_enabled", String(checked));
+    setOneSignalTag("goal_alerts", checked ? "true" : null);
     if (checked) {
       window.Android?.requestPushPermission?.();
     }
@@ -42,6 +44,7 @@ const Settings = () => {
   const handleTipsToggle = (checked: boolean) => {
     setTipsEnabled(checked);
     localStorage.setItem("tips_enabled", String(checked));
+    setOneSignalTag("daily_tips", checked ? "true" : null);
     if (checked) {
       window.Android?.requestPushPermission?.();
     }
