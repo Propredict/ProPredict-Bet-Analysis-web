@@ -1,13 +1,3 @@
-/**
- * send-win-push
- *
- * Triggered when a tip or ticket result changes to 'won'.
- * Sends a FOMO-style push to all users with daily_tips=true.
- * Message varies by content tier.
- *
- * Secrets: ONESIGNAL_APP_ID, ONESIGNAL_API_KEY
- */
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -22,60 +12,51 @@ serve(async (req) => {
   }
 
   try {
-    const { type, record } = await req.json();
+    const body = await req.json();
+    const { type, record } = body;
+
+    if (!type || !record) {
+      return new Response(JSON.stringify({ error: "Invalid payload" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
     const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
 
     if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
       console.error("OneSignal credentials not configured");
-      return new Response(JSON.stringify({ error: "OneSignal credentials not configured" }), {
+      return new Response(JSON.stringify({ error: "Missing OneSignal credentials" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Only fire for won results
-    if (record?.result !== "won") {
-      console.log("Skipping — result is not 'won'");
-      return new Response(JSON.stringify({ skipped: true, reason: "not won" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const contentTier = record.tier ?? "free";
-    let headings = "";
-    let contents = "";
+    let headings: Record<string, string> = {};
+    let contents: Record<string, string> = {};
+    const bigPicture = "https://propredict.me/push-win.jpg";
 
     if (type === "tip") {
-      if (contentTier === "premium") {
-        headings = "👑 Premium Tip WON!";
-        contents = "Another Premium winner just closed. You're missing out — upgrade now!";
-      } else if (contentTier === "exclusive" || contentTier === "pro") {
-        headings = "🔥 Pro Tip WON!";
-        contents = "Another Pro winner closed. Don't miss the next one — upgrade to access all picks.";
+      const home = record.home_team ?? "";
+      const away = record.away_team ?? "";
+      const matchLabel = home && away ? `${home} vs ${away}` : "Today's pick";
+
+      if (record.tier === "premium") {
+        headings = { en: "💎 Premium Tip WON!" };
+        contents = { en: `${matchLabel} cashed in. Upgrade for the next one.` };
+      } else if (record.tier === "exclusive" || record.tier === "pro") {
+        headings = { en: "🔥 Pro Tip WON!" };
+        contents = { en: `${matchLabel} was a winner. Don't miss tomorrow.` };
       } else {
-        headings = "⚽ Tip WON!";
-        const home = record.home_team ?? "";
-        const away = record.away_team ?? "";
-        contents = home && away
-          ? `${home} vs ${away} — Our prediction was correct! 🎯`
-          : "Another winning prediction confirmed! Check the results.";
+        headings = { en: "⚽ Free Tip WON!" };
+        contents = { en: `${matchLabel} delivered. More coming soon.` };
       }
     } else if (type === "ticket") {
-      if (contentTier === "premium") {
-        headings = "👑 Premium Combo WON!";
-        contents = "A Premium combo just hit. Upgrade to never miss a winner!";
-      } else if (contentTier === "exclusive" || contentTier === "pro") {
-        headings = "🔥 Pro Combo WON!";
-        contents = "A Pro combo just landed. Upgrade to access tomorrow's picks.";
-      } else {
-        headings = "🎫 Combo WON!";
-        const title = record.title ?? "";
-        contents = title
-          ? `${title} — Winner confirmed! 🎯`
-          : "Another winning combo confirmed! Check the results.";
-      }
+      const tier = record.tier ?? "daily";
+      const tierLabel = tier === "premium" ? "Premium" : tier === "exclusive" ? "Pro" : "Daily";
+      headings = { en: "🎫 Winning Ticket!" };
+      contents = { en: `Today's ${tierLabel} ticket hit. Ready for the next one?` };
     } else {
       return new Response(JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -87,21 +68,22 @@ serve(async (req) => {
       filters: [
         { field: "tag", key: "daily_tips", relation: "=", value: "true" },
       ],
-      headings: { en: headings },
-      contents: { en: contents },
+      headings,
+      contents,
+      big_picture: bigPicture,
       android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
       android_sound: "default",
       priority: 10,
       ttl: 300,
-      big_picture: "https://propredict.me/push-win.jpg",
       collapse_id: `win_${type}_${record.id}`,
+      url: `https://propredict.me/${type}/${record.id}?platform=android`,
       data: {
         type: `${type}_won`,
         id: record.id,
-        tier: contentTier,
+        tier: record.tier,
+        result: record.result,
         deep_link: `propredict://${type}/${record.id}`,
       },
-      url: `https://propredict.me/${type}/${record.id}?platform=android`,
       isAndroid: true,
       isIos: false,
       isAnyWeb: false,
@@ -109,7 +91,7 @@ serve(async (req) => {
 
     console.log("Sending win push:", JSON.stringify(payload));
 
-    const osResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+    const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -118,17 +100,18 @@ serve(async (req) => {
       body: JSON.stringify(payload),
     });
 
-    const osResult = await osResponse.json();
-    console.log("OneSignal response:", JSON.stringify(osResult));
+    const result = await response.json();
+    console.log("OneSignal response:", JSON.stringify(result));
 
-    if (!osResponse.ok) {
-      return new Response(JSON.stringify({ error: "OneSignal API error", details: osResult }), {
-        status: osResponse.status,
+    if (!response.ok) {
+      return new Response(JSON.stringify({ error: "OneSignal API error", details: result }), {
+        status: response.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true, onesignal: osResult }), {
+    return new Response(JSON.stringify({ success: true, onesignal: result }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
