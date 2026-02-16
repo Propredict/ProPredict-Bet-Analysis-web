@@ -82,6 +82,8 @@ serve(async (req) => {
       included_segments: ["All"],
       headings: { en: headings },
       contents: { en: contents },
+      // Android channel (HIGH importance, lock screen visible)
+      android_channel_id: "goal_alerts",
       // Android high priority
       android_sound: "default",
       priority: 10,
