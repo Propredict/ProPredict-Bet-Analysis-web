@@ -76,13 +76,14 @@ serve(async (req) => {
       priority: 10,
       ttl: 300,
       collapse_id: `win_${type}_${record.id}`,
-      url: `https://propredict.me/${type}/${record.id}?platform=android`,
       data: {
         type: `${type}_won`,
         id: record.id,
         tier: record.tier,
         result: record.result,
-        deep_link: `propredict://${type}/${record.id}`,
+        nav_path: type === "tip"
+          ? `/daily-tips?highlight=${record.id}&result=won`
+          : `/daily-tickets?highlight=${record.id}&result=won`,
       },
       isAndroid: true,
       isIos: false,
