@@ -136,8 +136,6 @@ serve(async (req) => {
         tier: contentTier,
         nav_path: navPath,
       },
-
-      url: `https://propredictbet.lovable.app${navPath}`,
     };
 
     console.log("Sending OneSignal notification:", JSON.stringify(payload));

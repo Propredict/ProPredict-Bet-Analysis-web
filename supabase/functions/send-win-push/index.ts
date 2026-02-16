@@ -120,7 +120,6 @@ serve(async (req) => {
         result: record.result,
         nav_path: navPath,
       },
-      url: `https://propredictbet.lovable.app${navPath}`,
     };
 
     console.log("Sending win push:", JSON.stringify(payload));
