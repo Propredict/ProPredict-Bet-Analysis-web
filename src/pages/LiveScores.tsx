@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2 } from "lucide-react";
+import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2, Bell } from "lucide-react";
 import { useMemo, useState, useEffect, useCallback, Fragment, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -245,6 +245,21 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* ALERT CTA BANNER */}
+        {!globalAlertSettings.enabled && (
+          <button
+            onClick={() => navigate("/live-scores", { replace: true })}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 hover:border-amber-500/50 transition-all"
+            // We need access to the global alerts modal – trigger it via a custom approach
+            // Instead, let's just use the same approach as the header bell
+          >
+            <Bell className="h-4 w-4 text-amber-400 animate-[pulse_1.5s_ease-in-out_infinite]" />
+            <span className="text-xs text-amber-300 font-medium">
+              Enable alert for goal sound — tap the 🔔 bell in the top bar
+            </span>
+          </button>
+        )}
 
         {/* STATS CARDS - COMPACT grid */}
         <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
