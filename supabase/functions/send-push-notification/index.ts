@@ -79,7 +79,11 @@ serve(async (req) => {
     /* ── Send via OneSignal REST API ── */
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
-      included_segments: ["All"],
+
+      // Tag-based targeting: only users who opted in to daily_tips
+      filters: [
+        { field: "tag", key: "daily_tips", relation: "=", value: "true" },
+      ],
 
       headings: { en: headings },
       contents: { en: contents },

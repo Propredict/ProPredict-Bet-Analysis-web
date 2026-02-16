@@ -21,13 +21,33 @@ function shouldShowPrompt(enabledKey: string, lastShownKey: string): boolean {
   return Date.now() - parseInt(lastShown, 10) > TWO_DAYS_MS;
 }
 
+/** Set or remove a OneSignal tag via the Web SDK deferred queue */
+function setOneSignalTag(key: string, value: string | null) {
+  try {
+    const w = window as any;
+    w.OneSignalDeferred = w.OneSignalDeferred || [];
+    w.OneSignalDeferred.push(async (OneSignal: any) => {
+      if (value) {
+        await OneSignal.User.addTag(key, value);
+        console.log(`[OneSignal] Tag set: ${key}=${value}`);
+      } else {
+        await OneSignal.User.removeTag(key);
+        console.log(`[OneSignal] Tag removed: ${key}`);
+      }
+    });
+  } catch (e) {
+    console.warn("[OneSignal] Tag operation failed:", e);
+  }
+}
+
+export { setOneSignalTag };
+
 export function AndroidPushModal() {
   const [step, setStep] = useState<ModalStep>(null);
   const { user, loading } = useAuth();
 
   const advanceToNextStep = useCallback((afterGoal: boolean) => {
     if (afterGoal && shouldShowPrompt("tips_enabled", "tips_prompt_last_shown")) {
-      // Small delay between popups
       setTimeout(() => setStep("tips"), 600);
     } else {
       setStep(null);
@@ -38,7 +58,6 @@ export function AndroidPushModal() {
     const isAndroid = typeof window !== "undefined" && window.Android !== undefined;
     if (!isAndroid || loading || !user) return;
 
-    // Already has push subscription
     if (localStorage.getItem("onesignal_player_id")) return;
 
     const needGoal = shouldShowPrompt("goal_enabled", "goal_prompt_last_shown");
@@ -58,6 +77,7 @@ export function AndroidPushModal() {
     window.Android?.requestPushPermission?.();
     localStorage.setItem("goal_enabled", "true");
     localStorage.setItem("goal_prompt_last_shown", String(Date.now()));
+    setOneSignalTag("goal_alerts", "true");
     setStep(null);
     advanceToNextStep(true);
   };
@@ -73,6 +93,7 @@ export function AndroidPushModal() {
     window.Android?.requestPushPermission?.();
     localStorage.setItem("tips_enabled", "true");
     localStorage.setItem("tips_prompt_last_shown", String(Date.now()));
+    setOneSignalTag("daily_tips", "true");
     setStep(null);
   };
 
@@ -113,14 +134,14 @@ export function AndroidPushModal() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <Lightbulb className="h-7 w-7 text-primary" />
             </div>
-            <DialogTitle className="text-lg">🎯 Enable Daily AI Tips & Tickets</DialogTitle>
+            <DialogTitle className="text-lg">🎯 Enable Daily AI Picks & Combos</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               Receive high-probability AI predictions directly on your phone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2.5 pt-1">
             <Button onClick={handleTipsEnable} className="w-full">
-              Allow Daily Tips
+              Allow Daily Picks
             </Button>
             <Button variant="ghost" onClick={handleTipsLater} className="w-full text-muted-foreground">
               Maybe Later
