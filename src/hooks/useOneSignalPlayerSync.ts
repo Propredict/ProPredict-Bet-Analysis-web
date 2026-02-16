@@ -61,7 +61,8 @@ export function useOneSignalPlayerSync() {
       if (error) {
         console.error("[OneSignal] Failed to upsert push token:", error.message);
       } else {
-        console.log("[OneSignal] ✅ Android push token saved successfully");
+      console.log("[OneSignal] ✅ Android push token saved successfully");
+        localStorage.setItem("onesignal_player_id", playerId);
         pendingPlayerIdRef.current = null;
       }
     };

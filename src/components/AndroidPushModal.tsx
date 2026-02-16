@@ -8,21 +8,33 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AndroidPushModal() {
   const [open, setOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    // Only on Android
     const isAndroid = typeof window !== "undefined" && window.Android !== undefined;
     if (!isAndroid) return;
 
-    const alreadyShown = localStorage.getItem("push_prompt_shown") === "true";
-    if (alreadyShown) return;
+    // Wait for auth to resolve
+    if (loading) return;
 
-    // Small delay so the app loads first
-    const timer = setTimeout(() => setOpen(true), 2000);
+    // Only show after user is logged in
+    if (!user) return;
+
+    // Already shown before
+    if (localStorage.getItem("push_prompt_shown") === "true") return;
+
+    // Already has push subscription (OneSignal player ID synced)
+    if (localStorage.getItem("onesignal_player_id")) return;
+
+    // Small delay after login so the app settles
+    const timer = setTimeout(() => setOpen(true), 2500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [user, loading]);
 
   const handleEnable = () => {
     window.Android?.requestPushPermission?.();
