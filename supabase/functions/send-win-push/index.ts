@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,8 +23,10 @@ serve(async (req) => {
       });
     }
 
-    const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
-    const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "");
+    const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
+    const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
       console.error("OneSignal credentials not configured");
@@ -73,12 +76,35 @@ serve(async (req) => {
     const route = tierRouteMap[record.tier] ?? tierRouteMap.daily;
     const navPath = `/${route}?highlight=${record.id}&result=won`;
 
-    console.log(`[send-win-push] tier=${record.tier}, route=${route}, nav_path=${navPath}`);
+    /* ── Get ALL player IDs from users_push_tokens (same as check-goals) ── */
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: tokens, error: tokensError } = await supabase
+      .from("users_push_tokens")
+      .select("onesignal_player_id");
+
+    if (tokensError) {
+      console.error("Failed to fetch push tokens:", tokensError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch push tokens", details: tokensError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const playerIds = tokens?.map((t) => t.onesignal_player_id).filter(Boolean) ?? [];
+
+    if (playerIds.length === 0) {
+      console.log("[send-win-push] No push tokens found in database");
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "no push tokens" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    console.log(`[send-win-push] tier=${record.tier}, route=${route}, targets=${playerIds.length}`);
 
     const payload = {
       app_id: ONESIGNAL_APP_ID,
-      // ALL subscribed users — FOMO model (bypasses unreliable tag filters)
-      included_segments: ["Subscribed Users"],
+      include_player_ids: playerIds,
       headings,
       contents,
       big_picture: bigPicture,
@@ -94,7 +120,6 @@ serve(async (req) => {
         result: record.result,
         nav_path: navPath,
       },
-      // Web push: use nav_path as URL so browser opens correct page
       url: `https://propredictbet.lovable.app${navPath}`,
     };
 
@@ -119,7 +144,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true, onesignal: result }), {
+    return new Response(JSON.stringify({ success: true, onesignal: result, targets: playerIds.length }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
