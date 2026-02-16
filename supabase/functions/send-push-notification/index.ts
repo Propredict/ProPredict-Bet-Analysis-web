@@ -80,23 +80,23 @@ serve(async (req) => {
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
       included_segments: ["All"],
+
       headings: { en: headings },
       contents: { en: contents },
-      // Android channel (HIGH importance, lock screen visible)
+
       android_channel_id: "goal_alerts",
-      // Android high priority
+
       android_sound: "default",
       priority: 10,
-      // Android + Web push
+      ttl: 300,
+
+      url: `https://propredict.me/${type}/${record.id}?platform=android`,
+
+      big_picture: "https://propredict.me/android-notification-banner.png",
+
       isAndroid: true,
       isIos: false,
-      isAnyWeb: true,
-      isChromeWeb: true,
-      isFirefox: true,
-      isSafari: true,
-      isWP_WNS: false,
-      // expire in 5 minutes
-      ttl: 300,
+      isAnyWeb: false,
     };
 
     console.log("Sending OneSignal notification:", JSON.stringify(payload));
