@@ -83,6 +83,18 @@ serve(async (req) => {
     /* App-side decides what to show based on tier in data payload */
 
     /* ── Send via OneSignal REST API ── */
+    /* ── Build nav_path based on tier ── */
+    const tierRouteMap: Record<string, string> = {
+      premium: type === "tip" ? "premium-tips" : "premium-tickets",
+      exclusive: type === "tip" ? "exclusive-tips" : "exclusive-tickets",
+      daily: type === "tip" ? "daily-tips" : "daily-tickets",
+      free: type === "tip" ? "daily-tips" : "daily-tickets",
+    };
+    const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
+    const navPath = `/${route}?highlight=${record.id}&plan_required=${contentTier}`;
+
+    console.log(`[send-push] tier=${contentTier}, route=${route}, nav_path=${navPath}`);
+
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
 
@@ -110,14 +122,11 @@ serve(async (req) => {
         type,
         id: record.id,
         tier: contentTier,
-        nav_path: type === "tip"
-          ? `/${contentTier === "premium" ? "premium-tips" : contentTier === "exclusive" ? "exclusive-tips" : "daily-tips"}?highlight=${record.id}&plan_required=${contentTier}`
-          : `/${contentTier === "premium" ? "premium-tickets" : contentTier === "exclusive" ? "exclusive-tickets" : "daily-tickets"}?highlight=${record.id}&plan_required=${contentTier}`,
+        nav_path: navPath,
       },
 
-      isAndroid: true,
-      isIos: false,
-      isAnyWeb: false,
+      // Web push: use nav_path as URL so browser opens correct page
+      url: `https://propredictbet.lovable.app${navPath}`,
     };
 
     console.log("Sending OneSignal notification:", JSON.stringify(payload));
