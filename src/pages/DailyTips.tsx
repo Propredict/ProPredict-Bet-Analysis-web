@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
+import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -20,6 +21,7 @@ export default function DailyTips() {
     refetch
   } = useTips(false);
   const {
+    plan,
     canAccess,
     getUnlockMethod,
     refetch: refetchPlan
@@ -31,6 +33,21 @@ export default function DailyTips() {
   const { isAndroidApp } = usePlatform();
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get("highlight");
+  const planRequired = searchParams.get("plan_required");
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
+
+  // Plan required upgrade modal from push notification
+  useEffect(() => {
+    if (!planRequired) return;
+    if (planRequired === "premium" && plan !== "premium") {
+      setUpgradeHighlight("premium");
+      setUpgradeModalOpen(true);
+    } else if (planRequired === "pro" && plan === "free") {
+      setUpgradeHighlight("basic");
+      setUpgradeModalOpen(true);
+    }
+  }, [planRequired, plan]);
 
   useEffect(() => {
     if (!highlightId) return;
@@ -204,5 +221,6 @@ export default function DailyTips() {
         These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
       </p>
     </div>
+    <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
   </>;
 }
