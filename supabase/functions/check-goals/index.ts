@@ -184,17 +184,21 @@ serve(async (req) => {
         include_player_ids: playerIds,
         headings: { en: `⚽ GOAL! ${scorerTeams}` },
         contents: { en: `${scoreText} (${elapsed}')` },
-        data: { match_id: matchId, type: "goal" },
 
-        // ================= ANDROID HIGH PRIORITY =================
-        android_channel_id: "goal_alerts",
-        android_priority: 10,
-        android_visibility: 1,
+        // Goal Alerts channel (separate from tips/tickets)
+        android_channel_id: "64568561-d234-453b-b3da-8de49688731d",
+
         android_sound: "default",
         priority: 10,
+        ttl: 120,
 
-        // expire quickly (live goal)
-        ttl: 60,
+        data: {
+          match_id: matchId,
+          type: "goal",
+          deep_link: `propredict://match/${matchId}`,
+        },
+
+        big_picture: "https://propredict.me/android-notification-banner.png",
       };
 
       console.log(`[check-goals] Sending to ${playerIds.length} users for match ${matchId}`);

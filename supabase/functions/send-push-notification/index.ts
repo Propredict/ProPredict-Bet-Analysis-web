@@ -84,7 +84,8 @@ serve(async (req) => {
       headings: { en: headings },
       contents: { en: contents },
 
-      android_channel_id: "goal_alerts",
+      // New Tips & Tickets channel (NOT goal_alerts)
+      android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
 
       android_sound: "default",
       priority: 10,
@@ -93,6 +94,12 @@ serve(async (req) => {
       url: `https://propredict.me/${type}/${record.id}?platform=android`,
 
       big_picture: "https://propredict.me/android-notification-banner.png",
+
+      data: {
+        type,
+        id: record.id,
+        deep_link: `propredict://${type}/${record.id}`,
+      },
 
       isAndroid: true,
       isIos: false,
