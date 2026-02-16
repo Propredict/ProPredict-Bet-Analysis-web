@@ -47,6 +47,7 @@ function getAlertSettings(): AlertSettings {
 // Preloaded audio elements for instant playback
 let goalAudio: HTMLAudioElement | null = null;
 let redCardAudio: HTMLAudioElement | null = null;
+let audioUnlocked = false;
 
 function preloadSounds() {
   try {
@@ -63,14 +64,54 @@ function preloadSounds() {
   }
 }
 
+// Unlock audio on first user gesture (required for Android WebView & mobile browsers)
+function unlockAudio() {
+  if (audioUnlocked) return;
+  try {
+    // Play a silent snippet to unlock the audio pipeline
+    if (goalAudio) {
+      goalAudio.volume = 0;
+      goalAudio.play().then(() => {
+        goalAudio!.pause();
+        goalAudio!.currentTime = 0;
+        goalAudio!.volume = 1;
+        audioUnlocked = true;
+        console.log("[LiveAlerts] Audio unlocked via user gesture");
+      }).catch(() => {});
+    }
+    if (redCardAudio) {
+      redCardAudio.volume = 0;
+      redCardAudio.play().then(() => {
+        redCardAudio!.pause();
+        redCardAudio!.currentTime = 0;
+        redCardAudio!.volume = 1;
+      }).catch(() => {});
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function setupAudioUnlock() {
+  const events = ["click", "touchstart", "keydown"];
+  const handler = () => {
+    unlockAudio();
+    events.forEach((e) => document.removeEventListener(e, handler, true));
+  };
+  events.forEach((e) => document.addEventListener(e, handler, { once: false, capture: true }));
+}
+
 // Preload as soon as module loads
 preloadSounds();
+setupAudioUnlock();
 
 function playGoalSound() {
   try {
     if (goalAudio) {
       goalAudio.currentTime = 0;
-      goalAudio.play().catch(() => {});
+      goalAudio.play().catch((err) => {
+        console.warn("[LiveAlerts] Goal sound play failed:", err.message);
+      });
     }
   } catch {
     // Audio not supported
@@ -81,7 +122,9 @@ function playRedCardSound() {
   try {
     if (redCardAudio) {
       redCardAudio.currentTime = 0;
-      redCardAudio.play().catch(() => {});
+      redCardAudio.play().catch((err) => {
+        console.warn("[LiveAlerts] Red card sound play failed:", err.message);
+      });
     }
   } catch {
     // Audio not supported
