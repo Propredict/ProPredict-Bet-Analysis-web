@@ -201,7 +201,7 @@ serve(async (req) => {
           nav_path: `/live-scores?match=${matchId}&from=goal_push`,
         },
 
-        big_picture: "https://propredict.me/android-notification-banner.png",
+        big_picture: "https://propredict.me/push-goal.jpg",
       };
 
       console.log(`[check-goals] Sending to ${playerIds.length} users for match ${matchId}`);
