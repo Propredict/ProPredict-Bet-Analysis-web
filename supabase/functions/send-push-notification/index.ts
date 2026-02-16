@@ -82,11 +82,9 @@ serve(async (req) => {
       included_segments: ["All"],
       headings: { en: headings },
       contents: { en: contents },
-      // Android: use goal_alerts channel (IMPORTANCE_HIGH, lock screen visible)
-      android_channel_id: "goal_alerts",
+      // Android high priority
       android_sound: "default",
-      android_priority: 10,
-      android_visibility: 1,
+      priority: 10,
       // Android + Web push
       isAndroid: true,
       isIos: false,
