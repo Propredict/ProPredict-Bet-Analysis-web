@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.check-goals]
 verify_jwt = false
+
+[functions.send-win-push]
+verify_jwt = false
