@@ -63,6 +63,18 @@ serve(async (req) => {
       });
     }
 
+    /* ── Build nav_path based on tier ── */
+    const tierRouteMap: Record<string, string> = {
+      premium: type === "tip" ? "premium-tips" : "premium-tickets",
+      exclusive: type === "tip" ? "exclusive-tips" : "exclusive-tickets",
+      daily: type === "tip" ? "daily-tips" : "daily-tickets",
+      free: type === "tip" ? "daily-tips" : "daily-tickets",
+    };
+    const route = tierRouteMap[record.tier] ?? tierRouteMap.daily;
+    const navPath = `/${route}?highlight=${record.id}&result=won`;
+
+    console.log(`[send-win-push] tier=${record.tier}, route=${route}, nav_path=${navPath}`);
+
     const payload = {
       app_id: ONESIGNAL_APP_ID,
       filters: [
@@ -81,13 +93,10 @@ serve(async (req) => {
         id: record.id,
         tier: record.tier,
         result: record.result,
-        nav_path: type === "tip"
-          ? `/${(record.tier === "premium" ? "premium-tips" : record.tier === "exclusive" ? "exclusive-tips" : "daily-tips")}?highlight=${record.id}&result=won`
-          : `/${(record.tier === "premium" ? "premium-tickets" : record.tier === "exclusive" ? "exclusive-tickets" : "daily-tickets")}?highlight=${record.id}&result=won`,
+        nav_path: navPath,
       },
-      isAndroid: true,
-      isIos: false,
-      isAnyWeb: false,
+      // Web push: use nav_path as URL so browser opens correct page
+      url: `https://propredictbet.lovable.app${navPath}`,
     };
 
     console.log("Sending win push:", JSON.stringify(payload));
