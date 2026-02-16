@@ -52,23 +52,26 @@ serve(async (req) => {
       );
     }
 
-    /* ── Build notification content ── */
+    /* ── Build notification content (tier-aware headings) ── */
+    const contentTier = record.tier ?? "free";
     let headings = "";
     let contents = "";
 
     if (type === "tip") {
-      headings = "⚽ New Tip Available!";
+      const tierLabel = contentTier === "premium" ? "👑 Premium" : contentTier === "exclusive" ? "🔥 Pro" : "⚽";
+      headings = `${tierLabel} New AI Pick Available!`;
       const home = record.home_team ?? "";
       const away = record.away_team ?? "";
       contents = home && away
         ? `${home} vs ${away} – Check out our latest prediction!`
-        : "A new betting tip is ready — open the app now!";
+        : "A new high-probability AI prediction is live now!";
     } else if (type === "ticket") {
-      headings = "🎫 New Ticket Available!";
+      const tierLabel = contentTier === "premium" ? "👑 Premium" : contentTier === "exclusive" ? "🔥 Pro" : "🎫";
+      headings = `${tierLabel} New AI Combo Available!`;
       const title = record.title ?? "";
       contents = title
-        ? `${title} – Open the app to view the full analysis!`
-        : "A new betting ticket is ready — open the app now!";
+        ? `${title} – Tap to view the full analysis!`
+        : "A new AI combo is ready — open the app now!";
     } else {
       return new Response(
         JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }),
@@ -76,40 +79,17 @@ serve(async (req) => {
       );
     }
 
-    /* ── Build tier-aware filters ── */
-    const contentTier = record.tier ?? "free";
-    
-    // Base filter: user must have daily_tips tag enabled
-    const filters: Record<string, unknown>[] = [
-      { field: "tag", key: "daily_tips", relation: "=", value: "true" },
-    ];
-    
-    // Tier-based plan segmentation:
-    // free tier → all plans get it
-    // daily tier → all plans get it  
-    // exclusive tier → pro + premium only
-    // premium tier → premium only
-    if (contentTier === "exclusive") {
-      filters.push({ operator: "AND" });
-      filters.push({
-        field: "tag", key: "plan", relation: "=", value: "pro",
-      });
-      // OR premium
-      filters.push({ operator: "OR" });
-      filters.push({ field: "tag", key: "daily_tips", relation: "=", value: "true" });
-      filters.push({ operator: "AND" });
-      filters.push({ field: "tag", key: "plan", relation: "=", value: "premium" });
-    } else if (contentTier === "premium") {
-      filters.push({ operator: "AND" });
-      filters.push({ field: "tag", key: "plan", relation: "=", value: "premium" });
-    }
-    // free/daily tiers → no additional plan filter (everyone gets it)
+    /* ── FOMO model: send to ALL users with daily_tips tag ── */
+    /* App-side decides what to show based on tier in data payload */
 
     /* ── Send via OneSignal REST API ── */
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
 
-      filters,
+      // ALL users who opted in — no plan filtering (FOMO conversion model)
+      filters: [
+        { field: "tag", key: "daily_tips", relation: "=", value: "true" },
+      ],
 
       headings: { en: headings },
       contents: { en: contents },
@@ -127,9 +107,11 @@ serve(async (req) => {
 
       collapse_id: `${type}_${record.id}`,
 
+      // Include tier in data so app can show appropriate CTA
       data: {
         type,
         id: record.id,
+        tier: contentTier,
         deep_link: `propredict://${type}/${record.id}`,
       },
 
