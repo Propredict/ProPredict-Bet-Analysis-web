@@ -60,6 +60,28 @@ import { UserPlanProvider } from "./hooks/useUserPlan";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // 🔔 OneSignal push click → deep link navigation
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const w = window as any;
+    w.OneSignalDeferred = w.OneSignalDeferred || [];
+    w.OneSignalDeferred.push(async function (OneSignal: any) {
+      const handlePushClick = (event: any) => {
+        const data = event?.notification?.additionalData;
+        if (!data?.deep_link) return;
+        console.log("[OneSignal] Push click deep_link:", data.deep_link);
+        window.location.href = data.deep_link;
+      };
+
+      try {
+        OneSignal?.Notifications?.addEventListener?.("click", handlePushClick);
+      } catch (e) {
+        console.warn("[OneSignal] Could not add click listener:", e);
+      }
+    });
+  }, []);
+
   // 🔔 OneSignal → Supabase sync
   useEffect(() => {
     if (typeof window === "undefined") return;
