@@ -77,9 +77,8 @@ serve(async (req) => {
 
     const payload = {
       app_id: ONESIGNAL_APP_ID,
-      filters: [
-        { field: "tag", key: "daily_tips", relation: "=", value: "true" },
-      ],
+      // ALL subscribed users — FOMO model (bypasses unreliable tag filters)
+      included_segments: ["Subscribed Users"],
       headings,
       contents,
       big_picture: bigPicture,
