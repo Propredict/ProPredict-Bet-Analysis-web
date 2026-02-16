@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 
 // Lightweight pages - eager import
 import Index from "./pages/Index";
@@ -142,6 +143,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <DeepLinkHandler />
               <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>}>
               <Routes>
                 {/* Auth pages */}
