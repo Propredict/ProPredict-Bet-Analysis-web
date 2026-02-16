@@ -105,29 +105,94 @@ export default function LiveScores() {
   // Persist deep-link values in refs so they survive searchParams clearing
   const deepLinkMatchIdRef = useRef<string | null>(null);
   const fromGoalPushRef = useRef(false);
+  const deepLinkProcessed = useRef(false);
 
-  // Capture deep-link params into refs before they get cleared
+  // Capture deep-link params from BOTH React Router and raw URL
   useEffect(() => {
-    if (deepLinkMatchId) {
-      deepLinkMatchIdRef.current = deepLinkMatchId;
+    // Read from React Router searchParams
+    let matchId = deepLinkMatchId;
+    let isGoalPush = fromGoalPush;
+
+    // Fallback: read directly from window.location (Android pushState may not sync to React Router immediately)
+    if (!matchId) {
+      const rawParams = new URLSearchParams(window.location.search);
+      matchId = rawParams.get("match");
+      isGoalPush = rawParams.get("from") === "goal_push";
     }
-    if (fromGoalPush) {
+
+    if (matchId) {
+      console.log("[LiveScores] Deep link param captured:", matchId, "goalPush:", isGoalPush);
+      deepLinkMatchIdRef.current = matchId;
+      deepLinkProcessed.current = false;
+    }
+    if (isGoalPush) {
       fromGoalPushRef.current = true;
     }
   }, [deepLinkMatchId, fromGoalPush]);
 
+  // Also capture on mount from raw URL (cold start fallback)
   useEffect(() => {
-    const targetId = deepLinkMatchIdRef.current || deepLinkMatchId;
+    const rawParams = new URLSearchParams(window.location.search);
+    const matchId = rawParams.get("match");
+    if (matchId) {
+      console.log("[LiveScores] Cold start deep link captured:", matchId);
+      deepLinkMatchIdRef.current = matchId;
+      deepLinkProcessed.current = false;
+      if (rawParams.get("from") === "goal_push") {
+        fromGoalPushRef.current = true;
+      }
+    }
+  }, []);
+
+  // Open modal when matches are loaded and we have a deep link target
+  useEffect(() => {
+    if (deepLinkProcessed.current) return;
+    const targetId = deepLinkMatchIdRef.current;
     if (!targetId || matches.length === 0) return;
+
     const target = matches.find((m) => m.id === targetId);
-    if (target && !selectedMatch) {
+    if (target) {
       console.log("[LiveScores] Opening match from deep link:", targetId);
-      setSelectedMatch(target);
+      deepLinkProcessed.current = true;
       deepLinkMatchIdRef.current = null;
+      setSelectedMatch(target);
       // Clean URL params after opening
       setSearchParams({}, { replace: true });
+    } else {
+      console.log("[LiveScores] Deep link match not found in results:", targetId, "total matches:", matches.length);
     }
-  }, [deepLinkMatchId, matches, selectedMatch, setSearchParams]);
+  }, [matches, setSearchParams]);
+
+  // Retry: listen for Android navigation events that arrive after mount
+  useEffect(() => {
+    const handler = () => {
+      const rawParams = new URLSearchParams(window.location.search);
+      const matchId = rawParams.get("match");
+      if (matchId && !deepLinkProcessed.current) {
+        console.log("[LiveScores] popstate/navigate deep link:", matchId);
+        deepLinkMatchIdRef.current = matchId;
+        deepLinkProcessed.current = false;
+        if (rawParams.get("from") === "goal_push") {
+          fromGoalPushRef.current = true;
+        }
+        // Try to open immediately if matches are loaded
+        const target = matches.find((m) => m.id === matchId);
+        if (target) {
+          deepLinkProcessed.current = true;
+          deepLinkMatchIdRef.current = null;
+          setSelectedMatch(target);
+          setSearchParams({}, { replace: true });
+        }
+      }
+    };
+
+    window.addEventListener("popstate", handler);
+    window.addEventListener("android-navigate", handler);
+    return () => {
+      window.removeEventListener("popstate", handler);
+      window.removeEventListener("android-navigate", handler);
+    };
+  }, [matches, setSearchParams]);
 
   // Custom close handler: go to /live-scores if opened from push
   const handleModalClose = useCallback(() => {
