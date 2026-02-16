@@ -21,18 +21,32 @@ function shouldShowPrompt(enabledKey: string, lastShownKey: string): boolean {
   return Date.now() - parseInt(lastShown, 10) > TWO_DAYS_MS;
 }
 
-/** Set or remove a OneSignal tag via the Web SDK deferred queue */
+/** Set or remove a OneSignal tag via native bridge (Android) or Web SDK (web) */
 function setOneSignalTag(key: string, value: string | null) {
   try {
     const w = window as any;
+
+    // Android native bridge: use Kotlin setTag / removeTag
+    if (w.Android?.setOneSignalTag) {
+      if (value) {
+        w.Android.setOneSignalTag(key, value);
+        console.log(`[OneSignal][Android] Tag set via bridge: ${key}=${value}`);
+      } else {
+        w.Android.removeOneSignalTag?.(key);
+        console.log(`[OneSignal][Android] Tag removed via bridge: ${key}`);
+      }
+      return;
+    }
+
+    // Web SDK fallback
     w.OneSignalDeferred = w.OneSignalDeferred || [];
     w.OneSignalDeferred.push(async (OneSignal: any) => {
       if (value) {
         await OneSignal.User.addTag(key, value);
-        console.log(`[OneSignal] Tag set: ${key}=${value}`);
+        console.log(`[OneSignal][Web] Tag set: ${key}=${value}`);
       } else {
         await OneSignal.User.removeTag(key);
-        console.log(`[OneSignal] Tag removed: ${key}`);
+        console.log(`[OneSignal][Web] Tag removed: ${key}`);
       }
     });
   } catch (e) {
