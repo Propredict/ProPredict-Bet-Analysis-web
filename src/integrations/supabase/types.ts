@@ -494,6 +494,13 @@ export type Database = {
             referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ticket_matches_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tickets: {
@@ -941,6 +948,51 @@ export type Database = {
         Row: {
           accuracy: number | null
           tier: Database["public"]["Enums"]["content_tier"] | null
+        }
+        Relationships: []
+      }
+      tickets_public: {
+        Row: {
+          ai_analysis: string | null
+          created_at_ts: string | null
+          created_by: string | null
+          description: string | null
+          id: string | null
+          result: Database["public"]["Enums"]["ticket_result"] | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          ticket_date: string | null
+          tier: Database["public"]["Enums"]["content_tier"] | null
+          title: string | null
+          total_odds: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_analysis?: never
+          created_at_ts?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          result?: Database["public"]["Enums"]["ticket_result"] | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          ticket_date?: string | null
+          tier?: Database["public"]["Enums"]["content_tier"] | null
+          title?: string | null
+          total_odds?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_analysis?: never
+          created_at_ts?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          result?: Database["public"]["Enums"]["ticket_result"] | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          ticket_date?: string | null
+          tier?: Database["public"]["Enums"]["content_tier"] | null
+          title?: string | null
+          total_odds?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
