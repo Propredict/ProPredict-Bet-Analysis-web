@@ -53,6 +53,18 @@
     overflow-x: hidden;
   }
 
+  /* Fixed status-bar cover — ensures teal behind system bar on ALL devices */
+  html::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: hsl(171 77% 36%); /* --primary */
+    z-index: 9999;
+  }
+
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
