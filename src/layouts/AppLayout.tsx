@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { initOneSignalWeb } from "@/lib/onesignal";
 import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
+import { AndroidPushModal } from "@/components/AndroidPushModal";
 
 // Pages where footer should be hidden (header-only layout)
 const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
@@ -265,6 +266,9 @@ export default function AppLayout() {
         settings={alertSettings}
         onToggle={toggleAlertSetting}
       />
+
+      {/* Android Push Permission Modal */}
+      <AndroidPushModal />
     </SidebarProvider>
   );
 }
