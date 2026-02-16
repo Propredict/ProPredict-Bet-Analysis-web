@@ -246,20 +246,30 @@ export default function LiveScores() {
           </div>
         </div>
 
-        {/* ALERT CTA BANNER */}
-        {!globalAlertSettings.enabled && (
-          <button
-            onClick={() => navigate("/live-scores", { replace: true })}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 hover:border-amber-500/50 transition-all"
-            // We need access to the global alerts modal – trigger it via a custom approach
-            // Instead, let's just use the same approach as the header bell
-          >
-            <Bell className="h-4 w-4 text-amber-400 animate-[pulse_1.5s_ease-in-out_infinite]" />
-            <span className="text-xs text-amber-300 font-medium">
-              Enable alert for goal sound — tap the 🔔 bell in the top bar
-            </span>
-          </button>
-        )}
+        {/* ALERT STATUS BANNER */}
+        <div
+          className={cn(
+            "w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+            globalAlertSettings.enabled
+              ? "bg-gradient-to-r from-green-500/15 to-emerald-500/10 border-green-500/30"
+              : "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border-amber-500/30"
+          )}
+        >
+          <Bell className={cn(
+            "h-4 w-4 flex-shrink-0",
+            globalAlertSettings.enabled
+              ? "text-green-400 animate-[pulse_1.5s_ease-in-out_infinite]"
+              : "text-amber-400"
+          )} />
+          <span className={cn(
+            "text-xs font-medium",
+            globalAlertSettings.enabled ? "text-green-300" : "text-amber-300"
+          )}>
+            {globalAlertSettings.enabled
+              ? "🔔 Goal sound alerts are ON"
+              : "Enable alert for goal sound — tap the 🔔 bell in the top bar"}
+          </span>
+        </div>
 
         {/* STATS CARDS - COMPACT grid */}
         <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
