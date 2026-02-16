@@ -111,8 +111,8 @@ serve(async (req) => {
         id: record.id,
         tier: contentTier,
         nav_path: type === "tip"
-          ? `/daily-tips?highlight=${record.id}&plan_required=${contentTier}`
-          : `/daily-tickets?highlight=${record.id}&plan_required=${contentTier}`,
+          ? `/${contentTier === "premium" ? "premium-tips" : contentTier === "exclusive" ? "exclusive-tips" : "daily-tips"}?highlight=${record.id}&plan_required=${contentTier}`
+          : `/${contentTier === "premium" ? "premium-tickets" : contentTier === "exclusive" ? "exclusive-tickets" : "daily-tickets"}?highlight=${record.id}&plan_required=${contentTier}`,
       },
 
       isAndroid: true,

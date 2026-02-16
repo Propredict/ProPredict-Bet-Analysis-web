@@ -82,8 +82,8 @@ serve(async (req) => {
         tier: record.tier,
         result: record.result,
         nav_path: type === "tip"
-          ? `/daily-tips?highlight=${record.id}&result=won`
-          : `/daily-tickets?highlight=${record.id}&result=won`,
+          ? `/${(record.tier === "premium" ? "premium-tips" : record.tier === "exclusive" ? "exclusive-tips" : "daily-tips")}?highlight=${record.id}&result=won`
+          : `/${(record.tier === "premium" ? "premium-tickets" : record.tier === "exclusive" ? "exclusive-tickets" : "daily-tickets")}?highlight=${record.id}&result=won`,
       },
       isAndroid: true,
       isIos: false,
