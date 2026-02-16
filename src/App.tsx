@@ -69,9 +69,13 @@ const App = () => {
     w.OneSignalDeferred.push(async function (OneSignal: any) {
       const handlePushClick = (event: any) => {
         const data = event?.notification?.additionalData;
-        if (!data?.deep_link) return;
-        console.log("[OneSignal] Push click deep_link:", data.deep_link);
-        window.location.href = data.deep_link;
+        const navPath = data?.nav_path;
+        if (!navPath) return;
+        console.log("[OneSignal] Push click nav_path:", navPath);
+        // Use in-app navigation (works inside WebView without opening Chrome)
+        if (window.location.pathname + window.location.search === navPath) return;
+        window.history.pushState({}, "", navPath);
+        window.dispatchEvent(new PopStateEvent("popstate"));
       };
 
       try {
