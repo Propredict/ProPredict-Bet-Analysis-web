@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Lock, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { PricingModal } from "@/components/PricingModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AdSlot from "@/components/ads/AdSlot";
 
@@ -31,7 +32,37 @@ export default function PremiumTickets() {
     unlockingId,
     handleUnlock
   } = useUnlockHandler();
-  
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+  const planRequired = searchParams.get("plan_required");
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
+
+  // Highlight scroll from push notification
+  useEffect(() => {
+    if (!highlightId) return;
+    const scrollToTicket = () => {
+      const el = document.getElementById(`ticket-${highlightId}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("push-highlight");
+      setTimeout(() => el.classList.remove("push-highlight"), 4000);
+    };
+    setTimeout(scrollToTicket, 400);
+  }, [highlightId]);
+
+  // Plan required upgrade modal from push notification
+  useEffect(() => {
+    if (!planRequired) return;
+    if (planRequired === "premium" && plan !== "premium") {
+      setUpgradeHighlight("premium");
+      setUpgradeModalOpen(true);
+    } else if (planRequired === "pro" && plan === "free") {
+      setUpgradeHighlight("basic");
+      setUpgradeModalOpen(true);
+    }
+  }, [planRequired, plan]);
+
   // Get today's date in Belgrade timezone (YYYY-MM-DD)
   const todayBelgrade = new Date().toLocaleDateString("en-CA", {
     timeZone: "Europe/Belgrade",
@@ -178,6 +209,7 @@ export default function PremiumTickets() {
         const isUnlocking = unlockingId === ticket.id;
         const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
         return <React.Fragment key={ticket.id}>
+          <div id={`ticket-${ticket.id}`}>
           <TicketCard ticket={{
           id: ticket.id,
           title: ticket.title,
@@ -192,6 +224,7 @@ export default function PremiumTickets() {
           })),
           createdAt: ticket.created_at_ts
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
+          </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTickets.length - 1 && (
             <div className="col-span-full">
               <AdSlot />
@@ -206,5 +239,6 @@ export default function PremiumTickets() {
         These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
       </p>
     </div>
+    <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
   </>;
 }
