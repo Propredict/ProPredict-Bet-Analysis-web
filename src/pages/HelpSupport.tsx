@@ -24,8 +24,8 @@ import {
   Clock,
   ArrowLeft
 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import emailjs from "@emailjs/browser";
@@ -39,7 +39,10 @@ const contactSchema = z.object({
 
 const HelpSupport = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const glossaryRef = useRef<HTMLDivElement>(null);
+  const faqParam = searchParams.get("faq");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -48,6 +51,15 @@ const HelpSupport = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-scroll and open glossary FAQ when navigating with ?faq=predictions-glossary
+  useEffect(() => {
+    if (faqParam === "predictions-glossary" && glossaryRef.current) {
+      setTimeout(() => {
+        glossaryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+  }, [faqParam]);
 
   const supportCards = [
     {
@@ -356,13 +368,16 @@ const HelpSupport = () => {
           </p>
 
           <div className="space-y-3">
-            {faqCategories.map((category) => (
-              <div key={category.title}>
+            {faqCategories.map((category) => {
+              const isGlossaryCategory = category.title === "Tips & Predictions";
+              const glossaryDefaultValue = (faqParam === "predictions-glossary" && isGlossaryCategory) ? "Tips & Predictions-3" : undefined;
+              return (
+              <div key={category.title} ref={isGlossaryCategory ? glossaryRef : undefined}>
                 <div className="flex items-center gap-2 mb-2">
                   <category.icon className={`h-3.5 w-3.5 ${category.color}`} />
                   <h3 className="text-xs font-medium text-foreground">{category.title}</h3>
                 </div>
-                <Accordion type="single" collapsible className="space-y-1">
+                <Accordion type="single" collapsible className="space-y-1" defaultValue={glossaryDefaultValue}>
                   {category.questions.map((faq, index) => (
                     <AccordionItem 
                       key={index} 
@@ -379,7 +394,8 @@ const HelpSupport = () => {
                   ))}
                 </Accordion>
               </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
