@@ -162,25 +162,6 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             </p>
           </div>
 
-          {/* Price */}
-          <div className="text-center mb-8">
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold text-foreground">
-                {isPremium ? "€5.99" : "€3.99"}
-              </span>
-              <span className="text-muted-foreground text-sm">/month</span>
-            </div>
-            {isPremium && (
-              <p className="text-xs text-muted-foreground mt-1">
-                or €59.99/year (save 17%)
-              </p>
-            )}
-            {!isPremium && (
-              <p className="text-xs text-muted-foreground mt-1">
-                or €39.99/year (save 17%)
-              </p>
-            )}
-          </div>
 
           {/* Features */}
           <div className={cn(
