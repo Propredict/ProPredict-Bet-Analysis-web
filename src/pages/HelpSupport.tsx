@@ -122,6 +122,14 @@ const HelpSupport = () => {
               <li><span className="font-semibold text-foreground">T1 2+</span> — Home team scores 2 or more goals.</li>
               <li><span className="font-semibold text-foreground">T2 2+</span> — Away team scores 2 or more goals.</li>
               <li><span className="font-semibold text-foreground">ATX (Any Time Draw)</span> — A draw occurs at any point during the match (half-time or full-time).</li>
+              <li><span className="font-semibold text-foreground">HT/FT (Half Time/Full Time)</span> — Predict the result at both half-time and full-time (e.g., 1/X = Home leads at HT, Draw at FT).</li>
+              <li><span className="font-semibold text-foreground">GG/NG</span> — GG (Goal Goal) = both teams score; NG (No Goal) = at least one team does not score. Same as BTTS Yes/No.</li>
+              <li><span className="font-semibold text-foreground">Clean Sheet</span> — A team concedes zero goals in the match.</li>
+              <li><span className="font-semibold text-foreground">Win to Nil</span> — A team wins the match without conceding any goals.</li>
+              <li><span className="font-semibold text-foreground">Handicap (-1, -2)</span> — A virtual goal advantage/disadvantage applied to a team before kickoff (e.g., -1 = team must win by 2+ goals).</li>
+              <li><span className="font-semibold text-foreground">First Half Over/Under</span> — Goals total applies only to the first half (e.g., 1H Over 0.5 = at least 1 goal before half-time).</li>
+              <li><span className="font-semibold text-foreground">Exact Goals</span> — Predict the exact number of total goals in the match (e.g., Exact 3 = exactly 3 goals scored).</li>
+              <li><span className="font-semibold text-foreground">Odd/Even Goals</span> — Whether the total number of goals is an odd or even number.</li>
               <li><span className="font-semibold text-foreground">Confidence %</span> — How confident the AI model is in the prediction (higher = stronger signal).</li>
               <li><span className="font-semibold text-foreground">Combined Confidence Score</span> — The multiplied confidence of all selections in a combo.</li>
             </ul>
