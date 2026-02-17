@@ -173,6 +173,10 @@ const HelpSupport = () => {
           q: "How do I report a bug?",
           a: "Use the contact form below to report any bugs. Please include details about what you were doing, the device/browser you're using, and any error messages you see."
         },
+        {
+          q: "When is the content updated?",
+          a: "All AI predictions, match previews, and statistics are refreshed daily at 00:00 UTC (midnight). Prediction results are automatically checked and updated every 30 minutes after matches finish. If you're in a different timezone, new content may appear slightly earlier or later relative to your local time."
+        },
       ],
     },
     {
