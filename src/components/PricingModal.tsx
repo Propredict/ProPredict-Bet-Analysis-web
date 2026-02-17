@@ -85,11 +85,11 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-x-0 bottom-0 top-[60px] z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/30 backdrop-blur-[1px] transition-opacity duration-300",
+          "absolute inset-0 bg-black/15 transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-0"
         )}
         onClick={handleClose}
