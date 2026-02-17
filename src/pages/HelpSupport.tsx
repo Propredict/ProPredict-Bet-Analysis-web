@@ -335,10 +335,13 @@ const HelpSupport = () => {
       {/* FAQ Section */}
       <Card className="mb-4">
         <CardContent className="p-3 sm:p-4">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-1">
             <MessageSquare className="h-4 w-4 text-primary" />
             <h2 className="text-xs sm:text-sm font-semibold text-foreground">Frequently Asked Questions</h2>
           </div>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mb-3">
+            Find answers to common questions about predictions, subscriptions, features, and more.
+          </p>
 
           <div className="space-y-3">
             {faqCategories.map((category) => (
