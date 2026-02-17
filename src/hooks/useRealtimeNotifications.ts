@@ -131,6 +131,59 @@ export function useRealtimeNotifications() {
           });
         }
       )
+      // ── Won tips ──
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tips",
+        },
+        (payload) => {
+          const rec = payload.new as any;
+          const old = payload.old as any;
+          if (rec.result === "won" && old?.result !== "won") {
+            const tier = rec.tier ?? "daily";
+            const route = getTierRoute("tip", tier);
+            const home = rec.home_team ?? "";
+            const away = rec.away_team ?? "";
+            const matchLabel = home && away ? `${home} vs ${away}` : "Today's pick";
+            toast("⚽ Tip WON!", {
+              description: `${matchLabel} cashed in!`,
+              action: {
+                label: "View",
+                onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),
+              },
+              duration: 8000,
+            });
+          }
+        }
+      )
+      // ── Won tickets ──
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tickets",
+        },
+        (payload) => {
+          const rec = payload.new as any;
+          const old = payload.old as any;
+          if (rec.result === "won" && old?.result !== "won") {
+            const tier = rec.tier ?? "daily";
+            const route = getTierRoute("ticket", tier);
+            toast("🎫 Ticket WON!", {
+              description: rec.title || "A ticket just hit!",
+              action: {
+                label: "View",
+                onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),
+              },
+              duration: 8000,
+            });
+          }
+        }
+      )
       .subscribe();
 
     return () => {
