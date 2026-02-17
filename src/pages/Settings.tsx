@@ -108,7 +108,7 @@ const Settings = () => {
 
   const supportItems = [
     { 
-      label: "Help & Support", 
+      label: "FAQ & Support", 
       description: "FAQs and contact support",
       icon: HelpCircle, 
       path: "/help-support",
