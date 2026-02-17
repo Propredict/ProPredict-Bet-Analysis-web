@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Star, Trophy, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export default function MyFavorites() {
   }
 
   return (
-    <div className="section-gap">
+    <div className="section-gap animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-pink-500/20 via-pink-500/10 to-transparent border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
         <div className="p-1.5 rounded-md bg-pink-500/20">
