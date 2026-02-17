@@ -70,7 +70,7 @@ const HelpSupport = () => {
     },
   ];
 
-  const faqCategories = [
+  const faqCategories: { title: string; icon: any; color: string; questions: { q: string; a: React.ReactNode }[] }[] = [
     {
       title: "Account & Subscription",
       icon: User,
@@ -109,7 +109,19 @@ const HelpSupport = () => {
         },
         {
           q: "What do the prediction markets and values mean?",
-          a: "Here's a quick guide to common prediction markets:\n\n• 1X2 – 1 = Home Win, X = Draw, 2 = Away Win.\n• BTTS (Both Teams to Score) – Yes means both teams are expected to score; No means at least one team keeps a clean sheet.\n• Over/Under 1.5 – Over 1.5 means 2 or more total goals; Under 1.5 means 0 or 1 goal.\n• Over/Under 2.5 – Over 2.5 means 3 or more total goals; Under 2.5 means 0, 1, or 2 goals.\n• Over/Under 3.5 – Over 3.5 means 4 or more total goals; Under 3.5 means 3 or fewer goals.\n• Double Chance – 1X = Home Win or Draw, X2 = Away Win or Draw, 12 = Home or Away Win (no draw).\n• Correct Score – The exact final score predicted by AI.\n• Confidence % – How confident the AI model is in the prediction (higher = stronger signal).\n• Combined Confidence Score – The multiplied confidence of all selections in a combo."
+          a: (
+            <ul className="space-y-1.5 list-none pl-0">
+              <li><span className="font-semibold text-foreground">1X2</span> — 1 = Home Win, X = Draw, 2 = Away Win.</li>
+              <li><span className="font-semibold text-foreground">BTTS (Both Teams to Score)</span> — Yes = both teams expected to score; No = at least one team keeps a clean sheet.</li>
+              <li><span className="font-semibold text-foreground">Over/Under 1.5</span> — Over = 2+ total goals; Under = 0 or 1 goal.</li>
+              <li><span className="font-semibold text-foreground">Over/Under 2.5</span> — Over = 3+ total goals; Under = 0, 1, or 2 goals.</li>
+              <li><span className="font-semibold text-foreground">Over/Under 3.5</span> — Over = 4+ total goals; Under = 3 or fewer goals.</li>
+              <li><span className="font-semibold text-foreground">Double Chance</span> — 1X = Home Win or Draw, X2 = Away Win or Draw, 12 = Home or Away Win (no draw).</li>
+              <li><span className="font-semibold text-foreground">Correct Score</span> — The exact final score predicted by AI.</li>
+              <li><span className="font-semibold text-foreground">Confidence %</span> — How confident the AI model is in the prediction (higher = stronger signal).</li>
+              <li><span className="font-semibold text-foreground">Combined Confidence Score</span> — The multiplied confidence of all selections in a combo.</li>
+            </ul>
+          )
         },
         {
           q: "What are AI Combos and how do they differ from single predictions?",
