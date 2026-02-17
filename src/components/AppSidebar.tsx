@@ -293,7 +293,7 @@ export function AppSidebar() {
                 activeClassName="bg-primary/20 text-primary"
               >
                 <HelpCircle className="h-4 w-4" />
-                {!collapsed && <span>Help & Support</span>}
+                {!collapsed && <span>FAQ & Support</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
