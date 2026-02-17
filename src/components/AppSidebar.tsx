@@ -288,6 +288,18 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <NavLink 
+                to="/help-support" 
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                activeClassName="bg-primary/20 text-primary"
+              >
+                <HelpCircle className="h-4 w-4" />
+                {!collapsed && <span>Help & Support</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink 
                 to="/settings" 
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
                 activeClassName="bg-primary/20 text-primary"
