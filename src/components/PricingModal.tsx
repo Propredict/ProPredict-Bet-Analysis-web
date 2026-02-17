@@ -44,11 +44,13 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
   useEffect(() => {
     if (open) {
-      // Small delay for mount → animate
+      document.body.style.overflow = "hidden";
       requestAnimationFrame(() => setIsVisible(true));
     } else {
+      document.body.style.overflow = "";
       setIsVisible(false);
     }
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
   const handleClose = () => {
@@ -98,8 +100,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col overflow-hidden",
-          "rounded-2xl max-h-[70vh] shadow-2xl",
+          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col",
+          "rounded-2xl shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
         style={{ backgroundColor: 'hsl(var(--background))' }}
@@ -113,7 +115,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </button>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pt-2 pb-20">
+        <div className="px-5 pt-2 pb-4">
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-2 mb-4">
