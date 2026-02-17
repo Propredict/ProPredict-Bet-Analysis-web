@@ -82,7 +82,7 @@ const HelpSupport = () => {
     },
   ];
 
-  const faqCategories: { title: string; icon: any; color: string; questions: { q: string; a: React.ReactNode }[] }[] = [
+  const faqCategories: { title: string; icon: any; color: string; questions: { q: string; a: React.ReactNode; highlight?: boolean }[] }[] = [
     {
       title: "Account & Subscription",
       icon: User,
@@ -120,7 +120,8 @@ const HelpSupport = () => {
           a: "New tips are posted daily, typically several hours before matches begin. Premium members receive early access to predictions as soon as they're generated."
         },
         {
-          q: "What do the prediction markets and values mean?",
+          highlight: true,
+           q: "What do the prediction markets and values mean?",
           a: (
             <ul className="space-y-1.5 list-none pl-0">
               <li><span className="font-semibold text-foreground">1X2</span> — 1 = Home Win, X = Draw, 2 = Away Win.</li>
@@ -382,9 +383,10 @@ const HelpSupport = () => {
                     <AccordionItem 
                       key={index} 
                       value={`${category.title}-${index}`}
-                      className="border border-border rounded-md px-3 data-[state=open]:bg-muted/30"
+                      className={`border rounded-md px-3 data-[state=open]:bg-muted/30 ${faq.highlight ? "border-destructive/60 bg-destructive/5" : "border-border"}`}
                     >
-                      <AccordionTrigger className="text-[11px] sm:text-xs text-foreground hover:no-underline py-2">
+                      <AccordionTrigger className={`text-[11px] sm:text-xs hover:no-underline py-2 ${faq.highlight ? "text-destructive font-semibold" : "text-foreground"}`}>
+                        {faq.highlight && <span className="mr-1.5">🔥</span>}
                         {faq.q}
                       </AccordionTrigger>
                       <AccordionContent className="text-[10px] sm:text-xs text-muted-foreground pb-2">
