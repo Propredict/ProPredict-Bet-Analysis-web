@@ -199,7 +199,7 @@ export default function LiveScores() {
     setSelectedMatch(null);
     if (fromGoalPushRef.current) {
       fromGoalPushRef.current = false;
-      navigate("/live-scores", { replace: true });
+      navigate("/favorites", { replace: true });
     }
   }, [navigate]);
 
