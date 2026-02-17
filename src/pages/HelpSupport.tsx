@@ -130,6 +130,33 @@ const HelpSupport = () => {
       ],
     },
     {
+      title: "Match Previews",
+      icon: Sparkles,
+      color: "text-emerald-400",
+      questions: [
+        {
+          q: "What are Match Previews?",
+          a: "Match Previews provide a detailed pre-match analysis for today's fixtures. Each preview includes form guides, head-to-head records, recent results, and key stats to help you understand the matchup before kickoff."
+        },
+        {
+          q: "How do I use the statistics in Match Previews?",
+          a: (
+            <ul className="space-y-1.5 list-none pl-0">
+              <li><span className="font-semibold text-foreground">Form Guide</span> — Shows each team's recent results (W/D/L) over the last 5 matches.</li>
+              <li><span className="font-semibold text-foreground">Head-to-Head (H2H)</span> — Historical results between the two teams in previous meetings.</li>
+              <li><span className="font-semibold text-foreground">Goals Scored/Conceded</span> — Average goals per match to gauge attacking and defensive strength.</li>
+              <li><span className="font-semibold text-foreground">Home/Away Performance</span> — How each team performs at home vs away.</li>
+              <li><span className="font-semibold text-foreground">League Filter</span> — Use the league search to quickly find matches from a specific competition.</li>
+            </ul>
+          )
+        },
+        {
+          q: "Why don't I see tomorrow's matches?",
+          a: "Match Previews only display today's fixtures. Finished matches are automatically filtered out so you always see the most relevant upcoming games."
+        },
+      ],
+    },
+    {
       title: "App & Technical",
       icon: Smartphone,
       color: "text-blue-400",
