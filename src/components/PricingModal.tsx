@@ -89,7 +89,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/15 transition-opacity duration-300",
+          "absolute inset-0 bg-black/40 transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-0"
         )}
         onClick={handleClose}
