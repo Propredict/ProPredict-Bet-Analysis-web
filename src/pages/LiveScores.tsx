@@ -196,10 +196,12 @@ export default function LiveScores() {
 
   // Custom close handler: go to /live-scores if opened from push
   const handleModalClose = useCallback(() => {
+    const wasFromPush = fromGoalPushRef.current;
+    fromGoalPushRef.current = false;
     setSelectedMatch(null);
-    if (fromGoalPushRef.current) {
-      fromGoalPushRef.current = false;
-      navigate("/favorites", { replace: true });
+    if (wasFromPush) {
+      // Let modal exit animation finish before navigating
+      setTimeout(() => navigate("/favorites", { replace: true }), 300);
     }
   }, [navigate]);
 
