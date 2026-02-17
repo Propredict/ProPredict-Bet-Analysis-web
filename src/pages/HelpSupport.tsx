@@ -110,6 +110,10 @@ const HelpSupport = () => {
           q: "What do the prediction markets and values mean?",
           a: "Here's a quick guide to common prediction markets:\n\n• 1X2 – 1 = Home Win, X = Draw, 2 = Away Win.\n• BTTS (Both Teams to Score) – Yes means both teams are expected to score; No means at least one team keeps a clean sheet.\n• Over/Under 1.5 – Over 1.5 means 2 or more total goals; Under 1.5 means 0 or 1 goal.\n• Over/Under 2.5 – Over 2.5 means 3 or more total goals; Under 2.5 means 0, 1, or 2 goals.\n• Over/Under 3.5 – Over 3.5 means 4 or more total goals; Under 3.5 means 3 or fewer goals.\n• Double Chance – 1X = Home Win or Draw, X2 = Away Win or Draw, 12 = Home or Away Win (no draw).\n• Correct Score – The exact final score predicted by AI.\n• Confidence % – How confident the AI model is in the prediction (higher = stronger signal).\n• Combined Confidence Score – The multiplied confidence of all selections in a combo."
         },
+        {
+          q: "What are AI Combos and how do they differ from single predictions?",
+          a: "AI Picks are individual match predictions (e.g., Team A to win, Over 2.5 goals). AI Combos bundle multiple AI Picks into a single combined selection — similar to an accumulator. All selections in a combo must be correct for it to count as a win. Combos carry a higher Combined Confidence Score because the individual confidence values are multiplied together. They offer more detailed analysis but are riskier since every pick must hit. Single predictions are safer and easier to follow, while combos are for users who want higher-value multi-match insights."
+        },
       ],
     },
     {
