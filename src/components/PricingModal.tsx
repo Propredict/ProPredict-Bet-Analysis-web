@@ -99,7 +99,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       <div
         className={cn(
           "relative w-full max-w-lg bg-background border-t border-border/50 transition-transform duration-300 ease-out flex flex-col",
-          "rounded-t-[24px] min-h-[90vh] max-h-[95vh]",
+          "rounded-t-[24px] max-h-[85vh]",
           isVisible ? "translate-y-0" : "translate-y-full"
         )}
       >
@@ -117,7 +117,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </button>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-6 pb-28">
+        <div className="flex-1 overflow-y-auto px-5 pb-24">
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-2 mb-4">
@@ -134,20 +134,20 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           )}
 
           {/* Header */}
-          <div className="text-center mt-4 mb-8">
+          <div className="text-center mt-2 mb-5">
             <div className={cn(
-              "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4",
+              "inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3",
               isPremium
-                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_30px_rgba(217,70,239,0.3)]"
-                : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_30px_rgba(245,158,11,0.3)]"
+                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]"
+                : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
             )}>
               {isPremium
-                ? <Crown className="h-8 w-8 text-fuchsia-400" />
-                : <Star className="h-8 w-8 text-amber-400" />
+                ? <Crown className="h-6 w-6 text-fuchsia-400" />
+                : <Star className="h-6 w-6 text-amber-400" />
               }
             </div>
             <h2 className={cn(
-              "text-2xl font-bold mb-2 bg-clip-text text-transparent",
+              "text-xl font-bold mb-1.5 bg-clip-text text-transparent",
               isPremium
                 ? "bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400"
                 : "bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400"
@@ -165,27 +165,27 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
           {/* Features */}
           <div className={cn(
-            "rounded-2xl p-5 mb-6 border",
+            "rounded-xl p-4 mb-4 border",
             isPremium
               ? "bg-fuchsia-500/5 border-fuchsia-500/20"
               : "bg-amber-500/5 border-amber-500/20"
           )}>
-            <h3 className="text-sm font-semibold text-foreground mb-4">
+            <h3 className="text-xs font-semibold text-foreground mb-3">
               Everything you get:
             </h3>
-            <ul className="space-y-3.5">
+            <ul className="space-y-2.5">
               {features.map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-3">
                   <div className={cn(
-                    "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center",
+                    "flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center",
                     isPremium ? "bg-fuchsia-500/15" : "bg-amber-500/15"
                   )}>
                     <feature.icon className={cn(
-                      "h-4 w-4",
+                      "h-3.5 w-3.5",
                       isPremium ? "text-fuchsia-400" : "text-amber-400"
                     )} />
                   </div>
-                  <span className="text-sm text-foreground">{feature.label}</span>
+                  <span className="text-xs text-foreground">{feature.label}</span>
                 </li>
               ))}
             </ul>
@@ -203,12 +203,12 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </div>
 
         {/* Sticky Bottom CTA */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 pb-6 bg-gradient-to-t from-background via-background to-background/0">
+        <div className="absolute bottom-0 left-0 right-0 p-4 pb-5 bg-gradient-to-t from-background via-background to-background/0">
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
             className={cn(
-              "w-full h-14 text-base font-bold rounded-2xl transition-all duration-200 shadow-lg",
+              "w-full h-12 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg",
               isPremium
                 ? "bg-gradient-to-r from-fuchsia-600 via-purple-600 to-pink-600 hover:from-fuchsia-500 hover:via-purple-500 hover:to-pink-500 text-white shadow-fuchsia-500/30"
                 : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-black shadow-amber-500/30"
