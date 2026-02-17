@@ -85,7 +85,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className={cn(
@@ -95,29 +95,24 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         onClick={handleClose}
       />
 
-      {/* Bottom Sheet */}
+      {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-lg bg-background border-t border-border/50 transition-transform duration-300 ease-out flex flex-col",
-          "rounded-t-[24px] max-h-[85vh]",
-          isVisible ? "translate-y-0" : "translate-y-full"
+          "relative w-full max-w-sm bg-background border border-border/50 transition-all duration-300 ease-out flex flex-col",
+          "rounded-2xl max-h-[75vh] shadow-2xl",
+          isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
       >
-        {/* Drag Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
-        </div>
-
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute right-4 top-4 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors z-10"
+          className="absolute right-3 top-3 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors z-10"
         >
           <X className="h-4 w-4 text-muted-foreground" />
         </button>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-24">
+        <div className="flex-1 overflow-y-auto px-5 pt-2 pb-20">
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-2 mb-4">
@@ -203,7 +198,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </div>
 
         {/* Sticky Bottom CTA */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 pb-5 bg-gradient-to-t from-background via-background to-background/0">
+        <div className="p-4 border-t border-border/30">
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
