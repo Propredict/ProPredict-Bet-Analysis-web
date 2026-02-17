@@ -326,11 +326,11 @@ const HelpSupport = () => {
       {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => navigate("/settings")}
+        onClick={() => navigate(faqParam === "predictions-glossary" ? "/" : "/settings")}
         className="mb-3 h-7 text-xs gap-1"
       >
         <ArrowLeft className="h-3 w-3" />
-        Back to Settings
+        {faqParam === "predictions-glossary" ? "Back to Dashboard" : "Back to Settings"}
       </Button>
 
       {/* Header */}
