@@ -98,8 +98,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col",
-          "rounded-2xl max-h-[80vh] shadow-2xl",
+          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col overflow-hidden",
+          "rounded-2xl max-h-[70vh] shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
         style={{ backgroundColor: 'hsl(var(--background))' }}
