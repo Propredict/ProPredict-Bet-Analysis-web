@@ -16,6 +16,7 @@ import {
   Shield, 
   CreditCard,
   MessageSquare,
+  Swords,
   User,
   Sparkles,
   Smartphone,
@@ -132,6 +133,33 @@ const HelpSupport = () => {
         {
           q: "How do I report a bug?",
           a: "Use the contact form below to report any bugs. Please include details about what you were doing, the device/browser you're using, and any error messages you see."
+        },
+      ],
+    },
+    {
+      title: "AI vs Members Arena",
+      icon: Swords,
+      color: "text-orange-400",
+      questions: [
+        {
+          q: "What is the AI vs Members Arena?",
+          a: "The Arena is a gamified prediction challenge where you compete against our AI. Pick outcomes for selected matches across Match Result (1X2), Goals (Over/Under 2.5), or BTTS markets — and earn points for every correct prediction."
+        },
+        {
+          q: "How do I earn points and what's the reward?",
+          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Pro Access extension. Your points only reset after you claim the reward, so you never lose progress."
+        },
+        {
+          q: "How many predictions can I make per day?",
+          a: "Daily limits depend on your plan: Free users get 4 predictions per day, Pro users get 5, and Premium users get 6. Predictions are available for priority league matches only."
+        },
+        {
+          q: "When are Arena predictions resolved?",
+          a: "Predictions are automatically resolved every 30 minutes after matches finish. Your stats, points, and notifications update in real time — no manual action needed."
+        },
+        {
+          q: "What do 'AI agrees' and 'AI challenged' badges mean?",
+          a: "'AI agrees' means the AI's prediction matches yours — a confidence signal. 'AI challenged' means your pick differs from the AI's, adding a competitive edge to the experience."
         },
       ],
     },
