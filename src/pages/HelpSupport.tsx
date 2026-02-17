@@ -118,6 +118,10 @@ const HelpSupport = () => {
               <li><span className="font-semibold text-foreground">Over/Under 3.5</span> — Over = 4+ total goals; Under = 3 or fewer goals.</li>
               <li><span className="font-semibold text-foreground">Double Chance</span> — 1X = Home Win or Draw, X2 = Away Win or Draw, 12 = Home or Away Win (no draw).</li>
               <li><span className="font-semibold text-foreground">Correct Score</span> — The exact final score predicted by AI.</li>
+              <li><span className="font-semibold text-foreground">DNB (Draw No Bet)</span> — If the match ends in a draw, the selection is void and confidence remains at 1 (push).</li>
+              <li><span className="font-semibold text-foreground">T1 2+</span> — Home team scores 2 or more goals.</li>
+              <li><span className="font-semibold text-foreground">T2 2+</span> — Away team scores 2 or more goals.</li>
+              <li><span className="font-semibold text-foreground">ATX (Any Time Draw)</span> — A draw occurs at any point during the match (half-time or full-time).</li>
               <li><span className="font-semibold text-foreground">Confidence %</span> — How confident the AI model is in the prediction (higher = stronger signal).</li>
               <li><span className="font-semibold text-foreground">Combined Confidence Score</span> — The multiplied confidence of all selections in a combo.</li>
             </ul>
