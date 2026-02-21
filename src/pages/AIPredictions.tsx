@@ -73,7 +73,8 @@ export default function AIPredictions() {
     // When confidence is NULL, the secure view masked it → user lacks access to that tier
     // If is_premium is true and confidence is null, it's premium tier (masked by view)
     if (prediction.is_premium && prediction.confidence == null) return "premium";
-    if (prediction.is_premium && prediction.confidence >= 85) return "premium";
+    // Tier based on confidence thresholds: FREE <65, PRO 65-84, PREMIUM ≥85
+    if (prediction.confidence != null && prediction.confidence >= 85) return "premium";
     if (prediction.confidence != null && prediction.confidence >= 65) return "pro";
     return "free";
   };
