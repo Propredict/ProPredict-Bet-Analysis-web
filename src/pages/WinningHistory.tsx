@@ -49,7 +49,7 @@ export default function AllTickets() {
       refetchTickets();
     }
     refetchPlan();
-    toast.success(`${contentType === "tips" ? "AI Picks" : "AI Combos"} refreshed`);
+    toast.success(`${contentType === "tips" ? "Predictions" : "Multi-Match Predictions"} refreshed`);
   };
 
   // Filter to exclude today and sort by date descending (last 3 days first)
@@ -193,7 +193,7 @@ export default function AllTickets() {
             </div>
             <div>
                <h1 className="text-sm sm:text-base font-semibold text-foreground">Prediction History</h1>
-               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse our archive of AI Picks & AI Combos</p>
+               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse our archive of Predictions & Multi-Match Predictions</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -254,7 +254,7 @@ export default function AllTickets() {
             )}
           >
             <Lightbulb className={cn("h-5 w-5", contentType === "tips" && "drop-shadow-lg")} />
-            <span className="text-base">AI Picks</span>
+            <span className="text-base">Predictions</span>
             <Badge 
               variant="outline" 
               className={cn(
@@ -277,7 +277,7 @@ export default function AllTickets() {
             )}
           >
             <Ticket className={cn("h-5 w-5", contentType === "tickets" && "drop-shadow-lg")} />
-            <span className="text-base">AI Combos</span>
+            <span className="text-base">Multi-Match</span>
             <Badge 
               variant="outline" 
               className={cn(
@@ -403,7 +403,7 @@ export default function AllTickets() {
             <div className="flex flex-col items-center gap-2 py-6">
               <Lightbulb className="h-6 w-6 text-muted-foreground/40" />
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} AI Picks in archive</p>
+                <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} predictions in archive</p>
                 <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
               </div>
             </div>
@@ -431,7 +431,7 @@ export default function AllTickets() {
               <div className="flex flex-col items-center gap-2 py-6">
                 <Ticket className="h-6 w-6 text-muted-foreground/40" />
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} AI Combos in archive</p>
+                  <p className="text-xs text-muted-foreground">No {getTabLabel(activeTab).toLowerCase()} multi-match predictions in archive</p>
                   <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
                 </div>
               </div>

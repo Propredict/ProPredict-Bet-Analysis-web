@@ -116,8 +116,8 @@ const HelpSupport = () => {
           a: "Free users can access Daily Predictions. To access Pro Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
         },
         {
-          q: "When are new tips posted?",
-          a: "New tips are posted daily, typically several hours before matches begin. Premium members receive early access to predictions as soon as they're generated."
+          q: "When are new predictions posted?",
+          a: "New predictions are posted daily, typically several hours before matches begin. Premium members receive early access to predictions as soon as they're generated."
         },
         {
           highlight: true,

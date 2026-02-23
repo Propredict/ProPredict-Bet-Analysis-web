@@ -77,7 +77,7 @@ export default function ExclusiveTickets() {
   const handleRefresh = () => {
     refetch();
     refetchPlan();
-    toast.success("AI Combos refreshed");
+    toast.success("Predictions refreshed");
   };
 
   return <>
@@ -181,7 +181,7 @@ export default function ExclusiveTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
-              <p>Loading AI Combos...</p>
+              <p>Loading predictions...</p>
             </div>
           </Card>
         ) : exclusiveTickets.length === 0 ? (

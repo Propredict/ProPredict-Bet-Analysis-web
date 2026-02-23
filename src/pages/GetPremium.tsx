@@ -61,7 +61,7 @@ const androidPlans = {
       name: "Free",
       price: "€0",
       period: "/forever",
-      description: "Watch ads to unlock daily tips",
+       description: "Watch ads to access daily predictions",
       buttonText: "Current Plan",
       buttonVariant: "outline" as const,
       features: [
@@ -80,7 +80,7 @@ const androidPlans = {
       name: "Pro",
       price: "€3.99",
       period: "/month",
-      description: "Unlock all AI Picks without watching ads",
+       description: "Access all predictions without watching ads",
       buttonText: "Get Pro",
       buttonVariant: "default" as const,
       popular: true,
@@ -100,7 +100,7 @@ const androidPlans = {
       name: "Premium",
       price: "€5.99",
       period: "/month",
-      description: "Full access to all AI Picks & Combos",
+       description: "Full access to all predictions",
       buttonText: "Get Premium",
       buttonVariant: "default" as const,
       features: [
@@ -120,7 +120,7 @@ const androidPlans = {
       name: "Free",
       price: "€0",
       period: "/forever",
-      description: "Watch ads to unlock daily tips",
+      description: "Watch ads to access daily predictions",
       buttonText: "Current Plan",
       buttonVariant: "outline" as const,
       features: [
@@ -140,7 +140,7 @@ const androidPlans = {
       price: "€39.99",
       period: "/year",
       savings: "€3.33/mo - Save 17%",
-      description: "Unlock all AI Picks without watching ads",
+      description: "Access all predictions without watching ads",
       buttonText: "Get Pro",
       buttonVariant: "default" as const,
       popular: true,
@@ -161,7 +161,7 @@ const androidPlans = {
       price: "€59.99",
       period: "/year",
       savings: "€5.00/mo - Save 17%",
-      description: "Full access to all AI Picks & Combos",
+      description: "Full access to all predictions",
       buttonText: "Get Premium",
       buttonVariant: "default" as const,
       features: [
@@ -189,7 +189,7 @@ const webPlans = {
       buttonText: "Current Plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Full access to Daily AI Picks/Combos", included: true },
+         { text: "Full access to Daily Predictions", included: true },
         { text: "Free AI Basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
@@ -209,11 +209,11 @@ const webPlans = {
       buttonVariant: "default" as const,
       popular: true,
       features: [
-        { text: "Daily & Pro AI Picks/Combos unlocked", included: true },
+         { text: "Daily & Pro Predictions unlocked", included: true },
         { text: "Basic & Pro AI predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
-        { text: "Ad-free AI Picks/Combos experience", included: true },
+         { text: "Ad-free predictions experience", included: true },
         { text: "5 Match Previews daily", included: true },
         { text: "Premium insights", included: false },
         { text: "VIP analysis", included: false },
@@ -248,7 +248,7 @@ const webPlans = {
       buttonText: "Current Plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Full access to Daily AI Picks/Combos", included: true },
+        { text: "Full access to Daily Predictions", included: true },
         { text: "Free AI Basic predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
@@ -269,11 +269,11 @@ const webPlans = {
       buttonVariant: "default" as const,
       popular: true,
       features: [
-        { text: "Daily & Pro AI Picks/Combos unlocked", included: true },
+        { text: "Daily & Pro Predictions unlocked", included: true },
         { text: "Basic & Pro AI predictions", included: true },
         { text: "Live scores", included: true },
         { text: "League standings", included: true },
-        { text: "Ad-free AI Picks/Combos experience", included: true },
+        { text: "Ad-free predictions experience", included: true },
         { text: "5 Match Previews daily", included: true },
         { text: "Premium insights", included: false },
         { text: "VIP analysis", included: false },
@@ -303,7 +303,7 @@ const webPlans = {
 
 const benefits = [
   { icon: Target, title: "Premium AI Predictions", description: "AI analysis with 90%+ historical accuracy" },
-  { icon: Zap, title: "VIP AI Combos", description: "Curated multi-match AI analysis and insights" },
+  { icon: Zap, title: "VIP Multi-Match Predictions", description: "Curated multi-match AI analysis and insights" },
   { icon: Brain, title: "Full AI Analysis", description: "Complete AI-powered match analysis and insights" },
   { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new predictions" },
   { icon: Clock, title: "Priority Access", description: "Get insights before match kickoff" },
