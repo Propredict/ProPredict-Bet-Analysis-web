@@ -128,31 +128,30 @@ const PrivacyPolicy = () => {
             </ul>
           </div>
 
-          {/* 3 */}
+          {/* 4. Advertising and Third-Party Services */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">3. Third-Party Services</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">We use trusted third-party services to operate and monetize ProPredict:</p>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
-              <li>Advertising partners for website and mobile app monetization</li>
-              <li>Analytics services (e.g. Google Analytics / Firebase)</li>
-              <li>Authentication and database services (e.g. Supabase)</li>
-            </ul>
-            <p className="text-xs text-muted-foreground">
-              Advertising partners may use cookies, device identifiers, or similar technologies to display personalized or non-personalized advertisements in accordance with applicable laws.
+            <h3 className="font-semibold text-sm mb-1.5">4. Advertising and Third-Party Services</h3>
+            <p className="text-xs text-muted-foreground mb-2">
+              We use third-party services to support and operate our platform.
             </p>
-          </div>
 
-          {/* Advertising & Consent */}
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">Advertising & Consent</h3>
+            <h4 className="font-semibold text-xs mb-1">Advertising</h4>
+            <p className="text-xs text-muted-foreground mb-1.5">We use:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
+              <li><strong className="text-foreground">Google AdSense</strong> to display advertisements on our website.</li>
+              <li><strong className="text-foreground">Google AdMob</strong> to display advertisements within our mobile application.</li>
+            </ul>
             <p className="text-xs text-muted-foreground mb-1.5">
-              ProPredict may display advertisements on the website and in the mobile application through third-party advertising partners.
+              These services may collect device information, advertising identifiers (such as Google Advertising ID), IP address, and usage data for the purposes of ad personalization, measurement, and analytics.
             </p>
             <p className="text-xs text-muted-foreground mb-1.5">
-              Ads may be personalized or non-personalized depending on user consent, location, and applicable regulations (such as GDPR and CCPA).
+              Google and its partners may use cookies and similar technologies to serve ads based on a user's prior visits to this website or app and other websites.
             </p>
             <p className="text-xs text-muted-foreground">
-              Users may manage or withdraw consent through cookie settings, device settings, or browser controls.
+              Users may manage or opt out of personalized advertising by visiting:{" "}
+              <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                https://adssettings.google.com
+              </a>
             </p>
           </div>
 
