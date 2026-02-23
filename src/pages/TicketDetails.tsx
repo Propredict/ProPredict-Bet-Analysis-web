@@ -311,7 +311,7 @@ export default function TicketDetails() {
           {JSON.stringify(breadcrumbSchema)}
         </script>
       </Helmet>
-      <div className="space-y-4 max-w-3xl mx-auto">
+      <div className="space-y-4 max-w-xl mx-auto">
         {/* Breadcrumb Navigation */}
         <Breadcrumb>
           <BreadcrumbList className="text-xs sm:text-sm">
