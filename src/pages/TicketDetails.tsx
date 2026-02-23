@@ -392,7 +392,7 @@ export default function TicketDetails() {
                       <div className="flex items-center justify-between">
                         {/* Match name - VISIBLE */}
                         <div className="flex-1 mr-4 min-w-0">
-                          <span className="text-sm text-gray-900 truncate block">
+                          <span className="text-sm font-bold text-gray-900 truncate block">
                             {parsed.homeTeam} vs {parsed.awayTeam}
                           </span>
                           {parsed.league && (
@@ -419,7 +419,7 @@ export default function TicketDetails() {
                   return (
                     <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                       <div className="flex-1 mr-4 min-w-0">
-                        <span className="text-sm text-gray-900 truncate block">
+                        <span className="text-sm font-bold text-gray-900 truncate block">
                           {parsed.homeTeam} vs {parsed.awayTeam}
                         </span>
                         {parsed.league && (
@@ -440,9 +440,9 @@ export default function TicketDetails() {
           </div>
 
           {/* Combined Confidence Score - Blurred when locked */}
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+          <div className="px-4 py-3 bg-primary/10 border-t border-primary/20">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Combined Confidence Score</span>
+              <span className="text-sm font-semibold text-gray-700">Combined Confidence Score</span>
               <span className={cn(
                 "font-bold text-lg text-primary",
                 isLocked && "blur-sm opacity-50"
@@ -470,9 +470,9 @@ export default function TicketDetails() {
           )}
 
           {/* Share Section */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-gray-100 bg-gray-50">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Share2 className="h-4 w-4" />
                 <span>Share this AI Combo</span>
               </div>
