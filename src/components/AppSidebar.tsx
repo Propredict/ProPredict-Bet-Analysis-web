@@ -163,7 +163,7 @@ export function AppSidebar() {
         {/* Tips */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "AI Picks"}
+            {!collapsed && "Match Predictions"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
