@@ -124,7 +124,7 @@ export default function DailyTickets() {
 
   return <>
     <Helmet>
-      <title>Daily AI Combos – ProPredict</title>
+      <title>Daily Multi-Match Predictions – ProPredict</title>
       <meta
         name="description"
         content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only."
@@ -138,7 +138,7 @@ export default function DailyTickets() {
             <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Combos</h1>
+            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Multi-Match Predictions</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "AI-powered match combinations"}
             </p>
@@ -158,7 +158,7 @@ export default function DailyTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Daily AI Combos combine multiple daily predictions into structured multi-match combinations, created for informational and analytical purposes only. Each combo is generated based on AI analysis and match statistics.
+          Daily Multi-Match Predictions combine multiple daily predictions into structured multi-match combinations, created for informational and analytical purposes only. Each combo is generated based on AI analysis and match statistics.
         </p>
       </Card>
 
@@ -212,7 +212,7 @@ export default function DailyTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No daily AI Combos available</p>
+              <p className="text-primary mb-1">No Daily Multi-Match Predictions available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
