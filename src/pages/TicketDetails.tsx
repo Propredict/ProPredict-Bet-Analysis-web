@@ -80,14 +80,30 @@ export default function TicketDetails() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleFacebookShare = () => {
-    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-    // On Android WebView, use native bridge to open externally; fallback to window.open
-    if ((window as any).Android?.openExternalUrl) {
-      (window as any).Android.openExternalUrl(fbUrl);
-    } else {
-      window.open(fbUrl, "_blank", "noopener,noreferrer,width=600,height=400");
+  const handleFacebookShare = async () => {
+    // On mobile/Android, use native share sheet so user can pick Facebook app
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: ticket?.title || "ProPredict Prediction",
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          // Fall through to copy fallback
+        } else {
+          return;
+        }
+      }
     }
+    // Web fallback: open Facebook sharer
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
+      "_blank",
+      "noopener,noreferrer,width=600,height=400"
+    );
   };
 
   const handleInstagramShare = async () => {
