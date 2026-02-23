@@ -365,6 +365,57 @@ export default function LiveScores() {
                 {l === "All Leagues" && <Badge className="ml-1 bg-white/10 text-[9px] px-1">{leaguesCount}</Badge>}
               </Button>)}
           </div>
+
+          {/* SEARCH + VIEW TOGGLE */}
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative flex-1 max-w-sm">
+              <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
+              <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Input 
+                  className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
+                  placeholder="Search teams…" 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)}
+                  onFocus={e => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }, 300);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg border border-border">
+              <button
+                onClick={() => setViewMode("simple")}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
+                  viewMode === "simple" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <List className="h-3 w-3" />
+                <span className="hidden sm:inline">Simple</span>
+              </button>
+              <button
+                onClick={() => setViewMode("structured")}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
+                  viewMode === "structured" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LayoutGrid className="h-3 w-3" />
+                <span className="hidden sm:inline">Grouped</span>
+              </button>
+            </div>
+          </div>
           
           {/* Date selector - Enhanced with prominent borders */}
           <div className="relative">
@@ -415,57 +466,6 @@ export default function LiveScores() {
               <span className="capitalize">{tab}</span>
             </button>
           ))}
-        </div>
-
-        {/* SEARCH + VIEW TOGGLE */}
-        <div className="flex items-center gap-2">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
-            <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
-              <Input 
-                className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
-                placeholder="Search teams…" 
-                value={search} 
-                onChange={e => setSearch(e.target.value)}
-                onFocus={e => {
-                  setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: "smooth", block: "center" });
-                  }, 300);
-                }}
-              />
-            </div>
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg border border-border">
-            <button
-              onClick={() => setViewMode("simple")}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
-                viewMode === "simple" 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <List className="h-3 w-3" />
-              <span className="hidden sm:inline">Simple</span>
-            </button>
-            <button
-              onClick={() => setViewMode("structured")}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all",
-                viewMode === "structured" 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <LayoutGrid className="h-3 w-3" />
-              <span className="hidden sm:inline">Grouped</span>
-            </button>
-          </div>
         </div>
 
         {/* MATCHES or FALLBACK */}
