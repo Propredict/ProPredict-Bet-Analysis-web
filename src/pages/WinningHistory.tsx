@@ -178,7 +178,7 @@ export default function AllTickets() {
             "@type": "BreadcrumbList",
             "itemListElement": [
               { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propredict.me/" },
-              { "@type": "ListItem", "position": 2, "name": "Winning History", "item": "https://propredict.me/winning-history" }
+              { "@type": "ListItem", "position": 2, "name": "Prediction History", "item": "https://propredict.me/winning-history" }
             ]
           })}
         </script>
