@@ -166,7 +166,7 @@ export function MatchPredictions() {
       <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md bg-primary/5 border border-primary/10">
         <Users className="h-3 w-3 text-primary/70" />
         <span className="text-[9px] text-muted-foreground">
-          <span className="text-primary font-medium">128</span> users unlocked tips today
+          <span className="text-primary font-medium">128</span> users unlocked predictions today
         </span>
       </div>
 
@@ -199,7 +199,7 @@ export function MatchPredictions() {
             {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
             {activeTab === "premium" && <Crown className="h-5 w-5 text-fuchsia-500/50" />}
             <p className="text-[10px] text-muted-foreground">
-              No {activeTab === "exclusive" ? "Pro" : activeTab} tips available
+              No {activeTab === "exclusive" ? "Pro" : activeTab} predictions available
             </p>
           </div>
         </Card>
