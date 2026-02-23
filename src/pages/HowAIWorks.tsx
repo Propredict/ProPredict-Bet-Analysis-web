@@ -345,6 +345,30 @@ const HowAIWorks = () => {
           </CardContent>
         </Card>
 
+        {/* Model Limitations & Transparency */}
+        <Card className="bg-card border-border">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 rounded-md bg-warning/20">
+                <Shield className="h-4 w-4 text-warning" />
+              </div>
+              <h2 className="text-sm font-semibold text-foreground">Model Limitations & Transparency</h2>
+            </div>
+            <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
+              No predictive model can account for every variable in a live sporting event. While our system leverages thousands of data points and statistical features, certain factors remain inherently unpredictable — such as last-minute injuries, weather disruptions, refereeing decisions, and individual player psychology.
+            </p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
+              Our model operates on the principle of probabilistic reasoning: it does not claim to know the future, but rather estimates the statistical likelihood of outcomes based on observed historical patterns. This distinction is fundamental to how ProPredict works and how its outputs should be interpreted.
+            </p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
+              We believe in full transparency regarding our methodology and its constraints. Our accuracy metrics are published openly, and we actively track how our probability estimates compare with real-world results across thousands of matches and multiple leagues worldwide. This ongoing evaluation process helps us identify areas for improvement and ensures our users have realistic expectations.
+            </p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
+              ProPredict is committed to responsible AI usage. We do not exaggerate the capabilities of our system, and we strongly encourage all users to treat the predictions as one of many informational inputs — never as definitive forecasts or guarantees of any kind.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* CTA Section */}
         <Card className="bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/30">
           <CardContent className="p-4 md:p-5 text-center">
