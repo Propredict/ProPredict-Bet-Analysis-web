@@ -215,7 +215,7 @@ const Settings = () => {
                 <Switch checked={goalEnabled} onCheckedChange={handleGoalToggle} />
               </div>
 
-              {/* Daily Tips & Tickets */}
+              {/* Daily Predictions & Combos */}
               <div className="flex items-center justify-between p-2 rounded-md">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-full bg-muted/50">

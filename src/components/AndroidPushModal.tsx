@@ -141,7 +141,7 @@ export function AndroidPushModal() {
         </DialogContent>
       </Dialog>
 
-      {/* 🎯 Daily Tips Modal */}
+      {/* 🎯 Daily Predictions Modal */}
       <Dialog open={step === "tips"} onOpenChange={(v) => { if (!v) handleTipsLater(); }}>
         <DialogContent className="sm:max-w-[380px] gap-5">
           <DialogHeader className="items-center text-center gap-3">
