@@ -77,16 +77,43 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
-          {/* 1 */}
+          {/* 2. Information We Collect */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">1. Information We Collect</h3>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-              <li>Email address and account credentials</li>
-              <li>Optional profile information</li>
-              <li>Device and browser information</li>
-              <li>IP address and approximate location</li>
-              <li>Usage and performance data</li>
+            <h3 className="font-semibold text-sm mb-1.5">2. Information We Collect</h3>
+            <p className="text-xs text-muted-foreground mb-2">We may collect the following types of information:</p>
+
+            <h4 className="font-semibold text-xs mb-1">2.1 Information You Provide</h4>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
+              <li>Email address</li>
+              <li>Account credentials</li>
+              <li>Subscription details</li>
+              <li>Support inquiries</li>
             </ul>
+
+            <h4 className="font-semibold text-xs mb-1">2.2 Automatically Collected Information</h4>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
+              <li>IP address</li>
+              <li>Device type</li>
+              <li>Operating system</li>
+              <li>Browser type</li>
+              <li>Usage data (pages visited, features used)</li>
+              <li>App interaction data</li>
+            </ul>
+
+            <h4 className="font-semibold text-xs mb-1">2.3 Payment Information</h4>
+            <div className="border border-border bg-muted/30 rounded-md p-2 mt-1">
+              <p className="text-xs font-semibold mb-1">💳 Payment Processing</p>
+              <p className="text-xs text-muted-foreground mb-1.5">
+                We use third-party payment processors to securely handle subscription payments:
+              </p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+                <li>Stripe (for subscriptions purchased via our website)</li>
+                <li>Google Play Billing (for subscriptions purchased within our Android mobile application)</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                We do not store full payment card details on our servers. All payment transactions are processed securely by the respective payment provider.
+              </p>
+            </div>
           </div>
 
           {/* 2 */}
