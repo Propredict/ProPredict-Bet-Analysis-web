@@ -81,7 +81,6 @@ export default function TicketDetails() {
   };
 
   const handleFacebookShare = async () => {
-    // On mobile/Android, use native share sheet so user can pick Facebook app
     if (navigator.share) {
       try {
         await navigator.share({
@@ -91,19 +90,16 @@ export default function TicketDetails() {
         });
         return;
       } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          // Fall through to copy fallback
-        } else {
-          return;
-        }
+        if ((err as Error).name === "AbortError") return;
       }
     }
-    // Web fallback: open Facebook sharer
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
-      "_blank",
-      "noopener,noreferrer,width=600,height=400"
-    );
+    // Fallback: copy link (window.open blocked in Android WebView)
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied! Paste it on Facebook.", { duration: 4000 });
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
   const handleInstagramShare = async () => {
