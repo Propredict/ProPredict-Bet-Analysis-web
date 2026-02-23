@@ -78,36 +78,14 @@ const Index = () => {
             <h2 className="text-sm md:text-base font-bold text-foreground mb-3">About ProPredict – Advanced AI Sports Analysis</h2>
             <div className="space-y-2 text-[11px] md:text-xs text-muted-foreground leading-relaxed">
               <p>
-                ProPredict is an AI-powered sports analytics platform focused on football data analysis and predictive modeling. Our system combines historical match statistics, performance indicators, team metrics, and machine learning algorithms to generate structured probability-based insights.
+                ProPredict is an AI-powered sports analytics platform focused on football data analysis and predictive modeling. Our system combines historical match statistics, performance indicators, and machine learning algorithms to generate structured probability-based insights.
               </p>
               <p>
-                Unlike traditional platforms, ProPredict does not provide gambling services or financial advice. Instead, our goal is to offer transparent, data-driven analysis that helps users understand patterns, trends, and performance indicators in football matches.
+                Unlike traditional platforms, ProPredict does not provide gambling services or financial advice. We offer transparent, data-driven analysis to help users understand patterns and trends in football matches.
               </p>
-              <p>Our AI models analyze multiple data points including:</p>
-              <ul className="list-disc list-inside space-y-0.5 pl-2">
-                <li>Team form and historical performance</li>
-                <li>Offensive and defensive efficiency metrics</li>
-                <li>Head-to-head statistics</li>
-                <li>Goal expectancy indicators</li>
-                <li>Possession and shot conversion trends</li>
-                <li>Contextual match variables</li>
-              </ul>
+              <p>Our AI models analyze key data points including team form, head-to-head statistics, goal expectancy indicators, possession trends, and contextual match variables — generating insights for informational and educational purposes only.</p>
               <p>
-                Using statistical regression models and probability estimation methods, the platform generates structured match insights. These insights are designed for informational and educational purposes only.
-              </p>
-              <p>
-                ProPredict does not guarantee outcomes or results. Football matches are influenced by many unpredictable factors, and statistical analysis can only estimate probabilities — not certainties. Our platform emphasizes analytical transparency and data interpretation rather than subjective advice.
-              </p>
-              <p>Users can explore:</p>
-              <ul className="list-disc list-inside space-y-0.5 pl-2">
-                <li>Probability-based outcome forecasts</li>
-                <li>Structured performance comparisons</li>
-                <li>Historical trend analysis</li>
-                <li>Analytical match summaries</li>
-                <li>AI-generated statistical breakdowns</li>
-              </ul>
-              <p>
-                By focusing on data science rather than speculation, ProPredict provides a modern analytical approach to understanding football performance metrics. Our mission is to make sports analytics accessible, structured, and easy to interpret — empowering users with knowledge rather than promises.
+                ProPredict does not guarantee outcomes. Football is influenced by unpredictable factors, and statistical analysis estimates probabilities — not certainties. Our mission is to make sports analytics accessible, structured, and easy to interpret — empowering users with knowledge rather than promises.
               </p>
             </div>
           </section>
