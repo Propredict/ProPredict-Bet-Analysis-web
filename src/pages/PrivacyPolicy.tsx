@@ -40,7 +40,7 @@ const PrivacyPolicy = () => {
         Back to Settings
       </Button>
 
-      <div className="max-w-3xl mx-auto">
+      <div>
         <div className="flex items-center gap-2 mb-1">
           <Shield className="w-5 h-5 text-primary" />
           <h1 className="text-xl font-bold">Privacy Policy</h1>
@@ -254,9 +254,51 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
-          {/* Contact */}
+          {/* 10. Informational Nature of the Service */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">Contact Us</h3>
+            <h3 className="font-semibold text-sm mb-1.5">10. Informational Nature of the Service</h3>
+            <p className="text-xs text-muted-foreground mb-1">
+              ProPredict provides AI-generated statistical analysis and probability-based insights related to sports events.
+            </p>
+            <p className="text-xs text-muted-foreground mb-1">
+              The platform does not facilitate gambling, accept wagers, or provide financial advice.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              All predictions are provided for informational and educational purposes only.
+            </p>
+          </div>
+
+          {/* 11. Children's Privacy */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">11. Children's Privacy</h3>
+            <p className="text-xs text-muted-foreground mb-1">
+              Our services are not intended for individuals under the age of 18.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              We do not knowingly collect personal data from minors.
+            </p>
+          </div>
+
+          {/* 12. International Data Transfers */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">12. International Data Transfers</h3>
+            <p className="text-xs text-muted-foreground">
+              Your information may be processed in countries outside your country of residence. By using our services, you consent to such transfers in accordance with applicable data protection laws.
+            </p>
+          </div>
+
+          {/* 13. Changes to This Privacy Policy */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">13. Changes to This Privacy Policy</h3>
+            <p className="text-xs text-muted-foreground">
+              We may update this Privacy Policy periodically. Updates will be posted on this page with a revised effective date.
+            </p>
+          </div>
+
+          {/* 14. Contact Information */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">14. Contact Information</h3>
+            <p className="text-xs text-muted-foreground mb-1">If you have any questions about this Privacy Policy, please contact:</p>
             <p className="text-xs text-muted-foreground">
               Email:{" "}
               <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>
