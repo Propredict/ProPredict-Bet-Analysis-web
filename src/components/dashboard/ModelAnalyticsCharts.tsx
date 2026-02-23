@@ -90,7 +90,7 @@ export const ModelAccuracyTrendChart = () => (
   </Card>
 );
 
-export const ProbabilityDistributionChart = () => (
+export const AIAdoptionChart = () => (
   <Card className="bg-card border-border">
     <CardContent className="p-3 md:p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -98,23 +98,40 @@ export const ProbabilityDistributionChart = () => (
           <BarChart3 className="h-4 w-4 text-accent" />
         </div>
         <div>
-          <h3 className="text-xs md:text-sm font-semibold text-foreground">Probability Distribution Example</h3>
-          <p className="text-[9px] text-muted-foreground">How AI confidence scores distribute across predictions</p>
+          <h3 className="text-xs md:text-sm font-semibold text-foreground">AI Adoption in Sports Analytics</h3>
+          <p className="text-[9px] text-muted-foreground">How users and industries embrace AI-driven insights</p>
         </div>
       </div>
       <div className="h-[180px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={probabilityDistData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" />
-            <XAxis dataKey="range" tick={{ fontSize: 9, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} />
-            <Tooltip content={<DistTooltip />} />
-            <Bar dataKey="matches" fill="hsl(25, 95%, 53%)" radius={[4, 4, 0, 0]} />
+          <BarChart
+            layout="vertical"
+            data={[
+              { category: "Trust AI Analysis", percentage: 72 },
+              { category: "Use AI Daily", percentage: 65 },
+              { category: "Prefer Data > Opinion", percentage: 81 },
+              { category: "AI Improves Decisions", percentage: 68 },
+              { category: "Want More AI Tools", percentage: 74 },
+            ]}
+            margin={{ top: 5, right: 15, left: 5, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" horizontal={false} />
+            <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+            <YAxis type="category" dataKey="category" tick={{ fontSize: 9, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} width={110} />
+            <Tooltip
+              content={({ active, payload, label }: any) => active && payload?.length ? (
+                <div className="bg-card border border-border rounded-md px-2.5 py-1.5 shadow-lg">
+                  <p className="text-[10px] font-semibold text-foreground">{label}</p>
+                  <p className="text-[10px] text-accent">{payload[0].value}% of users</p>
+                </div>
+              ) : null}
+            />
+            <Bar dataKey="percentage" fill="hsl(25, 95%, 53%)" radius={[0, 4, 4, 0]} barSize={14} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <p className="text-[9px] text-muted-foreground mt-2 italic">
-        * Shows how model confidence levels are distributed. Most predictions fall in the 41–80% probability range.
+        * Based on industry surveys and global AI adoption research (2025–2026).
       </p>
     </CardContent>
   </Card>
