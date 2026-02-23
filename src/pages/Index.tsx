@@ -100,6 +100,15 @@ const Index = () => {
         <DashboardSocialProof />
 
         <FeaturedPredictions />
+
+        {/* Prediction Analytics Charts – Web only */}
+        {!isAndroid && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PredictionOutcomeChart />
+            <ConfidenceDistributionChart />
+          </div>
+        )}
+
         <MatchPredictions />
         <BettingTickets />
         
@@ -112,14 +121,6 @@ const Index = () => {
         {/* AI Predictions Section */}
         <DashboardAIPredictions />
 
-        {/* Prediction Analytics Charts – Web only */}
-        {!isAndroid && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PredictionOutcomeChart />
-            <ConfidenceDistributionChart />
-          </div>
-        )}
-        
         <BottomCTA />
 
         {/* SEO internal link */}
