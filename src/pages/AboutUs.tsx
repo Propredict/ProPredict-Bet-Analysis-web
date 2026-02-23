@@ -22,52 +22,68 @@ const AboutUs = () => {
         Back to Settings
       </Button>
       
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
-          <Shield className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold">About ProPredict</h1>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">Smart sports insights powered by data and analysis</p>
+       <div className="max-w-3xl mx-auto">
+         <div className="flex items-center gap-2 mb-1">
+           <Shield className="w-5 h-5 text-primary" />
+           <h1 className="text-xl font-bold">About ProPredict</h1>
+         </div>
+         <p className="text-xs text-primary font-medium mb-4">Advanced AI Sports Analytics Platform</p>
 
-        <div className="space-y-3">
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">Who We Are</h3>
-            <p className="text-xs text-muted-foreground">
-              ProPredict is a sports analysis platform designed to provide users with AI-powered match insights,
-              statistics, and predictions for informational and entertainment purposes.
-            </p>
-          </div>
+         <div className="space-y-3">
+           <div className="border border-border rounded-lg p-3">
+             <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+               ProPredict is an advanced AI-powered sports analytics platform focused on structured football data analysis and predictive modeling. Our technology combines historical match statistics, performance indicators, and machine learning algorithms to generate probability-based insights designed to enhance understanding of match dynamics.
+             </p>
+             <p className="text-xs text-muted-foreground leading-relaxed">
+               We analyze large datasets across multiple competitions to identify patterns, trends, and performance signals that may influence football outcomes. By integrating statistical modeling with contextual variables, ProPredict delivers transparent, data-driven insights in a structured and accessible format.
+             </p>
+           </div>
 
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">What We Do</h3>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-              <li>Analyze football matches using data and AI models</li>
-              <li>Provide probability-based predictions</li>
-              <li>Offer premium analytical insights</li>
-              <li>Display live scores and match statistics</li>
-            </ul>
-          </div>
+           <div className="border border-border rounded-lg p-3">
+             <h3 className="font-semibold text-sm mb-1.5">What We Do</h3>
+             <p className="text-xs text-muted-foreground mb-1.5">Our AI models evaluate key analytical factors including:</p>
+             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+               <li>Team form and performance consistency</li>
+               <li>Head-to-head statistical history</li>
+               <li>Goal expectancy and scoring efficiency metrics</li>
+               <li>Possession patterns and tactical structures</li>
+               <li>Match context variables such as venue, schedule intensity, and fatigue impact</li>
+             </ul>
+             <p className="text-xs text-muted-foreground mt-1.5">Each analysis is generated using historical data modeling and probability estimation techniques.</p>
+           </div>
 
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">No Gambling Policy</h3>
-            <p className="text-xs text-muted-foreground font-medium mb-1.5">
-              ProPredict does NOT provide gambling services of any kind.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              We do not facilitate real-money transactions, process wagers, or connect to any gambling operators. All content is
-              for informational and entertainment purposes only.
-            </p>
-          </div>
+           <div className="border border-border rounded-lg p-3">
+             <h3 className="font-semibold text-sm mb-1.5">Our Approach</h3>
+             <p className="text-xs text-muted-foreground leading-relaxed mb-1.5">
+               Football outcomes are influenced by dynamic and unpredictable variables. Statistical modeling estimates probabilities — not certainties. ProPredict does not guarantee results, outcomes, or performance.
+             </p>
+             <p className="text-xs text-muted-foreground">
+               Our platform is designed for informational, research, and educational purposes only.
+             </p>
+           </div>
 
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">Contact</h3>
-            <p className="text-xs text-muted-foreground">If you have any questions, feel free to contact us:</p>
-            <a href="mailto:propredictsupp@gmail.com" className="text-xs text-primary hover:underline">
-              propredictsupp@gmail.com
-            </a>
-          </div>
-        </div>
-      </div>
+           <div className="border border-border rounded-lg p-3">
+             <h3 className="font-semibold text-sm mb-1.5">No Gambling Policy</h3>
+             <p className="text-xs text-muted-foreground font-medium mb-1.5">
+               ProPredict does NOT provide gambling, wagering, or real-money gaming services.
+             </p>
+             <p className="text-xs text-muted-foreground mb-2">
+               We do not facilitate financial transactions, process wagers, or connect users to gambling operators.
+             </p>
+             <p className="text-xs text-muted-foreground italic">
+               Our mission is to make advanced sports analytics accessible, structured, and easy to interpret — empowering users with data insights rather than speculative promises.
+             </p>
+           </div>
+
+           <div className="border border-border rounded-lg p-3">
+             <h3 className="font-semibold text-sm mb-1.5">Contact</h3>
+             <p className="text-xs text-muted-foreground">If you have any questions, feel free to contact us:</p>
+             <a href="mailto:propredictsupp@gmail.com" className="text-xs text-primary hover:underline">
+               propredictsupp@gmail.com
+             </a>
+           </div>
+         </div>
+       </div>
     </div>
     </>
   );
