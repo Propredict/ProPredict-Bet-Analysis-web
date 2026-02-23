@@ -53,12 +53,13 @@ export function DashboardSocialProof() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
-        {stats.map((stat, index) => (
+       {stats.map((stat, index) => (
           <Card
             key={index}
-            className={`text-center py-3 px-1.5 bg-gradient-to-b from-primary/10 via-card to-card border-primary/20 shadow-[0_0_12px_rgba(15,155,142,0.08)] ${
-              stat.isStar ? "ring-1 ring-warning/30 shadow-[0_0_18px_rgba(245,196,81,0.12)]" : ""
+            className={`text-center py-3 px-1.5 bg-gradient-to-b from-primary/10 via-card to-card border-primary/20 animate-pulse-glow ${
+              stat.isStar ? "ring-1 ring-warning/30 animate-pulse-glow-star" : ""
             }`}
+            style={{ animationDelay: `${index * 0.5}s` }}
           >
             <div className="flex items-center justify-center gap-0.5">
               <span className="text-base sm:text-xl font-bold text-primary">{stat.value}</span>
