@@ -68,7 +68,7 @@ export function FeaturedPredictions() {
       <Card className="p-3 bg-gradient-to-b from-card to-card/80 border-border/50 shadow-card">
         {/* Accuracy Header */}
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-primary/20">
-          <span className="text-xs font-medium text-primary/80">Global Win Rate</span>
+          <span className="text-xs font-medium text-primary/80">Global Accuracy</span>
           <div className="flex items-center gap-1.5">
             <span className="text-lg font-bold text-primary">
               {isLoading ? "—" : `${accuracy}%`}

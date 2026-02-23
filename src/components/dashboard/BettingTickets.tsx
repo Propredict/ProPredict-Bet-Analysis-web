@@ -139,7 +139,7 @@ export function BettingTickets() {
         </div>
         {accuracy > 0 && (
           <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-[10px] text-muted-foreground">Win Rate</span>
+            <span className="text-[10px] text-muted-foreground">Accuracy</span>
             <span className="text-xs font-bold text-primary">{accuracy}%</span>
           </div>
         )}
