@@ -72,7 +72,8 @@ export function AndroidPushModal() {
     const isAndroid = typeof window !== "undefined" && window.Android !== undefined;
     if (!isAndroid || loading || !user) return;
 
-    if (localStorage.getItem("onesignal_player_id")) return;
+    // Skip only if user already enabled both prompts
+    if (localStorage.getItem("goal_enabled") === "true" && localStorage.getItem("tips_enabled") === "true") return;
 
     const needGoal = shouldShowPrompt("goal_enabled", "goal_prompt_last_shown");
     const needTips = shouldShowPrompt("tips_enabled", "tips_prompt_last_shown");
