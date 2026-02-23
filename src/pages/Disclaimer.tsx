@@ -76,13 +76,18 @@ const Disclaimer = () => {
           </div>
 
           {/* Age */}
-          <div className="border border-red-500/30 bg-red-500/5 rounded-lg p-3">
-            <h3 className="font-semibold text-sm text-red-400 mb-1.5">🔞 Age Restriction (18+)</h3>
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">👤 Age Requirement</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
-              ProPredict is intended only for users aged 18 years or older.
+              This platform is intended for adult users. If you are under the legal age in your jurisdiction, please do not use this service.
             </p>
+          </div>
+
+          {/* Data Accuracy */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">📈 Data Accuracy</h3>
             <p className="text-xs text-muted-foreground">
-              By using this service, you confirm that you meet the minimum age requirement.
+              While we use statistical models and historical data to generate insights, ProPredict does not guarantee accuracy, completeness, or reliability of predictions.
             </p>
           </div>
 
