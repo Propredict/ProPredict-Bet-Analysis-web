@@ -111,10 +111,12 @@ export function useOneSignalPlayerSync() {
     // Auth state listener: flush pending player ID on ANY auth event with a session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("[OneSignal] onAuthStateChange:", event, "hasSession:", !!session?.user, "pendingId:", pendingPlayerIdRef.current);
-        if (session?.user && pendingPlayerIdRef.current) {
-          console.log("[OneSignal] 🔄 Auth event:", event, "- flushing pending Android player ID:", pendingPlayerIdRef.current);
-          await upsertPlayerToken(pendingPlayerIdRef.current);
+        const savedId = localStorage.getItem("onesignal_player_id");
+        const playerIdToSync = pendingPlayerIdRef.current || savedId;
+        console.log("[OneSignal] onAuthStateChange:", event, "hasSession:", !!session?.user, "pendingId:", pendingPlayerIdRef.current, "savedId:", savedId);
+        if (session?.user && playerIdToSync) {
+          console.log("[OneSignal] 🔄 Auth event:", event, "- syncing Android player ID for user:", session.user.id, "playerId:", playerIdToSync);
+          await upsertPlayerToken(playerIdToSync);
         }
       }
     );
@@ -122,9 +124,11 @@ export function useOneSignalPlayerSync() {
     // Also check existing session immediately (WebView may already have a session without firing auth events)
     const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user && pendingPlayerIdRef.current) {
-        console.log("[OneSignal] Syncing saved Android Player ID after session restore");
-        await upsertPlayerToken(pendingPlayerIdRef.current);
+      const savedId = localStorage.getItem("onesignal_player_id");
+      const playerIdToSync = pendingPlayerIdRef.current || savedId;
+      if (session?.user && playerIdToSync) {
+        console.log("[OneSignal] Syncing Android Player ID after session restore for user:", session.user.id);
+        await upsertPlayerToken(playerIdToSync);
       }
     };
     checkExistingSession();
