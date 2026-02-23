@@ -32,7 +32,7 @@ export function GuestBanner() {
           <div>
             <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Full Access</h3>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              Sign in to unlock Daily AI Picks, exclusive predictions, and save your favorites.
+              Sign in to access Daily Predictions, exclusive insights, and save your favorites.
             </p>
           </div>
         </div>

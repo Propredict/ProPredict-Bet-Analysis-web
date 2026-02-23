@@ -14,10 +14,10 @@ interface PricingModalProps {
 }
 
 const proFeatures = [
-  { icon: Sparkles, label: "Daily & Pro AI Picks unlocked" },
+  { icon: Sparkles, label: "Daily & Pro Predictions unlocked" },
   { icon: BarChart3, label: "Basic & Pro AI predictions" },
   { icon: Zap, label: "Live scores & standings" },
-  { icon: Ban, label: "Ad-free AI Picks experience" },
+  { icon: Ban, label: "Ad-free predictions experience" },
 ];
 
 const premiumFeatures = [

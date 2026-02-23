@@ -78,7 +78,7 @@ export default function PremiumTips() {
       await Promise.all([refetch(), refetchPlan()]);
       toast({
         title: "Data refreshed",
-        description: "Premium AI Picks have been updated.",
+        description: "Premium Predictions have been updated.",
       });
     } finally {
       setIsRefreshing(false);
@@ -87,7 +87,7 @@ export default function PremiumTips() {
 
   return <>
     <Helmet>
-      <title>Premium AI Picks – ProPredict</title>
+      <title>Premium Predictions – ProPredict</title>
       <meta
         name="description"
         content="Premium AI-powered sports predictions with highest confidence analysis. For entertainment and informational purposes only."
@@ -101,7 +101,7 @@ export default function PremiumTips() {
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Premium AI Picks</h1>
+            <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Premium Predictions</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Our highest-confidence AI predictions</p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function PremiumTips() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Premium AI Picks represent our highest-confidence predictions, combining AI models, in-depth match analysis, and expert insights. These picks are limited and carefully selected for maximum quality.
+          Premium Predictions represent our highest-confidence predictions, combining AI models, in-depth match analysis, and expert insights. These predictions are limited and carefully selected for maximum quality.
         </p>
       </Card>
 
@@ -199,7 +199,7 @@ export default function PremiumTips() {
           </Card> : premiumTips.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-warning mb-1">No premium AI picks available</p>
+              <p className="text-warning mb-1">No Premium Predictions available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />

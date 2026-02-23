@@ -40,9 +40,9 @@ import {
 } from "@/components/ui/sidebar";
 
 const tipsItems = [
-  { title: "Daily AI Picks", url: "/daily-tips", icon: Lightbulb },
-  { title: "Pro AI Picks", url: "/exclusive-tips", icon: Star },
-  { title: "Premium AI Picks", url: "/premium-tips", icon: Crown },
+  { title: "Daily Predictions", url: "/daily-tips", icon: Lightbulb },
+  { title: "Pro Insights", url: "/exclusive-tips", icon: Star },
+  { title: "Premium Predictions", url: "/premium-tips", icon: Crown },
 ];
 
 const ticketsItems = [
