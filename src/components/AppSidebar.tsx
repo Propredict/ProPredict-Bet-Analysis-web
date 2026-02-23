@@ -46,9 +46,9 @@ const tipsItems = [
 ];
 
 const ticketsItems = [
-  { title: "Daily AI Combos", url: "/daily-tickets", icon: Calendar },
-  { title: "Pro AI Combos", url: "/exclusive-tickets", icon: Ticket },
-  { title: "Premium AI Combos", url: "/premium-tickets", icon: Crown },
+  { title: "Daily Multi-Match", url: "/daily-tickets", icon: Calendar },
+  { title: "Pro Multi-Match", url: "/exclusive-tickets", icon: Ticket },
+  { title: "Premium Multi-Match", url: "/premium-tickets", icon: Crown },
   { title: "Winning History", url: "/winning-history", icon: Layers },
 ];
 
