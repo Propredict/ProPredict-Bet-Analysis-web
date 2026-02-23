@@ -154,8 +154,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             </h2>
             <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
               {isPremium
-                ? "Don't miss today's highest confidence AI picks."
-                : "Get access to higher confidence AI picks & analysis."
+                ? "Don't miss today's highest confidence AI predictions."
+                : "Get access to higher confidence AI predictions & analysis."
               }
             </p>
           </div>
