@@ -42,7 +42,7 @@ const DataDeletion = () => {
         Back to Settings
       </Button>
       
-      <div className="max-w-3xl mx-auto">
+      <div>
         <div className="flex items-center gap-2 mb-1">
           <Trash2 className="w-5 h-5 text-destructive" />
           <h1 className="text-xl font-bold">Data Deletion Request</h1>

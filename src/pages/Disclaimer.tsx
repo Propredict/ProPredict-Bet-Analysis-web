@@ -22,7 +22,7 @@ const Disclaimer = () => {
         Back to Settings
       </Button>
       
-      <div className="max-w-3xl mx-auto">
+      <div>
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle className="w-5 h-5 text-destructive" />
           <h1 className="text-xl font-bold">Disclaimer</h1>
