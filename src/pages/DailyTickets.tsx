@@ -75,7 +75,7 @@ export default function DailyTickets() {
   const handleRefresh = () => {
     refetch();
     refetchPlan();
-    toast.success("Tickets refreshed");
+    toast.success("AI Combos refreshed");
   };
 
   // Render tickets without ads
@@ -205,15 +205,15 @@ export default function DailyTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
-              <p>Loading tickets...</p>
+              <p>Loading AI Combos...</p>
             </div>
           </Card>
         ) : dailyTickets.length === 0 ? (
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No daily AI combos available</p>
-              <p className="text-sm">Check back later for new picks</p>
+              <p className="text-primary mb-1">No daily AI Combos available</p>
+              <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again

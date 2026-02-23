@@ -73,7 +73,7 @@ export function BettingTickets() {
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
-    { id: "exclusive", label: "Exclusive", subtitle: "Higher Confidence", icon: Star },
+    { id: "exclusive", label: "Pro", subtitle: "Higher Confidence", icon: Star },
     { id: "premium", label: "Premium", subtitle: "Members Only", icon: Crown },
   ];
 
@@ -134,7 +134,7 @@ export function BettingTickets() {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-foreground">Daily AI Combos</h2>
-            <p className="text-[9px] text-muted-foreground">Multi-bet combinations</p>
+            <p className="text-[9px] text-muted-foreground">Multi-match combinations</p>
           </div>
         </div>
         {accuracy > 0 && (
@@ -208,7 +208,7 @@ export function BettingTickets() {
             {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
             {activeTab === "premium" && <Crown className="h-5 w-5 text-fuchsia-500/50" />}
             <p className="text-[10px] text-muted-foreground">
-              No {activeTab === "exclusive" ? "Pro" : activeTab} tickets available
+              No {activeTab === "exclusive" ? "Pro" : activeTab} AI Combos available
             </p>
           </div>
         </Card>
