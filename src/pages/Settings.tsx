@@ -222,7 +222,7 @@ const Settings = () => {
                     <Lightbulb className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-medium text-foreground">Daily AI Picks & Combos</p>
+                    <p className="text-xs font-medium text-foreground">Daily Predictions & Combos</p>
                     <p className="text-[10px] text-muted-foreground">New AI predictions delivered to your phone</p>
                   </div>
                 </div>

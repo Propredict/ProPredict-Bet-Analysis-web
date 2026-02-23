@@ -134,7 +134,7 @@ export default function DailyTips() {
             <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily AI Picks</h1>
+            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Predictions</h1>
             {isAndroidApp && (
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Watch ads to access predictions or go Premium for full access</p>
             )}
@@ -155,7 +155,7 @@ export default function DailyTips() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Daily AI Picks provide carefully selected match predictions for today, based on form, statistics, and AI analysis. These picks are updated daily and are designed for quick insights into the most promising matches.
+          Daily Predictions provide carefully selected match predictions for today, based on form, statistics, and AI analysis. These predictions are updated daily and are designed for quick insights into the most promising matches.
         </p>
       </Card>
 
