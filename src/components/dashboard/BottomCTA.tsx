@@ -23,7 +23,7 @@ export function BottomCTA() {
           onClick={() => navigate("/winning-history")}
         >
           <Trophy className="h-3.5 w-3.5" />
-          Winning History
+          Prediction History
         </Button>
         <Button 
           className="gap-1.5 h-8 text-[10px] sm:text-xs px-4 gradient-premium text-white font-medium glow-primary hover:opacity-90 transition-opacity" 
