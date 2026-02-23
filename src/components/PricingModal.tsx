@@ -126,7 +126,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                   : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
               )}>
                 <Flame className="h-3.5 w-3.5" />
-                {isPremium ? "Premium Tip Just Dropped" : "Pro Tip Just Dropped"}
+                {isPremium ? "Premium Prediction Just Dropped" : "Pro Prediction Just Dropped"}
               </div>
             </div>
           )}

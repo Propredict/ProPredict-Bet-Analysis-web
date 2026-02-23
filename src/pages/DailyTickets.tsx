@@ -227,7 +227,7 @@ export default function DailyTickets() {
 
       {/* Compliance Disclaimer */}
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
-        These AI-generated predictions are for informational and entertainment purposes only. No betting or gambling services are provided.
+        These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.
       </p>
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />

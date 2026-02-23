@@ -85,7 +85,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="text-center space-y-0.5 pt-2 border-t border-border/30">
           <p className="text-[8px] sm:text-[9px] text-accent">
-            Disclaimer: ProPredict does not provide betting or gambling services. All AI-generated predictions are for informational and entertainment purposes only.
+            Disclaimer: ProPredict does not provide gambling services. All AI-generated predictions are for informational and entertainment purposes only.
           </p>
           <p className="text-[8px] sm:text-[9px] text-muted-foreground">
             © {new Date().getFullYear()} ProPredict. All rights reserved.
