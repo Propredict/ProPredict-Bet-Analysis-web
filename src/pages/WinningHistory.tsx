@@ -193,7 +193,7 @@ export default function AllTickets() {
             </div>
             <div>
                <h1 className="text-sm sm:text-base font-semibold text-foreground">Prediction History</h1>
-               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Browse our archive of Predictions & Multi-Match Predictions</p>
+               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Last 30 days of Predictions & Multi-Match Predictions</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
