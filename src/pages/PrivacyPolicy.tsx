@@ -85,134 +85,172 @@ const PrivacyPolicy = () => {
             <h4 className="font-semibold text-xs mb-1">2.1 Information You Provide</h4>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
               <li>Email address</li>
-              <li>Account credentials</li>
-              <li>Subscription details</li>
-              <li>Support inquiries</li>
+              <li>Account login details</li>
+              <li>Subscription information</li>
+              <li>Customer support communications</li>
             </ul>
 
             <h4 className="font-semibold text-xs mb-1">2.2 Automatically Collected Information</h4>
+            <p className="text-xs text-muted-foreground mb-1">When you use our website or mobile application, we may automatically collect:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
               <li>IP address</li>
-              <li>Device type</li>
-              <li>Operating system</li>
+              <li>Device type and operating system</li>
               <li>Browser type</li>
-              <li>Usage data (pages visited, features used)</li>
-              <li>App interaction data</li>
+              <li>App version</li>
+              <li>Usage activity (pages viewed, interactions)</li>
+              <li>Diagnostic data</li>
             </ul>
 
             <h4 className="font-semibold text-xs mb-1">2.3 Payment Information</h4>
-            <div className="border border-border bg-muted/30 rounded-md p-2 mt-1">
-              <p className="text-xs font-semibold mb-1">💳 Payment Processing</p>
-              <p className="text-xs text-muted-foreground mb-1.5">
-                We use third-party payment processors to securely handle subscription payments:
-              </p>
-              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
-                <li>Stripe (for subscriptions purchased via our website)</li>
-                <li>Google Play Billing (for subscriptions purchased within our Android mobile application)</li>
-              </ul>
-              <p className="text-xs text-muted-foreground">
-                We do not store full payment card details on our servers. All payment transactions are processed securely by the respective payment provider.
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground mb-1">Payments are processed securely through third-party payment providers:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Stripe (for subscriptions purchased via our website)</li>
+              <li>Google Play Billing (for subscriptions purchased within the Android application)</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mb-2">We do not store full credit card details on our servers.</p>
+
+            <h4 className="font-semibold text-xs mb-1">2.4 Advertising Identifiers</h4>
+            <p className="text-xs text-muted-foreground">
+              If you use our mobile application, advertising identifiers (such as Google Advertising ID) may be collected by Google AdMob for advertising and analytics purposes.
+            </p>
           </div>
 
-          {/* 2 */}
+          {/* 3. How We Use Your Information */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">2. How We Use Your Information</h3>
+            <h3 className="font-semibold text-sm mb-1.5">3. How We Use Your Information</h3>
+            <p className="text-xs text-muted-foreground mb-1">We use collected information to:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-              <li>Operate and improve the app</li>
-              <li>Provide support and notifications</li>
-              <li>Manage subscriptions</li>
-              <li>Analyze usage trends</li>
-              <li>Prevent fraud and abuse</li>
+              <li>Provide and maintain our services</li>
+              <li>Generate AI-based statistical analysis and probability insights</li>
+              <li>Improve our platform functionality</li>
+              <li>Process subscription payments</li>
+              <li>Communicate with users</li>
+              <li>Send service-related notifications</li>
+              <li>Analyze performance and usage trends</li>
+              <li>Display advertisements (where applicable)</li>
             </ul>
           </div>
 
           {/* 4. Advertising and Third-Party Services */}
           <div className="border border-border rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1.5">4. Advertising and Third-Party Services</h3>
-            <p className="text-xs text-muted-foreground mb-2">
-              We use third-party services to support and operate our platform.
-            </p>
 
-            <h4 className="font-semibold text-xs mb-1">Advertising</h4>
-            <p className="text-xs text-muted-foreground mb-1.5">We use:</p>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-2">
-              <li><strong className="text-foreground">Google AdSense</strong> to display advertisements on our website.</li>
-              <li><strong className="text-foreground">Google AdMob</strong> to display advertisements within our mobile application.</li>
+            <h4 className="font-semibold text-xs mb-1">4.1 Advertising</h4>
+            <p className="text-xs text-muted-foreground mb-1">We use:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li><strong className="text-foreground">Google AdSense</strong> to display advertisements on our website</li>
+              <li><strong className="text-foreground">Google AdMob</strong> to display advertisements within our mobile application</li>
             </ul>
             <p className="text-xs text-muted-foreground mb-1.5">
-              These services may collect device information, advertising identifiers (such as Google Advertising ID), IP address, and usage data for the purposes of ad personalization, measurement, and analytics.
+              Google and its partners may use cookies and similar technologies to serve ads based on your prior visits to our website or app and other websites.
             </p>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              Google and its partners may use cookies and similar technologies to serve ads based on a user's prior visits to this website or app and other websites.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Users may manage or opt out of personalized advertising by visiting:{" "}
+            <p className="text-xs text-muted-foreground mb-1">These services may collect:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Device information</li>
+              <li>Advertising identifiers</li>
+              <li>IP address</li>
+              <li>Usage data</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mb-2">
+              You can manage or opt out of personalized advertising by visiting:{" "}
               <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                 https://adssettings.google.com
               </a>
             </p>
-          </div>
 
-          {/* 4 - Subscriptions & Payments */}
-          <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">4. Subscriptions & Payments</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              Premium features may be available through paid subscriptions.
+            <h4 className="font-semibold text-xs mb-1">4.2 Payment Processing</h4>
+            <p className="text-xs text-muted-foreground mb-1">Subscription payments are processed by:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Stripe (website subscriptions)</li>
+              <li>Google Play Billing (Android in-app subscriptions)</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mb-2">
+              Each provider processes payment information in accordance with its own privacy policies.
             </p>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              All subscription payments are processed and managed exclusively by the platform where the purchase is made (such as Google Play Store or Apple App Store).
-            </p>
+
+            <h4 className="font-semibold text-xs mb-1">4.3 Infrastructure & Analytics</h4>
+            <p className="text-xs text-muted-foreground mb-1">We use trusted third-party service providers such as:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Supabase (database and authentication services)</li>
+              <li>Analytics providers for service improvement</li>
+            </ul>
             <p className="text-xs text-muted-foreground">
-              ProPredict does not directly collect, process, or store any payment or credit card information.
+              These providers process data only as necessary to support our services.
             </p>
           </div>
 
-          {/* 5 */}
+          {/* 5. Cookies and Tracking Technologies */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">5. Data Sharing</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              We do <strong className="text-foreground">NOT</strong> sell personal data. Information may be shared only with:
+            <h3 className="font-semibold text-sm mb-1.5">5. Cookies and Tracking Technologies</h3>
+            <p className="text-xs text-muted-foreground mb-1">We use cookies and similar technologies to:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Improve website functionality</li>
+              <li>Analyze traffic and user behavior</li>
+              <li>Provide personalized experiences</li>
+              <li>Deliver relevant advertisements</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mb-1.5">Users may control cookies through browser settings.</p>
+            <p className="text-xs text-muted-foreground">
+              For additional details, please refer to our{" "}
+              <a href="/cookie-policy" className="text-primary hover:underline">Cookie Policy</a>.
             </p>
+          </div>
+
+          {/* 6. Data Sharing */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">6. Data Sharing</h3>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              We do <strong className="text-foreground">NOT</strong> sell personal data.
+            </p>
+            <p className="text-xs text-muted-foreground mb-1">We may share information with third parties only to:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-              <li>Service providers</li>
-              <li>Advertising partners</li>
-              <li>Legal authorities when required by law</li>
+              <li>Process payments</li>
+              <li>Provide advertising services</li>
+              <li>Maintain technical infrastructure</li>
+              <li>Comply with legal obligations</li>
             </ul>
           </div>
 
-          {/* 6 - Cookies */}
+          {/* 7. Data Retention */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">6. Cookies</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              We use cookies to improve functionality, analyze traffic, and display advertisements.
-            </p>
+            <h3 className="font-semibold text-sm mb-1.5">7. Data Retention</h3>
+            <p className="text-xs text-muted-foreground mb-1">We retain personal data only as long as necessary to:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Provide our services</li>
+              <li>Comply with legal requirements</li>
+              <li>Resolve disputes</li>
+              <li>Enforce agreements</li>
+            </ul>
             <p className="text-xs text-muted-foreground">
-              For more information about cookies and how we use them, please review our{" "}
-              <a href="/cookie-policy" className="text-primary hover:underline">
-                Cookie Policy
-              </a>
-              .
+              Users may request account deletion at any time via the{" "}
+              <a href="/data-deletion" className="text-primary hover:underline">Data Deletion Request</a>{" "}
+              page or by contacting us at{" "}
+              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>.
             </p>
           </div>
 
-          {/* 7 - Data Retention */}
+          {/* 8. Data Security */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">7. Data Retention</h3>
-            <p className="text-xs text-muted-foreground mb-1.5">
-              We retain personal data only for as long as necessary to provide and improve the service or to comply with legal obligations.
-            </p>
+            <h3 className="font-semibold text-sm mb-1.5">8. Data Security</h3>
             <p className="text-xs text-muted-foreground">
-              Users may request deletion of their personal data at any time via the{" "}
-              <a href="/data-deletion" className="text-primary hover:underline">
-                Data Deletion Request
-              </a>{" "}
-              page or by contacting us at{" "}
-              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">
-                propredictsupp@gmail.com
-              </a>
-              .
+              We implement industry-standard technical and organizational safeguards to protect personal information from unauthorized access, alteration, disclosure, or destruction.
+            </p>
+          </div>
+
+          {/* 9. Your Rights */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">9. Your Rights</h3>
+            <p className="text-xs text-muted-foreground mb-1">Depending on your jurisdiction, you may have the right to:</p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
+              <li>Access your personal data</li>
+              <li>Correct inaccurate information</li>
+              <li>Request deletion</li>
+              <li>Withdraw consent</li>
+              <li>Restrict processing</li>
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              To exercise these rights, contact us at:{" "}
+              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>.
             </p>
           </div>
 
@@ -221,18 +259,11 @@ const PrivacyPolicy = () => {
             <h3 className="font-semibold text-sm mb-1.5">Contact Us</h3>
             <p className="text-xs text-muted-foreground">
               Email:{" "}
-              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">
-                propredictsupp@gmail.com
-              </a>
+              <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>
             </p>
             <p className="text-xs text-muted-foreground">
               Website:{" "}
-              <a
-                href="https://propredict.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
+              <a href="https://propredict.me" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                 https://propredict.me
               </a>
             </p>
