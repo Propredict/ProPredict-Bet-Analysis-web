@@ -30,6 +30,26 @@ const AboutUs = () => {
          <p className="text-xs text-primary font-medium mb-4">Advanced AI Sports Analytics Platform</p>
 
          <div className="space-y-3">
+           {/* Advanced AI Sports Analysis */}
+           <div className="border border-border rounded-lg p-3">
+             <h3 className="font-semibold text-sm mb-1.5">About ProPredict – Advanced AI Sports Analysis</h3>
+             <div className="space-y-2">
+               <p className="text-xs text-muted-foreground leading-relaxed">
+                 ProPredict is an AI-powered sports analytics platform focused on football data analysis and predictive modeling. Our system combines historical match statistics, performance indicators, and machine learning algorithms to generate structured probability-based insights.
+               </p>
+               <p className="text-xs text-muted-foreground leading-relaxed">
+                 Unlike traditional platforms, ProPredict does not provide gambling services or financial advice. We offer transparent, data-driven analysis to help users understand patterns and trends in football matches.
+               </p>
+               <p className="text-xs text-muted-foreground leading-relaxed">
+                 Our AI models analyze key data points including team form, head-to-head statistics, goal expectancy indicators, possession trends, and contextual match variables — generating insights for informational and educational purposes only.
+               </p>
+               <p className="text-xs text-muted-foreground leading-relaxed">
+                 ProPredict does not guarantee outcomes. Football is influenced by unpredictable factors, and statistical analysis estimates probabilities — not certainties. Our mission is to make sports analytics accessible, structured, and easy to interpret — empowering users with knowledge rather than promises.
+               </p>
+             </div>
+           </div>
+
+           {/* Original intro */}
            <div className="border border-border rounded-lg p-3">
              <p className="text-xs text-muted-foreground leading-relaxed mb-2">
                ProPredict is an advanced AI-powered sports analytics platform focused on structured football data analysis and predictive modeling. Our technology combines historical match statistics, performance indicators, and machine learning algorithms to generate probability-based insights designed to enhance understanding of match dynamics.
