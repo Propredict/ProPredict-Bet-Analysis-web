@@ -23,9 +23,9 @@ function getTierRoute(type: "tip" | "ticket", tier: string): string {
 }
 
 function getTierLabel(type: "tip" | "ticket", tier: string): string {
-  if (tier === "premium") return type === "tip" ? "👑 Premium Tip Available!" : "👑 Premium Ticket Available!";
-  if (tier === "exclusive") return type === "tip" ? "🔥 Pro Tip Available!" : "🔥 Pro Ticket Available!";
-  return type === "tip" ? "⚽ New Tip Available!" : "🎫 New Ticket Available!";
+  if (tier === "premium") return type === "tip" ? "👑 Premium AI Pick Available!" : "👑 Premium AI Combo Available!";
+  if (tier === "exclusive") return type === "tip" ? "🔥 Pro AI Pick Available!" : "🔥 Pro AI Combo Available!";
+  return type === "tip" ? "⚽ New AI Pick Available!" : "🎫 New AI Combo Available!";
 }
 
 /**
@@ -77,7 +77,7 @@ export function useRealtimeNotifications() {
             const tier = rec.tier ?? "daily";
             const route = getTierRoute("ticket", tier);
             toast(getTierLabel("ticket", tier), {
-              description: rec.title || "A new betting ticket is ready!",
+              description: rec.title || "A new AI Combo is available!",
               action: {
                 label: "View",
                 onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
@@ -122,7 +122,7 @@ export function useRealtimeNotifications() {
           const tier = rec.tier ?? "daily";
           const route = getTierRoute("ticket", tier);
           toast(getTierLabel("ticket", tier), {
-            description: rec.title || "A new betting ticket is ready!",
+            description: rec.title || "A new AI Combo is available!",
             action: {
               label: "View",
               onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
@@ -148,8 +148,8 @@ export function useRealtimeNotifications() {
             const home = rec.home_team ?? "";
             const away = rec.away_team ?? "";
             const matchLabel = home && away ? `${home} vs ${away}` : "Today's pick";
-            toast("⚽ Tip WON!", {
-              description: `${matchLabel} cashed in!`,
+            toast("⚽ AI Pick Confirmed!", {
+              description: `${matchLabel} — prediction confirmed!`,
               action: {
                 label: "View",
                 onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),
@@ -173,8 +173,8 @@ export function useRealtimeNotifications() {
           if (rec.result === "won" && old?.result !== "won") {
             const tier = rec.tier ?? "daily";
             const route = getTierRoute("ticket", tier);
-            toast("🎫 Ticket WON!", {
-              description: rec.title || "A ticket just hit!",
+            toast("🎫 AI Combo Confirmed!", {
+              description: rec.title || "An AI Combo prediction confirmed!",
               action: {
                 label: "View",
                 onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),

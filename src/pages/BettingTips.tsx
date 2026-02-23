@@ -40,7 +40,7 @@ export default function BettingTips() {
   const handleRefresh = () => {
     refetch();
     refetchPlan();
-    toast.success("Tips refreshed");
+    toast.success("AI Picks refreshed");
   };
 
   const dailyAccuracy =
@@ -128,7 +128,7 @@ export default function BettingTips() {
             className="bg-accent/20 text-accent border-accent/30 text-[9px] sm:text-[10px] px-2 py-0.5"
           >
             <Flame className="h-3 w-3 mr-1" />
-            Hot Picks
+            Hot Predictions
           </Badge>
 
           <Button 
@@ -257,7 +257,7 @@ export default function BettingTips() {
                 onClick={() => navigate(getFullPageRoute(activeTab))}
                 className="gap-2"
               >
-                See all {getTabLabel(activeTab)} tips
+                See all {getTabLabel(activeTab)} AI Picks
               </Button>
             </div>
           )}
@@ -269,7 +269,7 @@ export default function BettingTips() {
             {activeTab === "exclusive" && <Star className="h-6 w-6 text-amber-400/40" />}
             {activeTab === "premium" && <Crown className="h-6 w-6 text-fuchsia-400/40" />}
             <div className="text-center">
-              <p className="text-xs text-muted-foreground">No {activeTab} tips available</p>
+              <p className="text-xs text-muted-foreground">No {activeTab} AI Picks available</p>
               <p className="text-[10px] text-muted-foreground/70">Check back soon!</p>
             </div>
           </div>
