@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import AdSlot from "@/components/ads/AdSlot";
+import { ModelAccuracyTrendChart, ProbabilityDistributionChart } from "@/components/dashboard/ModelAnalyticsCharts";
 
 const DataFlowStep = ({ step, title, description, icon: Icon }: { step: number; title: string; description: string; icon: React.ElementType }) => (
   <div className="flex items-start gap-3">
@@ -263,6 +264,12 @@ const HowAIWorks = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Model Analytics Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <ModelAccuracyTrendChart />
+          <ProbabilityDistributionChart />
+        </div>
 
         {/* Example Prediction Card */}
         <Card className="bg-card border-border">
