@@ -4,7 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import AdSlot from "@/components/ads/AdSlot";
-import { ModelAccuracyTrendChart, ProbabilityDistributionChart } from "@/components/dashboard/ModelAnalyticsCharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const DataFlowStep = ({ step, title, description, icon: Icon }: { step: number; title: string; description: string; icon: React.ElementType }) => (
   <div className="flex items-start gap-3">
@@ -265,10 +273,106 @@ const HowAIWorks = () => {
           </CardContent>
         </Card>
 
-        {/* Model Analytics Charts */}
+        {/* AI Model Feature Weights & Resolution Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <ModelAccuracyTrendChart />
-          <ProbabilityDistributionChart />
+          {/* Feature Weight Distribution */}
+          <Card className="bg-card border-border">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-md bg-primary/20">
+                  <Layers className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xs md:text-sm font-semibold text-foreground">Feature Weight Distribution</h3>
+                  <p className="text-[9px] text-muted-foreground">How the AI model weighs each data factor</p>
+                </div>
+              </div>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={[
+                      { factor: "Form", weight: 40 },
+                      { factor: "Quality", weight: 25 },
+                      { factor: "Squad", weight: 15 },
+                      { factor: "Home Adv.", weight: 10 },
+                      { factor: "H2H", weight: 10 },
+                    ]}
+                    margin={{ top: 5, right: 15, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 50]} tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                    <YAxis type="category" dataKey="factor" tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} width={65} />
+                    <Tooltip
+                      content={({ active, payload, label }: any) => active && payload?.length ? (
+                        <div className="bg-card border border-border rounded-md px-2.5 py-1.5 shadow-lg">
+                          <p className="text-[10px] font-semibold text-foreground">{label}</p>
+                          <p className="text-[10px] text-primary">{payload[0].value}% weight</p>
+                        </div>
+                      ) : null}
+                    />
+                    <Bar dataKey="weight" fill="hsl(171, 77%, 36%)" radius={[0, 4, 4, 0]} barSize={16} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-2 italic">
+                * Weights are dynamically adjusted based on league context and data availability.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Prediction Resolution Breakdown */}
+          <Card className="bg-card border-border">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-md bg-success/20">
+                  <BarChart3 className="h-4 w-4 text-success" />
+                </div>
+                <div>
+                  <h3 className="text-xs md:text-sm font-semibold text-foreground">Prediction Resolution Breakdown</h3>
+                  <p className="text-[9px] text-muted-foreground">Historical outcome of resolved predictions</p>
+                </div>
+              </div>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { market: "1X2", confirmed: 62, unconfirmed: 38 },
+                      { market: "O/U 2.5", confirmed: 58, unconfirmed: 42 },
+                      { market: "BTTS", confirmed: 55, unconfirmed: 45 },
+                      { market: "Double", confirmed: 68, unconfirmed: 32 },
+                    ]}
+                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" />
+                    <XAxis dataKey="market" tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                    <Tooltip
+                      content={({ active, payload, label }: any) => active && payload?.length ? (
+                        <div className="bg-card border border-border rounded-md px-2.5 py-1.5 shadow-lg">
+                          <p className="text-[10px] font-semibold text-foreground">{label}</p>
+                          <p className="text-[10px] text-primary">Confirmed: {payload[0].value}%</p>
+                          <p className="text-[10px] text-muted-foreground">Unconfirmed: {payload[1].value}%</p>
+                        </div>
+                      ) : null}
+                    />
+                    <Bar dataKey="confirmed" stackId="a" fill="hsl(171, 77%, 36%)" radius={[0, 0, 0, 0]} barSize={24} />
+                    <Bar dataKey="unconfirmed" stackId="a" fill="hsl(160, 10%, 18%)" radius={[4, 4, 0, 0]} barSize={24} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-primary" />
+                  <span className="text-[9px] text-muted-foreground">Confirmed</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-border" />
+                  <span className="text-[9px] text-muted-foreground">Unconfirmed</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Example Prediction Card */}
