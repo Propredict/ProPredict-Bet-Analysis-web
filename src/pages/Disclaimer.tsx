@@ -39,6 +39,9 @@ const Disclaimer = () => {
             <p className="text-xs text-muted-foreground">
               ProPredict does <strong className="text-foreground">NOT</strong> allow users to place bets, process wagers, or connect to bookmakers or betting operators.
             </p>
+            <p className="text-xs text-muted-foreground">
+              ProPredict is <strong className="text-foreground">not affiliated with, endorsed by, or connected to</strong> any sportsbook, bookmaker, gambling platform, or betting operator.
+            </p>
           </div>
 
           {/* General */}
