@@ -54,8 +54,11 @@ export function useTickets(includeAll = false) {
 
       if (!includeAll) {
         const today = getTodayBelgradeDate();
-        // View already filters status=published, just filter by date
-        query = query.lte("ticket_date", today);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const thirtyDaysAgoStr = thirtyDaysAgo.toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+        // View already filters status=published, just filter by date (last 30 days)
+        query = query.lte("ticket_date", today).gte("ticket_date", thirtyDaysAgoStr);
       }
 
       const { data, error } = await query as any;
