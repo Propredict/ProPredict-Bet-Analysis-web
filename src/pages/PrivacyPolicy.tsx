@@ -62,11 +62,18 @@ const PrivacyPolicy = () => {
             </div>
           </div>
 
-          {/* Intro */}
+          {/* 1. Introduction */}
           <div className="border border-primary/30 bg-primary/5 rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">1. Introduction</h3>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              Welcome to ProPredict ("we", "our", or "us").
+              We respect your privacy and are committed to protecting your personal information.
+            </p>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website (propredict.me) and our mobile application.
+            </p>
             <p className="text-xs text-muted-foreground">
-              ProPredict ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains
-              how we collect, use, and protect your information when you use our website and mobile application.
+              By using our services, you agree to the practices described in this policy.
             </p>
           </div>
 
