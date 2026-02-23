@@ -47,7 +47,7 @@ const PrivacyPolicy = () => {
         </div>
         <p className="text-xs text-muted-foreground mb-4">Last updated: January 10, 2026</p>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* Important Notice */}
           <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-3">
             <div className="flex items-start gap-2">
