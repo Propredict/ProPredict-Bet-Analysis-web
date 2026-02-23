@@ -8,14 +8,20 @@
 
     <!-- Cookiebot Consent (MUST be before Analytics/AdSense) – Web only, excluded on Android -->
     <script>
-      if (!navigator.userAgent.includes('ProPredictAndroid') && !window.location.search.includes('platform=android')) {
-        var s = document.createElement('script');
-        s.id = 'Cookiebot';
-        s.src = 'https://consent.cookiebot.com/uc.js';
-        s.setAttribute('data-cbid', '76c0ca30-7ac2-4399-a9dd-dc3842a6569a');
-        s.setAttribute('data-blockingmode', 'auto');
-        document.head.appendChild(s);
-      }
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isAndroid = ua.includes('ProPredictAndroid')
+          || window.location.search.includes('platform=android')
+          || typeof window.Android !== 'undefined';
+        if (!isAndroid) {
+          var s = document.createElement('script');
+          s.id = 'Cookiebot';
+          s.src = 'https://consent.cookiebot.com/uc.js';
+          s.setAttribute('data-cbid', '76c0ca30-7ac2-4399-a9dd-dc3842a6569a');
+          s.setAttribute('data-blockingmode', 'auto');
+          document.head.appendChild(s);
+        }
+      })();
     </script>
 
     <!-- Google AdSense (GLOBAL – required for review) -->
