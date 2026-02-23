@@ -34,20 +34,26 @@ const Settings = () => {
 
   const handleGoalToggle = (checked: boolean) => {
     setGoalEnabled(checked);
-    localStorage.setItem("goal_enabled", String(checked));
-    setOneSignalTag("goal_alerts", checked ? "true" : null);
     if (checked) {
+      localStorage.setItem("goal_enabled", "true");
       window.Android?.requestPushPermission?.();
+    } else {
+      localStorage.removeItem("goal_enabled");
+      localStorage.removeItem("goal_prompt_last_shown");
     }
+    setOneSignalTag("goal_alerts", checked ? "true" : null);
   };
 
   const handleTipsToggle = (checked: boolean) => {
     setTipsEnabled(checked);
-    localStorage.setItem("tips_enabled", String(checked));
-    setOneSignalTag("daily_tips", checked ? "true" : null);
     if (checked) {
+      localStorage.setItem("tips_enabled", "true");
       window.Android?.requestPushPermission?.();
+    } else {
+      localStorage.removeItem("tips_enabled");
+      localStorage.removeItem("tips_prompt_last_shown");
     }
+    setOneSignalTag("daily_tips", checked ? "true" : null);
   };
 
   const accountItems = [
