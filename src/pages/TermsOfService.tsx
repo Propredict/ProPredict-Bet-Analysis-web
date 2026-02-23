@@ -54,9 +54,9 @@ const TermsOfService = () => {
             <div className="flex items-start gap-2">
               <Lock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-sm text-amber-500 mb-1">Important Notice – No Betting Services</h3>
-                <p className="text-xs text-muted-foreground">
-                  ProPredict does <strong className="text-foreground">NOT</strong> provide betting, gambling, or wagering services and does not allow users to place bets.
+                 <h3 className="font-semibold text-sm text-amber-500 mb-1">Important Notice – No Gambling Services</h3>
+                 <p className="text-xs text-muted-foreground">
+                   ProPredict does <strong className="text-foreground">NOT</strong> provide gambling or wagering services and does not allow users to place wagers.
                 </p>
               </div>
             </div>
@@ -85,10 +85,10 @@ const TermsOfService = () => {
             </ul>
             <p className="text-xs text-muted-foreground font-medium mb-1">ProPredict does NOT provide:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-              <li>Betting or gambling services</li>
-              <li>Real-money wagering</li>
-              <li>Bet placement or processing</li>
-              <li>Connections to bookmakers or betting operators</li>
+               <li>Gambling services</li>
+               <li>Real-money wagering</li>
+               <li>Wager placement or processing</li>
+               <li>Connections to gambling operators</li>
             </ul>
           </div>
 
@@ -105,7 +105,7 @@ const TermsOfService = () => {
               <li>Use of the service is at your own risk</li>
             </ul>
             <p className="text-xs text-muted-foreground">
-              ProPredict does not provide financial, investment, or betting advice.
+              ProPredict does not provide financial, investment, or gambling advice.
             </p>
           </div>
 

@@ -214,7 +214,7 @@ export default function HowAIvsMembersWorks() {
             </ul>
             <div className="p-2 rounded-md bg-destructive/10 border border-destructive/20">
               <p className="text-[10px] md:text-xs text-destructive font-medium">
-                ProPredict does not provide betting or gambling services. All AI-generated predictions are for informational and entertainment purposes only.
+                ProPredict does not provide gambling services. All AI-generated predictions are for informational and entertainment purposes only.
               </p>
             </div>
           </CardContent>
@@ -232,10 +232,10 @@ export default function HowAIvsMembersWorks() {
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="q1" className="border-border/50">
                 <AccordionTrigger className="text-[11px] md:text-xs text-foreground py-2.5 hover:no-underline">
-                  Is this a betting platform?
+                  Is this a gambling platform?
                 </AccordionTrigger>
                 <AccordionContent className="text-[10px] md:text-xs text-muted-foreground pb-2.5">
-                  No. ProPredict is an analysis and comparison platform only. We do not offer betting or gambling services.
+                  No. ProPredict is an analysis and comparison platform only. We do not offer gambling services.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="q2" className="border-border/50">

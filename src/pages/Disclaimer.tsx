@@ -34,13 +34,13 @@ const Disclaimer = () => {
           <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-3">
             <h3 className="font-semibold text-sm text-amber-500 mb-1.5">🔔 Important Legal Notice</h3>
             <p className="text-xs text-muted-foreground mb-1.5">
-              ProPredict does <strong className="text-foreground">NOT</strong> provide betting, gambling, wagering, or real-money gaming services.
+              ProPredict does <strong className="text-foreground">NOT</strong> provide gambling, wagering, or real-money gaming services.
             </p>
             <p className="text-xs text-muted-foreground">
-              ProPredict does <strong className="text-foreground">NOT</strong> allow users to place bets, process wagers, or connect to bookmakers or betting operators.
+              ProPredict does <strong className="text-foreground">NOT</strong> allow users to place wagers or connect to gambling operators.
             </p>
             <p className="text-xs text-muted-foreground">
-              ProPredict is <strong className="text-foreground">not affiliated with, endorsed by, or connected to</strong> any sportsbook, bookmaker, gambling platform, or betting operator.
+              ProPredict is <strong className="text-foreground">not affiliated with, endorsed by, or connected to</strong> any sportsbook, gambling platform, or wagering operator.
             </p>
           </div>
 
@@ -57,7 +57,7 @@ const Disclaimer = () => {
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
               <li>financial advice</li>
               <li>investment advice</li>
-              <li>betting or gambling advice</li>
+              <li>gambling advice</li>
             </ul>
             <p className="text-xs text-muted-foreground">
               Use of the content is entirely at the user's own discretion and risk.

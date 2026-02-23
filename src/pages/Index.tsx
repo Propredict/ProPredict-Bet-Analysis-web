@@ -119,7 +119,7 @@ const Index = () => {
 
         {/* Compliance Disclaimer */}
         <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
-          Disclaimer: ProPredict does not provide betting or gambling services. All AI-generated predictions are for informational and entertainment purposes only.
+          Disclaimer: ProPredict does not provide gambling services. All AI-generated predictions are for informational and entertainment purposes only.
         </p>
       </div>
       <GuestSignInModal />

@@ -55,7 +55,7 @@ const PrivacyPolicy = () => {
               <div>
                 <h3 className="font-semibold text-sm text-amber-500 mb-1">Important Notice</h3>
                 <p className="text-xs text-muted-foreground">
-                  ProPredict does <strong className="text-foreground">NOT</strong> provide betting or gambling services. All content is for{" "}
+                  ProPredict does <strong className="text-foreground">NOT</strong> provide gambling services. All content is for{" "}
                   <strong className="text-foreground">informational and entertainment purposes only</strong>.
                 </p>
               </div>
