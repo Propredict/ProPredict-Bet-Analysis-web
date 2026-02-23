@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions";
-import { ModelAccuracyTrendChart, AIAdoptionChart } from "@/components/dashboard/ModelAnalyticsCharts";
+import { ModelAccuracyTrendChart, AIAdoptionChart, PredictionOutcomeChart, ConfidenceDistributionChart } from "@/components/dashboard/ModelAnalyticsCharts";
 import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
 import { BettingTickets } from "@/components/dashboard/BettingTickets";
 import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
@@ -111,6 +111,14 @@ const Index = () => {
         
         {/* AI Predictions Section */}
         <DashboardAIPredictions />
+
+        {/* Prediction Analytics Charts – Web only */}
+        {!isAndroid && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PredictionOutcomeChart />
+            <ConfidenceDistributionChart />
+          </div>
+        )}
         
         <BottomCTA />
 
