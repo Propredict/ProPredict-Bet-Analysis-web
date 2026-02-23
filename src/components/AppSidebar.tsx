@@ -188,7 +188,7 @@ export function AppSidebar() {
         {/* Tickets */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "AI Combos"}
+            {!collapsed && "Multi-Match Predictions"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
