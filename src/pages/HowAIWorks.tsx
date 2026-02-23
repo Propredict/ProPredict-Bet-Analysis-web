@@ -321,56 +321,49 @@ const HowAIWorks = () => {
             </CardContent>
           </Card>
 
-          {/* Prediction Resolution Breakdown */}
+          {/* AI Adoption & Trust Statistics */}
           <Card className="bg-card border-border">
             <CardContent className="p-3 md:p-4">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-md bg-success/20">
-                  <BarChart3 className="h-4 w-4 text-success" />
+                <div className="p-1.5 rounded-md bg-accent/20">
+                  <BarChart3 className="h-4 w-4 text-accent" />
                 </div>
                 <div>
-                  <h3 className="text-xs md:text-sm font-semibold text-foreground">Prediction Resolution Breakdown</h3>
-                  <p className="text-[9px] text-muted-foreground">Historical outcome of resolved predictions</p>
+                  <h3 className="text-xs md:text-sm font-semibold text-foreground">AI Adoption in Sports Analytics</h3>
+                  <p className="text-[9px] text-muted-foreground">How users and industries are embracing AI-driven insights</p>
                 </div>
               </div>
               <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
+                    layout="vertical"
                     data={[
-                      { market: "1X2", confirmed: 62, unconfirmed: 38 },
-                      { market: "O/U 2.5", confirmed: 58, unconfirmed: 42 },
-                      { market: "BTTS", confirmed: 55, unconfirmed: 45 },
-                      { market: "Double", confirmed: 68, unconfirmed: 32 },
+                      { category: "Trust AI Analysis", percentage: 72 },
+                      { category: "Use AI Daily", percentage: 65 },
+                      { category: "Prefer Data > Opinion", percentage: 81 },
+                      { category: "AI Improves Decisions", percentage: 68 },
+                      { category: "Want More AI Tools", percentage: 74 },
                     ]}
-                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                    margin={{ top: 5, right: 15, left: 5, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" />
-                    <XAxis dataKey="market" tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(160, 10%, 18%)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                    <YAxis type="category" dataKey="category" tick={{ fontSize: 9, fill: "hsl(160, 12%, 55%)" }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip
                       content={({ active, payload, label }: any) => active && payload?.length ? (
                         <div className="bg-card border border-border rounded-md px-2.5 py-1.5 shadow-lg">
                           <p className="text-[10px] font-semibold text-foreground">{label}</p>
-                          <p className="text-[10px] text-primary">Confirmed: {payload[0].value}%</p>
-                          <p className="text-[10px] text-muted-foreground">Unconfirmed: {payload[1].value}%</p>
+                          <p className="text-[10px] text-accent">{payload[0].value}% of users</p>
                         </div>
                       ) : null}
                     />
-                    <Bar dataKey="confirmed" stackId="a" fill="hsl(171, 77%, 36%)" radius={[0, 0, 0, 0]} barSize={24} />
-                    <Bar dataKey="unconfirmed" stackId="a" fill="hsl(160, 10%, 18%)" radius={[4, 4, 0, 0]} barSize={24} />
+                    <Bar dataKey="percentage" fill="hsl(25, 95%, 53%)" radius={[0, 4, 4, 0]} barSize={14} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-4 mt-2">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-primary" />
-                  <span className="text-[9px] text-muted-foreground">Confirmed</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-border" />
-                  <span className="text-[9px] text-muted-foreground">Unconfirmed</span>
-                </div>
-              </div>
+              <p className="text-[9px] text-muted-foreground mt-2 italic">
+                * Based on industry surveys and global AI adoption research (2025–2026).
+              </p>
             </CardContent>
           </Card>
         </div>
