@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Goal, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 type ModalStep = "goal" | "tips" | null;
 
@@ -69,7 +70,8 @@ export function AndroidPushModal() {
   }, []);
 
   useEffect(() => {
-    const isAndroid = typeof window !== "undefined" && window.Android !== undefined;
+    const isAndroid = getIsAndroidApp();
+    console.log("[AndroidPushModal] Check: isAndroid=", isAndroid, "loading=", loading, "user=", !!user, "goal_enabled=", localStorage.getItem("goal_enabled"), "tips_enabled=", localStorage.getItem("tips_enabled"));
     if (!isAndroid || loading || !user) return;
 
     // Skip only if user already enabled both prompts
