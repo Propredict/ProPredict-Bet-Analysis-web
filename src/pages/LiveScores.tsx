@@ -429,7 +429,12 @@ export default function LiveScores() {
                 className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
                 placeholder="Search teams…" 
                 value={search} 
-                onChange={e => setSearch(e.target.value)} 
+                onChange={e => setSearch(e.target.value)}
+                onFocus={e => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }, 300);
+                }}
               />
             </div>
           </div>
