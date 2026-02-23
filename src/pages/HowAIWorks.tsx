@@ -36,7 +36,19 @@ const HowAIWorks = () => {
               <h2 className="text-sm font-semibold text-foreground">Introduction</h2>
             </div>
             <p className="text-xs text-muted-foreground mb-2">
-              ProPredict is an AI-powered sports analysis platform designed to help users better understand football matches through data, statistics, and machine learning models. Our system analyzes large volumes of historical and real-time data to generate predictions, insights, and structured match evaluations.
+              At ProPredict, we utilize advanced data science and machine learning techniques to analyze sports data and generate outcome probability insights.
+            </p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Our system processes large datasets, including historical match results, team and player performance metrics, and trend indicators. A machine learning model identifies statistical patterns and relationships between variables to estimate the likelihood of different match outcomes.
+            </p>
+            <p className="text-xs text-muted-foreground mb-2">
+              The prediction process is based on predictive analytics — a field of artificial intelligence focused on forecasting future results using past and current data. Our models are trained on comprehensive datasets and continuously refined to improve accuracy.
+            </p>
+            <p className="text-xs text-muted-foreground mb-2">
+              These predictions provide analytical insights and probability estimates based on historical and real‐time data. They are intended for informational and educational purposes only, not as guaranteed results or recommendations for any financial decision.
+            </p>
+            <p className="text-xs text-muted-foreground mb-2">
+              This approach helps users better understand the statistical context of sports outcomes using modern AI technologies.
             </p>
             <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
               <p className="text-[10px] md:text-xs text-primary font-medium">
