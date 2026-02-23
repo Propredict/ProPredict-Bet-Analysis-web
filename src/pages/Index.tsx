@@ -73,31 +73,18 @@ const Index = () => {
           </div>
         )}
 
-        {/* SEO About Section – Web only */}
+        {/* Learn More CTA – Web only */}
         {!isAndroid && (
-          <section className="bg-card border border-border rounded-xl p-5 md:p-6">
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-3">About ProPredict – Advanced AI Sports Analysis</h2>
-            <div className="space-y-2 text-[11px] md:text-xs text-muted-foreground leading-relaxed">
-              <p>
-                ProPredict is an AI-powered sports analytics platform focused on football data analysis and predictive modeling. Our system combines historical match statistics, performance indicators, and machine learning algorithms to generate structured probability-based insights.
-              </p>
-              <p>
-                Unlike traditional platforms, ProPredict does not provide gambling services or financial advice. We offer transparent, data-driven analysis to help users understand patterns and trends in football matches.
-              </p>
-              <p>Our AI models analyze key data points including team form, head-to-head statistics, goal expectancy indicators, possession trends, and contextual match variables — generating insights for informational and educational purposes only.</p>
-              <p>
-                ProPredict does not guarantee outcomes. Football is influenced by unpredictable factors, and statistical analysis estimates probabilities — not certainties. Our mission is to make sports analytics accessible, structured, and easy to interpret — empowering users with knowledge rather than promises.
-              </p>
-              <p className="text-[11px] md:text-xs text-muted-foreground mt-1">
-                👉 Read more about our methodology and mission
-              </p>
-              <Link
-                to="/about-us"
-                className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/25 transition-colors"
-              >
-                Learn More About ProPredict
-              </Link>
-            </div>
+          <section className="bg-card border border-border rounded-xl p-5 md:p-6 text-center">
+            <p className="text-[11px] md:text-xs text-muted-foreground mb-3">
+              👉 Read more about our methodology and mission
+            </p>
+            <Link
+              to="/about-us"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/25 transition-colors"
+            >
+              Learn More About ProPredict
+            </Link>
           </section>
         )}
 
