@@ -120,7 +120,7 @@ export default function DailyTips() {
 
   return <>
     <Helmet>
-      <title>Daily AI Picks – ProPredict</title>
+      <title>Daily AI Predictions – ProPredict</title>
       <meta
         name="description"
         content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes."
@@ -203,7 +203,7 @@ export default function DailyTips() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-accent mb-1">No daily AI picks available</p>
+              <p className="text-accent mb-1">No daily AI predictions available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />

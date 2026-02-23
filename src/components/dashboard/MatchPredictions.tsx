@@ -111,9 +111,9 @@ export function MatchPredictions() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily AI Picks";
-      case "exclusive": return "See all Pro AI Picks";
-      case "premium": return "See all Premium AI Picks";
+      case "daily": return "See all Daily AI Predictions";
+      case "exclusive": return "See all Pro AI Predictions";
+      case "premium": return "See all Premium AI Predictions";
     }
   };
 
@@ -125,7 +125,7 @@ export function MatchPredictions() {
           <TrendingUp className="h-4 w-4 text-primary" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-primary">Daily AI Picks</h2>
+          <h2 className="text-sm font-semibold text-primary">Daily AI Predictions</h2>
           <p className="text-[9px] text-muted-foreground"></p>
         </div>
       </div>

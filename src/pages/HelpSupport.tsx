@@ -150,7 +150,7 @@ const HelpSupport = () => {
         },
         {
           q: "What are AI Combos and how do they differ from single predictions?",
-          a: "AI Picks are individual match predictions (e.g., Team A to win, Over 2.5 goals). AI Combos bundle multiple AI Picks into a single combined selection — similar to an accumulator. All selections in a combo must be correct for it to count as a win. Combos carry a higher Combined Confidence Score because the individual confidence values are multiplied together. They offer more detailed analysis but are riskier since every pick must hit. Single predictions are safer and easier to follow, while combos are for users who want higher-value multi-match insights."
+          a: "AI Predictions are individual match predictions (e.g., Team A to win, Over 2.5 goals). AI Combos bundle multiple AI Predictions into a single combined selection — similar to an accumulator. All selections in a combo must be correct for it to count as a win. Combos carry a higher Combined Confidence Score because the individual confidence values are multiplied together. They offer more detailed analysis but are riskier since every prediction must hit. Single predictions are safer and easier to follow, while combos are for users who want higher-value multi-match insights."
         },
       ],
     },
