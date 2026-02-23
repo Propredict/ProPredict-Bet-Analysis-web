@@ -87,6 +87,15 @@ const Index = () => {
               <p>
                 ProPredict does not guarantee outcomes. Football is influenced by unpredictable factors, and statistical analysis estimates probabilities — not certainties. Our mission is to make sports analytics accessible, structured, and easy to interpret — empowering users with knowledge rather than promises.
               </p>
+              <p className="text-[11px] md:text-xs text-muted-foreground mt-1">
+                👉 Read more about our methodology and mission
+              </p>
+              <Link
+                to="/about-us"
+                className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/25 transition-colors"
+              >
+                Learn More About ProPredict
+              </Link>
             </div>
           </section>
         )}
