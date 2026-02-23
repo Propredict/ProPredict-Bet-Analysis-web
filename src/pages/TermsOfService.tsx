@@ -44,7 +44,7 @@ const TermsOfService = () => {
         Back to Settings
       </Button>
       
-      <div className="max-w-3xl mx-auto">
+      <div>
         <h1 className="text-xl font-bold mb-1">Terms of Service</h1>
         <p className="text-xs text-muted-foreground mb-4">Last updated: January 10, 2026</p>
 
