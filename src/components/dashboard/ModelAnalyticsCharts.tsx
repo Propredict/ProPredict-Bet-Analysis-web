@@ -1,5 +1,23 @@
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, BarChart3, PieChart } from "lucide-react";
+
+function AnimateOnView({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+      {children}
+    </div>
+  );
+}
 import {
   AreaChart,
   Area,
@@ -37,7 +55,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export const ModelAccuracyTrendChart = () => (
-  <Card className="bg-card border-border">
+  <AnimateOnView><Card className="bg-card border-border">
     <CardContent className="p-3 md:p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-md bg-primary/20">
@@ -69,11 +87,11 @@ export const ModelAccuracyTrendChart = () => (
         * Accuracy = confirmed predictions / total resolved predictions. Updated daily.
       </p>
     </CardContent>
-  </Card>
+  </Card></AnimateOnView>
 );
 
 export const AIAdoptionChart = () => (
-  <Card className="bg-card border-border">
+  <AnimateOnView><Card className="bg-card border-border">
     <CardContent className="p-3 md:p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-md bg-accent/20">
@@ -116,7 +134,7 @@ export const AIAdoptionChart = () => (
         * Based on industry surveys and global AI adoption research (2025–2026).
       </p>
     </CardContent>
-  </Card>
+  </Card></AnimateOnView>
 );
 
 const outcomeColors = [
@@ -126,7 +144,7 @@ const outcomeColors = [
 ];
 
 export const PredictionOutcomeChart = () => (
-  <Card className="bg-card border-border">
+  <AnimateOnView><Card className="bg-card border-border">
     <CardContent className="p-3 md:p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-md bg-primary/20">
@@ -170,11 +188,11 @@ export const PredictionOutcomeChart = () => (
         * Distribution of resolved analytical predictions over the last 30 days based on historical evaluation data.
       </p>
     </CardContent>
-  </Card>
+  </Card></AnimateOnView>
 );
 
 export const ConfidenceDistributionChart = () => (
-  <Card className="bg-card border-border">
+  <AnimateOnView><Card className="bg-card border-border">
     <CardContent className="p-3 md:p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-md bg-accent/20">
@@ -216,5 +234,5 @@ export const ConfidenceDistributionChart = () => (
         * Breakdown of AI-generated confidence ranges across analyzed matches.
       </p>
     </CardContent>
-  </Card>
+  </Card></AnimateOnView>
 );
