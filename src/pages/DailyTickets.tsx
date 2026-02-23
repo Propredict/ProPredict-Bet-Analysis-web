@@ -171,7 +171,7 @@ export default function DailyTickets() {
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">75%</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Win Rate</p>
+              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Accuracy</p>
             </div>
           </div>
         </Card>
