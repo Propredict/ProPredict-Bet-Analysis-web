@@ -102,7 +102,7 @@ export default function PremiumTickets() {
           </div>
           <div>
             <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Multi-Match Predictions</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest value picks for subscribers</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest confidence predictions for subscribers</p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
@@ -139,7 +139,7 @@ export default function PremiumTickets() {
               </div>
               <div>
                 <h3 className="text-xs sm:text-sm font-semibold text-foreground">Access Premium AI Predictions</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium AI combos</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium predictions</p>
               </div>
             </div>
             <Button size="sm" className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
@@ -191,7 +191,7 @@ export default function PremiumTickets() {
         {isLoading ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
-              <p>Loading AI Combos...</p>
+              <p>Loading predictions...</p>
             </div>
           </Card> : premiumTickets.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
