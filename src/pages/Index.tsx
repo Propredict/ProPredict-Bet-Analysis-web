@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions";
 import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
@@ -60,6 +61,14 @@ const Index = () => {
         <DashboardAIPredictions />
         
         <BottomCTA />
+
+        {/* SEO internal link */}
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          👉 Learn more about how our AI prediction model works →{" "}
+          <Link to="/how-ai-works" className="text-primary hover:underline font-medium">
+            How AI Works
+          </Link>
+        </p>
 
         {/* Compliance Disclaimer */}
         <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
