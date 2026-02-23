@@ -401,7 +401,7 @@ export default function TicketDetails() {
                         </div>
                         {/* Prediction & Confidence - BLURRED */}
                         <div className="flex items-center gap-2 blur-sm opacity-50">
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">
+                          <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-xs border border-primary/30">
                             {match.prediction}
                           </Badge>
                           <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
@@ -427,7 +427,7 @@ export default function TicketDetails() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                        <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-xs border border-primary/30">
                           {match.prediction}
                         </Badge>
                         <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
