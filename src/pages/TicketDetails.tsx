@@ -81,8 +81,13 @@ export default function TicketDetails() {
   };
 
   const handleFacebookShare = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-    window.open(url, "_blank", "noopener,noreferrer,width=600,height=400");
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+    // On Android WebView, use native bridge to open externally; fallback to window.open
+    if ((window as any).Android?.openExternalUrl) {
+      (window as any).Android.openExternalUrl(fbUrl);
+    } else {
+      window.open(fbUrl, "_blank", "noopener,noreferrer,width=600,height=400");
+    }
   };
 
   const handleInstagramShare = async () => {
