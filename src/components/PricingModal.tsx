@@ -36,12 +36,20 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  const [internalPlan, setInternalPlan] = useState<"basic" | "premium">(highlightPlan ?? "basic");
   const isAndroid = getIsAndroidApp();
+
+  // Sync internal plan when parent changes highlightPlan or modal opens
+  useEffect(() => {
+    if (open && highlightPlan) {
+      setInternalPlan(highlightPlan);
+    }
+  }, [open, highlightPlan]);
 
   const planRequired = searchParams.get("plan_required");
   const showFomoBadge = open && (planRequired === "premium" || planRequired === "pro");
 
-  const isPremium = highlightPlan === "premium";
+  const isPremium = internalPlan === "premium";
   const targetPlan: UserPlan = isPremium ? "premium" : "basic";
   const features = isPremium ? premiumFeatures : proFeatures;
 
@@ -263,7 +271,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           {!isPremium && (
             <p className="text-center text-[11px] text-muted-foreground mt-2.5">
               Want everything? <button
-                onClick={() => onOpenChange(true)}
+                onClick={() => setInternalPlan("premium")}
                 className="text-fuchsia-400 font-semibold underline underline-offset-2"
               >
                 Go Premium →
@@ -273,7 +281,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           {isPremium && currentPlan === "free" && (
             <p className="text-center text-[11px] text-muted-foreground mt-2.5">
               Looking for a lighter plan? <button
-                onClick={() => onOpenChange(true)}
+                onClick={() => setInternalPlan("basic")}
                 className="text-amber-400 font-semibold underline underline-offset-2"
               >
                 Try Pro →
