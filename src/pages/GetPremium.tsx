@@ -323,7 +323,7 @@ const testimonials = [
   { name: "ProAnalyst", badge: "Expert", rating: 4, comment: "Solid AI analysis with great accuracy. The match previews give me an edge every matchday." },
   { name: "StefanPro", badge: "Premium", rating: 5, comment: "Upgraded to Premium last month — the VIP insights are next level. Highly recommend!" },
   { name: "GoalMaster99", badge: "Analyst", rating: 5, comment: "I love how the AI breaks down every match. The confidence ratings are surprisingly reliable." },
-  { name: "DataKing", badge: "Expert", rating: 4, comment: "Clean interface, accurate predictions, and great value for money. What more could you ask for?" },
+  { name: "DataKing", badge: "Expert", rating: 4, comment: "Clean interface, accurate predictions, and outstanding value. What more could you ask for?" },
 ];
 
 const faqs = [

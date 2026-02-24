@@ -155,7 +155,7 @@ const Settings = () => {
             <AlertTriangle className="h-4 w-4 text-accent flex-shrink-0" />
             <div>
               <p className="text-xs font-medium text-accent">18+ Only · Entertainment Purposes Only</p>
-              <p className="text-[10px] text-muted-foreground">This app does not accept bets or process payments</p>
+              <p className="text-[10px] text-muted-foreground">This app provides AI-powered analysis for informational purposes only</p>
             </div>
           </div>
           <Button 

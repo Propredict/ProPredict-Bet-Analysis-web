@@ -70,7 +70,7 @@ export function getRiskBadge(
 }
 
 /**
- * Derive all betting markets from prediction data
+ * Derive all prediction markets from AI analysis data
  */
 export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
   const score = parseScore(prediction.predicted_score);
