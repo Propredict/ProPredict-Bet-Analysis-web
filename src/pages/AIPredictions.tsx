@@ -22,6 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
+import { AndroidNativeAdSlot } from "@/components/live-scores/AndroidNativeAdSlot";
 
 type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -563,6 +564,11 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
+                      {(idx + 1) % 4 === 0 && idx < visibleFeatured.length - 1 && (
+                        <div className="col-span-full">
+                          <AndroidNativeAdSlot slotIndex={idx + 1} />
+                        </div>
+                      )}
                       {(idx + 1) % 6 === 0 && idx < visibleFeatured.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
@@ -647,6 +653,11 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
+                      {(idx + 1) % 4 === 0 && idx < visibleRegular.length - 1 && (
+                        <div className="col-span-full">
+                          <AndroidNativeAdSlot slotIndex={1000 + idx + 1} />
+                        </div>
+                      )}
                       {(idx + 1) % 6 === 0 && idx < visibleRegular.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
