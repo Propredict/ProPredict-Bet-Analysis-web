@@ -121,10 +121,12 @@ export default function DailyTips() {
   return <>
     <Helmet>
       <title>Daily AI Predictions – ProPredict</title>
-      <meta
-        name="description"
-        content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes."
-      />
+      <meta name="description" content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes." />
+      <meta property="og:title" content="Daily AI Predictions – ProPredict" />
+      <meta property="og:description" content="Daily AI-powered sports predictions and match insights for football matches." />
+      <meta property="og:image" content="https://propredict.me/og-image.png" />
+      <meta property="og:url" content="https://propredict.me/daily-predictions" />
+      <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
       {/* Header */}

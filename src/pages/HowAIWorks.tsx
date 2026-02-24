@@ -46,10 +46,12 @@ const HowAIWorks = () => {
     <>
       <Helmet>
         <title>AI Methodology – How AI Predictions Work | ProPredict</title>
-        <meta
-          name="description"
-          content="Learn how ProPredict uses machine learning, predictive analytics, and data science to estimate outcome probabilities for football matches based on historical and real-time data."
-        />
+        <meta name="description" content="Learn how ProPredict uses machine learning, predictive analytics, and data science to estimate outcome probabilities for football matches based on historical and real-time data." />
+        <meta property="og:title" content="How AI Predictions Work – ProPredict" />
+        <meta property="og:description" content="Learn how ProPredict uses machine learning and data analytics to estimate outcome probabilities for football matches." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/how-ai-works" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="space-y-3 md:space-y-4">

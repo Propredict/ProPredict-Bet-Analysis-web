@@ -277,10 +277,12 @@ export default function LiveScores() {
     <>
       <Helmet>
         <title>Live Scores – AI Sports Predictions | ProPredict</title>
-        <meta
-          name="description"
-          content="Real-time live scores from all major football leagues. Track matches, goals, and results. AI-powered sports analysis platform."
-        />
+        <meta name="description" content="Real-time live scores from all major football leagues. Track matches, goals, and results. AI-powered sports analysis platform." />
+        <meta property="og:title" content="Live Scores – ProPredict" />
+        <meta property="og:description" content="Real-time live scores from all major football leagues. Track matches, goals, and results." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/live-scores" />
+        <meta property="og:type" content="website" />
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - COMPACT */}

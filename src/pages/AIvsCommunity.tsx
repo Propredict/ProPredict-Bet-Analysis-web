@@ -182,6 +182,11 @@ export default function AIvsCommunity() {
       <Helmet>
         <title>AI vs Members – AI Sports Predictions | ProPredict</title>
         <meta name="description" content="Compare AI predictions with community analysis on top European football matches." />
+        <meta property="og:title" content="AI vs Members – Prediction Arena | ProPredict" />
+        <meta property="og:description" content="Compare AI predictions with community analysis on top European football matches." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/ai-vs-community" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="w-full px-3 sm:px-4 lg:px-6 py-4 space-y-5">

@@ -75,10 +75,12 @@ export default function MatchPreviews() {
     <>
       <Helmet>
         <title>Match Previews – AI Sports Predictions | ProPredict</title>
-        <meta
-          name="description"
-          content="AI-powered match analysis and predictions for today's top football matches. For informational and entertainment purposes only."
-        />
+        <meta name="description" content="AI-powered match analysis and predictions for today's top football matches. For informational and entertainment purposes only." />
+        <meta property="og:title" content="Match Previews – ProPredict" />
+        <meta property="og:description" content="AI-powered match analysis and predictions for today's top football matches." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/match-previews" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="page-content space-y-4">

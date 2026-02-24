@@ -321,6 +321,11 @@ const HelpSupport = () => {
       <Helmet>
         <title>FAQ & Support – AI Sports Predictions | ProPredict</title>
         <meta name="description" content="Get help with ProPredict. Browse FAQs about subscriptions, AI predictions, and technical issues, or contact our support team." />
+        <meta property="og:title" content="FAQ & Support – ProPredict" />
+        <meta property="og:description" content="Browse FAQs about subscriptions, AI predictions, and technical issues, or contact our support team." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/help-support" />
+        <meta property="og:type" content="website" />
       </Helmet>
       <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
       {/* Back Button */}

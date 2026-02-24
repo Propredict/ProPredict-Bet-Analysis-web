@@ -125,10 +125,12 @@ export default function DailyTickets() {
   return <>
     <Helmet>
       <title>Daily Multi-Match Predictions – ProPredict</title>
-      <meta
-        name="description"
-        content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only."
-      />
+      <meta name="description" content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only." />
+      <meta property="og:title" content="Daily Multi-Match Predictions – ProPredict" />
+      <meta property="og:description" content="Daily AI-powered match combinations and analysis for football." />
+      <meta property="og:image" content="https://propredict.me/og-image.png" />
+      <meta property="og:url" content="https://propredict.me/daily-tickets" />
+      <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
       {/* Header */}

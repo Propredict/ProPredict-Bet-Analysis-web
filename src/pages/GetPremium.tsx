@@ -504,6 +504,11 @@ export default function GetPremium() {
     <Helmet>
       <title>Get Premium – Upgrade Your Plan | ProPredict</title>
       <meta name="description" content="Upgrade to Pro or Premium for full access to AI predictions, match previews, and ad-free experience. Flexible monthly and annual plans." />
+      <meta property="og:title" content="Get Premium – ProPredict" />
+      <meta property="og:description" content="Upgrade for full access to AI predictions, match previews, and ad-free experience." />
+      <meta property="og:image" content="https://propredict.me/og-image.png" />
+      <meta property="og:url" content="https://propredict.me/get-premium" />
+      <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap max-w-5xl mx-auto">
       {/* Header */}

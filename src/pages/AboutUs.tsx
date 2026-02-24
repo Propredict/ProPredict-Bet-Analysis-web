@@ -11,6 +11,11 @@ const AboutUs = () => {
       <Helmet>
         <title>About Us – AI Sports Predictions | ProPredict</title>
         <meta name="description" content="ProPredict is an AI-powered sports analysis platform providing match insights, predictions, and statistics for informational and entertainment purposes." />
+        <meta property="og:title" content="About Us – ProPredict" />
+        <meta property="og:description" content="AI-powered sports analysis platform providing match insights, predictions, and statistics." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/about-us" />
+        <meta property="og:type" content="website" />
       </Helmet>
       <div className="section-gap">
       <Button 
