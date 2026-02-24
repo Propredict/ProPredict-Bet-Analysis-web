@@ -75,31 +75,22 @@ export default function TicketDetails() {
     }
   };
 
-  const handleTwitterShare = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+  const openUrl = (url: string) => {
+    if (window.Android?.openExternal) {
+      window.Android.openExternal(url);
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   };
 
-  const handleFacebookShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: ticket?.title || "ProPredict Prediction",
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-      }
-    }
-    // Fallback: copy link (window.open blocked in Android WebView)
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied! Paste it on Facebook.", { duration: 4000 });
-    } catch {
-      toast.error("Failed to copy link");
-    }
+  const handleTwitterShare = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    openUrl(url);
+  };
+
+  const handleFacebookShare = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    openUrl(url);
   };
 
   const handleInstagramShare = async () => {
