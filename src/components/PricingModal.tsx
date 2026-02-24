@@ -35,6 +35,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
+  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  const isAndroid = getIsAndroidApp();
 
   const planRequired = searchParams.get("plan_required");
   const showFomoBadge = open && (planRequired === "premium" || planRequired === "pro");
@@ -42,6 +44,12 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const isPremium = highlightPlan === "premium";
   const targetPlan: UserPlan = isPremium ? "premium" : "basic";
   const features = isPremium ? premiumFeatures : proFeatures;
+
+  // Pricing per plan & period
+  const pricing = isPremium
+    ? { monthly: "€5.99/mo", annual: "€59.99/yr", saveBadge: "Save 17%" }
+    : { monthly: "€3.99/mo", annual: "€39.99/yr", saveBadge: "Save 16%" };
+  const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
   useEffect(() => {
     if (open) {
@@ -69,8 +77,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
     }
 
     // Android: use RevenueCat purchaseSubscription helper (priority chain)
-    if (getIsAndroidApp()) {
-      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", "monthly");
+    if (isAndroid) {
+      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", period);
       return;
     }
 
@@ -196,6 +204,40 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
         {/* Sticky Bottom CTA */}
         <div className="p-4 border-t border-border/30">
+          {/* Monthly / Annual toggle — Android only */}
+          {isAndroid && (
+            <div className="flex items-center justify-center gap-1 mb-3 p-1 rounded-lg bg-muted/50">
+              <button
+                onClick={() => setPeriod("monthly")}
+                className={cn(
+                  "flex-1 py-1.5 text-xs font-semibold rounded-md transition-all",
+                  period === "monthly"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setPeriod("annual")}
+                className={cn(
+                  "flex-1 py-1.5 text-xs font-semibold rounded-md transition-all relative",
+                  period === "annual"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Annual
+                <span className={cn(
+                  "ml-1 text-[10px] font-bold",
+                  isPremium ? "text-fuchsia-400" : "text-amber-400"
+                )}>
+                  {pricing.saveBadge}
+                </span>
+              </button>
+            </div>
+          )}
+
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
@@ -211,8 +253,8 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
               {currentPlan === targetPlan
                 ? "Current Plan"
                 : isPremium
-                  ? "Upgrade to Premium – €5.99/mo"
-                  : "Upgrade to Pro – €3.99/mo"
+                  ? `Upgrade to Premium – ${currentPrice}`
+                  : `Upgrade to Pro – ${currentPrice}`
               }
             </span>
           </Button>
