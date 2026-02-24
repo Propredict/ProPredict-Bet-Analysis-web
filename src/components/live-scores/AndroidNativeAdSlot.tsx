@@ -1,18 +1,16 @@
 /**
  * Android-only native ad placeholder.
  *
- * Renders a fixed-height container that the Android native layer
- * detects and fills with an inline native ad (ca-app-pub-4138787612808412/9395979295).
+ * Renders a styled container that the Android native layer
+ * detects via `data-android-ad-slot` and fills with an inline native ad.
  * On web this component renders nothing.
- *
- * When the container scrolls into view, it signals the native layer
- * via window.Android.onLiveScoresView() so Android can render the ad.
  *
  * Shown for ALL Android users (FREE, PRO, PREMIUM).
  */
 
 import { useEffect, useRef } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { Sparkles } from "lucide-react";
 
 interface AndroidNativeAdSlotProps {
   /** Unique slot id so native layer can target specific positions */
@@ -56,9 +54,17 @@ export function AndroidNativeAdSlot({ slotIndex }: AndroidNativeAdSlotProps) {
       ref={slotRef}
       data-android-ad-slot={slotIndex}
       data-ad-unit-id="ca-app-pub-4138787612808412/9395979295"
-      className="w-full flex items-center justify-center bg-secondary/30 border-y border-border/50"
-      style={{ minHeight: 120 }}
+      className="w-full rounded-lg overflow-hidden bg-gradient-to-r from-secondary/40 via-secondary/20 to-secondary/40 border border-border/40"
+      style={{ minHeight: 140 }}
       aria-hidden="true"
-    />
+    >
+      {/* Placeholder content shown until native ad loads */}
+      <div className="flex items-center justify-center h-full min-h-[140px] opacity-30">
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-medium tracking-wide uppercase">Ad</span>
+        </div>
+      </div>
+    </div>
   );
 }
