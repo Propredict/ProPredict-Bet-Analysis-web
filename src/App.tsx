@@ -45,7 +45,6 @@ const PremiumTickets = lazy(() => import("./pages/PremiumTickets"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
 const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
 const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
-const BettingTips = lazy(() => import("./pages/BettingTips"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 
@@ -171,7 +170,6 @@ const App = () => {
                   <Route path="/ai-predictions" element={<AIPredictions />} />
                   <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                   <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
-                  <Route path="/betting-tips" element={<BettingTips />} />
                   <Route path="/league-statistics" element={<LeagueStatistics />} />
                   <Route path="/match-previews" element={<MatchPreviews />} />
 
