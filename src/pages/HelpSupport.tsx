@@ -103,7 +103,7 @@ const HelpSupport = () => {
       ],
     },
     {
-      title: "Tips & Predictions",
+      title: "AI Predictions",
       icon: Sparkles,
       color: "text-accent",
       questions: [
@@ -188,7 +188,7 @@ const HelpSupport = () => {
       questions: [
         {
           q: "How do I enable notifications?",
-          a: "Go to Settings > Notifications to configure your push notification preferences. You can customize alerts for goals, match starts, and tip updates."
+          a: "Go to Settings > Notifications to configure your push notification preferences. You can customize alerts for goals, match starts, and prediction updates."
         },
         {
           q: "The app is not loading properly",
