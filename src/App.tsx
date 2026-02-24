@@ -154,6 +154,7 @@ const App = () => {
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/how-ai-works" element={<HowAIWorks />} />
                   <Route path="/live-scores" element={<LiveScores />} />
                   <Route path="/favorites" element={<MyFavorites />} />
