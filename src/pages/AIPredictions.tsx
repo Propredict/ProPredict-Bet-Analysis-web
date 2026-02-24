@@ -569,11 +569,13 @@ export default function AIPredictions() {
                           <AndroidNativeAdSlot slotIndex={idx + 1} />
                         </div>
                       )}
+                      {/* AdSlot hidden until AdSense approved
                       {(idx + 1) % 6 === 0 && idx < visibleFeatured.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
                         </div>
                       )}
+                      */}
                     </React.Fragment>
                   );
                 })}
@@ -658,11 +660,13 @@ export default function AIPredictions() {
                           <AndroidNativeAdSlot slotIndex={1000 + idx + 1} />
                         </div>
                       )}
+                      {/* AdSlot hidden until AdSense approved
                       {(idx + 1) % 6 === 0 && idx < visibleRegular.length - 1 && (
                         <div className="col-span-full">
                           <AdSlot />
                         </div>
                       )}
+                      */}
                     </React.Fragment>
                   );
                 })}
