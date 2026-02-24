@@ -32,6 +32,7 @@ import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { initOneSignalWeb } from "@/lib/onesignal";
 import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 import { AndroidPushModal } from "@/components/AndroidPushModal";
+import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
 
 // Pages where footer should be hidden (header-only layout)
 const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
@@ -274,6 +275,9 @@ export default function AppLayout() {
 
       {/* Android Push Permission Modal */}
       <AndroidPushModal />
+
+      {/* Android Battery Optimization Prompt */}
+      <BatteryOptimizationPrompt />
     </SidebarProvider>
   );
 }
