@@ -199,7 +199,7 @@ export default function AllTickets() {
           <div className="flex items-center gap-1.5">
             <Badge variant="outline" className="text-[9px] sm:text-[10px] px-2 py-0.5 bg-primary/10 border-primary/30 text-primary">
               <Trophy className="h-3 w-3 mr-1" />
-              {contentType === "tips" ? wonTipsCount : wonTicketsCount} won
+              {contentType === "tips" ? wonTipsCount : wonTicketsCount} success
             </Badge>
             <Button 
               variant="ghost" 
@@ -219,14 +219,14 @@ export default function AllTickets() {
               <Trophy className="h-4 w-4 text-emerald-400" />
               <span className="text-lg font-bold text-emerald-400">{globalWon}</span>
             </div>
-            <span className="text-[10px] text-emerald-400/70">Won</span>
+            <span className="text-[10px] text-emerald-400/70">Success</span>
           </div>
           <div className="bg-gradient-to-br from-red-500/20 via-red-500/10 to-transparent border border-red-500/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <TrendingDown className="h-4 w-4 text-red-400" />
               <span className="text-lg font-bold text-red-400">{globalLost}</span>
             </div>
-            <span className="text-[10px] text-red-400/70">Lost</span>
+            <span className="text-[10px] text-red-400/70">Missed</span>
           </div>
           <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
@@ -376,7 +376,7 @@ export default function AllTickets() {
                           tip.result === "pending" && "bg-muted/50 border-muted-foreground/30 text-muted-foreground"
                         )}
                       >
-                        {tip.result}
+                        {tip.result === "won" ? "Success" : tip.result === "lost" ? "Missed" : tip.result}
                       </Badge>
                     </div>
                   </div>

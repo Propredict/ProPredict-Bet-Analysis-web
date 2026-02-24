@@ -138,8 +138,8 @@ export const AIAdoptionChart = () => (
 );
 
 const outcomeColors = [
-  "hsl(171, 77%, 36%)", // Won - primary/teal
-  "hsl(0, 84%, 60%)",   // Lost - destructive/red
+  "hsl(171, 77%, 36%)", // Success - primary/teal
+  "hsl(0, 84%, 60%)",   // Missed - destructive/red
   "hsl(38, 92%, 50%)",  // Pending - warning/amber
 ];
 

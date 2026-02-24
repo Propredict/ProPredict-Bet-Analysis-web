@@ -88,7 +88,7 @@ export function FeaturedPredictions() {
             <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : won}
             </p>
-            <p className="text-[9px] text-primary/70">Won</p>
+            <p className="text-[9px] text-primary/70">Success</p>
           </div>
 
           <div className="flex flex-col items-center p-2 rounded-md bg-destructive/10 border border-destructive/20">
@@ -96,7 +96,7 @@ export function FeaturedPredictions() {
             <p className="text-xs font-semibold text-foreground">
               {isLoading ? "—" : lost}
             </p>
-            <p className="text-[9px] text-destructive/70">Lost</p>
+            <p className="text-[9px] text-destructive/70">Missed</p>
           </div>
 
           <div className="flex flex-col items-center p-2 rounded-md bg-muted/30 border border-border/50">

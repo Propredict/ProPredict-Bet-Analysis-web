@@ -365,9 +365,9 @@ export default function AIPredictions() {
                   <p className="text-lg md:text-xl font-bold text-teal-500">{Math.max(tierStats.free.accuracy, 50)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
-                      <span className="text-success">{tierStats.free.won}W</span>
+                      <span className="text-success">{tierStats.free.won}S</span>
                       {" / "}
-                      <span className="text-destructive">{tierStats.free.lost}L</span>
+                      <span className="text-destructive">{tierStats.free.lost}M</span>
                     </span>
                   </div>
                   {tierStats.free.total > 0 && (
@@ -388,9 +388,9 @@ export default function AIPredictions() {
                   <p className="text-lg md:text-xl font-bold text-amber-500">{Math.max(tierStats.pro.accuracy, 75)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
-                      <span className="text-success">{tierStats.pro.won}W</span>
+                      <span className="text-success">{tierStats.pro.won}S</span>
                       {" / "}
-                      <span className="text-destructive">{tierStats.pro.lost}L</span>
+                      <span className="text-destructive">{tierStats.pro.lost}M</span>
                     </span>
                   </div>
                   {tierStats.pro.total > 0 && (
@@ -411,9 +411,9 @@ export default function AIPredictions() {
                   <p className="text-lg md:text-xl font-bold text-fuchsia-500">{Math.max(tierStats.premium.accuracy, 87)}%</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[8px] md:text-[9px] text-muted-foreground">
-                      <span className="text-success">{tierStats.premium.won}W</span>
+                      <span className="text-success">{tierStats.premium.won}S</span>
                       {" / "}
-                      <span className="text-destructive">{tierStats.premium.lost}L</span>
+                      <span className="text-destructive">{tierStats.premium.lost}M</span>
                     </span>
                   </div>
                   {tierStats.premium.total > 0 && (
