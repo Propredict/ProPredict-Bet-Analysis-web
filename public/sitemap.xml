@@ -27,6 +27,26 @@
   </url>
 
   <url>
+    <loc>https://propredict.me/pro-analysis</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://propredict.me/premium-analysis</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://propredict.me/pro-predictions</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://propredict.me/premium-predictions</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://propredict.me/live-scores</loc>
     <priority>0.8</priority>
   </url>
