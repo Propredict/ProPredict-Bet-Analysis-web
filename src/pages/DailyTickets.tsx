@@ -10,14 +10,12 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
-import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const {
     tickets,
     isLoading,
@@ -27,6 +25,7 @@ export default function DailyTickets() {
     plan,
     canAccess,
     getUnlockMethod,
+    isAuthenticated,
     refetch: refetchPlan
   } = useUserPlan();
   const {
@@ -81,7 +80,7 @@ export default function DailyTickets() {
   // Render tickets without ads
   const renderTickets = () => {
     return dailyTickets.map((ticket, idx) => {
-      const unlockMethod = !user 
+      const unlockMethod = !isAuthenticated 
         ? { type: "login_required" as const, message: "Sign in to Unlock" }
         : getUnlockMethod("daily", "ticket", ticket.id);
       const isLocked = unlockMethod?.type !== "unlocked";
@@ -107,7 +106,7 @@ export default function DailyTickets() {
             }} 
             isLocked={isLocked} 
             unlockMethod={unlockMethod} 
-            onUnlockClick={() => !user ? navigate("/login") : handleUnlock("ticket", ticket.id, "daily")} 
+            onUnlockClick={() => !isAuthenticated ? navigate("/login") : handleUnlock("ticket", ticket.id, "daily")} 
             onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
             isUnlocking={isUnlocking} 
           />
