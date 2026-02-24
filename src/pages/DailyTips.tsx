@@ -72,7 +72,7 @@ export default function DailyTips() {
   const handleRefresh = () => {
     refetch();
     refetchPlan();
-    toast.success("Tips refreshed");
+    toast.success("Predictions refreshed");
   };
 
   // Render tips without ads

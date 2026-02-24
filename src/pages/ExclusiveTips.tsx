@@ -77,7 +77,7 @@ export default function ExclusiveTips() {
   const handleRefresh = () => {
     refetch();
     refetchPlan();
-    toast.success("Tips refreshed");
+    toast.success("Predictions refreshed");
   };
 
   return <>
