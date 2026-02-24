@@ -496,11 +496,11 @@ export default function LiveScores() {
                     <div className="divide-y divide-border">
                       {games.map((m, idx) => (
                         <Fragment key={m.id}>
-                          <MatchRow 
+          <MatchRow 
                             match={m} 
                             onSelect={setSelectedMatch}
                             isFavorite={isFavorite(m.id)}
-                            toggleFavorite={() => toggleFavorite(m.id)}
+                            toggleFavorite={() => toggleFavorite(m.id, navigate)}
                             hasAlert={hasAlert(m.id)}
                             toggleMatchAlert={() => toggleMatchAlert(m.id)}
                             hasRecentGoal={hasRecentGoal(m.id)}
@@ -537,7 +537,7 @@ export default function LiveScores() {
                   leagueCount={countryLeagueCount}
                   onSelectMatch={setSelectedMatch}
                   isFavorite={isFavorite}
-                  toggleFavorite={toggleFavorite}
+                  toggleFavorite={(id: string) => toggleFavorite(id, navigate)}
                   hasAlert={hasAlert}
                   toggleMatchAlert={toggleMatchAlert}
                   hasRecentGoal={hasRecentGoal}
@@ -821,6 +821,7 @@ function CountrySection({
                 toggleMatchAlert={toggleMatchAlert}
                 hasRecentGoal={hasRecentGoal}
                 isSoundActive={isSoundActive}
+                
               />
             ))}
           </div>
