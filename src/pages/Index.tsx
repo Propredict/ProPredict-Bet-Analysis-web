@@ -31,10 +31,12 @@ const Index = () => {
     <>
       <Helmet>
         <title>ProPredict – AI Sports Analysis & Predictions</title>
-        <meta
-          name="description"
-          content="AI-powered sports predictions, match analysis, and statistics for entertainment and informational purposes only."
-        />
+        <meta name="description" content="AI-powered sports predictions, match analysis, and statistics for entertainment and informational purposes only." />
+        <meta property="og:title" content="ProPredict – AI Sports Analysis & Predictions" />
+        <meta property="og:description" content="AI-powered sports predictions, match analysis, and statistics for entertainment and informational purposes only." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/" />
+        <meta property="og:type" content="website" />
       </Helmet>
       <div className="space-y-6">
         <GuestBanner />

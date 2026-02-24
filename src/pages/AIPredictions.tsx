@@ -245,10 +245,12 @@ export default function AIPredictions() {
     <>
       <Helmet>
         <title>AI Predictions – ProPredict</title>
-        <meta
-          name="description"
-          content="AI-generated sports predictions and statistical insights. No guarantee of accuracy. For informational purposes only."
-        />
+        <meta name="description" content="AI-generated sports predictions and statistical insights. No guarantee of accuracy. For informational purposes only." />
+        <meta property="og:title" content="AI Predictions – ProPredict" />
+        <meta property="og:description" content="AI-generated sports predictions and statistical insights for football matches worldwide." />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
+        <meta property="og:url" content="https://propredict.me/ai-predictions" />
+        <meta property="og:type" content="website" />
       </Helmet>
       <div className="flex gap-2 md:gap-4 lg:gap-6">
         {/* Left Sidebar - Hidden on mobile */}

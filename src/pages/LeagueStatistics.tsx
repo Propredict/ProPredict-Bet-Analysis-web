@@ -101,6 +101,11 @@ export default function LeagueStatistics() {
     <Helmet>
       <title>League Statistics & Standings – ProPredict</title>
       <meta name="description" content="Live league standings, top scorers, assists, fixtures, and head-to-head stats across all major football leagues. AI-powered sports analysis." />
+      <meta property="og:title" content="League Statistics & Standings – ProPredict" />
+      <meta property="og:description" content="Live league standings, top scorers, assists, fixtures, and head-to-head stats across all major football leagues." />
+      <meta property="og:image" content="https://propredict.me/og-image.png" />
+      <meta property="og:url" content="https://propredict.me/league-statistics" />
+      <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
