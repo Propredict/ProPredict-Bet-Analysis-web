@@ -37,6 +37,9 @@ interface AndroidBridge {
 
   // Subscription management — opens Google Play subscription management
   manageSubscription?: () => void;
+
+  // Open external URL in system browser
+  openExternal?: (url: string) => void;
 }
 
 declare global {
