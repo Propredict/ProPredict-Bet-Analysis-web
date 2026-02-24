@@ -7,10 +7,10 @@ import { useNavigate } from "react-router-dom";
 function getTierRoute(type: "tip" | "ticket", tier: string): string {
   const routes: Record<string, Record<string, string>> = {
     tip: {
-      premium: "/premium-tips",
-      exclusive: "/exclusive-tips",
-      daily: "/daily-tips",
-      free: "/daily-tips",
+      premium: "/premium-analysis",
+      exclusive: "/pro-analysis",
+      daily: "/daily-analysis",
+      free: "/daily-analysis",
     },
     ticket: {
       premium: "/premium-predictions",

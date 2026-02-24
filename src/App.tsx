@@ -163,13 +163,16 @@ const App = () => {
                   <Route path="/get-premium" element={<GetPremium />} />
 
                   {/* Tips */}
-                  <Route path="/daily-tips" element={<DailyTips />} />
+                  <Route path="/daily-analysis" element={<DailyTips />} />
+                  <Route path="/daily-tips" element={<Navigate to="/daily-analysis" replace />} />
                   <Route path="/daily-predictions" element={<DailyTickets />} />
                   <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
-                  <Route path="/exclusive-tips" element={<ExclusiveTips />} />
+                  <Route path="/pro-analysis" element={<ExclusiveTips />} />
+                  <Route path="/exclusive-tips" element={<Navigate to="/pro-analysis" replace />} />
                   <Route path="/pro-predictions" element={<ExclusiveTickets />} />
                   <Route path="/exclusive-tickets" element={<Navigate to="/pro-predictions" replace />} />
-                  <Route path="/premium-tips" element={<PremiumTips />} />
+                  <Route path="/premium-analysis" element={<PremiumTips />} />
+                  <Route path="/premium-tips" element={<Navigate to="/premium-analysis" replace />} />
                   <Route path="/premium-predictions" element={<PremiumTickets />} />
                   <Route path="/premium-tickets" element={<Navigate to="/premium-predictions" replace />} />
                   <Route path="/ai-predictions" element={<AIPredictions />} />

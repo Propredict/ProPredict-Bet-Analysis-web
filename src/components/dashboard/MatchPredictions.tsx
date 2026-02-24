@@ -28,9 +28,9 @@ function mapDbTipToTip(dbTip: any): Tip {
 }
 
 const TAB_ROUTES: Record<TabType, string> = {
-  daily: "/daily-tips",
-  exclusive: "/exclusive-tips",
-  premium: "/premium-tips"
+  daily: "/daily-analysis",
+  exclusive: "/pro-analysis",
+  premium: "/premium-analysis"
 };
 
 export function MatchPredictions() {
