@@ -5,49 +5,35 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 /**
  * Listens for ONESIGNAL_PLAYER_ID postMessage from the Android native bridge
  * and upserts the player ID into users_push_tokens for the logged-in user.
- * 
- * Handles the case where the Player ID arrives before the user logs in
- * by storing it and retrying on auth state changes.
+ *
+ * After reinstall the native bridge delivers a NEW player ID.
+ * This hook:
+ *  1. Always overwrites localStorage with the latest bridge value.
+ *  2. Retries the upsert on every auth-state change until it succeeds.
+ *  3. Runs a periodic retry so even if auth fires before the bridge message,
+ *     the token is still synced within seconds.
  */
 export function useOneSignalPlayerSync() {
   const isAndroid = getIsAndroidApp();
   const pendingPlayerIdRef = useRef<string | null>(null);
+  const syncedRef = useRef(false); // true once DB upsert succeeds this session
 
   useEffect(() => {
-    if (!isAndroid) {
-      console.log("[OneSignal] Not Android, skipping player sync");
-      return;
-    }
+    if (!isAndroid) return;
 
     console.log("[OneSignal] Android detected, setting up player ID listener");
+    syncedRef.current = false;
 
-    // Global debug listener - logs ALL messages to find OneSignal Player ID
-    const debugListener = (event: MessageEvent) => {
-      const d = event.data;
-      if (typeof d === 'string' && d.includes('ONESIGNAL')) {
-        console.log("[DEBUG RAW MESSAGE] string:", d);
-      } else if (typeof d === 'object' && d !== null) {
-        try {
-          const json = JSON.stringify(d);
-          if (json.includes('ONESIGNAL') || json.includes('playerId')) {
-            console.log("[DEBUG RAW MESSAGE] object:", json);
-          }
-        } catch {}
-      }
-    };
-    window.addEventListener("message", debugListener);
-
-    const upsertPlayerToken = async (playerId: string) => {
-      console.log("[OneSignal] upsertPlayerToken called with:", playerId);
+    // ── Core upsert ──
+    const upsertPlayerToken = async (playerId: string): Promise<boolean> => {
       const { data: { user } } = await supabase.auth.getUser();
-
       if (!user) {
-        console.log("[OneSignal] Player ID received but user not logged in, saving for later:", playerId);
+        console.log("[OneSignal] No user yet, saving pending ID:", playerId);
         pendingPlayerIdRef.current = playerId;
-        return;
+        return false;
       }
 
-      console.log("[OneSignal] ▶ UPSERTING player ID:", playerId, "for user:", user.id, "platform: android");
+      console.log("[OneSignal] ▶ UPSERTING player ID:", playerId, "for user:", user.id);
 
       const { error } = await supabase.from("users_push_tokens").upsert(
         {
@@ -59,85 +45,85 @@ export function useOneSignalPlayerSync() {
       );
 
       if (error) {
-        console.error("[OneSignal] Failed to upsert push token:", error.message);
-      } else {
-      console.log("[OneSignal] ✅ Android push token saved successfully");
-        localStorage.setItem("onesignal_player_id", playerId);
-        pendingPlayerIdRef.current = null;
+        console.error("[OneSignal] Upsert failed:", error.message);
+        return false;
       }
+
+      console.log("[OneSignal] ✅ Push token saved successfully");
+      localStorage.setItem("onesignal_player_id", playerId);
+      pendingPlayerIdRef.current = null;
+      syncedRef.current = true;
+      return true;
     };
 
+    // ── Bridge message handler ──
     const handleMessage = async (event: MessageEvent | Event) => {
       const rawData = (event as MessageEvent).data;
-
-      console.log("[OneSignal] ANDROID MESSAGE RECEIVED:", rawData);
-      console.log("[OneSignal] rawData type:", typeof rawData);
-      try {
-        console.log("[OneSignal] rawData JSON:", JSON.stringify(rawData));
-      } catch (e) {
-        console.log("[OneSignal] rawData not serializable");
-      }
-
       const data =
         typeof rawData === "string"
-          ? (() => {
-              try { return JSON.parse(rawData); } catch { return null; }
-            })()
+          ? (() => { try { return JSON.parse(rawData); } catch { return null; } })()
           : rawData;
 
-      if (!data) {
-        console.log("[OneSignal] data is null after parsing");
-        return;
-      }
-      if (data.type !== "ONESIGNAL_PLAYER_ID") {
-        console.log("[OneSignal] Ignoring message type:", data.type);
-        return;
-      }
-      if (!data.playerId) {
-        console.log("[OneSignal] No playerId in message");
-        return;
-      }
+      if (!data || data.type !== "ONESIGNAL_PLAYER_ID" || !data.playerId) return;
 
       const playerId = data.playerId as string;
-      console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
+      const previousId = localStorage.getItem("onesignal_player_id");
+
+      // Always store the latest bridge value — critical after reinstall
+      localStorage.setItem("onesignal_player_id", playerId);
+      pendingPlayerIdRef.current = playerId;
+      syncedRef.current = false; // force re-sync with new ID
+
+      if (previousId && previousId !== playerId) {
+        console.log("[OneSignal] 🔄 Player ID CHANGED (reinstall detected):", previousId, "→", playerId);
+      } else {
+        console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
+      }
 
       await upsertPlayerToken(playerId);
     };
 
-    // Listen on BOTH window and document for Android WebView compatibility
     window.addEventListener("message", handleMessage);
     document.addEventListener("message", handleMessage as EventListener);
 
-    // Auth state listener: flush pending player ID on ANY auth event with a session
+    // ── Auth state listener: flush pending player ID on login ──
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const savedId = localStorage.getItem("onesignal_player_id");
-        const playerIdToSync = pendingPlayerIdRef.current || savedId;
-        console.log("[OneSignal] onAuthStateChange:", event, "hasSession:", !!session?.user, "pendingId:", pendingPlayerIdRef.current, "savedId:", savedId);
+      async (_event, session) => {
+        if (syncedRef.current) return; // already synced this session
+        const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
         if (session?.user && playerIdToSync) {
-          console.log("[OneSignal] 🔄 Auth event:", event, "- syncing Android player ID for user:", session.user.id, "playerId:", playerIdToSync);
+          console.log("[OneSignal] 🔄 Auth event — syncing player ID for user:", session.user.id);
           await upsertPlayerToken(playerIdToSync);
         }
       }
     );
 
-    // Also check existing session immediately (WebView may already have a session without firing auth events)
-    const checkExistingSession = async () => {
+    // ── Immediate check: session may already exist ──
+    const checkExisting = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const savedId = localStorage.getItem("onesignal_player_id");
-      const playerIdToSync = pendingPlayerIdRef.current || savedId;
+      const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
       if (session?.user && playerIdToSync) {
-        console.log("[OneSignal] Syncing Android Player ID after session restore for user:", session.user.id);
         await upsertPlayerToken(playerIdToSync);
       }
     };
-    checkExistingSession();
+    checkExisting();
+
+    // ── Periodic retry: bridge message may arrive after auth ──
+    const retryInterval = setInterval(async () => {
+      if (syncedRef.current) return;
+      const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
+      if (playerIdToSync) {
+        console.log("[OneSignal] ⏱ Retry sync for:", playerIdToSync);
+        const ok = await upsertPlayerToken(playerIdToSync);
+        if (ok) clearInterval(retryInterval);
+      }
+    }, 5000);
 
     return () => {
-      window.removeEventListener("message", debugListener);
       window.removeEventListener("message", handleMessage);
       document.removeEventListener("message", handleMessage as EventListener);
       subscription.unsubscribe();
+      clearInterval(retryInterval);
     };
   }, [isAndroid]);
 }
