@@ -186,7 +186,7 @@ export default function TicketDetails() {
         return { label: "Pro Multi-Match Predictions", path: "/exclusive-tickets" };
       case "daily":
       default:
-        return { label: "Daily Multi-Match Predictions", path: "/daily-tickets" };
+        return { label: "Daily Multi-Match Predictions", path: "/daily-predictions" };
     }
   };
   const tierBreadcrumb = getTierBreadcrumb();
