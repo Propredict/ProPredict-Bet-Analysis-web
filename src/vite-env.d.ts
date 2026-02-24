@@ -38,6 +38,9 @@ interface AndroidBridge {
 
   // Open external URL in system browser
   openExternal?: (url: string) => void;
+
+  // Battery optimization — opens system settings to disable battery optimization
+  openBatterySettings?: () => void;
 }
 
 declare global {
