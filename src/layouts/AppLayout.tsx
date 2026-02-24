@@ -248,7 +248,7 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-16 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
+          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-20 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
             <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>
