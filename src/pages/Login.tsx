@@ -108,7 +108,7 @@ const Login = () => {
               <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertTitle className="text-foreground">Your account has been successfully created.</AlertTitle>
               <AlertDescription className="text-muted-foreground">
-                You can now explore AI-powered tips, predictions, and in-depth analysis.
+                You can now explore AI-powered predictions, analysis, and in-depth insights.
               </AlertDescription>
             </Alert>
             <Button 
