@@ -181,9 +181,9 @@ export default function TicketDetails() {
   const getTierBreadcrumb = () => {
     switch (ticket.tier) {
       case "premium":
-        return { label: "Premium Multi-Match Predictions", path: "/premium-tickets" };
+        return { label: "Premium Multi-Match Predictions", path: "/premium-predictions" };
       case "exclusive":
-        return { label: "Pro Multi-Match Predictions", path: "/exclusive-tickets" };
+        return { label: "Pro Multi-Match Predictions", path: "/pro-predictions" };
       case "daily":
       default:
         return { label: "Daily Multi-Match Predictions", path: "/daily-predictions" };

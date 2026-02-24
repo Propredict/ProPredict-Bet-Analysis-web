@@ -13,8 +13,8 @@ function getTierRoute(type: "tip" | "ticket", tier: string): string {
       free: "/daily-tips",
     },
     ticket: {
-      premium: "/premium-tickets",
-      exclusive: "/exclusive-tickets",
+      premium: "/premium-predictions",
+      exclusive: "/pro-predictions",
       daily: "/daily-predictions",
       free: "/daily-predictions",
     },
