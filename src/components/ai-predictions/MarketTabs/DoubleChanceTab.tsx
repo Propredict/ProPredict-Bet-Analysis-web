@@ -63,7 +63,7 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
       {hasAccess && (
         <div className="bg-[#1e3a5f]/20 rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30">
           <p className="text-[10px] md:text-xs text-muted-foreground">
-            <span className="font-semibold text-cyan-400">Safer bet:</span> Covers two outcomes.
+            <span className="font-semibold text-cyan-400">Safer pick:</span> Covers two outcomes.
           </p>
         </div>
       )}
