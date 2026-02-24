@@ -87,7 +87,7 @@ export default function ExclusiveTickets() {
       <meta property="og:title" content="Pro Multi-Match Predictions – ProPredict" />
       <meta property="og:description" content="Pro-level AI-powered match combinations with advanced analysis." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
-      <meta property="og:url" content="https://propredict.me/exclusive-tickets" />
+      <meta property="og:url" content="https://propredict.me/pro-predictions" />
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">

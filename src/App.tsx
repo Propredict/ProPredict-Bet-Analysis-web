@@ -167,9 +167,11 @@ const App = () => {
                   <Route path="/daily-predictions" element={<DailyTickets />} />
                   <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
                   <Route path="/exclusive-tips" element={<ExclusiveTips />} />
-                  <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
+                  <Route path="/pro-predictions" element={<ExclusiveTickets />} />
+                  <Route path="/exclusive-tickets" element={<Navigate to="/pro-predictions" replace />} />
                   <Route path="/premium-tips" element={<PremiumTips />} />
-                  <Route path="/premium-tickets" element={<PremiumTickets />} />
+                  <Route path="/premium-predictions" element={<PremiumTickets />} />
+                  <Route path="/premium-tickets" element={<Navigate to="/premium-predictions" replace />} />
                   <Route path="/ai-predictions" element={<AIPredictions />} />
                   <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                   <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
