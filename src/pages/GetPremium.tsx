@@ -611,10 +611,17 @@ export default function GetPremium() {
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
-                disabled={isCurrentPlan || isLoading}
+                disabled={isCurrentPlan || (isFree && currentPlan !== "free") || isLoading}
                 onClick={() => handleSubscribe(plan.id)}
               >
-                {isLoading ? "Loading..." : isCurrentPlan ? "Current Plan" : plan.buttonText}
+                {isLoading
+                  ? "Loading..."
+                  : isCurrentPlan
+                  ? "Current Plan"
+                  : isFree
+                  ? (currentPlan === "free" ? "Current Plan" : "Free Plan")
+                  : plan.buttonText
+                }
               </Button>
 
               <ul className="mt-4 space-y-2">
