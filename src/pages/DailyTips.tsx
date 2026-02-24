@@ -125,7 +125,7 @@ export default function DailyTips() {
       <meta property="og:title" content="Daily AI Predictions – ProPredict" />
       <meta property="og:description" content="Daily AI-powered sports predictions and match insights for football matches." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
-      <meta property="og:url" content="https://propredict.me/daily-predictions" />
+      <meta property="og:url" content="https://propredict.me/daily-analysis" />
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
