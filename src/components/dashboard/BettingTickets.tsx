@@ -33,7 +33,7 @@ function mapDbTicket(db: any): BettingTicket {
 }
 
 const TAB_ROUTES: Record<TabType, string> = {
-  daily: "/daily-tickets",
+  daily: "/daily-predictions",
   exclusive: "/exclusive-tickets",
   premium: "/premium-tickets"
 };

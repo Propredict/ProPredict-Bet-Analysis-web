@@ -164,7 +164,8 @@ const App = () => {
 
                   {/* Tips */}
                   <Route path="/daily-tips" element={<DailyTips />} />
-                  <Route path="/daily-tickets" element={<DailyTickets />} />
+                  <Route path="/daily-predictions" element={<DailyTickets />} />
+                  <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
                   <Route path="/exclusive-tips" element={<ExclusiveTips />} />
                   <Route path="/exclusive-tickets" element={<ExclusiveTickets />} />
                   <Route path="/premium-tips" element={<PremiumTips />} />
