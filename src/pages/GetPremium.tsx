@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   Check,
   X,
@@ -499,6 +500,11 @@ export default function GetPremium() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Get Premium – Upgrade Your Plan | ProPredict</title>
+      <meta name="description" content="Upgrade to Pro or Premium for full access to AI predictions, match previews, and ad-free experience. Flexible monthly and annual plans." />
+    </Helmet>
     <div className="section-gap max-w-5xl mx-auto">
       {/* Header */}
       <div className="text-center space-y-2">
@@ -732,5 +738,6 @@ export default function GetPremium() {
         Choose package and unlock premium features.
       </p>
     </div>
+    </>
   );
 }

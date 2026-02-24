@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -96,7 +97,12 @@ export default function LeagueStatistics() {
     return matches.filter(m => m.league.toLowerCase() === leagueName.toLowerCase());
   }, [matches, isAllLeagues, selectedLeague]);
   const liveCount = filteredMatches.filter(m => m.status === "live" || m.status === "halftime").length;
-  return <div className="section-gap max-w-full overflow-x-hidden">
+  return <>
+    <Helmet>
+      <title>League Statistics & Standings – ProPredict</title>
+      <meta name="description" content="Live league standings, top scorers, assists, fixtures, and head-to-head stats across all major football leagues. AI-powered sports analysis." />
+    </Helmet>
+    <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -228,5 +234,6 @@ export default function LeagueStatistics() {
 
         {/* Footer Ad */}
         <AdSlot />
-      </div>;
+      </div>
+  </>;
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,11 @@ const ForgotPassword = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Forgot Password – ProPredict</title>
+      <meta name="description" content="Reset your ProPredict account password. Enter your email to receive a secure password reset link." />
+    </Helmet>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md shadow-2xl border-border/50 backdrop-blur">
         <CardHeader className="space-y-1 text-center">
@@ -107,6 +113,7 @@ const ForgotPassword = () => {
         </CardFooter>
       </Card>
     </div>
+    </>
   );
 };
 
