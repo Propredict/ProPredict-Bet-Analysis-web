@@ -301,7 +301,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       return false;
     },
-    [isAdmin, plan, isContentUnlocked],
+    [isAdmin, user, plan, isContentUnlocked],
   );
 
   /* =====================

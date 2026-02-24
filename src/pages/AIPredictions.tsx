@@ -58,7 +58,7 @@ export default function AIPredictions() {
     return { won, lost, pending, accuracy };
   }, [predictions]);
 
-  const { isAdmin, plan } = useUserPlan();
+  const { isAdmin, plan, isAuthenticated, isLoading: planLoading } = useUserPlan();
   const { user } = useAuth();
   const { isFavorite, isSaving, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
@@ -589,7 +589,7 @@ export default function AIPredictions() {
               </h2>
             </div>
 
-            {!user ? (
+            {!isAuthenticated && !planLoading ? (
               /* Guest login gate - only for free predictions */
               <Card className="p-6 md:p-10 text-center border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
                 <div className="max-w-sm mx-auto space-y-4">
