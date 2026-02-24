@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type UserPlan } from "@/hooks/useUserPlan";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { purchaseSubscription } from "@/hooks/useRevenueCat";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -67,20 +68,13 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       return;
     }
 
-    const android = (window as any).Android;
-    if (android) {
-      if (targetPlan === "basic" && typeof android.purchasePackage === "function") {
-        android.purchasePackage("propredict_pro_monthly");
-      } else if (targetPlan === "premium" && typeof android.purchasePackage === "function") {
-        android.purchasePackage("propredict_premium_monthly");
-      } else if (targetPlan === "basic" && typeof android.getPro === "function") {
-        android.getPro();
-      } else if (targetPlan === "premium" && typeof android.getPremium === "function") {
-        android.getPremium();
-      }
+    // Android: use RevenueCat purchaseSubscription helper (priority chain)
+    if (getIsAndroidApp()) {
+      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", "monthly");
       return;
     }
 
+    // Web: go to pricing page
     navigate("/get-premium");
   };
 
