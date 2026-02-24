@@ -9,8 +9,6 @@ interface AndroidBridge {
   // Interstitial Ads — context string tells native which placement triggered it
   showInterstitial?: (context: string) => void;
   
-  // Live Scores — notify native layer the page is visible so it can inject inline ads
-  onLiveScoresView?: () => void;
 
   // Push permission — request OneSignal notification permission from web layer
   requestPushPermission?: () => void;

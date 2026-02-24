@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
-import { AndroidNativeAdSlot } from "@/components/live-scores/AndroidNativeAdSlot";
+
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
@@ -33,13 +33,6 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 export default function LiveScores() {
   console.log("🔥 LiveScores mounted");
 
-  // Android only: notify native layer that Live Scores is visible
-  // so it can prepare inline native ads between match rows
-  useEffect(() => {
-    if (getIsAndroidApp() && (window as any).Android?.onLiveScoresView) {
-      (window as any).Android.onLiveScoresView();
-    }
-  }, []);
   
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -511,10 +504,6 @@ export default function LiveScores() {
                             hasRecentGoal={hasRecentGoal(m.id)}
                             soundActive={isSoundActive(m.id)}
                           />
-                          {/* Android only: native ad slot after every 4th match */}
-                          {(idx + 1) % 4 === 0 && idx < games.length - 1 && (
-                            <AndroidNativeAdSlot slotIndex={idx + 1} />
-                          )}
                         </Fragment>
                       ))}
                     </div>
@@ -902,10 +891,6 @@ function LeagueSection({
                 hasRecentGoal={hasRecentGoal(m.id)}
                 soundActive={isSoundActive(m.id)}
               />
-              {/* Android only: native ad slot after every 4th match */}
-              {(idx + 1) % 4 === 0 && idx < matches.length - 1 && (
-                <AndroidNativeAdSlot slotIndex={idx + 1} />
-              )}
             </Fragment>
           ))}
         </div>
