@@ -33,6 +33,7 @@ import { initOneSignalWeb } from "@/lib/onesignal";
 import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 import { AndroidPushModal } from "@/components/AndroidPushModal";
 import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
+import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
 
 // Pages where footer should be hidden (header-only layout)
 const HEADER_ONLY_ROUTES = ["/live-scores", "/ai-predictions"];
@@ -47,6 +48,9 @@ export default function AppLayout() {
 
   // Sync Android OneSignal Player ID to Supabase
   useOneSignalPlayerSync();
+
+  // Toggle Android native ad banner based on current route
+  useAndroidNativeAd();
 
   // In-app realtime toast notifications for new tips/tickets
   useRealtimeNotifications();

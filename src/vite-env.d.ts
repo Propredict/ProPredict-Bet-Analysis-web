@@ -8,6 +8,9 @@ interface AndroidBridge {
   
   // Interstitial Ads — context string tells native which placement triggered it
   showInterstitial?: (context: string) => void;
+
+  // Native Ad toggle — show/hide bottom native ad banner
+  toggleNativeAd?: (show: boolean) => void;
   
 
   // Push permission — request OneSignal notification permission from web layer
