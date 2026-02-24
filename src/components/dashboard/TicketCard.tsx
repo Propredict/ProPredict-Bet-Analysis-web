@@ -188,14 +188,14 @@ function TicketCard({
         return (
           <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2">
             <CheckCircle2 className="h-3 w-3 mr-1" />
-            Won
+            Success
           </Badge>
         );
       case "lost":
         return (
           <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-2">
             <XCircle className="h-3 w-3 mr-1" />
-            Lost
+            Missed
           </Badge>
         );
       default:

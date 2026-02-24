@@ -327,7 +327,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                       userStatus === "lost" ? "text-destructive" :
                       "text-primary"
                     }`}>
-                      {userStatus === "won" ? "You predicted correctly! +1 Point 🎉" :
+                      {userStatus === "won" ? "Correct prediction! +1 Point 🎉" :
                        userStatus === "lost" ? "Your prediction was incorrect" :
                        "Prediction locked"}
                     </p>
@@ -354,7 +354,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     userStatus === "lost" ? "bg-destructive/15 text-destructive border-destructive/30" :
                     "bg-primary/15 text-primary border-primary/30"
                   }`}>
-                    {userStatus === "won" ? "WIN" : userStatus === "lost" ? "LOSS" : "PENDING"}
+                    {userStatus === "won" ? "SUCCESS" : userStatus === "lost" ? "MISSED" : "PENDING"}
                   </Badge>
 
                   {/* AI agreement badge */}

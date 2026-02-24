@@ -50,14 +50,14 @@ function getResultBadge(result: TicketResult) {
       return (
         <Badge className="gap-1 bg-success/20 text-success border-success/30">
           <CheckCircle2 className="h-3 w-3" />
-          Won
+          Success
         </Badge>
       );
     case "lost":
       return (
         <Badge className="gap-1 bg-destructive/20 text-destructive border-destructive/30">
           <XCircle className="h-3 w-3" />
-          Lost
+          Missed
         </Badge>
       );
     default:
