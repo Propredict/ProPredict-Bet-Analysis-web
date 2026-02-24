@@ -1,19 +1,30 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { FeaturedPredictions } from "@/components/dashboard/FeaturedPredictions";
-import { ModelAccuracyTrendChart, AIAdoptionChart, PredictionOutcomeChart, ConfidenceDistributionChart } from "@/components/dashboard/ModelAnalyticsCharts";
-import { MatchPredictions } from "@/components/dashboard/MatchPredictions";
-import { BettingTickets } from "@/components/dashboard/BettingTickets";
-import { LeagueStandings } from "@/components/dashboard/LeagueStandings";
-import { TodaysMatches } from "@/components/dashboard/TodaysMatches";
-import { DashboardAIPredictions } from "@/components/dashboard/DashboardAIPredictions";
-import { DashboardSocialProof } from "@/components/dashboard/DashboardSocialProof";
-import { BottomCTA } from "@/components/dashboard/BottomCTA";
-import { GuestBanner } from "@/components/GuestBanner";
-import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+
+// Lightweight components – eager
+import { GuestBanner } from "@/components/GuestBanner";
+import { GuestSignInModal } from "@/components/GuestSignInModal";
+
+// Heavy components – lazy loaded for faster initial paint
+const FeaturedPredictions = lazy(() => import("@/components/dashboard/FeaturedPredictions").then(m => ({ default: m.FeaturedPredictions })));
+const MatchPredictions = lazy(() => import("@/components/dashboard/MatchPredictions").then(m => ({ default: m.MatchPredictions })));
+const BettingTickets = lazy(() => import("@/components/dashboard/BettingTickets").then(m => ({ default: m.BettingTickets })));
+const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStandings").then(m => ({ default: m.LeagueStandings })));
+const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
+const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
+const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
+const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
+
+// Charts – very heavy (recharts), lazy + only on web
+const ModelAccuracyTrendChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.ModelAccuracyTrendChart })));
+const AIAdoptionChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.AIAdoptionChart })));
+const PredictionOutcomeChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.PredictionOutcomeChart })));
+const ConfidenceDistributionChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.ConfidenceDistributionChart })));
+
+const LazyFallback = () => <div className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>;
 
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();
@@ -90,40 +101,58 @@ const Index = () => {
           </section>
         )}
 
-        {/* Model Analytics Charts – Web only */}
+        {/* Model Analytics Charts – Web only (heavy recharts) */}
         {!isAndroid && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ModelAccuracyTrendChart />
-            <AIAdoptionChart />
-          </div>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ModelAccuracyTrendChart />
+              <AIAdoptionChart />
+            </div>
+          </Suspense>
         )}
 
         {/* Social Proof Section */}
-        <DashboardSocialProof />
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardSocialProof />
+        </Suspense>
 
-        <FeaturedPredictions />
+        <Suspense fallback={<LazyFallback />}>
+          <FeaturedPredictions />
+        </Suspense>
 
         {/* Prediction Analytics Charts – Web only */}
         {!isAndroid && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PredictionOutcomeChart />
-            <ConfidenceDistributionChart />
-          </div>
+          <Suspense fallback={<LazyFallback />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <PredictionOutcomeChart />
+              <ConfidenceDistributionChart />
+            </div>
+          </Suspense>
         )}
 
-        <MatchPredictions />
-        <BettingTickets />
+        <Suspense fallback={<LazyFallback />}>
+          <MatchPredictions />
+        </Suspense>
+        <Suspense fallback={<LazyFallback />}>
+          <BettingTickets />
+        </Suspense>
         
         {/* Two-column layout for Standings and Live Scores */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <LeagueStandings />
-          <TodaysMatches />
-        </div>
+        <Suspense fallback={<LazyFallback />}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LeagueStandings />
+            <TodaysMatches />
+          </div>
+        </Suspense>
         
         {/* AI Predictions Section */}
-        <DashboardAIPredictions />
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardAIPredictions />
+        </Suspense>
 
-        <BottomCTA />
+        <Suspense fallback={<LazyFallback />}>
+          <BottomCTA />
+        </Suspense>
 
         {/* SEO internal link */}
         <p className="text-xs text-muted-foreground text-center mt-2">

@@ -57,7 +57,16 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,    // 2 minutes – cached data served instantly on navigation
+      gcTime: 10 * 60 * 1000,       // 10 minutes – keep unused data in memory longer
+      refetchOnWindowFocus: false,   // Don't refetch when switching tabs (saves data on Android)
+      retry: 1,                      // Fewer retries for faster failure feedback
+    },
+  },
+});
 
 const App = () => {
   // 🔔 OneSignal push click → deep link navigation
