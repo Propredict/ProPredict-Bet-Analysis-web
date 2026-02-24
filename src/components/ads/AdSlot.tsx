@@ -27,9 +27,12 @@ export default function AdSlot({
 
   return (
     <div
+      className="adslot-wrapper"
       style={{
         margin: "24px 0",
         textAlign: "center",
+        overflow: "hidden",
+        minHeight: 0,
         ...style,
       }}
     >
