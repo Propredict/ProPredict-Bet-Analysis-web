@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.send-win-push]
 verify_jwt = false
+
+[functions.test-push]
+verify_jwt = false
