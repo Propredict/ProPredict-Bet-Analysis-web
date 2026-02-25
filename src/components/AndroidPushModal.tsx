@@ -74,20 +74,7 @@ export function AndroidPushModal() {
     console.log("[AndroidPushModal] Check: isAndroid=", isAndroid, "loading=", loading, "user=", !!user, "goal_enabled=", localStorage.getItem("goal_enabled"), "tips_enabled=", localStorage.getItem("tips_enabled"));
     if (!isAndroid || loading || !user) return;
 
-    // On every fresh app session, clear push flags so modal re-appears
-    // This ensures token refresh after reinstall or app data wipe
-    const sessionKey = "push_modal_session";
-    if (!sessionStorage.getItem(sessionKey)) {
-      sessionStorage.setItem(sessionKey, "1");
-      // Clear enabled flags so modal re-triggers and refreshes OneSignal token
-      localStorage.removeItem("goal_enabled");
-      localStorage.removeItem("tips_enabled");
-      localStorage.removeItem("goal_prompt_last_shown");
-      localStorage.removeItem("tips_prompt_last_shown");
-      console.log("[AndroidPushModal] Fresh session detected — cleared push flags for re-prompt");
-    }
-
-    // Skip if user already enabled both in this session
+    // Skip only if user already enabled both prompts
     if (localStorage.getItem("goal_enabled") === "true" && localStorage.getItem("tips_enabled") === "true") return;
 
     const needGoal = shouldShowPrompt("goal_enabled", "goal_prompt_last_shown");
