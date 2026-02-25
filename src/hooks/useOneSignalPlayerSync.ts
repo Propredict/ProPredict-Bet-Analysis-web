@@ -108,7 +108,27 @@ export function useOneSignalPlayerSync() {
     );
 
     // ── Immediate check: session may already exist ──
+    // Also proactively pull current Player ID from native bridge
     const checkExisting = async () => {
+      // Ask native bridge for current Player ID (handles reinstall case)
+      try {
+        const w = window as any;
+        if (w.Android?.getOneSignalPlayerId) {
+          const nativeId = w.Android.getOneSignalPlayerId();
+          if (nativeId && typeof nativeId === "string" && nativeId.length > 5) {
+            const storedId = localStorage.getItem("onesignal_player_id");
+            if (nativeId !== storedId) {
+              console.log("[OneSignal] 🔄 Native bridge has NEW Player ID:", storedId, "→", nativeId);
+              localStorage.setItem("onesignal_player_id", nativeId);
+              pendingPlayerIdRef.current = nativeId;
+              syncedRef.current = false;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[OneSignal] Failed to pull native Player ID:", e);
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
       if (session?.user && playerIdToSync) {
