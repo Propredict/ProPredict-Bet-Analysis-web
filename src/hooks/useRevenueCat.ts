@@ -214,7 +214,11 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
  * 
  * planKey format: "pro_monthly", "pro_annual", "premium_monthly", "premium_annual"
  */
-export function purchaseSubscription(planId: "basic" | "premium", period: "monthly" | "annual"): void {
+export function purchaseSubscription(
+  planId: "basic" | "premium",
+  period: "monthly" | "annual",
+  currentPlan?: "free" | "basic" | "premium"
+): void {
   const android = (window as any).Android as AndroidBridgeRC | undefined;
   if (!getIsAndroidApp() || !android) {
     console.warn("[RevenueCat] Android bridge not available");
@@ -225,8 +229,10 @@ export function purchaseSubscription(planId: "basic" | "premium", period: "month
   const planKey = `${planId === "basic" ? "pro" : "premium"}_${period}`;
 
   // Priority 1: purchasePlan — native resolves the correct offering dynamically
+  // Pass currentPlan so native side knows if this is an upgrade (e.g. pro → premium)
   if (typeof android.purchasePlan === "function") {
-    console.log("[RevenueCat] purchasePlan:", planKey);
+    const isUpgrade = currentPlan && currentPlan !== "free" && currentPlan !== planId;
+    console.log("[RevenueCat] purchasePlan:", planKey, isUpgrade ? `(upgrade from ${currentPlan})` : "(new purchase)");
     android.purchasePlan(planKey);
     return;
   }
