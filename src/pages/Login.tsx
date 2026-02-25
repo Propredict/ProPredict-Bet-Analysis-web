@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Mail, Lock, Chrome, ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { sendWelcomeEmail } from "@/lib/sendPurchaseEmail";
 import logo from "@/assets/logo.png";
@@ -22,8 +23,16 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   
   const redirectTo = searchParams.get("redirect") || "/";
+  const safeRedirectTo = redirectTo === "/login" ? "/" : redirectTo;
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(safeRedirectTo, { replace: true });
+    }
+  }, [loading, user, navigate, safeRedirectTo]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +67,7 @@ const Login = () => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate(redirectTo);
+        navigate(safeRedirectTo);
       }
     } catch (error: any) {
       toast({
@@ -77,7 +86,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}${redirectTo}`,
+          redirectTo: `${window.location.origin}${safeRedirectTo}`,
         },
       });
 
@@ -114,7 +123,7 @@ const Login = () => {
             </Alert>
             <Button 
               className="w-full" 
-              onClick={() => navigate(redirectTo)}
+              onClick={() => navigate(safeRedirectTo)}
             >
               Start Exploring
               <ArrowRight className="ml-2 h-4 w-4" />
