@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info, Brain } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import googlePlayBadge from "@/assets/google-play-badge.jfif";
 
 export function Footer() {
   const { isAndroidApp } = usePlatform();
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   const legalLinks = [
     { label: "About Us", path: "/about-us", icon: Info },
@@ -22,8 +26,8 @@ export function Footer() {
         {!isAndroidApp && (
           <div className="flex justify-end mb-2">
             <div className="flex flex-col items-center gap-1">
-              <a
-                href="#"
+              <button
+                onClick={() => setShowComingSoon(true)}
                 aria-label="Get it on Google Play"
                 title="Get it on Google Play"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-foreground/95 text-background hover:bg-foreground transition-colors shadow-sm"
@@ -31,11 +35,30 @@ export function Footer() {
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" />
                 </svg>
-              </a>
+              </button>
               <span className="text-[8px] text-muted-foreground">Get Google Play App</span>
             </div>
           </div>
         )}
+
+        {/* Coming Soon Modal */}
+        <Dialog open={showComingSoon} onOpenChange={setShowComingSoon}>
+          <DialogContent className="sm:max-w-[340px] p-0 overflow-hidden bg-card border-primary/30">
+            <div className="p-5 flex flex-col items-center text-center gap-4">
+              <img 
+                src={googlePlayBadge} 
+                alt="Google Play" 
+                className="w-40 rounded-lg shadow-md"
+              />
+              <div>
+                <h3 className="text-lg font-bold text-foreground mb-1">🚀 Coming Soon!</h3>
+                <p className="text-xs text-muted-foreground">
+                  ProPredict Android app will be available on Google Play very soon. Stay tuned!
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Legal Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mb-3">
