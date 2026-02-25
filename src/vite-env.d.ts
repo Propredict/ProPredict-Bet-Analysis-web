@@ -44,6 +44,9 @@ interface AndroidBridge {
 
   // Battery optimization — opens system settings to disable battery optimization
   openBatterySettings?: () => void;
+
+  // OneSignal — get current Player ID from native SDK
+  getOneSignalPlayerId?: () => string;
 }
 
 declare global {
