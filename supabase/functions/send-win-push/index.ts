@@ -80,7 +80,7 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: tokens, error: tokensError } = await supabase
       .from("users_push_tokens")
-      .select("onesignal_player_id");
+      .select("onesignal_player_id, user_id, platform");
 
     if (tokensError) {
       console.error("Failed to fetch push tokens:", tokensError.message);
@@ -90,7 +90,17 @@ serve(async (req) => {
       );
     }
 
-    const playerIds = tokens?.map((t) => t.onesignal_player_id).filter(Boolean) ?? [];
+    // Prefer Android token over Web token per user to avoid duplicates
+    const tokensByUser = new Map<string, { id: string; platform: string }>();
+    for (const t of tokens ?? []) {
+      if (!t.onesignal_player_id) continue;
+      const uid = t.user_id ?? t.onesignal_player_id;
+      const existing = tokensByUser.get(uid);
+      if (!existing || (t.platform === "android" && existing.platform !== "android")) {
+        tokensByUser.set(uid, { id: t.onesignal_player_id, platform: t.platform ?? "android" });
+      }
+    }
+    const playerIds = Array.from(tokensByUser.values()).map((v) => v.id);
 
     if (playerIds.length === 0) {
       console.log("[send-win-push] No push tokens found in database");
