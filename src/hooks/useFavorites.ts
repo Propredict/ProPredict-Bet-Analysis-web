@@ -132,6 +132,31 @@ export function useFavorites() {
     }
   }, [favorites]);
 
+  const clearAllFavorites = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || favorites.size === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Remove OneSignal tags for all favorites
+      favorites.forEach((matchId) => {
+        setOneSignalTag(`favorite_match_${matchId}`, null);
+      });
+
+      setFavorites(new Set());
+      toast({ title: "All favorites cleared" });
+    } catch (error) {
+      console.error("Error clearing favorites:", error);
+      toast({ title: "Error", description: "Failed to clear favorites.", variant: "destructive" });
+    }
+  }, [favorites]);
+
   const isFavorite = useCallback((matchId: string) => favorites.has(matchId), [favorites]);
   const isSaving = useCallback((matchId: string) => savingIds.has(matchId), [savingIds]);
 
@@ -141,6 +166,7 @@ export function useFavorites() {
     isSaving,
     isLoading,
     toggleFavorite,
+    clearAllFavorites,
     refetch: fetchFavorites,
   };
 }
