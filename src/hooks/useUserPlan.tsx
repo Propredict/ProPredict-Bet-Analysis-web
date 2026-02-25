@@ -71,7 +71,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const isMobileApp = getIsMobileApp();
   
   // RevenueCat integration for Android - source of truth for mobile subscriptions
-  const revenueCat = useRevenueCat();
+  const revenueCat = useRevenueCat(user?.id);
 
   const [plan, setPlan] = useState<UserPlan>("free");
   const [isAdmin, setIsAdmin] = useState(false);

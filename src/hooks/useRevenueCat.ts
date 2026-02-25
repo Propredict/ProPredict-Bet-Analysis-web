@@ -58,6 +58,7 @@ interface AndroidBridgeRC {
   restorePurchases?: () => void;
   getPro?: () => void;
   getPremium?: () => void;
+  syncUser?: (userId: string) => void;
 }
 
 /**
@@ -81,7 +82,7 @@ function readEntitlements(): RevenueCatEntitlements | undefined {
   return (window as any).__REVENUECAT_ENTITLEMENTS__;
 }
 
-export function useRevenueCat(): UseRevenueCatResult {
+export function useRevenueCat(userId?: string): UseRevenueCatResult {
   const isAndroidApp = getIsAndroidApp();
   
   const [entitlements, setEntitlements] = useState<RevenueCatEntitlements | undefined>(
@@ -90,6 +91,17 @@ export function useRevenueCat(): UseRevenueCatResult {
   const [isLoading, setIsLoading] = useState(isAndroidApp);
   const [offerings, setOfferings] = useState<RevenueCatOfferings | null>(null);
   const [offeringsReady, setOfferingsReady] = useState(false);
+
+  // Sync userId with RevenueCat via native bridge (must happen before any purchase)
+  useEffect(() => {
+    if (!isAndroidApp || !userId) return;
+
+    const android = (window as any).Android as AndroidBridgeRC | undefined;
+    if (android?.syncUser) {
+      console.log("[RevenueCat] Syncing user with native:", userId);
+      android.syncUser(userId);
+    }
+  }, [isAndroidApp, userId]);
 
   // Request entitlements AND offerings from Android on mount
   useEffect(() => {
