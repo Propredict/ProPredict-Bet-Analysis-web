@@ -86,7 +86,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
     // Android: use RevenueCat purchaseSubscription helper (priority chain)
     if (isAndroid) {
-      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", period);
+      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", period, currentPlan);
       return;
     }
 
