@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2, Bell } from "lucide-react";
+import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2, Bell, XCircle } from "lucide-react";
 import { useMemo, useState, useEffect, useCallback, Fragment, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -56,11 +56,13 @@ export default function LiveScores() {
     favorites,
     isFavorite,
     toggleFavorite,
+    clearAllFavorites,
   } = useFavorites();
   const {
     hasAlert,
     toggleMatchAlert,
-    alertedMatchIds
+    alertedMatchIds,
+    clearAllAlerts,
   } = useMatchAlertPreferences();
 
   // Determine if we're in a fallback state (error or loading with no data)
@@ -333,6 +335,33 @@ export default function LiveScores() {
           </span>
         </div>
 
+        {/* CLEAR ALL BUTTONS */}
+        {(favorites.size > 0 || alertedMatchIds.size > 0) && (
+          <div className="flex items-center gap-2">
+            {favorites.size > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={clearAllFavorites}
+                className="gap-1 h-7 text-[10px] sm:text-xs border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+              >
+                <XCircle className="h-3 w-3" />
+                Clear All Stars ({favorites.size})
+              </Button>
+            )}
+            {alertedMatchIds.size > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={clearAllAlerts}
+                className="gap-1 h-7 text-[10px] sm:text-xs border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+              >
+                <XCircle className="h-3 w-3" />
+                Clear All Bells ({alertedMatchIds.size})
+              </Button>
+            )}
+          </div>
+        )}
         {/* STATS CARDS - COMPACT grid */}
         <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
           <StatCard title="Live" value={liveCount} icon={Play} variant="live" />
