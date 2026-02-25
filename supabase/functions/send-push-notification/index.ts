@@ -102,31 +102,63 @@ serve(async (req) => {
 
     // Prefer Android token over Web token per user.
     // If a user has both, only send to Android to avoid duplicates.
-    const tokensByUser = new Map<string, { id: string; platform: string }>();
+    const tokensByUser = new Map<string, { id: string; platform: string; userId: string | null }>();
     for (const t of tokens ?? []) {
       if (!t.onesignal_player_id) continue;
-      const uid = t.user_id ?? t.onesignal_player_id; // fallback for anonymous tokens
+      const uid = t.user_id ?? t.onesignal_player_id;
       const existing = tokensByUser.get(uid);
       if (!existing || (t.platform === "android" && existing.platform !== "android")) {
-        tokensByUser.set(uid, { id: t.onesignal_player_id, platform: t.platform ?? "android" });
+        tokensByUser.set(uid, { id: t.onesignal_player_id, platform: t.platform ?? "android", userId: t.user_id });
       }
     }
-    const playerIds = Array.from(tokensByUser.values()).map((v) => v.id);
 
-    if (playerIds.length === 0) {
-      console.log("[send-push] No push tokens found in database");
+    /* ── 40-minute marketing cooldown ── */
+    const FORTY_MIN = 40 * 60 * 1000;
+    const now = new Date();
+    const eligiblePlayerIds: string[] = [];
+    const eligibleUserIds: string[] = [];
+
+    for (const [, token] of tokensByUser) {
+      if (!token.userId) {
+        // Anonymous token — no cooldown, always send
+        eligiblePlayerIds.push(token.id);
+        continue;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("last_marketing_push_at")
+        .eq("user_id", token.userId)
+        .maybeSingle();
+
+      let canSend = true;
+      if (profile?.last_marketing_push_at) {
+        const diff = now.getTime() - new Date(profile.last_marketing_push_at).getTime();
+        if (diff < FORTY_MIN) {
+          canSend = false;
+        }
+      }
+
+      if (canSend) {
+        eligiblePlayerIds.push(token.id);
+        eligibleUserIds.push(token.userId);
+      }
+    }
+
+    if (eligiblePlayerIds.length === 0) {
+      console.log("[send-push] All users in cooldown, skipping");
       return new Response(
-        JSON.stringify({ skipped: true, reason: "no push tokens" }),
+        JSON.stringify({ skipped: true, reason: "all users in cooldown" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    console.log(`[send-push] tier=${contentTier}, route=${route}, targets=${playerIds.length}`);
+    console.log(`[send-push] tier=${contentTier}, route=${route}, eligible=${eligiblePlayerIds.length}/${tokensByUser.size}`);
 
     /* ── Send via OneSignal REST API using include_player_ids ── */
     const payload: Record<string, unknown> = {
       app_id: ONESIGNAL_APP_ID,
-      include_player_ids: playerIds,
+      include_player_ids: eligiblePlayerIds,
 
       headings: { en: headings },
       contents: { en: contents },
@@ -173,8 +205,17 @@ serve(async (req) => {
       );
     }
 
+    // Update cooldown timestamp for eligible users
+    if (eligibleUserIds.length > 0) {
+      const { error: updateErr } = await supabase
+        .from("profiles")
+        .update({ last_marketing_push_at: now.toISOString() })
+        .in("user_id", eligibleUserIds);
+      if (updateErr) console.error("[send-push] Failed to update cooldown:", updateErr.message);
+    }
+
     return new Response(
-      JSON.stringify({ success: true, onesignal: osResult, targets: playerIds.length }),
+      JSON.stringify({ success: true, onesignal: osResult, targets: eligiblePlayerIds.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
