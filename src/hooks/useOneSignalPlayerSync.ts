@@ -33,19 +33,28 @@ export function useOneSignalPlayerSync() {
         return false;
       }
 
-      console.log("[OneSignal] ▶ UPSERTING player ID:", playerId, "for user:", user.id);
+      console.log("[OneSignal] ▶ Replacing Android token for user:", user.id, "→", playerId);
 
-      const { error } = await supabase.from("users_push_tokens").upsert(
-        {
-          user_id: user.id,
-          onesignal_player_id: playerId,
-          platform: "android",
-        },
-        { onConflict: "user_id,platform" }
-      );
+      // Delete all old Android tokens for this user
+      const { error: deleteError } = await supabase
+        .from("users_push_tokens")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("platform", "android");
+
+      if (deleteError) {
+        console.error("[OneSignal] Delete old tokens failed:", deleteError.message);
+      }
+
+      // Insert fresh token
+      const { error } = await supabase.from("users_push_tokens").insert({
+        user_id: user.id,
+        onesignal_player_id: playerId,
+        platform: "android",
+      });
 
       if (error) {
-        console.error("[OneSignal] Upsert failed:", error.message);
+        console.error("[OneSignal] Insert failed:", error.message);
         return false;
       }
 
