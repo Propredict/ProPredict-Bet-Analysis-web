@@ -129,6 +129,8 @@
             message: "You'll now receive alerts for new predictions & match goals!",
           },
         });
+        // Tag web users so backend can skip them when Android app is installed
+        OneSignal.User.addTag("platform", "web");
       });
     </script>
 
