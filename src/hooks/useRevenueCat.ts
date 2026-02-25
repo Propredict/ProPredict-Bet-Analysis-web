@@ -221,8 +221,8 @@ export function purchaseSubscription(planId: "basic" | "premium", period: "month
 
   // Priority 2: purchasePackage with hardcoded IDs (legacy)
   const LEGACY_PACKAGES: Record<string, Record<string, string>> = {
-    basic: { monthly: "propredict_pro_monthly", annual: "propredict_pro_annual" },
-    premium: { monthly: "propredict_premium_monthly", annual: "propredict_premium_annual" },
+    basic: { monthly: "pro-monthly", annual: "pro-annual" },
+    premium: { monthly: "premium-monthly", annual: "premium-annual" },
   };
   const packageId = LEGACY_PACKAGES[planId]?.[period];
   if (packageId && typeof android.purchasePackage === "function") {
