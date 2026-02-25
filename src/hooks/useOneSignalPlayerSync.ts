@@ -85,6 +85,12 @@ export function useOneSignalPlayerSync() {
 
       if (previousId && previousId !== playerId) {
         console.log("[OneSignal] 🔄 Player ID CHANGED (reinstall detected):", previousId, "→", playerId);
+        // Reinstall detected — clear push preference flags so modal re-appears
+        localStorage.removeItem("goal_enabled");
+        localStorage.removeItem("tips_enabled");
+        localStorage.removeItem("goal_prompt_last_shown");
+        localStorage.removeItem("tips_prompt_last_shown");
+        console.log("[OneSignal] 🧹 Cleared push flags for re-prompt after reinstall");
       } else {
         console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
       }
