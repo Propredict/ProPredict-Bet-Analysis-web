@@ -14,9 +14,26 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 type ModalStep = "goal" | "tips" | null;
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Check if push was explicitly disabled and cooldown hasn't expired */
+function isPushDisabledCooldownActive(): boolean {
+  const disabledAt = localStorage.getItem("push_disabled_at");
+  if (!disabledAt) return false;
+  return Date.now() - parseInt(disabledAt, 10) < SEVEN_DAYS_MS;
+}
+
+/** Check if push was disabled more than 7 days ago (eligible for soft reminder) */
+export function isPushReminderEligible(): boolean {
+  const disabledAt = localStorage.getItem("push_disabled_at");
+  if (!disabledAt) return false;
+  return Date.now() - parseInt(disabledAt, 10) >= SEVEN_DAYS_MS;
+}
 
 function shouldShowPrompt(enabledKey: string, lastShownKey: string): boolean {
   if (localStorage.getItem(enabledKey) === "true") return false;
+  // If user explicitly disabled and cooldown is active, don't show
+  if (isPushDisabledCooldownActive()) return false;
   const lastShown = localStorage.getItem(lastShownKey);
   if (!lastShown) return true;
   return Date.now() - parseInt(lastShown, 10) > TWO_DAYS_MS;
