@@ -57,6 +57,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { UserPlanProvider } from "./hooks/useUserPlan";
+import { AndroidAuthGate } from "./components/AndroidAuthGate";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -154,6 +155,7 @@ const App = () => {
               <BrowserRouter>
                 <ScrollToTop />
                 <DeepLinkHandler />
+                <AndroidAuthGate>
                 <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>}>
                 <Routes>
                   {/* Auth pages */}
@@ -243,6 +245,7 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
+                </AndroidAuthGate>
               </BrowserRouter>
             </TooltipProvider>
           </UserPlanProvider>
