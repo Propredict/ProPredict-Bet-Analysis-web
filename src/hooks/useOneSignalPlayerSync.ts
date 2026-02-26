@@ -114,6 +114,18 @@ export function useOneSignalPlayerSync() {
           console.log("[OneSignal] 🔄 Auth event — syncing player ID for user:", session.user.id);
           await upsertPlayerToken(playerIdToSync);
         }
+
+        // Ensure subscription is active after login (fixes Play build "unsubscribed" state)
+        if (session?.user) {
+          const goalEnabled = localStorage.getItem("goal_enabled") === "true";
+          const tipsEnabled = localStorage.getItem("tips_enabled") === "true";
+          if (goalEnabled || tipsEnabled) {
+            try {
+              (window as any).Android?.enablePush?.();
+              console.log("[OneSignal] 🔔 Auth state change → enablePush called");
+            } catch (e) { /* ignore */ }
+          }
+        }
       }
     );
 
@@ -143,6 +155,26 @@ export function useOneSignalPlayerSync() {
       const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
       if (session?.user && playerIdToSync) {
         await upsertPlayerToken(playerIdToSync);
+      }
+
+      // ── Ensure OneSignal subscription is active after auth ──
+      // In Play builds, system permission may be auto-granted but subscription
+      // stays "unsubscribed" because optIn() was never called.
+      // If user previously enabled push, proactively call enablePush to activate subscription.
+      if (session?.user) {
+        const goalEnabled = localStorage.getItem("goal_enabled") === "true";
+        const tipsEnabled = localStorage.getItem("tips_enabled") === "true";
+        if (goalEnabled || tipsEnabled) {
+          try {
+            const w = window as any;
+            if (w.Android?.enablePush) {
+              console.log("[OneSignal] 🔔 Auth ready + push prefs exist → calling enablePush to ensure subscription");
+              w.Android.enablePush();
+            }
+          } catch (e) {
+            console.warn("[OneSignal] enablePush after auth failed:", e);
+          }
+        }
       }
     };
     checkExisting();
