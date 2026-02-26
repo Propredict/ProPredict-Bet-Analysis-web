@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { isPushReminderEligible } from "@/components/AndroidPushModal";
+import { usePushSubscriptionStatus } from "@/hooks/usePushSubscriptionStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -32,6 +33,15 @@ const Settings = () => {
 
   const [goalEnabled, setGoalEnabled] = useState(() => localStorage.getItem("goal_enabled") === "true");
   const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
+
+  // Sync UI toggles with real native push status on mount
+  const nativeStatus = usePushSubscriptionStatus();
+  useEffect(() => {
+    if (nativeStatus && !nativeStatus.optedIn) {
+      setGoalEnabled(false);
+      setTipsEnabled(false);
+    }
+  }, [nativeStatus]);
 
   const handleGoalToggle = (checked: boolean) => {
     setGoalEnabled(checked);

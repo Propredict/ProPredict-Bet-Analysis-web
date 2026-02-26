@@ -51,6 +51,10 @@ interface AndroidBridge {
   // OneSignal — set/remove tags
   setOneSignalTag?: (key: string, value: string) => void;
   removeOneSignalTag?: (key: string) => void;
+
+  // OneSignal — get real push subscription status from native SDK
+  // Returns JSON string: { "optedIn": boolean, "subscriptionId": string | null }
+  getPushSubscriptionStatus?: () => string;
 }
 
 declare global {
