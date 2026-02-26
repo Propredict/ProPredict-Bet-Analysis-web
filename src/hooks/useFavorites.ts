@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { setOneSignalTag } from "@/components/AndroidPushModal";
+import { syncFavoritesTag } from "@/components/AndroidPushModal";
 
 interface Favorite {
   id: string;
@@ -98,10 +98,10 @@ export function useFavorites() {
         setFavorites((prev) => {
           const next = new Set(prev);
           next.delete(matchId);
+          // Sync single CSV tag with updated favorites list
+          syncFavoritesTag(next);
           return next;
         });
-        // Remove OneSignal favorite tag for push targeting
-        setOneSignalTag(`favorite_match_${matchId}`, null);
       } else {
         const { error } = await supabase
           .from("favorites")
@@ -112,9 +112,12 @@ export function useFavorites() {
 
         if (error) throw error;
 
-        setFavorites((prev) => new Set(prev).add(matchId));
-        // Set OneSignal favorite tag for push targeting
-        setOneSignalTag(`favorite_match_${matchId}`, "true");
+        setFavorites((prev) => {
+          const next = new Set(prev).add(matchId);
+          // Sync single CSV tag with updated favorites list
+          syncFavoritesTag(next);
+          return next;
+        });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -144,12 +147,9 @@ export function useFavorites() {
 
       if (error) throw error;
 
-      // Remove OneSignal tags for all favorites
-      favorites.forEach((matchId) => {
-        setOneSignalTag(`favorite_match_${matchId}`, null);
-      });
-
       setFavorites(new Set());
+      // Clear the single CSV favorites tag
+      syncFavoritesTag(new Set());
       toast({ title: "All favorites cleared" });
     } catch (error) {
       console.error("Error clearing favorites:", error);

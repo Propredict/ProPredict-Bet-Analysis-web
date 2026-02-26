@@ -57,6 +57,20 @@ function setOneSignalTag(key: string, value: string | null) {
 
 export { setOneSignalTag };
 
+/**
+ * Sync the full favorites list as a single CSV OneSignal tag.
+ * Format: ",id1,id2,id3," — commas on both ends for safe `contains` filtering.
+ * Replaces the old per-match favorite_match_* tags to avoid the 409 tag-limit error.
+ */
+export function syncFavoritesTag(favoriteIds: Set<string>) {
+  if (favoriteIds.size === 0) {
+    setOneSignalTag("favorites", null);
+  } else {
+    const csv = "," + Array.from(favoriteIds).join(",") + ",";
+    setOneSignalTag("favorites", csv);
+  }
+}
+
 export function AndroidPushModal() {
   const [step, setStep] = useState<ModalStep>(null);
   const { user, loading } = useAuth();
