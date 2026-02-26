@@ -73,6 +73,16 @@ function useProvideAuthState(): AuthContextValue {
     });
 
     const initAuth = async () => {
+      // Timeout guard: if auth takes too long (slow network / no internet),
+      // resolve loading=false to prevent infinite spinner.
+      const authTimeout = setTimeout(() => {
+        if (!initDoneRef.current && isMountedRef.current) {
+          console.warn("[Auth] Timeout — resolving as guest after 8s");
+          initDoneRef.current = true;
+          setLoading(false);
+        }
+      }, 8000);
+
       try {
         // getSession reads from localStorage — fast, but may be expired.
         const {
@@ -80,6 +90,7 @@ function useProvideAuthState(): AuthContextValue {
         } = await supabase.auth.getSession();
 
         if (initialSession) {
+          clearTimeout(authTimeout);
           initDoneRef.current = true;
           applySession(initialSession, true);
           return;
@@ -91,6 +102,7 @@ function useProvideAuthState(): AuthContextValue {
           data: { user: currentUser },
         } = await supabase.auth.getUser();
 
+        clearTimeout(authTimeout);
         initDoneRef.current = true;
 
         if (!isMountedRef.current) return;
@@ -102,6 +114,7 @@ function useProvideAuthState(): AuthContextValue {
           applySession(null, true);
         }
       } catch {
+        clearTimeout(authTimeout);
         initDoneRef.current = true;
         // Network/hydration error — stop loading to prevent infinite spinner
         if (isMountedRef.current) {
