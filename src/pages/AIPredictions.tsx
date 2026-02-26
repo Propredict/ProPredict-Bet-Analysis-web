@@ -11,6 +11,7 @@ import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useFavoritesPushSync } from "@/hooks/useFavoritesPushSync";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,8 @@ export default function AIPredictions() {
 
   const { isAdmin, plan, isAuthenticated, isLoading: planLoading } = useUserPlan();
   const { user } = useAuth();
-  const { isFavorite, isSaving, toggleFavorite } = useFavorites();
+  const { favorites, isFavorite, isSaving, toggleFavorite } = useFavorites();
+  useFavoritesPushSync(favorites);
   const navigate = useNavigate();
 
   // Single page-level unlock handler for Android rewarded ads (same pattern as DailyTips)
