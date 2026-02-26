@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Profile = () => {
-  const { user, signOut, session } = useAuth();
+  const { user, signOut, session, loading: authLoading } = useAuth();
   const { plan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   const arenaStats = useArenaStats();
@@ -29,7 +29,7 @@ const Profile = () => {
   const [openingPortal, setOpeningPortal] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
@@ -74,6 +74,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (user) {
+      setProfileLoading(true);
       fetchProfile();
       fetchSubscription();
     }
@@ -99,7 +100,7 @@ const Profile = () => {
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
   };
 
@@ -258,10 +259,21 @@ const Profile = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-3 p-4">
+        <p className="text-sm text-muted-foreground">Please sign in to view your profile.</p>
+        <Button onClick={() => navigate("/login")} className="h-8 text-xs">
+          Sign In
+        </Button>
       </div>
     );
   }
