@@ -449,6 +449,33 @@ export type Database = {
         }
         Relationships: []
       }
+      push_preference_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          push_state: string | null
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          push_state?: string | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          push_state?: string | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ticket_matches: {
         Row: {
           away_team: string | null
