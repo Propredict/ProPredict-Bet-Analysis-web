@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { isPushReminderEligible } from "@/components/AndroidPushModal";
 import { usePushSubscriptionStatus, enablePushViabridge } from "@/hooks/usePushSubscriptionStatus";
+import { logPushPreferenceChange } from "@/hooks/usePushAnalytics";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -48,17 +49,18 @@ const Settings = () => {
     if (checked) {
       localStorage.setItem("goal_enabled", "true");
       localStorage.removeItem("push_disabled_at");
-      // Use enablePush if permission exists, otherwise request permission
       if (pushState === "opted_out") {
         enablePushViabridge();
       } else {
         window.Android?.requestPushPermission?.();
       }
+      logPushPreferenceChange("goal_enabled", "settings");
     } else {
       localStorage.setItem("goal_enabled", "false");
       if (!tipsEnabled) {
         localStorage.setItem("push_disabled_at", String(Date.now()));
       }
+      logPushPreferenceChange("goal_disabled", "settings");
     }
     setOneSignalTag("goal_alerts", checked ? "true" : null);
   };
@@ -73,11 +75,13 @@ const Settings = () => {
       } else {
         window.Android?.requestPushPermission?.();
       }
+      logPushPreferenceChange("tips_enabled", "settings");
     } else {
       localStorage.setItem("tips_enabled", "false");
       if (!goalEnabled) {
         localStorage.setItem("push_disabled_at", String(Date.now()));
       }
+      logPushPreferenceChange("tips_disabled", "settings");
     }
     setOneSignalTag("daily_tips", checked ? "true" : null);
   };

@@ -11,6 +11,7 @@ import { Goal, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { determinePushState } from "@/hooks/usePushSubscriptionStatus";
+import { logPushPreferenceChange } from "@/hooks/usePushAnalytics";
 
 type ModalStep = "goal" | "tips" | null;
 
@@ -134,6 +135,7 @@ export function AndroidPushModal() {
     localStorage.setItem("goal_enabled", "true");
     localStorage.setItem("goal_prompt_last_shown", String(Date.now()));
     setOneSignalTag("goal_alerts", "true");
+    logPushPreferenceChange("goal_enabled", "modal");
     setStep(null);
     advanceToNextStep(true);
   };
@@ -150,6 +152,7 @@ export function AndroidPushModal() {
     localStorage.setItem("tips_enabled", "true");
     localStorage.setItem("tips_prompt_last_shown", String(Date.now()));
     setOneSignalTag("daily_tips", "true");
+    logPushPreferenceChange("tips_enabled", "modal");
     setStep(null);
   };
 
