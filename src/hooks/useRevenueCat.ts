@@ -228,12 +228,17 @@ export function purchaseSubscription(
   // Build a plan key the native side can map to the correct RevenueCat offering
   const planKey = `${planId === "basic" ? "pro" : "premium"}_${period}`;
 
+  // Detect downgrade: premium → basic
+  const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2 };
+  const isDowngrade = currentPlan && PLAN_RANK[currentPlan] > PLAN_RANK[planId];
+  const isUpgrade = currentPlan && currentPlan !== "free" && PLAN_RANK[currentPlan] < PLAN_RANK[planId];
+
   // Priority 1: purchasePlan — native resolves the correct offering dynamically
-  // Pass currentPlan so native side knows if this is an upgrade (e.g. pro → premium)
+  // Append ":downgrade" suffix so native side uses DEFERRED replacement mode
   if (typeof android.purchasePlan === "function") {
-    const isUpgrade = currentPlan && currentPlan !== "free" && currentPlan !== planId;
-    console.log("[RevenueCat] purchasePlan:", planKey, isUpgrade ? `(upgrade from ${currentPlan})` : "(new purchase)");
-    android.purchasePlan(planKey);
+    const finalKey = isDowngrade ? `${planKey}:downgrade` : planKey;
+    console.log("[RevenueCat] purchasePlan:", finalKey, isUpgrade ? `(upgrade from ${currentPlan})` : isDowngrade ? `(downgrade from ${currentPlan})` : "(new purchase)");
+    android.purchasePlan(finalKey);
     return;
   }
 

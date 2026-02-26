@@ -456,8 +456,8 @@ export default function GetPremium() {
     // Android: HARD BLOCK - use native bridge, never Stripe
     const android = (window as any).Android;
     if (android) {
-      // Use the unified purchaseSubscription which handles offering lookup dynamically
-      purchaseSubscription(planId as "basic" | "premium", billingPeriod);
+      // Pass currentPlan so purchaseSubscription can detect upgrade vs downgrade
+      purchaseSubscription(planId as "basic" | "premium", billingPeriod, currentPlan);
       return;
     }
 
@@ -520,12 +520,31 @@ export default function GetPremium() {
         <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
       </div>
 
-      {/* Android: Google Play info banner */}
+      {/* Android: Google Play info banner + Manage Subscription */}
       {isAndroidApp && (
-        <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+        <div className="rounded-lg border border-border bg-muted/30 p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
             Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
           </p>
+          {currentPlan !== "free" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={() => {
+                const android = (window as any).Android;
+                if (android?.manageSubscription) {
+                  android.manageSubscription();
+                } else {
+                  // Fallback: open Google Play subscriptions page
+                  window.open("https://play.google.com/store/account/subscriptions", "_blank");
+                }
+              }}
+            >
+              <Shield className="h-3.5 w-3.5 mr-1.5" />
+              Manage Subscription
+            </Button>
+          )}
         </div>
       )}
 
