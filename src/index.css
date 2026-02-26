@@ -53,7 +53,7 @@
     overflow-x: hidden;
   }
 
-  /* Fixed status-bar cover — ensures teal behind system bar on ALL devices */
+  /* Fixed status-bar cover — ensures colored bar behind system bar on ALL devices */
   html::before {
     content: "";
     position: fixed;
@@ -61,8 +61,9 @@
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 0px);
-    background: hsl(171 77% 36%); /* --primary */
+    background: hsl(var(--primary));
     z-index: 9999;
+    pointer-events: none;
   }
 
   body {

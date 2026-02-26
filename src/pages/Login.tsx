@@ -103,7 +103,7 @@ const Login = () => {
 
   if (signUpSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4 pt-[calc(env(safe-area-inset-top,0px)+1rem)]">
         <Card className="w-full max-w-md shadow-2xl border-border/50 backdrop-blur">
           <CardHeader className="space-y-1 text-center">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -140,7 +140,7 @@ const Login = () => {
       <title>Sign In – AI Sports Analysis | ProPredict</title>
       <meta name="description" content="Sign in or create your ProPredict account. Access AI-powered sports predictions and match analysis for free." />
     </Helmet>
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4 pt-[calc(env(safe-area-inset-top,0px)+1rem)]">
       <Card className="w-full max-w-md shadow-2xl border-border/50 backdrop-blur">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center p-2">
