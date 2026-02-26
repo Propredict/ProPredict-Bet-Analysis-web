@@ -1,4 +1,4 @@
-import { useEffect, useRef, lazy, Suspense } from "react";
+import { useEffect, useRef, lazy, Suspense, forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -24,7 +24,8 @@ const AIAdoptionChart = lazy(() => import("@/components/dashboard/ModelAnalytics
 const PredictionOutcomeChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.PredictionOutcomeChart })));
 const ConfidenceDistributionChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.ConfidenceDistributionChart })));
 
-const LazyFallback = () => <div className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>;
+const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
+LazyFallback.displayName = "LazyFallback";
 
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();

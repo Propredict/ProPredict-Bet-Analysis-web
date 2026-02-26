@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 const STORAGE_KEY = "guest_modal_shown";
 
-export function GuestSignInModal() {
+export const GuestSignInModal = forwardRef<HTMLDivElement>((_, ref) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
-    
+
     // Only show for guests who haven't seen the modal this session
     if (!user && !sessionStorage.getItem(STORAGE_KEY)) {
       // Small delay for better UX
@@ -49,7 +49,8 @@ export function GuestSignInModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent 
+      <DialogContent
+        ref={ref}
         className="bg-white text-gray-900 border-0 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-0 max-w-[340px] sm:max-w-[380px] animate-in fade-in-0 duration-300"
       >
         {/* Close button */}
@@ -85,4 +86,6 @@ export function GuestSignInModal() {
       </DialogContent>
     </Dialog>
   );
-}
+});
+
+GuestSignInModal.displayName = "GuestSignInModal";

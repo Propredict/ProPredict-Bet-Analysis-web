@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function ScrollToTopButton() {
+export const ScrollToTopButton = forwardRef<HTMLButtonElement>((_, ref) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -25,6 +25,7 @@ export function ScrollToTopButton() {
 
   return (
     <Button
+      ref={ref}
       onClick={scrollToTop}
       size="icon"
       className={cn(
@@ -41,4 +42,6 @@ export function ScrollToTopButton() {
       <ArrowUp className="h-5 w-5" />
     </Button>
   );
-}
+});
+
+ScrollToTopButton.displayName = "ScrollToTopButton";
