@@ -160,7 +160,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       const resolvedPlan = subRes.data.plan as UserPlan;
-      const resolvedSource = (subRes.data as any).subscription_source as SubscriptionSource || "free";
+      const resolvedSource = (subRes.data.subscription_source as SubscriptionSource) || "free";
       setPlan(resolvedPlan);
       setSubscriptionSource(resolvedSource);
 
