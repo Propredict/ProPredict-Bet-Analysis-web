@@ -110,10 +110,12 @@ export const AndroidPushModal = forwardRef<HTMLDivElement>((_, ref) => {
     // Skip only if user already enabled both prompts
     if (localStorage.getItem("goal_enabled") === "true" && localStorage.getItem("tips_enabled") === "true") return;
 
-    // Check real native push state — only show modal if push is fully active or unknown
+    // Check real native push state
+    // Show modal for: "unknown" (first time), "active" (permission granted), "no_permission" (will request via bridge)
+    // Only skip if user explicitly opted out (they disabled push in Settings toggle)
     const pushState = determinePushState();
-    if (pushState === "no_permission" || pushState === "opted_out") {
-      console.log("[AndroidPushModal] Push state is", pushState, "— skipping modal");
+    if (pushState === "opted_out") {
+      console.log("[AndroidPushModal] Push state is opted_out — skipping modal");
       return;
     }
 
