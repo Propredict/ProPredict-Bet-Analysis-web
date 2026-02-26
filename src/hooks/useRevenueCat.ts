@@ -226,12 +226,12 @@ export function purchaseSubscription(
     return;
   }
 
-  // Map to exact RevenueCat package identifiers as they appear on Android:
-  // Pro (basic):    $rc_monthly / $rc_annual
-  // Premium:        propredict_premium_service:premium-monthly / propredict_premium_service:premium-annual
+  // Map to exact RevenueCat package identifiers matching Google Play base plan IDs
+  // Product ID: propredict_premium_service
+  // Base plans: pro-monthly, pro-annual, premium-monthly, premium-annual
   const RC_PACKAGE_MAP: Record<string, string> = {
-    "basic-monthly": "$rc_monthly",
-    "basic-annual": "$rc_annual",
+    "basic-monthly": "propredict_premium_service:pro-monthly",
+    "basic-annual": "propredict_premium_service:pro-annual",
     "premium-monthly": "propredict_premium_service:premium-monthly",
     "premium-annual": "propredict_premium_service:premium-annual",
   };
