@@ -22,6 +22,8 @@ export function useFavorites() {
       if (!user) {
         if (isMounted.current) {
           setFavorites(new Set());
+          // Clear OneSignal tag when no user (logout, guest)
+          syncFavoritesTag(new Set());
           setIsLoading(false);
         }
         return;
@@ -39,6 +41,8 @@ export function useFavorites() {
           (data as { match_id: string }[] | null)?.map((f) => f.match_id) || []
         );
         setFavorites(favoriteIds);
+        // Sync OneSignal tag from DB source of truth on every fetch (login, reinstall, etc.)
+        syncFavoritesTag(favoriteIds);
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
