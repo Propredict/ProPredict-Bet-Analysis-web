@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { isPushReminderEligible } from "@/components/AndroidPushModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -36,10 +37,14 @@ const Settings = () => {
     setGoalEnabled(checked);
     if (checked) {
       localStorage.setItem("goal_enabled", "true");
+      localStorage.removeItem("push_disabled_at");
       window.Android?.requestPushPermission?.();
     } else {
-      localStorage.removeItem("goal_enabled");
-      localStorage.removeItem("goal_prompt_last_shown");
+      localStorage.setItem("goal_enabled", "false");
+      // Save disable timestamp for soft reminder cooldown
+      if (!tipsEnabled) {
+        localStorage.setItem("push_disabled_at", String(Date.now()));
+      }
     }
     setOneSignalTag("goal_alerts", checked ? "true" : null);
   };
@@ -48,10 +53,14 @@ const Settings = () => {
     setTipsEnabled(checked);
     if (checked) {
       localStorage.setItem("tips_enabled", "true");
+      localStorage.removeItem("push_disabled_at");
       window.Android?.requestPushPermission?.();
     } else {
-      localStorage.removeItem("tips_enabled");
-      localStorage.removeItem("tips_prompt_last_shown");
+      localStorage.setItem("tips_enabled", "false");
+      // Save disable timestamp for soft reminder cooldown
+      if (!goalEnabled) {
+        localStorage.setItem("push_disabled_at", String(Date.now()));
+      }
     }
     setOneSignalTag("daily_tips", checked ? "true" : null);
   };
@@ -234,6 +243,16 @@ const Settings = () => {
                 </div>
                 <Switch checked={tipsEnabled} onCheckedChange={handleTipsToggle} />
               </div>
+
+              {/* Soft reminder banner — shows after 7 days of being disabled */}
+              {!goalEnabled && !tipsEnabled && isPushReminderEligible() && (
+                <div className="mx-2 mb-2 p-2.5 rounded-md bg-primary/5 border border-primary/20 flex items-center gap-2">
+                  <Bell className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    You've had notifications off for a while. Enable them to get live goal alerts and daily AI predictions.
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
