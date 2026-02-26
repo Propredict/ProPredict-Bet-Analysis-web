@@ -120,24 +120,21 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
       android.syncUser(userId);
     }
 
-    // Read initial entitlements (may already be set by Android)
-    const initial = readEntitlements();
-    if (initial) {
-      setEntitlements(initial);
-      setIsLoading(false);
-    } else {
-      // Request entitlements from Android
-      if (android?.requestEntitlements) {
-        android.requestEntitlements();
-      }
+    // Do NOT read window.__REVENUECAT_ENTITLEMENTS__ here — it may contain
+    // stale data from the previous user. Wait for Android to respond with
+    // fresh entitlements via REVENUECAT_ENTITLEMENTS_UPDATE after syncUser completes.
 
-      // Set a timeout to stop loading even if Android doesn't respond
-      const timeout = setTimeout(() => {
-        setIsLoading(false);
-      }, 3000);
-
-      return () => clearTimeout(timeout);
+    // Request fresh entitlements from Android (will arrive via postMessage)
+    if (android?.requestEntitlements) {
+      android.requestEntitlements();
     }
+
+    // Timeout: stop loading if Android never responds
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
 
     // Request offerings so we have dynamic product data
     if (android?.requestOfferings) {
