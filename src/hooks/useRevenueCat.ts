@@ -89,18 +89,11 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
   const [offerings, setOfferings] = useState<RevenueCatOfferings | null>(null);
   const [offeringsReady, setOfferingsReady] = useState(false);
 
-  // Sync userId with RevenueCat via native bridge (must happen before any purchase)
-  useEffect(() => {
-    if (!isAndroidApp || !userId) return;
-
-    const android = (window as any).Android as AndroidBridgeRC | undefined;
-    if (android?.syncUser) {
-      console.log("[RevenueCat] Syncing user with native:", userId);
-      android.syncUser(userId);
-    }
-  }, [isAndroidApp, userId]);
-
-  // Request entitlements AND offerings from Android on mount
+  // Sync userId with RevenueCat via native bridge AND re-request entitlements.
+  // When userId changes (login/logout/switch account), we MUST:
+  // 1. Reset entitlements to prevent stale plan from previous user
+  // 2. Call syncUser on Android so RevenueCat identifies the correct user
+  // 3. Re-request entitlements for the new user
   useEffect(() => {
     if (!isAndroidApp) {
       setIsLoading(false);
@@ -109,17 +102,35 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
 
     const android = (window as any).Android as AndroidBridgeRC | undefined;
 
-    // Read initial entitlements
+    // No user → reset to free (logout scenario)
+    if (!userId) {
+      console.log("[RevenueCat] No userId — resetting entitlements to free");
+      setEntitlements(undefined);
+      setIsLoading(false);
+      return;
+    }
+
+    // New user logging in — reset entitlements while we fetch fresh data
+    setEntitlements(undefined);
+    setIsLoading(true);
+
+    // Sync user with RevenueCat native
+    if (android?.syncUser) {
+      console.log("[RevenueCat] Syncing user with native:", userId);
+      android.syncUser(userId);
+    }
+
+    // Read initial entitlements (may already be set by Android)
     const initial = readEntitlements();
     if (initial) {
       setEntitlements(initial);
       setIsLoading(false);
     } else {
-      // Request entitlements from Android if not already set
+      // Request entitlements from Android
       if (android?.requestEntitlements) {
         android.requestEntitlements();
       }
-      
+
       // Set a timeout to stop loading even if Android doesn't respond
       const timeout = setTimeout(() => {
         setIsLoading(false);
@@ -133,7 +144,7 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
       console.log("[RevenueCat] Requesting offerings from native");
       android.requestOfferings();
     }
-  }, [isAndroidApp]);
+  }, [isAndroidApp, userId]);
 
   // Listen for entitlement updates AND offerings from Android
   useEffect(() => {
