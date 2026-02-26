@@ -47,6 +47,10 @@ interface AndroidBridge {
 
   // OneSignal — get current Player ID from native SDK
   getOneSignalPlayerId?: () => string;
+
+  // OneSignal — set/remove tags
+  setOneSignalTag?: (key: string, value: string) => void;
+  removeOneSignalTag?: (key: string) => void;
 }
 
 declare global {
