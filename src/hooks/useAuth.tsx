@@ -32,6 +32,9 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch(() => {
+      // Network error during hydration — stop loading to prevent infinite spinner
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
