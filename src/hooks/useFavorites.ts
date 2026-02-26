@@ -95,13 +95,10 @@ export function useFavorites() {
 
         if (error) throw error;
 
-        setFavorites((prev) => {
-          const next = new Set(prev);
-          next.delete(matchId);
-          // Sync single CSV tag with updated favorites list
-          syncFavoritesTag(next);
-          return next;
-        });
+        const updated = new Set(favorites);
+        updated.delete(matchId);
+        setFavorites(updated);
+        syncFavoritesTag(updated);
       } else {
         const { error } = await supabase
           .from("favorites")
@@ -112,12 +109,9 @@ export function useFavorites() {
 
         if (error) throw error;
 
-        setFavorites((prev) => {
-          const next = new Set(prev).add(matchId);
-          // Sync single CSV tag with updated favorites list
-          syncFavoritesTag(next);
-          return next;
-        });
+        const updated = new Set(favorites).add(matchId);
+        setFavorites(updated);
+        syncFavoritesTag(updated);
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
