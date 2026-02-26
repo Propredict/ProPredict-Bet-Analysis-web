@@ -227,13 +227,10 @@ export function purchaseSubscription(
   }
 
   // Map to RevenueCat package identifiers (from Offerings dashboard):
-  // pro-monthly  → $rc_monthly
-  // pro-annual   → $rc_annual
-  // premium-monthly → premium-monthly
-  // premium-annual  → premium-annual
+  // All packages now use explicit identifiers: propredict_premium_service:<basePlanId>
   const RC_PACKAGE_MAP: Record<string, string> = {
-    "basic-monthly": "$rc_monthly",
-    "basic-annual": "$rc_annual",
+    "basic-monthly": "pro-monthly",
+    "basic-annual": "pro-annual",
     "premium-monthly": "premium-monthly",
     "premium-annual": "premium-annual",
   };
