@@ -15,6 +15,7 @@ import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
 
 import { useFavorites } from "@/hooks/useFavorites";
+import { useFavoritesPushSync } from "@/hooks/useFavoritesPushSync";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
@@ -58,6 +59,7 @@ export default function LiveScores() {
     toggleFavorite,
     clearAllFavorites,
   } = useFavorites();
+  useFavoritesPushSync(favorites);
   const {
     hasAlert,
     toggleMatchAlert,

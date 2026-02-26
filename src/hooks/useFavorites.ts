@@ -2,32 +2,43 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { syncFavoritesTag } from "@/components/AndroidPushModal";
 
-interface Favorite {
-  id: string;
-  match_id: string;
-  created_at: string;
-}
+/**
+ * Favorites hook — depends ONLY on userId + Supabase backend.
+ * No push notification or subscription/entitlement logic here.
+ *
+ * Race-condition guard: during app reload the auth state may briefly
+ * be null while rehydrating. We track `hasEverHadUser` so we never
+ * wipe an existing favourites set just because getUser() temporarily
+ * returns null.
+ */
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const isMounted = useRef(true);
+  // Guard: once we've seen a real user, don't wipe favorites on transient null
+  const hasEverHadUser = useRef(false);
 
   const fetchFavorites = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+
       if (!user) {
         if (isMounted.current) {
-          setFavorites(new Set());
-          // Clear OneSignal tag when no user (logout, guest)
-          syncFavoritesTag(new Set());
+          // Only clear if we never had a user (true guest / explicit logout).
+          // During app reload getUser() may briefly return null — skip clearing.
+          if (!hasEverHadUser.current) {
+            setFavorites(new Set());
+          }
           setIsLoading(false);
         }
         return;
       }
+
+      // We've confirmed a real user exists
+      hasEverHadUser.current = true;
 
       const { data, error } = await supabase
         .from("favorites")
@@ -41,13 +52,10 @@ export function useFavorites() {
           (data as { match_id: string }[] | null)?.map((f) => f.match_id) || []
         );
         setFavorites(favoriteIds);
-        // Sync OneSignal tag from DB source of truth on every fetch (login, reinstall, etc.)
-        syncFavoritesTag(favoriteIds);
-        const csv = favoriteIds.size > 0 ? "," + Array.from(favoriteIds).join(",") + "," : "(empty)";
-        console.log("[Favorites Sync] Count:", favoriteIds.size, "| CSV sent to OneSignal:", csv);
+        console.log("[Favorites] Fetched", favoriteIds.size, "favorites from DB");
       }
     } catch (error) {
-      console.error("Error fetching favorites:", error);
+      console.error("[Favorites] Error fetching:", error);
     } finally {
       if (isMounted.current) {
         setIsLoading(false);
@@ -57,9 +65,18 @@ export function useFavorites() {
 
   useEffect(() => {
     isMounted.current = true;
+    hasEverHadUser.current = false;
     fetchFavorites();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      // On explicit sign-out, reset the guard so favorites clear properly
+      if (event === "SIGNED_OUT") {
+        hasEverHadUser.current = false;
+        setFavorites(new Set());
+        setIsLoading(false);
+        return;
+      }
+      // For all other events (SIGNED_IN, TOKEN_REFRESHED, etc.) re-fetch
       fetchFavorites();
     });
 
@@ -70,25 +87,18 @@ export function useFavorites() {
   }, [fetchFavorites]);
 
   const toggleFavorite = useCallback(async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
-    console.log("[Favorites] toggleFavorite called for matchId:", matchId);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    console.log("[Favorites] Auth check - user:", user?.id, "error:", authError?.message);
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      console.warn("[Favorites] No user session, redirecting to login");
       toast({
         title: "Sign in required",
         description: "Please sign in to save favorites.",
       });
-      if (navigate) {
-        navigate("/login");
-      }
+      if (navigate) navigate("/login");
       return;
     }
 
     setSavingIds((prev) => new Set(prev).add(matchId));
-
     const isFavoriteNow = favorites.has(matchId);
 
     try {
@@ -98,29 +108,22 @@ export function useFavorites() {
           .delete()
           .eq("user_id", user.id)
           .eq("match_id", matchId);
-
         if (error) throw error;
 
         const updated = new Set(favorites);
         updated.delete(matchId);
         setFavorites(updated);
-        syncFavoritesTag(updated);
       } else {
         const { error } = await supabase
           .from("favorites")
-          .insert({
-            user_id: user.id,
-            match_id: matchId,
-          });
-
+          .insert({ user_id: user.id, match_id: matchId });
         if (error) throw error;
 
         const updated = new Set(favorites).add(matchId);
         setFavorites(updated);
-        syncFavoritesTag(updated);
       }
     } catch (error) {
-      console.error("Error toggling favorite:", error);
+      console.error("[Favorites] Error toggling:", error);
       toast({
         title: "Error",
         description: "Failed to update favorite. Please try again.",
@@ -144,15 +147,12 @@ export function useFavorites() {
         .from("favorites")
         .delete()
         .eq("user_id", user.id);
-
       if (error) throw error;
 
       setFavorites(new Set());
-      // Clear the single CSV favorites tag
-      syncFavoritesTag(new Set());
       toast({ title: "All favorites cleared" });
     } catch (error) {
-      console.error("Error clearing favorites:", error);
+      console.error("[Favorites] Error clearing:", error);
       toast({ title: "Error", description: "Failed to clear favorites.", variant: "destructive" });
     }
   }, [favorites]);
