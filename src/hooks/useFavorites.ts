@@ -5,45 +5,22 @@ import { toast } from "@/hooks/use-toast";
 
 /**
  * Favorites hook — depends ONLY on userId + Supabase backend.
- * No push notification or subscription/entitlement logic here.
- *
- * Race-condition guard: during app reload the auth state may briefly
- * be null while rehydrating. We track `hasEverHadUser` so we never
- * wipe an existing favourites set just because getUser() temporarily
- * returns null.
+ * No push notification or entitlement logic.
  */
-
 export function useFavorites() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
+
   const isMounted = useRef(true);
-  // Guard: once we've seen a real user, don't wipe favorites on transient null
-  const hasEverHadUser = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
-  const fetchFavorites = useCallback(async () => {
+  const fetchFavoritesByUser = useCallback(async (userId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        if (isMounted.current) {
-          // Only clear if we never had a user (true guest / explicit logout).
-          // During app reload getUser() may briefly return null — skip clearing.
-          if (!hasEverHadUser.current) {
-            setFavorites(new Set());
-          }
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      // We've confirmed a real user exists
-      hasEverHadUser.current = true;
-
       const { data, error } = await supabase
         .from("favorites")
         .select("match_id")
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (error) throw error;
 
@@ -52,7 +29,6 @@ export function useFavorites() {
           (data as { match_id: string }[] | null)?.map((f) => f.match_id) || []
         );
         setFavorites(favoriteIds);
-        console.log("[Favorites] Fetched", favoriteIds.size, "favorites from DB");
       }
     } catch (error) {
       console.error("[Favorites] Error fetching:", error);
@@ -63,90 +39,146 @@ export function useFavorites() {
     }
   }, []);
 
+  const getCurrentUserId = useCallback(async (): Promise<string | null> => {
+    // Prefer session (local, hydration-safe), fallback to getUser when needed
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.user?.id) return session.user.id;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    return user?.id ?? null;
+  }, []);
+
   useEffect(() => {
     isMounted.current = true;
-    hasEverHadUser.current = false;
-    fetchFavorites();
+    setIsLoading(true);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      // On explicit sign-out, reset the guard so favorites clear properly
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!isMounted.current) return;
+
+      const userId = session?.user?.id ?? null;
+      lastUserIdRef.current = userId;
+
+      if (userId) {
+        await fetchFavoritesByUser(userId);
+      } else {
+        setFavorites(new Set());
+        setIsLoading(false);
+      }
+    };
+
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextUserId = session?.user?.id ?? null;
+
+      if (!isMounted.current) return;
+
       if (event === "SIGNED_OUT") {
-        hasEverHadUser.current = false;
+        lastUserIdRef.current = null;
         setFavorites(new Set());
         setIsLoading(false);
         return;
       }
-      // For all other events (SIGNED_IN, TOKEN_REFRESHED, etc.) re-fetch
-      fetchFavorites();
+
+      // Guard against transient null during hydration/token transitions.
+      if (!nextUserId && lastUserIdRef.current) {
+        return;
+      }
+
+      if (nextUserId) {
+        lastUserIdRef.current = nextUserId;
+        setIsLoading(true);
+        void fetchFavoritesByUser(nextUserId);
+      } else {
+        lastUserIdRef.current = null;
+        setFavorites(new Set());
+        setIsLoading(false);
+      }
     });
 
     return () => {
       isMounted.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchFavorites]);
+  }, [fetchFavoritesByUser]);
 
-  const toggleFavorite = useCallback(async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
-    const { data: { user } } = await supabase.auth.getUser();
+  const toggleFavorite = useCallback(
+    async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
+      const userId = await getCurrentUserId();
 
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to save favorites.",
-      });
-      if (navigate) navigate("/login");
-      return;
-    }
-
-    setSavingIds((prev) => new Set(prev).add(matchId));
-    const isFavoriteNow = favorites.has(matchId);
-
-    try {
-      if (isFavoriteNow) {
-        const { error } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("match_id", matchId);
-        if (error) throw error;
-
-        const updated = new Set(favorites);
-        updated.delete(matchId);
-        setFavorites(updated);
-      } else {
-        const { error } = await supabase
-          .from("favorites")
-          .insert({ user_id: user.id, match_id: matchId });
-        if (error) throw error;
-
-        const updated = new Set(favorites).add(matchId);
-        setFavorites(updated);
+      if (!userId) {
+        toast({
+          title: "Sign in required",
+          description: "Please sign in to save favorites.",
+        });
+        if (navigate) navigate("/login");
+        return;
       }
-    } catch (error) {
-      console.error("[Favorites] Error toggling:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorite. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSavingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(matchId);
-        return next;
-      });
-    }
-  }, [favorites]);
+
+      setSavingIds((prev) => new Set(prev).add(matchId));
+      const isFavoriteNow = favorites.has(matchId);
+
+      try {
+        if (isFavoriteNow) {
+          const { error } = await supabase
+            .from("favorites")
+            .delete()
+            .eq("user_id", userId)
+            .eq("match_id", matchId);
+
+          if (error) throw error;
+
+          setFavorites((prev) => {
+            const updated = new Set(prev);
+            updated.delete(matchId);
+            return updated;
+          });
+        } else {
+          const { error } = await supabase
+            .from("favorites")
+            .insert({ user_id: userId, match_id: matchId });
+
+          if (error) throw error;
+
+          setFavorites((prev) => new Set(prev).add(matchId));
+        }
+      } catch (error) {
+        console.error("[Favorites] Error toggling:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update favorite. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setSavingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(matchId);
+          return next;
+        });
+      }
+    },
+    [favorites, getCurrentUserId]
+  );
 
   const clearAllFavorites = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || favorites.size === 0) return;
+    const userId = await getCurrentUserId();
+    if (!userId || favorites.size === 0) return;
 
     try {
-      const { error } = await supabase
-        .from("favorites")
-        .delete()
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("favorites").delete().eq("user_id", userId);
+
       if (error) throw error;
 
       setFavorites(new Set());
@@ -155,7 +187,7 @@ export function useFavorites() {
       console.error("[Favorites] Error clearing:", error);
       toast({ title: "Error", description: "Failed to clear favorites.", variant: "destructive" });
     }
-  }, [favorites]);
+  }, [favorites, getCurrentUserId]);
 
   const isFavorite = useCallback((matchId: string) => favorites.has(matchId), [favorites]);
   const isSaving = useCallback((matchId: string) => savingIds.has(matchId), [savingIds]);
@@ -167,6 +199,10 @@ export function useFavorites() {
     isLoading,
     toggleFavorite,
     clearAllFavorites,
-    refetch: fetchFavorites,
+    refetch: async () => {
+      const userId = await getCurrentUserId();
+      if (!userId) return;
+      await fetchFavoritesByUser(userId);
+    },
   };
 }
