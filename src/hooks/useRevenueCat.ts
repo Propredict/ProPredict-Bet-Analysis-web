@@ -226,8 +226,23 @@ export function purchaseSubscription(
     return;
   }
 
-  // Build exact RevenueCat package identifier (hyphen format)
-  const packageId = `${planId === "basic" ? "pro" : "premium"}-${period}`;
+  // Map to exact RevenueCat package identifiers as they appear on Android:
+  // Pro (basic):    $rc_monthly / $rc_annual
+  // Premium:        propredict_premium_service:premium-monthly / propredict_premium_service:premium-annual
+  const RC_PACKAGE_MAP: Record<string, string> = {
+    "basic-monthly": "$rc_monthly",
+    "basic-annual": "$rc_annual",
+    "premium-monthly": "propredict_premium_service:premium-monthly",
+    "premium-annual": "propredict_premium_service:premium-annual",
+  };
+
+  const mapKey = `${planId}-${period}`;
+  const packageId = RC_PACKAGE_MAP[mapKey];
+
+  if (!packageId) {
+    console.warn("[RevenueCat] Unknown plan/period combination:", mapKey);
+    return;
+  }
 
   // Detect downgrade: premium → basic
   const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2 };
