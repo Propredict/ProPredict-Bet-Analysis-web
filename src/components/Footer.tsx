@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info, Brain } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import googlePlayBadge from "@/assets/google-play-badge.jfif";
 
-export function Footer() {
+export const Footer = forwardRef<HTMLElement>((_, ref) => {
   const { isAndroidApp } = usePlatform();
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -20,7 +20,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
+    <footer ref={ref} className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
         {/* Google Play - small square button (right aligned) - Hidden on Android */}
         {!isAndroidApp && (
@@ -117,4 +117,6 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+});
+
+Footer.displayName = "Footer";

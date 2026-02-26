@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, forwardRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -90,7 +90,7 @@ export function syncFavoritesTag(favoriteIds: Set<string>) {
   }
 }
 
-export function AndroidPushModal() {
+export const AndroidPushModal = forwardRef<HTMLDivElement>((_, ref) => {
   const [step, setStep] = useState<ModalStep>(null);
   const { user, loading } = useAuth();
 
@@ -162,7 +162,7 @@ export function AndroidPushModal() {
   };
 
   return (
-    <>
+    <div ref={ref}>
       {/* ⚽ Goal Alerts Modal */}
       <Dialog open={step === "goal"} onOpenChange={(v) => { if (!v) handleGoalLater(); }}>
         <DialogContent className="sm:max-w-[380px] gap-5">
@@ -208,6 +208,8 @@ export function AndroidPushModal() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
-}
+});
+
+AndroidPushModal.displayName = "AndroidPushModal";

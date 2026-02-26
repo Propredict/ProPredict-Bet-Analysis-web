@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Zap, Heart, Swords, Brain, User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,45 +11,45 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { 
-    label: "Live", 
-    icon: Zap, 
+  {
+    label: "Live",
+    icon: Zap,
     path: "/live-scores",
     matchPaths: ["/live-scores"]
   },
-  { 
-    label: "AI Prediction", 
-    icon: Brain, 
+  {
+    label: "AI Prediction",
+    icon: Brain,
     path: "/ai-predictions",
     matchPaths: ["/ai-predictions"]
   },
-  { 
-    label: "Members", 
-    icon: Swords, 
+  {
+    label: "Members",
+    icon: Swords,
     path: "/ai-vs-community",
     matchPaths: ["/ai-vs-community"]
   },
-  { 
-    label: "Favorites", 
-    icon: Heart, 
+  {
+    label: "Favorites",
+    icon: Heart,
     path: "/favorites",
     matchPaths: ["/favorites"]
   },
-  { 
-    label: "Profile", 
-    icon: User, 
+  {
+    label: "Profile",
+    icon: User,
     path: "/profile",
     matchPaths: ["/profile", "/settings"]
   },
 ];
 
-export function MobileBottomNav() {
+export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const isActive = (item: NavItem) => {
     if (item.matchPaths) {
-      return item.matchPaths.some(p => 
+      return item.matchPaths.some(p =>
         p === "/" ? location.pathname === "/" : location.pathname.startsWith(p)
       );
     }
@@ -56,7 +57,8 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav 
+    <nav
+      ref={ref}
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
@@ -64,15 +66,15 @@ export function MobileBottomNav() {
         {NAV_ITEMS.map((item) => {
           const active = isActive(item);
           const Icon = item.icon;
-          
+
           return (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-1.5 transition-all",
-                active 
-                  ? "text-primary" 
+                active
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -100,4 +102,6 @@ export function MobileBottomNav() {
       </div>
     </nav>
   );
-}
+});
+
+MobileBottomNav.displayName = "MobileBottomNav";
