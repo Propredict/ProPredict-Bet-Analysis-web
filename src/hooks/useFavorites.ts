@@ -43,6 +43,8 @@ export function useFavorites() {
         setFavorites(favoriteIds);
         // Sync OneSignal tag from DB source of truth on every fetch (login, reinstall, etc.)
         syncFavoritesTag(favoriteIds);
+        const csv = favoriteIds.size > 0 ? "," + Array.from(favoriteIds).join(",") + "," : "(empty)";
+        console.log("[Favorites Sync] Count:", favoriteIds.size, "| CSV sent to OneSignal:", csv);
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
