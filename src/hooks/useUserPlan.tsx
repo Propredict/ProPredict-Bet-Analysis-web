@@ -196,13 +196,13 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     if (!isMobileApp) return;
     
     if (!revenueCat.isLoading) {
-      if (revenueCat.hasActiveSubscription) {
-        setPlan(revenueCat.plan);
-        // Sync updated plan tag to OneSignal
-        if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
-      }
+      // RevenueCat is the SOLE source of truth on Android.
+      // Always apply its plan — including "free" when no entitlements exist.
+      setPlan(revenueCat.plan);
+      // Sync updated plan tag to OneSignal
+      if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
     }
-  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, revenueCat.hasActiveSubscription, user]);
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user]);
 
   /* =====================
      Android Ad-Unlock Event Listener
