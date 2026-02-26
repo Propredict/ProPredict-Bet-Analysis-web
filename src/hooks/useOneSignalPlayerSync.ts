@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { setOneSignalTag } from "@/components/AndroidPushModal";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 /**
@@ -90,7 +91,10 @@ export function useOneSignalPlayerSync() {
         localStorage.removeItem("tips_enabled");
         localStorage.removeItem("goal_prompt_last_shown");
         localStorage.removeItem("tips_prompt_last_shown");
-        console.log("[OneSignal] 🧹 Cleared push flags for re-prompt after reinstall");
+        // Clear stale OneSignal tags so they match the reset localStorage state
+        setOneSignalTag("goal_alerts", null);
+        setOneSignalTag("daily_tips", null);
+        console.log("[OneSignal] 🧹 Cleared push flags + OneSignal tags after reinstall");
       } else {
         console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
       }
