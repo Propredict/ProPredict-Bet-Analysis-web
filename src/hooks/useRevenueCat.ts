@@ -53,11 +53,8 @@ interface AndroidBridgeRC {
   showRewardedAd?: () => void;
   requestEntitlements?: () => void;
   requestOfferings?: () => void;
-  purchasePackage?: (packageId: string) => void;
   purchasePlan?: (planId: string) => void;
   restorePurchases?: () => void;
-  getPro?: () => void;
-  getPremium?: () => void;
   syncUser?: (userId: string) => void;
 }
 
@@ -207,12 +204,11 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
 /**
  * Purchase a subscription plan via the Android native bridge.
  * 
- * Uses a priority chain:
- * 1. purchasePlan(planKey) — native handles offering lookup dynamically
- * 2. purchasePackage(packageId) — legacy hardcoded IDs
- * 3. getPro()/getPremium() — oldest fallback
+ * Sends the exact RevenueCat package identifier to native:
+ * "pro-monthly", "pro-annual", "premium-monthly", "premium-annual"
  * 
- * planKey format: "pro_monthly", "pro_annual", "premium_monthly", "premium_annual"
+ * For downgrades (premium → basic), appends ":downgrade" suffix
+ * so native side uses GoogleReplacementMode.DEFERRED.
  */
 export function purchaseSubscription(
   planId: "basic" | "premium",
@@ -225,45 +221,23 @@ export function purchaseSubscription(
     return;
   }
 
-  // Build a plan key the native side can map to the correct RevenueCat offering
-  const planKey = `${planId === "basic" ? "pro" : "premium"}_${period}`;
+  if (typeof android.purchasePlan !== "function") {
+    console.warn("[RevenueCat] purchasePlan not available on Android bridge");
+    return;
+  }
+
+  // Build exact RevenueCat package identifier (hyphen format)
+  const packageId = `${planId === "basic" ? "pro" : "premium"}-${period}`;
 
   // Detect downgrade: premium → basic
   const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2 };
   const isDowngrade = currentPlan && PLAN_RANK[currentPlan] > PLAN_RANK[planId];
   const isUpgrade = currentPlan && currentPlan !== "free" && PLAN_RANK[currentPlan] < PLAN_RANK[planId];
 
-  // Priority 1: purchasePlan — native resolves the correct offering dynamically
   // Append ":downgrade" suffix so native side uses DEFERRED replacement mode
-  if (typeof android.purchasePlan === "function") {
-    const finalKey = isDowngrade ? `${planKey}:downgrade` : planKey;
-    console.log("[RevenueCat] purchasePlan:", finalKey, isUpgrade ? `(upgrade from ${currentPlan})` : isDowngrade ? `(downgrade from ${currentPlan})` : "(new purchase)");
-    android.purchasePlan(finalKey);
-    return;
-  }
-
-  // Priority 2: purchasePackage with hardcoded IDs (legacy)
-  const LEGACY_PACKAGES: Record<string, Record<string, string>> = {
-    basic: { monthly: "pro-monthly", annual: "pro-annual" },
-    premium: { monthly: "premium-monthly", annual: "premium-annual" },
-  };
-  const packageId = LEGACY_PACKAGES[planId]?.[period];
-  if (packageId && typeof android.purchasePackage === "function") {
-    console.log("[RevenueCat] purchasePackage (legacy):", packageId);
-    android.purchasePackage(packageId);
-    return;
-  }
-
-  // Priority 3: getPro/getPremium (oldest fallback)
-  if (planId === "basic" && typeof android.getPro === "function") {
-    console.log("[RevenueCat] getPro (legacy fallback)");
-    android.getPro();
-  } else if (planId === "premium" && typeof android.getPremium === "function") {
-    console.log("[RevenueCat] getPremium (legacy fallback)");
-    android.getPremium();
-  } else {
-    console.warn("[RevenueCat] No purchase method available on Android bridge");
-  }
+  const finalKey = isDowngrade ? `${packageId}:downgrade` : packageId;
+  console.log("[RevenueCat] purchasePlan:", finalKey, isUpgrade ? `(upgrade from ${currentPlan})` : isDowngrade ? `(downgrade from ${currentPlan})` : "(new purchase)");
+  android.purchasePlan(finalKey);
 }
 
 /**
