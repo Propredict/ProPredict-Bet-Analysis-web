@@ -30,18 +30,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-// Android RevenueCat package IDs
-const REVENUECAT_PACKAGES = {
-  basic: {
-    monthly: "propredict_pro_monthly",
-    annual: "propredict_pro_annual",
-  },
-  premium: {
-    monthly: "propredict_premium_monthly",
-    annual: "propredict_premium_annual",
-  },
-};
-
 // Web-only: Stripe price IDs
 const STRIPE_PRICES = {
   basic: {

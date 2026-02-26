@@ -19,19 +19,10 @@ interface AndroidBridge {
   // RevenueCat Offerings — request native to fetch and post back current offerings
   requestOfferings?: () => void;
   
-  // RevenueCat Subscriptions (SDK 7.x)
-  purchasePackage?: (packageId: string) => void;
+  // RevenueCat — unified purchase method (sends package identifier e.g. "pro-monthly")
+  purchasePlan?: (planId: string) => void;
   requestEntitlements?: () => void;
   restorePurchases?: () => void;
-  
-  // Unified purchase method
-  purchasePlan?: (planId: string) => void;
-  
-  // Legacy purchase methods (fallback)
-  getPro?: () => void;
-  buyPro?: () => void;
-  getPremium?: () => void;
-  buyPremium?: () => void;
   
   // User sync — sends Supabase UUID to native for RevenueCat login
   syncUser?: (userId: string) => void;
