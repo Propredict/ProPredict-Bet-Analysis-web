@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
-interface PushSubscriptionStatus {
+export interface PushSubscriptionStatus {
   optedIn: boolean;
   subscriptionId: string | null;
 }
 
+export type PushState =
+  | "no_permission"    // System permission denied → "Enable in Settings"
+  | "opted_out"        // Permission exists but optedIn=false → soft reminder
+  | "active"           // Both true → all good
+  | "unknown";         // Bridge not available (web or bridge not ready)
+
 /**
  * Query the real push subscription status from the Android native bridge.
- * Returns null on web or if the bridge method isn't available yet.
  */
 export function getNativePushStatus(): PushSubscriptionStatus | null {
   if (!getIsAndroidApp()) return null;
@@ -29,53 +34,90 @@ export function getNativePushStatus(): PushSubscriptionStatus | null {
 }
 
 /**
- * Sync localStorage push flags with the real native subscription status.
- * Call this on login / app resume to ensure UI toggles reflect reality.
- *
- * Returns the native status if available, or null if bridge isn't ready.
+ * Check system-level notification permission via bridge.
  */
-export function syncPushStatusFromNative(): PushSubscriptionStatus | null {
-  const status = getNativePushStatus();
-  if (!status) return null;
+export function hasNativeNotificationPermission(): boolean | null {
+  if (!getIsAndroidApp()) return null;
+  try {
+    const result = window.Android?.hasNotificationPermission?.();
+    console.log("[PushStatus] hasNotificationPermission:", result);
+    return result ?? null;
+  } catch (e) {
+    console.warn("[PushStatus] hasNotificationPermission failed:", e);
+    return null;
+  }
+}
 
-  if (!status.optedIn) {
-    // Native says push is disabled — update localStorage to match
+/**
+ * Re-enable push subscription (optIn) without re-requesting system permission.
+ * Only works if system permission is already granted.
+ */
+export function enablePushViabridge() {
+  try {
+    window.Android?.enablePush?.();
+    console.log("[PushStatus] enablePush called via bridge");
+  } catch (e) {
+    console.warn("[PushStatus] enablePush failed:", e);
+  }
+}
+
+/**
+ * Determine the combined push state from native bridge data.
+ */
+export function determinePushState(): PushState {
+  const permission = hasNativeNotificationPermission();
+  const status = getNativePushStatus();
+
+  // Bridge not available
+  if (permission === null || status === null) return "unknown";
+
+  if (!permission) return "no_permission";
+  if (!status.optedIn) return "opted_out";
+  return "active";
+}
+
+/**
+ * Sync localStorage push flags with the real native subscription status.
+ */
+export function syncPushStatusFromNative(): PushState {
+  const state = determinePushState();
+  console.log("[PushStatus] Determined state:", state);
+
+  if (state === "no_permission" || state === "opted_out") {
     const goalWasEnabled = localStorage.getItem("goal_enabled") === "true";
     const tipsWasEnabled = localStorage.getItem("tips_enabled") === "true";
 
     if (goalWasEnabled || tipsWasEnabled) {
-      console.log("[PushStatus] Native optedIn=false, syncing localStorage flags to false");
+      console.log("[PushStatus] Syncing localStorage flags to false (state:", state, ")");
       localStorage.setItem("goal_enabled", "false");
       localStorage.setItem("tips_enabled", "false");
 
-      // Set disable timestamp if not already set
       if (!localStorage.getItem("push_disabled_at")) {
         localStorage.setItem("push_disabled_at", String(Date.now()));
       }
     }
   }
 
-  return status;
+  return state;
 }
 
 /**
- * React hook that checks native push status on mount and syncs UI state.
+ * React hook that checks native push status on mount and provides the combined state.
  */
 export function usePushSubscriptionStatus() {
-  const [status, setStatus] = useState<PushSubscriptionStatus | null>(null);
+  const [pushState, setPushState] = useState<PushState>("unknown");
   const isAndroid = getIsAndroidApp();
 
   useEffect(() => {
     if (!isAndroid) return;
 
-    // Small delay to let bridge initialise
     const timer = setTimeout(() => {
       const result = syncPushStatusFromNative();
-      setStatus(result);
+      setPushState(result);
     }, 1000);
 
     return () => clearTimeout(timer);
   }, [isAndroid]);
 
-  return status;
+  return pushState;
 }

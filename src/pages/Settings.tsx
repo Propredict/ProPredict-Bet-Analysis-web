@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { isPushReminderEligible } from "@/components/AndroidPushModal";
-import { usePushSubscriptionStatus } from "@/hooks/usePushSubscriptionStatus";
+import { usePushSubscriptionStatus, enablePushViabridge } from "@/hooks/usePushSubscriptionStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -35,23 +35,27 @@ const Settings = () => {
   const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
 
   // Sync UI toggles with real native push status on mount
-  const nativeStatus = usePushSubscriptionStatus();
+  const pushState = usePushSubscriptionStatus();
   useEffect(() => {
-    if (nativeStatus && !nativeStatus.optedIn) {
+    if (pushState === "no_permission" || pushState === "opted_out") {
       setGoalEnabled(false);
       setTipsEnabled(false);
     }
-  }, [nativeStatus]);
+  }, [pushState]);
 
   const handleGoalToggle = (checked: boolean) => {
     setGoalEnabled(checked);
     if (checked) {
       localStorage.setItem("goal_enabled", "true");
       localStorage.removeItem("push_disabled_at");
-      window.Android?.requestPushPermission?.();
+      // Use enablePush if permission exists, otherwise request permission
+      if (pushState === "opted_out") {
+        enablePushViabridge();
+      } else {
+        window.Android?.requestPushPermission?.();
+      }
     } else {
       localStorage.setItem("goal_enabled", "false");
-      // Save disable timestamp for soft reminder cooldown
       if (!tipsEnabled) {
         localStorage.setItem("push_disabled_at", String(Date.now()));
       }
@@ -64,10 +68,13 @@ const Settings = () => {
     if (checked) {
       localStorage.setItem("tips_enabled", "true");
       localStorage.removeItem("push_disabled_at");
-      window.Android?.requestPushPermission?.();
+      if (pushState === "opted_out") {
+        enablePushViabridge();
+      } else {
+        window.Android?.requestPushPermission?.();
+      }
     } else {
       localStorage.setItem("tips_enabled", "false");
-      // Save disable timestamp for soft reminder cooldown
       if (!goalEnabled) {
         localStorage.setItem("push_disabled_at", String(Date.now()));
       }
@@ -254,8 +261,38 @@ const Settings = () => {
                 <Switch checked={tipsEnabled} onCheckedChange={handleTipsToggle} />
               </div>
 
-              {/* Soft reminder banner — shows after 7 days of being disabled */}
-              {!goalEnabled && !tipsEnabled && isPushReminderEligible() && (
+              {/* System permission denied — direct user to system settings */}
+              {pushState === "no_permission" && (
+                <div className="mx-2 mb-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      Notifications are blocked at system level. Enable them in your device settings.
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.Android?.openBatterySettings?.()}
+                    className="text-[10px] text-primary hover:text-foreground h-6 px-2 flex-shrink-0"
+                  >
+                    Open Settings <ChevronRight className="h-3 w-3 ml-0.5" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Opted out but permission exists — soft reminder */}
+              {pushState === "opted_out" && !goalEnabled && !tipsEnabled && (
+                <div className="mx-2 mb-2 p-2.5 rounded-md bg-primary/5 border border-primary/20 flex items-center gap-2">
+                  <Bell className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Push notifications are paused. Toggle above to re-enable instantly.
+                  </p>
+                </div>
+              )}
+
+              {/* Fallback: localStorage-based soft reminder after 7 days */}
+              {pushState === "unknown" && !goalEnabled && !tipsEnabled && isPushReminderEligible() && (
                 <div className="mx-2 mb-2 p-2.5 rounded-md bg-primary/5 border border-primary/20 flex items-center gap-2">
                   <Bell className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                   <p className="text-[10px] text-muted-foreground leading-tight">

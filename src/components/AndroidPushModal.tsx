@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Goal, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { getNativePushStatus } from "@/hooks/usePushSubscriptionStatus";
+import { determinePushState } from "@/hooks/usePushSubscriptionStatus";
 
 type ModalStep = "goal" | "tips" | null;
 
@@ -109,10 +109,10 @@ export function AndroidPushModal() {
     // Skip only if user already enabled both prompts
     if (localStorage.getItem("goal_enabled") === "true" && localStorage.getItem("tips_enabled") === "true") return;
 
-    // If native bridge reports push is opted-out at system level, don't show modal
-    const nativeStatus = getNativePushStatus();
-    if (nativeStatus && !nativeStatus.optedIn) {
-      console.log("[AndroidPushModal] Native push opted-out, skipping modal");
+    // Check real native push state — only show modal if push is fully active or unknown
+    const pushState = determinePushState();
+    if (pushState === "no_permission" || pushState === "opted_out") {
+      console.log("[AndroidPushModal] Push state is", pushState, "— skipping modal");
       return;
     }
 

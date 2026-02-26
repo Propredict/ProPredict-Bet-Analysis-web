@@ -55,6 +55,12 @@ interface AndroidBridge {
   // OneSignal — get real push subscription status from native SDK
   // Returns JSON string: { "optedIn": boolean, "subscriptionId": string | null }
   getPushSubscriptionStatus?: () => string;
+
+  // Check if system-level notification permission is granted
+  hasNotificationPermission?: () => boolean;
+
+  // Re-enable push (optIn) without re-requesting system permission
+  enablePush?: () => void;
 }
 
 declare global {
