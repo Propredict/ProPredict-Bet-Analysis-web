@@ -13,6 +13,8 @@ import {
   Crown,
   Sparkles,
   Quote,
+  ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -381,9 +383,13 @@ function TestimonialsSlider() {
 export default function GetPremium() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
   const [isLoading, setIsLoading] = useState(false);
-  const { plan: currentPlan, isAuthenticated, refetch: refetchPlan } = useUserPlan();
+  const { plan: currentPlan, subscriptionSource, isAuthenticated, refetch: refetchPlan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   const navigate = useNavigate();
+
+  // Cross-platform protection flags
+  const isStripeSubOnAndroid = isAndroidApp && subscriptionSource === "stripe" && currentPlan !== "free";
+  const isGoogleSubOnWeb = !isAndroidApp && subscriptionSource === "google_play" && currentPlan !== "free";
 
   // Both Android and Web now support monthly/annual toggle
   const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans[billingPeriod];
@@ -433,6 +439,16 @@ export default function GetPremium() {
 
   const handleSubscribe = async (planId: string) => {
     if (planId === "free" || currentPlan === planId) return;
+
+    // Cross-platform protection: block purchases from wrong platform
+    if (isStripeSubOnAndroid) {
+      toast.error("Please manage your subscription on our website.");
+      return;
+    }
+    if (isGoogleSubOnWeb) {
+      toast.error("Please manage your subscription in the Android app.");
+      return;
+    }
 
     // Auth guard: block purchases for non-authenticated users
     if (!isAuthenticated) {
@@ -508,8 +524,57 @@ export default function GetPremium() {
         <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
       </div>
 
-      {/* Android: Google Play info banner + Manage Subscription */}
-      {isAndroidApp && (
+      {/* Cross-platform subscription protection banners */}
+      {isStripeSubOnAndroid && (
+        <Card className="p-4 border-warning/50 bg-warning/10 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
+            <h3 className="text-sm font-semibold text-foreground">Manage Your Subscription</h3>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Your subscription was purchased on our website.
+            For security and billing reasons, upgrades and changes must be made there.
+          </p>
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full text-xs h-9"
+            onClick={() => {
+              window.open("https://propredict.me/get-premium", "_blank");
+            }}
+          >
+            <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+            Go to Website
+          </Button>
+        </Card>
+      )}
+
+      {isGoogleSubOnWeb && (
+        <Card className="p-4 border-warning/50 bg-warning/10 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
+            <h3 className="text-sm font-semibold text-foreground">Manage Subscription in App</h3>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Your subscription was purchased through Google Play.
+            Please manage or upgrade it in the Android app.
+          </p>
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full text-xs h-9"
+            onClick={() => {
+              window.open("https://play.google.com/store/apps/details?id=com.propredict.app", "_blank");
+            }}
+          >
+            <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+            Open Android App
+          </Button>
+        </Card>
+      )}
+
+      {/* Android: Google Play info banner + Manage Subscription (only when NOT Stripe sub) */}
+      {isAndroidApp && !isStripeSubOnAndroid && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
             Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
@@ -524,7 +589,6 @@ export default function GetPremium() {
                 if (android?.manageSubscription) {
                   android.manageSubscription();
                 } else {
-                  // Fallback: open Google Play subscriptions page
                   window.open("https://play.google.com/store/account/subscriptions", "_blank");
                 }
               }}
@@ -618,7 +682,7 @@ export default function GetPremium() {
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
-                disabled={isCurrentPlan || (isFree && currentPlan !== "free") || isLoading}
+                disabled={isCurrentPlan || (isFree && currentPlan !== "free") || isLoading || (!isFree && (isStripeSubOnAndroid || isGoogleSubOnWeb))}
                 onClick={() => handleSubscribe(plan.id)}
               >
                 {isLoading

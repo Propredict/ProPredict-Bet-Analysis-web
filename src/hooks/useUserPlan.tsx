@@ -14,6 +14,7 @@ import { setOneSignalTag } from "@/components/AndroidPushModal";
 ===================== */
 
 export type UserPlan = "free" | "basic" | "premium";
+export type SubscriptionSource = "free" | "stripe" | "google_play";
 export type ContentTier = "free" | "daily" | "exclusive" | "premium";
 export type ContentType = "tip" | "ticket";
 
@@ -34,6 +35,7 @@ interface UnlockedContent {
 
 interface UserPlanContextType {
   plan: UserPlan;
+  subscriptionSource: SubscriptionSource;
   isLoading: boolean;
   isAdmin: boolean;
   isAuthenticated: boolean;
@@ -74,6 +76,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const revenueCat = useRevenueCat(user?.id);
 
   const [plan, setPlan] = useState<UserPlan>("free");
+  const [subscriptionSource, setSubscriptionSource] = useState<SubscriptionSource>("free");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
@@ -86,6 +89,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const fetchUserData = useCallback(async () => {
     if (!user) {
       setPlan("free");
+      setSubscriptionSource("free");
       setIsAdmin(false);
       setUnlockedContent([]);
       setIsLoading(false);
@@ -102,7 +106,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           .eq("role", "admin")
           .maybeSingle(),
 
-        supabase.from("user_subscriptions").select("plan, expires_at").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
 
         supabase
           .from("user_unlocks")
@@ -114,6 +118,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       if (adminRes.data?.role === "admin") {
         setIsAdmin(true);
         setPlan("premium");
+        setSubscriptionSource("free");
         setUnlockedContent([]);
         setIsLoading(false);
         return;
@@ -139,6 +144,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       /* ===== SUBSCRIPTION ===== */
       if (!subRes.data) {
         setPlan("free");
+        setSubscriptionSource("free");
         setIsLoading(false);
         return;
       }
@@ -147,19 +153,23 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         const exp = new Date(subRes.data.expires_at);
         if (exp < new Date()) {
           setPlan("free");
+          setSubscriptionSource("free");
           setIsLoading(false);
           return;
         }
       }
 
       const resolvedPlan = subRes.data.plan as UserPlan;
+      const resolvedSource = (subRes.data as any).subscription_source as SubscriptionSource || "free";
       setPlan(resolvedPlan);
+      setSubscriptionSource(resolvedSource);
 
       // Sync plan + user_id tags to OneSignal for push segmentation
       syncOneSignalPlanTags(resolvedPlan, user.id);
     } catch (err) {
       console.error("UserPlan error:", err);
       setPlan("free");
+      setSubscriptionSource("free");
       setIsAdmin(false);
       setUnlockedContent([]);
     } finally {
@@ -552,6 +562,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     <UserPlanContext.Provider
       value={{
         plan,
+        subscriptionSource,
         isLoading: combinedIsLoading,
         isAdmin,
         isAuthenticated: !!user,
