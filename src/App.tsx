@@ -55,6 +55,7 @@ const ManageTickets = lazy(() => import("./pages/admin/ManageTickets"));
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+import { AuthProvider } from "@/hooks/useAuth";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 
 const queryClient = new QueryClient({
@@ -145,105 +146,107 @@ const App = () => {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <UserPlanProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <DeepLinkHandler />
-              <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>}>
-              <Routes>
-                {/* Auth pages */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+        <AuthProvider>
+          <UserPlanProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ScrollToTop />
+                <DeepLinkHandler />
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>}>
+                <Routes>
+                  {/* Auth pages */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Layout pages */}
-                <Route element={<AppLayout />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
-                  <Route path="/home" element={<Navigate to="/" replace />} />
-                  <Route path="/how-ai-works" element={<HowAIWorks />} />
-                  <Route path="/live-scores" element={<LiveScores />} />
-                  <Route path="/favorites" element={<MyFavorites />} />
-                  <Route path="/winning-history" element={<WinningHistory />} />
-                  <Route path="/tickets/:id" element={<TicketDetails />} />
-                  <Route path="/get-premium" element={<GetPremium />} />
+                  {/* Layout pages */}
+                  <Route element={<AppLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="/how-ai-works" element={<HowAIWorks />} />
+                    <Route path="/live-scores" element={<LiveScores />} />
+                    <Route path="/favorites" element={<MyFavorites />} />
+                    <Route path="/winning-history" element={<WinningHistory />} />
+                    <Route path="/tickets/:id" element={<TicketDetails />} />
+                    <Route path="/get-premium" element={<GetPremium />} />
 
-                  {/* Tips */}
-                  <Route path="/daily-analysis" element={<DailyTips />} />
-                  <Route path="/daily-tips" element={<Navigate to="/daily-analysis" replace />} />
-                  <Route path="/daily-predictions" element={<DailyTickets />} />
-                  <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
-                  <Route path="/pro-analysis" element={<ExclusiveTips />} />
-                  <Route path="/exclusive-tips" element={<Navigate to="/pro-analysis" replace />} />
-                  <Route path="/pro-predictions" element={<ExclusiveTickets />} />
-                  <Route path="/exclusive-tickets" element={<Navigate to="/pro-predictions" replace />} />
-                  <Route path="/premium-analysis" element={<PremiumTips />} />
-                  <Route path="/premium-tips" element={<Navigate to="/premium-analysis" replace />} />
-                  <Route path="/premium-predictions" element={<PremiumTickets />} />
-                  <Route path="/premium-tickets" element={<Navigate to="/premium-predictions" replace />} />
-                  <Route path="/ai-predictions" element={<AIPredictions />} />
-                  <Route path="/ai-vs-community" element={<AIvsCommunity />} />
-                  <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
-                  <Route path="/league-statistics" element={<LeagueStatistics />} />
-                  <Route path="/match-previews" element={<MatchPreviews />} />
+                    {/* Tips */}
+                    <Route path="/daily-analysis" element={<DailyTips />} />
+                    <Route path="/daily-tips" element={<Navigate to="/daily-analysis" replace />} />
+                    <Route path="/daily-predictions" element={<DailyTickets />} />
+                    <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
+                    <Route path="/pro-analysis" element={<ExclusiveTips />} />
+                    <Route path="/exclusive-tips" element={<Navigate to="/pro-analysis" replace />} />
+                    <Route path="/pro-predictions" element={<ExclusiveTickets />} />
+                    <Route path="/exclusive-tickets" element={<Navigate to="/pro-predictions" replace />} />
+                    <Route path="/premium-analysis" element={<PremiumTips />} />
+                    <Route path="/premium-tips" element={<Navigate to="/premium-analysis" replace />} />
+                    <Route path="/premium-predictions" element={<PremiumTickets />} />
+                    <Route path="/premium-tickets" element={<Navigate to="/premium-predictions" replace />} />
+                    <Route path="/ai-predictions" element={<AIPredictions />} />
+                    <Route path="/ai-vs-community" element={<AIvsCommunity />} />
+                    <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
+                    <Route path="/league-statistics" element={<LeagueStatistics />} />
+                    <Route path="/match-previews" element={<MatchPreviews />} />
 
-                  {/* Protected */}
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* Protected */}
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* Admin */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <AdminRoute>
-                        <AdminDashboard />
-                      </AdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/tips"
-                    element={
-                      <AdminRoute>
-                        <ManageTips />
-                      </AdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/tickets"
-                    element={
-                      <AdminRoute>
-                        <ManageTickets />
-                      </AdminRoute>
-                    }
-                  />
+                    {/* Admin */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/tips"
+                      element={
+                        <AdminRoute>
+                          <ManageTips />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/tickets"
+                      element={
+                        <AdminRoute>
+                          <ManageTickets />
+                        </AdminRoute>
+                      }
+                    />
 
-                  {/* Legal */}
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/cookie-policy" element={<CookiePolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                  <Route path="/disclaimer" element={<Disclaimer />} />
-                  <Route path="/data-deletion" element={<DataDeletion />} />
-                  <Route path="/help-support" element={<HelpSupport />} />
-                  <Route path="/about-us" element={<AboutUs />} />
-                </Route>
+                    {/* Legal */}
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/cookie-policy" element={<CookiePolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/disclaimer" element={<Disclaimer />} />
+                    <Route path="/data-deletion" element={<DataDeletion />} />
+                    <Route path="/help-support" element={<HelpSupport />} />
+                    <Route path="/about-us" element={<AboutUs />} />
+                  </Route>
 
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
-        </UserPlanProvider>
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </UserPlanProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

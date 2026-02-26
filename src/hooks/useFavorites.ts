@@ -2,18 +2,19 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Favorites hook — depends ONLY on userId + Supabase backend.
  * No push notification or entitlement logic.
  */
 export function useFavorites() {
+  const { user, loading: authLoading } = useAuth();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
 
   const isMounted = useRef(true);
-  const lastUserIdRef = useRef<string | null>(null);
 
   const fetchFavoritesByUser = useCallback(async (userId: string) => {
     try {
@@ -26,7 +27,7 @@ export function useFavorites() {
 
       if (isMounted.current) {
         const favoriteIds = new Set<string>(
-          (data as { match_id: string }[] | null)?.map((f) => f.match_id) || []
+          (data as { match_id: string }[] | null)?.map((f) => f.match_id) || [],
         );
         setFavorites(favoriteIds);
       }
@@ -40,79 +41,39 @@ export function useFavorites() {
   }, []);
 
   const getCurrentUserId = useCallback(async (): Promise<string | null> => {
-    // Prefer session (local, hydration-safe), fallback to getUser when needed
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (session?.user?.id) return session.user.id;
+    if (user?.id) return user.id;
 
     const {
-      data: { user },
+      data: { user: currentUser },
     } = await supabase.auth.getUser();
 
-    return user?.id ?? null;
-  }, []);
+    return currentUser?.id ?? null;
+  }, [user?.id]);
 
   useEffect(() => {
     isMounted.current = true;
-    setIsLoading(true);
 
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    if (authLoading) {
+      setIsLoading(true);
+      return () => {
+        isMounted.current = false;
+      };
+    }
 
-      if (!isMounted.current) return;
+    const userId = user?.id ?? null;
 
-      const userId = session?.user?.id ?? null;
-      lastUserIdRef.current = userId;
-
-      if (userId) {
-        await fetchFavoritesByUser(userId);
-      } else {
-        setFavorites(new Set());
-        setIsLoading(false);
-      }
-    };
-
-    init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      const nextUserId = session?.user?.id ?? null;
-
-      if (!isMounted.current) return;
-
-      if (event === "SIGNED_OUT") {
-        lastUserIdRef.current = null;
-        setFavorites(new Set());
-        setIsLoading(false);
-        return;
-      }
-
-      // Guard against transient null during hydration/token transitions.
-      if (!nextUserId && lastUserIdRef.current) {
-        return;
-      }
-
-      if (nextUserId) {
-        lastUserIdRef.current = nextUserId;
-        setIsLoading(true);
-        void fetchFavoritesByUser(nextUserId);
-      } else {
-        lastUserIdRef.current = null;
-        setFavorites(new Set());
-        setIsLoading(false);
-      }
-    });
+    if (userId) {
+      setIsLoading(true);
+      void fetchFavoritesByUser(userId);
+    } else {
+      setFavorites(new Set());
+      setIsLoading(false);
+    }
 
     return () => {
       isMounted.current = false;
-      subscription.unsubscribe();
     };
-  }, [fetchFavoritesByUser]);
+  }, [authLoading, user?.id, fetchFavoritesByUser]);
 
   const toggleFavorite = useCallback(
     async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
@@ -146,9 +107,7 @@ export function useFavorites() {
             return updated;
           });
         } else {
-          const { error } = await supabase
-            .from("favorites")
-            .insert({ user_id: userId, match_id: matchId });
+          const { error } = await supabase.from("favorites").insert({ user_id: userId, match_id: matchId });
 
           if (error) throw error;
 
@@ -169,7 +128,7 @@ export function useFavorites() {
         });
       }
     },
-    [favorites, getCurrentUserId]
+    [favorites, getCurrentUserId],
   );
 
   const clearAllFavorites = useCallback(async () => {
@@ -206,3 +165,4 @@ export function useFavorites() {
     },
   };
 }
+
