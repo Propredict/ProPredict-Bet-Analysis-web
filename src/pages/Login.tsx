@@ -63,10 +63,6 @@ const Login = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
         navigate(safeRedirectTo);
       }
     } catch (error: any) {
