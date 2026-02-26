@@ -54,15 +54,18 @@ export function MatchPredictions() {
   const tipsQuery = useTips(false);
   if (!tipsQuery) return null;
   const { tips: dbTips = [], isLoading } = tipsQuery;
-  const tips = dbTips.map(mapDbTipToTip);
+
+  // Dashboard shows ONLY today's tips — older ones go to history pages
+  const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const todayDbTips = dbTips.filter((t: any) => t.tip_date === todayDate);
+  const tips = todayDbTips.map(mapDbTipToTip);
   const filteredTips = tips.filter(t => t.tier === activeTab);
   const displayedTips = filteredTips.slice(0, 3);
   const hasMoreTips = filteredTips.length > 3;
 
-  // Count only today's tips per tier
-  const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  // Count only today's tips per tier (todayDate already defined above)
   const todayTipCountByTier = (tierId: string) =>
-    dbTips.filter((t: any) => t.tier === tierId && t.tip_date === todayDate).length;
+    todayDbTips.filter((t: any) => t.tier === tierId).length;
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
