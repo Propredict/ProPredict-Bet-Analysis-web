@@ -179,12 +179,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchUserData();
-
-    // Send Supabase user ID to Android WebView for RevenueCat login
-    if (user && user.id && (window as any).Android && (window as any).Android.syncUser) {
-      (window as any).Android.syncUser(user.id);
-      console.log("Supabase User ID sent to Android: " + user.id);
-    }
+    // syncUser is now handled inside useRevenueCat when userId changes
   }, [fetchUserData, user]);
 
   /* =====================
