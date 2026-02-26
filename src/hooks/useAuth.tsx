@@ -25,15 +25,34 @@ function useProvideAuthState(): AuthContextValue {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const isMountedRef = useRef(true);
+  // Track whether initAuth has completed — prevents the listener from
+  // prematurely resolving loading=false with a stale null session while
+  // the token is still being refreshed.
+  const initDoneRef = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
+    initDoneRef.current = false;
 
-    const applySession = (nextSession: Session | null) => {
+    const applySession = (nextSession: Session | null, fromInit = false) => {
       if (!isMountedRef.current) return;
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      setLoading(false);
+
+      // If we have a real session, always apply it immediately.
+      if (nextSession) {
+        setSession(nextSession);
+        setUser(nextSession.user);
+        setLoading(false);
+        return;
+      }
+
+      // Null session: only trust it once initAuth has finished.
+      // This prevents the onAuthStateChange INITIAL_SESSION (null) from
+      // flashing a guest state while getUser() is still recovering the token.
+      if (fromInit || initDoneRef.current) {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      }
     };
 
     // Set up auth state listener BEFORE checking session
@@ -55,25 +74,35 @@ function useProvideAuthState(): AuthContextValue {
 
     const initAuth = async () => {
       try {
+        // getSession reads from localStorage — fast, but may be expired.
         const {
           data: { session: initialSession },
         } = await supabase.auth.getSession();
 
         if (initialSession) {
-          applySession(initialSession);
+          initDoneRef.current = true;
+          applySession(initialSession, true);
           return;
         }
 
-        // Fallback: getUser can recover user after token refresh in some environments.
+        // Fallback: getUser hits the server and can recover the session
+        // after a token refresh (critical on Android WebView after app kill).
         const {
           data: { user: currentUser },
         } = await supabase.auth.getUser();
 
+        initDoneRef.current = true;
+
         if (!isMountedRef.current) return;
-        setSession(null);
-        setUser(currentUser ?? null);
-        setLoading(false);
+        if (currentUser) {
+          setUser(currentUser);
+          // Session might arrive via onAuthStateChange shortly after.
+          setLoading(false);
+        } else {
+          applySession(null, true);
+        }
       } catch {
+        initDoneRef.current = true;
         // Network/hydration error — stop loading to prevent infinite spinner
         if (isMountedRef.current) {
           setLoading(false);
