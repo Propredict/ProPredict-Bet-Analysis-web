@@ -23,7 +23,7 @@ export function DashboardTipsPopup() {
     } catch { /* ignore */ }
 
     // On Android delay 3s to avoid clashing with auth / interstitial
-    const delay = isAndroid ? 3000 : 800;
+    const delay = isAndroid ? 12000 : 800;
     const timer = setTimeout(() => {
       setOpen(true);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
