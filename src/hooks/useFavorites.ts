@@ -87,6 +87,9 @@ export function useFavorites() {
 
   const toggleFavorite = useCallback(
     async (matchId: string, navigate?: ReturnType<typeof useNavigate>) => {
+      // Guard: prevent double-tap / concurrent toggle for the same match
+      if (savingIds.has(matchId)) return;
+
       const userId = await getCurrentUserId();
 
       if (!userId) {
@@ -138,7 +141,7 @@ export function useFavorites() {
         });
       }
     },
-    [favorites, getCurrentUserId],
+    [favorites, savingIds, getCurrentUserId],
   );
 
   const clearAllFavorites = useCallback(async () => {
