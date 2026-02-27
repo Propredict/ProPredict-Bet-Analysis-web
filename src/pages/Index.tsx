@@ -1,8 +1,9 @@
 import { useEffect, useRef, lazy, Suspense, forwardRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { Sparkles, ChevronRight } from "lucide-react";
 
 // Lightweight components – eager
 import { GuestBanner } from "@/components/GuestBanner";
@@ -30,6 +31,7 @@ LazyFallback.displayName = "LazyFallback";
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const isAndroid = getIsAndroidApp();
+  const navigate = useNavigate();
   const firedRef = useRef(false);
 
   // Android only: show one interstitial on Home (max 1 per app session)
@@ -52,6 +54,23 @@ const Index = () => {
       </Helmet>
       <div className="space-y-6">
         <GuestBanner />
+
+        {/* Quick CTA – Check Today's Tips */}
+        <button
+          onClick={() => navigate("/daily-analysis")}
+          className="w-full flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 hover:border-primary/50 transition-all group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-primary/20">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Check Today's New Tips</p>
+              <p className="text-[10px] text-muted-foreground">Fresh AI predictions ready for you</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5" />
+        </button>
         
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-6 md:p-8 text-center shadow-lg shadow-primary/10">
