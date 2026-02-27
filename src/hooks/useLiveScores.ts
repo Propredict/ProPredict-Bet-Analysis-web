@@ -39,6 +39,7 @@ export function useLiveScores({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const hasFetchedOnce = useRef(false);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -46,7 +47,10 @@ export function useLiveScores({
       const controller = new AbortController();
       abortRef.current = controller;
 
-      setIsLoading(true);
+      // Only show loading spinner on first fetch, not on refreshes
+      if (!hasFetchedOnce.current) {
+        setIsLoading(true);
+      }
       setError(null);
 
       const res = await fetch(`${EDGE_URL}?mode=${dateMode}`, {
@@ -71,6 +75,7 @@ export function useLiveScores({
         setMatches([]);
       }
     } finally {
+      hasFetchedOnce.current = true;
       setIsLoading(false);
     }
   }, [dateMode, statusFilter]);
