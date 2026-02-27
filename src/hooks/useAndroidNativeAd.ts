@@ -9,7 +9,7 @@
  *
  * All other pages: native ad hidden.
  */
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
@@ -25,9 +25,31 @@ const AD_ROUTES = new Set([
   "/ai-predictions",
 ]);
 
+const NATIVE_AD_COOLDOWN_KEY = "propredict:native_ad_ts";
+const NATIVE_AD_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+
+function isNativeAdInCooldown(): boolean {
+  try {
+    const ts = localStorage.getItem(NATIVE_AD_COOLDOWN_KEY);
+    if (!ts) return false;
+    return Date.now() - Number(ts) < NATIVE_AD_COOLDOWN_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markNativeAdShown(): void {
+  try {
+    localStorage.setItem(NATIVE_AD_COOLDOWN_KEY, String(Date.now()));
+  } catch {
+    // ignore
+  }
+}
+
 export function useAndroidNativeAd() {
   const { pathname } = useLocation();
   const isAndroid = getIsAndroidApp();
+  const isShowingRef = useRef(false);
 
   useEffect(() => {
     if (!isAndroid) return;
@@ -35,11 +57,21 @@ export function useAndroidNativeAd() {
     if (!bridge?.toggleNativeAd) return;
 
     const shouldShow = AD_ROUTES.has(pathname);
-    bridge.toggleNativeAd(shouldShow);
 
-    // On unmount or route change away, always hide
-    return () => {
+    if (shouldShow && !isNativeAdInCooldown()) {
+      bridge.toggleNativeAd(true);
+      isShowingRef.current = true;
+      markNativeAdShown();
+    } else {
       bridge.toggleNativeAd(false);
+      isShowingRef.current = false;
+    }
+
+    return () => {
+      if (isShowingRef.current) {
+        bridge.toggleNativeAd(false);
+        isShowingRef.current = false;
+      }
     };
   }, [pathname, isAndroid]);
 }
