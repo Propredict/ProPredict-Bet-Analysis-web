@@ -15,7 +15,7 @@ import { useCallback } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const COOLDOWN_KEY = "propredict:interstitial_ts";
-const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 const LOGIN_GRACE_KEY = "propredict:login_ts";
 const LOGIN_GRACE_MS = 20 * 1000; // 20s after login — no interstitials (protects OneSignal permission dialog)
 

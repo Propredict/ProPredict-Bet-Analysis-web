@@ -33,6 +33,7 @@ import { initOneSignalWeb } from "@/lib/onesignal";
 import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 import { AndroidPushModal } from "@/components/AndroidPushModal";
 import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
+import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
 
 
 // Pages where footer should be hidden (header-only layout)
@@ -48,6 +49,9 @@ export default function AppLayout() {
 
   // Sync Android OneSignal Player ID to Supabase
   useOneSignalPlayerSync();
+
+  // Show native ad banner on specific pages (Android only)
+  useAndroidNativeAd();
 
 
   // In-app realtime toast notifications for new tips/tickets

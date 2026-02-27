@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { NativeAdSlot } from "@/components/ads/NativeAdSlot";
+
 
 
 type SortOption = "confidence" | "kickoff" | "risk";
@@ -568,11 +568,6 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {idx === 7 && (
-                        <div className="col-span-full">
-                          <NativeAdSlot />
-                        </div>
-                      )}
                     </React.Fragment>
                   );
                 })}
@@ -652,11 +647,6 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {idx === 7 && (
-                        <div className="col-span-full">
-                          <NativeAdSlot />
-                        </div>
-                      )}
                     </React.Fragment>
                   );
                 })}
