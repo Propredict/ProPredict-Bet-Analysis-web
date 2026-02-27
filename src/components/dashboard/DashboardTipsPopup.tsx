@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const SESSION_KEY = "propredict:tips_popup_shown_v5";
+const SESSION_KEY = "propredict:tips_popup_shown_v6";
 
 export function DashboardTipsPopup() {
   const [open, setOpen] = useState(false);
@@ -57,55 +57,55 @@ export function DashboardTipsPopup() {
         </div>
 
         {/* Options */}
-        <div className="px-4 pb-2 space-y-2">
+        <div className="px-4 pb-2 space-y-2.5">
           {/* Daily */}
           <button
             onClick={() => goTo("/daily-analysis")}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm transition-all group"
+            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 shadow-md hover:shadow-lg transition-all group"
           >
-            <div className="p-2 rounded-lg bg-primary/15">
-              <Sparkles className="h-4 w-4 text-primary" />
+            <div className="p-2 rounded-lg bg-white/15">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[13px] font-semibold text-slate-800">Daily Tips</p>
-              <p className="text-[10px] text-slate-500">Free predictions</p>
+              <p className="text-[13px] font-bold text-white">Daily Tips</p>
+              <p className="text-[10px] text-white/70">Free predictions</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-primary animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           {/* Exclusive */}
           <button
             onClick={() => goTo("/pro-analysis")}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200 hover:border-amber-400 hover:shadow-sm transition-all group"
+            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-md hover:shadow-lg transition-all group"
           >
-            <div className="p-2 rounded-lg bg-amber-200/60">
-              <Star className="h-4 w-4 text-amber-600" />
+            <div className="p-2 rounded-lg bg-white/15">
+              <Star className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[13px] font-semibold text-slate-800">Exclusive Tips</p>
-              <p className="text-[10px] text-amber-600">Higher confidence</p>
+              <p className="text-[13px] font-bold text-white">Exclusive Tips</p>
+              <p className="text-[10px] text-white/70">Higher confidence</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-amber-400 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           {/* Premium */}
           <button
             onClick={() => goTo("/premium-analysis")}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-fuchsia-50 border border-fuchsia-200 hover:border-fuchsia-400 hover:shadow-sm transition-all group"
+            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-700 hover:from-fuchsia-500 hover:to-purple-600 shadow-md hover:shadow-lg transition-all group"
           >
-            <div className="p-2 rounded-lg bg-fuchsia-200/60">
-              <Crown className="h-4 w-4 text-fuchsia-600" />
+            <div className="p-2 rounded-lg bg-white/15">
+              <Crown className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[13px] font-semibold text-slate-800">Premium Tips</p>
-              <p className="text-[10px] text-fuchsia-600">Members only</p>
+              <p className="text-[13px] font-bold text-white">Premium Tips</p>
+              <p className="text-[10px] text-white/70">Members only</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-fuchsia-400 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
         {/* Dismiss */}
-        <div className="px-4 pb-4 pt-1">
+        <div className="px-4 pb-4 pt-2">
           <button
             className="w-full py-2 text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
             onClick={() => setOpen(false)}
