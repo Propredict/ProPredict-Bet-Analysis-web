@@ -40,6 +40,10 @@ export function useAndroidInterstitial() {
     // Gate 1: Android only
     if (!getIsAndroidApp()) return;
 
+    // Gate: Don't show on login/auth pages
+    const path = window.location.pathname;
+    if (path === "/login" || path === "/forgot-password" || path === "/reset-password") return;
+
     // Gate 2: 5-minute cooldown between interstitials
     if (isInCooldown()) return;
 
