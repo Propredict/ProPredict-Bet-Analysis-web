@@ -103,16 +103,22 @@ const App = () => {
     });
   }, []);
 
-  // 🔔 OneSignal → Supabase sync
+  // 🔔 OneSignal Web → Supabase sync (SKIP on Android — native bridge handles it)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Android uses native OneSignal SDK via useOneSignalPlayerSync — never run web sync
     const w = window as any;
+    const isAndroid = typeof w.Android !== 'undefined'
+      || w.isAndroidApp === true
+      || w.__IS_ANDROID_APP__ === true;
+    try { if (w.sessionStorage?.getItem('propredict:platform') === 'android') return; } catch {}
+    if (isAndroid) return;
+
     w.OneSignalDeferred = w.OneSignalDeferred || [];
     w.OneSignalDeferred.push(async function (OneSignal: any) {
       const syncPlayerId = async () => {
         try {
-          // SDK v16: use PushSubscription.id (NOT getUserId)
           const sub = OneSignal?.User?.PushSubscription;
           const playerId = sub?.id;
           if (!playerId) {
@@ -138,10 +144,8 @@ const App = () => {
         }
       };
 
-      // Try immediately (if permission already granted)
       await syncPlayerId();
 
-      // Listen for future subscription changes (user grants permission later)
       try {
         OneSignal?.User?.PushSubscription?.addEventListener?.("change", syncPlayerId);
       } catch (e) {

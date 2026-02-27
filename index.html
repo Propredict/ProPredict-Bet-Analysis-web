@@ -24,12 +24,23 @@
       })();
     </script>
 
-    <!-- Google AdSense (GLOBAL – required for review) -->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4138787612808412"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Google AdSense (Web only — not allowed in Android WebView) -->
+    <script>
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isAndroid = ua.includes('ProPredictAndroid')
+          || window.location.search.includes('platform=android')
+          || typeof window.Android !== 'undefined';
+        try { if (window.sessionStorage.getItem('propredict:platform') === 'android') isAndroid = true; } catch(e) {}
+        if (!isAndroid) {
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4138787612808412';
+          s.crossOrigin = 'anonymous';
+          document.head.appendChild(s);
+        }
+      })();
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" />
@@ -111,27 +122,44 @@
     </script>
 
     <!-- ========================= -->
-    <!-- OneSignal Web Push -->
+    <!-- OneSignal Web Push (Web only — NEVER inside Android WebView) -->
     <!-- ========================= -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function (OneSignal) {
-        await OneSignal.init({
-          appId: "31fc0b24-9d06-42ae-8eae-d224f781a97a",
-          notifyButton: {
-            enable: true,
-            size: "small",
-            position: "bottom-right",
-          },
-          welcomeNotification: {
-            title: "ProPredict",
-            message: "You'll now receive alerts for new predictions & match goals!",
-          },
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isAndroid = ua.includes('ProPredictAndroid')
+          || window.location.search.includes('platform=android')
+          || typeof window.Android !== 'undefined';
+        try { if (window.sessionStorage.getItem('propredict:platform') === 'android') isAndroid = true; } catch(e) {}
+
+        if (isAndroid) {
+          console.log('[OneSignal] Android detected — skipping Web SDK');
+          return;
+        }
+
+        // Load OneSignal Web SDK only for real browsers
+        var s = document.createElement('script');
+        s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+        s.defer = true;
+        document.head.appendChild(s);
+
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function (OneSignal) {
+          await OneSignal.init({
+            appId: "31fc0b24-9d06-42ae-8eae-d224f781a97a",
+            notifyButton: {
+              enable: true,
+              size: "small",
+              position: "bottom-right",
+            },
+            welcomeNotification: {
+              title: "ProPredict",
+              message: "You'll now receive alerts for new predictions & match goals!",
+            },
+          });
+          OneSignal.User.addTag("platform", "web");
         });
-        // Tag web users so backend can skip them when Android app is installed
-        OneSignal.User.addTag("platform", "web");
-      });
+      })();
     </script>
 
     <!-- Google Analytics (GA4) -->
