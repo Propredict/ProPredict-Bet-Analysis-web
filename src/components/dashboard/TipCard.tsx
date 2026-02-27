@@ -201,8 +201,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     
     return (
       <div className={getTierCardClass(tip.tier, isLocked)}>
-        {/* Card Header */}
-        <div className="p-3 sm:p-4">
+        {/* Header: Badges */}
+        <div className="p-3 sm:p-4 pb-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               {getTierBadge(tip.tier)}
@@ -210,54 +210,47 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 {tip.league}
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              {getStatusBadge()}
-            </div>
+            {getStatusBadge()}
           </div>
+        </div>
 
-          {/* Match Title */}
-          <h3 className="font-bold text-sm sm:text-base text-foreground mb-3">
+        {/* Match Title Section */}
+        <div className="px-3 sm:px-4 pb-3">
+          <h3 className="font-bold text-sm sm:text-base text-foreground">
             {tip.homeTeam} vs {tip.awayTeam}
           </h3>
+        </div>
 
-          {/* Prediction Details - Blurred */}
-          <div className="p-3 bg-muted/30 rounded-lg border border-border/50 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Prediction</span>
-              <span className="blur-sm opacity-50 font-medium text-sm">{tip.prediction}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Value</span>
-              <span className="blur-sm opacity-50 font-bold text-primary">{tip.odds.toFixed(2)}</span>
-            </div>
+        {/* Divider */}
+        <div className="mx-3 sm:mx-4 h-px bg-border/40" />
+
+        {/* Prediction Details - Blurred */}
+        <div className="p-3 sm:p-4 space-y-1">
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-xs text-muted-foreground">Prediction</span>
+            <span className="blur-sm opacity-50 font-medium text-sm">{tip.prediction}</span>
+          </div>
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-xs text-muted-foreground">Value</span>
+            <span className="blur-sm opacity-50 font-bold text-primary">{tip.odds.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Card Footer - Unlock Button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-3 sm:p-4 pt-0">
-            {/* Android dual-button layout for Pro/Exclusive content */}
             {unlockMethod.type === "android_watch_ad_or_pro" ? (
               <div className="flex flex-col gap-1.5">
                 <Button
                   size="sm"
                   className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0"
                   disabled={isUnlocking}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUnlockClick();
-                  }}
+                  onClick={(e) => { e.stopPropagation(); onUnlockClick(); }}
                 >
                   {isUnlocking ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Watching ad...
-                    </>
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</>
                   ) : (
-                    <>
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {unlockMethod.primaryMessage}
-                    </>
+                    <><Sparkles className="h-3.5 w-3.5" />{unlockMethod.primaryMessage}</>
                   )}
                 </Button>
                 <Button
@@ -269,10 +262,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                       : "text-muted-foreground hover:text-foreground"
                   )}
                   variant={getIsAndroidApp() ? "default" : "ghost"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSecondaryClick();
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleSecondaryClick(); }}
                 >
                   <Star className="h-3 w-3 mr-1 fill-current" />
                   {unlockMethod.secondaryMessage}
@@ -284,21 +274,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 size="sm"
                 className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())}
                 disabled={isUnlocking}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUnlockClick();
-                }}
+                onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}
               >
                 {isUnlocking ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Watching ad...
-                  </>
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</>
                 ) : (
-                  <>
-                    {Icon && <Icon className="h-3.5 w-3.5" />}
-                    {getUnlockButtonText(unlockMethod)}
-                  </>
+                  <>{Icon && <Icon className="h-3.5 w-3.5" />}{getUnlockButtonText(unlockMethod)}</>
                 )}
               </Button>
             )}
@@ -311,8 +292,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   // Unlocked state
   return (
     <div className={getTierCardClass(tip.tier, isLocked)}>
-      {/* Card Header */}
-      <div className="p-3 sm:p-4">
+      {/* Header: Badges */}
+      <div className="p-3 sm:p-4 pb-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {getTierBadge(tip.tier)}
@@ -320,28 +301,31 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
               {tip.league}
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            {getStatusBadge()}
-          </div>
+          {getStatusBadge()}
         </div>
+      </div>
 
-        {/* Match Title */}
-        <h3 className="font-bold text-sm sm:text-base text-foreground mb-3">
+      {/* Match Title Section */}
+      <div className="px-3 sm:px-4 pb-3">
+        <h3 className="font-bold text-sm sm:text-base text-foreground">
           {tip.homeTeam} vs {tip.awayTeam}
         </h3>
+      </div>
 
-        {/* Prediction Details - Revealed */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between py-2 border-b border-border/30">
-            <span className="text-xs text-muted-foreground">Prediction</span>
-            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs px-2">
-              {tip.prediction}
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-muted-foreground">Value</span>
-            <span className="font-bold text-base text-primary">{tip.odds.toFixed(2)}</span>
-          </div>
+      {/* Divider */}
+      <div className="mx-3 sm:mx-4 h-px bg-border/40" />
+
+      {/* Prediction Details - Revealed */}
+      <div className="p-3 sm:p-4 space-y-1">
+        <div className="flex items-center justify-between py-1.5">
+          <span className="text-xs text-muted-foreground">Prediction</span>
+          <Badge className="bg-primary/20 text-primary border-primary/30 text-xs px-2">
+            {tip.prediction}
+          </Badge>
+        </div>
+        <div className="flex items-center justify-between py-1.5">
+          <span className="text-xs text-muted-foreground">Value</span>
+          <span className="font-bold text-base text-primary">{tip.odds.toFixed(2)}</span>
         </div>
       </div>
 
