@@ -70,8 +70,17 @@ export function useFavorites() {
       setIsLoading(false);
     }
 
+    // Refetch when app comes back to foreground (e.g. user reopens the app)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && userId) {
+        void fetchFavoritesByUser(userId);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       isMounted.current = false;
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [authLoading, user?.id, fetchFavoritesByUser]);
 
