@@ -35,6 +35,21 @@ serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+  const purgeInvalidPlayerIds = async (invalidIds: string[]) => {
+    if (!invalidIds.length) return;
+    const { error } = await supabase
+      .from("users_push_tokens")
+      .delete()
+      .in("onesignal_player_id", invalidIds);
+
+    if (error) {
+      console.error("[check-goals] Failed to purge invalid player IDs:", error.message);
+      return;
+    }
+
+    console.log(`[check-goals] Purged ${invalidIds.length} invalid player IDs`);
+  };
+
   try {
     // ================= FETCH LIVE MATCHES =================
     const apiRes = await fetch(
@@ -228,9 +243,17 @@ serve(async (req) => {
       );
 
       const osResult = await osRes.json();
+      const invalidPlayerIds = Array.isArray(osResult?.errors?.invalid_player_ids)
+        ? (osResult.errors.invalid_player_ids as string[])
+        : [];
+
+      if (invalidPlayerIds.length > 0) {
+        await purgeInvalidPlayerIds(invalidPlayerIds);
+      }
 
       if (osRes.ok) {
-        totalNotifications += playerIds.length;
+        const delivered = typeof osResult?.recipients === "number" ? osResult.recipients : 0;
+        totalNotifications += delivered;
         console.log(`[check-goals] Notification sent for match ${matchId}:`, JSON.stringify(osResult));
       } else {
         console.error(`[check-goals] OneSignal error for match ${matchId}:`, JSON.stringify(osResult));

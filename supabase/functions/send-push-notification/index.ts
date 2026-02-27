@@ -60,6 +60,25 @@ function mapPlan(dbPlan: string | null): string {
   return "free";
 }
 
+async function purgeInvalidPlayerIds(
+  supabase: ReturnType<typeof createClient>,
+  invalidIds: string[],
+): Promise<void> {
+  if (!invalidIds.length) return;
+
+  const { error } = await supabase
+    .from("users_push_tokens")
+    .delete()
+    .in("onesignal_player_id", invalidIds);
+
+  if (error) {
+    console.error("[send-push] Failed to purge invalid player IDs:", error.message);
+    return;
+  }
+
+  console.log(`[send-push] Purged ${invalidIds.length} invalid player IDs`);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -219,6 +238,14 @@ serve(async (req) => {
       });
 
       const osResult = await osResponse.json();
+      const invalidPlayerIds = Array.isArray((osResult as any)?.errors?.invalid_player_ids)
+        ? ((osResult as any).errors.invalid_player_ids as string[])
+        : [];
+
+      if (invalidPlayerIds.length > 0) {
+        await purgeInvalidPlayerIds(supabase, invalidPlayerIds);
+      }
+
       console.log(`[send-push] OneSignal response (${plan}):`, JSON.stringify(osResult));
       results.push({ plan, count: ids.length, onesignal: osResult });
 
