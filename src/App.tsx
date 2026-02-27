@@ -136,8 +136,9 @@ const App = () => {
             return;
           }
 
-          const { data } = await supabase.auth.getUser();
-          const user = data.user;
+          // Use getSession (local, no network) to avoid race conditions with auth init
+          const { data: { session } } = await supabase.auth.getSession();
+          const user = session?.user;
           if (!user) return;
 
           await supabase.from("users_push_tokens").upsert(
