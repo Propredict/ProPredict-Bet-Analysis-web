@@ -101,10 +101,10 @@ serve(async (req) => {
 
     /* ── Build nav_path based on tier ── */
     const tierRouteMap: Record<string, string> = {
-      premium: type === "tip" ? "premium-tips" : "premium-tickets",
-      exclusive: type === "tip" ? "exclusive-tips" : "exclusive-tickets",
-      daily: type === "tip" ? "daily-tips" : "daily-tickets",
-      free: type === "tip" ? "daily-tips" : "daily-tickets",
+      premium: type === "tip" ? "premium-analysis" : "premium-predictions",
+      exclusive: type === "tip" ? "pro-analysis" : "pro-predictions",
+      daily: type === "tip" ? "daily-analysis" : "daily-predictions",
+      free: type === "tip" ? "daily-analysis" : "daily-predictions",
     };
     const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
     const navPath = `/${route}?highlight=${record.id}&plan_required=${contentTier}`;

@@ -5,8 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+
+/** Redirect that preserves query params (critical for push notification deep links) */
+function NavigateWithSearch({ to }: { to: string }) {
+  const location = useLocation();
+  return <Navigate to={to + location.search} replace />;
+}
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
@@ -177,17 +183,17 @@ const App = () => {
 
                     {/* Tips */}
                     <Route path="/daily-analysis" element={<DailyTips />} />
-                    <Route path="/daily-tips" element={<Navigate to="/daily-analysis" replace />} />
+                    <Route path="/daily-tips" element={<NavigateWithSearch to="/daily-analysis" />} />
                     <Route path="/daily-predictions" element={<DailyTickets />} />
-                    <Route path="/daily-tickets" element={<Navigate to="/daily-predictions" replace />} />
+                    <Route path="/daily-tickets" element={<NavigateWithSearch to="/daily-predictions" />} />
                     <Route path="/pro-analysis" element={<ExclusiveTips />} />
-                    <Route path="/exclusive-tips" element={<Navigate to="/pro-analysis" replace />} />
+                    <Route path="/exclusive-tips" element={<NavigateWithSearch to="/pro-analysis" />} />
                     <Route path="/pro-predictions" element={<ExclusiveTickets />} />
-                    <Route path="/exclusive-tickets" element={<Navigate to="/pro-predictions" replace />} />
+                    <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/pro-predictions" />} />
                     <Route path="/premium-analysis" element={<PremiumTips />} />
-                    <Route path="/premium-tips" element={<Navigate to="/premium-analysis" replace />} />
+                    <Route path="/premium-tips" element={<NavigateWithSearch to="/premium-analysis" />} />
                     <Route path="/premium-predictions" element={<PremiumTickets />} />
-                    <Route path="/premium-tickets" element={<Navigate to="/premium-predictions" replace />} />
+                    <Route path="/premium-tickets" element={<NavigateWithSearch to="/premium-predictions" />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
                     <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                     <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
