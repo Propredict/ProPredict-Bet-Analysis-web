@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const SESSION_KEY = "propredict:tips_popup_shown";
+const SESSION_KEY = "propredict:tips_popup_shown_v2";
 
 export function DashboardTipsPopup() {
   const [open, setOpen] = useState(false);
