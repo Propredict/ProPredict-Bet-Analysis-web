@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { Zap, RefreshCw, Star, Search, Play, Trophy, BarChart3, Clock, CheckCircle, Heart, ChevronDown, ChevronRight, List, LayoutGrid, Volume2, Bell, XCircle } from "lucide-react";
 import { useMemo, useState, useEffect, useCallback, Fragment, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
-import { NativeAdSlot } from "@/components/ads/NativeAdSlot";
+
 
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
@@ -32,7 +33,15 @@ type DateMode = "yesterday" | "today" | "tomorrow";
 /* -------------------- PAGE -------------------- */
 
 export default function LiveScores() {
-  console.log("🔥 LiveScores mounted");
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("live_scores");
+    }
+  }, [maybeShowInterstitial]);
 
   
   const navigate = useNavigate();
@@ -548,10 +557,6 @@ export default function LiveScores() {
                   elements.push(<AdSlot key={`ad-${league}`} />);
                 }
 
-                // Insert native in-feed ad after the league group that crosses the 8th match
-                if (startCount < 8 && matchCounter >= 8) {
-                  elements.push(<NativeAdSlot key={`native-ad-${league}`} />);
-                }
 
                 return elements;
               });
