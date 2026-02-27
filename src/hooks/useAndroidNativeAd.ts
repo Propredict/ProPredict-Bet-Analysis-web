@@ -35,5 +35,10 @@ export function useAndroidNativeAd() {
 
     const shouldShow = AD_ROUTES.has(pathname);
     bridge.toggleNativeAd(shouldShow);
+
+    // On unmount or route change away, always hide
+    return () => {
+      bridge.toggleNativeAd(false);
+    };
   }, [pathname, isAndroid]);
 }
