@@ -168,6 +168,17 @@ export function useOneSignalPlayerSync() {
         await upsertPlayerToken(playerIdToSync);
       }
 
+      // Sync OneSignal identity with Supabase user ID on app start (existing session)
+      if (session?.user) {
+        try {
+          const w = window as any;
+          if (w.isAndroidApp && w.Android?.syncUser) {
+            w.Android.syncUser(session.user.id);
+            console.log("[OneSignal] SYNC USER → Android (existing session):", session.user.id);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
       // ── Ensure OneSignal subscription is active after auth ──
       // In Play builds, system permission may be auto-granted but subscription
       // stays "unsubscribed" because optIn() was never called.
