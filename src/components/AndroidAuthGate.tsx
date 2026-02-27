@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
@@ -7,11 +7,12 @@ import { Loader2 } from "lucide-react";
 /**
  * Android-only auth gate.
  * On Android WebView:
- *   - authLoading → full-screen splash/spinner
+ *   - authLoading → full-screen splash/spinner (max 3s)
  *   - no user     → redirect to /login
  *   - user exists → render children
  *
  * On web: always renders children (guest-friendly).
+ * CRITICAL: Never blocks on OneSignal or any push-related state.
  */
 
 const AUTH_ROUTES = ["/login", "/forgot-password", "/reset-password"];
@@ -28,14 +29,24 @@ export function AndroidAuthGate({ children }: { children: ReactNode }) {
 function AndroidGateInner({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const [timedOut, setTimedOut] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Safety: never show splash for more than 3 seconds
+  useEffect(() => {
+    if (loading && !timedOut) {
+      timerRef.current = setTimeout(() => setTimedOut(true), 3000);
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [loading, timedOut]);
 
   // Allow auth-related pages to render without redirect loops
   if (AUTH_ROUTES.includes(location.pathname)) {
     return <>{children}</>;
   }
 
-  // Splash while auth is resolving
-  if (loading) {
+  // Splash while auth is resolving (max 3s)
+  if (loading && !timedOut) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <img
