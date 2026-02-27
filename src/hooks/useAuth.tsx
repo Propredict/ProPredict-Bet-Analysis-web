@@ -80,11 +80,11 @@ function useProvideAuthState(): AuthContextValue {
       // resolve loading=false to prevent infinite spinner.
       const authTimeout = setTimeout(() => {
         if (!initDoneRef.current && isMountedRef.current) {
-          console.warn("[Auth] Timeout — resolving as guest after 8s");
+          console.warn("[Auth] Timeout — resolving as guest after 3s");
           initDoneRef.current = true;
           setLoading(false);
         }
-      }, 8000);
+      }, 3000);
 
       try {
         // getSession reads from localStorage — fast, but may be expired.

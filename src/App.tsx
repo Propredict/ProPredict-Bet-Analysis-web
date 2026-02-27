@@ -77,6 +77,16 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  // 🛡️ Global safety net: catch unhandled async errors so UI never silently breaks
+  useEffect(() => {
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      console.error("[App] Unhandled promise rejection:", event.reason);
+      event.preventDefault(); // Prevent crash
+    };
+    window.addEventListener("unhandledrejection", handleRejection);
+    return () => window.removeEventListener("unhandledrejection", handleRejection);
+  }, []);
+
   // 🔔 OneSignal push click → deep link navigation
   useEffect(() => {
     if (typeof window === "undefined") return;
