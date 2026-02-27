@@ -15,13 +15,13 @@ import { useCallback } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const COOLDOWN_KEY = "propredict:interstitial_ts";
-const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
+const COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes between interstitials
 const LOGIN_GRACE_KEY = "propredict:login_ts";
 const LOGIN_GRACE_MS = 20 * 1000; // 20s after login — no interstitials (protects OneSignal permission dialog)
 
 function isInCooldown(): boolean {
   try {
-    const ts = window.sessionStorage?.getItem(COOLDOWN_KEY);
+    const ts = localStorage.getItem(COOLDOWN_KEY);
     if (!ts) return false;
     return Date.now() - Number(ts) < COOLDOWN_MS;
   } catch {
@@ -31,7 +31,7 @@ function isInCooldown(): boolean {
 
 function markShown(): void {
   try {
-    window.sessionStorage?.setItem(COOLDOWN_KEY, String(Date.now()));
+    localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
   } catch {
     // ignore
   }
