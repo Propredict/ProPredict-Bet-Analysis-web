@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const SESSION_KEY = "propredict:tips_popup_shown_v2";
+const SESSION_KEY = "propredict:tips_popup_shown_v3";
 
 export function DashboardTipsPopup() {
   const [open, setOpen] = useState(false);
@@ -39,9 +39,9 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm p-0 gap-0 border-border bg-background overflow-hidden">
+      <DialogContent className="max-w-sm p-0 gap-0 border-border !bg-white dark:!bg-slate-50 overflow-hidden [&>button]:hidden">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-5 text-center">
+        <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 text-center">
           <button
             onClick={() => setOpen(false)}
             className="absolute top-3 right-3 p-1 rounded-full hover:bg-muted/50 transition-colors"
@@ -51,10 +51,10 @@ export function DashboardTipsPopup() {
           <div className="inline-flex p-2.5 rounded-xl bg-primary/20 mb-3">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <DialogTitle className="text-base font-bold text-foreground">
+          <DialogTitle className="text-base font-bold text-slate-900">
             Today's Predictions Are Ready!
           </DialogTitle>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-slate-500 mt-1">
             Fresh AI-powered analysis waiting for you
           </p>
         </div>
@@ -69,8 +69,8 @@ export function DashboardTipsPopup() {
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-foreground">Daily Tips</p>
-              <p className="text-[10px] text-muted-foreground">Free predictions</p>
+              <p className="text-sm font-semibold text-slate-900">Daily Tips</p>
+              <p className="text-[10px] text-slate-500">Free predictions</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
           </button>
@@ -83,8 +83,8 @@ export function DashboardTipsPopup() {
               <Star className="h-4 w-4 text-amber-500" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-foreground">Exclusive Tips</p>
-              <p className="text-[10px] text-muted-foreground">Higher confidence</p>
+              <p className="text-sm font-semibold text-slate-900">Exclusive Tips</p>
+              <p className="text-[10px] text-slate-500">Higher confidence</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-amber-500 transition-colors" />
           </button>
@@ -97,8 +97,8 @@ export function DashboardTipsPopup() {
               <Crown className="h-4 w-4 text-fuchsia-500" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-foreground">Premium Tips</p>
-              <p className="text-[10px] text-muted-foreground">Members only</p>
+              <p className="text-sm font-semibold text-slate-900">Premium Tips</p>
+              <p className="text-[10px] text-slate-500">Members only</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-fuchsia-500 transition-colors" />
           </button>
@@ -108,7 +108,7 @@ export function DashboardTipsPopup() {
         <div className="px-4 pb-4">
           <Button
             variant="ghost"
-            className="w-full text-xs text-muted-foreground"
+            className="w-full text-xs text-slate-400"
             onClick={() => setOpen(false)}
           >
             Maybe Later
