@@ -66,12 +66,22 @@ export function useFavorites() {
   useEffect(() => {
     isMounted.current = true;
 
+    // Safety timeout: never stay loading for more than 6 seconds
+    const loadingTimeout = setTimeout(() => {
+      if (isMounted.current && isLoading) {
+        console.warn("[Favorites] Loading safety timeout — forcing isLoading=false");
+        hasFetchedOnce.current = true;
+        setIsLoading(false);
+      }
+    }, 6000);
+
     if (authLoading) {
       // Keep existing UI stable during transient token refreshes.
       // Avoid forcing spinner forever if data was already loaded once.
       if (!hasFetchedOnce.current) setIsLoading(true);
       return () => {
         isMounted.current = false;
+        clearTimeout(loadingTimeout);
       };
     }
 
@@ -112,6 +122,7 @@ export function useFavorites() {
 
     return () => {
       isMounted.current = false;
+      clearTimeout(loadingTimeout);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [authLoading, user?.id, fetchFavoritesByUser]);
