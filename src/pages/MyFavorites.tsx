@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Star, Trophy, Loader2 } from "lucide-react";
+import { Star, Trophy, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,8 @@ export default function MyFavorites() {
     statusFilter: "all",
   });
 
-  const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading } = useFavorites();
-  
+  const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading, refetch } = useFavorites();
+  const [refreshing, setRefreshing] = useState(false);
 
   // Enable goal/red card alerts on Favorites page
   const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");
@@ -37,6 +38,12 @@ export default function MyFavorites() {
     );
   }, [favoriteMatches]);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
   // Only show loading on initial mount, not on re-fetches
   const isInitialLoading = matchesLoading && matches.length === 0 && favoritesLoading;
 
@@ -51,14 +58,25 @@ export default function MyFavorites() {
   return (
     <div className="section-gap animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-pink-500/20 via-pink-500/10 to-transparent border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
-        <div className="p-1.5 rounded-md bg-pink-500/20">
-          <Star className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400 fill-pink-400" />
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-500/20 via-pink-500/10 to-transparent border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-md bg-pink-500/20">
+            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400 fill-pink-400" />
+          </div>
+          <div>
+            <h1 className="text-sm sm:text-base font-bold text-foreground">My Favorites</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{favoriteMatches.length} saved matches</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-sm sm:text-base font-bold text-foreground">My Favorites</h1>
-          <p className="text-[9px] sm:text-[10px] text-muted-foreground">{favoriteMatches.length} saved matches</p>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="h-8 w-8"
+        >
+          <RefreshCw className={cn("h-4 w-4 text-muted-foreground", refreshing && "animate-spin")} />
+        </Button>
       </div>
 
       {/* FAVORITES */}
