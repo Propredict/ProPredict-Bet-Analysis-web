@@ -107,7 +107,7 @@ export function DashboardTipsPopup() {
         {/* Dismiss */}
         <div className="px-4 pb-4 pt-1">
           <button
-            className="w-full py-2 text-xs text-slate-400 hover:text-slate-500 transition-colors"
+            className="w-full py-2 text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
             onClick={() => setOpen(false)}
           >
             Maybe Later
