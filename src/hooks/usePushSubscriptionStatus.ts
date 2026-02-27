@@ -79,25 +79,16 @@ export function determinePushState(): PushState {
 /**
  * Sync localStorage push flags with the real native subscription status.
  */
+/**
+ * Query native push state WITHOUT modifying localStorage preferences.
+ * User preferences (goal_enabled, tips_enabled) must only change from
+ * explicit user actions (Settings toggles or Modal buttons), never
+ * from an automatic background sync that might read stale SDK state.
+ */
 export function syncPushStatusFromNative(): PushState {
   const state = determinePushState();
   console.log("[PushStatus] Determined state:", state);
-
-  if (state === "no_permission" || state === "opted_out") {
-    const goalWasEnabled = localStorage.getItem("goal_enabled") === "true";
-    const tipsWasEnabled = localStorage.getItem("tips_enabled") === "true";
-
-    if (goalWasEnabled || tipsWasEnabled) {
-      console.log("[PushStatus] Syncing localStorage flags to false (state:", state, ")");
-      localStorage.setItem("goal_enabled", "false");
-      localStorage.setItem("tips_enabled", "false");
-
-      if (!localStorage.getItem("push_disabled_at")) {
-        localStorage.setItem("push_disabled_at", String(Date.now()));
-      }
-    }
-  }
-
+  // NO localStorage overwrites — only report state for UI display
   return state;
 }
 

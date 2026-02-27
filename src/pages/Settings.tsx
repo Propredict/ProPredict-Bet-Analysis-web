@@ -35,14 +35,9 @@ const Settings = () => {
   const [goalEnabled, setGoalEnabled] = useState(() => localStorage.getItem("goal_enabled") === "true");
   const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
 
-  // Sync UI toggles with real native push status on mount
+  // Show real native push status for banners — but DON'T override user preferences.
+  // User toggles are the source of truth; native state is only used for info banners.
   const pushState = usePushSubscriptionStatus();
-  useEffect(() => {
-    if (pushState === "no_permission" || pushState === "opted_out") {
-      setGoalEnabled(false);
-      setTipsEnabled(false);
-    }
-  }, [pushState]);
 
   const handleGoalToggle = (checked: boolean) => {
     setGoalEnabled(checked);
