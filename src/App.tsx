@@ -99,7 +99,6 @@ const App = () => {
         const navPath = data?.nav_path;
         if (!navPath) return;
         console.log("[OneSignal] Push click nav_path:", navPath);
-        // Use in-app navigation (works inside WebView without opening Chrome)
         if (window.location.pathname + window.location.search === navPath) return;
         window.history.pushState({}, "", navPath);
         window.dispatchEvent(new PopStateEvent("popstate"));
@@ -117,7 +116,6 @@ const App = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Android uses native OneSignal SDK via useOneSignalPlayerSync — never run web sync
     const w = window as any;
     const isAndroid = typeof w.Android !== 'undefined'
       || w.isAndroidApp === true
@@ -136,7 +134,6 @@ const App = () => {
             return;
           }
 
-          // Use getSession (local, no network) to avoid race conditions with auth init
           const { data: { session } } = await supabase.auth.getSession();
           const user = session?.user;
           if (!user) return;
