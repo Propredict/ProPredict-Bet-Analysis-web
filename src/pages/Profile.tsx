@@ -30,6 +30,7 @@ const Profile = () => {
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   
   const [profileLoading, setProfileLoading] = useState(false);
+  const profileFetchedOnce = useRef(false);
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
@@ -74,7 +75,10 @@ const Profile = () => {
 
   useEffect(() => {
     if (user) {
-      setProfileLoading(true);
+      // Only show full-page loading on first fetch, not on token refreshes
+      if (!profileFetchedOnce.current) {
+        setProfileLoading(true);
+      }
       fetchProfile();
       fetchSubscription();
     }
@@ -100,6 +104,7 @@ const Profile = () => {
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
     } finally {
+      profileFetchedOnce.current = true;
       setProfileLoading(false);
     }
   };
@@ -259,7 +264,7 @@ const Profile = () => {
     }
   };
 
-  if (authLoading || profileLoading) {
+  if ((authLoading && !profileFetchedOnce.current) || profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
