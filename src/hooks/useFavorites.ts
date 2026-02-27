@@ -15,9 +15,11 @@ export function useFavorites() {
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const hasFetchedOnce = useRef(false);
   const isMounted = useRef(true);
+  const lastKnownUserIdRef = useRef<string | null>(null);
 
   const fetchFavoritesByUser = useCallback(async (userId: string) => {
     try {
+      lastKnownUserIdRef.current = userId;
       const { data, error } = await supabase
         .from("favorites")
         .select("match_id")
@@ -42,33 +44,62 @@ export function useFavorites() {
   }, []);
 
   const getCurrentUserId = useCallback(async (): Promise<string | null> => {
-    if (user?.id) return user.id;
+    if (user?.id) {
+      lastKnownUserIdRef.current = user.id;
+      return user.id;
+    }
+
+    if (lastKnownUserIdRef.current) return lastKnownUserIdRef.current;
 
     const {
       data: { user: currentUser },
     } = await supabase.auth.getUser();
 
-    return currentUser?.id ?? null;
+    if (currentUser?.id) {
+      lastKnownUserIdRef.current = currentUser.id;
+      return currentUser.id;
+    }
+
+    return null;
   }, [user?.id]);
 
   useEffect(() => {
     isMounted.current = true;
 
     if (authLoading) {
-      setIsLoading(true);
+      // Keep existing UI stable during transient token refreshes.
+      // Avoid forcing spinner forever if data was already loaded once.
+      if (!hasFetchedOnce.current) setIsLoading(true);
       return () => {
         isMounted.current = false;
       };
     }
 
-    const userId = user?.id ?? null;
+    const userId = user?.id ?? lastKnownUserIdRef.current;
 
     if (userId) {
       if (!hasFetchedOnce.current) setIsLoading(true);
       void fetchFavoritesByUser(userId);
     } else {
-      setFavorites(new Set());
-      setIsLoading(false);
+      // Protect against transient auth null: verify once with Supabase before clearing.
+      void (async () => {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+
+        if (!isMounted.current) return;
+
+        if (currentUser?.id) {
+          lastKnownUserIdRef.current = currentUser.id;
+          if (!hasFetchedOnce.current) setIsLoading(true);
+          await fetchFavoritesByUser(currentUser.id);
+          return;
+        }
+
+        lastKnownUserIdRef.current = null;
+        setFavorites(new Set());
+        setIsLoading(false);
+      })();
     }
 
     // Refetch when app comes back to foreground (e.g. user reopens the app)
