@@ -105,16 +105,6 @@ const Index = () => {
           </section>
         )}
 
-        {/* Model Analytics Charts – Web only (heavy recharts) */}
-        {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ModelAccuracyTrendChart />
-              <AIAdoptionChart />
-            </div>
-          </Suspense>
-        )}
-
         {/* Social Proof Section */}
         <Suspense fallback={<LazyFallback />}>
           <DashboardSocialProof />
@@ -153,6 +143,16 @@ const Index = () => {
         <Suspense fallback={<LazyFallback />}>
           <DashboardAIPredictions />
         </Suspense>
+
+        {/* Model Analytics Charts – Web only (after AI Predictions) */}
+        {!isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ModelAccuracyTrendChart />
+              <AIAdoptionChart />
+            </div>
+          </Suspense>
+        )}
 
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />
