@@ -154,6 +154,12 @@ export function useOneSignalPlayerSync() {
         }
 
         if (event === "SIGNED_OUT") {
+          // Reset native OneSignal identity so next login isn't blocked
+          try {
+            (window as any).Android?.logoutOneSignal?.();
+            console.log("[OneSignal] 🔓 Native logoutOneSignal called");
+          } catch (e) { /* ignore */ }
+
           lastSyncedUserIdRef.current = null;
           lastSyncedPlayerIdRef.current = null;
           identitySyncedRef.current = false;
