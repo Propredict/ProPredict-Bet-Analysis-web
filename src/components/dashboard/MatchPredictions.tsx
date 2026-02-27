@@ -74,21 +74,21 @@ export function MatchPredictions() {
   ];
 
   const getTabStyles = (tabId: string, isActive: boolean) => {
-    const baseStyles = "relative py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-300 border";
+    const baseStyles = "relative py-3.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2";
     
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "border-white/50 bg-white/15 shadow-[0_0_10px_rgba(255,255,255,0.15)]")
-          : cn(baseStyles, "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40");
+          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.25)]")
+          : cn(baseStyles, "border-primary/30 bg-primary/8 hover:bg-primary/15 hover:border-primary/50");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "border-amber-500 bg-amber-500/15 shadow-[0_0_10px_rgba(245,158,11,0.2)]")
-          : cn(baseStyles, "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/50");
+          ? cn(baseStyles, "border-amber-500 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.25)]")
+          : cn(baseStyles, "border-amber-500/30 bg-amber-500/8 hover:bg-amber-500/15 hover:border-amber-500/50");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "border-fuchsia-500 bg-fuchsia-500/15 shadow-[0_0_10px_rgba(217,70,239,0.2)]")
-          : cn(baseStyles, "border-fuchsia-500/30 bg-fuchsia-500/5 hover:bg-fuchsia-500/10 hover:border-fuchsia-500/50");
+          ? cn(baseStyles, "border-fuchsia-500 bg-fuchsia-500/20 shadow-[0_0_15px_rgba(217,70,239,0.25)]")
+          : cn(baseStyles, "border-fuchsia-500/30 bg-fuchsia-500/8 hover:bg-fuchsia-500/15 hover:border-fuchsia-500/50");
       default:
         return cn(baseStyles, "border-border");
     }
@@ -96,7 +96,7 @@ export function MatchPredictions() {
 
   const getTextColor = (tabId: string) => {
     switch (tabId) {
-      case "daily": return "text-white";
+      case "daily": return "text-primary";
       case "exclusive": return "text-amber-400";
       case "premium": return "text-fuchsia-400";
       default: return "text-muted-foreground";
@@ -105,7 +105,7 @@ export function MatchPredictions() {
 
   const getSubtitleColor = (tabId: string) => {
     switch (tabId) {
-      case "daily": return "text-white/60";
+      case "daily": return "text-primary/70";
       case "exclusive": return "text-amber-400/70";
       case "premium": return "text-fuchsia-400/70";
       default: return "text-muted-foreground";
@@ -134,7 +134,7 @@ export function MatchPredictions() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-secondary/30">
+      <div className="grid grid-cols-3 gap-2.5 p-1.5 rounded-xl bg-secondary/30">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           const count = todayTipCountByTier(tab.id);
@@ -147,18 +147,18 @@ export function MatchPredictions() {
               onClick={() => setActiveTab(tab.id as TabType)}
               className={getTabStyles(tab.id, isActive)}
             >
-              <div className="flex flex-col items-center gap-0.5">
-                <div className="flex items-center gap-1.5">
-                  <tab.icon className={cn("h-3.5 w-3.5", textColor)} />
-                  <span className={cn("font-semibold", textColor)}>{tab.label}</span>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <tab.icon className={cn("h-4 w-4", textColor)} />
+                  <span className={cn("font-bold text-sm", textColor)}>{tab.label}</span>
                   <span className={cn(
-                    "text-[10px] px-1.5 py-0.5 rounded-md bg-muted/50",
+                    "text-[11px] font-bold px-2 py-0.5 rounded-md bg-muted/50",
                     textColor
                   )}>
                     {count}
                   </span>
                 </div>
-                <span className={cn("text-[9px]", subtitleColor)}>{tab.subtitle}</span>
+                <span className={cn("text-[10px] font-medium", subtitleColor)}>{tab.subtitle}</span>
               </div>
             </button>
           );
