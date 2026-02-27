@@ -52,8 +52,9 @@ export function useFavorites() {
     if (lastKnownUserIdRef.current) return lastKnownUserIdRef.current;
 
     const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
+    const currentUser = session?.user;
 
     if (currentUser?.id) {
       lastKnownUserIdRef.current = currentUser.id;

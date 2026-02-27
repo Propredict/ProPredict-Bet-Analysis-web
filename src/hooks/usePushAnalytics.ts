@@ -16,7 +16,8 @@ export async function logPushPreferenceChange(
   source: "settings" | "modal" = "settings"
 ) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) {
       console.log("[PushAnalytics] No user logged in, skipping log");
       return;
