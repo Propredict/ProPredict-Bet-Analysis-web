@@ -115,6 +115,17 @@ export function useOneSignalPlayerSync() {
           await upsertPlayerToken(playerIdToSync);
         }
 
+        // Sync OneSignal identity with Supabase user ID on login
+        if (session?.user) {
+          try {
+            const w = window as any;
+            if (w.isAndroidApp && w.Android?.syncUser) {
+              w.Android.syncUser(session.user.id);
+              console.log("[OneSignal] SYNC USER → Android:", session.user.id);
+            }
+          } catch (e) { /* ignore */ }
+        }
+
         // Ensure subscription is active after login (fixes Play build "unsubscribed" state)
         if (session?.user) {
           const goalEnabled = localStorage.getItem("goal_enabled") === "true";
