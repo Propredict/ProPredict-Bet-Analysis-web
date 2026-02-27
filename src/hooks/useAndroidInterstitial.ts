@@ -16,6 +16,8 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const COOLDOWN_KEY = "propredict:interstitial_ts";
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const LOGIN_GRACE_KEY = "propredict:login_ts";
+const LOGIN_GRACE_MS = 20 * 1000; // 20s after login — no interstitials (protects OneSignal permission dialog)
 
 function isInCooldown(): boolean {
   try {
@@ -43,6 +45,15 @@ export function useAndroidInterstitial() {
     // Gate: Don't show on login/auth pages
     const path = window.location.pathname;
     if (path === "/login" || path === "/forgot-password" || path === "/reset-password") return;
+
+    // Gate: Don't show during login grace period (protects OneSignal permission dialog from losing focus)
+    try {
+      const loginTs = localStorage.getItem(LOGIN_GRACE_KEY);
+      if (loginTs && Date.now() - Number(loginTs) < LOGIN_GRACE_MS) {
+        console.log("[Android] Interstitial blocked: login grace period active");
+        return;
+      }
+    } catch { /* ignore */ }
 
     // Gate 2: 5-minute cooldown between interstitials
     if (isInCooldown()) return;
