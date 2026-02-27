@@ -63,6 +63,9 @@ function useProvideAuthState(): AuthContextValue {
 
       // Track login event in Google Analytics
       if (event === "SIGNED_IN" && nextSession?.user) {
+        // Mark login timestamp so interstitial ads don't steal focus from OneSignal permission dialog
+        try { localStorage.setItem("propredict:login_ts", String(Date.now())); } catch {}
+
         if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
           (window as any).gtag("event", "login", {
             method: "Supabase",
