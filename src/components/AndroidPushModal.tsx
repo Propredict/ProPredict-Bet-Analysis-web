@@ -121,6 +121,7 @@ export const AndroidPushModal = forwardRef<HTMLDivElement>((_, ref) => {
 
   // ── Goal Handlers ──
   const handleGoalEnable = () => {
+    // requestPushPermission ONLY — login already happened via syncUser on SIGNED_IN
     window.Android?.requestPushPermission?.();
     localStorage.setItem("goal_enabled", "true");
     localStorage.setItem("goal_prompt_last_shown", String(Date.now()));
