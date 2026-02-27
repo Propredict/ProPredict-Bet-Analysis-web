@@ -15,8 +15,11 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
  */
 export function useOneSignalPlayerSync() {
   const isAndroid = getIsAndroidApp();
+  // Persist across re-renders; reset only on actual SIGNED_OUT
   const lastSyncedUserIdRef = useRef<string | null>(null);
   const lastSyncedPlayerIdRef = useRef<string | null>(null);
+  // Session-level guard: survives re-renders AND re-mounts within same page session
+  const identitySyncedRef = useRef(false);
 
   useEffect(() => {
     if (!isAndroid) return;
@@ -59,10 +62,16 @@ export function useOneSignalPlayerSync() {
       return true;
     };
 
-    // ── Sync OneSignal identity — ONLY on actual auth change ──
+    // ── Sync OneSignal identity — ONLY ONCE per session, ONLY on user change ──
     const syncOneSignalIdentity = (userId: string) => {
+      // Guard 1: already synced this exact user (survives re-renders)
       if (lastSyncedUserIdRef.current === userId) {
         console.log("[OneSignal] Identity already synced for:", userId);
+        return;
+      }
+      // Guard 2: session-level flag (prevents race between checkExisting + SIGNED_IN)
+      if (identitySyncedRef.current && lastSyncedUserIdRef.current === userId) {
+        console.log("[OneSignal] Identity sync already completed this session");
         return;
       }
 
@@ -70,7 +79,8 @@ export function useOneSignalPlayerSync() {
         if (window.Android?.syncUser) {
           window.Android.syncUser(userId);
           lastSyncedUserIdRef.current = userId;
-          console.log("[OneSignal] ✅ SYNC USER →", userId);
+          identitySyncedRef.current = true;
+          console.log("[OneSignal] ✅ SYNC USER (once) →", userId);
         } else {
           console.warn("[OneSignal] ⚠️ Android bridge not available for syncUser");
         }
@@ -103,10 +113,11 @@ export function useOneSignalPlayerSync() {
         localStorage.removeItem("tips_prompt_last_shown");
         setOneSignalTag("goal_alerts", null);
         setOneSignalTag("daily_tips", null);
-        // Force re-sync
+        // Force re-sync of token only (NOT identity — avoid login loop)
         lastSyncedPlayerIdRef.current = null;
-        lastSyncedUserIdRef.current = null;
-        console.log("[OneSignal] 🧹 Cleared push flags after reinstall");
+        // DO NOT reset lastSyncedUserIdRef or identitySyncedRef here
+        // The user hasn't changed, only the device token did
+        console.log("[OneSignal] 🧹 Cleared push flags after reinstall (identity preserved)");
       } else {
         console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
       }
@@ -124,7 +135,7 @@ export function useOneSignalPlayerSync() {
         if (event === "SIGNED_IN" && session?.user) {
           const playerId = localStorage.getItem("onesignal_player_id");
 
-          // Sync OneSignal identity only if user changed
+          // Sync OneSignal identity — guards inside prevent duplicate calls
           syncOneSignalIdentity(session.user.id);
 
           if (playerId) {
@@ -145,6 +156,7 @@ export function useOneSignalPlayerSync() {
         if (event === "SIGNED_OUT") {
           lastSyncedUserIdRef.current = null;
           lastSyncedPlayerIdRef.current = null;
+          identitySyncedRef.current = false;
         }
       }
     );
