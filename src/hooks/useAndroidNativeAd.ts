@@ -22,6 +22,7 @@ const AD_ROUTES = new Set([
   "/premium-predictions",
   "/winning-history",
   "/live-scores",
+  "/ai-predictions",
 ]);
 
 export function useAndroidNativeAd() {
