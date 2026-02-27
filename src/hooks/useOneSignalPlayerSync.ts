@@ -105,19 +105,30 @@ export function useOneSignalPlayerSync() {
       localStorage.setItem("onesignal_player_id", playerId);
 
       if (previousId && previousId !== playerId) {
-        console.log("[OneSignal] 🔄 Player ID CHANGED (reinstall detected):", previousId, "→", playerId);
-        // Reset push preference flags so modal re-appears
-        localStorage.removeItem("goal_enabled");
-        localStorage.removeItem("tips_enabled");
-        localStorage.removeItem("goal_prompt_last_shown");
-        localStorage.removeItem("tips_prompt_last_shown");
-        setOneSignalTag("goal_alerts", null);
-        setOneSignalTag("daily_tips", null);
-        // Force re-sync of token only (NOT identity — avoid login loop)
+        console.log("[OneSignal] 🔄 Player ID changed:", previousId, "→", playerId);
+
+        // IMPORTANT:
+        // Do NOT clear local push preferences on token rotation.
+        // OneSignal/Android may rotate subscription IDs without a real reinstall.
+        // Clearing flags here can incorrectly re-open onboarding modals and create
+        // "enabled → unsubscribed" loops.
+        const goalEnabled = localStorage.getItem("goal_enabled") === "true";
+        const tipsEnabled = localStorage.getItem("tips_enabled") === "true";
+
+        if (goalEnabled) setOneSignalTag("goal_alerts", "true");
+        if (tipsEnabled) setOneSignalTag("daily_tips", "true");
+        if (goalEnabled || tipsEnabled) {
+          try {
+            (window as any).Android?.enablePush?.();
+            console.log("[OneSignal] 🔔 Re-enabled push after token change");
+          } catch {
+            // ignore bridge errors
+          }
+        }
+
+        // Force re-sync of token only (NOT identity)
         lastSyncedPlayerIdRef.current = null;
-        // DO NOT reset lastSyncedUserIdRef or identitySyncedRef here
-        // The user hasn't changed, only the device token did
-        console.log("[OneSignal] 🧹 Cleared push flags after reinstall (identity preserved)");
+        console.log("[OneSignal] ♻️ Preserved local push preferences after token change");
       } else {
         console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
       }
