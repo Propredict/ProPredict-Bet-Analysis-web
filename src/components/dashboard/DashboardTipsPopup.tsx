@@ -39,7 +39,7 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm p-0 gap-0 border-primary/30 bg-card overflow-hidden">
+      <DialogContent className="max-w-sm p-0 gap-0 border-border bg-background overflow-hidden">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-5 text-center">
           <button
