@@ -66,18 +66,17 @@ export function useFavorites() {
   useEffect(() => {
     isMounted.current = true;
 
-    // Safety timeout: never stay loading for more than 6 seconds
+    // Safety timeout: never stay loading for more than 3 seconds
     const loadingTimeout = setTimeout(() => {
       if (isMounted.current && isLoading) {
         console.warn("[Favorites] Loading safety timeout — forcing isLoading=false");
         hasFetchedOnce.current = true;
         setIsLoading(false);
       }
-    }, 6000);
+    }, 3000);
 
     if (authLoading) {
-      // Keep existing UI stable during transient token refreshes.
-      // Avoid forcing spinner forever if data was already loaded once.
+      // If we already fetched once, keep showing existing data (no spinner)
       if (!hasFetchedOnce.current) setIsLoading(true);
       return () => {
         isMounted.current = false;
@@ -91,25 +90,10 @@ export function useFavorites() {
       if (!hasFetchedOnce.current) setIsLoading(true);
       void fetchFavoritesByUser(userId);
     } else {
-      // Protect against transient auth null: verify once with Supabase before clearing.
-      void (async () => {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-
-        if (!isMounted.current) return;
-
-        if (currentUser?.id) {
-          lastKnownUserIdRef.current = currentUser.id;
-          if (!hasFetchedOnce.current) setIsLoading(true);
-          await fetchFavoritesByUser(currentUser.id);
-          return;
-        }
-
-        lastKnownUserIdRef.current = null;
-        setFavorites(new Set());
-        setIsLoading(false);
-      })();
+      // No user → immediately return empty favorites. Never block UI.
+      lastKnownUserIdRef.current = null;
+      setFavorites(new Set());
+      setIsLoading(false);
     }
 
     // Refetch when app comes back to foreground (e.g. user reopens the app)

@@ -37,7 +37,10 @@ export default function MyFavorites() {
     );
   }, [favoriteMatches]);
 
-  if (matchesLoading || favoritesLoading) {
+  // Only show loading on initial mount, not on re-fetches
+  const isInitialLoading = matchesLoading && matches.length === 0 && favoritesLoading;
+
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />

@@ -12,10 +12,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [timedOut, setTimedOut] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Safety: never show loading for more than 6 seconds
+  // Safety: never show loading for more than 3 seconds
   useEffect(() => {
     if (loading && !timedOut) {
-      timerRef.current = setTimeout(() => setTimedOut(true), 6000);
+      timerRef.current = setTimeout(() => setTimedOut(true), 3000);
     }
     return () => clearTimeout(timerRef.current);
   }, [loading, timedOut]);

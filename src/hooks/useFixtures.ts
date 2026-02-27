@@ -52,11 +52,21 @@ export function useFixtures(dateFilter: DateFilter, fetchLiveOnly: boolean = fal
       const mode = fetchLiveOnly ? "live" : dateFilter;
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Get session token if available, but don't block on auth
+      let token = "";
+      try {
+        const { data } = await supabase.auth.getSession();
+        token = data.session?.access_token || "";
+      } catch {
+        // Auth not available — continue without token (public endpoint)
+      }
+
       const response = await fetch(
         `${supabaseUrl}/functions/v1/get-fixtures?mode=${mode}`,
         {
           headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           signal: abortControllerRef.current.signal,
