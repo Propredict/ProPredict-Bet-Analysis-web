@@ -13,7 +13,7 @@ export function useFavorites() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
-
+  const hasFetchedOnce = useRef(false);
   const isMounted = useRef(true);
 
   const fetchFavoritesByUser = useCallback(async (userId: string) => {
@@ -35,6 +35,7 @@ export function useFavorites() {
       console.error("[Favorites] Error fetching:", error);
     } finally {
       if (isMounted.current) {
+        hasFetchedOnce.current = true;
         setIsLoading(false);
       }
     }
@@ -63,7 +64,7 @@ export function useFavorites() {
     const userId = user?.id ?? null;
 
     if (userId) {
-      setIsLoading(true);
+      if (!hasFetchedOnce.current) setIsLoading(true);
       void fetchFavoritesByUser(userId);
     } else {
       setFavorites(new Set());
