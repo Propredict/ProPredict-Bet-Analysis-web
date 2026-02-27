@@ -70,7 +70,7 @@ export function DashboardTipsPopup() {
               <p className="text-[13px] font-semibold text-slate-800">Daily Tips</p>
               <p className="text-[10px] text-slate-500">Free predictions</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-4 w-4 text-primary animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           {/* Exclusive */}
@@ -85,7 +85,7 @@ export function DashboardTipsPopup() {
               <p className="text-[13px] font-semibold text-slate-800">Exclusive Tips</p>
               <p className="text-[10px] text-amber-600">Higher confidence</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-amber-300 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-4 w-4 text-amber-400 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           {/* Premium */}
@@ -100,7 +100,7 @@ export function DashboardTipsPopup() {
               <p className="text-[13px] font-semibold text-slate-800">Premium Tips</p>
               <p className="text-[10px] text-fuchsia-600">Members only</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-fuchsia-300 group-hover:text-fuchsia-500 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-4 w-4 text-fuchsia-400 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
