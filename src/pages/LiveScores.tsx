@@ -13,6 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
+import { NativeAdSlot } from "@/components/ads/NativeAdSlot";
 
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMatchAlertPreferences } from "@/hooks/useMatchAlertPreferences";
@@ -545,6 +546,11 @@ export default function LiveScores() {
                 // Insert web ad after the league group that crosses the 5th match threshold
                 if (startCount < 5 && matchCounter >= 5) {
                   elements.push(<AdSlot key={`ad-${league}`} />);
+                }
+
+                // Insert native in-feed ad after the league group that crosses the 8th match
+                if (startCount < 8 && matchCounter >= 8) {
+                  elements.push(<NativeAdSlot key={`native-ad-${league}`} />);
                 }
 
                 return elements;
