@@ -559,11 +559,8 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {idx === 7 && (
-                        <div className="col-span-full">
-                          <NativeAdSlot />
-                        </div>
-                      )}
+
+
                     </React.Fragment>
                   );
                 })}
@@ -643,11 +640,8 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                      {idx === 7 && (
-                        <div className="col-span-full">
-                          <NativeAdSlot />
-                        </div>
-                      )}
+
+
                     </React.Fragment>
                   );
                 })}
