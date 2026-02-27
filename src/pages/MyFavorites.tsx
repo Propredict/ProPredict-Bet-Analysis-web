@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useFavoritesPushSync } from "@/hooks/useFavoritesPushSync";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
@@ -20,7 +19,7 @@ export default function MyFavorites() {
   });
 
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading } = useFavorites();
-  useFavoritesPushSync(favorites);
+  
 
   // Enable goal/red card alerts on Favorites page
   const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");

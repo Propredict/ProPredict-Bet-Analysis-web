@@ -4,66 +4,75 @@ import { setOneSignalTag } from "@/components/AndroidPushModal";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 /**
- * Listens for ONESIGNAL_PLAYER_ID postMessage from the Android native bridge
- * and upserts the player ID into users_push_tokens for the logged-in user.
+ * Manages OneSignal player ID sync for Android.
  *
- * After reinstall the native bridge delivers a NEW player ID.
- * This hook:
- *  1. Always overwrites localStorage with the latest bridge value.
- *  2. Retries the upsert on every auth-state change until it succeeds.
- *  3. Runs a periodic retry so even if auth fires before the bridge message,
- *     the token is still synced within seconds.
+ * Key principles:
+ * 1. Supabase user_id is the master identity
+ * 2. OneSignal login (syncUser) only on actual auth changes
+ * 3. Push token upsert uses ON CONFLICT to prevent duplicates
+ * 4. No re-login on foreground resume / re-render
+ * 5. Multi-device support: same user can have tokens on multiple devices
  */
 export function useOneSignalPlayerSync() {
   const isAndroid = getIsAndroidApp();
-  const pendingPlayerIdRef = useRef<string | null>(null);
-  const syncedRef = useRef(false); // true once DB upsert succeeds this session
+  const lastSyncedUserIdRef = useRef<string | null>(null);
+  const lastSyncedPlayerIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isAndroid) return;
 
     console.log("[OneSignal] Android detected, setting up player ID listener");
-    syncedRef.current = false;
 
-    // ── Core upsert ──
+    // ── Core upsert — uses INSERT ... ON CONFLICT instead of delete+insert ──
     const upsertPlayerToken = async (playerId: string): Promise<boolean> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log("[OneSignal] No user yet, saving pending ID:", playerId);
-        pendingPlayerIdRef.current = playerId;
+        console.log("[OneSignal] No user yet, deferring sync");
         return false;
       }
 
-      console.log("[OneSignal] ▶ Replacing Android token for user:", user.id, "→", playerId);
-
-      // Delete all old Android tokens for this user
-      const { error: deleteError } = await supabase
-        .from("users_push_tokens")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("platform", "android");
-
-      if (deleteError) {
-        console.error("[OneSignal] Delete old tokens failed:", deleteError.message);
+      // Skip if already synced this exact combo
+      if (lastSyncedUserIdRef.current === user.id && lastSyncedPlayerIdRef.current === playerId) {
+        return true;
       }
 
-      // Insert fresh token
-      const { error } = await supabase.from("users_push_tokens").insert({
-        user_id: user.id,
-        onesignal_player_id: playerId,
-        platform: "android",
-      });
+      console.log("[OneSignal] ▶ Upserting Android token for user:", user.id, "→", playerId);
+
+      const { error } = await supabase.from("users_push_tokens").upsert(
+        {
+          user_id: user.id,
+          onesignal_player_id: playerId,
+          platform: "android",
+        },
+        { onConflict: "user_id,platform" }
+      );
 
       if (error) {
-        console.error("[OneSignal] Insert failed:", error.message);
+        console.error("[OneSignal] Upsert failed:", error.message);
         return false;
       }
 
       console.log("[OneSignal] ✅ Push token saved successfully");
       localStorage.setItem("onesignal_player_id", playerId);
-      pendingPlayerIdRef.current = null;
-      syncedRef.current = true;
+      lastSyncedUserIdRef.current = user.id;
+      lastSyncedPlayerIdRef.current = playerId;
       return true;
+    };
+
+    // ── Sync OneSignal identity — ONLY on actual auth change ──
+    const syncOneSignalIdentity = (userId: string) => {
+      if (lastSyncedUserIdRef.current === userId) {
+        console.log("[OneSignal] Identity already synced for:", userId);
+        return;
+      }
+
+      try {
+        const w = window as any;
+        if (w.isAndroidApp && w.Android?.syncUser) {
+          w.Android.syncUser(userId);
+          console.log("[OneSignal] SYNC USER →", userId);
+        }
+      } catch (e) { /* ignore */ }
     };
 
     // ── Bridge message handler ──
@@ -79,22 +88,21 @@ export function useOneSignalPlayerSync() {
       const playerId = data.playerId as string;
       const previousId = localStorage.getItem("onesignal_player_id");
 
-      // Always store the latest bridge value — critical after reinstall
       localStorage.setItem("onesignal_player_id", playerId);
-      pendingPlayerIdRef.current = playerId;
-      syncedRef.current = false; // force re-sync with new ID
 
       if (previousId && previousId !== playerId) {
         console.log("[OneSignal] 🔄 Player ID CHANGED (reinstall detected):", previousId, "→", playerId);
-        // Reinstall detected — clear push preference flags so modal re-appears
+        // Reset push preference flags so modal re-appears
         localStorage.removeItem("goal_enabled");
         localStorage.removeItem("tips_enabled");
         localStorage.removeItem("goal_prompt_last_shown");
         localStorage.removeItem("tips_prompt_last_shown");
-        // Clear stale OneSignal tags so they match the reset localStorage state
         setOneSignalTag("goal_alerts", null);
         setOneSignalTag("daily_tips", null);
-        console.log("[OneSignal] 🧹 Cleared push flags + OneSignal tags after reinstall");
+        // Force re-sync
+        lastSyncedPlayerIdRef.current = null;
+        lastSyncedUserIdRef.current = null;
+        console.log("[OneSignal] 🧹 Cleared push flags after reinstall");
       } else {
         console.log("[OneSignal] 🔥 Received Android Player ID:", playerId);
       }
@@ -105,45 +113,41 @@ export function useOneSignalPlayerSync() {
     window.addEventListener("message", handleMessage);
     document.addEventListener("message", handleMessage as EventListener);
 
-    // ── Auth state listener: flush pending player ID on login ──
+    // ── Auth state listener: only react to SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED ──
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (syncedRef.current) return; // already synced this session
-        const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
-        if (session?.user && playerIdToSync) {
-          console.log("[OneSignal] 🔄 Auth event — syncing player ID for user:", session.user.id);
-          await upsertPlayerToken(playerIdToSync);
-        }
+      async (event, session) => {
+        // Only sync on actual login events, NOT on token refresh or focus
+        if (event === "SIGNED_IN" && session?.user) {
+          const playerId = localStorage.getItem("onesignal_player_id");
 
-        // Sync OneSignal identity with Supabase user ID on login
-        if (session?.user) {
-          try {
-            const w = window as any;
-            if (w.isAndroidApp && w.Android?.syncUser) {
-              w.Android.syncUser(session.user.id);
-              console.log("[OneSignal] SYNC USER → Android:", session.user.id);
-            }
-          } catch (e) { /* ignore */ }
-        }
+          // Sync OneSignal identity only if user changed
+          syncOneSignalIdentity(session.user.id);
 
-        // Ensure subscription is active after login (fixes Play build "unsubscribed" state)
-        if (session?.user) {
+          if (playerId) {
+            await upsertPlayerToken(playerId);
+          }
+
+          // Ensure subscription is active if user previously enabled push
           const goalEnabled = localStorage.getItem("goal_enabled") === "true";
           const tipsEnabled = localStorage.getItem("tips_enabled") === "true";
           if (goalEnabled || tipsEnabled) {
             try {
               (window as any).Android?.enablePush?.();
-              console.log("[OneSignal] 🔔 Auth state change → enablePush called");
+              console.log("[OneSignal] 🔔 SIGNED_IN → enablePush called");
             } catch (e) { /* ignore */ }
           }
+        }
+
+        if (event === "SIGNED_OUT") {
+          lastSyncedUserIdRef.current = null;
+          lastSyncedPlayerIdRef.current = null;
         }
       }
     );
 
-    // ── Immediate check: session may already exist ──
-    // Also proactively pull current Player ID from native bridge
+    // ── Initial check: handle existing session (cold start) ──
     const checkExisting = async () => {
-      // Ask native bridge for current Player ID (handles reinstall case)
+      // Pull current Player ID from native bridge if available
       try {
         const w = window as any;
         if (w.Android?.getOneSignalPlayerId) {
@@ -153,8 +157,7 @@ export function useOneSignalPlayerSync() {
             if (nativeId !== storedId) {
               console.log("[OneSignal] 🔄 Native bridge has NEW Player ID:", storedId, "→", nativeId);
               localStorage.setItem("onesignal_player_id", nativeId);
-              pendingPlayerIdRef.current = nativeId;
-              syncedRef.current = false;
+              lastSyncedPlayerIdRef.current = null; // force re-sync
             }
           }
         }
@@ -163,52 +166,23 @@ export function useOneSignalPlayerSync() {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
-      if (session?.user && playerIdToSync) {
-        await upsertPlayerToken(playerIdToSync);
-      }
-
-      // Sync OneSignal identity with Supabase user ID on app start (existing session)
       if (session?.user) {
-        try {
-          const w = window as any;
-          if (w.isAndroidApp && w.Android?.syncUser) {
-            w.Android.syncUser(session.user.id);
-            console.log("[OneSignal] SYNC USER → Android (existing session):", session.user.id);
-          }
-        } catch (e) { /* ignore */ }
-      }
-
-      // ── Ensure OneSignal subscription is active after auth ──
-      // In Play builds, system permission may be auto-granted but subscription
-      // stays "unsubscribed" because optIn() was never called.
-      // If user previously enabled push, proactively call enablePush to activate subscription.
-      if (session?.user) {
-        const goalEnabled = localStorage.getItem("goal_enabled") === "true";
-        const tipsEnabled = localStorage.getItem("tips_enabled") === "true";
-        if (goalEnabled || tipsEnabled) {
-          try {
-            const w = window as any;
-            if (w.Android?.enablePush) {
-              console.log("[OneSignal] 🔔 Auth ready + push prefs exist → calling enablePush to ensure subscription");
-              w.Android.enablePush();
-            }
-          } catch (e) {
-            console.warn("[OneSignal] enablePush after auth failed:", e);
-          }
+        const playerId = localStorage.getItem("onesignal_player_id");
+        syncOneSignalIdentity(session.user.id);
+        if (playerId) {
+          await upsertPlayerToken(playerId);
         }
       }
     };
     checkExisting();
 
-    // ── Periodic retry: bridge message may arrive after auth ──
-    const retryInterval = setInterval(async () => {
-      if (syncedRef.current) return;
-      const playerIdToSync = pendingPlayerIdRef.current || localStorage.getItem("onesignal_player_id");
-      if (playerIdToSync) {
-        console.log("[OneSignal] ⏱ Retry sync for:", playerIdToSync);
-        const ok = await upsertPlayerToken(playerIdToSync);
-        if (ok) clearInterval(retryInterval);
+    // ── Single delayed retry (bridge message may arrive after auth) ──
+    const retryTimer = setTimeout(async () => {
+      if (lastSyncedPlayerIdRef.current) return; // already synced
+      const playerId = localStorage.getItem("onesignal_player_id");
+      if (playerId) {
+        console.log("[OneSignal] ⏱ Delayed retry for:", playerId);
+        await upsertPlayerToken(playerId);
       }
     }, 5000);
 
@@ -216,7 +190,7 @@ export function useOneSignalPlayerSync() {
       window.removeEventListener("message", handleMessage);
       document.removeEventListener("message", handleMessage as EventListener);
       subscription.unsubscribe();
-      clearInterval(retryInterval);
+      clearTimeout(retryTimer);
     };
   }, [isAndroid]);
 }
