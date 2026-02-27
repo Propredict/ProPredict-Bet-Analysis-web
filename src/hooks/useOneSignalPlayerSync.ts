@@ -67,12 +67,16 @@ export function useOneSignalPlayerSync() {
       }
 
       try {
-        const w = window as any;
-        if (w.isAndroidApp && w.Android?.syncUser) {
-          w.Android.syncUser(userId);
-          console.log("[OneSignal] SYNC USER →", userId);
+        if (window.Android?.syncUser) {
+          window.Android.syncUser(userId);
+          lastSyncedUserIdRef.current = userId;
+          console.log("[OneSignal] ✅ SYNC USER →", userId);
+        } else {
+          console.warn("[OneSignal] ⚠️ Android bridge not available for syncUser");
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        console.error("[OneSignal] syncUser bridge error:", e);
+      }
     };
 
     // ── Bridge message handler ──
