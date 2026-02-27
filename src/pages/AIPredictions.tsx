@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
-
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
@@ -30,6 +30,15 @@ type TierFilter = "all" | "free" | "pro" | "premium";
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("ai_predictions");
+    }
+  }, [maybeShowInterstitial]);
 
   const [day, setDay] = useState<"today" | "tomorrow">("today");
   const [searchQuery, setSearchQuery] = useState("");
@@ -559,8 +568,11 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-
-
+                      {idx === 7 && (
+                        <div className="col-span-full">
+                          <NativeAdSlot />
+                        </div>
+                      )}
                     </React.Fragment>
                   );
                 })}
@@ -640,8 +652,11 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-
-
+                      {idx === 7 && (
+                        <div className="col-span-full">
+                          <NativeAdSlot />
+                        </div>
+                      )}
                     </React.Fragment>
                   );
                 })}
