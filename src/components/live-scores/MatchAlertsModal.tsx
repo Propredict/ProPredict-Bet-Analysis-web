@@ -48,7 +48,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
     
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user || !isMounted.current) {
         if (isMounted.current) setIsLoading(false);
         return;
@@ -81,7 +82,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
   }, []);
 
   const checkAuthAndFetch = useCallback(async (matchId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!isMounted.current) return;
     
     if (!user) {
@@ -118,7 +120,8 @@ export function MatchAlertsModal({ match, onClose }: MatchAlertsModalProps) {
 
     setIsSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         toast({
           title: "Sign in required",
