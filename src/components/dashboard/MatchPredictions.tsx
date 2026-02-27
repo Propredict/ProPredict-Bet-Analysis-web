@@ -114,9 +114,9 @@ export function MatchPredictions() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily AI Predictions";
-      case "exclusive": return "See all Pro AI Predictions";
-      case "premium": return "See all Premium AI Predictions";
+      case "daily": return "See all Daily Predictions";
+      case "exclusive": return "See all Pro Predictions";
+      case "premium": return "See all Premium Predictions";
     }
   };
 
