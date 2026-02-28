@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type MatchStatus = "live" | "upcoming" | "finished" | "halftime";
 
 export interface Match {
-  id: string; // ← FIXTURE ID (KLJUČNO)
+  id: string;
   homeTeam: string;
   awayTeam: string;
   homeTeamId: number;
@@ -26,7 +27,18 @@ interface ApiResponse {
 }
 
 const AUTO_REFRESH_MS = 30_000;
+const STALE_TIME_MS = 2 * 60 * 1000; // 2 minutes
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-fixtures`;
+
+async function fetchFixtures(
+  dateMode: string,
+  signal?: AbortSignal
+): Promise<Match[]> {
+  const res = await fetch(`${EDGE_URL}?mode=${dateMode}`, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data: ApiResponse = await res.json();
+  return data.fixtures ?? [];
+}
 
 export function useLiveScores({
   dateMode = "today",
@@ -35,59 +47,35 @@ export function useLiveScores({
   dateMode?: "today" | "yesterday" | "tomorrow" | "live";
   statusFilter?: "all" | "live" | "upcoming" | "finished";
 }) {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const hasFetchedOnce = useRef(false);
+  const queryClient = useQueryClient();
 
-  const fetchMatches = useCallback(async () => {
-    try {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
+  const {
+    data: allMatches = [],
+    isLoading,
+    error,
+    dataUpdatedAt,
+  } = useQuery<Match[]>({
+    queryKey: ["live-scores", dateMode],
+    queryFn: ({ signal }) => fetchFixtures(dateMode, signal),
+    staleTime: STALE_TIME_MS,
+    gcTime: 10 * 60 * 1000, // 10 min garbage collection
+    refetchInterval: AUTO_REFRESH_MS,
+    refetchOnWindowFocus: false,
+  });
 
-      // Only show loading spinner on first fetch, not on refreshes
-      if (!hasFetchedOnce.current) {
-        setIsLoading(true);
-      }
-      setError(null);
+  // Client-side status filtering
+  const matches =
+    statusFilter === "all"
+      ? allMatches
+      : statusFilter === "live"
+      ? allMatches.filter((m) => m.status === "live" || m.status === "halftime")
+      : allMatches.filter((m) => m.status === statusFilter);
 
-      const res = await fetch(`${EDGE_URL}?mode=${dateMode}`, {
-        signal: controller.signal,
-      });
+  const hasFetchedOnce = dataUpdatedAt > 0;
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["live-scores", dateMode] });
+  }, [queryClient, dateMode]);
 
-      const data: ApiResponse = await res.json();
-      let list = data.fixtures ?? [];
-
-      if (statusFilter === "live") {
-        list = list.filter((m) => m.status === "live" || m.status === "halftime");
-      } else if (statusFilter !== "all") {
-        list = list.filter((m) => m.status === statusFilter);
-      }
-
-      setMatches(list);
-    } catch (e: any) {
-      if (e.name !== "AbortError") {
-        setError("Failed to load live scores");
-        setMatches([]);
-      }
-    } finally {
-      hasFetchedOnce.current = true;
-      setIsLoading(false);
-    }
-  }, [dateMode, statusFilter]);
-
-  useEffect(() => {
-    fetchMatches();
-    const i = setInterval(fetchMatches, AUTO_REFRESH_MS);
-    return () => {
-      abortRef.current?.abort();
-      clearInterval(i);
-    };
-  }, [fetchMatches]);
-
-  return { matches, isLoading, error, refetch: fetchMatches, hasFetchedOnce: hasFetchedOnce.current };
+  return { matches, isLoading, error: error ? "Failed to load live scores" : null, refetch, hasFetchedOnce };
 }
