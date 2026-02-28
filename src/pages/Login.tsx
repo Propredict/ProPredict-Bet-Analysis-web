@@ -242,17 +242,19 @@ const Login = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground text-center w-full">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+          <div className="text-center w-full space-y-1">
+            <p className="text-base font-semibold text-foreground">
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+            </p>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline font-medium"
+              className="text-primary hover:underline font-bold text-base"
               disabled={isLoading}
             >
-              {isSignUp ? "Sign in" : "Sign up"}
+              {isSignUp ? "Sign In to your account" : "Sign Up and create account"}
             </button>
-          </p>
+          </div>
           
           <Button
             variant="ghost"
