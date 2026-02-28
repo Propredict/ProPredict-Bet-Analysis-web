@@ -664,6 +664,255 @@ function generateAnalysisV2(params: {
   return `This matchup looks balanced: ${why}. The draw is a realistic outcome (${draw}%) with split win probabilities (${homeWin}% / ${awayWin}%).`;
 }
 
+// ============ PREMIUM DEEP ANALYSIS (Last 10 matches + 5 H2H) ============
+
+interface PremiumFormData {
+  last10: FormMatch[];
+  winsCount: number;
+  drawsCount: number;
+  lossesCount: number;
+  goalsScored: number;
+  goalsConceded: number;
+  homeRecord: { w: number; d: number; l: number };
+  awayRecord: { w: number; d: number; l: number };
+  streak: string; // e.g. "W3" or "L2" or "D1"
+}
+
+function analyzeLast10(form: FormMatch[]): PremiumFormData {
+  let w = 0, d = 0, l = 0, gs = 0, gc = 0;
+  const homeRec = { w: 0, d: 0, l: 0 };
+  const awayRec = { w: 0, d: 0, l: 0 };
+
+  for (const m of form) {
+    gs += m.goalsFor;
+    gc += m.goalsAgainst;
+    if (m.result === "W") {
+      w++;
+      if (m.isHome) homeRec.w++; else awayRec.w++;
+    } else if (m.result === "D") {
+      d++;
+      if (m.isHome) homeRec.d++; else awayRec.d++;
+    } else {
+      l++;
+      if (m.isHome) homeRec.l++; else awayRec.l++;
+    }
+  }
+
+  // Calculate streak
+  let streak = "";
+  if (form.length > 0) {
+    const firstResult = form[0].result;
+    let count = 0;
+    for (const m of form) {
+      if (m.result === firstResult) count++;
+      else break;
+    }
+    streak = `${firstResult}${count}`;
+  }
+
+  return {
+    last10: form,
+    winsCount: w,
+    drawsCount: d,
+    lossesCount: l,
+    goalsScored: gs,
+    goalsConceded: gc,
+    homeRecord: homeRec,
+    awayRecord: awayRec,
+    streak,
+  };
+}
+
+interface H2HSummary {
+  matches: H2HMatch[];
+  teamAWins: number;
+  teamBWins: number;
+  draws: number;
+  totalGoals: number;
+  avgGoalsPerMatch: number;
+}
+
+function analyzeH2H(h2h: H2HMatch[], teamAId: number): H2HSummary {
+  let aWins = 0, bWins = 0, draws = 0, totalGoals = 0;
+
+  for (const m of h2h) {
+    const aGoals = m.homeTeamId === teamAId ? m.homeGoals : m.awayGoals;
+    const bGoals = m.homeTeamId === teamAId ? m.awayGoals : m.homeGoals;
+    totalGoals += m.homeGoals + m.awayGoals;
+    if (aGoals > bGoals) aWins++;
+    else if (aGoals < bGoals) bWins++;
+    else draws++;
+  }
+
+  return {
+    matches: h2h,
+    teamAWins: aWins,
+    teamBWins: bWins,
+    draws,
+    totalGoals,
+    avgGoalsPerMatch: h2h.length > 0 ? totalGoals / h2h.length : 0,
+  };
+}
+
+function formatFormString(form: FormMatch[]): string {
+  return form.map(m => m.result).join("");
+}
+
+function generatePremiumAnalysis(params: {
+  homeTeamName: string;
+  awayTeamName: string;
+  prediction: string;
+  predictedScore: string;
+  confidence: number;
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+  homeData: PremiumFormData;
+  awayData: PremiumFormData;
+  h2hSummary: H2HSummary;
+  homeStats: TeamStats | null;
+  awayStats: TeamStats | null;
+}): string {
+  const {
+    homeTeamName, awayTeamName, prediction, predictedScore, confidence,
+    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats,
+  } = params;
+
+  const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
+  const favProb = prediction === "1" ? homeWin : prediction === "2" ? awayWin : draw;
+
+  const sections: string[] = [];
+
+  // 📊 VERDICT
+  sections.push(`📊 VERDICT: ${favName} ${prediction === "X" ? "Draw" : `to win`} (${favProb}% probability, ${confidence}% confidence). Predicted score: ${predictedScore}.`);
+
+  // 🔥 FORM (Last 10)
+  const homeFormStr = formatFormString(homeData.last10);
+  const awayFormStr = formatFormString(awayData.last10);
+  const homeAvgScored = homeData.last10.length > 0 ? (homeData.goalsScored / homeData.last10.length).toFixed(1) : "0";
+  const homeAvgConceded = homeData.last10.length > 0 ? (homeData.goalsConceded / homeData.last10.length).toFixed(1) : "0";
+  const awayAvgScored = awayData.last10.length > 0 ? (awayData.goalsScored / awayData.last10.length).toFixed(1) : "0";
+  const awayAvgConceded = awayData.last10.length > 0 ? (awayData.goalsConceded / awayData.last10.length).toFixed(1) : "0";
+
+  sections.push(`🔥 FORM (Last ${homeData.last10.length} matches):\n• ${homeTeamName}: ${homeFormStr} (${homeData.winsCount}W ${homeData.drawsCount}D ${homeData.lossesCount}L) — ${homeData.goalsScored} goals scored, ${homeData.goalsConceded} conceded (avg ${homeAvgScored}/${homeAvgConceded} per game). Current streak: ${homeData.streak}.\n• ${awayTeamName}: ${awayFormStr} (${awayData.winsCount}W ${awayData.drawsCount}D ${awayData.lossesCount}L) — ${awayData.goalsScored} goals scored, ${awayData.goalsConceded} conceded (avg ${awayAvgScored}/${awayAvgConceded} per game). Current streak: ${awayData.streak}.`);
+
+  // ⚔️ H2H
+  if (h2hSummary.matches.length > 0) {
+    const h2hScores = h2hSummary.matches.slice(0, 5).map(m => `${m.homeGoals}-${m.awayGoals}`).join(", ");
+    sections.push(`⚔️ HEAD-TO-HEAD (Last ${h2hSummary.matches.length}):\n• ${homeTeamName} wins: ${h2hSummary.teamAWins} | Draws: ${h2hSummary.draws} | ${awayTeamName} wins: ${h2hSummary.teamBWins}.\n• Recent scores: ${h2hScores}.\n• Avg goals/match: ${h2hSummary.avgGoalsPerMatch.toFixed(1)}.`);
+  }
+
+  // 🏟️ HOME/AWAY SPLITS
+  sections.push(`🏟️ HOME/AWAY SPLITS:\n• ${homeTeamName} at home: ${homeData.homeRecord.w}W ${homeData.homeRecord.d}D ${homeData.homeRecord.l}L.\n• ${awayTeamName} away: ${awayData.awayRecord.w}W ${awayData.awayRecord.d}D ${awayData.awayRecord.l}L.`);
+
+  // 📈 SEASON STATS
+  if (homeStats && awayStats && homeStats.played > 0 && awayStats.played > 0) {
+    const homeWinRate = ((homeStats.wins / homeStats.played) * 100).toFixed(0);
+    const awayWinRate = ((awayStats.wins / awayStats.played) * 100).toFixed(0);
+    const homeGD = homeStats.goalsFor - homeStats.goalsAgainst;
+    const awayGD = awayStats.goalsFor - awayStats.goalsAgainst;
+    sections.push(`📈 SEASON STATS:\n• ${homeTeamName}: ${homeStats.wins}W ${homeStats.draws}D ${homeStats.losses}L (${homeWinRate}% win rate), GF ${homeStats.goalsFor} GA ${homeStats.goalsAgainst} (GD ${homeGD > 0 ? "+" : ""}${homeGD}).\n• ${awayTeamName}: ${awayStats.wins}W ${awayStats.draws}D ${awayStats.losses}L (${awayWinRate}% win rate), GF ${awayStats.goalsFor} GA ${awayStats.goalsAgainst} (GD ${awayGD > 0 ? "+" : ""}${awayGD}).`);
+  }
+
+  // 🎯 PROBABILITIES
+  sections.push(`🎯 WIN PROBABILITIES: ${homeTeamName} ${homeWin}% | Draw ${draw}% | ${awayTeamName} ${awayWin}%.`);
+
+  return sections.join("\n\n");
+}
+
+/**
+ * Premium enhancement: fetch last 10 real matches + 5 H2H for high-confidence predictions.
+ * Recalculates with deeper data and generates detailed analysis.
+ */
+async function premiumEnhance(
+  pred: any,
+  initialResult: PredictionResult,
+  homeTeamId: number,
+  awayTeamId: number,
+  homeTeamName: string,
+  awayTeamName: string,
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  apiKey: string
+): Promise<PredictionResult> {
+  console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
+
+  // Fetch last 10 real matches + 5 H2H (more data than standard)
+  const [homeForm10, awayForm10, h2h5] = await Promise.all([
+    fetchTeamForm(homeTeamId, apiKey, 10),
+    fetchTeamForm(awayTeamId, apiKey, 10),
+    fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
+  ]);
+
+  // Recalculate with deeper form data (use last 10 for form score)
+  const deepHomeFormScore = calculateFormScoreDeep(homeForm10);
+  const deepAwayFormScore = calculateFormScoreDeep(awayForm10);
+  const deepH2HScore = calculateH2HScore(h2h5, homeTeamId, awayTeamId);
+
+  // Recalculate prediction with deep data
+  const deepResult = calculatePrediction(
+    homeForm10.slice(0, 5), // Use last 5 for core calculation (more than 3)
+    awayForm10.slice(0, 5),
+    homeStats,
+    awayStats,
+    h2h5,
+    homeTeamId,
+    awayTeamId,
+    homeTeamName,
+    awayTeamName
+  );
+
+  // Keep the higher confidence (deep analysis should confirm or raise)
+  const finalConfidence = Math.max(initialResult.confidence, deepResult.confidence);
+
+  // Analyze last 10 data for detailed report
+  const homeData = analyzeLast10(homeForm10);
+  const awayData = analyzeLast10(awayForm10);
+  const h2hSummary = analyzeH2H(h2h5, homeTeamId);
+
+  // Use the deep result's prediction/probabilities
+  const analysis = generatePremiumAnalysis({
+    homeTeamName,
+    awayTeamName,
+    prediction: deepResult.prediction,
+    predictedScore: deepResult.predicted_score,
+    confidence: finalConfidence,
+    homeWin: deepResult.home_win,
+    draw: deepResult.draw,
+    awayWin: deepResult.away_win,
+    homeData,
+    awayData,
+    h2hSummary,
+    homeStats,
+    awayStats,
+  });
+
+  return {
+    ...deepResult,
+    confidence: finalConfidence,
+    analysis,
+  };
+}
+
+/**
+ * Extended form score using up to 10 matches (weighted: recent matches count more)
+ */
+function calculateFormScoreDeep(form: FormMatch[]): number {
+  if (form.length === 0) return 50;
+
+  let weightedPoints = 0;
+  let weightSum = 0;
+
+  for (let i = 0; i < form.length; i++) {
+    const weight = 1.0 - (i * 0.07); // Most recent = 1.0, 10th = 0.37
+    const pts = form[i].result === "W" ? 3 : form[i].result === "D" ? 1 : 0;
+    weightedPoints += pts * weight;
+    weightSum += 3 * weight; // Max possible per match
+  }
+
+  return Math.round((weightedPoints / weightSum) * 100);
+}
+
 /**
  * Assign tiers to all predictions based on confidence (STRICT):
  * - FREE: confidence < 65%
@@ -854,7 +1103,7 @@ async function processBatch(
         continue;
       }
 
-      const newPrediction = calculatePrediction(
+      let newPrediction = calculatePrediction(
         homeForm,
         awayForm,
         homeStats,
@@ -865,6 +1114,25 @@ async function processBatch(
         homeTeamName,
         awayTeamName
       );
+
+      // ⭐ PREMIUM DEEP DIVE: If initial confidence >= 85%, enhance with last 10 matches + 5 H2H
+      if (newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
+        try {
+          newPrediction = await premiumEnhance(
+            pred,
+            newPrediction,
+            homeTeamId,
+            awayTeamId,
+            homeTeamName,
+            awayTeamName,
+            homeStats,
+            awayStats,
+            apiKey
+          );
+        } catch (e) {
+          console.warn(`Premium enhance failed for ${homeTeamName} vs ${awayTeamName}, keeping standard result:`, e);
+        }
+      }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
@@ -889,8 +1157,9 @@ async function processBatch(
       }
 
       updated++;
+      const tier = newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE ? "⭐PREMIUM" : "STD";
       console.log(
-        `Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win})`
+        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}%`
       );
     } catch (e) {
       await markPredictionLocked(
