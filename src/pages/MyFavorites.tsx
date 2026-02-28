@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Star, Trophy, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 
 export default function MyFavorites() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   const { matches, isLoading: matchesLoading } = useLiveScores({
@@ -26,6 +27,21 @@ export default function MyFavorites() {
   const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");
 
   const favoriteMatches = useMemo(() => matches.filter((m) => favorites.has(m.id)), [matches, favorites]);
+
+  // Auto-open match modal from deep-link query param (?match=123)
+  useEffect(() => {
+    const matchId = searchParams.get("match");
+    if (matchId && matches.length > 0) {
+      const match = matches.find((m) => String(m.id) === matchId);
+      if (match) {
+        setSelectedMatch(match);
+        // Clean up query param
+        searchParams.delete("match");
+        searchParams.delete("from");
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [matches, searchParams]);
 
   const grouped = useMemo(() => {
     return favoriteMatches.reduce(
