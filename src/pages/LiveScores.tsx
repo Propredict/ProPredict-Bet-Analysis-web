@@ -57,7 +57,8 @@ export default function LiveScores() {
     matches,
     isLoading,
     error,
-    refetch
+    refetch,
+    hasFetchedOnce
   } = useLiveScores({
     dateMode,
     statusFilter: statusTab
@@ -506,7 +507,7 @@ export default function LiveScores() {
         {/* MATCHES or FALLBACK */}
         {isUnavailable ? (
           <LiveScoresFallback />
-        ) : isLoading && matches.length === 0 ? (
+        ) : (isLoading && matches.length === 0) || !hasFetchedOnce ? (
           <LiveScoresFallback />
         ) : Object.keys(grouped).length === 0 ? (
           <Card className="p-4 sm:p-6 text-center bg-card border-border">
