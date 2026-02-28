@@ -89,5 +89,5 @@ export function useLiveScores({
     };
   }, [fetchMatches]);
 
-  return { matches, isLoading, error, refetch: fetchMatches };
+  return { matches, isLoading, error, refetch: fetchMatches, hasFetchedOnce: hasFetchedOnce.current };
 }
