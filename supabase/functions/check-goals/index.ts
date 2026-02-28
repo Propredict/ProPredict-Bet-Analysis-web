@@ -222,7 +222,7 @@ serve(async (req) => {
         data: {
           match_id: matchId,
           type: "goal",
-          nav_path: `/live-scores?match=${matchId}&from=goal_push`,
+          nav_path: `/favorites?match=${matchId}&from=goal_push`,
         },
 
         big_picture: "https://propredict.me/push-goal.jpg",
