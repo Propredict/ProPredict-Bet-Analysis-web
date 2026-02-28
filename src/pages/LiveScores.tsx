@@ -506,6 +506,8 @@ export default function LiveScores() {
         {/* MATCHES or FALLBACK */}
         {isUnavailable ? (
           <LiveScoresFallback />
+        ) : isLoading && matches.length === 0 ? (
+          <LiveScoresFallback />
         ) : Object.keys(grouped).length === 0 ? (
           <Card className="p-4 sm:p-6 text-center bg-card border-border">
             <p className="text-xs text-muted-foreground">No matches found</p>
