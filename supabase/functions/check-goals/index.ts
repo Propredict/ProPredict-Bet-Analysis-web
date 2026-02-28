@@ -186,9 +186,15 @@ serve(async (req) => {
           tokensByUser.set(uid, { id: t.onesignal_player_id, platform: t.platform ?? "android" });
         }
       }
-      const playerIds = Array.from(tokensByUser.values()).map((v) => v.id);
+      // Split by platform: Android → /favorites, Web → /live-scores
+      const androidIds: string[] = [];
+      const webIds: string[] = [];
+      for (const v of tokensByUser.values()) {
+        if (v.platform === "android") androidIds.push(v.id);
+        else webIds.push(v.id);
+      }
 
-      if (playerIds.length === 0) {
+      if (androidIds.length === 0 && webIds.length === 0) {
         console.log(`[check-goals] No push tokens for match ${matchId} users`);
         await supabase.from("match_scores_cache").upsert({
           match_id: matchId,
@@ -199,64 +205,68 @@ serve(async (req) => {
         continue;
       }
 
-      // ================= SEND NOTIFICATION =================
+      // ================= SEND NOTIFICATIONS =================
       const scorerTeams = eventsToSend.map((e) => e.team).join(", ");
       const scoreText = `${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`;
 
-      const payload = {
+      const basePayload = {
         app_id: ONESIGNAL_APP_ID,
-        include_player_ids: playerIds,
         headings: { en: `⚽ GOAL! ${scorerTeams}` },
         contents: { en: `${scoreText} (${elapsed}')` },
-
-        // Goal Alerts channel
         android_channel_id: "64568561-d234-453b-b3da-8de49688731d",
-
         android_sound: "default",
         priority: 10,
         ttl: 120,
-
-        // Collapse duplicate goal notifications for same match
         collapse_id: `goal_${matchId}`,
-
-        data: {
-          match_id: matchId,
-          type: "goal",
-          nav_path: `/favorites?match=${matchId}&from=goal_push`,
-        },
-
         big_picture: "https://propredict.me/push-goal.jpg",
       };
 
-      console.log(`[check-goals] Sending to ${playerIds.length} users for match ${matchId}`);
-
-      const osRes = await fetch(
-        "https://onesignal.com/api/v1/notifications",
-        {
+      const sendBatch = async (playerIds: string[], navPath: string) => {
+        if (playerIds.length === 0) return null;
+        const payload = {
+          ...basePayload,
+          include_player_ids: playerIds,
+          data: {
+            match_id: matchId,
+            type: "goal",
+            nav_path: navPath,
+          },
+        };
+        const res = await fetch("https://onesignal.com/api/v1/notifications", {
           method: "POST",
           headers: {
             "Content-Type": "application/json; charset=utf-8",
             Authorization: `Basic ${ONESIGNAL_API_KEY}`,
           },
           body: JSON.stringify(payload),
+        });
+        return res;
+      };
+
+      // Android → Favorites, Web → Live Scores
+      const [androidRes, webRes] = await Promise.all([
+        sendBatch(androidIds, `/favorites?match=${matchId}&from=goal_push`),
+        sendBatch(webIds, `/live-scores?match=${matchId}&from=goal_push`),
+      ]);
+
+      console.log(`[check-goals] Sending to ${androidIds.length} Android + ${webIds.length} Web users for match ${matchId}`);
+
+      // Process responses
+      for (const osRes of [androidRes, webRes]) {
+        if (!osRes) continue;
+        const osResult = await osRes.json();
+        const invalidIds = Array.isArray(osResult?.errors?.invalid_player_ids)
+          ? (osResult.errors.invalid_player_ids as string[])
+          : [];
+        if (invalidIds.length > 0) await purgeInvalidPlayerIds(invalidIds);
+
+        if (osRes.ok) {
+          const delivered = typeof osResult?.recipients === "number" ? osResult.recipients : 0;
+          totalNotifications += delivered;
+          console.log(`[check-goals] Notification sent for match ${matchId}:`, JSON.stringify(osResult));
+        } else {
+          console.error(`[check-goals] OneSignal error for match ${matchId}:`, JSON.stringify(osResult));
         }
-      );
-
-      const osResult = await osRes.json();
-      const invalidPlayerIds = Array.isArray(osResult?.errors?.invalid_player_ids)
-        ? (osResult.errors.invalid_player_ids as string[])
-        : [];
-
-      if (invalidPlayerIds.length > 0) {
-        await purgeInvalidPlayerIds(invalidPlayerIds);
-      }
-
-      if (osRes.ok) {
-        const delivered = typeof osResult?.recipients === "number" ? osResult.recipients : 0;
-        totalNotifications += delivered;
-        console.log(`[check-goals] Notification sent for match ${matchId}:`, JSON.stringify(osResult));
-      } else {
-        console.error(`[check-goals] OneSignal error for match ${matchId}:`, JSON.stringify(osResult));
       }
 
       // ================= UPDATE CACHE =================
