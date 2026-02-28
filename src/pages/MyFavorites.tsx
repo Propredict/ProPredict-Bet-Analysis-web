@@ -44,8 +44,8 @@ export default function MyFavorites() {
     setRefreshing(false);
   };
 
-  // Only show loading on initial mount, not on re-fetches
-  const isInitialLoading = matchesLoading && matches.length === 0 && favoritesLoading;
+  // Show loading until BOTH data sources have loaded at least once
+  const isInitialLoading = (matchesLoading && matches.length === 0) || (favoritesLoading && favorites.size === 0);
 
   if (isInitialLoading) {
     return (
