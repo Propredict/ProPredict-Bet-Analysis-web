@@ -478,9 +478,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             : "Thanks for watching! Ticket unlocked."
         );
 
-        // Persist to Supabase in the background (fire-and-forget)
+        // Persist to Supabase in the background, then refetch so view returns unmasked data
         unlockContent(contentType, contentId)
-          .then((ok) => console.log("[UserPlan] 💾 DB persist result:", ok))
+          .then((ok) => {
+            console.log("[UserPlan] 💾 DB persist result:", ok);
+            if (ok) {
+              queryClient.invalidateQueries({ queryKey: ["tips"] });
+              queryClient.invalidateQueries({ queryKey: ["tickets"] });
+            }
+          })
           .catch((err) =>
             console.error("[UserPlan] ❌ Failed to persist ad-unlock to DB:", err)
           );
