@@ -334,11 +334,12 @@
   }
 }
 
-/* Move Cookiebot widget icon to bottom-right and make smaller */
+/* Move Cookiebot widget icon to bottom-right, smaller, above bottom nav */
 #CookiebotWidget {
   left: auto !important;
-  right: 12px !important;
-  transform: scale(0.7) !important;
+  right: 8px !important;
+  bottom: 140px !important;
+  transform: scale(0.65) !important;
   transform-origin: bottom right !important;
 }
 
