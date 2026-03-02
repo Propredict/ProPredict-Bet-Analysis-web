@@ -334,6 +334,12 @@
   }
 }
 
+/* Move Cookiebot widget icon to bottom-right */
+#CookiebotWidget {
+  left: auto !important;
+  right: 12px !important;
+}
+
 @keyframes smoothGlow {
   0% {
     box-shadow: 0 0 0px hsl(var(--primary) / 0);
