@@ -334,10 +334,12 @@
   }
 }
 
-/* Move Cookiebot widget icon to bottom-right */
+/* Move Cookiebot widget icon to bottom-right and make smaller */
 #CookiebotWidget {
   left: auto !important;
   right: 12px !important;
+  transform: scale(0.7) !important;
+  transform-origin: bottom right !important;
 }
 
 @keyframes smoothGlow {
