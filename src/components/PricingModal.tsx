@@ -97,7 +97,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[60px] z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-x-0 bottom-0 top-[60px] z-50 flex items-center justify-center p-3">
       {/* Backdrop */}
       <div
         className={cn(
@@ -110,7 +110,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col",
+          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[calc(100vh-140px)]",
           "rounded-2xl shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
@@ -125,44 +125,44 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </button>
 
         {/* Scrollable Content */}
-        <div className="px-5 pt-2 pb-4">
+        <div className="px-5 pt-2 pb-3 overflow-y-auto flex-1 min-h-0">
           {/* FOMO Badge */}
           {showFomoBadge && (
-            <div className="flex justify-center mt-2 mb-4">
+            <div className="flex justify-center mt-1 mb-2">
               <div className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold animate-pulse",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse",
                 isPremium
                   ? "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40"
                   : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
               )}>
-                <Flame className="h-3.5 w-3.5" />
+                <Flame className="h-3 w-3" />
                 {isPremium ? "Premium Prediction Just Dropped" : "Pro Prediction Just Dropped"}
               </div>
             </div>
           )}
 
           {/* Header */}
-          <div className="text-center mt-2 mb-5">
+          <div className="text-center mt-1 mb-3">
             <div className={cn(
-              "inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3",
+              "inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2",
               isPremium
                 ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]"
                 : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
             )}>
               {isPremium
-                ? <Crown className="h-6 w-6 text-fuchsia-400" />
-                : <Star className="h-6 w-6 text-amber-400" />
+                ? <Crown className="h-5 w-5 text-fuchsia-400" />
+                : <Star className="h-5 w-5 text-amber-400" />
               }
             </div>
             <h2 className={cn(
-              "text-xl font-bold mb-1.5 bg-clip-text text-transparent",
+              "text-lg font-bold mb-1 bg-clip-text text-transparent",
               isPremium
                 ? "bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400"
                 : "bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400"
             )}>
               {isPremium ? "Unlock Premium Access" : "Unlock Pro Access"}
             </h2>
-            <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
+            <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
               {isPremium
                 ? "Don't miss today's highest confidence AI predictions."
                 : "Get access to higher confidence AI predictions & analysis."
@@ -170,38 +170,37 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             </p>
           </div>
 
-
           {/* Features */}
           <div className={cn(
-            "rounded-xl p-4 mb-4 border",
+            "rounded-xl p-3 mb-3 border",
             isPremium
               ? "bg-fuchsia-500/5 border-fuchsia-500/20"
               : "bg-amber-500/5 border-amber-500/20"
           )}>
-            <h3 className="text-xs font-semibold text-foreground mb-3">
+            <h3 className="text-[11px] font-semibold text-foreground mb-2">
               Everything you get:
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1.5">
               {features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-3">
+                <li key={idx} className="flex items-center gap-2.5">
                   <div className={cn(
-                    "flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center",
+                    "flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center",
                     isPremium ? "bg-fuchsia-500/15" : "bg-amber-500/15"
                   )}>
                     <feature.icon className={cn(
-                      "h-3.5 w-3.5",
+                      "h-3 w-3",
                       isPremium ? "text-fuchsia-400" : "text-amber-400"
                     )} />
                   </div>
-                  <span className="text-xs text-foreground">{feature.label}</span>
+                  <span className="text-[11px] text-foreground">{feature.label}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Social Proof */}
-          <div className="text-center mb-4">
-            <p className="text-xs text-muted-foreground">
+          <div className="text-center mb-1">
+            <p className="text-[11px] text-muted-foreground">
               <span className={cn(
                 "font-semibold",
                 isPremium ? "text-fuchsia-400" : "text-amber-400"
@@ -211,7 +210,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </div>
 
         {/* Sticky Bottom CTA */}
-        <div className="p-4 border-t border-border/30">
+        <div className="p-4 pt-3 border-t border-border/30">
           {/* Monthly / Annual toggle — Android only */}
           {isAndroid && (
             <div className="flex items-center justify-center gap-1 mb-3 p-1 rounded-lg bg-muted/50">
@@ -250,14 +249,14 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
             className={cn(
-              "w-full h-12 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg",
+              "w-full h-11 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg",
               isPremium
                 ? "bg-gradient-to-r from-fuchsia-600 via-purple-600 to-pink-600 hover:from-fuchsia-500 hover:via-purple-500 hover:to-pink-500 text-white shadow-fuchsia-500/30"
                 : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-black shadow-amber-500/30"
             )}
           >
             <span className="flex items-center gap-2">
-              {isPremium ? <Crown className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+              {isPremium ? <Crown className="h-4 w-4" /> : <Star className="h-4 w-4" />}
               {currentPlan === targetPlan
                 ? "Current Plan"
                 : isPremium
@@ -269,7 +268,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
           {/* Cross-sell hint */}
           {!isPremium && (
-            <p className="text-center text-[11px] text-muted-foreground mt-2.5">
+            <p className="text-center text-[11px] text-muted-foreground mt-2">
               Want everything? <button
                 onClick={() => setInternalPlan("premium")}
                 className="text-fuchsia-400 font-semibold underline underline-offset-2"
@@ -279,7 +278,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
             </p>
           )}
           {isPremium && currentPlan === "free" && (
-            <p className="text-center text-[11px] text-muted-foreground mt-2.5">
+            <p className="text-center text-[11px] text-muted-foreground mt-2">
               Looking for a lighter plan? <button
                 onClick={() => setInternalPlan("basic")}
                 className="text-amber-400 font-semibold underline underline-offset-2"
