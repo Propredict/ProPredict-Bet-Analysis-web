@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Crown, Star, Sparkles, X, Flame, Zap, Bell, Ban, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
   const [internalPlan, setInternalPlan] = useState<"basic" | "premium">(highlightPlan ?? "basic");
   const isAndroid = getIsAndroidApp();
@@ -60,14 +61,23 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
   useEffect(() => {
+    let frame: number | undefined;
+
     if (open) {
       document.body.style.overflow = "hidden";
-      requestAnimationFrame(() => setIsVisible(true));
+      frame = requestAnimationFrame(() => {
+        setIsVisible(true);
+        contentRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      });
     } else {
       document.body.style.overflow = "";
       setIsVisible(false);
     }
-    return () => { document.body.style.overflow = ""; };
+
+    return () => {
+      document.body.style.overflow = "";
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, [open]);
 
   const handleClose = () => {
@@ -97,7 +107,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-20 top-[calc(3rem+env(safe-area-inset-top,0px))] sm:top-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:bottom-4 z-50 flex items-center justify-center p-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:p-4 sm:pt-[calc(3.75rem+env(safe-area-inset-top,0px))] sm:pb-4">
       {/* Backdrop */}
       <div
         className={cn(
@@ -110,7 +120,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[calc(100dvh-250px)] sm:max-h-[85vh]",
+          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-full sm:max-h-[85vh]",
           "rounded-2xl shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
@@ -125,7 +135,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </button>
 
         {/* Scrollable Content */}
-        <div className="px-5 pt-2 pb-3 overflow-y-auto flex-1 min-h-0">
+        <div ref={contentRef} className="px-5 pt-2 pb-3 overflow-y-auto flex-1 min-h-0">
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-1 mb-2">
