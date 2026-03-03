@@ -125,44 +125,44 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
         </button>
 
         {/* Scrollable Content */}
-        <div className="px-5 pt-2 pb-3 overflow-y-auto flex-1 min-h-0">
+        <div className="px-4 pt-1.5 pb-2 overflow-y-auto flex-1 min-h-0">
           {/* FOMO Badge */}
           {showFomoBadge && (
-            <div className="flex justify-center mt-1 mb-2">
+            <div className="flex justify-center mt-0.5 mb-1.5">
               <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse",
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold animate-pulse",
                 isPremium
                   ? "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40"
                   : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
               )}>
-                <Flame className="h-3 w-3" />
+                <Flame className="h-2.5 w-2.5" />
                 {isPremium ? "Premium Prediction Just Dropped" : "Pro Prediction Just Dropped"}
               </div>
             </div>
           )}
 
           {/* Header */}
-          <div className="text-center mt-1 mb-3">
+          <div className="text-center mt-0.5 mb-2">
             <div className={cn(
-              "inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2",
+              "inline-flex items-center justify-center w-8 h-8 rounded-lg mb-1.5",
               isPremium
-                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]"
-                : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_15px_rgba(217,70,239,0.3)]"
+                : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
             )}>
               {isPremium
-                ? <Crown className="h-5 w-5 text-fuchsia-400" />
-                : <Star className="h-5 w-5 text-amber-400" />
+                ? <Crown className="h-4 w-4 text-fuchsia-400" />
+                : <Star className="h-4 w-4 text-amber-400" />
               }
             </div>
             <h2 className={cn(
-              "text-lg font-bold mb-1 bg-clip-text text-transparent",
+              "text-base font-bold mb-0.5 bg-clip-text text-transparent",
               isPremium
                 ? "bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400"
                 : "bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400"
             )}>
               {isPremium ? "Unlock Premium Access" : "Unlock Pro Access"}
             </h2>
-            <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
+            <p className="text-[10px] text-muted-foreground max-w-[240px] mx-auto leading-tight">
               {isPremium
                 ? "Don't miss today's highest confidence AI predictions."
                 : "Get access to higher confidence AI predictions & analysis."
@@ -172,35 +172,35 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
           {/* Features */}
           <div className={cn(
-            "rounded-xl p-3 mb-3 border",
+            "rounded-lg p-2.5 mb-2 border",
             isPremium
               ? "bg-fuchsia-500/5 border-fuchsia-500/20"
               : "bg-amber-500/5 border-amber-500/20"
           )}>
-            <h3 className="text-[11px] font-semibold text-foreground mb-2">
+            <h3 className="text-[10px] font-semibold text-foreground mb-1.5">
               Everything you get:
             </h3>
-            <ul className="space-y-1.5">
+            <ul className="space-y-1">
               {features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2.5">
+                <li key={idx} className="flex items-center gap-2">
                   <div className={cn(
-                    "flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center",
+                    "flex-shrink-0 w-5 h-5 rounded flex items-center justify-center",
                     isPremium ? "bg-fuchsia-500/15" : "bg-amber-500/15"
                   )}>
                     <feature.icon className={cn(
-                      "h-3 w-3",
+                      "h-2.5 w-2.5",
                       isPremium ? "text-fuchsia-400" : "text-amber-400"
                     )} />
                   </div>
-                  <span className="text-[11px] text-foreground">{feature.label}</span>
+                  <span className="text-[10px] text-foreground">{feature.label}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Social Proof */}
-          <div className="text-center mb-1">
-            <p className="text-[11px] text-muted-foreground">
+          <div className="text-center mb-0.5">
+            <p className="text-[10px] text-muted-foreground">
               <span className={cn(
                 "font-semibold",
                 isPremium ? "text-fuchsia-400" : "text-amber-400"
