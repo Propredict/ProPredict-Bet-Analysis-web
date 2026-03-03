@@ -110,7 +110,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[calc(100dvh-200px)] sm:max-h-[85vh]",
+          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[calc(100dvh-250px)] sm:max-h-[85vh]",
           "rounded-2xl shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
