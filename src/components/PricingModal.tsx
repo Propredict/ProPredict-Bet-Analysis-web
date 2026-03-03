@@ -97,11 +97,11 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[60px] z-50 flex items-center justify-center p-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-black/40 transition-opacity duration-300",
+          "absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-0"
         )}
         onClick={handleClose}
@@ -110,7 +110,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       {/* Card Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[calc(100vh-140px)]",
+          "relative w-full max-w-[340px] border border-border/50 transition-all duration-300 ease-out flex flex-col max-h-[85vh]",
           "rounded-2xl shadow-2xl",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
