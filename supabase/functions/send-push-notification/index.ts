@@ -153,8 +153,8 @@ serve(async (req) => {
       }
     }
 
-    /* ── 40-minute marketing cooldown ── */
-    const FORTY_MIN = 40 * 60 * 1000;
+    /* ── 15-minute marketing cooldown ── */
+    const COOLDOWN_MS = 15 * 60 * 1000;
     const now = new Date();
 
     // Group eligible tokens by user plan
@@ -174,7 +174,7 @@ serve(async (req) => {
 
         if (profileRes.data?.last_marketing_push_at) {
           const diff = now.getTime() - new Date(profileRes.data.last_marketing_push_at).getTime();
-          if (diff < FORTY_MIN) canSend = false;
+          if (diff < COOLDOWN_MS) canSend = false;
         }
 
         if (subRes.data && subRes.data.expires_at && new Date(subRes.data.expires_at) > now) {
