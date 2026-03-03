@@ -149,14 +149,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (subRes.data.expires_at) {
-        const exp = new Date(subRes.data.expires_at);
-        if (exp < new Date()) {
-          setPlan("free");
-          setSubscriptionSource("free");
-          setIsLoading(false);
-          return;
-        }
+      // Check both expires_at AND status for full security consistency
+      const isExpired = subRes.data.expires_at && new Date(subRes.data.expires_at) < new Date();
+      const isInactive = subRes.data.status && subRes.data.status !== "active";
+
+      if (isExpired || isInactive) {
+        setPlan("free");
+        setSubscriptionSource("free");
+        setIsLoading(false);
+        return;
       }
 
       const resolvedPlan = subRes.data.plan as UserPlan;
