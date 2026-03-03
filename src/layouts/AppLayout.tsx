@@ -34,6 +34,7 @@ import { useOneSignalPlayerSync } from "@/hooks/useOneSignalPlayerSync";
 import { AndroidPushModal } from "@/components/AndroidPushModal";
 import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
 import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
+import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
 
 
 // Pages where footer should be hidden (header-only layout)
@@ -56,6 +57,9 @@ export default function AppLayout() {
 
   // In-app realtime toast notifications for new tips/tickets
   useRealtimeNotifications();
+
+  // Realtime score sync — instant cache update when goals are detected
+  useRealtimeScoreSync();
 
   // Initialize OneSignal Web Push (once)
   useEffect(() => {
