@@ -65,14 +65,23 @@ serve(async (req) => {
     // Use service role to bypass RLS
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Helper to find user by email
-    const findUserByEmail = async (email: string) => {
-      const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
-      if (userError) {
-        console.error("Error fetching users:", userError);
+    // Helper to find user by email via profiles table (avoids listUsers pagination limit)
+    const findUserByEmail = async (email: string): Promise<{ id: string; email: string } | null> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error finding user by email in profiles:", error);
         return null;
       }
-      return userData.users.find(u => u.email === email) || null;
+      if (!data) {
+        console.error(`No profile found for email: ${email}`);
+        return null;
+      }
+      return { id: data.user_id, email: data.email || email };
     };
 
     // Helper to find user by Stripe customer ID
@@ -82,6 +91,13 @@ serve(async (req) => {
       const email = (customer as Stripe.Customer).email;
       if (!email) return null;
       return findUserByEmail(email);
+    };
+
+    // Helper to find user by subscription metadata (most reliable)
+    const findUserByMetadata = async (subscription: Stripe.Subscription) => {
+      const userId = subscription.metadata?.user_id;
+      if (!userId) return null;
+      return { id: userId, email: "" };
     };
 
     // Handle checkout.session.completed
@@ -155,7 +171,8 @@ serve(async (req) => {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      const user = await findUserByCustomerId(customerId);
+      // Try metadata first, then fallback to customer email lookup
+      const user = await findUserByMetadata(subscription) || await findUserByCustomerId(customerId);
       if (!user) {
         console.error(`No user found for customer: ${customerId}`);
         return new Response(
@@ -195,7 +212,7 @@ serve(async (req) => {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      const user = await findUserByCustomerId(customerId);
+      const user = await findUserByMetadata(subscription) || await findUserByCustomerId(customerId);
       if (!user) {
         console.error(`No user found for customer: ${customerId}`);
         return new Response(

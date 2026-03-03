@@ -38,6 +38,7 @@ serve(async (req) => {
     // Get user from auth header if present
     const authHeader = req.headers.get("Authorization");
     let customerEmail: string | undefined;
+    let userId: string | undefined;
 
     if (authHeader?.startsWith("Bearer ")) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -49,16 +50,25 @@ serve(async (req) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
         customerEmail = user.email;
+        userId = user.id;
       }
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl || "https://propredictbet.lovable.app/profile?payment=success",
       cancel_url: cancelUrl || "https://propredictbet.lovable.app/get-premium",
       customer_email: customerEmail,
-    });
+    };
+
+    // Pass user_id in both session and subscription metadata for webhook lookup
+    if (userId) {
+      sessionParams.metadata = { user_id: userId };
+      sessionParams.subscription_data = { metadata: { user_id: userId } };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(
       JSON.stringify({ url: session.url }),
