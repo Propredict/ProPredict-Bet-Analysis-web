@@ -236,7 +236,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
               <div className="p-1.5 rounded-md bg-accent/15">
                 <Users className="h-4 w-4 text-accent" />
               </div>
-              <span className="text-xs font-semibold text-accent">Community</span>
+              <span className="text-xs font-semibold text-accent">Users Vote</span>
             </div>
             <span className="text-[10px] text-muted-foreground">{community.totalVotes} votes</span>
           </div>
