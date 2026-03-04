@@ -561,10 +561,10 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
       <div className="border-t border-border/30">
         <button
           onClick={() => setShowComments(!showComments)}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[10px] text-primary-foreground hover:text-primary-foreground/80 transition-colors"
         >
           <MessageSquare className="h-3 w-3" />
-          Leave your AI prediction comment
+          Comment Below
           {showComments ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
         {showComments && (
