@@ -68,7 +68,7 @@ const UserPlanContext = createContext<UserPlanContextType | undefined>(undefined
 ===================== */
 
 export function UserPlanProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const isMobileApp = getIsMobileApp();
   
@@ -87,12 +87,16 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   ===================== */
 
   const fetchUserData = useCallback(async () => {
+    // Guard: don't reset to "free" while auth is still refreshing the token.
+    // Only treat as genuinely logged-out when authLoading is false.
     if (!user) {
-      setPlan("free");
-      setSubscriptionSource("free");
-      setIsAdmin(false);
-      setUnlockedContent([]);
-      setIsLoading(false);
+      if (!authLoading) {
+        setPlan("free");
+        setSubscriptionSource("free");
+        setIsAdmin(false);
+        setUnlockedContent([]);
+        setIsLoading(false);
+      }
       return;
     }
 
@@ -176,7 +180,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     fetchUserData();
