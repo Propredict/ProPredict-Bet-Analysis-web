@@ -471,9 +471,11 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                   className="w-full h-8 text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_12px_rgba(15,155,142,0.3)]"
                   onClick={async () => {
                     if (canPick && pendingPick) {
-                      await submitPick(pendingPick);
-                      onPredictionMade?.();
-                      setPendingPick(null);
+                      const saved = await submitPick(pendingPick);
+                      if (saved) {
+                        onPredictionMade?.();
+                        setPendingPick(null);
+                      }
                     }
                   }}
                   disabled={submitting || !canPick}
