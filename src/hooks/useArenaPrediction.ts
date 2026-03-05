@@ -78,9 +78,13 @@ export function useArenaPrediction(
   }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string) => {
-    if (!user || isKickedOff || submitting || isFree) return;
-    if (userPick) return; // already locked
-    if (limitReached) return;
+    console.log("[Arena] submitPick called:", { pick, user: !!user, isKickedOff, submitting, isFree, userPick, limitReached });
+    if (!user || isKickedOff || submitting || isFree) {
+      console.warn("[Arena] submitPick blocked:", { user: !!user, isKickedOff, submitting, isFree });
+      return;
+    }
+    if (userPick) { console.warn("[Arena] submitPick blocked: already locked", userPick); return; }
+    if (limitReached) { console.warn("[Arena] submitPick blocked: limit reached"); return; }
     setSubmitting(true);
 
     // Optimistic lock — immediately show as locked
