@@ -77,14 +77,10 @@ export function useArenaPrediction(
     };
   }, [user, matchId, fetchExisting]);
 
-  const submitPick = useCallback(async (pick: string) => {
-    console.log("[Arena] submitPick called:", { pick, user: !!user, isKickedOff, submitting, isFree, userPick, limitReached });
-    if (!user || isKickedOff || submitting || isFree) {
-      console.warn("[Arena] submitPick blocked:", { user: !!user, isKickedOff, submitting, isFree });
-      return;
-    }
-    if (userPick) { console.warn("[Arena] submitPick blocked: already locked", userPick); return; }
-    if (limitReached) { console.warn("[Arena] submitPick blocked: limit reached"); return; }
+  const submitPick = useCallback(async (pick: string): Promise<boolean> => {
+    if (!user || isKickedOff || submitting || isFree) return false;
+    if (userPick) return false; // already locked
+    if (limitReached) return false;
     setSubmitting(true);
 
     // Optimistic lock — immediately show as locked
@@ -93,20 +89,33 @@ export function useArenaPrediction(
     setUserMarketLabel(deriveMarketLabel(pick));
 
     try {
-      // Get active season for season_id (required FK)
-      const { data: season } = await (supabase as any)
-        .from("active_arena_season")
-        .select("id")
-        .maybeSingle();
+      // Resolve season_id (priority: provided seasonId -> active view -> latest season)
+      let resolvedSeasonId = seasonId;
 
-      if (!season?.id) {
-        console.error("No active arena season found — cannot save prediction");
-        // Rollback
+      if (!resolvedSeasonId) {
+        const { data: activeSeason } = await (supabase as any)
+          .from("active_arena_season")
+          .select("id")
+          .maybeSingle();
+        resolvedSeasonId = activeSeason?.id ?? null;
+      }
+
+      if (!resolvedSeasonId) {
+        const { data: latestSeason } = await (supabase as any)
+          .from("arena_seasons")
+          .select("id")
+          .order("starts_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        resolvedSeasonId = latestSeason?.id ?? null;
+      }
+
+      if (!resolvedSeasonId) {
+        console.error("No arena season found — cannot save prediction");
         setUserPick(null);
         setUserStatus(null);
         setUserMarketLabel(null);
-        setSubmitting(false);
-        return;
+        return false;
       }
 
       // Direct insert using correct table columns
@@ -116,7 +125,7 @@ export function useArenaPrediction(
           user_id: user.id,
           match_id: matchId,
           prediction: pick,
-          season_id: season.id,
+          season_id: resolvedSeasonId,
           status: "pending",
         });
 
@@ -126,12 +135,10 @@ export function useArenaPrediction(
           console.log("Arena: duplicate prediction (23505), keeping locked");
         } else {
           console.error("Arena insert error:", insertError);
-          // Rollback
           setUserPick(null);
           setUserStatus(null);
           setUserMarketLabel(null);
-          setSubmitting(false);
-          return;
+          return false;
         }
       }
 
@@ -141,22 +148,24 @@ export function useArenaPrediction(
         setUserPick(verified.prediction);
         setUserStatus(verified.status || "pending");
         setUserMarketLabel(deriveMarketLabel(verified.prediction));
-      } else {
-        // DB doesn't have it — rollback
-        console.error("Arena: post-insert verification failed, prediction not found in DB");
-        setUserPick(null);
-        setUserStatus(null);
-        setUserMarketLabel(null);
+        return true;
       }
+
+      console.error("Arena: post-insert verification failed, prediction not found in DB");
+      setUserPick(null);
+      setUserStatus(null);
+      setUserMarketLabel(null);
+      return false;
     } catch (e) {
       console.error("Arena prediction submit error:", e);
       setUserPick(null);
       setUserStatus(null);
       setUserMarketLabel(null);
+      return false;
     } finally {
       setSubmitting(false);
     }
-  }, [user, matchId, isKickedOff, submitting, userPick, isFree, limitReached, fetchExisting]);
+  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, isFree, limitReached, fetchExisting]);
 
   const canPick = !isKickedOff && !!user && !isFree && !limitReached && !userPick;
 
