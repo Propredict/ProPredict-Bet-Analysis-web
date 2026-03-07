@@ -1277,13 +1277,20 @@ async function handleBatchRegenerate(
         .select("match_id")
         .eq("match_date", matchDate);
 
-      const { data: existingGlobal } = await supabase
-        .from("ai_predictions")
-        .select("match_id")
-        .in("match_id", fixtureIds.slice(0, 500)); // Check first 500
+      // Check all fixture IDs in chunks of 500 (Supabase .in() limit)
+      let existingGlobalAll: any[] = [];
+      for (let i = 0; i < fixtureIds.length; i += 500) {
+        const chunk = fixtureIds.slice(i, i + 500);
+        const { data: chunkData } = await supabase
+          .from("ai_predictions")
+          .select("match_id")
+          .in("match_id", chunk);
+        if (chunkData) existingGlobalAll = existingGlobalAll.concat(chunkData);
+      }
+      const existingGlobal = { data: existingGlobalAll };
 
       const existingDateIds = new Set((existingByDate ?? []).map((p: any) => String(p.match_id)));
-      const existingGlobalIds = new Set((existingGlobal ?? []).map((p: any) => String(p.match_id)));
+      const existingGlobalIds = new Set((existingGlobal.data ?? []).map((p: any) => String(p.match_id)));
       
       // Only insert IDs that don't exist ANYWHERE in the table
       const missingIds = fixtureIds.filter((id) => !existingDateIds.has(id) && !existingGlobalIds.has(id));
