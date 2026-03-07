@@ -31,8 +31,11 @@ export interface AIPrediction {
  */
 function getDateString(dayOffset: number = 0): string {
   const now = new Date();
-  const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + dayOffset));
-  return utcDate.toISOString().split("T")[0];
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset);
+  const year = target.getFullYear();
+  const month = String(target.getMonth() + 1).padStart(2, "0");
+  const day = String(target.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 /**
