@@ -1290,7 +1290,7 @@ async function handleBatchRegenerate(
       const existingGlobal = { data: existingGlobalAll };
 
       const existingDateIds = new Set((existingByDate ?? []).map((p: any) => String(p.match_id)));
-      const existingGlobalIds = new Set((existingGlobal ?? []).map((p: any) => String(p.match_id)));
+      const existingGlobalIds = new Set((existingGlobal.data ?? []).map((p: any) => String(p.match_id)));
       
       // Only insert IDs that don't exist ANYWHERE in the table
       const missingIds = fixtureIds.filter((id) => !existingDateIds.has(id) && !existingGlobalIds.has(id));
