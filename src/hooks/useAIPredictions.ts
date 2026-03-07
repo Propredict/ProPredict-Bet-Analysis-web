@@ -42,18 +42,32 @@ function getDateString(dayOffset: number = 0): string {
  * Fetch predictions from Supabase for a specific date
  */
 async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
-  const { data, error } = await supabase
-    .from("ai_predictions")
-    .select("*")
-    .eq("match_date", dateStr)
-    .order("match_time", { ascending: true });
+  // Supabase default limit is 1000 rows — fetch in pages to get all predictions
+  const PAGE_SIZE = 1000;
+  let allData: AIPrediction[] = [];
+  let from = 0;
+  let hasMore = true;
 
-  if (error) {
-    console.error("Error fetching AI predictions:", error);
-    return [];
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from("ai_predictions")
+      .select("*")
+      .eq("match_date", dateStr)
+      .order("match_time", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error("Error fetching AI predictions:", error);
+      break;
+    }
+
+    const rows = data ?? [];
+    allData = allData.concat(rows);
+    hasMore = rows.length === PAGE_SIZE;
+    from += PAGE_SIZE;
   }
 
-  return data ?? [];
+  return allData;
 }
 
 /**
