@@ -35,7 +35,7 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 };
 
 interface LeagueStatsEmptyStateProps {
-  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "default";
+  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "default";
   onSelectLeague?: (leagueId: string) => void;
 }
 
@@ -69,6 +69,11 @@ const typeConfig = {
     icon: Swords,
     title: "All Leagues Head to Head",
     subtitle: "Choose a specific league to compare teams",
+  },
+  players: {
+    icon: Users,
+    title: "All Leagues Players",
+    subtitle: "Choose a specific league to view player statistics",
   },
   default: {
     icon: Trophy,

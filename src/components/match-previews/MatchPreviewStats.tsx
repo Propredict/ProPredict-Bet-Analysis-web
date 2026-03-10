@@ -9,7 +9,8 @@ import {
   Target,
   BarChart3,
   Trophy,
-  Handshake
+  Handshake,
+  Star
 } from "lucide-react";
 import { useMatchDetails, type MatchDetails, type H2HMatch } from "@/hooks/useMatchDetails";
 import { useH2H } from "@/hooks/useH2H";
@@ -142,28 +143,32 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-3 pt-3 overflow-x-auto">
-          <TabsList className="w-full grid grid-cols-6 h-9 min-w-[400px]">
-            <TabsTrigger value="h2h" className="text-xs gap-1">
+          <TabsList className="w-full grid grid-cols-7 h-9 min-w-[450px]">
+            <TabsTrigger value="h2h" className="text-[10px] gap-0.5">
               <Swords className="h-3 w-3" />
               <span className="hidden sm:inline">H2H</span>
             </TabsTrigger>
-            <TabsTrigger value="scorers" className="text-xs gap-1">
+            <TabsTrigger value="key-players" className="text-[10px] gap-0.5">
+              <Star className="h-3 w-3" />
+              <span className="hidden sm:inline">Players</span>
+            </TabsTrigger>
+            <TabsTrigger value="scorers" className="text-[10px] gap-0.5">
               <Trophy className="h-3 w-3" />
               <span className="hidden sm:inline">Scorers</span>
             </TabsTrigger>
-            <TabsTrigger value="assists" className="text-xs gap-1">
+            <TabsTrigger value="assists" className="text-[10px] gap-0.5">
               <Handshake className="h-3 w-3" />
               <span className="hidden sm:inline">Assists</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs gap-1">
+            <TabsTrigger value="stats" className="text-[10px] gap-0.5">
               <BarChart3 className="h-3 w-3" />
               <span className="hidden sm:inline">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="lineups" className="text-xs gap-1">
+            <TabsTrigger value="lineups" className="text-[10px] gap-0.5">
               <Users className="h-3 w-3" />
               <span className="hidden sm:inline">Lineups</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="text-xs gap-1">
+            <TabsTrigger value="events" className="text-[10px] gap-0.5">
               <Target className="h-3 w-3" />
               <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
@@ -177,6 +182,17 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
               summary={h2hSummary}
               homeTeam={match.homeTeam}
               awayTeam={match.awayTeam}
+            />
+          </TabsContent>
+
+          <TabsContent value="key-players" className="mt-0">
+            <KeyPlayersSection
+              scorersData={scorersData}
+              assistsData={assistsData}
+              isLoading={scorersLoading || assistsLoading}
+              homeTeam={match.homeTeam}
+              awayTeam={match.awayTeam}
+              leagueId={leagueId}
             />
           </TabsContent>
 
@@ -505,6 +521,116 @@ function EventsSection({ data }: { data: MatchDetails | null }) {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+// Key Players Section - filtered by match teams
+interface KeyPlayersSectionProps {
+  scorersData: any;
+  assistsData: any;
+  isLoading: boolean;
+  homeTeam: string;
+  awayTeam: string;
+  leagueId: string | null;
+}
+
+function KeyPlayersSection({ scorersData, assistsData, isLoading, homeTeam, awayTeam, leagueId }: KeyPlayersSectionProps) {
+  if (!leagueId) {
+    return (
+      <EmptyState 
+        icon={Star} 
+        title="Key players not available" 
+        subtitle="Player data not supported for this league"
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
+      </div>
+    );
+  }
+
+  const allScorers: PlayerStats[] = (scorersData as any)?.players || [];
+  const allAssists: PlayerStats[] = (assistsData as any)?.players || [];
+
+  // Helper: fuzzy team name match
+  const matchTeam = (teamName: string, target: string) => {
+    const tLower = target.toLowerCase();
+    const nLower = teamName.toLowerCase();
+    return nLower.includes(tLower) || tLower.includes(nLower) || 
+           nLower.split(" ").some(w => w.length > 3 && tLower.includes(w));
+  };
+
+  const homeScorers = allScorers.filter(p => matchTeam(p.team.name, homeTeam)).slice(0, 3);
+  const awayScorers = allScorers.filter(p => matchTeam(p.team.name, awayTeam)).slice(0, 3);
+  const homeAssists = allAssists.filter(p => matchTeam(p.team.name, homeTeam)).slice(0, 3);
+  const awayAssists = allAssists.filter(p => matchTeam(p.team.name, awayTeam)).slice(0, 3);
+
+  const hasData = homeScorers.length > 0 || awayScorers.length > 0;
+
+  if (!hasData) {
+    return (
+      <EmptyState 
+        icon={Star} 
+        title="No key players found" 
+        subtitle="Top scorers/assists for these teams will appear here"
+      />
+    );
+  }
+
+  const renderPlayerCard = (player: PlayerStats, stat: "goals" | "assists") => (
+    <div key={`${player.player.id}-${stat}`} className="flex items-center gap-2 p-2 rounded-lg bg-muted/20">
+      <img 
+        src={player.player.photo} 
+        alt="" 
+        className="h-8 w-8 rounded-full object-cover bg-muted flex-shrink-0"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium truncate">{player.player.name}</p>
+        <p className="text-[10px] text-muted-foreground">{player.games.appearances} apps</p>
+      </div>
+      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+        {stat === "goals" ? `⚽ ${player.goals}` : `🅰️ ${player.assists}`}
+      </Badge>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 max-h-[350px] overflow-y-auto">
+      {/* Home Team */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Star className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-semibold">{homeTeam}</span>
+        </div>
+        <div className="space-y-1.5">
+          {homeScorers.map(p => renderPlayerCard(p, "goals"))}
+          {homeAssists.map(p => renderPlayerCard(p, "assists"))}
+          {homeScorers.length === 0 && homeAssists.length === 0 && (
+            <p className="text-[10px] text-muted-foreground px-2">No top players found in league rankings</p>
+          )}
+        </div>
+      </div>
+
+      {/* Away Team */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Star className="h-3.5 w-3.5 text-destructive" />
+          <span className="text-xs font-semibold">{awayTeam}</span>
+        </div>
+        <div className="space-y-1.5">
+          {awayScorers.map(p => renderPlayerCard(p, "goals"))}
+          {awayAssists.map(p => renderPlayerCard(p, "assists"))}
+          {awayScorers.length === 0 && awayAssists.length === 0 && (
+            <p className="text-[10px] text-muted-foreground px-2">No top players found in league rankings</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

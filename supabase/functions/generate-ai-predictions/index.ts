@@ -151,6 +151,14 @@ async function fetchJsonWithRetry(
 const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
+const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+
+interface TopPlayer {
+  name: string;
+  team: string;
+  goals: number;
+  assists: number;
+}
 
 /**
  * Fetch team's last N matches form
@@ -855,6 +863,34 @@ function formatFormString(form: FormMatch[]): string {
   return form.map(m => m.result).join("");
 }
 
+/**
+ * Fetch top scorers for a league (cached per invocation)
+ */
+async function fetchTopScorers(leagueId: number, season: number, apiKey: string): Promise<TopPlayer[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (topScorersCache.has(cacheKey)) return topScorersCache.get(cacheKey) as any;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players/topscorers?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      topScorersCache.set(cacheKey, []);
+      return [];
+    }
+    const players: TopPlayer[] = (data.response || []).slice(0, 20).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.statistics?.[0]?.team?.name || "",
+      goals: item.statistics?.[0]?.goals?.total || 0,
+      assists: item.statistics?.[0]?.goals?.assists || 0,
+    }));
+    topScorersCache.set(cacheKey, players as any);
+    return players;
+  } catch {
+    topScorersCache.set(cacheKey, []);
+    return [];
+  }
+}
+
 function generatePremiumAnalysis(params: {
   homeTeamName: string;
   awayTeamName: string;
@@ -869,10 +905,11 @@ function generatePremiumAnalysis(params: {
   h2hSummary: H2HSummary;
   homeStats: TeamStats | null;
   awayStats: TeamStats | null;
+  topScorers?: TopPlayer[];
 }): string {
   const {
     homeTeamName, awayTeamName, prediction, predictedScore, confidence,
-    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats,
+    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers,
   } = params;
 
   const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
@@ -929,6 +966,24 @@ function generatePremiumAnalysis(params: {
     }
   }
 
+  // ⭐ KEY PLAYERS
+  if (topScorers && topScorers.length > 0) {
+    const matchTeam = (t: string, target: string) => t.toLowerCase().includes(target.toLowerCase().split(" ").pop() || "");
+    const homePlayers = topScorers.filter(p => matchTeam(p.team, homeTeamName)).slice(0, 3);
+    const awayPlayers = topScorers.filter(p => matchTeam(p.team, awayTeamName)).slice(0, 3);
+    
+    if (homePlayers.length > 0 || awayPlayers.length > 0) {
+      const lines: string[] = [];
+      if (homePlayers.length > 0) {
+        lines.push(`• ${homeTeamName}: ${homePlayers.map(p => `${p.name} (${p.goals}G/${p.assists}A)`).join(", ")}.`);
+      }
+      if (awayPlayers.length > 0) {
+        lines.push(`• ${awayTeamName}: ${awayPlayers.map(p => `${p.name} (${p.goals}G/${p.assists}A)`).join(", ")}.`);
+      }
+      sections.push(`⭐ KEY PLAYERS:\n${lines.join("\n")}`);
+    }
+  }
+
   // 🎯 PROBABILITIES
   sections.push(`🎯 WIN PROBABILITIES: ${homeTeamName} ${homeWin}% | Draw ${draw}% | ${awayTeamName} ${awayWin}%.`);
 
@@ -948,15 +1003,18 @@ async function premiumEnhance(
   awayTeamName: string,
   homeStats: TeamStats | null,
   awayStats: TeamStats | null,
-  apiKey: string
+  apiKey: string,
+  leagueId?: number,
+  season?: number
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
-  // Fetch last 10 real matches + 5 H2H (more data than standard)
-  const [homeForm10, awayForm10, h2h5] = await Promise.all([
+  // Fetch last 10 real matches + 5 H2H + top scorers (more data than standard)
+  const [homeForm10, awayForm10, h2h5, topScorers] = await Promise.all([
     fetchTeamForm(homeTeamId, apiKey, 10),
     fetchTeamForm(awayTeamId, apiKey, 10),
     fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
+    leagueId && season ? fetchTopScorers(leagueId, season, apiKey) : Promise.resolve([]),
   ]);
 
   // Recalculate with deeper form data (use last 10 for form score)
@@ -1000,6 +1058,7 @@ async function premiumEnhance(
     h2hSummary,
     homeStats,
     awayStats,
+    topScorers,
   });
 
   return {
@@ -1242,7 +1301,9 @@ async function processBatch(
             awayTeamName,
             homeStats,
             awayStats,
-            apiKey
+            apiKey,
+            leagueId,
+            season
           );
         } catch (e) {
           console.warn(`Premium enhance failed for ${homeTeamName} vs ${awayTeamName}, keeping standard result:`, e);

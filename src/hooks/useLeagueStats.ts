@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds";
+export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players";
 
 export interface TeamStanding {
   rank: number;
@@ -107,12 +107,45 @@ export interface RoundsResponse {
   rounds: string[];
 }
 
+export interface DetailedPlayerStats {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+    nationality: string;
+    age: number | null;
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  games: {
+    appearances: number;
+    minutes: number;
+    rating: string | null;
+  };
+  goals: number;
+  assists: number;
+  penalties: number;
+  shots: { total: number; on: number };
+  passes: { total: number; key: number; accuracy: number };
+  dribbles: { attempts: number; success: number };
+  cards: { yellow: number; red: number };
+}
+
+export interface PlayersResponse {
+  type: "players";
+  players: DetailedPlayerStats[];
+}
+
 type LeagueStatsResponse = 
   | StandingsResponse 
   | ScorersResponse 
   | AssistsResponse 
   | FixturesResponse 
-  | RoundsResponse;
+  | RoundsResponse
+  | PlayersResponse;
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -192,6 +225,17 @@ export function useLeagueRounds(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "rounds", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useLeaguePlayers(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "players", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "players", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 0,
     gcTime: 0,

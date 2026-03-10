@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds";
+type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players";
 
 serve(async (req: Request) => {
   // Handle CORS preflight
@@ -32,9 +32,9 @@ serve(async (req: Request) => {
       );
     }
 
-    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds"].includes(type)) {
+    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players"].includes(type)) {
       return new Response(
-        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, or rounds" }),
+        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, or players" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -213,6 +213,77 @@ serve(async (req: Request) => {
           rounds: roundsJson.response || [],
         };
         break;
+
+      case "players": {
+        // Fetch top scorers and assists in parallel, combine into one response
+        const [pScorersJson, pAssistsJson] = await Promise.all([
+          fetchWithFallback(`players/topscorers?league=${league}`, season),
+          fetchWithFallback(`players/topassists?league=${league}`, season),
+        ]);
+
+        const normalizePlayer = (item: any) => ({
+          player: {
+            id: item.player?.id,
+            name: item.player?.name,
+            photo: item.player?.photo,
+            nationality: item.player?.nationality,
+            age: item.player?.age,
+          },
+          team: {
+            id: item.statistics?.[0]?.team?.id,
+            name: item.statistics?.[0]?.team?.name,
+            logo: item.statistics?.[0]?.team?.logo,
+          },
+          games: {
+            appearances: item.statistics?.[0]?.games?.appearences || 0,
+            minutes: item.statistics?.[0]?.games?.minutes || 0,
+            rating: item.statistics?.[0]?.games?.rating || null,
+          },
+          goals: item.statistics?.[0]?.goals?.total || 0,
+          assists: item.statistics?.[0]?.goals?.assists || 0,
+          penalties: item.statistics?.[0]?.penalty?.scored || 0,
+          shots: {
+            total: item.statistics?.[0]?.shots?.total || 0,
+            on: item.statistics?.[0]?.shots?.on || 0,
+          },
+          passes: {
+            total: item.statistics?.[0]?.passes?.total || 0,
+            key: item.statistics?.[0]?.passes?.key || 0,
+            accuracy: item.statistics?.[0]?.passes?.accuracy || 0,
+          },
+          dribbles: {
+            attempts: item.statistics?.[0]?.dribbles?.attempts || 0,
+            success: item.statistics?.[0]?.dribbles?.success || 0,
+          },
+          cards: {
+            yellow: item.statistics?.[0]?.cards?.yellow || 0,
+            red: item.statistics?.[0]?.cards?.red || 0,
+          },
+        });
+
+        // Combine and deduplicate by player ID, keeping max goals/assists
+        const playerMap = new Map<number, any>();
+        for (const item of (pScorersJson.response || [])) {
+          const p = normalizePlayer(item);
+          playerMap.set(p.player.id, p);
+        }
+        for (const item of (pAssistsJson.response || [])) {
+          const p = normalizePlayer(item);
+          if (!playerMap.has(p.player.id)) {
+            playerMap.set(p.player.id, p);
+          } else {
+            // Merge: take higher assists count
+            const existing = playerMap.get(p.player.id)!;
+            if (p.assists > existing.assists) existing.assists = p.assists;
+          }
+        }
+
+        responseData = {
+          type: "players",
+          players: Array.from(playerMap.values()),
+        };
+        break;
+      }
 
       default:
         return new Response(

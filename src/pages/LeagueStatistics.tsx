@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3 } from "lucide-react";
+import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
@@ -12,6 +12,7 @@ import { LeagueStatsAssistsTab } from "@/components/league-statistics/LeagueStat
 import { LeagueStatsFixturesTab } from "@/components/league-statistics/LeagueStatsFixturesTab";
 import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStatsRoundsTab";
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
+import { LeagueStatsPlayersTab } from "@/components/league-statistics/LeagueStatsPlayersTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 // Known league ID mappings for API-Football
@@ -180,6 +181,7 @@ export default function LeagueStatistics() {
               {[
                 { value: "live", icon: Play, label: "Live" },
                 { value: "standings", icon: Trophy, label: "Standings" },
+                { value: "players", icon: UserCheck, label: "Players" },
                 { value: "scorers", icon: Target, label: "Scorers" },
                 { value: "assists", icon: Users, label: "Assists" },
                 { value: "fixtures", icon: Calendar, label: "Fixtures" },
@@ -215,6 +217,10 @@ export default function LeagueStatistics() {
           </TabsContent>
 
           {/* Other tabs - show empty state if "All Leagues" selected */}
+
+          <TabsContent value="players" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="players" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsPlayersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
 
           <TabsContent value="scorers" className="mt-4">
             {isAllLeagues ? <LeagueStatsEmptyState type="scorers" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsScorersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
