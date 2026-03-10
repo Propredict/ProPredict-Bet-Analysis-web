@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.get-team-stats]
 verify_jwt = false
+
+[functions.get-player-profile]
+verify_jwt = false

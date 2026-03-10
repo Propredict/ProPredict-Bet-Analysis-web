@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLeagueYellowCards, YellowCardsResponse } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface Props {
   leagueId: string;
@@ -55,15 +56,17 @@ export function LeagueStatsYellowCardsTab({ leagueId, leagueName }: Props) {
                   <tr key={item.player.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="px-2 sm:px-3 py-2 font-bold text-primary">{index + 1}</td>
                     <td className="px-2 sm:px-3 py-2">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        {item.player.photo && (
-                          <img src={item.player.photo} alt="" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{item.player.name}</div>
-                          <div className="text-[9px] sm:text-xs text-muted-foreground truncate sm:hidden">{item.team.name}</div>
+                      <ClickablePlayer playerId={item.player.id}>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          {item.player.photo && (
+                            <img src={item.player.photo} alt="" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <div className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none hover:text-primary transition-colors">{item.player.name}</div>
+                            <div className="text-[9px] sm:text-xs text-muted-foreground truncate sm:hidden">{item.team.name}</div>
+                          </div>
                         </div>
-                      </div>
+                      </ClickablePlayer>
                     </td>
                     <td className="px-2 sm:px-3 py-2 hidden sm:table-cell">
                       <div className="flex items-center gap-2">

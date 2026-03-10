@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { TeamPlayersStats, PlayerMatchStats } from "@/hooks/useMatchDetails";
 import { useState } from "react";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface PlayersTabProps {
   players: TeamPlayersStats[];
@@ -32,13 +33,15 @@ function PlayerRow({ player, index }: { player: PlayerMatchStats; index: number 
 
   return (
     <div className={`flex items-center gap-2 px-3 py-2 text-xs ${index % 2 === 0 ? "bg-secondary/20" : ""}`}>
-      <img src={player.player.photo} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{player.player.name}</p>
-        <p className="text-muted-foreground text-[10px]">
-          {s.games?.position || "–"} • {s.games?.minutes || 0}'
-        </p>
-      </div>
+      <ClickablePlayer playerId={player.player.id} className="flex items-center gap-2 flex-1 min-w-0">
+        <img src={player.player.photo} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate hover:text-primary transition-colors">{player.player.name}</p>
+          <p className="text-muted-foreground text-[10px]">
+            {s.games?.position || "–"} • {s.games?.minutes || 0}'
+          </p>
+        </div>
+      </ClickablePlayer>
       <div className="flex items-center gap-2 flex-shrink-0">
         {(s.goals?.total || 0) > 0 && (
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-500/20 text-green-400">
