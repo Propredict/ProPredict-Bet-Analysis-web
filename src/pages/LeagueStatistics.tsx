@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle } from "lucide-react";
+import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle, Square, ShieldAlert, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
@@ -14,6 +14,9 @@ import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStats
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
 import { LeagueStatsPlayersTab } from "@/components/league-statistics/LeagueStatsPlayersTab";
 import { LeagueStatsInjuriesTab } from "@/components/league-statistics/LeagueStatsInjuriesTab";
+import { LeagueStatsYellowCardsTab } from "@/components/league-statistics/LeagueStatsYellowCardsTab";
+import { LeagueStatsRedCardsTab } from "@/components/league-statistics/LeagueStatsRedCardsTab";
+import { LeagueStatsSquadsTab } from "@/components/league-statistics/LeagueStatsSquadsTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 // Known league ID mappings for API-Football
