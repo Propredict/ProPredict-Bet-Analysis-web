@@ -1058,6 +1058,7 @@ async function premiumEnhance(
     h2hSummary,
     homeStats,
     awayStats,
+    topScorers,
   });
 
   return {
