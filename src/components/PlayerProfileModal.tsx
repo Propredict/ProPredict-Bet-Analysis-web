@@ -47,9 +47,9 @@ export function PlayerProfileModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center p-3 sm:p-4 pointer-events-none">
       <div
-        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-xl bg-background border border-border/30 shadow-2xl pointer-events-auto relative"
+        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl bg-background border border-border/40 shadow-[0_8px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
           {/* Close button - always visible */}
@@ -62,7 +62,7 @@ export function PlayerProfileModal() {
           </button>
 
           {isLoading ? (
-            <div className="p-6 pt-0 space-y-4">
+            <div className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Skeleton className="w-16 h-16 rounded-full" />
                 <div className="space-y-2 flex-1">
@@ -73,8 +73,12 @@ export function PlayerProfileModal() {
               {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
             </div>
           ) : !profile ? (
-            <div className="p-6 pt-0 text-center text-muted-foreground text-sm">
-              Player data not available
+            <div className="p-8 pt-12 flex flex-col items-center justify-center gap-3 text-center min-h-[160px]">
+              <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center">
+                <X className="h-6 w-6 text-muted-foreground/60" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Player data not available</p>
+              <p className="text-xs text-muted-foreground">Stats for this player could not be loaded</p>
             </div>
           ) : (
             <>
