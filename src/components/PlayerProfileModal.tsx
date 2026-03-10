@@ -284,6 +284,6 @@ export function PlayerProfileModal() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
