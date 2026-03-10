@@ -69,6 +69,7 @@ function PitchPlayer({ player, isAway, teamColors }: { player: PlayerLineup; isA
 }
 
 function PitchFormation({ lineup, isAway }: { lineup: TeamLineup; isAway: boolean }) {
+  const teamColors = lineup.team?.colors || null;
   const players = lineup.startXI || [];
   const hasGrid = players.some(p => p.grid);
 
