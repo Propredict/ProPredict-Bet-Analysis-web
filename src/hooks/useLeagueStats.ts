@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds";
+export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players";
 
 export interface TeamStanding {
   rank: number;
