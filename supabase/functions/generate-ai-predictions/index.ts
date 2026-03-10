@@ -1115,6 +1115,7 @@ async function premiumEnhance(
     homeStats,
     awayStats,
     topScorers,
+    injuries,
   });
 
   return {
