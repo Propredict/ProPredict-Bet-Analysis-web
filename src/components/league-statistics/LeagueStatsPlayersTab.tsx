@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users } from "lucide-react";
 import { useLeaguePlayers, type PlayersResponse, type DetailedPlayerStats } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface LeagueStatsPlayersTabProps {
   leagueId: string;
