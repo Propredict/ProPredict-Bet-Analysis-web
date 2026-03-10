@@ -139,6 +139,7 @@ export interface MatchDetails {
   events: MatchEvent[];
   odds: OddsBet[];
   players: TeamPlayersStats[];
+  injuries: InjuryData[];
   h2h: H2HMatch[];
 }
 
