@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.test-push]
 verify_jwt = false
+
+[functions.get-team-stats]
+verify_jwt = false
