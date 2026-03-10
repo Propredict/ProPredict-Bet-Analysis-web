@@ -70,6 +70,11 @@ const typeConfig = {
     title: "All Leagues Head to Head",
     subtitle: "Choose a specific league to compare teams",
   },
+  players: {
+    icon: Users,
+    title: "All Leagues Players",
+    subtitle: "Choose a specific league to view player statistics",
+  },
   default: {
     icon: Trophy,
     title: "Select a League",
