@@ -71,6 +71,30 @@ export interface OddsBet {
   values: OddsValue[];
 }
 
+export interface PlayerMatchStats {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+  };
+  statistics: Array<{
+    games: { minutes: number | null; rating: string | null; position: string | null };
+    shots: { total: number | null; on: number | null };
+    goals: { total: number | null; assists: number | null };
+    passes: { total: number | null; key: number | null; accuracy: string | null };
+    tackles: { total: number | null; interceptions: number | null };
+    duels: { total: number | null; won: number | null };
+    dribbles: { attempts: number | null; success: number | null };
+    fouls: { drawn: number | null; committed: number | null };
+    cards: { yellow: number | null; red: number | null };
+  }>;
+}
+
+export interface TeamPlayersStats {
+  team: { id: number; name: string; logo: string };
+  players: PlayerMatchStats[];
+}
+
 export interface MatchDetails {
   fixture: {
     id: number;
@@ -99,6 +123,7 @@ export interface MatchDetails {
   lineups: TeamLineup[];
   events: MatchEvent[];
   odds: OddsBet[];
+  players: TeamPlayersStats[];
   h2h: H2HMatch[];
 }
 
