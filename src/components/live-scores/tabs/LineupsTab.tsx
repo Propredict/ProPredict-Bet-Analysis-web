@@ -1,5 +1,6 @@
 import { TeamLineup, PlayerLineup } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface LineupsTabProps {
   lineups: TeamLineup[];
@@ -15,7 +16,11 @@ function PlayerRow({ player }: { player: PlayerLineup }) {
         <span className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
           {player.number || "—"}
         </span>
-        <span className="text-sm text-foreground">{player.name || "Unknown"}</span>
+        <ClickablePlayer playerId={player.id}>
+          <span className="text-sm text-foreground hover:text-primary transition-colors">
+            {player.name || "Unknown"}
+          </span>
+        </ClickablePlayer>
       </div>
       <span className="text-xs text-muted-foreground font-medium bg-muted/40 px-2.5 py-1 rounded">
         {posLabel}
