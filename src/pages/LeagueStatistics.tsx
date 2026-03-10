@@ -253,6 +253,18 @@ export default function LeagueStatistics() {
           <TabsContent value="h2h" className="mt-4">
             {isAllLeagues ? <LeagueStatsEmptyState type="h2h" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsH2HTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
           </TabsContent>
+
+          <TabsContent value="yellowcards" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="yellowcards" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsYellowCardsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
+          <TabsContent value="redcards" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="redcards" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsRedCardsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
+          <TabsContent value="squads" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="squads" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsSquadsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
         </Tabs>
 
         {/* Footer Ad */}
