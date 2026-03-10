@@ -946,7 +946,7 @@ function generatePremiumAnalysis(params: {
 }): string {
   const {
     homeTeamName, awayTeamName, prediction, predictedScore, confidence,
-    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers,
+    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers, injuries,
   } = params;
 
   const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
