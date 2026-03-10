@@ -140,8 +140,8 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           </div>
 
           {/* TABS */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="px-3 py-3 border-b border-white/10">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col min-h-0 flex-1">
+            <div className="px-3 py-3 border-b border-white/10 flex-shrink-0">
               <TabsList
                 className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
                 style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
@@ -158,62 +158,64 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               </TabsList>
             </div>
 
-            <TabsContent value="statistics" className="m-0">
-              <StatisticsTab
-                statistics={details?.statistics ?? []}
-                events={details?.events ?? []}
-                loading={loading}
-                homeTeam={match.homeTeam}
-                awayTeam={match.awayTeam}
-              />
-            </TabsContent>
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <TabsContent value="statistics" className="m-0">
+                <StatisticsTab
+                  statistics={details?.statistics ?? []}
+                  events={details?.events ?? []}
+                  loading={loading}
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                />
+              </TabsContent>
 
-            <TabsContent value="players" className="m-0">
-              <PlayersTab
-                players={details?.players ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="players" className="m-0">
+                <PlayersTab
+                  players={details?.players ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="injuries" className="m-0">
-              <InjuriesTab
-                injuries={details?.injuries ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="injuries" className="m-0">
+                <InjuriesTab
+                  injuries={details?.injuries ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="season-stats" className="m-0">
-              <SeasonStatsTab
-                homeStats={teamStatsData?.home ?? null}
-                awayStats={teamStatsData?.away ?? null}
-                loading={teamStatsLoading}
-                homeTeam={match.homeTeam}
-                awayTeam={match.awayTeam}
-              />
-            </TabsContent>
+              <TabsContent value="season-stats" className="m-0">
+                <SeasonStatsTab
+                  homeStats={teamStatsData?.home ?? null}
+                  awayStats={teamStatsData?.away ?? null}
+                  loading={teamStatsLoading}
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                />
+              </TabsContent>
 
-            <TabsContent value="lineups" className="m-0">
-              <LineupsTab
-                lineups={details?.lineups ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="lineups" className="m-0">
+                <LineupsTab
+                  lineups={details?.lineups ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="odds" className="m-0">
-              <OddsTab
-                odds={details?.odds ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="odds" className="m-0">
+                <OddsTab
+                  odds={details?.odds ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="h2h" className="m-0">
-              <H2HTab
-                h2h={details?.h2h ?? []}
-                loading={loading}
-                homeTeamName={match.homeTeam}
-                awayTeamName={match.awayTeam}
-              />
-            </TabsContent>
+              <TabsContent value="h2h" className="m-0">
+                <H2HTab
+                  h2h={details?.h2h ?? []}
+                  loading={loading}
+                  homeTeamName={match.homeTeam}
+                  awayTeamName={match.awayTeam}
+                />
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>
