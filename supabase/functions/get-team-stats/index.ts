@@ -92,7 +92,7 @@ serve(async (req: Request) => {
       parseCoach(awayCoachRes),
     ]);
 
-    function normalizeTeamStats(stats: any) {
+    function normalizeTeamStats(stats: any, coach: any) {
       if (!stats) return null;
       return {
         team: {
@@ -100,6 +100,7 @@ serve(async (req: Request) => {
           name: stats.team?.name,
           logo: stats.team?.logo,
         },
+        coach: coach || null,
         form: stats.form ?? "",
         fixtures: {
           played: { home: stats.fixtures?.played?.home ?? 0, away: stats.fixtures?.played?.away ?? 0, total: stats.fixtures?.played?.total ?? 0 },
