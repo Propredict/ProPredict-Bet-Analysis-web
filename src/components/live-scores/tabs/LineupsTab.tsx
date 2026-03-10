@@ -1,5 +1,6 @@
 import { TeamLineup, PlayerLineup } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface LineupsTabProps {
   lineups: TeamLineup[];
