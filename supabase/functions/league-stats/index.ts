@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries";
+type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries" | "yellowcards" | "redcards" | "squads";
 
 serve(async (req: Request) => {
   // Handle CORS preflight
@@ -32,9 +32,9 @@ serve(async (req: Request) => {
       );
     }
 
-    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players", "injuries"].includes(type)) {
+    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players", "injuries", "yellowcards", "redcards", "squads"].includes(type)) {
       return new Response(
-        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, players, or injuries" }),
+        JSON.stringify({ error: "Invalid type parameter" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -311,6 +311,109 @@ serve(async (req: Request) => {
               name: item.league?.name || "",
             },
           })),
+        };
+        break;
+      }
+
+      case "yellowcards": {
+        const ycJson = await fetchWithFallback(`players/topyellowcards?league=${league}`, season);
+        responseData = {
+          type: "yellowcards",
+          players: (ycJson.response || []).map((item: any) => ({
+            player: {
+              id: item.player?.id,
+              name: item.player?.name,
+              photo: item.player?.photo,
+              nationality: item.player?.nationality,
+            },
+            team: {
+              id: item.statistics?.[0]?.team?.id,
+              name: item.statistics?.[0]?.team?.name,
+              logo: item.statistics?.[0]?.team?.logo,
+            },
+            games: {
+              appearances: item.statistics?.[0]?.games?.appearences || 0,
+              minutes: item.statistics?.[0]?.games?.minutes || 0,
+            },
+            cards: {
+              yellow: item.statistics?.[0]?.cards?.yellow || 0,
+              yellowred: item.statistics?.[0]?.cards?.yellowred || 0,
+              red: item.statistics?.[0]?.cards?.red || 0,
+            },
+            fouls: {
+              committed: item.statistics?.[0]?.fouls?.committed || 0,
+            },
+          })),
+        };
+        break;
+      }
+
+      case "redcards": {
+        const rcJson = await fetchWithFallback(`players/topredcards?league=${league}`, season);
+        responseData = {
+          type: "redcards",
+          players: (rcJson.response || []).map((item: any) => ({
+            player: {
+              id: item.player?.id,
+              name: item.player?.name,
+              photo: item.player?.photo,
+              nationality: item.player?.nationality,
+            },
+            team: {
+              id: item.statistics?.[0]?.team?.id,
+              name: item.statistics?.[0]?.team?.name,
+              logo: item.statistics?.[0]?.team?.logo,
+            },
+            games: {
+              appearances: item.statistics?.[0]?.games?.appearences || 0,
+              minutes: item.statistics?.[0]?.games?.minutes || 0,
+            },
+            cards: {
+              yellow: item.statistics?.[0]?.cards?.yellow || 0,
+              yellowred: item.statistics?.[0]?.cards?.yellowred || 0,
+              red: item.statistics?.[0]?.cards?.red || 0,
+            },
+            fouls: {
+              committed: item.statistics?.[0]?.fouls?.committed || 0,
+            },
+          })),
+        };
+        break;
+      }
+
+      case "squads": {
+        // First get all teams in the league from standings
+        const standingsForSquads = await fetchWithFallback(`standings?league=${league}`, season);
+        const teams = standingsForSquads.response?.[0]?.league?.standings?.[0] || [];
+        
+        // Fetch squads for first 6 teams to avoid rate limits
+        const teamIds = teams.slice(0, 20).map((t: any) => t.team?.id).filter(Boolean);
+        const squadPromises = teamIds.map((teamId: number) =>
+          fetch(`${API_FOOTBALL_URL}/players/squads?team=${teamId}`, { headers }).then(r => r.json())
+        );
+        const squadResults = await Promise.all(squadPromises);
+        
+        const squads = squadResults
+          .filter((r: any) => r.response?.length > 0)
+          .map((r: any) => ({
+            team: {
+              id: r.response[0]?.team?.id,
+              name: r.response[0]?.team?.name,
+              logo: r.response[0]?.team?.logo,
+            },
+            players: (r.response[0]?.players || []).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              age: p.age,
+              number: p.number,
+              position: p.position,
+              photo: p.photo,
+            })),
+          }));
+
+        responseData = {
+          type: "squads",
+          squads,
         };
         break;
       }

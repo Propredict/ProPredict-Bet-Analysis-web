@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle } from "lucide-react";
+import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle, Square, ShieldAlert, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
@@ -14,6 +14,9 @@ import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStats
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
 import { LeagueStatsPlayersTab } from "@/components/league-statistics/LeagueStatsPlayersTab";
 import { LeagueStatsInjuriesTab } from "@/components/league-statistics/LeagueStatsInjuriesTab";
+import { LeagueStatsYellowCardsTab } from "@/components/league-statistics/LeagueStatsYellowCardsTab";
+import { LeagueStatsRedCardsTab } from "@/components/league-statistics/LeagueStatsRedCardsTab";
+import { LeagueStatsSquadsTab } from "@/components/league-statistics/LeagueStatsSquadsTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 // Known league ID mappings for API-Football
@@ -183,9 +186,12 @@ export default function LeagueStatistics() {
                 { value: "live", icon: Play, label: "Live" },
                 { value: "standings", icon: Trophy, label: "Standings" },
                 { value: "players", icon: UserCheck, label: "Players" },
-                { value: "injuries", icon: AlertTriangle, label: "Injuries" },
+                { value: "squads", icon: UsersRound, label: "Squads" },
                 { value: "scorers", icon: Target, label: "Scorers" },
                 { value: "assists", icon: Users, label: "Assists" },
+                { value: "yellowcards", icon: Square, label: "🟨 Cards" },
+                { value: "redcards", icon: ShieldAlert, label: "🟥 Cards" },
+                { value: "injuries", icon: AlertTriangle, label: "Injuries" },
                 { value: "fixtures", icon: Calendar, label: "Fixtures" },
                 { value: "rounds", icon: RotateCcw, label: "Rounds" },
                 { value: "h2h", icon: Swords, label: "H2H" },
@@ -246,6 +252,18 @@ export default function LeagueStatistics() {
 
           <TabsContent value="h2h" className="mt-4">
             {isAllLeagues ? <LeagueStatsEmptyState type="h2h" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsH2HTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
+          <TabsContent value="yellowcards" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="yellowcards" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsYellowCardsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
+          <TabsContent value="redcards" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="redcards" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsRedCardsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
+          <TabsContent value="squads" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="squads" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsSquadsTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
           </TabsContent>
         </Tabs>
 

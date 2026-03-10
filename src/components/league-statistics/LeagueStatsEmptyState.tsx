@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Trophy, Target, Users, Calendar, RotateCcw, Swords, AlertTriangle } from "lucide-react";
+import { Trophy, Target, Users, Calendar, RotateCcw, Swords, AlertTriangle, Square, ShieldAlert, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { LeagueSearchSelect } from "./LeagueSearchSelect";
@@ -35,7 +35,7 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 };
 
 interface LeagueStatsEmptyStateProps {
-  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "injuries" | "default";
+  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "injuries" | "yellowcards" | "redcards" | "squads" | "default";
   onSelectLeague?: (leagueId: string) => void;
 }
 
@@ -79,6 +79,21 @@ const typeConfig = {
     icon: AlertTriangle,
     title: "All Leagues Injuries",
     subtitle: "Choose a specific league to view injuries & suspensions",
+  },
+  yellowcards: {
+    icon: Square,
+    title: "All Leagues Yellow Cards",
+    subtitle: "Choose a specific league to view top yellow cards",
+  },
+  redcards: {
+    icon: ShieldAlert,
+    title: "All Leagues Red Cards",
+    subtitle: "Choose a specific league to view top red cards",
+  },
+  squads: {
+    icon: UsersRound,
+    title: "All Leagues Squads",
+    subtitle: "Choose a specific league to view team squads",
   },
   default: {
     icon: Trophy,
