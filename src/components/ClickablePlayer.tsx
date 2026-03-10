@@ -8,11 +8,15 @@ interface ClickablePlayerProps {
 
 export function ClickablePlayer({ playerId, children, className = "" }: ClickablePlayerProps) {
   const { openPlayer } = usePlayerProfileModal();
+  const isAndroid = !!(window as any).Android;
+
+  if (isAndroid) {
+    return <span className={className}>{children}</span>;
+  }
 
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log('[ClickablePlayer] Clicked player:', playerId);
     openPlayer(playerId);
   };
 
