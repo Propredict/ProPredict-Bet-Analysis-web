@@ -2,6 +2,7 @@ import { StatItem, MatchEvent } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
 import { Clock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface StatisticsTabProps {
   statistics: StatItem[];
