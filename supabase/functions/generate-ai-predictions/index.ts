@@ -966,6 +966,24 @@ function generatePremiumAnalysis(params: {
     }
   }
 
+  // ⭐ KEY PLAYERS
+  if (topScorers && topScorers.length > 0) {
+    const matchTeam = (t: string, target: string) => t.toLowerCase().includes(target.toLowerCase().split(" ").pop() || "");
+    const homePlayers = topScorers.filter(p => matchTeam(p.team, homeTeamName)).slice(0, 3);
+    const awayPlayers = topScorers.filter(p => matchTeam(p.team, awayTeamName)).slice(0, 3);
+    
+    if (homePlayers.length > 0 || awayPlayers.length > 0) {
+      const lines: string[] = [];
+      if (homePlayers.length > 0) {
+        lines.push(`• ${homeTeamName}: ${homePlayers.map(p => `${p.name} (${p.goals}G/${p.assists}A)`).join(", ")}.`);
+      }
+      if (awayPlayers.length > 0) {
+        lines.push(`• ${awayTeamName}: ${awayPlayers.map(p => `${p.name} (${p.goals}G/${p.assists}A)`).join(", ")}.`);
+      }
+      sections.push(`⭐ KEY PLAYERS:\n${lines.join("\n")}`);
+    }
+  }
+
   // 🎯 PROBABILITIES
   sections.push(`🎯 WIN PROBABILITIES: ${homeTeamName} ${homeWin}% | Draw ${draw}% | ${awayTeamName} ${awayWin}%.`);
 
