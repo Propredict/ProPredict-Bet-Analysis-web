@@ -34,17 +34,32 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
   );
 }
 
-function ColumnHeaders({ homeTeam, awayTeam, homeLogo, awayLogo }: { homeTeam: string; awayTeam: string; homeLogo?: string; awayLogo?: string }) {
+function ColumnHeaders({ homeTeam, awayTeam, homeLogo, awayLogo, homeCoach, awayCoach }: { 
+  homeTeam: string; awayTeam: string; homeLogo?: string; awayLogo?: string;
+  homeCoach?: TeamSeasonStats["coach"]; awayCoach?: TeamSeasonStats["coach"];
+}) {
   return (
     <div className="grid grid-cols-3 py-3 px-3 border-b border-white/10">
       <div className="flex flex-col items-center gap-1">
         {homeLogo && <img src={homeLogo} alt="" className="w-6 h-6 object-contain" />}
         <span className="text-xs font-bold text-center uppercase truncate max-w-[100px]">{homeTeam}</span>
+        {homeCoach && (
+          <div className="flex items-center gap-1 mt-0.5">
+            {homeCoach.photo && <img src={homeCoach.photo} alt="" className="w-5 h-5 rounded-full object-cover" />}
+            <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">{homeCoach.name}</span>
+          </div>
+        )}
       </div>
       <div />
       <div className="flex flex-col items-center gap-1">
         {awayLogo && <img src={awayLogo} alt="" className="w-6 h-6 object-contain" />}
         <span className="text-xs font-bold text-center uppercase truncate max-w-[100px]">{awayTeam}</span>
+        {awayCoach && (
+          <div className="flex items-center gap-1 mt-0.5">
+            {awayCoach.photo && <img src={awayCoach.photo} alt="" className="w-5 h-5 rounded-full object-cover" />}
+            <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">{awayCoach.name}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -79,6 +94,8 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
         awayTeam={awayTeam}
         homeLogo={h.team?.logo}
         awayLogo={a.team?.logo}
+        homeCoach={h.coach}
+        awayCoach={a.coach}
       />
 
       {/* Form */}
