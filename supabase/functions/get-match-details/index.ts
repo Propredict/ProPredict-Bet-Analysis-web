@@ -153,6 +153,7 @@ serve(async (req: Request) => {
       lineups: lineupsData.response || [],
       events: eventsData.response || [],
       odds: oddsData.response || [],
+      players: playersData.response || [],
       h2h: h2hData,
     };
 
