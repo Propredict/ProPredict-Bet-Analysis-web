@@ -9,15 +9,22 @@ interface ClickablePlayerProps {
 export function ClickablePlayer({ playerId, children, className = "" }: ClickablePlayerProps) {
   const { openPlayer } = usePlayerProfileModal();
 
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('[ClickablePlayer] Clicked player:', playerId);
+    openPlayer(playerId);
+  };
+
   return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        openPlayer(playerId);
-      }}
-      className={`cursor-pointer hover:opacity-80 transition-opacity text-left ${className}`}
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onTouchEnd={handleClick}
+      className={`cursor-pointer hover:opacity-80 transition-opacity text-left inline ${className}`}
     >
       {children}
-    </button>
+    </span>
   );
 }
