@@ -253,3 +253,14 @@ export function useLeaguePlayers(leagueId: string, season: string = "2025") {
     refetchOnWindowFocus: true,
   });
 }
+
+export function useLeagueInjuries(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "injuries", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "injuries", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
