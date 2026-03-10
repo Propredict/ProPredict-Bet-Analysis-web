@@ -104,9 +104,9 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     <>
       <div className="fixed inset-0 z-50 bg-black/60" onClick={onClose} />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div
-          className="w-full max-w-2xl max-h-[calc(100vh-1rem)] sm:max-h-[90vh] rounded-xl bg-[#1a1f2e] border border-white/10 overflow-hidden flex flex-col"
+          className="w-full max-w-2xl max-h-[calc(100vh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] sm:max-h-[90vh] rounded-t-xl sm:rounded-xl bg-[#1a1f2e] border border-white/10 overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
