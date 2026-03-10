@@ -16,6 +16,8 @@ function NavigateWithSearch({ to }: { to: string }) {
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
+import { PlayerProfileProvider } from "@/contexts/PlayerProfileContext";
+import { PlayerProfileModal } from "@/components/PlayerProfileModal";
 
 // Lightweight pages - eager import
 import Index from "./pages/Index";
