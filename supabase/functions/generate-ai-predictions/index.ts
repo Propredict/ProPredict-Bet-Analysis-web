@@ -942,6 +942,7 @@ function generatePremiumAnalysis(params: {
   homeStats: TeamStats | null;
   awayStats: TeamStats | null;
   topScorers?: TopPlayer[];
+  injuries?: InjuryInfo[];
 }): string {
   const {
     homeTeamName, awayTeamName, prediction, predictedScore, confidence,
