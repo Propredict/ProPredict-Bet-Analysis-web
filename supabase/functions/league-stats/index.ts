@@ -32,9 +32,9 @@ serve(async (req: Request) => {
       );
     }
 
-    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players"].includes(type)) {
+    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players", "injuries"].includes(type)) {
       return new Response(
-        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, or players" }),
+        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, players, or injuries" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
