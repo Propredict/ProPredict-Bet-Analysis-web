@@ -47,14 +47,11 @@ export function PlayerProfileModal() {
   if (!isOpen) return null;
 
   return (
-    <>
-      <div className="fixed inset-0 z-[60] bg-black/50" onClick={closePlayer} />
-
-      <div className="fixed inset-0 z-[61] flex items-center justify-center p-4 pointer-events-none">
-        <div
-          className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-background border border-border/30 shadow-2xl pointer-events-auto relative"
-          onClick={(e) => e.stopPropagation()}
-        >
+    <div className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center pointer-events-none">
+      <div
+        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-xl bg-background border border-border/30 shadow-2xl pointer-events-auto relative"
+        onClick={(e) => e.stopPropagation()}
+      >
           {/* Close button - always visible */}
           <button
             onClick={closePlayer}
@@ -287,6 +284,6 @@ export function PlayerProfileModal() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
