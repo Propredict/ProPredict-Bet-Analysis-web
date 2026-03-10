@@ -304,3 +304,36 @@ export function useLeagueInjuries(leagueId: string, season: string = "2025") {
     refetchOnWindowFocus: true,
   });
 }
+
+export function useLeagueYellowCards(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "yellowcards", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "yellowcards", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useLeagueRedCards(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "redcards", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "redcards", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useLeagueSquads(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "squads", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "squads", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
