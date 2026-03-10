@@ -1,6 +1,7 @@
 import { Target, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLeagueScorers, ScorersResponse, PlayerStats } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface LeagueStatsScorersTabProps {
   leagueId: string;
