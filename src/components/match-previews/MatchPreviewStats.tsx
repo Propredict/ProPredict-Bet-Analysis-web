@@ -489,6 +489,76 @@ function LineupsSection({ data, match }: { data: MatchDetails | null; match: Mat
   );
 }
 
+// Injuries Preview Section
+function InjuriesPreviewSection({ injuries, homeTeam, awayTeam, loading }: { 
+  injuries: any[]; homeTeam: string; awayTeam: string; loading: boolean 
+}) {
+  if (loading) {
+    return <Skeleton className="h-32 w-full" />;
+  }
+
+  if (injuries.length === 0) {
+    return (
+      <EmptyState 
+        icon={AlertTriangle} 
+        title="No injury data available" 
+        subtitle="Injury reports appear closer to match day"
+      />
+    );
+  }
+
+  // Group by team
+  const grouped = injuries.reduce<Record<string, { team: any; players: any[] }>>((acc, inj) => {
+    const key = String(inj.team?.id || "unknown");
+    if (!acc[key]) acc[key] = { team: inj.team, players: [] };
+    acc[key].players.push(inj);
+    return acc;
+  }, {});
+
+  const getTypeBadge = (type: string) => {
+    const lower = (type || "").toLowerCase();
+    if (lower.includes("missing") || lower === "out") {
+      return <Badge className="bg-destructive/15 text-destructive border-0 text-[10px]">Out</Badge>;
+    }
+    if (lower.includes("doubtful")) {
+      return <Badge className="bg-amber-500/15 text-amber-500 border-0 text-[10px]">Doubtful</Badge>;
+    }
+    return <Badge variant="outline" className="text-[10px]">{type}</Badge>;
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-1">
+        <AlertTriangle className="h-4 w-4 text-destructive" />
+        <span className="text-xs font-medium">Injuries & Suspensions</span>
+        <Badge variant="secondary" className="text-[10px] ml-auto">{injuries.length} players</Badge>
+      </div>
+      {Object.values(grouped).map(({ team, players }) => (
+        <div key={team?.id || "unknown"} className="space-y-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            {team?.logo && <img src={team.logo} alt="" className="h-4 w-4 object-contain" />}
+            <span className="text-[11px] font-medium">{team?.name}</span>
+          </div>
+          {players.map((inj: any, idx: number) => (
+            <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-muted/20">
+              {inj.player?.photo ? (
+                <img src={inj.player.photo} alt="" className="h-6 w-6 rounded-full object-cover" />
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[9px]">?</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-medium truncate">{inj.player?.name}</p>
+                <p className="text-[9px] text-muted-foreground truncate">{inj.player?.reason}</p>
+              </div>
+              {getTypeBadge(inj.player?.type || "")}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Events Section with fallback
 function EventsSection({ data }: { data: MatchDetails | null }) {
   const events = data?.events || [];
