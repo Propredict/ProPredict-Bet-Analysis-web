@@ -45,6 +45,25 @@ export interface PlayerProfile {
     goals: number;
     assists: number;
   }>;
+  transfers: Array<{
+    date: string;
+    type: string;
+    teams: {
+      from: { id: number; name: string; logo: string };
+      to: { id: number; name: string; logo: string };
+    };
+  }>;
+  trophies: Array<{
+    league: string;
+    country: string;
+    season: string;
+    place: string;
+  }>;
+  sidelined: Array<{
+    type: string;
+    start: string;
+    end: string;
+  }>;
 }
 
 async function fetchPlayerProfile(playerId: number): Promise<PlayerProfile | null> {

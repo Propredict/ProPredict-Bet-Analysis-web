@@ -60,9 +60,39 @@ serve(async (req: Request) => {
 
     const player = data.player;
     const stats = data.statistics || [];
-    
-    // Get the most relevant statistics entry (first one, usually current team)
     const primary = stats[0] || {};
+
+    // Fetch transfers and trophies in parallel
+    const [transfersRes, trophiesRes, sidelinedRes] = await Promise.all([
+      fetch(`${API_FOOTBALL_URL}/transfers?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
+      fetch(`${API_FOOTBALL_URL}/trophies?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
+      fetch(`${API_FOOTBALL_URL}/sidelined?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
+    ]);
+
+    // Normalize transfers
+    const transfers = (transfersRes.response?.[0]?.transfers || []).slice(0, 15).map((t: any) => ({
+      date: t.date,
+      type: t.type,
+      teams: {
+        from: { id: t.teams?.in?.id, name: t.teams?.out?.name, logo: t.teams?.out?.logo },
+        to: { id: t.teams?.out?.id, name: t.teams?.in?.name, logo: t.teams?.in?.logo },
+      },
+    }));
+
+    // Normalize trophies
+    const trophies = (trophiesRes.response || []).map((t: any) => ({
+      league: t.league,
+      country: t.country,
+      season: t.season,
+      place: t.place,
+    }));
+
+    // Normalize sidelined (injury history)
+    const sidelined = (sidelinedRes.response || []).slice(0, 10).map((s: any) => ({
+      type: s.type,
+      start: s.start,
+      end: s.end,
+    }));
 
     const responseData = {
       player: {
@@ -143,7 +173,6 @@ serve(async (req: Request) => {
           saved: primary.penalty?.saved || 0,
         },
       },
-      // All team statistics if player played for multiple teams
       allStats: stats.map((s: any) => ({
         team: { id: s.team?.id, name: s.team?.name, logo: s.team?.logo },
         league: { name: s.league?.name, logo: s.league?.logo },
@@ -151,6 +180,9 @@ serve(async (req: Request) => {
         goals: s.goals?.total || 0,
         assists: s.goals?.assists || 0,
       })),
+      transfers,
+      trophies,
+      sidelined,
     };
 
     return new Response(

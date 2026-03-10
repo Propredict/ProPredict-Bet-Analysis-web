@@ -164,6 +164,76 @@ export function PlayerProfileModal() {
               </div>
             </div>
 
+            {/* Transfers */}
+            {profile.transfers && profile.transfers.length > 0 && (
+              <div className="px-5 pt-3 pb-3 border-t border-white/10">
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Transfer History</h3>
+                <div className="space-y-1.5">
+                  {profile.transfers.map((t, i) => (
+                    <div key={i} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span className="text-[10px] text-muted-foreground w-20 flex-shrink-0">
+                        {t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '–'}
+                      </span>
+                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                        {t.teams.from.logo && <img src={t.teams.from.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0" />}
+                        <span className="truncate text-muted-foreground">{t.teams.from.name || '–'}</span>
+                      </div>
+                      <span className="text-primary font-bold text-[10px]">→</span>
+                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                        {t.teams.to.logo && <img src={t.teams.to.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0" />}
+                        <span className="truncate">{t.teams.to.name || '–'}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50 flex-shrink-0">
+                        {t.type || '–'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Trophies */}
+            {profile.trophies && profile.trophies.length > 0 && (
+              <div className="px-5 pt-3 pb-3 border-t border-white/10">
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  🏆 Trophies ({profile.trophies.filter(t => t.place === "Winner").length} won)
+                </h3>
+                <div className="space-y-1">
+                  {profile.trophies.map((t, i) => (
+                    <div key={i} className="flex items-center gap-2 py-1 text-xs">
+                      <span className={`text-sm ${t.place === "Winner" ? "" : "opacity-40"}`}>
+                        {t.place === "Winner" ? "🏆" : t.place === "2nd Place" ? "🥈" : t.place === "3rd Place" ? "🥉" : "🏅"}
+                      </span>
+                      <span className={`flex-1 truncate ${t.place === "Winner" ? "font-medium" : "text-muted-foreground"}`}>
+                        {t.league}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">{t.season}</span>
+                      <span className="text-[10px] text-muted-foreground">{t.country}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sidelined (Injury History) */}
+            {profile.sidelined && profile.sidelined.length > 0 && (
+              <div className="px-5 pt-3 pb-3 border-t border-white/10">
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">🚑 Injury History</h3>
+                <div className="space-y-1">
+                  {profile.sidelined.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 py-1 text-xs">
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-destructive/15 text-destructive flex-shrink-0">
+                        {s.type}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground flex-1">
+                        {s.start} → {s.end || 'ongoing'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Multi-team info */}
             {profile.allStats.length > 1 && (
               <div className="px-5 pt-1 pb-4 border-t border-white/10">
