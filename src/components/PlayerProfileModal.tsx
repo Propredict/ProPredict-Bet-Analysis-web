@@ -62,7 +62,7 @@ export function PlayerProfileModal() {
           </button>
 
           {isLoading ? (
-            <div className="p-6 pt-0 space-y-4">
+            <div className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Skeleton className="w-16 h-16 rounded-full" />
                 <div className="space-y-2 flex-1">
@@ -73,8 +73,12 @@ export function PlayerProfileModal() {
               {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
             </div>
           ) : !profile ? (
-            <div className="p-6 pt-0 text-center text-muted-foreground text-sm">
-              Player data not available
+            <div className="p-8 pt-12 flex flex-col items-center justify-center gap-3 text-center min-h-[160px]">
+              <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center">
+                <X className="h-6 w-6 text-muted-foreground/60" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Player data not available</p>
+              <p className="text-xs text-muted-foreground">Stats for this player could not be loaded</p>
             </div>
           ) : (
             <>
