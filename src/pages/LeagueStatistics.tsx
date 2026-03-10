@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck } from "lucide-react";
+import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
