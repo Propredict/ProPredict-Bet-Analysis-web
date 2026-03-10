@@ -165,7 +165,13 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               />
             </TabsContent>
 
-            <TabsContent value="season-stats" className="m-0">
+            <TabsContent value="players" className="m-0">
+              <PlayersTab
+                players={details?.players ?? []}
+                loading={loading}
+              />
+            </TabsContent>
+
               <SeasonStatsTab
                 homeStats={teamStatsData?.home ?? null}
                 awayStats={teamStatsData?.away ?? null}
