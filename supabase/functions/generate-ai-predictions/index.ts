@@ -239,6 +239,59 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
       goalsFor: stats.goals?.for?.total?.total ?? 0,
       goalsAgainst: stats.goals?.against?.total?.total ?? 0,
       form: stats.form ?? "",
+      // Home/Away splits
+      home: {
+        played: stats.fixtures?.played?.home ?? 0,
+        wins: stats.fixtures?.wins?.home ?? 0,
+        draws: stats.fixtures?.draws?.home ?? 0,
+        losses: stats.fixtures?.loses?.home ?? 0,
+        goalsFor: stats.goals?.for?.total?.home ?? 0,
+        goalsAgainst: stats.goals?.against?.total?.home ?? 0,
+      },
+      away: {
+        played: stats.fixtures?.played?.away ?? 0,
+        wins: stats.fixtures?.wins?.away ?? 0,
+        draws: stats.fixtures?.draws?.away ?? 0,
+        losses: stats.fixtures?.loses?.away ?? 0,
+        goalsFor: stats.goals?.for?.total?.away ?? 0,
+        goalsAgainst: stats.goals?.against?.total?.away ?? 0,
+      },
+      // Goals average
+      goalsForAvg: parseFloat(stats.goals?.for?.average?.total ?? "0"),
+      goalsAgainstAvg: parseFloat(stats.goals?.against?.average?.total ?? "0"),
+      homeGoalsForAvg: parseFloat(stats.goals?.for?.average?.home ?? "0"),
+      homeGoalsAgainstAvg: parseFloat(stats.goals?.against?.average?.home ?? "0"),
+      awayGoalsForAvg: parseFloat(stats.goals?.for?.average?.away ?? "0"),
+      awayGoalsAgainstAvg: parseFloat(stats.goals?.against?.average?.away ?? "0"),
+      // Clean sheets & failed to score
+      cleanSheets: {
+        home: stats.clean_sheet?.home ?? 0,
+        away: stats.clean_sheet?.away ?? 0,
+        total: stats.clean_sheet?.total ?? 0,
+      },
+      failedToScore: {
+        home: stats.failed_to_score?.home ?? 0,
+        away: stats.failed_to_score?.away ?? 0,
+        total: stats.failed_to_score?.total ?? 0,
+      },
+      // Penalty stats
+      penalty: {
+        scored: stats.penalty?.scored?.total ?? 0,
+        missed: stats.penalty?.missed?.total ?? 0,
+        total: (stats.penalty?.scored?.total ?? 0) + (stats.penalty?.missed?.total ?? 0),
+      },
+      // Biggest streaks
+      biggestStreak: {
+        wins: stats.biggest?.streak?.wins ?? 0,
+        draws: stats.biggest?.streak?.draws ?? 0,
+        losses: stats.biggest?.streak?.loses ?? 0,
+      },
+      biggestWin: stats.biggest?.wins?.home && stats.biggest?.wins?.away
+        ? (parseInt(stats.biggest.wins.home?.split("-")?.[0] ?? "0") > parseInt(stats.biggest.wins.away?.split("-")?.[0] ?? "0")
+          ? stats.biggest.wins.home : stats.biggest.wins.away) : (stats.biggest?.wins?.home || stats.biggest?.wins?.away || null),
+      biggestLoss: stats.biggest?.loses?.home && stats.biggest?.loses?.away
+        ? (parseInt(stats.biggest.loses.home?.split("-")?.[1] ?? "0") > parseInt(stats.biggest.loses.away?.split("-")?.[1] ?? "0")
+          ? stats.biggest.loses.home : stats.biggest.loses.away) : (stats.biggest?.loses?.home || stats.biggest?.loses?.away || null),
     };
 
     teamStatsCache.set(cacheKey, normalized);
