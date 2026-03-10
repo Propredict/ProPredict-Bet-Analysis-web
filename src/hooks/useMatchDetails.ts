@@ -20,11 +20,17 @@ export interface PlayerLineup {
   grid: string | null;
 }
 
+export interface TeamColors {
+  player: { primary: string; number: string; border: string } | null;
+  goalkeeper: { primary: string; number: string; border: string } | null;
+}
+
 export interface TeamLineup {
   team: {
     id: number;
     name: string;
     logo: string;
+    colors: TeamColors | null;
   };
   formation: string | null;
   startXI: PlayerLineup[];
