@@ -1,14 +1,16 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, TrendingUp, History } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Match } from "@/hooks/useLiveScores";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
+import { useTeamStats } from "@/hooks/useTeamStats";
 import { StatisticsTab } from "./tabs/StatisticsTab";
 import { LineupsTab } from "./tabs/LineupsTab";
 import { OddsTab } from "./tabs/OddsTab";
 import { H2HTab } from "./tabs/H2HTab";
+import { SeasonStatsTab } from "./tabs/SeasonStatsTab";
 
 interface MatchDetailModalProps {
   match: Match | null;
