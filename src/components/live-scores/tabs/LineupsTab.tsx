@@ -105,26 +105,26 @@ function PitchView({ lineups }: { lineups: TeamLineup[] }) {
 
   return (
     <div className="relative mx-4 mb-3 rounded-xl overflow-hidden border border-border/30">
-      {/* Pitch background */}
-      <div className="bg-gradient-to-b from-emerald-900/30 via-emerald-800/20 to-orange-900/30 relative">
+      {/* Pitch background - horizontal */}
+      <div className="bg-gradient-to-r from-emerald-900/30 via-emerald-800/20 to-orange-900/30 relative min-h-[280px]">
         {/* Pitch markings */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Center line */}
-          <div className="absolute left-0 right-0 top-1/2 h-px bg-white/10" />
+          {/* Center line (vertical) */}
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/10" />
           {/* Center circle */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/10" />
           {/* Center dot */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white/15" />
-          {/* Top penalty area */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-10 border-b border-l border-r border-white/10 rounded-b-sm" />
-          {/* Bottom penalty area */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-10 border-t border-l border-r border-white/10 rounded-t-sm" />
+          {/* Left penalty area */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-32 border-r border-t border-b border-white/10 rounded-r-sm" />
+          {/* Right penalty area */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-32 border-l border-t border-b border-white/10 rounded-l-sm" />
         </div>
 
-        <div className="relative z-10 flex flex-col">
+        <div className="relative z-10 flex flex-row h-full min-h-[280px]">
           <PitchFormation lineup={home} isAway={false} />
           {/* Divider */}
-          <div className="h-px" />
+          <div className="w-px" />
           <PitchFormation lineup={away} isAway={true} />
         </div>
       </div>
