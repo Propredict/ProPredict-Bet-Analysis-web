@@ -3,6 +3,7 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLeagueSquads, SquadsResponse } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface Props {
   leagueId: string;
@@ -87,7 +88,9 @@ export function LeagueStatsSquadsTab({ leagueId, leagueName }: Props) {
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
-                    <span className="text-xs font-medium flex-1 min-w-0 truncate">{player.name}</span>
+                    <ClickablePlayer playerId={player.id} className="text-xs font-medium flex-1 min-w-0 truncate hover:text-primary transition-colors">
+                      {player.name}
+                    </ClickablePlayer>
                     {player.number && (
                       <span className="text-[10px] font-bold text-primary w-5 text-center">#{player.number}</span>
                     )}

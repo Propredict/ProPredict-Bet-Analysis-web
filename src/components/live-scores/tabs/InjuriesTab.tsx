@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { InjuryData } from "@/hooks/useMatchDetails";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface InjuriesTabProps {
   injuries: InjuryData[];
@@ -24,7 +25,9 @@ export function InjuriesTab({ injuries, loading }: InjuriesTabProps) {
       <div className="p-8 text-center">
         <AlertTriangle className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">No injury data available</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Injury reports appear closer to match day</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">
+          Injury reports may not be available for smaller leagues or cups
+        </p>
       </div>
     );
   }
@@ -65,10 +68,10 @@ export function InjuriesTab({ injuries, loading }: InjuriesTabProps) {
                 ) : (
                   <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[10px]">?</div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{inj.player.name}</p>
+                <ClickablePlayer playerId={inj.player.id} className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate hover:text-primary transition-colors">{inj.player.name}</p>
                   <p className="text-[10px] text-muted-foreground truncate">{inj.player.reason}</p>
-                </div>
+                </ClickablePlayer>
                 {getTypeBadge(inj.player.type)}
               </div>
             ))}

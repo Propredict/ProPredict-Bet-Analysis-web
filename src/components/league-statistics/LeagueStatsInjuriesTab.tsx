@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { useLeagueInjuries } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface LeagueStatsInjuriesTabProps {
   leagueId: string;
@@ -105,10 +106,10 @@ export function LeagueStatsInjuriesTab({ leagueId, leagueName }: LeagueStatsInju
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs">?</div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{inj.player.name}</p>
+                  <ClickablePlayer playerId={inj.player.id} className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate hover:text-primary transition-colors">{inj.player.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{inj.player.reason}</p>
-                  </div>
+                  </ClickablePlayer>
                   {getTypeBadge(inj.player.type)}
                 </div>
               ))}
