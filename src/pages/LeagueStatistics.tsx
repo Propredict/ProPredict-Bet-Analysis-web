@@ -181,6 +181,7 @@ export default function LeagueStatistics() {
               {[
                 { value: "live", icon: Play, label: "Live" },
                 { value: "standings", icon: Trophy, label: "Standings" },
+                { value: "players", icon: UserCheck, label: "Players" },
                 { value: "scorers", icon: Target, label: "Scorers" },
                 { value: "assists", icon: Users, label: "Assists" },
                 { value: "fixtures", icon: Calendar, label: "Fixtures" },
