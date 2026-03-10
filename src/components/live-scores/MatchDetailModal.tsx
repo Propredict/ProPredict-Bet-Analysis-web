@@ -23,6 +23,15 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   // Use the new hook for fetching match details
   const { data: details, loading } = useMatchDetails(match?.id ?? null);
 
+  // Lazy-load season stats only when tab is active
+  const homeTeamId = details?.teams?.home?.id;
+  const awayTeamId = details?.teams?.away?.id;
+  const leagueId = details?.league?.id;
+  const { data: teamStatsData, isLoading: teamStatsLoading } = useTeamStats(
+    homeTeamId, awayTeamId, leagueId,
+    activeTab === "season-stats"
+  );
+
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
