@@ -116,7 +116,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-3 py-3 border-b border-white/10">
-              <TabsList className="w-full grid grid-cols-6 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
+              <TabsList className="w-full grid grid-cols-7 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
                 <TabsTrigger 
                   value="statistics" 
                   className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
@@ -128,6 +128,12 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                   className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
                   <UserCheck className="h-3 w-3 mr-0.5 hidden sm:inline" /> Players
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="injuries" 
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <AlertTriangle className="h-3 w-3 mr-0.5 hidden sm:inline" /> Injuries
                 </TabsTrigger>
                 <TabsTrigger 
                   value="season-stats" 
