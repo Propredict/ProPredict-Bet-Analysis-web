@@ -47,9 +47,9 @@ export function PlayerProfileModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center p-3 sm:p-4 pointer-events-none">
       <div
-        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-xl bg-background border border-border/30 shadow-2xl pointer-events-auto relative"
+        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl bg-background border border-border/40 shadow-[0_8px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
           {/* Close button - always visible */}
