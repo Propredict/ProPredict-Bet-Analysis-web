@@ -324,6 +324,8 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
           events: Array.isArray(json.events) ? json.events : [],
           odds: normalizeOdds(json.odds || []),
           players: Array.isArray(json.players) ? json.players : [],
+          injuries: Array.isArray(json.injuries) ? json.injuries : [],
+          h2h: Array.isArray(json.h2h) ? json.h2h : [],
           h2h: Array.isArray(json.h2h) ? json.h2h : [],
         };
 
