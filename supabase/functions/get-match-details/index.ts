@@ -66,7 +66,7 @@ serve(async (req: Request) => {
     const homeTeamId = fixture.teams?.home?.id;
     const awayTeamId = fixture.teams?.away?.id;
 
-    // Parallel fetch for statistics, lineups, events, odds, and H2H
+    // Parallel fetch for statistics, lineups, events, odds, players stats, and H2H
     const fetchPromises: Promise<Response>[] = [
       // Statistics
       fetch(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, { headers }),
@@ -76,6 +76,8 @@ serve(async (req: Request) => {
       fetch(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, { headers }),
       // Odds
       fetch(`${API_FOOTBALL_URL}/odds?fixture=${fixtureId}`, { headers }),
+      // Players statistics
+      fetch(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, { headers }),
     ];
 
     // Only fetch H2H if we have both team IDs - CORRECT FORMAT: h2h=homeId-awayId
