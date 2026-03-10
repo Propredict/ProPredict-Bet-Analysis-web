@@ -115,36 +115,42 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-3 py-3 border-b border-white/10">
-              <TabsList className="w-full grid grid-cols-5 gap-1.5 bg-secondary/50 p-1.5 rounded-lg border border-border">
+              <TabsList className="w-full grid grid-cols-6 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
                 <TabsTrigger 
                   value="statistics" 
-                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <BarChart3 className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Stats
+                  <BarChart3 className="h-3 w-3 mr-0.5 hidden sm:inline" /> Stats
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="players" 
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <UserCheck className="h-3 w-3 mr-0.5 hidden sm:inline" /> Players
                 </TabsTrigger>
                 <TabsTrigger 
                   value="season-stats" 
-                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <Activity className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Season
+                  <Activity className="h-3 w-3 mr-0.5 hidden sm:inline" /> Season
                 </TabsTrigger>
                 <TabsTrigger 
                   value="lineups" 
-                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <Users className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Lineups
+                  <Users className="h-3 w-3 mr-0.5 hidden sm:inline" /> Lineups
                 </TabsTrigger>
                 <TabsTrigger 
                   value="odds" 
-                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <TrendingUp className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Odds
+                  <TrendingUp className="h-3 w-3 mr-0.5 hidden sm:inline" /> Odds
                 </TabsTrigger>
                 <TabsTrigger 
                   value="h2h" 
-                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <History className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> H2H
+                  <History className="h-3 w-3 mr-0.5 hidden sm:inline" /> H2H
                 </TabsTrigger>
               </TabsList>
             </div>
