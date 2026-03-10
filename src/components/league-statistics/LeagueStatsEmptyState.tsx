@@ -80,6 +80,21 @@ const typeConfig = {
     title: "All Leagues Injuries",
     subtitle: "Choose a specific league to view injuries & suspensions",
   },
+  yellowcards: {
+    icon: Square,
+    title: "All Leagues Yellow Cards",
+    subtitle: "Choose a specific league to view top yellow cards",
+  },
+  redcards: {
+    icon: ShieldAlert,
+    title: "All Leagues Red Cards",
+    subtitle: "Choose a specific league to view top red cards",
+  },
+  squads: {
+    icon: UsersRound,
+    title: "All Leagues Squads",
+    subtitle: "Choose a specific league to view team squads",
+  },
   default: {
     icon: Trophy,
     title: "Select a League",
