@@ -143,28 +143,32 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-3 pt-3 overflow-x-auto">
-          <TabsList className="w-full grid grid-cols-6 h-9 min-w-[400px]">
-            <TabsTrigger value="h2h" className="text-xs gap-1">
+          <TabsList className="w-full grid grid-cols-7 h-9 min-w-[450px]">
+            <TabsTrigger value="h2h" className="text-[10px] gap-0.5">
               <Swords className="h-3 w-3" />
               <span className="hidden sm:inline">H2H</span>
             </TabsTrigger>
-            <TabsTrigger value="scorers" className="text-xs gap-1">
+            <TabsTrigger value="key-players" className="text-[10px] gap-0.5">
+              <Star className="h-3 w-3" />
+              <span className="hidden sm:inline">Players</span>
+            </TabsTrigger>
+            <TabsTrigger value="scorers" className="text-[10px] gap-0.5">
               <Trophy className="h-3 w-3" />
               <span className="hidden sm:inline">Scorers</span>
             </TabsTrigger>
-            <TabsTrigger value="assists" className="text-xs gap-1">
+            <TabsTrigger value="assists" className="text-[10px] gap-0.5">
               <Handshake className="h-3 w-3" />
               <span className="hidden sm:inline">Assists</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs gap-1">
+            <TabsTrigger value="stats" className="text-[10px] gap-0.5">
               <BarChart3 className="h-3 w-3" />
               <span className="hidden sm:inline">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="lineups" className="text-xs gap-1">
+            <TabsTrigger value="lineups" className="text-[10px] gap-0.5">
               <Users className="h-3 w-3" />
               <span className="hidden sm:inline">Lineups</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="text-xs gap-1">
+            <TabsTrigger value="events" className="text-[10px] gap-0.5">
               <Target className="h-3 w-3" />
               <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
@@ -178,6 +182,17 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
               summary={h2hSummary}
               homeTeam={match.homeTeam}
               awayTeam={match.awayTeam}
+            />
+          </TabsContent>
+
+          <TabsContent value="key-players" className="mt-0">
+            <KeyPlayersSection
+              scorersData={scorersData}
+              assistsData={assistsData}
+              isLoading={scorersLoading || assistsLoading}
+              homeTeam={match.homeTeam}
+              awayTeam={match.awayTeam}
+              leagueId={leagueId}
             />
           </TabsContent>
 
