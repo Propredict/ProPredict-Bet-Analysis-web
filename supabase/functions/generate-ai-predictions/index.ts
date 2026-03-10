@@ -1021,6 +1021,24 @@ function generatePremiumAnalysis(params: {
     }
   }
 
+  // 🚑 INJURIES & SUSPENSIONS
+  if (injuries && injuries.length > 0) {
+    const matchTeam = (t: string, target: string) => t.toLowerCase().includes(target.toLowerCase().split(" ").pop() || "");
+    const homeInjuries = injuries.filter(p => matchTeam(p.team, homeTeamName)).slice(0, 5);
+    const awayInjuries = injuries.filter(p => matchTeam(p.team, awayTeamName)).slice(0, 5);
+    
+    if (homeInjuries.length > 0 || awayInjuries.length > 0) {
+      const lines: string[] = [];
+      if (homeInjuries.length > 0) {
+        lines.push(`• ${homeTeamName}: ${homeInjuries.map(p => `${p.name} (${p.reason})`).join(", ")}.`);
+      }
+      if (awayInjuries.length > 0) {
+        lines.push(`• ${awayTeamName}: ${awayInjuries.map(p => `${p.name} (${p.reason})`).join(", ")}.`);
+      }
+      sections.push(`🚑 INJURIES & SUSPENSIONS:\n${lines.join("\n")}`);
+    }
+  }
+
   // 🎯 PROBABILITIES
   sections.push(`🎯 WIN PROBABILITIES: ${homeTeamName} ${homeWin}% | Draw ${draw}% | ${awayTeamName} ${awayWin}%.`);
 
