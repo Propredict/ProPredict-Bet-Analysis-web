@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { TeamPlayersStats, PlayerMatchStats } from "@/hooks/useMatchDetails";
 import { useState } from "react";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface PlayersTabProps {
   players: TeamPlayersStats[];
