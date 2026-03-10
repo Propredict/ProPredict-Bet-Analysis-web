@@ -10,7 +10,8 @@ import {
   BarChart3,
   Trophy,
   Handshake,
-  Star
+  Star,
+  AlertTriangle
 } from "lucide-react";
 import { useMatchDetails, type MatchDetails, type H2HMatch } from "@/hooks/useMatchDetails";
 import { useH2H } from "@/hooks/useH2H";
