@@ -149,6 +149,43 @@ export interface InjuriesResponse {
   }>;
 }
 
+export interface CardsPlayerStats {
+  player: { id: number; name: string; photo: string; nationality: string };
+  team: { id: number; name: string; logo: string };
+  games: { appearances: number; minutes: number };
+  cards: { yellow: number; yellowred: number; red: number };
+  fouls: { committed: number };
+}
+
+export interface YellowCardsResponse {
+  type: "yellowcards";
+  players: CardsPlayerStats[];
+}
+
+export interface RedCardsResponse {
+  type: "redcards";
+  players: CardsPlayerStats[];
+}
+
+export interface SquadPlayer {
+  id: number;
+  name: string;
+  age: number | null;
+  number: number | null;
+  position: string;
+  photo: string;
+}
+
+export interface SquadTeam {
+  team: { id: number; name: string; logo: string };
+  players: SquadPlayer[];
+}
+
+export interface SquadsResponse {
+  type: "squads";
+  squads: SquadTeam[];
+}
+
 type LeagueStatsResponse = 
   | StandingsResponse 
   | ScorersResponse 
@@ -156,7 +193,10 @@ type LeagueStatsResponse =
   | FixturesResponse 
   | RoundsResponse
   | PlayersResponse
-  | InjuriesResponse;
+  | InjuriesResponse
+  | YellowCardsResponse
+  | RedCardsResponse
+  | SquadsResponse;
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
