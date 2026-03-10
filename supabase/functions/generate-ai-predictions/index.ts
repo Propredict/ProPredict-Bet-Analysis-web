@@ -1009,11 +1009,12 @@ async function premiumEnhance(
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
-  // Fetch last 10 real matches + 5 H2H (more data than standard)
-  const [homeForm10, awayForm10, h2h5] = await Promise.all([
+  // Fetch last 10 real matches + 5 H2H + top scorers (more data than standard)
+  const [homeForm10, awayForm10, h2h5, topScorers] = await Promise.all([
     fetchTeamForm(homeTeamId, apiKey, 10),
     fetchTeamForm(awayTeamId, apiKey, 10),
     fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
+    leagueId && season ? fetchTopScorers(leagueId, season, apiKey) : Promise.resolve([]),
   ]);
 
   // Recalculate with deeper form data (use last 10 for form score)
