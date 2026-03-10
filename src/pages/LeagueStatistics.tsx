@@ -13,6 +13,7 @@ import { LeagueStatsFixturesTab } from "@/components/league-statistics/LeagueSta
 import { LeagueStatsRoundsTab } from "@/components/league-statistics/LeagueStatsRoundsTab";
 import { LeagueStatsH2HTab } from "@/components/league-statistics/LeagueStatsH2HTab";
 import { LeagueStatsPlayersTab } from "@/components/league-statistics/LeagueStatsPlayersTab";
+import { LeagueStatsInjuriesTab } from "@/components/league-statistics/LeagueStatsInjuriesTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 // Known league ID mappings for API-Football
