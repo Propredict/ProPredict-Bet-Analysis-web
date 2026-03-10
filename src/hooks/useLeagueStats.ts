@@ -139,13 +139,24 @@ export interface PlayersResponse {
   players: DetailedPlayerStats[];
 }
 
+export interface InjuriesResponse {
+  type: "injuries";
+  injuries: Array<{
+    player: { id: number; name: string; photo: string; type: string; reason: string };
+    team: { id: number; name: string; logo: string };
+    fixture: { id: number; date: string };
+    league: { name: string };
+  }>;
+}
+
 type LeagueStatsResponse = 
   | StandingsResponse 
   | ScorersResponse 
   | AssistsResponse 
   | FixturesResponse 
   | RoundsResponse
-  | PlayersResponse;
+  | PlayersResponse
+  | InjuriesResponse;
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 

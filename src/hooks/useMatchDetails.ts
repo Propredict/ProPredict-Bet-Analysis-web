@@ -326,7 +326,6 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
           players: Array.isArray(json.players) ? json.players : [],
           injuries: Array.isArray(json.injuries) ? json.injuries : [],
           h2h: Array.isArray(json.h2h) ? json.h2h : [],
-          h2h: Array.isArray(json.h2h) ? json.h2h : [],
         };
 
         detailsCache.set(id, normalized);
