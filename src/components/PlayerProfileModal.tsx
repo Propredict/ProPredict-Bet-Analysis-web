@@ -26,7 +26,7 @@ export function PlayerProfileModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closePlayer()}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-md max-h-[calc(100vh-2rem)] sm:max-h-[85vh] overflow-y-auto p-0 w-[calc(100%-1rem)] rounded-lg">
         {isLoading ? (
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-3">
