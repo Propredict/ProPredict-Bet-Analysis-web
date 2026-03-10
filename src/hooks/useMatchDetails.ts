@@ -206,7 +206,15 @@ function normalizeLineups(rawLineups: any[]): TeamLineup[] {
   if (!Array.isArray(rawLineups)) return [];
 
   return rawLineups.map((lineup: any) => ({
-    team: lineup.team || { id: 0, name: "Unknown", logo: "" },
+    team: {
+      id: lineup.team?.id || 0,
+      name: lineup.team?.name || "Unknown",
+      logo: lineup.team?.logo || "",
+      colors: lineup.team?.colors ? {
+        player: lineup.team.colors.player || null,
+        goalkeeper: lineup.team.colors.goalkeeper || null,
+      } : null,
+    },
     formation: lineup.formation || null,
     coach: lineup.coach || null,
     startXI: (lineup.startXI || []).map((item: any) => {

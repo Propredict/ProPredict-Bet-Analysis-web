@@ -106,7 +106,7 @@ function PitchFormation({ lineup, isAway }: { lineup: TeamLineup; isAway: boolea
       {sortedRowKeys.map((rowKey) => (
         <div key={rowKey} className="flex flex-col items-center justify-center gap-1.5 py-1 flex-1">
           {rows.get(rowKey)!.map((p) => (
-            <PitchPlayer key={p.id} player={p} isAway={isAway} />
+            <PitchPlayer key={p.id} player={p} isAway={isAway} teamColors={teamColors} />
           ))}
         </div>
       ))}
