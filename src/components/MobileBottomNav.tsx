@@ -24,10 +24,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/ai-predictions"]
   },
   {
-    label: "Members",
-    icon: Swords,
-    path: "/ai-vs-community",
-    matchPaths: ["/ai-vs-community"]
+    label: "Premium",
+    icon: Crown,
+    path: "/get-premium",
+    matchPaths: ["/get-premium"]
   },
   {
     label: "Favorites",
