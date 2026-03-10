@@ -88,13 +88,14 @@ serve(async (req: Request) => {
     }
 
     const responses = await Promise.all(fetchPromises);
-    const [statsRes, lineupsRes, eventsRes, oddsRes, h2hRes] = responses;
+    const [statsRes, lineupsRes, eventsRes, oddsRes, playersRes, h2hRes] = responses;
 
-    const [statsData, lineupsData, eventsData, oddsData] = await Promise.all([
+    const [statsData, lineupsData, eventsData, oddsData, playersData] = await Promise.all([
       statsRes.json(),
       lineupsRes.json(),
       eventsRes.json(),
       oddsRes.json(),
+      playersRes.json(),
     ]);
 
     // Parse H2H data if available
