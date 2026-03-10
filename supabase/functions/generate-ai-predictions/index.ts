@@ -1003,7 +1003,9 @@ async function premiumEnhance(
   awayTeamName: string,
   homeStats: TeamStats | null,
   awayStats: TeamStats | null,
-  apiKey: string
+  apiKey: string,
+  leagueId?: number,
+  season?: number
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
