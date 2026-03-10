@@ -170,8 +170,10 @@ const App = () => {
         <AuthProvider>
           <UserPlanProvider>
             <TooltipProvider>
+              <PlayerProfileProvider>
               <Toaster />
               <Sonner />
+              <PlayerProfileModal />
               <BrowserRouter>
                 <ScrollToTop />
                 <DeepLinkHandler />
