@@ -107,12 +107,45 @@ export interface RoundsResponse {
   rounds: string[];
 }
 
+export interface DetailedPlayerStats {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+    nationality: string;
+    age: number | null;
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  games: {
+    appearances: number;
+    minutes: number;
+    rating: string | null;
+  };
+  goals: number;
+  assists: number;
+  penalties: number;
+  shots: { total: number; on: number };
+  passes: { total: number; key: number; accuracy: number };
+  dribbles: { attempts: number; success: number };
+  cards: { yellow: number; red: number };
+}
+
+export interface PlayersResponse {
+  type: "players";
+  players: DetailedPlayerStats[];
+}
+
 type LeagueStatsResponse = 
   | StandingsResponse 
   | ScorersResponse 
   | AssistsResponse 
   | FixturesResponse 
-  | RoundsResponse;
+  | RoundsResponse
+  | PlayersResponse;
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
