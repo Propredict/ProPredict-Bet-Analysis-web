@@ -285,6 +285,36 @@ serve(async (req: Request) => {
         break;
       }
 
+      case "injuries": {
+        const injuriesJson = await fetchWithFallback(`injuries?league=${league}`, season);
+        
+        responseData = {
+          type: "injuries",
+          injuries: (injuriesJson.response || []).map((item: any) => ({
+            player: {
+              id: item.player?.id || 0,
+              name: item.player?.name || "Unknown",
+              photo: item.player?.photo || "",
+              type: item.player?.type || "Missing",
+              reason: item.player?.reason || "Unknown",
+            },
+            team: {
+              id: item.team?.id || 0,
+              name: item.team?.name || "",
+              logo: item.team?.logo || "",
+            },
+            fixture: {
+              id: item.fixture?.id || 0,
+              date: item.fixture?.date || "",
+            },
+            league: {
+              name: item.league?.name || "",
+            },
+          })),
+        };
+        break;
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: "Invalid type" }),
