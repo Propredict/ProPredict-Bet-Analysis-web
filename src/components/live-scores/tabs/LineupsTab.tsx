@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TeamLineup, PlayerLineup } from "@/hooks/useMatchDetails";
+import { TeamLineup, PlayerLineup, TeamColors } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
 import { ClickablePlayer } from "@/components/ClickablePlayer";
 
@@ -31,26 +31,33 @@ function PlayerRow({ player }: { player: PlayerLineup }) {
 }
 
 /* ── Pitch View ── */
-function PitchPlayer({ player, isAway }: { player: PlayerLineup; isAway: boolean }) {
-  const jerseyColor = isAway ? "text-orange-400" : "text-emerald-400";
-  const numberColor = isAway ? "text-orange-100" : "text-emerald-100";
+function hexToStyle(hex: string | undefined | null): string | undefined {
+  if (!hex) return undefined;
+  const clean = hex.startsWith("#") ? hex : `#${hex}`;
+  return clean;
+}
+
+function PitchPlayer({ player, isAway, teamColors }: { player: PlayerLineup; isAway: boolean; teamColors: TeamColors | null }) {
+  const isGK = player.pos === "G";
+  const colorSet = isGK ? teamColors?.goalkeeper : teamColors?.player;
+  
+  const jerseyFill = hexToStyle(colorSet?.primary) || (isAway ? "#f97316" : "#10b981");
+  const numberFill = hexToStyle(colorSet?.number) || (isAway ? "#fff7ed" : "#ecfdf5");
+  const borderFill = hexToStyle(colorSet?.border) || jerseyFill;
 
   return (
     <ClickablePlayer playerId={player.id} className="flex flex-col items-center gap-0 group">
       <div className="relative w-8 h-9 group-hover:scale-110 transition-transform">
-        {/* Jersey SVG */}
-        <svg viewBox="0 0 32 36" fill="none" className={cn("w-full h-full drop-shadow-md", jerseyColor)}>
+        <svg viewBox="0 0 32 36" fill="none" className="w-full h-full drop-shadow-md">
           <path
             d="M8 2L2 8V14L6 13V32H26V13L30 14V8L24 2H20L16 6L12 2H8Z"
-            fill="currentColor"
-            fillOpacity="0.85"
-            stroke="currentColor"
-            strokeWidth="1"
-            strokeOpacity="0.6"
+            fill={jerseyFill}
+            fillOpacity="0.9"
+            stroke={borderFill}
+            strokeWidth="1.2"
           />
         </svg>
-        {/* Number on jersey */}
-        <span className={cn("absolute inset-0 flex items-center justify-center text-[10px] font-bold pt-1", numberColor)}>
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold pt-1" style={{ color: numberFill }}>
           {player.number || "—"}
         </span>
       </div>
@@ -62,6 +69,7 @@ function PitchPlayer({ player, isAway }: { player: PlayerLineup; isAway: boolean
 }
 
 function PitchFormation({ lineup, isAway }: { lineup: TeamLineup; isAway: boolean }) {
+  const teamColors = lineup.team?.colors || null;
   const players = lineup.startXI || [];
   const hasGrid = players.some(p => p.grid);
 
@@ -98,7 +106,7 @@ function PitchFormation({ lineup, isAway }: { lineup: TeamLineup; isAway: boolea
       {sortedRowKeys.map((rowKey) => (
         <div key={rowKey} className="flex flex-col items-center justify-center gap-1.5 py-1 flex-1">
           {rows.get(rowKey)!.map((p) => (
-            <PitchPlayer key={p.id} player={p} isAway={isAway} />
+            <PitchPlayer key={p.id} player={p} isAway={isAway} teamColors={teamColors} />
           ))}
         </div>
       ))}

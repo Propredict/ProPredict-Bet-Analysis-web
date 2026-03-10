@@ -20,11 +20,17 @@ export interface PlayerLineup {
   grid: string | null;
 }
 
+export interface TeamColors {
+  player: { primary: string; number: string; border: string } | null;
+  goalkeeper: { primary: string; number: string; border: string } | null;
+}
+
 export interface TeamLineup {
   team: {
     id: number;
     name: string;
     logo: string;
+    colors: TeamColors | null;
   };
   formation: string | null;
   startXI: PlayerLineup[];
@@ -200,7 +206,15 @@ function normalizeLineups(rawLineups: any[]): TeamLineup[] {
   if (!Array.isArray(rawLineups)) return [];
 
   return rawLineups.map((lineup: any) => ({
-    team: lineup.team || { id: 0, name: "Unknown", logo: "" },
+    team: {
+      id: lineup.team?.id || 0,
+      name: lineup.team?.name || "Unknown",
+      logo: lineup.team?.logo || "",
+      colors: lineup.team?.colors ? {
+        player: lineup.team.colors.player || null,
+        goalkeeper: lineup.team.colors.goalkeeper || null,
+      } : null,
+    },
     formation: lineup.formation || null,
     coach: lineup.coach || null,
     startXI: (lineup.startXI || []).map((item: any) => {
