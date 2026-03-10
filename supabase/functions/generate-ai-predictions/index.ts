@@ -41,6 +41,25 @@ interface TeamStats {
   goalsFor: number;
   goalsAgainst: number;
   form: string; // e.g., "WWDLW"
+  // Home/Away splits
+  home: { played: number; wins: number; draws: number; losses: number; goalsFor: number; goalsAgainst: number };
+  away: { played: number; wins: number; draws: number; losses: number; goalsFor: number; goalsAgainst: number };
+  // Goals average
+  goalsForAvg: number;
+  goalsAgainstAvg: number;
+  homeGoalsForAvg: number;
+  homeGoalsAgainstAvg: number;
+  awayGoalsForAvg: number;
+  awayGoalsAgainstAvg: number;
+  // Clean sheets & failed to score
+  cleanSheets: { home: number; away: number; total: number };
+  failedToScore: { home: number; away: number; total: number };
+  // Penalty stats
+  penalty: { scored: number; missed: number; total: number };
+  // Biggest streaks
+  biggestStreak: { wins: number; draws: number; losses: number };
+  biggestWin: string | null;   // e.g. "5-0"
+  biggestLoss: string | null;  // e.g. "0-4"
 }
 
 interface H2HMatch {
@@ -220,6 +239,59 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
       goalsFor: stats.goals?.for?.total?.total ?? 0,
       goalsAgainst: stats.goals?.against?.total?.total ?? 0,
       form: stats.form ?? "",
+      // Home/Away splits
+      home: {
+        played: stats.fixtures?.played?.home ?? 0,
+        wins: stats.fixtures?.wins?.home ?? 0,
+        draws: stats.fixtures?.draws?.home ?? 0,
+        losses: stats.fixtures?.loses?.home ?? 0,
+        goalsFor: stats.goals?.for?.total?.home ?? 0,
+        goalsAgainst: stats.goals?.against?.total?.home ?? 0,
+      },
+      away: {
+        played: stats.fixtures?.played?.away ?? 0,
+        wins: stats.fixtures?.wins?.away ?? 0,
+        draws: stats.fixtures?.draws?.away ?? 0,
+        losses: stats.fixtures?.loses?.away ?? 0,
+        goalsFor: stats.goals?.for?.total?.away ?? 0,
+        goalsAgainst: stats.goals?.against?.total?.away ?? 0,
+      },
+      // Goals average
+      goalsForAvg: parseFloat(stats.goals?.for?.average?.total ?? "0"),
+      goalsAgainstAvg: parseFloat(stats.goals?.against?.average?.total ?? "0"),
+      homeGoalsForAvg: parseFloat(stats.goals?.for?.average?.home ?? "0"),
+      homeGoalsAgainstAvg: parseFloat(stats.goals?.against?.average?.home ?? "0"),
+      awayGoalsForAvg: parseFloat(stats.goals?.for?.average?.away ?? "0"),
+      awayGoalsAgainstAvg: parseFloat(stats.goals?.against?.average?.away ?? "0"),
+      // Clean sheets & failed to score
+      cleanSheets: {
+        home: stats.clean_sheet?.home ?? 0,
+        away: stats.clean_sheet?.away ?? 0,
+        total: stats.clean_sheet?.total ?? 0,
+      },
+      failedToScore: {
+        home: stats.failed_to_score?.home ?? 0,
+        away: stats.failed_to_score?.away ?? 0,
+        total: stats.failed_to_score?.total ?? 0,
+      },
+      // Penalty stats
+      penalty: {
+        scored: stats.penalty?.scored?.total ?? 0,
+        missed: stats.penalty?.missed?.total ?? 0,
+        total: (stats.penalty?.scored?.total ?? 0) + (stats.penalty?.missed?.total ?? 0),
+      },
+      // Biggest streaks
+      biggestStreak: {
+        wins: stats.biggest?.streak?.wins ?? 0,
+        draws: stats.biggest?.streak?.draws ?? 0,
+        losses: stats.biggest?.streak?.loses ?? 0,
+      },
+      biggestWin: stats.biggest?.wins?.home && stats.biggest?.wins?.away
+        ? (parseInt(stats.biggest.wins.home?.split("-")?.[0] ?? "0") > parseInt(stats.biggest.wins.away?.split("-")?.[0] ?? "0")
+          ? stats.biggest.wins.home : stats.biggest.wins.away) : (stats.biggest?.wins?.home || stats.biggest?.wins?.away || null),
+      biggestLoss: stats.biggest?.loses?.home && stats.biggest?.loses?.away
+        ? (parseInt(stats.biggest.loses.home?.split("-")?.[1] ?? "0") > parseInt(stats.biggest.loses.away?.split("-")?.[1] ?? "0")
+          ? stats.biggest.loses.home : stats.biggest.loses.away) : (stats.biggest?.loses?.home || stats.biggest?.loses?.away || null),
     };
 
     teamStatsCache.set(cacheKey, normalized);
@@ -281,6 +353,7 @@ function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: numbe
 
 /**
  * Calculate team quality score (0-100) from season stats.
+ * Uses home/away splits, clean sheets, and defensive stability for a richer picture.
  */
 function calculateQualityScore(stats: TeamStats | null): number {
   if (!stats || stats.played === 0) return 50;
@@ -291,7 +364,18 @@ function calculateQualityScore(stats: TeamStats | null): number {
   const winScore = winRate * 100;
   const gdScore = Math.max(0, Math.min(100, 50 + goalDiffPerGame * 12));
 
-  return Math.round(winScore * 0.65 + gdScore * 0.35);
+  // Clean sheet bonus: teams that keep more clean sheets are defensively stronger
+  const cleanSheetRate = stats.played > 0 ? stats.cleanSheets.total / stats.played : 0;
+  const csBonus = cleanSheetRate * 100; // 0-100
+
+  // Failed to score penalty: teams that fail to score frequently are weaker
+  const failedRate = stats.played > 0 ? stats.failedToScore.total / stats.played : 0;
+  const ftsDeduction = failedRate * 100; // 0-100
+
+  // Base: 60% win rate + 25% goal diff + 10% clean sheets - 5% failed to score
+  return Math.round(
+    winScore * 0.60 + gdScore * 0.25 + csBonus * 0.10 + Math.max(0, 50 - ftsDeduction) * 0.05
+  );
 }
 
 /**
@@ -352,24 +436,37 @@ function calculatePrediction(
   const awayQualityScore = calculateQualityScore(awayStats);
 
   // === SQUAD / AVAILABILITY (15%) ===
-  // Conservative proxy from last-3 attacking output + defensive stability.
+  // Enhanced: use season goals average when available, fallback to form-based
   const homeGoalRate = calculateGoalRate(homeForm);
   const awayGoalRate = calculateGoalRate(awayForm);
 
+  // If we have season stats, use home goals avg for home team and away goals avg for away team
+  const homeEffectiveScored = homeStats?.homeGoalsForAvg || homeGoalRate.scored;
+  const homeEffectiveConceded = homeStats?.homeGoalsAgainstAvg || homeGoalRate.conceded;
+  const awayEffectiveScored = awayStats?.awayGoalsForAvg || awayGoalRate.scored;
+  const awayEffectiveConceded = awayStats?.awayGoalsAgainstAvg || awayGoalRate.conceded;
+
   const homeSquadScore = clamp(
-    50 + (homeGoalRate.scored - homeGoalRate.conceded) * 18,
+    50 + (homeEffectiveScored - homeEffectiveConceded) * 18,
     0,
     100
   );
   const awaySquadScore = clamp(
-    50 + (awayGoalRate.scored - awayGoalRate.conceded) * 18,
+    50 + (awayEffectiveScored - awayEffectiveConceded) * 18,
     0,
     100
   );
 
-  // === HOME ADVANTAGE (10% MAX, VERY MINOR — avoid systematic home bias) ===
-  const homeAdvantageScore = 51;
-  const awayAdvantageScore = 49;
+  // === HOME ADVANTAGE (10% MAX — use real home/away win rates when available) ===
+  let homeAdvantageScore = 51;
+  let awayAdvantageScore = 49;
+  if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
+    const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
+    const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
+    // Slight boost based on actual home/away performance, capped to avoid bias
+    homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
+    awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
+  }
 
   // === H2H (10%, secondary) ===
   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
@@ -802,16 +899,34 @@ function generatePremiumAnalysis(params: {
     sections.push(`⚔️ HEAD-TO-HEAD (Last ${h2hSummary.matches.length}):\n• ${homeTeamName} wins: ${h2hSummary.teamAWins} | Draws: ${h2hSummary.draws} | ${awayTeamName} wins: ${h2hSummary.teamBWins}.\n• Recent scores: ${h2hScores}.\n• Avg goals/match: ${h2hSummary.avgGoalsPerMatch.toFixed(1)}.`);
   }
 
-  // 🏟️ HOME/AWAY SPLITS
-  sections.push(`🏟️ HOME/AWAY SPLITS:\n• ${homeTeamName} at home: ${homeData.homeRecord.w}W ${homeData.homeRecord.d}D ${homeData.homeRecord.l}L.\n• ${awayTeamName} away: ${awayData.awayRecord.w}W ${awayData.awayRecord.d}D ${awayData.awayRecord.l}L.`);
+  // 🏟️ HOME/AWAY SPLITS (enhanced with season stats)
+  if (homeStats && awayStats && homeStats.played > 0 && awayStats.played > 0) {
+    sections.push(`🏟️ HOME/AWAY SPLITS:\n• ${homeTeamName} at home: ${homeStats.home.wins}W ${homeStats.home.draws}D ${homeStats.home.losses}L (GF ${homeStats.home.goalsFor}, GA ${homeStats.home.goalsAgainst}, avg ${homeStats.homeGoalsForAvg.toFixed(1)}/${homeStats.homeGoalsAgainstAvg.toFixed(1)}).\n• ${awayTeamName} away: ${awayStats.away.wins}W ${awayStats.away.draws}D ${awayStats.away.losses}L (GF ${awayStats.away.goalsFor}, GA ${awayStats.away.goalsAgainst}, avg ${awayStats.awayGoalsForAvg.toFixed(1)}/${awayStats.awayGoalsAgainstAvg.toFixed(1)}).`);
+  } else {
+    sections.push(`🏟️ HOME/AWAY SPLITS:\n• ${homeTeamName} at home: ${homeData.homeRecord.w}W ${homeData.homeRecord.d}D ${homeData.homeRecord.l}L.\n• ${awayTeamName} away: ${awayData.awayRecord.w}W ${awayData.awayRecord.d}D ${awayData.awayRecord.l}L.`);
+  }
 
-  // 📈 SEASON STATS
+  // 📈 SEASON STATS (enhanced with clean sheets, failed to score, penalties)
   if (homeStats && awayStats && homeStats.played > 0 && awayStats.played > 0) {
     const homeWinRate = ((homeStats.wins / homeStats.played) * 100).toFixed(0);
     const awayWinRate = ((awayStats.wins / awayStats.played) * 100).toFixed(0);
     const homeGD = homeStats.goalsFor - homeStats.goalsAgainst;
     const awayGD = awayStats.goalsFor - awayStats.goalsAgainst;
-    sections.push(`📈 SEASON STATS:\n• ${homeTeamName}: ${homeStats.wins}W ${homeStats.draws}D ${homeStats.losses}L (${homeWinRate}% win rate), GF ${homeStats.goalsFor} GA ${homeStats.goalsAgainst} (GD ${homeGD > 0 ? "+" : ""}${homeGD}).\n• ${awayTeamName}: ${awayStats.wins}W ${awayStats.draws}D ${awayStats.losses}L (${awayWinRate}% win rate), GF ${awayStats.goalsFor} GA ${awayStats.goalsAgainst} (GD ${awayGD > 0 ? "+" : ""}${awayGD}).`);
+    sections.push(`📈 SEASON STATS:\n• ${homeTeamName}: ${homeStats.wins}W ${homeStats.draws}D ${homeStats.losses}L (${homeWinRate}% win rate), GF ${homeStats.goalsFor} GA ${homeStats.goalsAgainst} (GD ${homeGD > 0 ? "+" : ""}${homeGD}). Avg goals: ${homeStats.goalsForAvg.toFixed(1)} scored, ${homeStats.goalsAgainstAvg.toFixed(1)} conceded.\n• ${awayTeamName}: ${awayStats.wins}W ${awayStats.draws}D ${awayStats.losses}L (${awayWinRate}% win rate), GF ${awayStats.goalsFor} GA ${awayStats.goalsAgainst} (GD ${awayGD > 0 ? "+" : ""}${awayGD}). Avg goals: ${awayStats.goalsForAvg.toFixed(1)} scored, ${awayStats.goalsAgainstAvg.toFixed(1)} conceded.`);
+
+    // 🛡️ DEFENSIVE & ATTACK INSIGHTS
+    const defensiveInsights: string[] = [];
+    defensiveInsights.push(`• ${homeTeamName}: ${homeStats.cleanSheets.total} clean sheets (${homeStats.cleanSheets.home} home, ${homeStats.cleanSheets.away} away), failed to score ${homeStats.failedToScore.total}x.`);
+    defensiveInsights.push(`• ${awayTeamName}: ${awayStats.cleanSheets.total} clean sheets (${awayStats.cleanSheets.home} home, ${awayStats.cleanSheets.away} away), failed to score ${awayStats.failedToScore.total}x.`);
+    if (homeStats.penalty.total > 0 || awayStats.penalty.total > 0) {
+      defensiveInsights.push(`• Penalties: ${homeTeamName} ${homeStats.penalty.scored}/${homeStats.penalty.total} converted | ${awayTeamName} ${awayStats.penalty.scored}/${awayStats.penalty.total} converted.`);
+    }
+    sections.push(`🛡️ DEFENSIVE & ATTACK INSIGHTS:\n${defensiveInsights.join("\n")}`);
+
+    // 🔥 STREAKS
+    if (homeStats.biggestStreak.wins > 2 || awayStats.biggestStreak.wins > 2) {
+      sections.push(`🔥 BIGGEST STREAKS:\n• ${homeTeamName}: ${homeStats.biggestStreak.wins}W streak, ${homeStats.biggestStreak.losses}L streak${homeStats.biggestWin ? `, biggest win: ${homeStats.biggestWin}` : ""}.\n• ${awayTeamName}: ${awayStats.biggestStreak.wins}W streak, ${awayStats.biggestStreak.losses}L streak${awayStats.biggestWin ? `, biggest win: ${awayStats.biggestWin}` : ""}.`);
+    }
   }
 
   // 🎯 PROBABILITIES
