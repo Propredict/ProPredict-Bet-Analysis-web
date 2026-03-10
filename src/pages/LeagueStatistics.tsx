@@ -218,6 +218,10 @@ export default function LeagueStatistics() {
 
           {/* Other tabs - show empty state if "All Leagues" selected */}
 
+          <TabsContent value="players" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="players" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsPlayersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
           <TabsContent value="scorers" className="mt-4">
             {isAllLeagues ? <LeagueStatsEmptyState type="scorers" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsScorersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
           </TabsContent>
