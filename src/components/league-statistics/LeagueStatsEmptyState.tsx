@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Trophy, Target, Users, Calendar, RotateCcw, Swords, AlertTriangle } from "lucide-react";
+import { Trophy, Target, Users, Calendar, RotateCcw, Swords, AlertTriangle, Square, ShieldAlert, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { LeagueSearchSelect } from "./LeagueSearchSelect";
