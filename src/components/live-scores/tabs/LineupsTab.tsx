@@ -32,15 +32,27 @@ function PlayerRow({ player }: { player: PlayerLineup }) {
 
 /* ── Pitch View ── */
 function PitchPlayer({ player, isAway }: { player: PlayerLineup; isAway: boolean }) {
+  const jerseyColor = isAway ? "text-orange-400" : "text-emerald-400";
+  const numberColor = isAway ? "text-orange-100" : "text-emerald-100";
+
   return (
-    <ClickablePlayer playerId={player.id} className="flex flex-col items-center gap-0.5 group">
-      <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-colors group-hover:scale-110",
-        isAway
-          ? "bg-orange-500/20 border-orange-400 text-orange-300"
-          : "bg-emerald-500/20 border-emerald-400 text-emerald-300"
-      )}>
-        {player.number || "—"}
+    <ClickablePlayer playerId={player.id} className="flex flex-col items-center gap-0 group">
+      <div className="relative w-8 h-9 group-hover:scale-110 transition-transform">
+        {/* Jersey SVG */}
+        <svg viewBox="0 0 32 36" fill="none" className={cn("w-full h-full drop-shadow-md", jerseyColor)}>
+          <path
+            d="M8 2L2 8V14L6 13V32H26V13L30 14V8L24 2H20L16 6L12 2H8Z"
+            fill="currentColor"
+            fillOpacity="0.85"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeOpacity="0.6"
+          />
+        </svg>
+        {/* Number on jersey */}
+        <span className={cn("absolute inset-0 flex items-center justify-center text-[10px] font-bold pt-1", numberColor)}>
+          {player.number || "—"}
+        </span>
       </div>
       <span className="text-[9px] text-foreground/80 font-medium truncate max-w-[56px] text-center leading-tight group-hover:text-primary transition-colors">
         {player.name?.split(" ").pop() || "?"}
