@@ -353,6 +353,7 @@ function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: numbe
 
 /**
  * Calculate team quality score (0-100) from season stats.
+ * Uses home/away splits, clean sheets, and defensive stability for a richer picture.
  */
 function calculateQualityScore(stats: TeamStats | null): number {
   if (!stats || stats.played === 0) return 50;
@@ -363,7 +364,18 @@ function calculateQualityScore(stats: TeamStats | null): number {
   const winScore = winRate * 100;
   const gdScore = Math.max(0, Math.min(100, 50 + goalDiffPerGame * 12));
 
-  return Math.round(winScore * 0.65 + gdScore * 0.35);
+  // Clean sheet bonus: teams that keep more clean sheets are defensively stronger
+  const cleanSheetRate = stats.played > 0 ? stats.cleanSheets.total / stats.played : 0;
+  const csBonus = cleanSheetRate * 100; // 0-100
+
+  // Failed to score penalty: teams that fail to score frequently are weaker
+  const failedRate = stats.played > 0 ? stats.failedToScore.total / stats.played : 0;
+  const ftsDeduction = failedRate * 100; // 0-100
+
+  // Base: 60% win rate + 25% goal diff + 10% clean sheets - 5% failed to score
+  return Math.round(
+    winScore * 0.60 + gdScore * 0.25 + csBonus * 0.10 + Math.max(0, 50 - ftsDeduction) * 0.05
+  );
 }
 
 /**
