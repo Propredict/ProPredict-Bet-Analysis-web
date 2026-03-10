@@ -77,14 +77,14 @@ function PitchFormation({ lineup, isAway }: { lineup: TeamLineup; isAway: boolea
   }
 
   return (
-    <div className="flex flex-col items-center gap-1 py-2 flex-1">
+    <div className="flex flex-row items-center gap-1 px-1 flex-1">
       {/* Team name + formation */}
-      <div className="flex items-center gap-1.5 mb-1">
+      <div className="flex flex-col items-center gap-1 mr-1 min-w-[32px]">
         {lineup.team?.logo && <img src={lineup.team.logo} alt="" className="w-4 h-4 object-contain" />}
-        <span className="text-[10px] font-semibold text-foreground/70">{lineup.formation}</span>
+        <span className="text-[9px] font-semibold text-foreground/70 whitespace-nowrap">{lineup.formation}</span>
       </div>
       {sortedRowKeys.map((rowKey) => (
-        <div key={rowKey} className="flex items-center justify-center gap-2 sm:gap-3 w-full py-1">
+        <div key={rowKey} className="flex flex-col items-center justify-center gap-1.5 py-1 flex-1">
           {rows.get(rowKey)!.map((p) => (
             <PitchPlayer key={p.id} player={p} isAway={isAway} />
           ))}
