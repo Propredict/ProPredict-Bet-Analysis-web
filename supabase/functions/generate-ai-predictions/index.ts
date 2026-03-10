@@ -863,6 +863,34 @@ function formatFormString(form: FormMatch[]): string {
   return form.map(m => m.result).join("");
 }
 
+/**
+ * Fetch top scorers for a league (cached per invocation)
+ */
+async function fetchTopScorers(leagueId: number, season: number, apiKey: string): Promise<TopPlayer[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (topScorersCache.has(cacheKey)) return topScorersCache.get(cacheKey) as any;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players/topscorers?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      topScorersCache.set(cacheKey, []);
+      return [];
+    }
+    const players: TopPlayer[] = (data.response || []).slice(0, 20).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.statistics?.[0]?.team?.name || "",
+      goals: item.statistics?.[0]?.goals?.total || 0,
+      assists: item.statistics?.[0]?.goals?.assists || 0,
+    }));
+    topScorersCache.set(cacheKey, players as any);
+    return players;
+  } catch {
+    topScorersCache.set(cacheKey, []);
+    return [];
+  }
+}
+
 function generatePremiumAnalysis(params: {
   homeTeamName: string;
   awayTeamName: string;
@@ -877,6 +905,7 @@ function generatePremiumAnalysis(params: {
   h2hSummary: H2HSummary;
   homeStats: TeamStats | null;
   awayStats: TeamStats | null;
+  topScorers?: TopPlayer[];
 }): string {
   const {
     homeTeamName, awayTeamName, prediction, predictedScore, confidence,
