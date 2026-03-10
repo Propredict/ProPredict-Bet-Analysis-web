@@ -899,6 +899,34 @@ async function fetchTopScorers(leagueId: number, season: number, apiKey: string)
   }
 }
 
+/**
+ * Fetch injuries for a league (cached per invocation)
+ */
+async function fetchInjuries(leagueId: number, season: number, apiKey: string): Promise<InjuryInfo[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (injuriesCache.has(cacheKey)) return injuriesCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/injuries?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      injuriesCache.set(cacheKey, []);
+      return [];
+    }
+    const injuries: InjuryInfo[] = (data.response || []).slice(0, 50).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.team?.name || "",
+      type: item.player?.type || "Missing",
+      reason: item.player?.reason || "Unknown",
+    }));
+    injuriesCache.set(cacheKey, injuries);
+    return injuries;
+  } catch {
+    injuriesCache.set(cacheKey, []);
+    return [];
+  }
+}
+
 function generatePremiumAnalysis(params: {
   homeTeamName: string;
   awayTeamName: string;
