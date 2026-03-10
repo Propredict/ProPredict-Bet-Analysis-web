@@ -2,6 +2,7 @@ import { StatItem, MatchEvent } from "@/hooks/useMatchDetails";
 import { cn } from "@/lib/utils";
 import { Clock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface StatisticsTabProps {
   statistics: StatItem[];
@@ -140,10 +141,19 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
                   </span>
                   <span className="flex items-center gap-2">
                     {getEventIcon(event)}
-                    <span className="font-medium text-foreground">
-                      {event.player?.name}
-                    </span>
-                    {event.assist?.name && (
+                    <ClickablePlayer playerId={event.player?.id}>
+                      <span className="font-medium text-foreground hover:text-primary cursor-pointer transition-colors">
+                        {event.player?.name}
+                      </span>
+                    </ClickablePlayer>
+                    {event.assist?.name && event.assist?.id && (
+                      <ClickablePlayer playerId={event.assist.id}>
+                        <span className="text-muted-foreground text-xs hover:text-primary cursor-pointer transition-colors">
+                          ({event.assist.name})
+                        </span>
+                      </ClickablePlayer>
+                    )}
+                    {event.assist?.name && !event.assist?.id && (
                       <span className="text-muted-foreground text-xs">
                         ({event.assist.name})
                       </span>
