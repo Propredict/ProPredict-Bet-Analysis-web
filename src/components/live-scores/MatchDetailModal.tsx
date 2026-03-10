@@ -1,14 +1,16 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, TrendingUp, History } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Match } from "@/hooks/useLiveScores";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
+import { useTeamStats } from "@/hooks/useTeamStats";
 import { StatisticsTab } from "./tabs/StatisticsTab";
 import { LineupsTab } from "./tabs/LineupsTab";
 import { OddsTab } from "./tabs/OddsTab";
 import { H2HTab } from "./tabs/H2HTab";
+import { SeasonStatsTab } from "./tabs/SeasonStatsTab";
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -20,6 +22,15 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   // Use the new hook for fetching match details
   const { data: details, loading } = useMatchDetails(match?.id ?? null);
+
+  // Lazy-load season stats only when tab is active
+  const homeTeamId = details?.teams?.home?.id;
+  const awayTeamId = details?.teams?.away?.id;
+  const leagueId = details?.league?.id;
+  const { data: teamStatsData, isLoading: teamStatsLoading } = useTeamStats(
+    homeTeamId, awayTeamId, leagueId,
+    activeTab === "season-stats"
+  );
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -103,30 +114,36 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-3 py-3 border-b border-white/10">
-              <TabsList className="w-full grid grid-cols-4 gap-2 bg-secondary/50 p-1.5 rounded-lg border border-border">
+              <TabsList className="w-full grid grid-cols-5 gap-1.5 bg-secondary/50 p-1.5 rounded-lg border border-border">
                 <TabsTrigger 
                   value="statistics" 
-                  className="text-xs sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <BarChart3 className="h-3.5 w-3.5 mr-1" /> Stats
+                  <BarChart3 className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Stats
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="season-stats" 
+                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <Activity className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Season
                 </TabsTrigger>
                 <TabsTrigger 
                   value="lineups" 
-                  className="text-xs sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <Users className="h-3.5 w-3.5 mr-1" /> Lineups
+                  <Users className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Lineups
                 </TabsTrigger>
                 <TabsTrigger 
                   value="odds" 
-                  className="text-xs sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <TrendingUp className="h-3.5 w-3.5 mr-1" /> Probabilities
+                  <TrendingUp className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> Odds
                 </TabsTrigger>
                 <TabsTrigger 
                   value="h2h" 
-                  className="text-xs sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  className="text-[10px] sm:text-sm rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <History className="h-3.5 w-3.5 mr-1" /> H2H
+                  <History className="h-3.5 w-3.5 mr-0.5 sm:mr-1" /> H2H
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -136,6 +153,16 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                 statistics={details?.statistics ?? []}
                 events={details?.events ?? []}
                 loading={loading}
+                homeTeam={match.homeTeam}
+                awayTeam={match.awayTeam}
+              />
+            </TabsContent>
+
+            <TabsContent value="season-stats" className="m-0">
+              <SeasonStatsTab
+                homeStats={teamStatsData?.home ?? null}
+                awayStats={teamStatsData?.away ?? null}
+                loading={teamStatsLoading}
                 homeTeam={match.homeTeam}
                 awayTeam={match.awayTeam}
               />
