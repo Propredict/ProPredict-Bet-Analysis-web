@@ -224,6 +224,10 @@ export default function LeagueStatistics() {
             {isAllLeagues ? <LeagueStatsEmptyState type="players" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsPlayersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
           </TabsContent>
 
+          <TabsContent value="injuries" className="mt-4">
+            {isAllLeagues ? <LeagueStatsEmptyState type="injuries" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsInjuriesTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
+          </TabsContent>
+
           <TabsContent value="scorers" className="mt-4">
             {isAllLeagues ? <LeagueStatsEmptyState type="scorers" onSelectLeague={setSelectedLeagueId} /> : <LeagueStatsScorersTab leagueId={selectedLeagueId} leagueName={selectedLeague?.name || ""} />}
           </TabsContent>

@@ -75,6 +75,11 @@ const typeConfig = {
     title: "All Leagues Players",
     subtitle: "Choose a specific league to view player statistics",
   },
+  injuries: {
+    icon: AlertTriangle,
+    title: "All Leagues Injuries",
+    subtitle: "Choose a specific league to view injuries & suspensions",
+  },
   default: {
     icon: Trophy,
     title: "Select a League",
