@@ -201,6 +201,15 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
             />
           </TabsContent>
 
+          <TabsContent value="injuries" className="mt-0">
+            <InjuriesPreviewSection
+              injuries={data?.injuries || []}
+              homeTeam={match.homeTeam}
+              awayTeam={match.awayTeam}
+              loading={detailsLoading}
+            />
+          </TabsContent>
+
           <TabsContent value="scorers" className="mt-0">
             <ScorersSection 
               scorersData={scorersData} 
