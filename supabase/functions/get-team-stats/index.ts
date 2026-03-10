@@ -132,8 +132,8 @@ serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({
-        home: normalizeTeamStats(homeStats),
-        away: normalizeTeamStats(awayStats),
+        home: normalizeTeamStats(homeStats, homeCoach),
+        away: normalizeTeamStats(awayStats, awayCoach),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
