@@ -4,6 +4,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export interface TeamSeasonStats {
   team: { id: number; name: string; logo: string };
+  coach: { id: number; name: string; photo: string; nationality: string; age: number | null } | null;
   form: string;
   fixtures: {
     played: { home: number; away: number; total: number };

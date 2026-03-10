@@ -94,6 +94,8 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
         awayTeam={awayTeam}
         homeLogo={h.team?.logo}
         awayLogo={a.team?.logo}
+        homeCoach={h.coach}
+        awayCoach={a.coach}
       />
 
       {/* Form */}
