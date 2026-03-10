@@ -157,6 +157,20 @@ serve(async (req: Request) => {
       events: eventsData.response || [],
       odds: oddsData.response || [],
       players: playersData.response || [],
+      injuries: (injuriesData.response || []).map((inj: any) => ({
+        player: {
+          id: inj.player?.id || 0,
+          name: inj.player?.name || "Unknown",
+          photo: inj.player?.photo || "",
+          type: inj.player?.type || "Missing",
+          reason: inj.player?.reason || "Unknown",
+        },
+        team: {
+          id: inj.team?.id || 0,
+          name: inj.team?.name || "",
+          logo: inj.team?.logo || "",
+        },
+      })),
       h2h: h2hData,
     };
 
