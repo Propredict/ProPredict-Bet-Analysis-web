@@ -144,7 +144,7 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-3 pt-3 overflow-x-auto">
-          <TabsList className="w-full grid grid-cols-7 h-9 min-w-[450px]">
+          <TabsList className="w-full grid grid-cols-8 h-9 min-w-[500px]">
             <TabsTrigger value="h2h" className="text-[10px] gap-0.5">
               <Swords className="h-3 w-3" />
               <span className="hidden sm:inline">H2H</span>
@@ -152,6 +152,10 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
             <TabsTrigger value="key-players" className="text-[10px] gap-0.5">
               <Star className="h-3 w-3" />
               <span className="hidden sm:inline">Players</span>
+            </TabsTrigger>
+            <TabsTrigger value="injuries" className="text-[10px] gap-0.5">
+              <AlertTriangle className="h-3 w-3" />
+              <span className="hidden sm:inline">Injuries</span>
             </TabsTrigger>
             <TabsTrigger value="scorers" className="text-[10px] gap-0.5">
               <Trophy className="h-3 w-3" />
