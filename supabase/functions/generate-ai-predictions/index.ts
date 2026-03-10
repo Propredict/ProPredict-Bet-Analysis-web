@@ -41,6 +41,25 @@ interface TeamStats {
   goalsFor: number;
   goalsAgainst: number;
   form: string; // e.g., "WWDLW"
+  // Home/Away splits
+  home: { played: number; wins: number; draws: number; losses: number; goalsFor: number; goalsAgainst: number };
+  away: { played: number; wins: number; draws: number; losses: number; goalsFor: number; goalsAgainst: number };
+  // Goals average
+  goalsForAvg: number;
+  goalsAgainstAvg: number;
+  homeGoalsForAvg: number;
+  homeGoalsAgainstAvg: number;
+  awayGoalsForAvg: number;
+  awayGoalsAgainstAvg: number;
+  // Clean sheets & failed to score
+  cleanSheets: { home: number; away: number; total: number };
+  failedToScore: { home: number; away: number; total: number };
+  // Penalty stats
+  penalty: { scored: number; missed: number; total: number };
+  // Biggest streaks
+  biggestStreak: { wins: number; draws: number; losses: number };
+  biggestWin: string | null;   // e.g. "5-0"
+  biggestLoss: string | null;  // e.g. "0-4"
 }
 
 interface H2HMatch {
