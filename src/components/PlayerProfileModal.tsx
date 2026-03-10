@@ -48,19 +48,21 @@ export function PlayerProfileModal() {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/60" onClick={closePlayer} />
+      <div className="fixed inset-0 z-[60] bg-black/50" onClick={closePlayer} />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[61] flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-background border border-border/30 shadow-lg"
+          className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-xl bg-background border border-border/30 shadow-2xl pointer-events-auto relative"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
-          <div className="sticky top-0 z-10 flex justify-end p-2">
-            <Button size="icon" variant="ghost" onClick={closePlayer} className="h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          {/* Close button - always visible */}
+          <button
+            onClick={closePlayer}
+            className="absolute right-3 top-3 z-20 w-8 h-8 rounded-full bg-muted/90 flex items-center justify-center hover:bg-muted transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4 text-foreground" />
+          </button>
 
           {isLoading ? (
             <div className="p-6 pt-0 space-y-4">
