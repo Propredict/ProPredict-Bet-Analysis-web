@@ -37,10 +37,12 @@ serve(async (req: Request) => {
 
     const headers = { "x-apisports-key": apiKey };
 
-    // Fetch both teams in parallel
-    const [homeRes, awayRes] = await Promise.all([
+    // Fetch both teams stats + coaches in parallel
+    const [homeRes, awayRes, homeCoachRes, awayCoachRes] = await Promise.all([
       fetch(`${API_FOOTBALL_URL}/teams/statistics?team=${homeTeamId}&league=${leagueId}&season=${season}`, { headers }),
       fetch(`${API_FOOTBALL_URL}/teams/statistics?team=${awayTeamId}&league=${leagueId}&season=${season}`, { headers }),
+      fetch(`${API_FOOTBALL_URL}/coachs?team=${homeTeamId}`, { headers }),
+      fetch(`${API_FOOTBALL_URL}/coachs?team=${awayTeamId}`, { headers }),
     ]);
 
     // If primary season returns empty, try previous season
@@ -67,9 +69,27 @@ serve(async (req: Request) => {
       return json.response;
     }
 
-    const [homeStats, awayStats] = await Promise.all([
+    function parseCoach(res: Response): Promise<any> {
+      return res.json().then(json => {
+        const coaches = json?.response || [];
+        // Get the most recent (first) coach — API returns current coach first
+        if (coaches.length === 0) return null;
+        const c = coaches[0];
+        return {
+          id: c.id || 0,
+          name: c.name || "Unknown",
+          photo: c.photo || "",
+          nationality: c.nationality || "",
+          age: c.age || null,
+        };
+      }).catch(() => null);
+    }
+
+    const [homeStats, awayStats, homeCoach, awayCoach] = await Promise.all([
       parseWithFallback(homeRes, homeTeamId),
       parseWithFallback(awayRes, awayTeamId),
+      parseCoach(homeCoachRes),
+      parseCoach(awayCoachRes),
     ]);
 
     function normalizeTeamStats(stats: any) {
