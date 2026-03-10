@@ -269,6 +269,7 @@ const App = () => {
                 </Suspense>
                 </AndroidAuthGate>
               </BrowserRouter>
+              </PlayerProfileProvider>
             </TooltipProvider>
           </UserPlanProvider>
         </AuthProvider>
