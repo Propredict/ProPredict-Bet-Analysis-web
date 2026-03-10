@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +22,8 @@ interface MatchDetailModalProps {
 export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   const [activeTab, setActiveTab] = useState("statistics");
 
-  // Use the new hook for fetching match details
   const { data: details, loading } = useMatchDetails(match?.id ?? null);
 
-  // Lazy-load season stats only when tab is active
   const homeTeamId = details?.teams?.home?.id;
   const awayTeamId = details?.teams?.away?.id;
   const leagueId = details?.league?.id;
@@ -33,6 +31,34 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     homeTeamId, awayTeamId, leagueId,
     activeTab === "season-stats"
   );
+
+  // Determine which optional tabs have data
+  const hasPlayers = !loading && (details?.players?.length ?? 0) > 0;
+  const hasInjuries = !loading && (details?.injuries?.length ?? 0) > 0;
+  const hasLineups = !loading && details?.lineups?.some(l => l.startXI?.length > 0);
+
+  // Build visible tabs dynamically
+  const visibleTabs = useMemo(() => {
+    const tabs = [
+      { value: "statistics", label: "Stats", icon: BarChart3, always: true },
+      { value: "players", label: "Players", icon: UserCheck, always: false, hasData: hasPlayers },
+      { value: "injuries", label: "Injuries", icon: AlertTriangle, always: false, hasData: hasInjuries },
+      { value: "season-stats", label: "Season", icon: Activity, always: true },
+      { value: "lineups", label: "Lineups", icon: Users, always: false, hasData: hasLineups },
+      { value: "odds", label: "Odds", icon: TrendingUp, always: true },
+      { value: "h2h", label: "H2H", icon: History, always: true },
+    ];
+    // While loading, show all tabs; after loading, hide empty optional tabs
+    if (loading) return tabs;
+    return tabs.filter(t => t.always || t.hasData);
+  }, [loading, hasPlayers, hasInjuries, hasLineups]);
+
+  // Reset to stats if current tab got hidden
+  useEffect(() => {
+    if (!loading && !visibleTabs.some(t => t.value === activeTab)) {
+      setActiveTab("statistics");
+    }
+  }, [visibleTabs, loading, activeTab]);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -54,7 +80,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   if (!match) return null;
 
-  const isLiveOrHT = match.status === "live" || match.status === "halftime";
   const isUpcoming = match.status === "upcoming";
 
   const getStatusBadge = () => {
@@ -70,9 +95,10 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     return <Badge variant="outline">{match.startTime}</Badge>;
   };
 
-  // Get team logos from details if available
   const homeLogo = details?.teams?.home?.logo;
   const awayLogo = details?.teams?.away?.logo;
+
+  const colCount = visibleTabs.length;
 
   return (
     <>
@@ -116,49 +142,19 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-3 py-3 border-b border-white/10">
-              <TabsList className="w-full grid grid-cols-7 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
-                <TabsTrigger 
-                  value="statistics" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <BarChart3 className="h-3 w-3 mr-0.5 hidden sm:inline" /> Stats
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="players" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <UserCheck className="h-3 w-3 mr-0.5 hidden sm:inline" /> Players
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="injuries" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <AlertTriangle className="h-3 w-3 mr-0.5 hidden sm:inline" /> Injuries
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="season-stats" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <Activity className="h-3 w-3 mr-0.5 hidden sm:inline" /> Season
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="lineups" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <Users className="h-3 w-3 mr-0.5 hidden sm:inline" /> Lineups
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="odds" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <TrendingUp className="h-3 w-3 mr-0.5 hidden sm:inline" /> Odds
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="h2h" 
-                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <History className="h-3 w-3 mr-0.5 hidden sm:inline" /> H2H
-                </TabsTrigger>
+              <TabsList
+                className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
+                style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
+              >
+                {visibleTabs.map(({ value, label, icon: Icon }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                  >
+                    <Icon className="h-3 w-3 mr-0.5 hidden sm:inline" /> {label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </div>
 
