@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLeagueYellowCards, YellowCardsResponse } from "@/hooks/useLeagueStats";
+import { ClickablePlayer } from "@/components/ClickablePlayer";
 
 interface Props {
   leagueId: string;
