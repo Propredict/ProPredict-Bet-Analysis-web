@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries";
+type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries" | "yellowcards" | "redcards" | "squads";
 
 serve(async (req: Request) => {
   // Handle CORS preflight
