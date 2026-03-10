@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players";
+export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries";
 
 export interface TeamStanding {
   rank: number;
@@ -139,13 +139,24 @@ export interface PlayersResponse {
   players: DetailedPlayerStats[];
 }
 
+export interface InjuriesResponse {
+  type: "injuries";
+  injuries: Array<{
+    player: { id: number; name: string; photo: string; type: string; reason: string };
+    team: { id: number; name: string; logo: string };
+    fixture: { id: number; date: string };
+    league: { name: string };
+  }>;
+}
+
 type LeagueStatsResponse = 
   | StandingsResponse 
   | ScorersResponse 
   | AssistsResponse 
   | FixturesResponse 
   | RoundsResponse
-  | PlayersResponse;
+  | PlayersResponse
+  | InjuriesResponse;
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -236,6 +247,17 @@ export function useLeaguePlayers(leagueId: string, season: string = "2025") {
   return useQuery({
     queryKey: ["league-stats", "players", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "players", season),
+    enabled: !!leagueId && leagueId !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useLeagueInjuries(leagueId: string, season: string = "2025") {
+  return useQuery({
+    queryKey: ["league-stats", "injuries", leagueId, season],
+    queryFn: () => fetchLeagueStats(leagueId, "injuries", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 0,
     gcTime: 0,

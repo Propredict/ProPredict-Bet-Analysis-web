@@ -95,6 +95,21 @@ export interface TeamPlayersStats {
   players: PlayerMatchStats[];
 }
 
+export interface InjuryData {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+    type: string;   // "Missing" or "Questionable" or "Doubtful"
+    reason: string;  // "Knee Injury", "Suspended", etc.
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+}
+
 export interface MatchDetails {
   fixture: {
     id: number;
@@ -124,6 +139,7 @@ export interface MatchDetails {
   events: MatchEvent[];
   odds: OddsBet[];
   players: TeamPlayersStats[];
+  injuries: InjuryData[];
   h2h: H2HMatch[];
 }
 
@@ -308,6 +324,7 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
           events: Array.isArray(json.events) ? json.events : [],
           odds: normalizeOdds(json.odds || []),
           players: Array.isArray(json.players) ? json.players : [],
+          injuries: Array.isArray(json.injuries) ? json.injuries : [],
           h2h: Array.isArray(json.h2h) ? json.h2h : [],
         };
 

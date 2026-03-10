@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Trophy, Target, Users, Calendar, RotateCcw, Swords } from "lucide-react";
+import { Trophy, Target, Users, Calendar, RotateCcw, Swords, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { LeagueSearchSelect } from "./LeagueSearchSelect";
@@ -35,7 +35,7 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 };
 
 interface LeagueStatsEmptyStateProps {
-  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "default";
+  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "injuries" | "default";
   onSelectLeague?: (leagueId: string) => void;
 }
 
@@ -74,6 +74,11 @@ const typeConfig = {
     icon: Users,
     title: "All Leagues Players",
     subtitle: "Choose a specific league to view player statistics",
+  },
+  injuries: {
+    icon: AlertTriangle,
+    title: "All Leagues Injuries",
+    subtitle: "Choose a specific league to view injuries & suspensions",
   },
   default: {
     icon: Trophy,

@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players";
+type StatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries";
 
 serve(async (req: Request) => {
   // Handle CORS preflight
@@ -32,9 +32,9 @@ serve(async (req: Request) => {
       );
     }
 
-    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players"].includes(type)) {
+    if (!type || !["standings", "scorers", "assists", "fixtures", "rounds", "players", "injuries"].includes(type)) {
       return new Response(
-        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, or players" }),
+        JSON.stringify({ error: "Invalid type parameter. Use: standings, scorers, assists, fixtures, rounds, players, or injuries" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -281,6 +281,36 @@ serve(async (req: Request) => {
         responseData = {
           type: "players",
           players: Array.from(playerMap.values()),
+        };
+        break;
+      }
+
+      case "injuries": {
+        const injuriesJson = await fetchWithFallback(`injuries?league=${league}`, season);
+        
+        responseData = {
+          type: "injuries",
+          injuries: (injuriesJson.response || []).map((item: any) => ({
+            player: {
+              id: item.player?.id || 0,
+              name: item.player?.name || "Unknown",
+              photo: item.player?.photo || "",
+              type: item.player?.type || "Missing",
+              reason: item.player?.reason || "Unknown",
+            },
+            team: {
+              id: item.team?.id || 0,
+              name: item.team?.name || "",
+              logo: item.team?.logo || "",
+            },
+            fixture: {
+              id: item.fixture?.id || 0,
+              date: item.fixture?.date || "",
+            },
+            league: {
+              name: item.league?.name || "",
+            },
+          })),
         };
         break;
       }

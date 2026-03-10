@@ -152,6 +152,14 @@ const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+const injuriesCache = new Map<string, InjuryInfo[]>();
+
+interface InjuryInfo {
+  name: string;
+  team: string;
+  type: string;
+  reason: string;
+}
 
 interface TopPlayer {
   name: string;
@@ -891,6 +899,34 @@ async function fetchTopScorers(leagueId: number, season: number, apiKey: string)
   }
 }
 
+/**
+ * Fetch injuries for a league (cached per invocation)
+ */
+async function fetchInjuries(leagueId: number, season: number, apiKey: string): Promise<InjuryInfo[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (injuriesCache.has(cacheKey)) return injuriesCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/injuries?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      injuriesCache.set(cacheKey, []);
+      return [];
+    }
+    const injuries: InjuryInfo[] = (data.response || []).slice(0, 50).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.team?.name || "",
+      type: item.player?.type || "Missing",
+      reason: item.player?.reason || "Unknown",
+    }));
+    injuriesCache.set(cacheKey, injuries);
+    return injuries;
+  } catch {
+    injuriesCache.set(cacheKey, []);
+    return [];
+  }
+}
+
 function generatePremiumAnalysis(params: {
   homeTeamName: string;
   awayTeamName: string;
@@ -906,10 +942,11 @@ function generatePremiumAnalysis(params: {
   homeStats: TeamStats | null;
   awayStats: TeamStats | null;
   topScorers?: TopPlayer[];
+  injuries?: InjuryInfo[];
 }): string {
   const {
     homeTeamName, awayTeamName, prediction, predictedScore, confidence,
-    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers,
+    homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers, injuries,
   } = params;
 
   const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
@@ -984,6 +1021,24 @@ function generatePremiumAnalysis(params: {
     }
   }
 
+  // 🚑 INJURIES & SUSPENSIONS
+  if (injuries && injuries.length > 0) {
+    const matchTeam = (t: string, target: string) => t.toLowerCase().includes(target.toLowerCase().split(" ").pop() || "");
+    const homeInjuries = injuries.filter(p => matchTeam(p.team, homeTeamName)).slice(0, 5);
+    const awayInjuries = injuries.filter(p => matchTeam(p.team, awayTeamName)).slice(0, 5);
+    
+    if (homeInjuries.length > 0 || awayInjuries.length > 0) {
+      const lines: string[] = [];
+      if (homeInjuries.length > 0) {
+        lines.push(`• ${homeTeamName}: ${homeInjuries.map(p => `${p.name} (${p.reason})`).join(", ")}.`);
+      }
+      if (awayInjuries.length > 0) {
+        lines.push(`• ${awayTeamName}: ${awayInjuries.map(p => `${p.name} (${p.reason})`).join(", ")}.`);
+      }
+      sections.push(`🚑 INJURIES & SUSPENSIONS:\n${lines.join("\n")}`);
+    }
+  }
+
   // 🎯 PROBABILITIES
   sections.push(`🎯 WIN PROBABILITIES: ${homeTeamName} ${homeWin}% | Draw ${draw}% | ${awayTeamName} ${awayWin}%.`);
 
@@ -1009,12 +1064,13 @@ async function premiumEnhance(
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
-  // Fetch last 10 real matches + 5 H2H + top scorers (more data than standard)
-  const [homeForm10, awayForm10, h2h5, topScorers] = await Promise.all([
+  // Fetch last 10 real matches + 5 H2H + top scorers + injuries (more data than standard)
+  const [homeForm10, awayForm10, h2h5, topScorers, injuries] = await Promise.all([
     fetchTeamForm(homeTeamId, apiKey, 10),
     fetchTeamForm(awayTeamId, apiKey, 10),
     fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
     leagueId && season ? fetchTopScorers(leagueId, season, apiKey) : Promise.resolve([]),
+    leagueId && season ? fetchInjuries(leagueId, season, apiKey) : Promise.resolve([]),
   ]);
 
   // Recalculate with deeper form data (use last 10 for form score)
@@ -1059,6 +1115,7 @@ async function premiumEnhance(
     homeStats,
     awayStats,
     topScorers,
+    injuries,
   });
 
   return {

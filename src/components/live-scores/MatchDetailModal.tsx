@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from "react";
-import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +12,7 @@ import { OddsTab } from "./tabs/OddsTab";
 import { H2HTab } from "./tabs/H2HTab";
 import { SeasonStatsTab } from "./tabs/SeasonStatsTab";
 import { PlayersTab } from "./tabs/PlayersTab";
+import { InjuriesTab } from "./tabs/InjuriesTab";
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -115,7 +116,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-3 py-3 border-b border-white/10">
-              <TabsList className="w-full grid grid-cols-6 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
+              <TabsList className="w-full grid grid-cols-7 gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border">
                 <TabsTrigger 
                   value="statistics" 
                   className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
@@ -127,6 +128,12 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                   className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
                   <UserCheck className="h-3 w-3 mr-0.5 hidden sm:inline" /> Players
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="injuries" 
+                  className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <AlertTriangle className="h-3 w-3 mr-0.5 hidden sm:inline" /> Injuries
                 </TabsTrigger>
                 <TabsTrigger 
                   value="season-stats" 
@@ -168,6 +175,13 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             <TabsContent value="players" className="m-0">
               <PlayersTab
                 players={details?.players ?? []}
+                loading={loading}
+              />
+            </TabsContent>
+
+            <TabsContent value="injuries" className="m-0">
+              <InjuriesTab
+                injuries={details?.injuries ?? []}
                 loading={loading}
               />
             </TabsContent>
