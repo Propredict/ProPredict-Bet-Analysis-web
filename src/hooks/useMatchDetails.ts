@@ -95,6 +95,21 @@ export interface TeamPlayersStats {
   players: PlayerMatchStats[];
 }
 
+export interface InjuryData {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+    type: string;   // "Missing" or "Questionable" or "Doubtful"
+    reason: string;  // "Knee Injury", "Suspended", etc.
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+}
+
 export interface MatchDetails {
   fixture: {
     id: number;
