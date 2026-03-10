@@ -151,6 +151,14 @@ async function fetchJsonWithRetry(
 const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
+const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+
+interface TopPlayer {
+  name: string;
+  team: string;
+  goals: number;
+  assists: number;
+}
 
 /**
  * Fetch team's last N matches form
