@@ -102,21 +102,23 @@ export function LeagueStatsPlayersTab({ leagueId, leagueName }: LeagueStatsPlaye
               }`}
             >
               <span className="text-xs font-bold text-primary w-5 flex-shrink-0">{idx + 1}</span>
-              <img
-                src={player.player.photo}
-                alt=""
-                className="h-8 w-8 rounded-full object-cover bg-muted flex-shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{player.player.name}</p>
-                <div className="flex items-center gap-1">
-                  {player.team.logo && (
-                    <img src={player.team.logo} alt="" className="h-3 w-3 object-contain" />
-                  )}
-                  <span className="text-[10px] text-muted-foreground truncate">{player.team.name}</span>
+              <ClickablePlayer playerId={player.player.id} className="flex items-center gap-2 min-w-0">
+                <img
+                  src={player.player.photo}
+                  alt=""
+                  className="h-8 w-8 rounded-full object-cover bg-muted flex-shrink-0"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate hover:text-primary transition-colors">{player.player.name}</p>
+                  <div className="flex items-center gap-1">
+                    {player.team.logo && (
+                      <img src={player.team.logo} alt="" className="h-3 w-3 object-contain" />
+                    )}
+                    <span className="text-[10px] text-muted-foreground truncate">{player.team.name}</span>
+                  </div>
                 </div>
-              </div>
+              </ClickablePlayer>
 
               {/* Quick stat badges */}
               <div className="flex items-center gap-1 flex-shrink-0">
