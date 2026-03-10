@@ -152,6 +152,14 @@ const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+const injuriesCache = new Map<string, InjuryInfo[]>();
+
+interface InjuryInfo {
+  name: string;
+  team: string;
+  type: string;
+  reason: string;
+}
 
 interface TopPlayer {
   name: string;
