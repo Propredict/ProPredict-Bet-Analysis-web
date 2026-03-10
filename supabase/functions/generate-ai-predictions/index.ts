@@ -436,24 +436,37 @@ function calculatePrediction(
   const awayQualityScore = calculateQualityScore(awayStats);
 
   // === SQUAD / AVAILABILITY (15%) ===
-  // Conservative proxy from last-3 attacking output + defensive stability.
+  // Enhanced: use season goals average when available, fallback to form-based
   const homeGoalRate = calculateGoalRate(homeForm);
   const awayGoalRate = calculateGoalRate(awayForm);
 
+  // If we have season stats, use home goals avg for home team and away goals avg for away team
+  const homeEffectiveScored = homeStats?.homeGoalsForAvg || homeGoalRate.scored;
+  const homeEffectiveConceded = homeStats?.homeGoalsAgainstAvg || homeGoalRate.conceded;
+  const awayEffectiveScored = awayStats?.awayGoalsForAvg || awayGoalRate.scored;
+  const awayEffectiveConceded = awayStats?.awayGoalsAgainstAvg || awayGoalRate.conceded;
+
   const homeSquadScore = clamp(
-    50 + (homeGoalRate.scored - homeGoalRate.conceded) * 18,
+    50 + (homeEffectiveScored - homeEffectiveConceded) * 18,
     0,
     100
   );
   const awaySquadScore = clamp(
-    50 + (awayGoalRate.scored - awayGoalRate.conceded) * 18,
+    50 + (awayEffectiveScored - awayEffectiveConceded) * 18,
     0,
     100
   );
 
-  // === HOME ADVANTAGE (10% MAX, VERY MINOR — avoid systematic home bias) ===
-  const homeAdvantageScore = 51;
-  const awayAdvantageScore = 49;
+  // === HOME ADVANTAGE (10% MAX — use real home/away win rates when available) ===
+  let homeAdvantageScore = 51;
+  let awayAdvantageScore = 49;
+  if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
+    const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
+    const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
+    // Slight boost based on actual home/away performance, capped to avoid bias
+    homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
+    awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
+  }
 
   // === H2H (10%, secondary) ===
   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
