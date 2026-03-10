@@ -35,7 +35,7 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 };
 
 interface LeagueStatsEmptyStateProps {
-  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "default";
+  type?: "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "h2h" | "players" | "default";
   onSelectLeague?: (leagueId: string) => void;
 }
 
