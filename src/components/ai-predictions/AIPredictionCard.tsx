@@ -54,7 +54,7 @@ const AIPredictionCardInner = ({
   // Premium: is_premium = true AND (confidence >= 85 OR confidence is null/masked)
   // Pro/Exclusive: confidence >= 65 (and not premium)
   // Daily: everything else (open for all)
-  const isPremiumTier = prediction.is_premium && (prediction.confidence == null || prediction.confidence >= 85);
+  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 85) || (prediction.is_premium && prediction.confidence == null);
   const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 65;
   const isDailyTier = !isPremiumTier && !isProTier;
 
