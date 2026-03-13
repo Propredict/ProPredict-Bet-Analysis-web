@@ -21,6 +21,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [formError, setFormError] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -39,6 +40,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    setFormError("");
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
@@ -67,11 +69,7 @@ const Login = () => {
         navigate(safeRedirectTo);
       }
     } catch (error: any) {
-      toast({
-        title: "Authentication error",
-        description: error.message,
-        variant: "destructive",
-      });
+      setFormError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -207,6 +205,12 @@ const Login = () => {
                 </button>
               </div>
             </div>
+
+            {formError && (
+              <Alert variant="destructive" className="text-sm">
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (

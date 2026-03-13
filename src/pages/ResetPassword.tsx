@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
 
@@ -14,6 +15,7 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
+  const [formError, setFormError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,22 +41,16 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure both passwords are the same.",
-        variant: "destructive",
-      });
+      setFormError("Please make sure both passwords are the same.");
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
-        variant: "destructive",
-      });
+      setFormError("Password must be at least 6 characters.");
       return;
     }
+
+    setFormError("");
 
     setIsLoading(true);
 
@@ -72,11 +68,7 @@ const ResetPassword = () => {
       // Redirect to login after 2 seconds
       setTimeout(() => navigate("/login"), 2000);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      setFormError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -149,6 +141,12 @@ const ResetPassword = () => {
                   />
                 </div>
               </div>
+
+              {formError && (
+                <Alert variant="destructive" className="text-sm">
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
