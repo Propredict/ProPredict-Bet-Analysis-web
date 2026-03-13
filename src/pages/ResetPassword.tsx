@@ -141,10 +141,17 @@ const ResetPassword = () => {
                   />
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Min. 6 characters with uppercase, lowercase, number & symbol (e.g. Kp9$mXvL)
+              </p>
 
               {formError && (
                 <Alert variant="destructive" className="text-sm">
-                  <AlertDescription>{formError}</AlertDescription>
+                  <AlertDescription>
+                    {formError.toLowerCase().includes('weak') || formError.toLowerCase().includes('breach')
+                      ? "Your password is too common. Please use a stronger, unique password."
+                      : formError}
+                  </AlertDescription>
                 </Alert>
               )}
 
