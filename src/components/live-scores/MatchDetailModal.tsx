@@ -33,15 +33,16 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     activeTab === "season-stats"
   );
 
-  // Lazy-load odds only when user clicks on Odds tab
+  // Lazy-load odds when user clicks on Odds tab OR to check availability
   const { odds: lazyOdds, loading: oddsLoading } = useMatchOdds(
     match?.id ?? null,
-    activeTab === "odds"
+    activeTab === "odds" || !loading
   );
 
   // Determine which optional tabs have data
   const hasPlayers = !loading && (details?.players?.length ?? 0) > 0;
   const hasInjuries = !loading && (details?.injuries?.length ?? 0) > 0;
+  const hasOdds = !oddsLoading && lazyOdds.length > 0;
   const hasLineups = !loading && details?.lineups?.some(l => l.startXI?.length > 0);
 
   // Build visible tabs dynamically
@@ -52,13 +53,13 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
       { value: "injuries", label: "Injuries", icon: AlertTriangle, always: false, hasData: hasInjuries },
       { value: "season-stats", label: "Season", icon: Activity, always: true },
       { value: "lineups", label: "Lineups", icon: Users, always: false, hasData: hasLineups },
-      { value: "odds", label: "Odds", icon: TrendingUp, always: true },
+      { value: "odds", label: "Odds", icon: TrendingUp, always: false, hasData: hasOdds },
       { value: "h2h", label: "H2H", icon: History, always: true },
     ];
     // While loading, show all tabs; after loading, hide empty optional tabs
-    if (loading) return tabs;
+    if (loading || oddsLoading) return tabs;
     return tabs.filter(t => t.always || t.hasData);
-  }, [loading, hasPlayers, hasInjuries, hasLineups]);
+  }, [loading, oddsLoading, hasPlayers, hasInjuries, hasLineups, hasOdds]);
 
   // Reset to stats if current tab got hidden
   useEffect(() => {
