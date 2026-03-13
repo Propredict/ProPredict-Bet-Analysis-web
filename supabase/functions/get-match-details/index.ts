@@ -8,6 +8,27 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+
+async function fetchJsonSafe(url: string, headers: HeadersInit, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { headers, signal: controller.signal });
+    if (!response.ok) {
+      console.warn(`[get-match-details] Upstream request failed: ${url} (${response.status})`);
+      return null;
+    }
+
+    return await response.json().catch(() => null);
+  } catch (error) {
+    console.warn(`[get-match-details] Upstream request error: ${url}`, error);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 interface H2HMatchNormalized {
   fixture: {
     id: number;
