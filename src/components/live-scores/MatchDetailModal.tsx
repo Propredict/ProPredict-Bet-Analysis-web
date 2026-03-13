@@ -23,7 +23,7 @@ interface MatchDetailModalProps {
 export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   const [activeTab, setActiveTab] = useState("statistics");
 
-  const { data: details, loading } = useMatchDetails(match?.id ?? null);
+  const { data: details, loading, error } = useMatchDetails(match?.id ?? null);
 
   const homeTeamId = details?.teams?.home?.id;
   const awayTeamId = details?.teams?.away?.id;
