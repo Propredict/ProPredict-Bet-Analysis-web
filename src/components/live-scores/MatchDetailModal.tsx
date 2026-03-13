@@ -33,6 +33,12 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     activeTab === "season-stats"
   );
 
+  // Lazy-load odds only when user clicks on Odds tab
+  const { odds: lazyOdds, loading: oddsLoading } = useMatchOdds(
+    match?.id ?? null,
+    activeTab === "odds"
+  );
+
   // Determine which optional tabs have data
   const hasPlayers = !loading && (details?.players?.length ?? 0) > 0;
   const hasInjuries = !loading && (details?.injuries?.length ?? 0) > 0;
