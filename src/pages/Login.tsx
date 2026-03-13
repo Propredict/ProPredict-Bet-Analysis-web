@@ -40,6 +40,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    setFormError("");
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
