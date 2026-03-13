@@ -206,6 +206,12 @@ const Login = () => {
               </div>
             </div>
 
+            {formError && (
+              <Alert variant="destructive" className="text-sm">
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
