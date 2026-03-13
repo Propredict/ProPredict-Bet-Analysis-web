@@ -109,40 +109,37 @@ serve(async (req: Request) => {
 
     // Parse H2H data if available
     let h2hData: H2HMatchNormalized[] = [];
-    if (h2hRes) {
-      const h2hJson = await h2hRes.json();
-      if (h2hJson.response && Array.isArray(h2hJson.response)) {
-        h2hData = h2hJson.response.map((match: any) => ({
-          fixture: {
-            id: match.fixture?.id || 0,
-            date: match.fixture?.date || "",
-            venue: match.fixture?.venue || null,
+    if (h2hJson?.response && Array.isArray(h2hJson.response)) {
+      h2hData = h2hJson.response.map((match: any) => ({
+        fixture: {
+          id: match.fixture?.id || 0,
+          date: match.fixture?.date || "",
+          venue: match.fixture?.venue || null,
+        },
+        league: {
+          name: match.league?.name || "",
+          country: match.league?.country || "",
+          logo: match.league?.logo || "",
+        },
+        teams: {
+          home: {
+            id: match.teams?.home?.id || 0,
+            name: match.teams?.home?.name || "",
+            logo: match.teams?.home?.logo || "",
+            winner: match.teams?.home?.winner ?? null,
           },
-          league: {
-            name: match.league?.name || "",
-            country: match.league?.country || "",
-            logo: match.league?.logo || "",
+          away: {
+            id: match.teams?.away?.id || 0,
+            name: match.teams?.away?.name || "",
+            logo: match.teams?.away?.logo || "",
+            winner: match.teams?.away?.winner ?? null,
           },
-          teams: {
-            home: {
-              id: match.teams?.home?.id || 0,
-              name: match.teams?.home?.name || "",
-              logo: match.teams?.home?.logo || "",
-              winner: match.teams?.home?.winner ?? null,
-            },
-            away: {
-              id: match.teams?.away?.id || 0,
-              name: match.teams?.away?.name || "",
-              logo: match.teams?.away?.logo || "",
-              winner: match.teams?.away?.winner ?? null,
-            },
-          },
-          goals: {
-            home: match.goals?.home ?? null,
-            away: match.goals?.away ?? null,
-          },
-        }));
-      }
+        },
+        goals: {
+          home: match.goals?.home ?? null,
+          away: match.goals?.away ?? null,
+        },
+      }));
     }
 
     // Build response
