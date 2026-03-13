@@ -147,81 +147,98 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           </div>
 
           {/* TABS */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="px-3 py-3 border-b border-white/10">
-              <TabsList
-                className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
-                style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
-              >
-                {visibleTabs.map(({ value, label, icon: Icon }) => (
-                  <TabsTrigger
-                    key={value}
-                    value={value}
-                    className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                  >
-                    <Icon className="h-3 w-3 mr-0.5 hidden sm:inline" /> {label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+          {!details && (loading || error) ? (
+            <div className="border-t border-white/10 p-5">
+              {loading ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-4 w-1/3 rounded bg-muted" />
+                  <div className="h-20 w-full rounded bg-muted/60" />
+                  <div className="h-20 w-full rounded bg-muted/40" />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-sm font-medium text-foreground">Couldn’t load match details</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{error ?? "Please close and try opening this match again."}</p>
+                </div>
+              )}
             </div>
+          ) : (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="px-3 py-3 border-b border-white/10">
+                <TabsList
+                  className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
+                  style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
+                >
+                  {visibleTabs.map(({ value, label, icon: Icon }) => (
+                    <TabsTrigger
+                      key={value}
+                      value={value}
+                      className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                    >
+                      <Icon className="h-3 w-3 mr-0.5 hidden sm:inline" /> {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
-            <TabsContent value="statistics" className="m-0">
-              <StatisticsTab
-                statistics={details?.statistics ?? []}
-                events={details?.events ?? []}
-                loading={loading}
-                homeTeam={match.homeTeam}
-                awayTeam={match.awayTeam}
-              />
-            </TabsContent>
+              <TabsContent value="statistics" className="m-0">
+                <StatisticsTab
+                  statistics={details?.statistics ?? []}
+                  events={details?.events ?? []}
+                  loading={loading}
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                />
+              </TabsContent>
 
-            <TabsContent value="players" className="m-0">
-              <PlayersTab
-                players={details?.players ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="players" className="m-0">
+                <PlayersTab
+                  players={details?.players ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="injuries" className="m-0">
-              <InjuriesTab
-                injuries={details?.injuries ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="injuries" className="m-0">
+                <InjuriesTab
+                  injuries={details?.injuries ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="season-stats" className="m-0">
-              <SeasonStatsTab
-                homeStats={teamStatsData?.home ?? null}
-                awayStats={teamStatsData?.away ?? null}
-                loading={teamStatsLoading}
-                homeTeam={match.homeTeam}
-                awayTeam={match.awayTeam}
-              />
-            </TabsContent>
+              <TabsContent value="season-stats" className="m-0">
+                <SeasonStatsTab
+                  homeStats={teamStatsData?.home ?? null}
+                  awayStats={teamStatsData?.away ?? null}
+                  loading={teamStatsLoading}
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                />
+              </TabsContent>
 
-            <TabsContent value="lineups" className="m-0">
-              <LineupsTab
-                lineups={details?.lineups ?? []}
-                loading={loading}
-              />
-            </TabsContent>
+              <TabsContent value="lineups" className="m-0">
+                <LineupsTab
+                  lineups={details?.lineups ?? []}
+                  loading={loading}
+                />
+              </TabsContent>
 
-            <TabsContent value="odds" className="m-0">
-              <OddsTab
-                odds={lazyOdds}
-                loading={oddsLoading}
-              />
-            </TabsContent>
+              <TabsContent value="odds" className="m-0">
+                <OddsTab
+                  odds={lazyOdds}
+                  loading={oddsLoading}
+                />
+              </TabsContent>
 
-            <TabsContent value="h2h" className="m-0">
-              <H2HTab
-                h2h={details?.h2h ?? []}
-                loading={loading}
-                homeTeamName={match.homeTeam}
-                awayTeamName={match.awayTeam}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="h2h" className="m-0">
+                <H2HTab
+                  h2h={details?.h2h ?? []}
+                  loading={loading}
+                  homeTeamName={match.homeTeam}
+                  awayTeamName={match.awayTeam}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </div>
     </>
