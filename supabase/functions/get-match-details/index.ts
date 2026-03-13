@@ -66,7 +66,9 @@ serve(async (req: Request) => {
     const homeTeamId = fixture.teams?.home?.id;
     const awayTeamId = fixture.teams?.away?.id;
 
-    // Parallel fetch for statistics, lineups, events, odds, players stats, injuries, and H2H
+    // Parallel fetch for statistics, lineups, events, players stats, injuries, and H2H
+    // NOTE: Odds are NOT fetched here to avoid timeouts on large leagues.
+    // Odds are fetched lazily by the client when the Odds tab is opened.
     const fetchPromises: Promise<Response>[] = [
       // Statistics
       fetch(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, { headers }),
@@ -74,8 +76,6 @@ serve(async (req: Request) => {
       fetch(`${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`, { headers }),
       // Events
       fetch(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, { headers }),
-      // Odds
-      fetch(`${API_FOOTBALL_URL}/odds?fixture=${fixtureId}`, { headers }),
       // Players statistics
       fetch(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, { headers }),
       // Injuries
