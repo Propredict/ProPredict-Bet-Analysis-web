@@ -144,22 +144,22 @@ function PitchFormation({ lineup, isAway, jerseyColors }: { lineup: TeamLineup; 
 }
 
 function PitchView({ lineups }: { lineups: TeamLineup[] }) {
-  const home = lineups[0];
-  const away = lineups[1];
+  const home = lineups[0] ?? null;
+  const away = lineups[1] ?? null;
+
+  const colors = useMemo(
+    () => resolveJerseyColors(home?.team?.colors || null, away?.team?.colors || null),
+    [home?.team?.colors, away?.team?.colors]
+  );
+
   if (!home || !away) return null;
 
   const homeHasGrid = home.startXI?.some(p => p.grid);
   const awayHasGrid = away.startXI?.some(p => p.grid);
   if (!homeHasGrid && !awayHasGrid) return null;
 
-  const colors = useMemo(
-    () => resolveJerseyColors(home.team?.colors || null, away.team?.colors || null),
-    [home.team?.colors, away.team?.colors]
-  );
-
   return (
     <div className="relative mx-2 sm:mx-4 mb-3 rounded-xl overflow-hidden border border-border/30">
-      {/* Pitch background - horizontal */}
       <div className="bg-gradient-to-r from-emerald-900/30 via-emerald-800/20 to-orange-900/30 relative min-h-[280px]">
         {/* Pitch markings */}
         <div className="absolute inset-0 pointer-events-none">
