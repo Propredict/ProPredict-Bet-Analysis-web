@@ -90,36 +90,22 @@ serve(async (req: Request) => {
     // Parallel fetch for statistics, lineups, events, players stats, injuries, and H2H
     // NOTE: Odds are NOT fetched here to avoid timeouts on large leagues.
     // Odds are fetched lazily by the client when the Odds tab is opened.
-    const fetchPromises: Promise<Response>[] = [
-      // Statistics
-      fetch(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, { headers }),
-      // Lineups
-      fetch(`${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`, { headers }),
-      // Events
-      fetch(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, { headers }),
-      // Players statistics
-      fetch(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, { headers }),
-      // Injuries
-      fetch(`${API_FOOTBALL_URL}/injuries?fixture=${fixtureId}`, { headers }),
+    const fetchPromises: Promise<any>[] = [
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/injuries?fixture=${fixtureId}`, headers),
     ];
 
     // Only fetch H2H if we have both team IDs - CORRECT FORMAT: h2h=homeId-awayId
     if (homeTeamId && awayTeamId) {
       fetchPromises.push(
-        fetch(`${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=10`, { headers })
+        fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=10`, headers, 9000)
       );
     }
 
-    const responses = await Promise.all(fetchPromises);
-    const [statsRes, lineupsRes, eventsRes, playersRes, injuriesRes, h2hRes] = responses;
-
-    const [statsData, lineupsData, eventsData, playersData, injuriesData] = await Promise.all([
-      statsRes.json(),
-      lineupsRes.json(),
-      eventsRes.json(),
-      playersRes.json(),
-      injuriesRes.json(),
-    ]);
+    const [statsData, lineupsData, eventsData, playersData, injuriesData, h2hJson] = await Promise.all(fetchPromises);
 
     // Parse H2H data if available
     let h2hData: H2HMatchNormalized[] = [];
