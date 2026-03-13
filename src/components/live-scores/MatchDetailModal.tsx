@@ -57,9 +57,9 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
       { value: "h2h", label: "H2H", icon: History, always: true },
     ];
     // While loading, show all tabs; after loading, hide empty optional tabs
-    if (loading) return tabs;
+    if (loading || oddsLoading) return tabs;
     return tabs.filter(t => t.always || t.hasData);
-  }, [loading, hasPlayers, hasInjuries, hasLineups]);
+  }, [loading, oddsLoading, hasPlayers, hasInjuries, hasLineups, hasOdds]);
 
   // Reset to stats if current tab got hidden
   useEffect(() => {
