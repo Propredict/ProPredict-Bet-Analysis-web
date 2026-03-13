@@ -69,11 +69,7 @@ const Login = () => {
         navigate(safeRedirectTo);
       }
     } catch (error: any) {
-      toast({
-        title: "Authentication error",
-        description: error.message,
-        variant: "destructive",
-      });
+      setFormError(error.message);
     } finally {
       setIsLoading(false);
     }
