@@ -204,11 +204,20 @@ const Login = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">
+                  Min. 6 characters with uppercase, lowercase, number & symbol (e.g. Kp9$mXvL)
+                </p>
+              )}
             </div>
 
             {formError && (
               <Alert variant="destructive" className="text-sm">
-                <AlertDescription>{formError}</AlertDescription>
+                <AlertDescription>
+                  {formError.toLowerCase().includes('weak') || formError.toLowerCase().includes('breach')
+                    ? "Your password is too common. Please use a stronger, unique password."
+                    : formError}
+                </AlertDescription>
               </Alert>
             )}
 
