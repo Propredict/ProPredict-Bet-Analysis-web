@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Match } from "@/hooks/useLiveScores";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { useTeamStats } from "@/hooks/useTeamStats";
+import { useMatchOdds } from "@/hooks/useMatchOdds";
 import { StatisticsTab } from "./tabs/StatisticsTab";
 import { LineupsTab } from "./tabs/LineupsTab";
 import { OddsTab } from "./tabs/OddsTab";
@@ -30,6 +31,12 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
   const { data: teamStatsData, isLoading: teamStatsLoading } = useTeamStats(
     homeTeamId, awayTeamId, leagueId,
     activeTab === "season-stats"
+  );
+
+  // Lazy-load odds only when user clicks on Odds tab
+  const { odds: lazyOdds, loading: oddsLoading } = useMatchOdds(
+    match?.id ?? null,
+    activeTab === "odds"
   );
 
   // Determine which optional tabs have data
@@ -201,8 +208,8 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
             <TabsContent value="odds" className="m-0">
               <OddsTab
-                odds={details?.odds ?? []}
-                loading={loading}
+                odds={lazyOdds}
+                loading={oddsLoading}
               />
             </TabsContent>
 

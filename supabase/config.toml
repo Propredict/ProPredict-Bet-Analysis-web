@@ -6,7 +6,8 @@ verify_jwt = false
 [functions.get-match-details]
 verify_jwt = false
 
-[functions.league-stats]
+[functions.get-match-odds]
+verify_jwt = false
 verify_jwt = false
 
 [functions.create-checkout-session]
