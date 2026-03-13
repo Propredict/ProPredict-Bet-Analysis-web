@@ -8,6 +8,27 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+
+async function fetchJsonSafe(url: string, headers: HeadersInit, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { headers, signal: controller.signal });
+    if (!response.ok) {
+      console.warn(`[get-match-details] Upstream request failed: ${url} (${response.status})`);
+      return null;
+    }
+
+    return await response.json().catch(() => null);
+  } catch (error) {
+    console.warn(`[get-match-details] Upstream request error: ${url}`, error);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 interface H2HMatchNormalized {
   fixture: {
     id: number;
@@ -69,73 +90,56 @@ serve(async (req: Request) => {
     // Parallel fetch for statistics, lineups, events, players stats, injuries, and H2H
     // NOTE: Odds are NOT fetched here to avoid timeouts on large leagues.
     // Odds are fetched lazily by the client when the Odds tab is opened.
-    const fetchPromises: Promise<Response>[] = [
-      // Statistics
-      fetch(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, { headers }),
-      // Lineups
-      fetch(`${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`, { headers }),
-      // Events
-      fetch(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, { headers }),
-      // Players statistics
-      fetch(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, { headers }),
-      // Injuries
-      fetch(`${API_FOOTBALL_URL}/injuries?fixture=${fixtureId}`, { headers }),
+    const fetchPromises: Promise<any>[] = [
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/events?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/players?fixture=${fixtureId}`, headers),
+      fetchJsonSafe(`${API_FOOTBALL_URL}/injuries?fixture=${fixtureId}`, headers),
     ];
 
     // Only fetch H2H if we have both team IDs - CORRECT FORMAT: h2h=homeId-awayId
     if (homeTeamId && awayTeamId) {
       fetchPromises.push(
-        fetch(`${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=10`, { headers })
+        fetchJsonSafe(`${API_FOOTBALL_URL}/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=10`, headers, 9000)
       );
     }
 
-    const responses = await Promise.all(fetchPromises);
-    const [statsRes, lineupsRes, eventsRes, playersRes, injuriesRes, h2hRes] = responses;
-
-    const [statsData, lineupsData, eventsData, playersData, injuriesData] = await Promise.all([
-      statsRes.json(),
-      lineupsRes.json(),
-      eventsRes.json(),
-      playersRes.json(),
-      injuriesRes.json(),
-    ]);
+    const [statsData, lineupsData, eventsData, playersData, injuriesData, h2hJson] = await Promise.all(fetchPromises);
 
     // Parse H2H data if available
     let h2hData: H2HMatchNormalized[] = [];
-    if (h2hRes) {
-      const h2hJson = await h2hRes.json();
-      if (h2hJson.response && Array.isArray(h2hJson.response)) {
-        h2hData = h2hJson.response.map((match: any) => ({
-          fixture: {
-            id: match.fixture?.id || 0,
-            date: match.fixture?.date || "",
-            venue: match.fixture?.venue || null,
+    if (h2hJson?.response && Array.isArray(h2hJson.response)) {
+      h2hData = h2hJson.response.map((match: any) => ({
+        fixture: {
+          id: match.fixture?.id || 0,
+          date: match.fixture?.date || "",
+          venue: match.fixture?.venue || null,
+        },
+        league: {
+          name: match.league?.name || "",
+          country: match.league?.country || "",
+          logo: match.league?.logo || "",
+        },
+        teams: {
+          home: {
+            id: match.teams?.home?.id || 0,
+            name: match.teams?.home?.name || "",
+            logo: match.teams?.home?.logo || "",
+            winner: match.teams?.home?.winner ?? null,
           },
-          league: {
-            name: match.league?.name || "",
-            country: match.league?.country || "",
-            logo: match.league?.logo || "",
+          away: {
+            id: match.teams?.away?.id || 0,
+            name: match.teams?.away?.name || "",
+            logo: match.teams?.away?.logo || "",
+            winner: match.teams?.away?.winner ?? null,
           },
-          teams: {
-            home: {
-              id: match.teams?.home?.id || 0,
-              name: match.teams?.home?.name || "",
-              logo: match.teams?.home?.logo || "",
-              winner: match.teams?.home?.winner ?? null,
-            },
-            away: {
-              id: match.teams?.away?.id || 0,
-              name: match.teams?.away?.name || "",
-              logo: match.teams?.away?.logo || "",
-              winner: match.teams?.away?.winner ?? null,
-            },
-          },
-          goals: {
-            home: match.goals?.home ?? null,
-            away: match.goals?.away ?? null,
-          },
-        }));
-      }
+        },
+        goals: {
+          home: match.goals?.home ?? null,
+          away: match.goals?.away ?? null,
+        },
+      }));
     }
 
     // Build response
@@ -151,12 +155,12 @@ serve(async (req: Request) => {
       teams: fixture.teams,
       goals: fixture.goals,
       score: fixture.score,
-      statistics: statsData.response || [],
-      lineups: lineupsData.response || [],
-      events: eventsData.response || [],
+      statistics: statsData?.response || [],
+      lineups: lineupsData?.response || [],
+      events: eventsData?.response || [],
       odds: [], // Odds fetched lazily by client
-      players: playersData.response || [],
-      injuries: (injuriesData.response || []).map((inj: any) => ({
+      players: playersData?.response || [],
+      injuries: (injuriesData?.response || []).map((inj: any) => ({
         player: {
           id: inj.player?.id || 0,
           name: inj.player?.name || "Unknown",

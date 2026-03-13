@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const EDGE_FUNCTION_URL =
   `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-match-details`;
+const REQUEST_TIMEOUT_MS = 12000;
 
 // In-memory cache to avoid refetching for the same fixtureId
 const detailsCache = new Map<string, MatchDetails>();
@@ -303,9 +304,16 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
     const controller = new AbortController();
     abortRef.current = controller;
 
+    let didTimeout = false;
+
     const fetchDetails = async () => {
       setLoading(true);
       setError(null);
+
+      const timeoutId = window.setTimeout(() => {
+        didTimeout = true;
+        controller.abort();
+      }, REQUEST_TIMEOUT_MS);
 
       try {
         const res = await fetch(`${EDGE_FUNCTION_URL}?fixtureId=${id}`, {
@@ -315,6 +323,7 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
         });
 
         if (!res.ok) {
+          setError("Unable to load match details right now.");
           setData(null);
           return;
         }
@@ -322,6 +331,7 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
         const json = await res.json().catch(() => null);
 
         if (!json || typeof json !== "object") {
+          setError("Match details are temporarily unavailable.");
           setData(null);
           return;
         }
@@ -344,11 +354,20 @@ export function useMatchDetails(fixtureId: string | number | null): UseMatchDeta
 
         detailsCache.set(id, normalized);
         setData(normalized);
-      } catch (e: any) {
-        if (e?.name === "AbortError") return;
         setError(null);
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
+          if (didTimeout) {
+            setError("Loading took too long. Please try again.");
+            setData(null);
+          }
+          return;
+        }
+
+        setError("Unable to load match details right now.");
         setData(null);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
