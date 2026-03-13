@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Match } from "@/hooks/useLiveScores";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { useTeamStats } from "@/hooks/useTeamStats";
+import { useMatchOdds } from "@/hooks/useMatchOdds";
 import { StatisticsTab } from "./tabs/StatisticsTab";
 import { LineupsTab } from "./tabs/LineupsTab";
 import { OddsTab } from "./tabs/OddsTab";
