@@ -155,12 +155,12 @@ serve(async (req: Request) => {
       teams: fixture.teams,
       goals: fixture.goals,
       score: fixture.score,
-      statistics: statsData.response || [],
-      lineups: lineupsData.response || [],
-      events: eventsData.response || [],
+      statistics: statsData?.response || [],
+      lineups: lineupsData?.response || [],
+      events: eventsData?.response || [],
       odds: [], // Odds fetched lazily by client
-      players: playersData.response || [],
-      injuries: (injuriesData.response || []).map((inj: any) => ({
+      players: playersData?.response || [],
+      injuries: (injuriesData?.response || []).map((inj: any) => ({
         player: {
           id: inj.player?.id || 0,
           name: inj.player?.name || "Unknown",
