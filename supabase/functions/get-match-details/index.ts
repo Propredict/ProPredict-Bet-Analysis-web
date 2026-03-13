@@ -90,13 +90,12 @@ serve(async (req: Request) => {
     }
 
     const responses = await Promise.all(fetchPromises);
-    const [statsRes, lineupsRes, eventsRes, oddsRes, playersRes, injuriesRes, h2hRes] = responses;
+    const [statsRes, lineupsRes, eventsRes, playersRes, injuriesRes, h2hRes] = responses;
 
-    const [statsData, lineupsData, eventsData, oddsData, playersData, injuriesData] = await Promise.all([
+    const [statsData, lineupsData, eventsData, playersData, injuriesData] = await Promise.all([
       statsRes.json(),
       lineupsRes.json(),
       eventsRes.json(),
-      oddsRes.json(),
       playersRes.json(),
       injuriesRes.json(),
     ]);
