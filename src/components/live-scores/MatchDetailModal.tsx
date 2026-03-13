@@ -208,8 +208,8 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
             <TabsContent value="odds" className="m-0">
               <OddsTab
-                odds={details?.odds ?? []}
-                loading={loading}
+                odds={lazyOdds}
+                loading={oddsLoading}
               />
             </TabsContent>
 
