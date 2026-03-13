@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const EDGE_FUNCTION_URL =
   `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-match-details`;
+const REQUEST_TIMEOUT_MS = 12000;
 
 // In-memory cache to avoid refetching for the same fixtureId
 const detailsCache = new Map<string, MatchDetails>();
