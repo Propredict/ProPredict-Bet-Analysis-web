@@ -31,8 +31,9 @@ function OddsMarketGroup({ title, values }: { title: string; values: OddsValue[]
       <div className="text-xs text-muted-foreground">{title}</div>
       <div className="flex flex-wrap gap-2">
         {values.slice(0, 8).map((val, idx) => {
-          const isOver = val.value?.toLowerCase().includes("over") || val.value?.toLowerCase().includes("yes");
-          const isUnder = val.value?.toLowerCase().includes("under") || val.value?.toLowerCase().includes("no");
+          const valStr = typeof val.value === "string" ? val.value.toLowerCase() : String(val.value ?? "").toLowerCase();
+          const isOver = valStr.includes("over") || valStr.includes("yes");
+          const isUnder = valStr.includes("under") || valStr.includes("no");
           return (
             <OddsChip
               key={idx}
