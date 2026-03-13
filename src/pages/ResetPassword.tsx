@@ -41,22 +41,16 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure both passwords are the same.",
-        variant: "destructive",
-      });
+      setFormError("Please make sure both passwords are the same.");
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
-        variant: "destructive",
-      });
+      setFormError("Password must be at least 6 characters.");
       return;
     }
+
+    setFormError("");
 
     setIsLoading(true);
 
