@@ -154,7 +154,7 @@ serve(async (req: Request) => {
       statistics: statsData.response || [],
       lineups: lineupsData.response || [],
       events: eventsData.response || [],
-      odds: oddsData.response || [],
+      odds: [], // Odds fetched lazily by client
       players: playersData.response || [],
       injuries: (injuriesData.response || []).map((inj: any) => ({
         player: {
