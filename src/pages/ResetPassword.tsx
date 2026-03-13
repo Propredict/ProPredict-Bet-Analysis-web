@@ -15,6 +15,7 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
+  const [formError, setFormError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
