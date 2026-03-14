@@ -123,6 +123,7 @@ export default function DailyTickets() {
   };
 
   return <>
+    <FreeUserUpsellModal />
     <Helmet>
       <title>Daily Multi-Match Predictions – ProPredict</title>
       <meta name="description" content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only." />

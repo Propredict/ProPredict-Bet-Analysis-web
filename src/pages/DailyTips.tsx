@@ -120,6 +120,7 @@ export default function DailyTips() {
   };
 
   return <>
+    <FreeUserUpsellModal />
     <Helmet>
       <title>Daily AI Predictions – ProPredict</title>
       <meta name="description" content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes." />
