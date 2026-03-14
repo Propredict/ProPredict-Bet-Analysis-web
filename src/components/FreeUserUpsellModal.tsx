@@ -25,7 +25,7 @@ export function FreeUserUpsellModal() {
 
     const timer = setTimeout(() => setIsOpen(true), 800);
     return () => clearTimeout(timer);
-  }, [plan, loading]);
+  }, [plan, isLoading]);
 
   const handleClose = () => {
     sessionStorage.setItem(STORAGE_KEY, "true");
