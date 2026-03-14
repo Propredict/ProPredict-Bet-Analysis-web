@@ -23,7 +23,6 @@ export function FreeUserUpsellModal() {
   }, [plan, isLoading]);
 
   const handleClose = () => {
-    sessionStorage.setItem(STORAGE_KEY, "true");
     setIsOpen(false);
   };
 
