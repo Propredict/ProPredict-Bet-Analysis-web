@@ -27,7 +27,6 @@ export function FreeUserUpsellModal() {
   };
 
   const handleUpgrade = () => {
-    sessionStorage.setItem(STORAGE_KEY, "true");
     setIsOpen(false);
     navigate("/get-premium");
   };
