@@ -38,7 +38,7 @@ export function FreeUserUpsellModal() {
     navigate("/get-premium");
   };
 
-  if (loading || plan !== "free") return null;
+  if (isLoading || plan !== "free") return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
