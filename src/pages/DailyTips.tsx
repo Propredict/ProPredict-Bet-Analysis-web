@@ -13,6 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 
 export default function DailyTips() {
   const {

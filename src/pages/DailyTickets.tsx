@@ -13,6 +13,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 
 export default function DailyTickets() {
   const navigate = useNavigate();
