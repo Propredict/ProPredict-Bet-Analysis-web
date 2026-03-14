@@ -12,12 +12,12 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 const STORAGE_KEY = "free_upsell_modal_shown";
 
 export function FreeUserUpsellModal() {
-  const { plan, loading } = useUserPlan();
+  const { plan, isLoading } = useUserPlan();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    if (isLoading) return;
     if (plan !== "free") return;
 
     // Show once per session
