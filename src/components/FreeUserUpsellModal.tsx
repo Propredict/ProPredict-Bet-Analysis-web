@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { useUserPlan } from "@/hooks/useUserPlan";
 
-const STORAGE_KEY = "free_upsell_modal_shown";
-
 export function FreeUserUpsellModal() {
   const { plan, isLoading } = useUserPlan();
   const navigate = useNavigate();
@@ -19,9 +17,6 @@ export function FreeUserUpsellModal() {
   useEffect(() => {
     if (isLoading) return;
     if (plan !== "free") return;
-
-    // Show once per session
-    if (sessionStorage.getItem(STORAGE_KEY)) return;
 
     const timer = setTimeout(() => setIsOpen(true), 800);
     return () => clearTimeout(timer);
