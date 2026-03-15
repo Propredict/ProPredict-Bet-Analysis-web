@@ -195,7 +195,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, isMobileApp, revenueCat.isLoading, revenueCat.plan]);
 
   useEffect(() => {
     fetchUserData();
