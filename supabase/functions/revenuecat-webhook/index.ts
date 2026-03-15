@@ -169,7 +169,7 @@ serve(async (req) => {
 
       console.log(`RevenueCat webhook: Successfully activated ${plan} for user ${userId}`);
     } else if (deactivateEvents.includes(eventType)) {
-      console.log(`RevenueCat webhook: Deactivating subscription for user ${userId}`);
+      console.log(`RevenueCat webhook: Expiring subscription for user ${userId}`);
 
       const { error } = await supabase
         .from("user_subscriptions")
@@ -177,7 +177,7 @@ serve(async (req) => {
           {
             user_id: userId,
             plan: "free",
-            status: eventType === "EXPIRATION" ? "expired" : "canceled",
+            status: "expired",
             subscription_source: "free",
             expires_at: null,
             updated_at: new Date().toISOString(),
@@ -186,14 +186,32 @@ serve(async (req) => {
         );
 
       if (error) {
-        console.error("RevenueCat webhook: Error deactivating subscription:", error);
+        console.error("RevenueCat webhook: Error expiring subscription:", error);
         return new Response(
-          JSON.stringify({ error: "Failed to deactivate subscription" }),
+          JSON.stringify({ error: "Failed to expire subscription" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      console.log(`RevenueCat webhook: Successfully deactivated subscription for user ${userId}`);
+      console.log(`RevenueCat webhook: Successfully expired subscription for user ${userId}`);
+    } else if (cancelEvents.includes(eventType)) {
+      // CANCELLATION: User canceled but should keep access until expires_at
+      console.log(`RevenueCat webhook: Marking subscription as canceled for user ${userId}, keeping plan until expiry`);
+
+      // Only update status to "canceled" — keep existing plan, source, and expires_at
+      const { error } = await supabase
+        .from("user_subscriptions")
+        .update({
+          status: "canceled",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("RevenueCat webhook: Error marking cancellation:", error);
+      } else {
+        console.log(`RevenueCat webhook: Successfully marked canceled for user ${userId}`);
+      }
     } else if (eventType === "BILLING_ISSUE") {
       console.log(`RevenueCat webhook: Billing issue for user ${userId}`);
 
