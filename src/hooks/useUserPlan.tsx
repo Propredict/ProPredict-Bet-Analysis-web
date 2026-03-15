@@ -183,7 +183,9 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       // Sync plan + user_id tags to OneSignal for push segmentation
-      syncOneSignalPlanTags(resolvedPlan, user.id);
+      // On Android, use revenueCat.plan; on web, use the resolved plan from Supabase
+      const tagPlan = isMobileApp ? revenueCat.plan : plan;
+      syncOneSignalPlanTags(tagPlan, user.id);
     } catch (err) {
       console.error("UserPlan error:", err);
       setPlan("free");
