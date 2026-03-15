@@ -153,11 +153,16 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check both expires_at AND status for full security consistency
+      // Check subscription validity:
+      // - "active" status: always valid (if not expired)
+      // - "canceled" status: still valid until expires_at (user canceled but period not over)
+      // - Any other status (expired, past_due): no access
       const isExpired = subRes.data.expires_at && new Date(subRes.data.expires_at) < new Date();
-      const isInactive = subRes.data.status && subRes.data.status !== "active";
+      const status = subRes.data.status || "active";
+      const isCanceledButValid = status === "canceled" && subRes.data.expires_at && !isExpired;
+      const isActive = status === "active" && !isExpired;
 
-      if (isExpired || isInactive) {
+      if (!isActive && !isCanceledButValid) {
         setPlan("free");
         setSubscriptionSource("free");
         setIsLoading(false);
