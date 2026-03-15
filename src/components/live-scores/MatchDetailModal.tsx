@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo } from "react";
-import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck, AlertTriangle } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
