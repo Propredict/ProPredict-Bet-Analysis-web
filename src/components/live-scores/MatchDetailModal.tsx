@@ -50,7 +50,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     const tabs = [
       { value: "statistics", label: "Stats", icon: BarChart3, always: true },
       { value: "players", label: "Players", icon: UserCheck, always: false, hasData: hasPlayers },
-      { value: "injuries", label: "Injuries", icon: AlertTriangle, always: false, hasData: hasInjuries },
+      
       { value: "season-stats", label: "Season", icon: Activity, always: true },
       { value: "lineups", label: "Lineups", icon: Users, always: false, hasData: hasLineups },
       { value: "odds", label: "Odds", icon: TrendingUp, always: false, hasData: hasOdds },
