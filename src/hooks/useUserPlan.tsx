@@ -146,33 +146,41 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       /* ===== SUBSCRIPTION ===== */
-      if (!subRes.data) {
-        setPlan("free");
-        setSubscriptionSource("free");
+      // On Android, RevenueCat is the sole source of truth for plan.
+      // Only read subscription_source from Supabase; skip plan override.
+      if (isMobileApp && !revenueCat.isLoading) {
+        // Still read source from DB if available
+        if (subRes.data) {
+          setSubscriptionSource((subRes.data.subscription_source as SubscriptionSource) || "free");
+        }
+        // Plan is set by the RevenueCat effect below — do NOT overwrite here
         setIsLoading(false);
-        return;
+      } else if (!isMobileApp) {
+        // WEB: Supabase is the source of truth
+        if (!subRes.data) {
+          setPlan("free");
+          setSubscriptionSource("free");
+          setIsLoading(false);
+          return;
+        }
+
+        const isExpired = subRes.data.expires_at && new Date(subRes.data.expires_at) < new Date();
+        const status = subRes.data.status || "active";
+        const isCanceledButValid = status === "canceled" && subRes.data.expires_at && !isExpired;
+        const isActive = status === "active" && !isExpired;
+
+        if (!isActive && !isCanceledButValid) {
+          setPlan("free");
+          setSubscriptionSource("free");
+          setIsLoading(false);
+          return;
+        }
+
+        const resolvedPlan = subRes.data.plan as UserPlan;
+        const resolvedSource = (subRes.data.subscription_source as SubscriptionSource) || "free";
+        setPlan(resolvedPlan);
+        setSubscriptionSource(resolvedSource);
       }
-
-      // Check subscription validity:
-      // - "active" status: always valid (if not expired)
-      // - "canceled" status: still valid until expires_at (user canceled but period not over)
-      // - Any other status (expired, past_due): no access
-      const isExpired = subRes.data.expires_at && new Date(subRes.data.expires_at) < new Date();
-      const status = subRes.data.status || "active";
-      const isCanceledButValid = status === "canceled" && subRes.data.expires_at && !isExpired;
-      const isActive = status === "active" && !isExpired;
-
-      if (!isActive && !isCanceledButValid) {
-        setPlan("free");
-        setSubscriptionSource("free");
-        setIsLoading(false);
-        return;
-      }
-
-      const resolvedPlan = subRes.data.plan as UserPlan;
-      const resolvedSource = (subRes.data.subscription_source as SubscriptionSource) || "free";
-      setPlan(resolvedPlan);
-      setSubscriptionSource(resolvedSource);
 
       // Sync plan + user_id tags to OneSignal for push segmentation
       syncOneSignalPlanTags(resolvedPlan, user.id);
