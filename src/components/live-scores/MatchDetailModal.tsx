@@ -199,12 +199,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                 />
               </TabsContent>
 
-              <TabsContent value="injuries" className="m-0">
-                <InjuriesTab
-                  injuries={details?.injuries ?? []}
-                  loading={loading}
-                />
-              </TabsContent>
 
               <TabsContent value="season-stats" className="m-0">
                 <SeasonStatsTab
