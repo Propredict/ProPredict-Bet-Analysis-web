@@ -41,7 +41,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   // Determine which optional tabs have data
   const hasPlayers = !loading && (details?.players?.length ?? 0) > 0;
-  const hasInjuries = !loading && (details?.injuries?.length ?? 0) > 0;
+  
   const hasOdds = !oddsLoading && lazyOdds.length > 0;
   const hasLineups = !loading && details?.lineups?.some(l => l.startXI?.length > 0);
 
