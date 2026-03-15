@@ -59,7 +59,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     // While loading, show all tabs; after loading, hide empty optional tabs
     if (loading || oddsLoading) return tabs;
     return tabs.filter(t => t.always || t.hasData);
-  }, [loading, oddsLoading, hasPlayers, hasInjuries, hasLineups, hasOdds]);
+  }, [loading, oddsLoading, hasPlayers, hasLineups, hasOdds]);
 
   // Reset to stats if current tab got hidden
   useEffect(() => {
