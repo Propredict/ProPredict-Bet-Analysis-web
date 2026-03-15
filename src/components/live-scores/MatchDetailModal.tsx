@@ -13,7 +13,7 @@ import { OddsTab } from "./tabs/OddsTab";
 import { H2HTab } from "./tabs/H2HTab";
 import { SeasonStatsTab } from "./tabs/SeasonStatsTab";
 import { PlayersTab } from "./tabs/PlayersTab";
-import { InjuriesTab } from "./tabs/InjuriesTab";
+
 
 interface MatchDetailModalProps {
   match: Match | null;
