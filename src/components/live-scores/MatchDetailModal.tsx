@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo } from "react";
-import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck, AlertTriangle } from "lucide-react";
+import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +13,7 @@ import { OddsTab } from "./tabs/OddsTab";
 import { H2HTab } from "./tabs/H2HTab";
 import { SeasonStatsTab } from "./tabs/SeasonStatsTab";
 import { PlayersTab } from "./tabs/PlayersTab";
-import { InjuriesTab } from "./tabs/InjuriesTab";
+
 
 interface MatchDetailModalProps {
   match: Match | null;
@@ -41,7 +41,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   // Determine which optional tabs have data
   const hasPlayers = !loading && (details?.players?.length ?? 0) > 0;
-  const hasInjuries = !loading && (details?.injuries?.length ?? 0) > 0;
+  
   const hasOdds = !oddsLoading && lazyOdds.length > 0;
   const hasLineups = !loading && details?.lineups?.some(l => l.startXI?.length > 0);
 
@@ -50,7 +50,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     const tabs = [
       { value: "statistics", label: "Stats", icon: BarChart3, always: true },
       { value: "players", label: "Players", icon: UserCheck, always: false, hasData: hasPlayers },
-      { value: "injuries", label: "Injuries", icon: AlertTriangle, always: false, hasData: hasInjuries },
+      
       { value: "season-stats", label: "Season", icon: Activity, always: true },
       { value: "lineups", label: "Lineups", icon: Users, always: false, hasData: hasLineups },
       { value: "odds", label: "Odds", icon: TrendingUp, always: false, hasData: hasOdds },
@@ -59,7 +59,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
     // While loading, show all tabs; after loading, hide empty optional tabs
     if (loading || oddsLoading) return tabs;
     return tabs.filter(t => t.always || t.hasData);
-  }, [loading, oddsLoading, hasPlayers, hasInjuries, hasLineups, hasOdds]);
+  }, [loading, oddsLoading, hasPlayers, hasLineups, hasOdds]);
 
   // Reset to stats if current tab got hidden
   useEffect(() => {
@@ -199,12 +199,6 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                 />
               </TabsContent>
 
-              <TabsContent value="injuries" className="m-0">
-                <InjuriesTab
-                  injuries={details?.injuries ?? []}
-                  loading={loading}
-                />
-              </TabsContent>
 
               <TabsContent value="season-stats" className="m-0">
                 <SeasonStatsTab
