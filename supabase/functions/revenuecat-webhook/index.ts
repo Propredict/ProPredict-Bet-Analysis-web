@@ -119,9 +119,13 @@ serve(async (req) => {
       "PRODUCT_CHANGE",
     ];
 
-    // Handle cancellation/expiration events → deactivate subscription
+    // Handle expiration → fully deactivate subscription
     const deactivateEvents = [
       "EXPIRATION",
+    ];
+
+    // Handle cancellation → mark as canceled but keep plan until expires_at
+    const cancelEvents = [
       "CANCELLATION",
     ];
 
