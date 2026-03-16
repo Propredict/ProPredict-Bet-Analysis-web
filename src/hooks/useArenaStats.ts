@@ -92,9 +92,10 @@ export function useArenaStats(): ArenaStats {
       const [predictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
-          .select("status")
+          .select("status, created_at")
           .eq("user_id", user.id)
-          .eq("season_id", seasonIdForDisplay),
+          .eq("season_id", seasonIdForDisplay)
+          .order("created_at", { ascending: false }),
         (supabase as any)
           .from("arena_user_stats")
           .select("points, wins, losses, current_streak, reward_granted")
