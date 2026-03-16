@@ -146,7 +146,7 @@ export function useArenaStats(): ArenaStats {
       }
 
       // Derive current streak from effective predictions set (season first, then all-time fallback)
-      const streakSource = seasonHasAny ? seasonPredictions : allPredictions;
+      const streakSource = seasonHasResolved ? seasonPredictions : allPredictions;
       let derivedStreak = 0;
       for (const p of streakSource) {
         if (isWin(p.status)) derivedStreak++;
