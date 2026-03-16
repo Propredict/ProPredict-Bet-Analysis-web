@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${SITE_NAME} <noreply@${SENDER_DOMAIN}>`,
+        from: `noreply@${SENDER_DOMAIN}`,
         to: [user.email],
         subject: EMAIL_SUBJECTS[emailType] || 'Notification',
         html,
@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           error: {
             http_code: 500,
-            message: 'Failed to send email',
+            message: `Failed to send email: ${resendResult.slice(0, 200)}`,
           },
         }),
         {
