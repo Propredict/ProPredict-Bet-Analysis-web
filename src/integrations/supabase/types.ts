@@ -1099,6 +1099,7 @@ export type Database = {
       }
     }
     Functions: {
+      create_monthly_arena_season: { Args: never; Returns: undefined }
       ensure_arena_user_stats: { Args: never; Returns: undefined }
       has_role: {
         Args: {
