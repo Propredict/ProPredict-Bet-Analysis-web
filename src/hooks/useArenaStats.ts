@@ -28,6 +28,7 @@ export function useArenaStats(): ArenaStats {
     currentStreak: 0,
     rewardGranted: false,
     seasonId: null,
+    seasonName: null,
     loading: true,
   });
 
