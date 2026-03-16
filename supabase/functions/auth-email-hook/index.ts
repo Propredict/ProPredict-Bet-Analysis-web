@@ -35,7 +35,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 // Configuration
 const SITE_NAME = "ProPredict"
 const ROOT_DOMAIN = "propredict.me"
-const FROM_DOMAIN = "notify.propredict.me" // Domain shown in From address
+const FROM_DOMAIN = "propredict.me" // Domain shown in From address
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
