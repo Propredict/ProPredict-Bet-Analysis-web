@@ -131,12 +131,20 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
+      // Derive current streak from predictions (most recent consecutive wins)
+      let derivedStreak = 0;
+      for (const p of predictions) {
+        if (isWin(p.status)) derivedStreak++;
+        else break;
+      }
+      const currentStreak = derivedStreak > 0 ? derivedStreak : (serverStats?.current_streak ?? 0);
+
       setStats({
         points,
         wins,
         losses,
-        currentStreak: statsResult.data?.current_streak ?? 0,
-        rewardGranted: statsResult.data?.reward_granted ?? false,
+        currentStreak,
+        rewardGranted: serverStats?.reward_granted ?? false,
         seasonId: seasonIdForActions,
         seasonName,
         loading: false,
