@@ -122,14 +122,14 @@ export function useArenaStats(): ArenaStats {
 
       const seasonWins = seasonPredictions.filter((p: any) => isWin(p.status)).length;
       const seasonLosses = seasonPredictions.filter((p: any) => isLoss(p.status)).length;
-      const seasonHasAny = seasonPredictions.length > 0;
+      const seasonHasResolved = seasonWins + seasonLosses > 0;
 
       const allWins = allPredictions.filter((p: any) => isWin(p.status)).length;
       const allLosses = allPredictions.filter((p: any) => isLoss(p.status)).length;
 
-      // Prefer season stats, but if season has no predictions fallback to all-time predictions
-      const effectiveWinsFromPredictions = seasonHasAny ? seasonWins : allWins;
-      const effectiveLossesFromPredictions = seasonHasAny ? seasonLosses : allLosses;
+      // Prefer current season when it has resolved results; otherwise fallback to all-time resolved results
+      const effectiveWinsFromPredictions = seasonHasResolved ? seasonWins : allWins;
+      const effectiveLossesFromPredictions = seasonHasResolved ? seasonLosses : allLosses;
 
       const serverStats = statsResult.data;
       const wins = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.wins ?? 0);
