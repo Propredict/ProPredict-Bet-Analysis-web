@@ -1,6 +1,5 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
-import { Webhook } from 'https://esm.sh/standardwebhooks@1.0.0'
 import { SignupEmail } from '../_shared/email-templates/signup.tsx'
 import { InviteEmail } from '../_shared/email-templates/invite.tsx'
 import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
@@ -11,7 +10,7 @@ import { ReauthenticationEmail } from '../_shared/email-templates/reauthenticati
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type, webhook-id, webhook-timestamp, webhook-signature',
+    'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
@@ -36,83 +35,121 @@ const SITE_NAME = 'ProPredict'
 const SENDER_DOMAIN = 'notify.propredict.me'
 const ROOT_DOMAIN = 'propredict.me'
 
+function buildVerificationUrl(params: {
+  supabaseUrl: string
+  tokenHash?: string
+  emailType: string
+  redirectTo?: string
+}) {
+  const { supabaseUrl, tokenHash, emailType, redirectTo } = params
+  if (!tokenHash) return `https://${ROOT_DOMAIN}`
+
+  const verifyUrl = new URL('/auth/v1/verify', supabaseUrl)
+  verifyUrl.searchParams.set('token', tokenHash)
+  verifyUrl.searchParams.set('type', emailType)
+
+  if (redirectTo) {
+    verifyUrl.searchParams.set('redirect_to', redirectTo)
+  }
+
+  return verifyUrl.toString()
+}
+
+function mapEmailType(rawType?: string) {
+  if (!rawType) return ''
+  if (rawType === 'magic_link') return 'magiclink'
+  return rawType
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
-    const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET')
-    if (!hookSecret) {
-      console.error('SEND_EMAIL_HOOK_SECRET not configured')
-      return new Response(JSON.stringify({ error: 'Missing hook secret' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured')
-      return new Response(JSON.stringify({ error: 'Missing Resend API key' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+
+    if (!resendApiKey || !supabaseUrl) {
+      console.error('Missing required environment variables', {
+        hasResend: !!resendApiKey,
+        hasSupabaseUrl: !!supabaseUrl,
       })
+      return new Response(
+        JSON.stringify({
+          error: {
+            http_code: 500,
+            message: 'Server configuration error',
+          },
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
-    // Verify webhook signature using standardwebhooks
-    const payload = await req.text()
-    const headers = Object.fromEntries(req.headers)
-    const wh = new Webhook(hookSecret.replace('v1,whsec_', ''))
+    const payload = await req.json()
+    const user = payload?.user
+    const emailData = payload?.email_data ?? payload?.email
 
-    let data: any
-    try {
-      data = wh.verify(payload, headers)
-    } catch (err) {
-      console.error('Webhook verification failed:', err)
-      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (!user?.email || !emailData) {
+      console.error('Invalid payload for auth email hook', { payload })
+      return new Response(
+        JSON.stringify({
+          error: {
+            http_code: 400,
+            message: 'Invalid payload',
+          },
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
-    const { user, email_data } = data
-    const emailType = email_data.email_action_type
-    console.log('Auth email hook called', { emailType, email: user.email })
-
+    const emailType = mapEmailType(emailData.email_action_type)
     const EmailTemplate = EMAIL_TEMPLATES[emailType]
+
     if (!EmailTemplate) {
-      console.error('Unknown email type:', emailType)
-      // Return 200 so Supabase doesn't retry
+      console.error('Unknown email action type', { emailType, rawType: emailData.email_action_type })
       return new Response(JSON.stringify({}), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Build confirmation URL from token_hash and type
-    const siteUrl = `https://${ROOT_DOMAIN}`
-    const confirmationUrl = email_data.redirect_to
-      ? `${siteUrl}/auth/confirm?token_hash=${email_data.token_hash}&type=${emailType}&redirect_to=${encodeURIComponent(email_data.redirect_to)}`
-      : `${siteUrl}/auth/confirm?token_hash=${email_data.token_hash}&type=${emailType}`
+    const confirmationUrl = buildVerificationUrl({
+      supabaseUrl,
+      tokenHash: emailData.token_hash,
+      emailType,
+      redirectTo: emailData.redirect_to,
+    })
 
     const templateProps = {
       siteName: SITE_NAME,
-      siteUrl,
+      siteUrl: `https://${ROOT_DOMAIN}`,
       recipient: user.email,
       confirmationUrl,
-      token: email_data.token,
+      token: emailData.token,
       email: user.email,
-      newEmail: email_data.new_email,
+      newEmail: user.email_new ?? emailData.new_email,
     }
 
     const html = await renderAsync(React.createElement(EmailTemplate, templateProps))
 
-    // Send email via Resend API
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -126,25 +163,41 @@ Deno.serve(async (req) => {
     const resendResult = await resendResponse.text()
 
     if (!resendResponse.ok) {
-      console.error('Resend API error:', resendResult)
-      return new Response(JSON.stringify({ error: 'Failed to send email' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      console.error('Resend API error', { status: resendResponse.status, body: resendResult })
+      return new Response(
+        JSON.stringify({
+          error: {
+            http_code: 500,
+            message: 'Failed to send email',
+          },
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
-    console.log('Email sent successfully via Resend', { emailType, email: user.email })
+    console.log('Auth email sent', { emailType, email: user.email })
 
-    // Return empty 200 as expected by Supabase Auth Hook
     return new Response(JSON.stringify({}), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Auth email hook error:', error)
-    return new Response(JSON.stringify({ error: 'Internal error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error('Auth email hook error', error)
+
+    return new Response(
+      JSON.stringify({
+        error: {
+          http_code: 500,
+          message: 'Internal server error',
+        },
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   }
 })
