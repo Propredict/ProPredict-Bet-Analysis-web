@@ -188,6 +188,9 @@ serve(async (req) => {
       }
 
       console.log(`RevenueCat webhook: Successfully activated ${plan} for user ${userId}`);
+
+      // Notify admin about new sale (fire-and-forget)
+      notifyAdmin(plan, userData.user.email || "unknown", userId, "Google Play");
     } else if (deactivateEvents.includes(eventType)) {
       console.log(`RevenueCat webhook: Expiring subscription for user ${userId}`);
 

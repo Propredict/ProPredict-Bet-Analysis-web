@@ -184,6 +184,9 @@ serve(async (req) => {
       }
 
       console.log(`Successfully updated subscription for user ${user.id}`);
+
+      // Notify admin about new sale (fire-and-forget)
+      notifyAdmin(plan, customerEmail, user.id, "Stripe");
     }
 
     // Handle customer.subscription.updated (renewals, plan changes)
