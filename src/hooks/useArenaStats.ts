@@ -92,9 +92,10 @@ export function useArenaStats(): ArenaStats {
       const [predictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
-          .select("status")
+          .select("status, created_at")
           .eq("user_id", user.id)
-          .eq("season_id", seasonIdForDisplay),
+          .eq("season_id", seasonIdForDisplay)
+          .order("created_at", { ascending: false }),
         (supabase as any)
           .from("arena_user_stats")
           .select("points, wins, losses, current_streak, reward_granted")
@@ -114,10 +115,12 @@ export function useArenaStats(): ArenaStats {
       const winsFromPredictions = predictions.filter((p: any) => isWin(p.status)).length;
       const lossesFromPredictions = predictions.filter((p: any) => isLoss(p.status)).length;
 
-      // Prefer server-maintained stats; fallback to prediction-derived counts
-      const wins = statsResult.data?.wins ?? winsFromPredictions;
-      const losses = statsResult.data?.losses ?? lossesFromPredictions;
-      const points = statsResult.data?.points ?? winsFromPredictions;
+      // Always use prediction-derived counts as primary source (DB function has known issues)
+      // Fall back to server stats only if predictions return empty but stats exist
+      const serverStats = statsResult.data;
+      const wins = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.wins ?? 0);
+      const losses = lossesFromPredictions > 0 ? lossesFromPredictions : (serverStats?.losses ?? 0);
+      const points = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.points ?? 0);
 
       // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
       const rawKey = seasonResult.data?.season_key ?? null;
@@ -128,12 +131,20 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
+      // Derive current streak from predictions (most recent consecutive wins)
+      let derivedStreak = 0;
+      for (const p of predictions) {
+        if (isWin(p.status)) derivedStreak++;
+        else break;
+      }
+      const currentStreak = derivedStreak > 0 ? derivedStreak : (serverStats?.current_streak ?? 0);
+
       setStats({
         points,
         wins,
         losses,
-        currentStreak: statsResult.data?.current_streak ?? 0,
-        rewardGranted: statsResult.data?.reward_granted ?? false,
+        currentStreak,
+        rewardGranted: serverStats?.reward_granted ?? false,
         seasonId: seasonIdForActions,
         seasonName,
         loading: false,
