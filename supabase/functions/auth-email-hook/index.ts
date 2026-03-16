@@ -165,16 +165,37 @@ async function handleWebhook(req: Request): Promise<Response> {
   const recipientEmail =
     payload?.data?.email ?? payload?.user?.email ?? payload?.email ?? payload?.new_email
 
-  const confirmationUrl =
-    payload?.data?.url ??
-    payload?.confirmation_url ??
-    payload?.action_link ??
+  const token = payload?.data?.token ?? payload?.token ?? payload?.email_data?.token
+  const tokenHash = payload?.data?.token_hash ?? payload?.token_hash ?? payload?.email_data?.token_hash
+  const newEmail = payload?.data?.new_email ?? payload?.new_email ?? payload?.email_data?.new_email
+
+  // redirect_to is where user should land AFTER Supabase verifies the token
+  const redirectTo =
+    payload?.data?.redirect_to ??
     payload?.redirect_to ??
     payload?.email_data?.redirect_to ??
     `https://${ROOT_DOMAIN}`
 
-  const token = payload?.data?.token ?? payload?.token ?? payload?.email_data?.token
-  const newEmail = payload?.data?.new_email ?? payload?.new_email ?? payload?.email_data?.new_email
+  // If Supabase provides a ready-to-use confirmation URL, use it directly
+  // Otherwise, construct the Supabase verify URL with token_hash + redirect_to
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? `https://tczettddxmlcmhdhgebw.supabase.co`
+
+  let confirmationUrl =
+    payload?.data?.url ??
+    payload?.confirmation_url ??
+    payload?.action_link ??
+    ''
+
+  if (!confirmationUrl && tokenHash) {
+    // Construct proper Supabase verification URL
+    confirmationUrl = `${SUPABASE_URL}/auth/v1/verify?token=${tokenHash}&type=${emailType === 'email_change' ? 'email_change' : emailType}&redirect_to=${encodeURIComponent(redirectTo)}`
+  }
+
+  if (!confirmationUrl) {
+    confirmationUrl = redirectTo
+  }
+
+  console.log('Confirmation URL constructed', { run_id, confirmationUrl, hasTokenHash: !!tokenHash, redirectTo })
 
   if (!emailType || !recipientEmail) {
     console.error('Invalid auth hook payload', {
