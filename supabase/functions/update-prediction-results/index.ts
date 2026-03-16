@@ -494,7 +494,7 @@ Deno.serve(async (req) => {
                 if (stats) {
                   await supabase
                     .from("arena_user_stats")
-                    .update({ losses: stats.losses + 1 })
+                    .update({ losses: stats.losses + 1, current_streak: 0 })
                     .eq("id", stats.id);
                 }
               }
