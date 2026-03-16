@@ -145,9 +145,10 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
-      // Derive current streak from predictions (most recent consecutive wins)
+      // Derive current streak from effective predictions set (season first, then all-time fallback)
+      const streakSource = seasonHasAny ? seasonPredictions : allPredictions;
       let derivedStreak = 0;
-      for (const p of predictions) {
+      for (const p of streakSource) {
         if (isWin(p.status)) derivedStreak++;
         else break;
       }
