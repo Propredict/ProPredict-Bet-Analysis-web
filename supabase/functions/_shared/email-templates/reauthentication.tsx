@@ -19,10 +19,10 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your ProPredict verification code</Preview>
+    <Preview>Your verification code</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>🔐 Verification Code</Heading>
+        <Heading style={h1}>Confirm reauthentication</Heading>
         <Text style={text}>Use the code below to confirm your identity:</Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
@@ -36,26 +36,25 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 
 export default ReauthenticationEmail
 
-const main = { backgroundColor: '#0d1a15', fontFamily: "'Segoe UI', Arial, sans-serif" }
-const container = { padding: '30px 25px', maxWidth: '480px', margin: '0 auto' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
-  fontSize: '24px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#0fba81',
+  color: '#000000',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '15px',
-  color: '#7a9388',
-  lineHeight: '1.6',
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
   margin: '0 0 25px',
 }
 const codeStyle = {
   fontFamily: 'Courier, monospace',
-  fontSize: '28px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#0fba81',
+  color: '#000000',
   margin: '0 0 30px',
-  letterSpacing: '4px',
 }
-const footer = { fontSize: '12px', color: '#4a6358', margin: '30px 0 0' }
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
