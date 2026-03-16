@@ -9,6 +9,7 @@ export interface ArenaStats {
   currentStreak: number;
   rewardGranted: boolean;
   seasonId: string | null;
+  seasonName: string | null;
   loading: boolean;
 }
 
