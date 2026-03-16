@@ -44,7 +44,7 @@ export function useArenaStats(): ArenaStats {
       const [activeSeasonsRes, lastUserPredictionRes, latestSeasonRes] = await Promise.all([
         (supabase as any)
           .from("active_arena_season")
-          .select("id, starts_at")
+          .select("id, starts_at, season_key")
           .order("starts_at", { ascending: false })
           .limit(1),
         (supabase as any)
@@ -56,7 +56,7 @@ export function useArenaStats(): ArenaStats {
           .maybeSingle(),
         (supabase as any)
           .from("arena_seasons")
-          .select("id, starts_at")
+          .select("id, starts_at, season_key")
           .order("starts_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
