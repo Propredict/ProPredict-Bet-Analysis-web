@@ -23,10 +23,8 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const handleRecovery = async () => {
-      // Safety timeout — never hang forever
       const timeout = setTimeout(() => {
         if (!isValidSession) {
-          console.warn("[ResetPassword] Timeout — redirecting to forgot-password");
           toast({
             title: "Invalid or expired link",
             description: "Please request a new password reset link.",
@@ -34,11 +32,12 @@ const ResetPassword = () => {
           });
           navigate("/forgot-password");
         }
-      }, 5000);
+      }, 10000);
 
       try {
-        // 1. Check for PKCE flow: ?code= in query params
         const searchParams = new URLSearchParams(window.location.search);
+
+        // 1) PKCE flow
         const code = searchParams.get("code");
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -50,13 +49,13 @@ const ResetPassword = () => {
           }
         }
 
-        // 2. Check hash fragments (legacy / non-PKCE flow)
+        // 2) Legacy hash flow: #access_token=...&refresh_token=...&type=recovery
         const hash = window.location.hash;
         if (hash) {
-          const params = new URLSearchParams(hash.substring(1));
-          const accessToken = params.get("access_token");
-          const refreshToken = params.get("refresh_token");
-          const type = params.get("type");
+          const hashParams = new URLSearchParams(hash.substring(1));
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          const type = hashParams.get("type");
 
           if (accessToken && refreshToken && type === "recovery") {
             const { error } = await supabase.auth.setSession({
@@ -72,7 +71,41 @@ const ResetPassword = () => {
           }
         }
 
-        // 3. Fallback: check existing session (user may already be authenticated)
+        // 3) Query token flow: ?access_token=...&refresh_token=...&type=recovery
+        const queryAccessToken = searchParams.get("access_token");
+        const queryRefreshToken = searchParams.get("refresh_token");
+        const queryType = searchParams.get("type");
+
+        if (queryAccessToken && queryRefreshToken && queryType === "recovery") {
+          const { error } = await supabase.auth.setSession({
+            access_token: queryAccessToken,
+            refresh_token: queryRefreshToken,
+          });
+          if (!error) {
+            window.history.replaceState(null, "", window.location.pathname);
+            clearTimeout(timeout);
+            setIsValidSession(true);
+            return;
+          }
+        }
+
+        // 4) Token hash flow: ?token_hash=...&type=recovery
+        const tokenHash = searchParams.get("token_hash") ?? searchParams.get("token");
+        if (tokenHash && queryType === "recovery") {
+          const { error } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token_hash: tokenHash,
+          });
+
+          if (!error) {
+            window.history.replaceState(null, "", window.location.pathname);
+            clearTimeout(timeout);
+            setIsValidSession(true);
+            return;
+          }
+        }
+
+        // 5) Existing session fallback
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           clearTimeout(timeout);
@@ -80,7 +113,6 @@ const ResetPassword = () => {
           return;
         }
 
-        // No valid session found
         clearTimeout(timeout);
         toast({
           title: "Invalid or expired link",
@@ -99,8 +131,9 @@ const ResetPassword = () => {
         navigate("/forgot-password");
       }
     };
+
     handleRecovery();
-  }, [navigate, toast]);
+  }, [navigate, toast, isValidSession]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,12 +149,10 @@ const ResetPassword = () => {
     }
 
     setFormError("");
-
     setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.updateUser({ password });
-
       if (error) throw error;
 
       setIsSuccess(true);
@@ -130,7 +161,6 @@ const ResetPassword = () => {
         description: "Your password has been successfully reset.",
       });
 
-      // Redirect to login after 2 seconds
       setTimeout(() => navigate("/login"), 2000);
     } catch (error: any) {
       setFormError(error.message);
