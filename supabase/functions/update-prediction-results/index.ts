@@ -244,16 +244,17 @@ Deno.serve(async (req) => {
                 if (arenaWon) {
                   const { data: stats } = await supabase
                     .from("arena_user_stats")
-                    .select("id, points, wins, reward_granted")
+                    .select("id, points, wins, current_streak, reward_granted")
                     .eq("user_id", ap.user_id)
                     .eq("season_id", apSeasonId)
                     .maybeSingle();
 
                   if (stats) {
                     const newPoints = stats.points + 1;
+                    const newStreak = (stats.current_streak ?? 0) + 1;
                     await supabase
                       .from("arena_user_stats")
-                      .update({ points: newPoints, wins: stats.wins + 1 })
+                      .update({ points: newPoints, wins: stats.wins + 1, current_streak: newStreak })
                       .eq("id", stats.id);
 
                     // Auto-grant free Pro month at 1000 points (once per season)
