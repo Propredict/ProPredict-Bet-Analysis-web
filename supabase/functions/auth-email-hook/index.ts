@@ -225,36 +225,62 @@ async function handleWebhook(req: Request): Promise<Response> {
     })
   }
 
-  const resendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-      to: [recipientEmail],
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
-      html,
-      text,
-    }),
-  })
+  const primaryFrom = `${SITE_NAME} <noreply@${FROM_DOMAIN}>`
+  const fallbackFrom = `${SITE_NAME} <onboarding@resend.dev>`
 
-  if (!resendResponse.ok) {
-    const resendErrorText = await resendResponse.text()
+  const sendWithFrom = async (from: string) => {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: [recipientEmail],
+        subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+        html,
+        text,
+      }),
+    })
+
+    const bodyText = await response.text()
+    return { response, bodyText }
+  }
+
+  let sendResult = await sendWithFrom(primaryFrom)
+  let usedFrom = primaryFrom
+
+  if (
+    !sendResult.response.ok &&
+    sendResult.response.status === 403 &&
+    sendResult.bodyText.includes('domain is not verified')
+  ) {
+    console.warn('Primary sender domain not verified on current Resend account, using fallback sender', {
+      run_id,
+      primaryFrom,
+      fallbackFrom,
+    })
+
+    sendResult = await sendWithFrom(fallbackFrom)
+    usedFrom = fallbackFrom
+  }
+
+  if (!sendResult.response.ok) {
     console.error('Failed to send auth email via Resend', {
       run_id,
       emailType,
       recipientEmail,
-      status: resendResponse.status,
-      body: resendErrorText,
+      status: sendResult.response.status,
+      body: sendResult.bodyText,
+      usedFrom,
     })
 
     return new Response(
       JSON.stringify({
         error: 'Failed to send email',
-        provider_status: resendResponse.status,
-        provider_error: resendErrorText,
+        provider_status: sendResult.response.status,
+        provider_error: sendResult.bodyText,
       }),
       {
         status: 500,
@@ -263,19 +289,23 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
-  const resendBody = await resendResponse.json().catch(() => null)
+  const resendBody = JSON.parse(sendResult.bodyText)
 
   console.log('Auth email sent via Resend', {
     emailType,
     email: recipientEmail,
     run_id,
     resend_id: resendBody?.id,
+    from: usedFrom,
   })
 
-  return new Response(JSON.stringify({ success: true, sent: true, id: resendBody?.id }), {
-    status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
+  return new Response(
+    JSON.stringify({ success: true, sent: true, id: resendBody?.id, from: usedFrom }),
+    {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    }
+  )
 }
 
 Deno.serve(async (req) => {
