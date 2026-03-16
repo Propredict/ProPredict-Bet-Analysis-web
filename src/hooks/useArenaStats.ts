@@ -89,13 +89,19 @@ export function useArenaStats(): ArenaStats {
         }
       }
 
-      const [predictionsResult, statsResult, seasonResult] = await Promise.all([
+      const [seasonPredictionsResult, allPredictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
           .select("status, created_at")
           .eq("user_id", user.id)
           .eq("season_id", seasonIdForDisplay)
           .order("created_at", { ascending: false }),
+        (supabase as any)
+          .from("arena_predictions")
+          .select("status, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(200),
         (supabase as any)
           .from("arena_user_stats")
           .select("points, wins, losses, current_streak, reward_granted")
@@ -111,16 +117,24 @@ export function useArenaStats(): ArenaStats {
 
       if (!mountedRef.current) return;
 
-      const predictions = predictionsResult.data || [];
-      const winsFromPredictions = predictions.filter((p: any) => isWin(p.status)).length;
-      const lossesFromPredictions = predictions.filter((p: any) => isLoss(p.status)).length;
+      const seasonPredictions = seasonPredictionsResult.data || [];
+      const allPredictions = allPredictionsResult.data || [];
 
-      // Always use prediction-derived counts as primary source (DB function has known issues)
-      // Fall back to server stats only if predictions return empty but stats exist
+      const seasonWins = seasonPredictions.filter((p: any) => isWin(p.status)).length;
+      const seasonLosses = seasonPredictions.filter((p: any) => isLoss(p.status)).length;
+      const seasonHasResolved = seasonWins + seasonLosses > 0;
+
+      const allWins = allPredictions.filter((p: any) => isWin(p.status)).length;
+      const allLosses = allPredictions.filter((p: any) => isLoss(p.status)).length;
+
+      // Prefer current season when it has resolved results; otherwise fallback to all-time resolved results
+      const effectiveWinsFromPredictions = seasonHasResolved ? seasonWins : allWins;
+      const effectiveLossesFromPredictions = seasonHasResolved ? seasonLosses : allLosses;
+
       const serverStats = statsResult.data;
-      const wins = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.wins ?? 0);
-      const losses = lossesFromPredictions > 0 ? lossesFromPredictions : (serverStats?.losses ?? 0);
-      const points = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.points ?? 0);
+      const wins = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.wins ?? 0);
+      const losses = effectiveLossesFromPredictions > 0 ? effectiveLossesFromPredictions : (serverStats?.losses ?? 0);
+      const points = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.points ?? 0);
 
       // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
       const rawKey = seasonResult.data?.season_key ?? null;
@@ -131,11 +145,16 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
-      // Derive current streak from predictions (most recent consecutive wins)
+      // Derive current streak from effective predictions set (season first, then all-time fallback)
+      const streakSource = seasonHasResolved ? seasonPredictions : allPredictions;
       let derivedStreak = 0;
-      for (const p of predictions) {
-        if (isWin(p.status)) derivedStreak++;
-        else break;
+      for (const p of streakSource) {
+        if (p.status === "pending") continue;
+        if (isWin(p.status)) {
+          derivedStreak++;
+          continue;
+        }
+        if (isLoss(p.status)) break;
       }
       const currentStreak = derivedStreak > 0 ? derivedStreak : (serverStats?.current_streak ?? 0);
 
