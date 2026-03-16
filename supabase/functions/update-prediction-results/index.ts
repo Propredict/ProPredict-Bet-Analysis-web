@@ -474,14 +474,14 @@ Deno.serve(async (req) => {
               if (arenaWon) {
                 const { data: stats } = await supabase
                   .from("arena_user_stats")
-                  .select("id, points, wins")
+                  .select("id, points, wins, current_streak")
                   .eq("user_id", ap.user_id)
                   .eq("season_id", seasonId)
                   .maybeSingle();
                 if (stats) {
                   await supabase
                     .from("arena_user_stats")
-                    .update({ points: stats.points + 1, wins: stats.wins + 1 })
+                    .update({ points: stats.points + 1, wins: stats.wins + 1, current_streak: (stats.current_streak ?? 0) + 1 })
                     .eq("id", stats.id);
                 }
               } else {
