@@ -23,35 +23,76 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const handleRecovery = async () => {
-      // Since detectSessionInUrl is false, manually extract tokens from URL hash
-      const hash = window.location.hash;
-      if (hash) {
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get("access_token");
-        const refreshToken = params.get("refresh_token");
-        const type = params.get("type");
-
-        if (accessToken && refreshToken && type === "recovery") {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+      // Safety timeout — never hang forever
+      const timeout = setTimeout(() => {
+        if (!isValidSession) {
+          console.warn("[ResetPassword] Timeout — redirecting to forgot-password");
+          toast({
+            title: "Invalid or expired link",
+            description: "Please request a new password reset link.",
+            variant: "destructive",
           });
-          if (!error) {
-            // Clean up the URL hash
+          navigate("/forgot-password");
+        }
+      }, 5000);
+
+      try {
+        // 1. Check for PKCE flow: ?code= in query params
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get("code");
+        if (code) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!error && data.session) {
             window.history.replaceState(null, "", window.location.pathname);
+            clearTimeout(timeout);
             setIsValidSession(true);
             return;
           }
         }
-      }
 
-      // Fallback: check existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setIsValidSession(true);
-      } else {
+        // 2. Check hash fragments (legacy / non-PKCE flow)
+        const hash = window.location.hash;
+        if (hash) {
+          const params = new URLSearchParams(hash.substring(1));
+          const accessToken = params.get("access_token");
+          const refreshToken = params.get("refresh_token");
+          const type = params.get("type");
+
+          if (accessToken && refreshToken && type === "recovery") {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (!error) {
+              window.history.replaceState(null, "", window.location.pathname);
+              clearTimeout(timeout);
+              setIsValidSession(true);
+              return;
+            }
+          }
+        }
+
+        // 3. Fallback: check existing session (user may already be authenticated)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          clearTimeout(timeout);
+          setIsValidSession(true);
+          return;
+        }
+
+        // No valid session found
+        clearTimeout(timeout);
         toast({
           title: "Invalid or expired link",
+          description: "Please request a new password reset link.",
+          variant: "destructive",
+        });
+        navigate("/forgot-password");
+      } catch (err) {
+        console.error("[ResetPassword] Recovery error:", err);
+        clearTimeout(timeout);
+        toast({
+          title: "Something went wrong",
           description: "Please request a new password reset link.",
           variant: "destructive",
         });
