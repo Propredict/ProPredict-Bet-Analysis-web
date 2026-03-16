@@ -34,7 +34,6 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 
 // Configuration
 const SITE_NAME = "ProPredict"
-const SENDER_DOMAIN = "notify.propredict.me"
 const ROOT_DOMAIN = "propredict.me"
 const FROM_DOMAIN = "notify.propredict.me" // Domain shown in From address
 
