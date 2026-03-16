@@ -35,9 +35,17 @@ export function GamificationPanel() {
   return (
     <TooltipProvider delayDuration={200}>
       <Card className="p-4 bg-card border-border/50 space-y-4">
-        <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Your Arena Stats</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Your Arena Stats</h3>
+          </div>
+          {stats.seasonName && (
+            <Badge variant="outline" className="text-[9px] gap-1 bg-primary/10 text-primary border-primary/20">
+              <Calendar className="h-2.5 w-2.5" />
+              {stats.seasonName}
+            </Badge>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-2">

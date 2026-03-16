@@ -109,6 +109,15 @@ export function useArenaStats(): ArenaStats {
       const wins = predictions.filter((p: any) => isWin(p.status)).length;
       const losses = predictions.filter((p: any) => isLoss(p.status)).length;
 
+      // Derive human-readable season name from season_key (e.g. "2026-03" → "March 2026")
+      const rawKey = activeSeasonsRes.data?.[0]?.season_key ?? latestSeasonRes.data?.season_key ?? null;
+      let seasonName: string | null = null;
+      if (rawKey) {
+        const [y, m] = rawKey.split("-");
+        const date = new Date(+y, +m - 1);
+        seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
+      }
+
       setStats({
         points: wins,
         wins,
@@ -116,6 +125,7 @@ export function useArenaStats(): ArenaStats {
         currentStreak: statsResult.data?.current_streak ?? 0,
         rewardGranted: statsResult.data?.reward_granted ?? false,
         seasonId: seasonIdForActions,
+        seasonName,
         loading: false,
       });
     } catch (err) {
