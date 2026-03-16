@@ -93,11 +93,12 @@ export function useArenaPrediction(
       let resolvedSeasonId = seasonId;
 
       if (!resolvedSeasonId) {
-        const { data: activeSeason } = await (supabase as any)
+        const { data: activeSeasons } = await (supabase as any)
           .from("active_arena_season")
-          .select("id")
-          .maybeSingle();
-        resolvedSeasonId = activeSeason?.id ?? null;
+          .select("id, starts_at")
+          .order("starts_at", { ascending: false })
+          .limit(1);
+        resolvedSeasonId = activeSeasons?.[0]?.id ?? null;
       }
 
       if (!resolvedSeasonId) {
