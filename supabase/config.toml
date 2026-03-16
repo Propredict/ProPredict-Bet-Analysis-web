@@ -45,3 +45,6 @@ verify_jwt = false
 
 [functions.get-player-profile]
 verify_jwt = false
+
+[functions.auth-email-hook]
+verify_jwt = false
