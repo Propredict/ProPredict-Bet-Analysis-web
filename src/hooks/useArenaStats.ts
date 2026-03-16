@@ -89,7 +89,7 @@ export function useArenaStats(): ArenaStats {
         }
       }
 
-      const [predictionsResult, statsResult] = await Promise.all([
+      const [predictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
           .select("status")
@@ -97,20 +97,30 @@ export function useArenaStats(): ArenaStats {
           .eq("season_id", seasonIdForDisplay),
         (supabase as any)
           .from("arena_user_stats")
-          .select("current_streak, reward_granted")
+          .select("points, wins, losses, current_streak, reward_granted")
           .eq("user_id", user.id)
           .eq("season_id", seasonIdForDisplay)
+          .maybeSingle(),
+        (supabase as any)
+          .from("arena_seasons")
+          .select("season_key")
+          .eq("id", seasonIdForDisplay)
           .maybeSingle(),
       ]);
 
       if (!mountedRef.current) return;
 
       const predictions = predictionsResult.data || [];
-      const wins = predictions.filter((p: any) => isWin(p.status)).length;
-      const losses = predictions.filter((p: any) => isLoss(p.status)).length;
+      const winsFromPredictions = predictions.filter((p: any) => isWin(p.status)).length;
+      const lossesFromPredictions = predictions.filter((p: any) => isLoss(p.status)).length;
 
-      // Derive human-readable season name from season_key (e.g. "2026-03" → "March 2026")
-      const rawKey = activeSeasonsRes.data?.[0]?.season_key ?? latestSeasonRes.data?.season_key ?? null;
+      // Prefer server-maintained stats; fallback to prediction-derived counts
+      const wins = statsResult.data?.wins ?? winsFromPredictions;
+      const losses = statsResult.data?.losses ?? lossesFromPredictions;
+      const points = statsResult.data?.points ?? winsFromPredictions;
+
+      // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
+      const rawKey = seasonResult.data?.season_key ?? null;
       let seasonName: string | null = null;
       if (rawKey) {
         const [y, m] = rawKey.split("-");
@@ -119,7 +129,7 @@ export function useArenaStats(): ArenaStats {
       }
 
       setStats({
-        points: wins,
+        points,
         wins,
         losses,
         currentStreak: statsResult.data?.current_streak ?? 0,
