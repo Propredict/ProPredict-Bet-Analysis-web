@@ -149,8 +149,12 @@ export function useArenaStats(): ArenaStats {
       const streakSource = seasonHasResolved ? seasonPredictions : allPredictions;
       let derivedStreak = 0;
       for (const p of streakSource) {
-        if (isWin(p.status)) derivedStreak++;
-        else break;
+        if (p.status === "pending") continue;
+        if (isWin(p.status)) {
+          derivedStreak++;
+          continue;
+        }
+        if (isLoss(p.status)) break;
       }
       const currentStreak = derivedStreak > 0 ? derivedStreak : (serverStats?.current_streak ?? 0);
 
