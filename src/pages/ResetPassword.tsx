@@ -20,8 +20,30 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user arrived via password reset link
-    const checkSession = async () => {
+    const handleRecovery = async () => {
+      // Since detectSessionInUrl is false, manually extract tokens from URL hash
+      const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+        const type = params.get("type");
+
+        if (accessToken && refreshToken && type === "recovery") {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (!error) {
+            // Clean up the URL hash
+            window.history.replaceState(null, "", window.location.pathname);
+            setIsValidSession(true);
+            return;
+          }
+        }
+      }
+
+      // Fallback: check existing session
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsValidSession(true);
@@ -34,7 +56,7 @@ const ResetPassword = () => {
         navigate("/forgot-password");
       }
     };
-    checkSession();
+    handleRecovery();
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
