@@ -89,13 +89,19 @@ export function useArenaStats(): ArenaStats {
         }
       }
 
-      const [predictionsResult, statsResult, seasonResult] = await Promise.all([
+      const [seasonPredictionsResult, allPredictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
           .select("status, created_at")
           .eq("user_id", user.id)
           .eq("season_id", seasonIdForDisplay)
           .order("created_at", { ascending: false }),
+        (supabase as any)
+          .from("arena_predictions")
+          .select("status, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(200),
         (supabase as any)
           .from("arena_user_stats")
           .select("points, wins, losses, current_streak, reward_granted")
@@ -111,16 +117,24 @@ export function useArenaStats(): ArenaStats {
 
       if (!mountedRef.current) return;
 
-      const predictions = predictionsResult.data || [];
-      const winsFromPredictions = predictions.filter((p: any) => isWin(p.status)).length;
-      const lossesFromPredictions = predictions.filter((p: any) => isLoss(p.status)).length;
+      const seasonPredictions = seasonPredictionsResult.data || [];
+      const allPredictions = allPredictionsResult.data || [];
 
-      // Always use prediction-derived counts as primary source (DB function has known issues)
-      // Fall back to server stats only if predictions return empty but stats exist
+      const seasonWins = seasonPredictions.filter((p: any) => isWin(p.status)).length;
+      const seasonLosses = seasonPredictions.filter((p: any) => isLoss(p.status)).length;
+      const seasonHasAny = seasonPredictions.length > 0;
+
+      const allWins = allPredictions.filter((p: any) => isWin(p.status)).length;
+      const allLosses = allPredictions.filter((p: any) => isLoss(p.status)).length;
+
+      // Prefer season stats, but if season has no predictions fallback to all-time predictions
+      const effectiveWinsFromPredictions = seasonHasAny ? seasonWins : allWins;
+      const effectiveLossesFromPredictions = seasonHasAny ? seasonLosses : allLosses;
+
       const serverStats = statsResult.data;
-      const wins = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.wins ?? 0);
-      const losses = lossesFromPredictions > 0 ? lossesFromPredictions : (serverStats?.losses ?? 0);
-      const points = winsFromPredictions > 0 ? winsFromPredictions : (serverStats?.points ?? 0);
+      const wins = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.wins ?? 0);
+      const losses = effectiveLossesFromPredictions > 0 ? effectiveLossesFromPredictions : (serverStats?.losses ?? 0);
+      const points = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.points ?? 0);
 
       // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
       const rawKey = seasonResult.data?.season_key ?? null;
