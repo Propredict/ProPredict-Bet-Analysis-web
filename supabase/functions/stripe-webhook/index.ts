@@ -7,6 +7,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
+// Fire-and-forget admin notification via Resend
+async function notifyAdmin(plan: string, email: string, userId: string, source: string) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) return;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendKey}` },
+      body: JSON.stringify({
+        from: "ProPredict <noreply@notify.propredict.me>",
+        to: ["ilonacvitkopt@gmail.com"],
+        subject: `🚀 Nova prodaja na ProPredict!`,
+        html: `<p>Stigla je nova pretplata!</p><ul><li><b>Plan:</b> ${plan === "premium" ? "Premium" : "Pro"}</li><li><b>Izvor:</b> ${source}</li><li><b>Email:</b> ${email}</li><li><b>User ID:</b> ${userId}</li><li><b>Datum:</b> ${new Date().toISOString()}</li></ul>`,
+      }),
+    });
+  } catch (e) {
+    console.error("Admin notification failed:", e);
+  }
+}
+
 // Map price IDs to plans
 const PRICE_TO_PLAN: Record<string, string> = {
   "price_1SuCcpL8E849h6yxv6RvooUp": "basic",   // Pro monthly
