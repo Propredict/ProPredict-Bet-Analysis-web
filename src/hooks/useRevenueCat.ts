@@ -129,18 +129,19 @@ export function useRevenueCat(userId?: string): UseRevenueCatResult {
       android.requestEntitlements();
     }
 
-    // Timeout: stop loading if Android never responds
-    const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-
     // Request offerings so we have dynamic product data
     if (android?.requestOfferings) {
       console.log("[RevenueCat] Requesting offerings from native");
       android.requestOfferings();
     }
+
+    // Timeout: stop loading if Android never responds
+    const timeout = setTimeout(() => {
+      console.log("[RevenueCat] Timeout waiting for entitlements — falling back");
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(timeout);
   }, [isAndroidApp, userId]);
 
   // Listen for entitlement updates AND offerings from Android
