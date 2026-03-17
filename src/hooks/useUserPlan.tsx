@@ -206,16 +206,62 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
      Android RevenueCat Integration
      On Android, RevenueCat is the source of truth for subscriptions.
      Override the plan from Supabase with RevenueCat entitlements.
+     
+     FALLBACK: After uninstall/reinstall, RevenueCat may not have cached
+     entitlements yet and returns "free". If Supabase shows an active paid
+     subscription, we trigger restorePurchases() and use the DB plan as
+     an interim value until RevenueCat confirms.
   ===================== */
+  const restoreTriggeredRef = useRef(false);
+
   useEffect(() => {
-    if (!isMobileApp) return;
-    
-    if (!revenueCat.isLoading) {
-      // RevenueCat is the SOLE source of truth on Android.
-      // Always apply its plan — including "free" when no entitlements exist.
+    if (!isMobileApp || revenueCat.isLoading) return;
+
+    // RevenueCat returned a paid plan — use it (primary source of truth)
+    if (revenueCat.plan !== "free") {
       setPlan(revenueCat.plan);
-      // Sync updated plan tag to OneSignal
+      restoreTriggeredRef.current = false;
       if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
+      return;
+    }
+
+    // RevenueCat says "free" — check if Supabase disagrees (reinstall scenario)
+    if (user && !restoreTriggeredRef.current) {
+      supabase
+        .from("user_subscriptions")
+        .select("plan, status, expires_at")
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (!data) {
+            setPlan("free");
+            return;
+          }
+
+          const isExpired = data.expires_at && new Date(data.expires_at) < new Date();
+          const status = data.status || "active";
+          const isActive = (status === "active" || status === "canceled") && !isExpired;
+
+          if (isActive && data.plan !== "free") {
+            console.log("[UserPlan] RevenueCat=free but Supabase=", data.plan, "— using DB plan as interim & triggering restorePurchases");
+            // Use Supabase plan as interim so user isn't blocked
+            setPlan(data.plan as UserPlan);
+            if (user) syncOneSignalPlanTags(data.plan as UserPlan, user.id);
+
+            // Trigger native restore so RevenueCat re-syncs
+            const android = (window as any).Android as any;
+            if (android?.restorePurchases) {
+              restoreTriggeredRef.current = true;
+              android.restorePurchases();
+            }
+          } else {
+            setPlan("free");
+            if (user) syncOneSignalPlanTags("free", user.id);
+          }
+        });
+    } else {
+      setPlan("free");
+      if (user) syncOneSignalPlanTags("free", user.id);
     }
   }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user]);
 
