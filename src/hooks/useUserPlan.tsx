@@ -194,7 +194,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       setIsAdmin(false);
       setUnlockedContent([]);
     } finally {
-      setIsLoading(false);
+      // On Android, don't set isLoading=false here — the RevenueCat effect handles it
+      if (!isMobileApp) {
+        setIsLoading(false);
+      }
     }
   }, [user, authLoading, isMobileApp, revenueCat.isLoading, revenueCat.plan]);
 
