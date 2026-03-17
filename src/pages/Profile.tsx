@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -24,6 +24,7 @@ const Profile = () => {
   const { isAndroidApp } = usePlatform();
   const arenaStats = useArenaStats();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
@@ -43,6 +44,14 @@ const Profile = () => {
 
   // Track whether we already sent the purchase email this mount
   const purchaseEmailSent = useRef(false);
+
+  useEffect(() => {
+    if (location.state?.openDeleteDialog) {
+      setShowDeleteDialog(true);
+      // Clear state so it doesn't re-trigger on back navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
