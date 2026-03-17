@@ -151,6 +151,9 @@ const PrivacyPolicy = () => {
               <li>IP address</li>
               <li>Usage data</li>
             </ul>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              Advertising partners such as Google AdMob may use advertising identifiers and similar technologies to deliver personalized and non-personalized ads within the mobile application.
+            </p>
             <p className="text-xs text-muted-foreground mb-2">
               You can manage or opt out of personalized advertising by visiting:{" "}
               <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
