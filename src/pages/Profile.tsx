@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X, RotateCcw, Diamond } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, LogOut, CreditCard, CheckCircle2, X, RotateCcw, Diamond, Trash2, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Profile = () => {
   const { user, signOut, session, loading: authLoading } = useAuth();
@@ -28,6 +29,8 @@ const Profile = () => {
   const [signingOut, setSigningOut] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   const [profileLoading, setProfileLoading] = useState(false);
   const profileFetchedOnce = useRef(false);
@@ -214,6 +217,36 @@ const Profile = () => {
         variant: "destructive",
       });
       setSigningOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!session?.access_token) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete account");
+
+      await signOut();
+      navigate("/login");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -538,7 +571,73 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-destructive/30 mt-4">
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-sm sm:text-base text-destructive">Danger Zone</CardTitle>
+            <CardDescription className="text-[10px] sm:text-xs">
+              Permanently delete your account and all associated data
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4 pt-0 space-y-3">
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full h-8 text-xs"
+            >
+              <Trash2 className="mr-1.5 h-3 w-3" />
+              Delete Account
+            </Button>
+            <a
+              href="https://propredict.me/data-deletion"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Alternatively, you can submit a deletion request here
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Delete your account</DialogTitle>
+            <DialogDescription className="text-xs">
+              This will permanently delete your ProPredict account and all associated data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+              className="h-8 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="h-8 text-xs"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Account"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
