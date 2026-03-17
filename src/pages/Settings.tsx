@@ -369,6 +369,33 @@ const Settings = () => {
         </CardContent>
       </Card>
 
+      {/* Danger Zone */}
+      <Card className="border-destructive/30">
+        <CardContent className="p-0">
+          <div className="px-3 py-2 border-b border-destructive/20 flex items-center gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+            <h2 className="text-xs font-semibold text-destructive">Danger Zone</h2>
+          </div>
+          <div className="p-3">
+            <button
+              onClick={() => navigate("/profile", { state: { openDeleteDialog: true } })}
+              className="w-full flex items-center justify-between p-2 rounded-md hover:bg-destructive/10 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-full bg-destructive/10">
+                  <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-medium text-destructive">Delete Account</p>
+                  <p className="text-[10px] text-muted-foreground">Permanently delete your account and all data</p>
+                </div>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-destructive" />
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
     </div>
     </>
   );
