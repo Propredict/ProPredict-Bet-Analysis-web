@@ -550,10 +550,10 @@ const Profile = () => {
               )}
 
               <Button
-                variant="destructive"
+                variant="outline"
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="w-full h-8 text-xs"
+                className="w-full h-8 text-xs border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 {signingOut ? (
                   <>
