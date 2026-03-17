@@ -571,7 +571,73 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-destructive/30 mt-4">
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-sm sm:text-base text-destructive">Danger Zone</CardTitle>
+            <CardDescription className="text-[10px] sm:text-xs">
+              Permanently delete your account and all associated data
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4 pt-0 space-y-3">
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full h-8 text-xs"
+            >
+              <Trash2 className="mr-1.5 h-3 w-3" />
+              Delete Account
+            </Button>
+            <a
+              href="https://propredict.me/data-deletion"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Alternatively, you can submit a deletion request here
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Delete your account</DialogTitle>
+            <DialogDescription className="text-xs">
+              This will permanently delete your ProPredict account and all associated data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+              className="h-8 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="h-8 text-xs"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Account"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
