@@ -172,8 +172,12 @@ const PrivacyPolicy = () => {
             <p className="text-xs text-muted-foreground mb-1">We use trusted third-party service providers such as:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
               <li>Supabase (database and authentication services)</li>
+              <li>Google Firebase Analytics (app usage analysis and performance monitoring)</li>
               <li>Analytics providers for service improvement</li>
             </ul>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              We may use Google Firebase Analytics to analyze app usage, monitor performance, and improve service functionality. Firebase may collect anonymized usage statistics, device information, and diagnostic data.
+            </p>
             <p className="text-xs text-muted-foreground">
               These providers process data only as necessary to support our services.
             </p>
