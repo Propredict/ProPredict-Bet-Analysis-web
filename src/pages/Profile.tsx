@@ -387,6 +387,17 @@ const Profile = () => {
                   className="mt-1 h-8 text-xs"
                 />
               </div>
+
+              <div className="pt-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  onClick={() => window.open("https://propredict.me/data-deletion", "_blank")}
+                  className="w-full h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 justify-start"
+                >
+                  <X className="mr-1.5 h-3 w-3" />
+                  Delete Account
+                </Button>
+              </div>
             </div>
 
             {/* Save Button */}
