@@ -152,6 +152,7 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
@@ -160,6 +161,13 @@ const ResetPassword = () => {
         title: "Password updated",
         description: "Your password has been successfully reset.",
       });
+
+      // Send password changed confirmation email
+      if (user?.email) {
+        supabase.functions.invoke("send-password-changed-email", {
+          body: { email: user.email },
+        }).catch((err) => console.warn("Password changed email failed:", err));
+      }
 
       setTimeout(() => navigate("/login"), 2000);
     } catch (error: any) {
