@@ -292,7 +292,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
         if (!data) {
           setPlan("free");
-          syncOneSignalTag("plan", "free");
+          syncOneSignalPlanTags("free", user.id);
           return;
         }
 
