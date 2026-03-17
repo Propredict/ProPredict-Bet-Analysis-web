@@ -576,7 +576,7 @@ const Profile = () => {
           <CardHeader className="p-3 sm:p-4">
             <CardTitle className="text-sm sm:text-base text-destructive">Danger Zone</CardTitle>
             <CardDescription className="text-[10px] sm:text-xs">
-              Permanently delete your account and all associated data
+              Permanently delete your ProPredict account and all associated data. This action cannot be undone.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 pt-0 space-y-3">
