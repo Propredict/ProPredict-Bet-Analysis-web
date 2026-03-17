@@ -195,7 +195,9 @@ serve(async (req) => {
       const customerId = subscription.customer as string;
 
       // Try metadata first, then fallback to customer email lookup
-      const user = await findUserByMetadata(subscription) || await findUserByCustomerId(customerId);
+      let user = await findUserByMetadata(subscription);
+      const customerUser = await findUserByCustomerId(customerId);
+      if (!user) user = customerUser;
       if (!user) {
         console.error(`No user found for customer: ${customerId}`);
         return new Response(
@@ -203,6 +205,8 @@ serve(async (req) => {
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      // Ensure we have email (metadata lookup returns empty email)
+      if (!user.email && customerUser?.email) user.email = customerUser.email;
 
       const priceId = subscription.items.data[0]?.price.id;
       const plan = PRICE_TO_PLAN[priceId] || "basic";
