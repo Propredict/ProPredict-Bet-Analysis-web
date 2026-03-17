@@ -121,9 +121,9 @@ export function useArenaStats(): ArenaStats {
       const effectiveLossesFromPredictions = seasonHasResolved ? seasonLosses : allLosses;
 
       const serverStats = statsResult.data;
-      const wins = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.wins ?? 0);
-      const losses = effectiveLossesFromPredictions > 0 ? effectiveLossesFromPredictions : (serverStats?.losses ?? 0);
-      const points = effectiveWinsFromPredictions > 0 ? effectiveWinsFromPredictions : (serverStats?.points ?? 0);
+      const wins = Math.max(effectiveWinsFromPredictions, serverStats?.wins ?? 0);
+      const losses = Math.max(effectiveLossesFromPredictions, serverStats?.losses ?? 0);
+      const points = Math.max(effectiveWinsFromPredictions, serverStats?.points ?? 0);
 
       // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
       const rawKey = seasonResult.data?.season_key ?? null;
