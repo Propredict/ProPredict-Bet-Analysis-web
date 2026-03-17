@@ -226,43 +226,52 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     }
 
     // RevenueCat says "free" — check if Supabase disagrees (reinstall scenario)
-    if (user && !restoreTriggeredRef.current) {
-      supabase
-        .from("user_subscriptions")
-        .select("plan, status, expires_at")
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (!data) {
-            setPlan("free");
-            return;
-          }
-
-          const isExpired = data.expires_at && new Date(data.expires_at) < new Date();
-          const status = data.status || "active";
-          const isActive = (status === "active" || status === "canceled") && !isExpired;
-
-          if (isActive && data.plan !== "free") {
-            console.log("[UserPlan] RevenueCat=free but Supabase=", data.plan, "— using DB plan as interim & triggering restorePurchases");
-            // Use Supabase plan as interim so user isn't blocked
-            setPlan(data.plan as UserPlan);
-            if (user) syncOneSignalPlanTags(data.plan as UserPlan, user.id);
-
-            // Trigger native restore so RevenueCat re-syncs
-            const android = (window as any).Android as any;
-            if (android?.restorePurchases) {
-              restoreTriggeredRef.current = true;
-              android.restorePurchases();
-            }
-          } else {
-            setPlan("free");
-            if (user) syncOneSignalPlanTags("free", user.id);
-          }
-        });
-    } else {
+    if (!user) {
       setPlan("free");
-      if (user) syncOneSignalPlanTags("free", user.id);
+      return;
     }
+
+    // Restore already triggered: keep current interim plan and wait for RevenueCat sync
+    if (restoreTriggeredRef.current) {
+      return;
+    }
+
+    supabase
+      .from("user_subscriptions")
+      .select("plan, status, expires_at")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) {
+          setPlan("free");
+          syncOneSignalPlanTags("free", user.id);
+          return;
+        }
+
+        const isExpired = data.expires_at && new Date(data.expires_at) < new Date();
+        const status = data.status || "active";
+        const isActive = (status === "active" || status === "canceled") && !isExpired;
+
+        if (isActive && data.plan !== "free") {
+          console.log("[UserPlan] RevenueCat=free but Supabase=", data.plan, "— using DB plan as interim & triggering restorePurchases");
+          // Use Supabase plan as interim so user isn't blocked
+          setPlan(data.plan as UserPlan);
+          syncOneSignalPlanTags(data.plan as UserPlan, user.id);
+
+          // Trigger native restore so RevenueCat re-syncs
+          const android = (window as any).Android as any;
+          if (android?.restorePurchases) {
+            restoreTriggeredRef.current = true;
+            android.restorePurchases();
+          }
+        } else {
+          setPlan("free");
+          syncOneSignalPlanTags("free", user.id);
+        }
+      })
+      .catch((err) => {
+        console.error("[UserPlan] Failed to check Supabase fallback subscription:", err);
+      });
   }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user]);
 
   /* =====================
