@@ -29,6 +29,8 @@ const Profile = () => {
   const [signingOut, setSigningOut] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   const [profileLoading, setProfileLoading] = useState(false);
   const profileFetchedOnce = useRef(false);
