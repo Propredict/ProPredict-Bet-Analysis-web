@@ -52,7 +52,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
       { value: "lineups", label: "Lineups", icon: Users, always: false, hasData: hasLineups },
       { value: "players", label: "Players", icon: UserCheck, always: false, hasData: hasPlayers },
       { value: "season-stats", label: "Season", icon: Activity, always: true },
-      { value: "odds", label: "Odds", icon: TrendingUp, always: false, hasData: hasOdds },
+      { value: "odds", label: "Insights", icon: TrendingUp, always: false, hasData: hasOdds },
       { value: "h2h", label: "H2H", icon: History, always: true },
     ];
     // While loading, show all tabs; after loading, hide empty optional tabs
