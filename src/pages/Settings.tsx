@@ -369,6 +369,55 @@ const Settings = () => {
         </CardContent>
       </Card>
 
+      {/* Responsible Use Section */}
+      <Card className="border-primary/20">
+        <CardContent className="p-0">
+          <div className="px-3 py-2 border-b border-primary/20 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5 text-primary" />
+            <h2 className="text-xs font-semibold text-foreground">Responsible Use</h2>
+          </div>
+          <div className="p-3 space-y-2.5">
+            <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-[11px] font-semibold text-foreground">🎯 Entertainment Only</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    ProPredict is designed for entertainment and informational purposes. All AI-generated predictions are statistical analyses and do not guarantee any outcome.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1.5 px-1">
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] mt-0.5">🔹</span>
+                <p className="text-[10px] text-muted-foreground">This app is intended for users <span className="text-foreground font-medium">18 years or older</span>.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] mt-0.5">🔹</span>
+                <p className="text-[10px] text-muted-foreground">ProPredict does <span className="text-foreground font-medium">not</span> offer real-money gambling or facilitate any financial transactions.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] mt-0.5">🔹</span>
+                <p className="text-[10px] text-muted-foreground">AI predictions are based on statistical models and <span className="text-foreground font-medium">do not guarantee accuracy</span>.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] mt-0.5">🔹</span>
+                <p className="text-[10px] text-muted-foreground">Users are encouraged to use content responsibly and within the bounds of local regulations.</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate("/disclaimer")}
+              className="w-full text-[10px] h-7 border-primary/20 text-muted-foreground hover:text-foreground"
+            >
+              Read Full Disclaimer <ChevronRight className="h-3 w-3 ml-0.5" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Danger Zone */}
       <Card className="border-destructive/30">
         <CardContent className="p-0">

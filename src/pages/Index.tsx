@@ -55,6 +55,13 @@ const Index = () => {
       <div className="space-y-6">
         <GuestBanner />
         <DashboardTipsPopup />
+
+        {/* Entertainment Disclaimer Banner */}
+        <div className="rounded-lg bg-accent/10 border border-accent/20 px-4 py-2 flex items-center justify-center gap-2">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-accent">
+            🎯 For Entertainment & Informational Purposes Only · 18+
+          </span>
+        </div>
         
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-6 md:p-8 text-center shadow-lg shadow-primary/10">
