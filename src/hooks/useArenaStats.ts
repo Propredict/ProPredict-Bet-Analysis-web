@@ -75,19 +75,8 @@ export function useArenaStats(): ArenaStats {
         return;
       }
 
-      // Za prikaz bodova: ako aktivna sezona nema nijednu korisničku predikciju, prikaži poslednju sezonu sa aktivnošću
-      let seasonIdForDisplay = seasonIdForActions;
-      if (activeSeasonId) {
-        const { count: activePredictionCount } = await (supabase as any)
-          .from("arena_predictions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("season_id", activeSeasonId);
-
-        if ((activePredictionCount ?? 0) === 0 && latestUserSeasonId) {
-          seasonIdForDisplay = latestUserSeasonId;
-        }
-      }
+      // Uvek prikazuj aktivnu sezonu (čak i ako korisnik nema predikcije — prikaži 0)
+      const seasonIdForDisplay = activeSeasonId ?? seasonIdForActions;
 
       const [seasonPredictionsResult, allPredictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
