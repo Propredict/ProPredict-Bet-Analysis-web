@@ -102,7 +102,7 @@ export function OddsTab({ odds, loading }: OddsTabProps) {
 
   return (
     <div className="max-h-[450px] overflow-y-auto">
-      {/* Live Odds Section */}
+      {/* Live Insights Section */}
       {hasLiveOdds && (
         <div className="p-4 border-b border-border/30">
           <div className="flex items-center gap-2 text-sm font-medium text-primary mb-4">
@@ -117,7 +117,7 @@ export function OddsTab({ odds, loading }: OddsTabProps) {
         </div>
       )}
 
-      {/* Pre-Match Odds Section */}
+      {/* Pre-Match Insights Section */}
       {hasPreMatchOdds && (
         <div className="p-4 space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
