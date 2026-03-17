@@ -126,8 +126,8 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
-      // Use allPredictions for streak since some wins may span season boundaries
-      const streakSource = allPredictions;
+      // Derive streak from current month predictions
+      const streakSource = monthPredictions;
       let derivedStreak = 0;
       for (const p of streakSource) {
         if (p.status === "pending") continue;
