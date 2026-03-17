@@ -220,6 +220,36 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!session?.access_token) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete account");
+
+      await signOut();
+      navigate("/login");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   const handleManageSubscription = async () => {
     // Android: use native bridge for subscription management
     if (isAndroidApp) {
