@@ -209,9 +209,6 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
     }
   }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, plan, user]);
-      }
-    })();
-  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user, authLoading, shouldWaitForSessionRecovery]);
 
   /* =====================
      Android Ad-Unlock Event Listener
