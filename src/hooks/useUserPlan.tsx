@@ -236,12 +236,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase
-      .from("user_subscriptions")
-      .select("plan, status, expires_at")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("user_subscriptions")
+          .select("plan, status, expires_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
         if (!data) {
           setPlan("free");
           syncOneSignalPlanTags("free", user.id);
@@ -268,10 +270,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           setPlan("free");
           syncOneSignalPlanTags("free", user.id);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("[UserPlan] Failed to check Supabase fallback subscription:", err);
-      });
+      }
+    })();
   }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user]);
 
   /* =====================
