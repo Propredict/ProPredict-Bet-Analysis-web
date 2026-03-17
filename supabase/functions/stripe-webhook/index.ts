@@ -16,7 +16,7 @@ async function notifyAdmin(plan: string, email: string, userId: string, source: 
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendKey}` },
       body: JSON.stringify({
-        from: "ProPredict <noreply@notify.propredict.me>",
+        from: "ProPredict <noreply@propredict.me>",
         to: ["ilonacvitkopt@gmail.com"],
         subject: `🚀 Nova prodaja na ProPredict!`,
         html: `<p>Stigla je nova pretplata!</p><ul><li><b>Plan:</b> ${plan === "premium" ? "Premium" : "Pro"}</li><li><b>Izvor:</b> ${source}</li><li><b>Email:</b> ${email}</li><li><b>User ID:</b> ${userId}</li><li><b>Datum:</b> ${new Date().toISOString()}</li></ul>`,
@@ -195,7 +195,9 @@ serve(async (req) => {
       const customerId = subscription.customer as string;
 
       // Try metadata first, then fallback to customer email lookup
-      const user = await findUserByMetadata(subscription) || await findUserByCustomerId(customerId);
+      let user = await findUserByMetadata(subscription);
+      const customerUser = await findUserByCustomerId(customerId);
+      if (!user) user = customerUser;
       if (!user) {
         console.error(`No user found for customer: ${customerId}`);
         return new Response(
@@ -203,6 +205,8 @@ serve(async (req) => {
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      // Ensure we have email (metadata lookup returns empty email)
+      if (!user.email && customerUser?.email) user.email = customerUser.email;
 
       const priceId = subscription.items.data[0]?.price.id;
       const plan = PRICE_TO_PLAN[priceId] || "basic";
@@ -227,6 +231,10 @@ serve(async (req) => {
 
       if (error) {
         console.error("Error updating subscription:", error);
+      } else {
+        // Notify admin about renewal/plan change (fire-and-forget)
+        const customerEmail = user.email || "unknown";
+        notifyAdmin(plan, customerEmail, user.id, "Stripe (renewal)");
       }
     }
 
