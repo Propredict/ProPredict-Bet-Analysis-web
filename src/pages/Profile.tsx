@@ -46,6 +46,14 @@ const Profile = () => {
   const purchaseEmailSent = useRef(false);
 
   useEffect(() => {
+    if (location.state?.openDeleteDialog) {
+      setShowDeleteDialog(true);
+      // Clear state so it doesn't re-trigger on back navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     if (searchParams.get("payment") === "success") {
       setShowPaymentSuccess(true);
 
