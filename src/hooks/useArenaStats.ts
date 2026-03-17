@@ -78,19 +78,19 @@ export function useArenaStats(): ArenaStats {
       // Uvek prikazuj aktivnu sezonu (čak i ako korisnik nema predikcije — prikaži 0)
       const seasonIdForDisplay = activeSeasonId ?? seasonIdForActions;
 
-      const [seasonPredictionsResult, allPredictionsResult, statsResult, seasonResult] = await Promise.all([
+      // Get current month boundaries for date-based filtering
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+      const [monthPredictionsResult, statsResult, seasonResult] = await Promise.all([
         (supabase as any)
           .from("arena_predictions")
           .select("status, created_at")
           .eq("user_id", user.id)
-          .eq("season_id", seasonIdForDisplay)
+          .gte("created_at", monthStart)
+          .lte("created_at", monthEnd)
           .order("created_at", { ascending: false }),
-        (supabase as any)
-          .from("arena_predictions")
-          .select("status, created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(200),
         (supabase as any)
           .from("arena_user_stats")
           .select("points, wins, losses, current_streak, reward_granted")
@@ -106,21 +106,16 @@ export function useArenaStats(): ArenaStats {
 
       if (!mountedRef.current) return;
 
-      const seasonPredictions = seasonPredictionsResult.data || [];
-      const allPredictions = allPredictionsResult.data || [];
+      const monthPredictions = monthPredictionsResult.data || [];
 
-      const seasonWins = seasonPredictions.filter((p: any) => isWin(p.status)).length;
-      const seasonLosses = seasonPredictions.filter((p: any) => isLoss(p.status)).length;
-      const seasonHasResolved = seasonWins + seasonLosses > 0;
+      const monthWins = monthPredictions.filter((p: any) => isWin(p.status)).length;
+      const monthLosses = monthPredictions.filter((p: any) => isLoss(p.status)).length;
 
-      const allWins = allPredictions.filter((p: any) => isWin(p.status)).length;
-      const allLosses = allPredictions.filter((p: any) => isLoss(p.status)).length;
-
-      // Use the maximum across all sources: season predictions, all-time predictions, and server stats
+      // Use the higher of date-based count vs server stats (handles season_id mismatches)
       const serverStats = statsResult.data;
-      const wins = Math.max(seasonWins, allWins, serverStats?.wins ?? 0);
-      const losses = Math.max(seasonLosses, allLosses, serverStats?.losses ?? 0);
-      const points = Math.max(seasonWins, allWins, serverStats?.points ?? 0);
+      const wins = Math.max(monthWins, serverStats?.wins ?? 0);
+      const losses = Math.max(monthLosses, serverStats?.losses ?? 0);
+      const points = Math.max(monthWins, serverStats?.points ?? 0);
 
       // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
       const rawKey = seasonResult.data?.season_key ?? null;
@@ -131,8 +126,8 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
-      // Use allPredictions for streak since some wins may span season boundaries
-      const streakSource = allPredictions;
+      // Derive streak from current month predictions
+      const streakSource = monthPredictions;
       let derivedStreak = 0;
       for (const p of streakSource) {
         if (p.status === "pending") continue;
