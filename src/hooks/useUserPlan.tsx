@@ -567,8 +567,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchUserData, isMobileApp, revenueCat]);
 
-  // Combined loading state
-  const combinedIsLoading = isLoading || (isMobileApp && revenueCat.isLoading);
+  // Loading = only Supabase fetch. RevenueCat can upgrade later without blocking UI.
+  const combinedIsLoading = isLoading;
 
   return (
     <UserPlanContext.Provider
