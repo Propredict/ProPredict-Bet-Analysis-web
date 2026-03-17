@@ -151,6 +151,9 @@ const PrivacyPolicy = () => {
               <li>IP address</li>
               <li>Usage data</li>
             </ul>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              Advertising partners such as Google AdMob may use advertising identifiers and similar technologies to deliver personalized and non-personalized ads within the mobile application.
+            </p>
             <p className="text-xs text-muted-foreground mb-2">
               You can manage or opt out of personalized advertising by visiting:{" "}
               <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
@@ -172,8 +175,12 @@ const PrivacyPolicy = () => {
             <p className="text-xs text-muted-foreground mb-1">We use trusted third-party service providers such as:</p>
             <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5 mb-1.5">
               <li>Supabase (database and authentication services)</li>
+              <li>Google Firebase Analytics (app usage analysis and performance monitoring)</li>
               <li>Analytics providers for service improvement</li>
             </ul>
+            <p className="text-xs text-muted-foreground mb-1.5">
+              We may use Google Firebase Analytics to analyze app usage, monitor performance, and improve service functionality. Firebase may collect anonymized usage statistics, device information, and diagnostic data.
+            </p>
             <p className="text-xs text-muted-foreground">
               These providers process data only as necessary to support our services.
             </p>
@@ -295,9 +302,17 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
-          {/* 14. Contact Information */}
+          {/* 14. Data Controller */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">14. Contact Information</h3>
+            <h3 className="font-semibold text-sm mb-1.5">14. Data Controller</h3>
+            <p className="text-xs text-muted-foreground">
+              ProPredict is operated and managed by the ProPredict platform team.
+            </p>
+          </div>
+
+          {/* 15. Contact Information */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">15. Contact Information</h3>
             <p className="text-xs text-muted-foreground mb-1">If you have any questions about this Privacy Policy, please contact:</p>
             <p className="text-xs text-muted-foreground">
               Email:{" "}
