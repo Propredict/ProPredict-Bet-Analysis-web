@@ -227,6 +227,10 @@ serve(async (req) => {
 
       if (error) {
         console.error("Error updating subscription:", error);
+      } else {
+        // Notify admin about renewal/plan change (fire-and-forget)
+        const customerEmail = user.email || "unknown";
+        notifyAdmin(plan, customerEmail, user.id, "Stripe (renewal)");
       }
     }
 
