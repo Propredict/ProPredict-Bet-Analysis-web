@@ -24,6 +24,7 @@ const Profile = () => {
   const { isAndroidApp } = usePlatform();
   const arenaStats = useArenaStats();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
