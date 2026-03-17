@@ -553,7 +553,7 @@ const Profile = () => {
                 variant="outline"
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="w-full h-8 text-xs border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="w-full h-8 text-xs border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 hover:text-orange-300"
               >
                 {signingOut ? (
                   <>
