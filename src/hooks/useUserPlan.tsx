@@ -148,13 +148,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       /* ===== SUBSCRIPTION ===== */
       // On Android, RevenueCat is the sole source of truth for plan.
       // Only read subscription_source from Supabase; skip plan override.
-      if (isMobileApp && !revenueCat.isLoading) {
+      // IMPORTANT: Do NOT set isLoading=false here on Android — the RevenueCat
+      // effect + Supabase fallback will handle it to avoid "flash of free".
+      if (isMobileApp) {
         // Still read source from DB if available
         if (subRes.data) {
           setSubscriptionSource((subRes.data.subscription_source as SubscriptionSource) || "free");
         }
-        // Plan is set by the RevenueCat effect below — do NOT overwrite here
-        setIsLoading(false);
+        // Plan is set by the RevenueCat effect below — do NOT overwrite or stop loading here
       } else if (!isMobileApp) {
         // WEB: Supabase is the source of truth
         if (!subRes.data) {
