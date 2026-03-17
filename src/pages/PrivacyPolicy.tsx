@@ -302,9 +302,17 @@ const PrivacyPolicy = () => {
             </p>
           </div>
 
-          {/* 14. Contact Information */}
+          {/* 14. Data Controller */}
           <div className="border border-border rounded-lg p-3">
-            <h3 className="font-semibold text-sm mb-1.5">14. Contact Information</h3>
+            <h3 className="font-semibold text-sm mb-1.5">14. Data Controller</h3>
+            <p className="text-xs text-muted-foreground">
+              ProPredict is operated and managed by the ProPredict platform team.
+            </p>
+          </div>
+
+          {/* 15. Contact Information */}
+          <div className="border border-border rounded-lg p-3">
+            <h3 className="font-semibold text-sm mb-1.5">15. Contact Information</h3>
             <p className="text-xs text-muted-foreground mb-1">If you have any questions about this Privacy Policy, please contact:</p>
             <p className="text-xs text-muted-foreground">
               Email:{" "}
