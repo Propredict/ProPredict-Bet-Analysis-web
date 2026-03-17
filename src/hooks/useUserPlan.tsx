@@ -81,22 +81,55 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
   const purchaseEmailSentRef = useRef(false);
+  const authRecoveryStartedAtRef = useRef<number | null>(null);
+  const SESSION_RECOVERY_GRACE_MS = 3 * 60 * 1000;
+
+  const hasStoredSessionToken = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return Object.keys(localStorage).some((key) => key.includes("auth-token"));
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const shouldWaitForSessionRecovery = useCallback(() => {
+    if (!isMobileApp || user) return false;
+    if (!hasStoredSessionToken()) return false;
+
+    const now = Date.now();
+    if (!authRecoveryStartedAtRef.current) {
+      authRecoveryStartedAtRef.current = now;
+    }
+
+    return now - authRecoveryStartedAtRef.current < SESSION_RECOVERY_GRACE_MS;
+  }, [hasStoredSessionToken, isMobileApp, user]);
+
+  useEffect(() => {
+    if (user) {
+      authRecoveryStartedAtRef.current = null;
+    }
+  }, [user]);
 
   /* =====================
      Fetch User Data
-  ===================== */
+   ===================== */
 
   const fetchUserData = useCallback(async () => {
     // Guard: don't reset to "free" while auth is still refreshing the token.
-    // Only treat as genuinely logged-out when authLoading is false.
+    // On Android, if a local session token exists, allow a grace window for
+    // delayed session/entitlement recovery to avoid a "flash of free".
     if (!user) {
-      if (!authLoading) {
-        setPlan("free");
-        setSubscriptionSource("free");
-        setIsAdmin(false);
-        setUnlockedContent([]);
-        setIsLoading(false);
+      if (authLoading || shouldWaitForSessionRecovery()) {
+        setIsLoading(true);
+        return;
       }
+
+      setPlan("free");
+      setSubscriptionSource("free");
+      setIsAdmin(false);
+      setUnlockedContent([]);
+      setIsLoading(false);
       return;
     }
 
@@ -199,7 +232,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     }
-  }, [user, authLoading, isMobileApp, revenueCat.isLoading, revenueCat.plan]);
+  }, [user, authLoading, isMobileApp, revenueCat.isLoading, revenueCat.plan, shouldWaitForSessionRecovery]);
 
   useEffect(() => {
     fetchUserData();
@@ -227,6 +260,12 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       restoreTriggeredRef.current = false;
       if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
+      return;
+    }
+
+    // Session is still recovering in background (slow Android restore)
+    if (!user && (authLoading || shouldWaitForSessionRecovery())) {
+      setIsLoading(true);
       return;
     }
 
@@ -281,7 +320,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     })();
-  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user]);
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user, authLoading, shouldWaitForSessionRecovery]);
 
   /* =====================
      Android Ad-Unlock Event Listener
