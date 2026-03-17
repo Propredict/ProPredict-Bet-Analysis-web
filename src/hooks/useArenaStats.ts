@@ -131,8 +131,8 @@ export function useArenaStats(): ArenaStats {
         seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
       }
 
-      // Derive current streak from effective predictions set (season first, then all-time fallback)
-      const streakSource = seasonHasResolved ? seasonPredictions : allPredictions;
+      // Use allPredictions for streak since some wins may span season boundaries
+      const streakSource = allPredictions;
       let derivedStreak = 0;
       for (const p of streakSource) {
         if (p.status === "pending") continue;
