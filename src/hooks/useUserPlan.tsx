@@ -81,61 +81,48 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
   const purchaseEmailSentRef = useRef(false);
-  const authRecoveryStartedAtRef = useRef<number | null>(null);
-  const SESSION_RECOVERY_GRACE_MS = 3 * 60 * 1000;
 
-  const hasStoredSessionToken = useCallback(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return Object.keys(localStorage).some((key) => key.includes("auth-token"));
-    } catch {
-      return false;
+  /* =====================
+     Helper: resolve plan from user_subscriptions row
+  ===================== */
+  const resolvePlanFromSub = useCallback((sub: any): { plan: UserPlan; source: SubscriptionSource } => {
+    if (!sub) return { plan: "free", source: "free" };
+
+    const isExpired = sub.expires_at && new Date(sub.expires_at) < new Date();
+    const status = sub.status || "active";
+    const isCanceledButValid = status === "canceled" && sub.expires_at && !isExpired;
+    const isActive = status === "active" && !isExpired;
+
+    if (!isActive && !isCanceledButValid) {
+      return { plan: "free", source: "free" };
     }
+
+    return {
+      plan: (sub.plan as UserPlan) || "free",
+      source: (sub.subscription_source as SubscriptionSource) || "free",
+    };
   }, []);
-
-  const shouldWaitForSessionRecovery = useCallback(() => {
-    if (!isMobileApp || user) return false;
-    if (!hasStoredSessionToken()) return false;
-
-    const now = Date.now();
-    if (!authRecoveryStartedAtRef.current) {
-      authRecoveryStartedAtRef.current = now;
-    }
-
-    return now - authRecoveryStartedAtRef.current < SESSION_RECOVERY_GRACE_MS;
-  }, [hasStoredSessionToken, isMobileApp, user]);
-
-  useEffect(() => {
-    if (user) {
-      authRecoveryStartedAtRef.current = null;
-    }
-  }, [user]);
 
   /* =====================
      Fetch User Data
-   ===================== */
+     BOTH platforms: Supabase is the IMMEDIATE source of truth.
+     On Android, RevenueCat can only UPGRADE the plan later (never downgrade).
+  ===================== */
 
   const fetchUserData = useCallback(async () => {
-    // Guard: don't reset to "free" while auth is still refreshing the token.
-    // On Android, if a local session token exists, allow a grace window for
-    // delayed session/entitlement recovery to avoid a "flash of free".
     if (!user) {
-      if (authLoading || shouldWaitForSessionRecovery()) {
-        setIsLoading(true);
-        return;
+      if (!authLoading) {
+        setPlan("free");
+        setSubscriptionSource("free");
+        setIsAdmin(false);
+        setUnlockedContent([]);
+        setIsLoading(false);
       }
-
-      setPlan("free");
-      setSubscriptionSource("free");
-      setIsAdmin(false);
-      setUnlockedContent([]);
-      setIsLoading(false);
       return;
     }
 
     try {
       const [adminRes, subRes, unlocksRes] = await Promise.all([
-        // Check admin role from user_roles table (proper security pattern)
         supabase
           .from("user_roles")
           .select("role")
@@ -165,7 +152,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       /* ===== UNLOCKED CONTENT ===== */
       if (Array.isArray(unlocksRes.data)) {
-        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const today = new Date().toISOString().split("T")[0];
         const validUnlocks = unlocksRes.data.filter((u: any) => u.unlocked_date === today);
         setUnlockedContent(
           validUnlocks.map((u: any) => ({
@@ -178,48 +165,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         setUnlockedContent([]);
       }
 
-      /* ===== SUBSCRIPTION ===== */
-      // On Android, RevenueCat is the sole source of truth for plan.
-      // Only read subscription_source from Supabase; skip plan override.
-      // IMPORTANT: Do NOT set isLoading=false here on Android — the RevenueCat
-      // effect + Supabase fallback will handle it to avoid "flash of free".
-      if (isMobileApp) {
-        // Still read source from DB if available
-        if (subRes.data) {
-          setSubscriptionSource((subRes.data.subscription_source as SubscriptionSource) || "free");
-        }
-        // Plan is set by the RevenueCat effect below — do NOT overwrite or stop loading here
-      } else if (!isMobileApp) {
-        // WEB: Supabase is the source of truth
-        if (!subRes.data) {
-          setPlan("free");
-          setSubscriptionSource("free");
-          setIsLoading(false);
-          return;
-        }
+      /* ===== SUBSCRIPTION — SAME LOGIC FOR ALL PLATFORMS ===== */
+      const resolved = resolvePlanFromSub(subRes.data);
+      setPlan(resolved.plan);
+      setSubscriptionSource(resolved.source);
 
-        const isExpired = subRes.data.expires_at && new Date(subRes.data.expires_at) < new Date();
-        const status = subRes.data.status || "active";
-        const isCanceledButValid = status === "canceled" && subRes.data.expires_at && !isExpired;
-        const isActive = status === "active" && !isExpired;
+      // Sync plan tags to OneSignal
+      syncOneSignalPlanTags(resolved.plan, user.id);
 
-        if (!isActive && !isCanceledButValid) {
-          setPlan("free");
-          setSubscriptionSource("free");
-          setIsLoading(false);
-          return;
-        }
-
-        const resolvedPlan = subRes.data.plan as UserPlan;
-        const resolvedSource = (subRes.data.subscription_source as SubscriptionSource) || "free";
-        setPlan(resolvedPlan);
-        setSubscriptionSource(resolvedSource);
-      }
-
-      // Sync plan + user_id tags to OneSignal for push segmentation
-      // On Android, use revenueCat.plan; on web, use the resolved plan from Supabase
-      const tagPlan = isMobileApp ? revenueCat.plan : plan;
-      syncOneSignalPlanTags(tagPlan, user.id);
+      console.log("[UserPlan] Supabase plan resolved:", resolved.plan, "source:", resolved.source);
     } catch (err) {
       console.error("UserPlan error:", err);
       setPlan("free");
@@ -227,97 +181,34 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       setIsAdmin(false);
       setUnlockedContent([]);
     } finally {
-      // On Android, don't set isLoading=false here — the RevenueCat effect handles it
-      if (!isMobileApp) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, [user, authLoading, isMobileApp, revenueCat.isLoading, revenueCat.plan, shouldWaitForSessionRecovery]);
+  }, [user, authLoading, resolvePlanFromSub]);
 
   useEffect(() => {
     fetchUserData();
-    // syncUser is now handled inside useRevenueCat when userId changes
   }, [fetchUserData, user]);
 
   /* =====================
-     Android RevenueCat Integration
-     On Android, RevenueCat is the source of truth for subscriptions.
-     Override the plan from Supabase with RevenueCat entitlements.
-     
-     FALLBACK: After uninstall/reinstall, RevenueCat may not have cached
-     entitlements yet and returns "free". If Supabase shows an active paid
-     subscription, we trigger restorePurchases() and use the DB plan as
-     an interim value until RevenueCat confirms.
+     Android RevenueCat: can only UPGRADE plan, never downgrade.
+     If RevenueCat returns a higher plan than Supabase, use it.
+     This handles the case where a purchase just happened and
+     the webhook hasn't updated Supabase yet.
   ===================== */
-  const restoreTriggeredRef = useRef(false);
-
   useEffect(() => {
     if (!isMobileApp || revenueCat.isLoading) return;
 
-    // RevenueCat returned a paid plan — use it (primary source of truth)
-    if (revenueCat.plan !== "free") {
+    const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2 };
+    const rcRank = PLAN_RANK[revenueCat.plan] ?? 0;
+    const currentRank = PLAN_RANK[plan] ?? 0;
+
+    // RevenueCat can only upgrade, never downgrade
+    if (rcRank > currentRank) {
+      console.log("[UserPlan] RevenueCat upgrade:", plan, "→", revenueCat.plan);
       setPlan(revenueCat.plan);
-      setIsLoading(false);
-      restoreTriggeredRef.current = false;
       if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
-      return;
     }
-
-    // Session is still recovering in background (slow Android restore)
-    if (!user && (authLoading || shouldWaitForSessionRecovery())) {
-      setIsLoading(true);
-      return;
-    }
-
-    // RevenueCat says "free" — check if Supabase disagrees (reinstall scenario)
-    if (!user) {
-      setPlan("free");
-      setIsLoading(false);
-      return;
-    }
-
-    // Restore already triggered: keep current interim plan and wait for RevenueCat sync
-    if (restoreTriggeredRef.current) {
-      setIsLoading(false);
-      return;
-    }
-
-    void (async () => {
-      try {
-        const { data } = await supabase
-          .from("user_subscriptions")
-          .select("plan, status, expires_at")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (!data) {
-          setPlan("free");
-          syncOneSignalPlanTags("free", user.id);
-          return;
-        }
-
-        const isExpired = data.expires_at && new Date(data.expires_at) < new Date();
-        const status = data.status || "active";
-        const isActive = (status === "active" || status === "canceled") && !isExpired;
-
-        if (isActive && data.plan !== "free") {
-          console.log("[UserPlan] RevenueCat=free but Supabase=", data.plan, "— using DB plan as interim & triggering restorePurchases");
-          setPlan(data.plan as UserPlan);
-          syncOneSignalPlanTags(data.plan as UserPlan, user.id);
-
-          const android = (window as any).Android as any;
-          if (android?.restorePurchases) {
-            restoreTriggeredRef.current = true;
-            android.restorePurchases();
-          }
-        } else {
-          setPlan("free");
-          syncOneSignalPlanTags("free", user.id);
-        }
-      } catch (err) {
-        console.error("[UserPlan] Failed to check Supabase fallback subscription:", err);
-      } finally {
-        setIsLoading(false);
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, plan, user]);
       }
     })();
   }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, user, authLoading, shouldWaitForSessionRecovery]);
