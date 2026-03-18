@@ -75,61 +75,36 @@ export function useArenaStats(): ArenaStats {
         return;
       }
 
-      // Uvek prikazuj aktivnu sezonu (čak i ako korisnik nema predikcije — prikaži 0)
+      // Use cumulative stats across all seasons (points reset only after reaching 1000)
       const seasonIdForDisplay = activeSeasonId ?? seasonIdForActions;
 
-      // Get current month boundaries for date-based filtering
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-
-      const [monthPredictionsResult, statsResult, seasonResult] = await Promise.all([
+      // Fetch ALL user stats (cumulative across seasons) + recent predictions for streak
+      const [allStatsResult, recentPredictionsResult] = await Promise.all([
+        (supabase as any)
+          .from("arena_user_stats")
+          .select("points, wins, losses, current_streak, reward_granted")
+          .eq("user_id", user.id),
         (supabase as any)
           .from("arena_predictions")
           .select("status, created_at")
           .eq("user_id", user.id)
-          .gte("created_at", monthStart)
-          .lte("created_at", monthEnd)
-          .order("created_at", { ascending: false }),
-        (supabase as any)
-          .from("arena_user_stats")
-          .select("points, wins, losses, current_streak, reward_granted")
-          .eq("user_id", user.id)
-          .eq("season_id", seasonIdForDisplay)
-          .maybeSingle(),
-        (supabase as any)
-          .from("arena_seasons")
-          .select("season_key")
-          .eq("id", seasonIdForDisplay)
-          .maybeSingle(),
+          .order("created_at", { ascending: false })
+          .limit(50),
       ]);
 
       if (!mountedRef.current) return;
 
-      const monthPredictions = monthPredictionsResult.data || [];
+      // Sum points/wins/losses across ALL seasons (cumulative until 1000 reset)
+      const allStats = allStatsResult.data || [];
+      const totalPoints = allStats.reduce((sum: number, s: any) => sum + (s.points ?? 0), 0);
+      const totalWins = allStats.reduce((sum: number, s: any) => sum + (s.wins ?? 0), 0);
+      const totalLosses = allStats.reduce((sum: number, s: any) => sum + (s.losses ?? 0), 0);
+      const rewardGranted = allStats.some((s: any) => s.reward_granted);
 
-      const monthWins = monthPredictions.filter((p: any) => isWin(p.status)).length;
-      const monthLosses = monthPredictions.filter((p: any) => isLoss(p.status)).length;
-
-      // Use the higher of date-based count vs server stats (handles season_id mismatches)
-      const serverStats = statsResult.data;
-      const wins = Math.max(monthWins, serverStats?.wins ?? 0);
-      const losses = Math.max(monthLosses, serverStats?.losses ?? 0);
-      const points = Math.max(monthWins, serverStats?.points ?? 0);
-
-      // Derive human-readable season name from display season_key (e.g. "2026-03" → "March 2026")
-      const rawKey = seasonResult.data?.season_key ?? null;
-      let seasonName: string | null = null;
-      if (rawKey) {
-        const [y, m] = rawKey.split("-");
-        const date = new Date(+y, +m - 1);
-        seasonName = date.toLocaleString("en-US", { month: "long", year: "numeric" });
-      }
-
-      // Derive streak from current month predictions
-      const streakSource = monthPredictions;
+      // Derive streak from recent predictions (across all time)
+      const recentPredictions = recentPredictionsResult.data || [];
       let derivedStreak = 0;
-      for (const p of streakSource) {
+      for (const p of recentPredictions) {
         if (p.status === "pending") continue;
         if (isWin(p.status)) {
           derivedStreak++;
@@ -137,16 +112,18 @@ export function useArenaStats(): ArenaStats {
         }
         if (isLoss(p.status)) break;
       }
-      const currentStreak = derivedStreak > 0 ? derivedStreak : (serverStats?.current_streak ?? 0);
+      // Use higher of derived vs any single season server streak
+      const maxServerStreak = allStats.reduce((max: number, s: any) => Math.max(max, s.current_streak ?? 0), 0);
+      const currentStreak = Math.max(derivedStreak, maxServerStreak);
 
       setStats({
-        points,
-        wins,
-        losses,
+        points: totalPoints,
+        wins: totalWins,
+        losses: totalLosses,
         currentStreak,
-        rewardGranted: serverStats?.reward_granted ?? false,
+        rewardGranted,
         seasonId: seasonIdForActions,
-        seasonName,
+        seasonName: null,
         loading: false,
       });
     } catch (err) {
