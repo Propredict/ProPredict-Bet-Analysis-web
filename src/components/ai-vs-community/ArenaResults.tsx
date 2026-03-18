@@ -348,30 +348,32 @@ export function ArenaResults() {
                       <EyeOff className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground" />
                     )}
                   </button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        className="p-1 rounded hover:bg-destructive/20 transition-colors"
-                        title="Remove from list"
-                      >
-                        <X className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete prediction?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently remove your prediction for {result.home_team} vs {result.away_team}. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deletePrediction(result.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {(result.status === "lost" || result.status === "loss") && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-1 rounded hover:bg-destructive/20 transition-colors"
+                          title="Remove from list"
+                        >
+                          <X className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete prediction?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove your prediction for {result.home_team} vs {result.away_team}. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deletePrediction(result.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </Card>
