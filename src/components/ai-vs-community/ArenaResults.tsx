@@ -125,29 +125,6 @@ export function ArenaResults() {
     }
   }, [user]);
 
-  const resolveResults = useCallback(async () => {
-    setResolving(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-prediction-results`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-        }
-      );
-      const data = await response.json();
-      console.log("Resolve results:", data);
-      // Refetch after resolving
-      await fetchResults();
-    } catch (err) {
-      console.error("Resolve error:", err);
-    } finally {
-      setResolving(false);
-    }
-  }, [fetchResults]);
 
   useEffect(() => {
     mountedRef.current = true;
