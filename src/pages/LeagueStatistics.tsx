@@ -51,7 +51,7 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 
 export default function LeagueStatistics() {
   const [selectedLeagueId, setSelectedLeagueId] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("live");
+  const [activeTab, setActiveTab] = useState("standings");
   const {
     matches,
     isLoading,
