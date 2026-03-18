@@ -65,7 +65,7 @@ export function ArenaResults() {
   const [results, setResults] = useState<ArenaPredictionResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [resolving, setResolving] = useState(false);
+  
   const [hiddenIds, setHiddenIdsState] = useState<Set<string>>(getHiddenIds);
   const [showHidden, setShowHidden] = useState(false);
   const mountedRef = useRef(true);
