@@ -196,17 +196,13 @@ serve(async (req) => {
 
       const { error } = await supabase
         .from("user_subscriptions")
-        .upsert(
-          {
-            user_id: userId,
-            plan: "free",
-            status: "expired",
-            subscription_source: "free",
-            expires_at: null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
+        .update({
+          plan: "free",
+          status: "expired",
+          subscription_source: "google_play",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
 
       if (error) {
         console.error("RevenueCat webhook: Error expiring subscription:", error);
