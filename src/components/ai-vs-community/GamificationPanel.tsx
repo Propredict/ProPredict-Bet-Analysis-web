@@ -1,4 +1,4 @@
-import { Trophy, Flame, Target, Brain, Crown, Info, Calendar } from "lucide-react";
+import { Trophy, Flame, Target, Brain, Crown, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -40,12 +40,6 @@ export function GamificationPanel() {
             <Trophy className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">Your Arena Stats</h3>
           </div>
-          {stats.seasonName && (
-            <Badge variant="outline" className="text-[9px] gap-1 bg-primary/10 text-primary border-primary/20">
-              <Calendar className="h-2.5 w-2.5" />
-              {stats.seasonName}
-            </Badge>
-          )}
         </div>
 
         <div className="grid grid-cols-3 gap-2">
@@ -95,17 +89,17 @@ export function GamificationPanel() {
           </div>
         )}
 
-        {/* Monthly Progress */}
+        {/* Points Progress */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-center text-[10px]">
             <div className="flex items-center gap-1">
-              <span className="text-muted-foreground">Monthly Progress</span>
+              <span className="text-muted-foreground">Points Progress</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-3 w-3 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>🏆 Points reset to 0 after reaching 1000. Each correct prediction earns 1 point. Incorrect = 0 points. Reach 1000 to unlock a free Pro month.</p>
+                   <p>🏆 Each correct prediction earns 1 point. Reach 1000 to unlock a free Pro month. Points reset to 0 after claiming the reward.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -118,7 +112,7 @@ export function GamificationPanel() {
             </p>
           )}
           <p className="text-[9px] text-muted-foreground/60 leading-relaxed">
-            Points reset to 0 after reaching 1000. Each correct prediction earns 1 point.
+            Points reset to 0 after reaching 1000 and claiming your reward.
           </p>
         </div>
 
