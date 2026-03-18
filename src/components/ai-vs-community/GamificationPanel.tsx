@@ -1,4 +1,4 @@
-import { Trophy, Flame, Target, Brain, Crown, Info, Calendar } from "lucide-react";
+import { Trophy, Flame, Target, Brain, Crown, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
