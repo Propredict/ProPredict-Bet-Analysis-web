@@ -73,12 +73,18 @@ export function ArenaResults() {
   const fetchResults = useCallback(async () => {
     if (!user) return;
     try {
+      // Show only today's predictions in the results list
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
+
       const { data: predictions } = await (supabase as any)
         .from("arena_predictions")
         .select("id, match_id, prediction, status, created_at")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
+        .gte("created_at", todayStart)
+        .lte("created_at", todayEnd)
+        .order("created_at", { ascending: false });
 
       if (!mountedRef.current) return;
 
