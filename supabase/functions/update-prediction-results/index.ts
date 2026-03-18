@@ -324,7 +324,7 @@ Deno.serve(async (req) => {
                         user_id: ap.user_id,
                         type: "win",
                         title: "🎉 Free Pro Month Unlocked!",
-                        message: "Congratulations! You reached 100 Arena points and earned a free Pro month. Enjoy Pro access for 30 days!",
+                        message: "Congratulations! You reached 1000 Arena points and earned a free Pro month. Your points have been reset — start a new cycle!",
                         match_id: fixtureId,
                       });
                     }
