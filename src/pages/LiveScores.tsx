@@ -46,7 +46,7 @@ export default function LiveScores() {
   
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const [statusTab, setStatusTab] = useState<StatusTab>("live");
   const [dateMode, setDateMode] = useState<DateMode>("today");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
   const [search, setSearch] = useState("");
