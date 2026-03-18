@@ -212,47 +212,38 @@ export function ArenaResults() {
 
   return (
     <div className="space-y-4">
-      {/* Stats summary + refresh */}
+      {/* Title */}
       <div className="flex items-center justify-between">
-        <div className="grid grid-cols-3 gap-2 flex-1">
-          <Card className="p-3 text-center bg-success/5 border-success/20">
-            <p className="text-lg font-bold text-success">{wonCount}</p>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Won</p>
-          </Card>
-          <Card className="p-3 text-center bg-destructive/5 border-destructive/20">
-            <p className="text-lg font-bold text-destructive">{lostCount}</p>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Lost</p>
-          </Card>
-          <Card className="p-3 text-center bg-primary/5 border-primary/20">
-            <p className="text-lg font-bold text-primary">{pendingCount}</p>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pending</p>
-          </Card>
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">Today's Results</h3>
         </div>
-        <div className="flex items-center gap-1 ml-2 shrink-0">
-          {pendingCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resolveResults}
-              disabled={resolving}
-              className="text-[10px] h-7 px-2 gap-1"
-              title="Check finished matches and resolve results"
-            >
-              {resolving ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
-              Resolve
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleManualRefresh}
-            disabled={refreshing}
-            className="shrink-0 h-7 w-7"
-            title="Refresh results"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+          className="shrink-0 h-7 w-7"
+          title="Refresh results"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
+      {/* Stats summary */}
+      <div className="grid grid-cols-3 gap-2">
+        <Card className="p-3 text-center bg-success/5 border-success/20">
+          <p className="text-lg font-bold text-success">{wonCount}</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Won</p>
+        </Card>
+        <Card className="p-3 text-center bg-destructive/5 border-destructive/20">
+          <p className="text-lg font-bold text-destructive">{lostCount}</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Lost</p>
+        </Card>
+        <Card className="p-3 text-center bg-primary/5 border-primary/20">
+          <p className="text-lg font-bold text-primary">{pendingCount}</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Pending</p>
+        </Card>
       </div>
 
       {/* Hidden toggle */}
