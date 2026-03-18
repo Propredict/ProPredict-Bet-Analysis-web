@@ -302,7 +302,7 @@ Deno.serve(async (req) => {
                             plan: currentPlan,
                             status: "active",
                             expires_at: baseDate.toISOString(),
-                            source: "arena_reward",
+                            subscription_source: "arena_reward",
                           })
                           .eq("id", existingSub.id);
                         console.log(`🎉 Arena reward: extended ${currentPlan} by 30 days for ${ap.user_id}`);
@@ -315,6 +315,7 @@ Deno.serve(async (req) => {
                             plan: "basic",
                             status: "active",
                             expires_at: expiresAt.toISOString(),
+                            subscription_source: "arena_reward",
                           });
                         console.log(`🎉 Arena reward: created free Pro month for ${ap.user_id}`);
                       }
