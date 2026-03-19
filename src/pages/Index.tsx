@@ -63,21 +63,21 @@ const Index = () => {
             href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent px-4 py-3 shadow-md shadow-primary/5 hover:border-primary/50 hover:shadow-primary/10 transition-all group cursor-pointer"
+            className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-[hsl(30,100%,10%)] via-card to-card px-4 py-3 shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" />
-                </svg>
-              </div>
+              <img 
+                src={googlePlayBanner} 
+                alt="Google Play" 
+                className="h-12 w-12 sm:h-14 sm:w-14 shrink-0 rounded-lg object-cover shadow-sm"
+              />
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm font-semibold text-foreground truncate">📱 ProPredict is now on Google Play!</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Get faster predictions & real-time alerts on the go. Download free!</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Get faster predictions & real-time alerts on the go — completely free!</p>
               </div>
             </div>
-            <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-[10px] sm:text-xs font-bold text-primary-foreground group-hover:bg-primary/90 transition-colors whitespace-nowrap">
-              Download App
+            <span className="shrink-0 rounded-lg bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-4 py-2 text-[10px] sm:text-xs font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
+              ⬇ Download App
             </span>
           </a>
         )}
