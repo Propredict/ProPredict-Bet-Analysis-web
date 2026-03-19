@@ -69,11 +69,11 @@ const Index = () => {
               <img 
                 src={googlePlayBanner} 
                 alt="Google Play" 
-                className="h-12 w-12 sm:h-14 sm:w-14 shrink-0 rounded-lg object-cover shadow-sm"
+                className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-lg object-cover shadow-sm"
               />
               <div>
-                <p className="text-xs sm:text-sm font-semibold text-foreground">📱 ProPredict is now on Google Play!</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
+                <p className="text-sm sm:text-lg font-semibold text-foreground">📱 ProPredict is now on Google Play!</p>
+                <p className="text-[11px] sm:text-sm text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
               </div>
             </div>
             <span className="rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-6 py-2.5 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
