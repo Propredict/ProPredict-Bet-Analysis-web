@@ -63,7 +63,7 @@ const Index = () => {
             href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-0 rounded-xl border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden"
+            className="flex items-center justify-center gap-4 rounded-xl border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden px-4 py-3"
           >
             <img 
               src={googlePlayBanner} 
