@@ -1,9 +1,7 @@
-import { useState, forwardRef } from "react";
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Shield, FileText, ScrollText, Trash2, Mail, Globe, Cookie, Info, Brain } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import googlePlayBadge from "@/assets/google-play-badge.jfif";
 
 export const Footer = forwardRef<HTMLElement>((_, ref) => {
   const { isAndroidApp } = usePlatform();
