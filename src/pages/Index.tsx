@@ -63,22 +63,22 @@ const Index = () => {
             href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-[hsl(30,100%,10%)] via-card to-card px-4 py-4 shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden"
+            className="flex items-center gap-0 rounded-xl border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden"
           >
-            <div className="flex items-center gap-3">
-              <img 
-                src={googlePlayBanner} 
-                alt="Google Play" 
-                className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-lg object-cover shadow-sm"
-              />
-              <div>
+            <img 
+              src={googlePlayBanner} 
+              alt="Google Play" 
+              className="h-28 sm:h-32 w-auto shrink-0 object-cover"
+            />
+            <div className="flex flex-col items-center gap-3 flex-1 px-4 py-4">
+              <div className="text-center">
                 <p className="text-sm sm:text-lg font-semibold text-foreground">📱 ProPredict is now on Google Play!</p>
                 <p className="text-[11px] sm:text-sm text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
               </div>
+              <span className="rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-6 py-2.5 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
+                ⬇ Download App
+              </span>
             </div>
-            <span className="rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-6 py-2.5 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
-              ⬇ Download App
-            </span>
           </a>
         )}
 
