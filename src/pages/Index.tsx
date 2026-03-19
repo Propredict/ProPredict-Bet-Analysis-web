@@ -63,19 +63,19 @@ const Index = () => {
             href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-4 rounded-xl border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden px-3 py-2"
+            className="flex items-center justify-center gap-5 rounded-lg border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden px-2 py-1.5"
           >
             <img 
               src={googlePlayBanner} 
               alt="Google Play" 
-              className="h-16 sm:h-20 w-auto shrink-0 object-cover rounded-lg"
+              className="h-20 sm:h-24 w-auto shrink-0 object-cover rounded-md"
             />
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2.5">
               <div className="text-center">
-                <p className="text-sm sm:text-base font-semibold text-foreground">📱 ProPredict is now on Google Play!</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
+                <p className="text-base sm:text-xl font-bold text-foreground">📱 ProPredict is now on Google Play!</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
               </div>
-              <span className="rounded-lg bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-5 py-1.5 text-xs sm:text-sm font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
+              <span className="rounded-lg bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-7 py-2 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
                 ⬇ Download App
               </span>
             </div>
