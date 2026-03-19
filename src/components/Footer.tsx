@@ -5,7 +5,6 @@ import { usePlatform } from "@/hooks/usePlatform";
 
 export const Footer = forwardRef<HTMLElement>((_, ref) => {
   const { isAndroidApp } = usePlatform();
-  const [showComingSoon, setShowComingSoon] = useState(false);
 
   const legalLinks = [
     { label: "About Us", path: "/about-us", icon: Info },
