@@ -1,16 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp, Lock, Zap, Shield, Activity, Target, BarChart3, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp, Lock, Zap, Trophy, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
-import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
@@ -19,28 +17,28 @@ function getTeamInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
 }
 
-function getRiskColor(confidence: number | null) {
-  if (!confidence) return { label: "Unknown", color: "text-gray-400", dot: "bg-gray-400" };
-  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-600", dot: "bg-emerald-500" };
-  if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-600", dot: "bg-amber-500" };
-  return { label: "High Risk", color: "text-red-600", dot: "bg-red-500" };
+function getRiskLabel(confidence: number | null) {
+  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted/30" };
+  if (confidence >= 80) return { label: "LOW RISK", color: "text-emerald-400", bg: "bg-emerald-500/15" };
+  if (confidence >= 65) return { label: "MED RISK", color: "text-amber-400", bg: "bg-amber-500/15" };
+  return { label: "HIGH RISK", color: "text-red-400", bg: "bg-red-500/15" };
 }
 
 function getPredictionLabel(prediction: string | null): string {
   if (!prediction) return "—";
   const p = prediction.toLowerCase().trim();
-  if (p === "1" || p === "home") return "Home Win";
-  if (p === "x" || p === "draw") return "Draw";
-  if (p === "2" || p === "away") return "Away Win";
-  if (p.includes("over")) return "Over 2.5 Goals";
-  if (p.includes("under")) return "Under 2.5 Goals";
-  if (p.includes("btts")) return "Both Teams to Score";
-  return prediction;
+  if (p === "1" || p === "home") return "HOME WIN";
+  if (p === "x" || p === "draw") return "DRAW";
+  if (p === "2" || p === "away") return "AWAY WIN";
+  if (p.includes("over")) return "OVER 2.5";
+  if (p.includes("under")) return "UNDER 2.5";
+  if (p.includes("btts")) return "BTTS YES";
+  return prediction.toUpperCase();
 }
 
-function getPredictionIcon(prediction: string | null) {
+function getPredictionEmoji(prediction: string | null) {
   const p = (prediction || "").toLowerCase().trim();
-  if (p === "1" || p === "home") return "🏠";
+  if (p === "1" || p === "home") return "🔥";
   if (p === "2" || p === "away") return "✈️";
   if (p === "x" || p === "draw") return "🤝";
   if (p.includes("over")) return "⚽";
@@ -54,6 +52,7 @@ interface AIPick {
   label: string;
   confidence: number;
   color: string;
+  bg: string;
 }
 
 function deriveAIPicks(pred: any): AIPick[] {
@@ -66,72 +65,73 @@ function deriveAIPicks(pred: any): AIPick[] {
   const totalGoalsAvg = homeGoals + awayGoals;
   const confidence = pred.confidence ?? 60;
 
-  // Use match-specific seed for subtle variation
   const seed = (pred.match_id || "").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 10;
-  const jitter = (base: number) => base + (seed - 5) * 0.5; // ±2.5% variation per match
+  const jitter = (base: number) => base + (seed - 5) * 0.5;
 
   const pick = (label: string, conf: number) => {
     conf = Math.max(30, Math.min(95, Math.round(jitter(conf))));
-    const emoji = conf >= 75 ? "🟢" : conf >= 55 ? "🟡" : "⚠️";
-    const color = conf >= 75 ? "text-emerald-600" : conf >= 55 ? "text-amber-600" : "text-red-500";
-    allPicks.push({ emoji, label, confidence: conf, color });
+    const emoji = conf >= 80 ? "🔥" : conf >= 75 ? "🟢" : conf >= 60 ? "🟡" : "⚠️";
+    const color = conf >= 75 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400";
+    const bg = conf >= 75 ? "bg-emerald-500/10 border-emerald-500/20" : conf >= 60 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
+    allPicks.push({ emoji, label, confidence: conf, color, bg });
   };
 
   // 1X2
-  pick(`Home Win — ${pred.home_team}`, homeWin);
+  pick(`Home Win`, homeWin);
   pick("Draw", draw);
-  pick(`Away Win — ${pred.away_team}`, awayWin);
+  pick(`Away Win`, awayWin);
 
   // Double Chance
-  pick(`1X (${pred.home_team} or Draw)`, Math.min(95, homeWin + draw * 0.6));
-  pick(`X2 (Draw or ${pred.away_team})`, Math.min(95, draw * 0.6 + awayWin));
+  pick(`1X (Home/Draw)`, Math.min(95, homeWin + draw * 0.6));
+  pick(`X2 (Draw/Away)`, Math.min(95, draw * 0.6 + awayWin));
   pick(`12 (No Draw)`, Math.min(95, homeWin + awayWin * 0.5));
 
-  // Over/Under - logically consistent scaling
+  // Over/Under
   const overBase = 20 + totalGoalsAvg * 12;
-  pick("Over 0.5 Goals", Math.min(95, 50 + totalGoalsAvg * 15));
-  pick("Over 1.5 Goals", Math.min(93, 35 + totalGoalsAvg * 13));
-  pick("Over 2.5 Goals", Math.min(90, overBase));
-  pick("Over 3.5 Goals", Math.min(85, overBase - 15));
-  pick("Over 4.5 Goals", Math.min(80, overBase - 30));
-  
-  // Under markets scale inversely
-  pick("Under 0.5 Goals", Math.max(30, 50 - totalGoalsAvg * 15));
-  pick("Under 1.5 Goals", Math.max(30, 60 - totalGoalsAvg * 12));
-  pick("Under 2.5 Goals", Math.max(30, 72 - totalGoalsAvg * 10));
-  pick("Under 3.5 Goals", Math.max(35, 82 - totalGoalsAvg * 8));
-  pick("Under 4.5 Goals", Math.max(40, 90 - totalGoalsAvg * 6));
+  pick("Over 0.5", Math.min(95, 50 + totalGoalsAvg * 15));
+  pick("Over 1.5", Math.min(93, 35 + totalGoalsAvg * 13));
+  pick("Over 2.5", Math.min(90, overBase));
+  pick("Over 3.5", Math.min(85, overBase - 15));
+  pick("Under 0.5", Math.max(30, 50 - totalGoalsAvg * 15));
+  pick("Under 1.5", Math.max(30, 60 - totalGoalsAvg * 12));
+  pick("Under 2.5", Math.max(30, 72 - totalGoalsAvg * 10));
+  pick("Under 3.5", Math.max(35, 82 - totalGoalsAvg * 8));
+  pick("Under 4.5", Math.max(40, 90 - totalGoalsAvg * 6));
 
   // BTTS
   const bttsYesConf = 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
   const bttsNoConf = 30 + (2.5 - Math.min(homeGoals, awayGoals)) * 15 + (homeGoals < 0.8 || awayGoals < 0.8 ? 15 : 0);
-  pick("BTTS — Yes", bttsYesConf);
-  pick("BTTS — No", bttsNoConf);
+  pick("BTTS Yes", bttsYesConf);
+  pick("BTTS No", bttsNoConf);
 
   // Draw No Bet
-  pick(`Draw No Bet — ${pred.home_team}`, homeWin + draw * 0.3);
-  pick(`Draw No Bet — ${pred.away_team}`, awayWin + draw * 0.3);
-
-  // Correct Score
-  if (pred.predicted_score) {
-    pick(`Correct Score ${pred.predicted_score}`, confidence * 0.4);
-  }
-
-  // HT/FT
-  if (homeWin >= 55) pick(`HT/FT — ${pred.home_team}/${pred.home_team}`, homeWin * 0.65);
-  if (awayWin >= 55) pick(`HT/FT — ${pred.away_team}/${pred.away_team}`, awayWin * 0.65);
-  if (draw >= 30 && homeWin >= 40) pick(`HT/FT — Draw/${pred.home_team}`, draw * 0.4 + homeWin * 0.3);
+  pick(`DNB Home`, homeWin + draw * 0.3);
+  pick(`DNB Away`, awayWin + draw * 0.3);
 
   // Clean Sheet
-  pick(`${pred.home_team} Clean Sheet`, Math.max(30, 65 - awayGoals * 18));
-  pick(`${pred.away_team} Clean Sheet`, Math.max(30, 65 - homeGoals * 18));
+  pick(`Home CS`, Math.max(30, 65 - awayGoals * 18));
+  pick(`Away CS`, Math.max(30, 65 - homeGoals * 18));
 
-  // Win to Nil
-  pick(`${pred.home_team} Win to Nil`, homeWin * 0.55 * Math.max(0.3, 1 - awayGoals * 0.2));
-  pick(`${pred.away_team} Win to Nil`, awayWin * 0.55 * Math.max(0.3, 1 - homeGoals * 0.2));
+  return allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence).slice(0, 8);
+}
 
-  // Filter >75% and sort by confidence
-  return allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence);
+function deriveStatsGrid(pred: any) {
+  const homeGoals = pred.last_home_goals ?? 0;
+  const awayGoals = pred.last_away_goals ?? 0;
+  const homeWin = pred.home_win ?? 0;
+  const awayWin = pred.away_win ?? 0;
+  const totalAvg = homeGoals + awayGoals;
+  const bttsChance = Math.min(95, 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0));
+
+  // Form indicator
+  const formLabel = homeWin >= 60 ? "Strong" : homeWin >= 45 ? "Good" : homeWin >= 30 ? "Average" : "Weak";
+
+  return [
+    { label: "Win %", value: `${Math.max(homeWin, awayWin)}%`, sub: homeWin > awayWin ? "Home" : "Away" },
+    { label: "Goals Avg", value: totalAvg.toFixed(1), sub: "Combined" },
+    { label: "BTTS", value: `${Math.round(bttsChance)}%`, sub: "Chance" },
+    { label: "Form", value: formLabel, sub: "Home" },
+  ];
 }
 
 export default function MatchPreviewDetail() {
@@ -205,7 +205,9 @@ export default function MatchPreviewDetail() {
     : null;
   const homeLogo = liveMatch?.homeLogo || null;
   const awayLogo = liveMatch?.awayLogo || null;
-  const risk = prediction ? getRiskColor(prediction.confidence) : getRiskColor(null);
+  const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
+  const aiPicks = prediction && unlocked ? deriveAIPicks(prediction) : [];
+  const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction) : [];
 
   if (loading) {
     return (
@@ -219,11 +221,11 @@ export default function MatchPreviewDetail() {
     return (
       <div className="page-content space-y-4">
         <Button variant="ghost" size="sm" onClick={() => navigate("/match-previews")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Back to Match Previews
+          <ArrowLeft className="h-4 w-4" /> Back
         </Button>
-        <Card className="p-6 text-center bg-white border-gray-200">
-          <p className="text-gray-500">Match not found.</p>
-        </Card>
+        <div className="p-6 text-center rounded-2xl bg-card border border-border">
+          <p className="text-muted-foreground">Match not found.</p>
+        </div>
       </div>
     );
   }
@@ -234,201 +236,209 @@ export default function MatchPreviewDetail() {
         <title>{prediction.home_team} vs {prediction.away_team} – Match Preview | ProPredict</title>
       </Helmet>
 
-      <div className="page-content space-y-5">
+      <div className="page-content space-y-4">
         {/* Back button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/match-previews")}
-          className="gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-muted-foreground"
+          className="gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Match Previews
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
         </Button>
 
-        {/* Hero Match Card */}
-        <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-border/40 shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden">
-          {/* Top accent bar */}
-          <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+        {/* ============ HERO SECTION ============ */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a0f1a] via-[#0d1525] to-[#0a1a2e]">
+          {/* Glow effects */}
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-cyan-500/8 rounded-full blur-3xl" />
           
-          <div className="p-6 space-y-5">
-            {/* League badge */}
-            <div className="flex justify-center">
-              <Badge className="bg-emerald-50 dark:bg-primary/20 text-emerald-700 dark:text-primary border-emerald-200 dark:border-primary/30 px-4 py-1.5 text-xs font-bold uppercase tracking-widest">
-                {prediction.league || "Unknown League"}
+          <div className="relative p-5 space-y-4">
+            {/* League + Time */}
+            <div className="flex items-center justify-between">
+              <Badge className="bg-white/10 text-white/80 border-white/10 text-[9px] font-semibold uppercase tracking-wider px-2.5 py-1">
+                {prediction.league || "League"}
               </Badge>
+              <div className="flex items-center gap-1 text-white/50">
+                <Clock className="h-3 w-3" />
+                <span className="text-[10px] font-medium">{prediction.match_time || "TBD"}</span>
+              </div>
             </div>
 
-            {/* Teams section */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
+            {/* Teams */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                 {homeLogo ? (
-                  <img src={homeLogo} alt={prediction.home_team} className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-md" />
+                  <img src={homeLogo} alt="" className="w-14 h-14 sm:w-18 sm:h-18 object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]" />
                 ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-primary/20 dark:to-primary/10 border border-emerald-100 dark:border-primary/20 flex items-center justify-center">
-                    <span className="text-xl font-black text-emerald-700 dark:text-primary">
-                      {getTeamInitials(prediction.home_team)}
-                    </span>
+                  <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-xl bg-white/10 flex items-center justify-center">
+                    <span className="text-base font-black text-white/80">{getTeamInitials(prediction.home_team)}</span>
                   </div>
                 )}
-                <span className="text-sm sm:text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">
+                <span className="text-xs sm:text-sm font-bold text-center text-white/90 leading-tight line-clamp-2">
                   {prediction.home_team}
                 </span>
               </div>
 
-              <div className="flex flex-col items-center gap-1.5 flex-shrink-0 px-2">
-                <span className="text-[10px] text-gray-400 dark:text-muted-foreground font-medium uppercase tracking-wider">
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                <span className="text-[9px] text-white/40 font-medium uppercase tracking-wider">
                   {prediction.match_date || "Today"}
                 </span>
-                <div className="w-12 h-12 rounded-full bg-gray-50 dark:bg-muted/30 border-2 border-gray-200 dark:border-border flex items-center justify-center">
-                  <span className="text-lg font-black text-gray-700 dark:text-foreground">VS</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-gray-400" />
-                  <span className="text-xs font-semibold text-gray-500 dark:text-muted-foreground">
-                    {prediction.match_time || "TBD"}
-                  </span>
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                  <span className="text-sm font-black text-white/60">VS</span>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                 {awayLogo ? (
-                  <img src={awayLogo} alt={prediction.away_team} className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-md" />
+                  <img src={awayLogo} alt="" className="w-14 h-14 sm:w-18 sm:h-18 object-contain drop-shadow-[0_0_12px_rgba(59,130,246,0.3)]" />
                 ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-500/20 dark:to-blue-500/10 border border-blue-100 dark:border-blue-500/20 flex items-center justify-center">
-                    <span className="text-xl font-black text-blue-700 dark:text-blue-400">
-                      {getTeamInitials(prediction.away_team)}
-                    </span>
+                  <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-xl bg-white/10 flex items-center justify-center">
+                    <span className="text-base font-black text-white/80">{getTeamInitials(prediction.away_team)}</span>
                   </div>
                 )}
-                <span className="text-sm sm:text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">
+                <span className="text-xs sm:text-sm font-bold text-center text-white/90 leading-tight line-clamp-2">
                   {prediction.away_team}
                 </span>
               </div>
             </div>
 
-            {/* Confidence & Risk badges */}
-            <div className="flex items-center justify-center gap-4">
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-muted/20 rounded-full px-4 py-2 border border-gray-100 dark:border-border/40">
-                <Sparkles className="h-4 w-4 text-emerald-500" />
-                <span className="text-xs text-gray-500 dark:text-muted-foreground">Confidence</span>
-                <span className="text-base font-black text-gray-900 dark:text-foreground">{prediction.confidence ?? 0}%</span>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-muted/20 rounded-full px-4 py-2 border border-gray-100 dark:border-border/40">
-                <span className={cn("w-2.5 h-2.5 rounded-full", risk.dot)} />
-                <span className={cn("text-sm font-bold", risk.color)}>{risk.label}</span>
-              </div>
-            </div>
-
-            {/* UNLOCKED: AI Prediction Hero */}
-            {unlocked && (
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-5 shadow-xl shadow-emerald-200/30 dark:shadow-emerald-900/20">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+PC9zdmc+')] opacity-50" />
-                <div className="relative flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-white/70" />
-                      <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">AI Prediction</span>
-                      <Badge className="bg-white/20 text-white border-white/30 text-[9px]">AI Generated</Badge>
+            {/* HERO PREDICTION - dominates */}
+            {unlocked ? (
+              <div className="space-y-3">
+                {/* Main prediction */}
+                <div className="text-center space-y-1">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl">{getPredictionEmoji(prediction.prediction)}</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                      {getPredictionLabel(prediction.prediction)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                      <span className="text-xl sm:text-2xl font-black text-emerald-400">{prediction.confidence}%</span>
+                      <span className="text-[10px] text-white/50 uppercase">confidence</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{getPredictionIcon(prediction.prediction)}</span>
-                      <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                        {getPredictionLabel(prediction.prediction)}
-                      </span>
+                    <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", risk.bg, risk.color)}>
+                      {risk.label}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-4xl font-black text-white">{prediction.confidence}%</div>
-                    <div className="text-xs text-white/60 uppercase tracking-wider">Confidence</div>
-                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Win Probabilities - show after unlock */}
-            {unlocked && (
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-3 text-center border border-emerald-100 dark:border-emerald-500/20">
-                  <div className="text-xs text-gray-500 dark:text-muted-foreground mb-1 truncate">{prediction.home_team}</div>
-                  <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">{prediction.home_win}%</div>
-                </div>
-                <div className="bg-gray-50 dark:bg-muted/20 rounded-xl p-3 text-center border border-gray-100 dark:border-border/40">
-                  <div className="text-xs text-gray-500 dark:text-muted-foreground mb-1">Draw</div>
-                  <div className="text-xl font-black text-gray-600 dark:text-muted-foreground">{prediction.draw}%</div>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-3 text-center border border-blue-100 dark:border-blue-500/20">
-                  <div className="text-xs text-gray-500 dark:text-muted-foreground mb-1 truncate">{prediction.away_team}</div>
-                  <div className="text-xl font-black text-blue-600 dark:text-blue-400">{prediction.away_win}%</div>
-                </div>
-              </div>
-            )}
-
-            {/* 🎯 AI Picks */}
-            {unlocked && (
-              <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border/40 shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b bg-gray-50 dark:bg-muted/20 border-gray-100 dark:border-border/30">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
-                    <Target className="h-3.5 w-3.5" />
-                  </div>
-                  <h3 className="font-bold text-sm text-gray-800 dark:text-foreground">🎯 AI Picks</h3>
-                  <Badge className="ml-auto bg-emerald-50 dark:bg-primary/20 text-emerald-700 dark:text-primary border-emerald-200 dark:border-primary/30 text-[9px]">
-                    Multi-Market
+                {/* AI TOP PICK badge */}
+                <div className="flex justify-center">
+                  <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border-amber-500/30 px-3 py-1 text-[10px] font-bold uppercase tracking-widest gap-1">
+                    <Trophy className="h-3 w-3" />
+                    AI TOP PICK
                   </Badge>
                 </div>
-                <div className="p-3 space-y-2">
-                  {deriveAIPicks(prediction).map((pick, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border/20"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-base">{pick.emoji}</span>
-                        <span className="text-sm font-semibold text-gray-800 dark:text-foreground">{pick.label}</span>
-                      </div>
-                      <span className={cn("text-sm font-black", pick.color)}>{pick.confidence}%</span>
-                    </div>
-                  ))}
+
+                {/* Win probabilities - compact */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-white/5 rounded-xl p-2.5 text-center border border-white/5">
+                    <div className="text-[9px] text-white/40 mb-0.5 truncate">{prediction.home_team}</div>
+                    <div className="text-lg font-black text-emerald-400">{prediction.home_win}%</div>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-2.5 text-center border border-white/5">
+                    <div className="text-[9px] text-white/40 mb-0.5">Draw</div>
+                    <div className="text-lg font-black text-white/60">{prediction.draw}%</div>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-2.5 text-center border border-white/5">
+                    <div className="text-[9px] text-white/40 mb-0.5 truncate">{prediction.away_team}</div>
+                    <div className="text-lg font-black text-blue-400">{prediction.away_win}%</div>
+                  </div>
                 </div>
               </div>
-            )}
-            {!unlocked && (
-              <div className="space-y-3 pt-1">
-                {canGenerate ? (
-                  <Button
-                    size="lg"
-                    className="w-full text-sm font-bold h-13 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200/40 dark:shadow-emerald-900/30 animate-pulse rounded-xl"
-                    onClick={() => setUnlocked(true)}
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Unlock Prediction & Full Analysis
-                  </Button>
-                ) : (
-                  <Button
-                    size="lg"
-                    className="w-full text-sm font-bold h-13 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200/40 dark:shadow-emerald-900/30 rounded-xl"
-                    onClick={() => navigate("/get-premium")}
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Upgrade Plan to Unlock
-                  </Button>
-                )}
+            ) : (
+              /* Locked state */
+              <div className="text-center space-y-3 py-2">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-emerald-400" />
+                  <span className="text-sm text-white/60">Confidence</span>
+                  <span className="text-lg font-black text-white">{prediction.confidence ?? 0}%</span>
+                </div>
+                <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase", risk.bg, risk.color)}>
+                  {risk.label}
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Analysis content — only after unlock */}
-        {unlocked && (isGenerating || analysis) && generatedMatch && (
-          <div className="space-y-4">
-            <MatchPreviewAnalysis
-              match={generatedMatch}
-              analysis={analysis}
-              isLoading={isGenerating}
-              prediction={prediction}
-            />
-            {analysis && <MatchPreviewStats match={generatedMatch} />}
+        {/* ============ AI PICKS - Chip Style ============ */}
+        {unlocked && aiPicks.length > 0 && (
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2 px-1">
+              <Target className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold text-foreground">🎯 AI Picks</span>
+              <Badge className="ml-auto bg-primary/10 text-primary border-primary/20 text-[9px] font-bold">Multi-Market</Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {aiPicks.map((pick, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all",
+                    pick.bg
+                  )}
+                >
+                  <span>{pick.emoji}</span>
+                  <span className="text-foreground">{pick.label}</span>
+                  <span className={cn("font-black", pick.color)}>{pick.confidence}%</span>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* ============ STATS MINI GRID ============ */}
+        {unlocked && statsGrid.length > 0 && (
+          <div className="grid grid-cols-4 gap-2">
+            {statsGrid.map((stat, idx) => (
+              <div key={idx} className="bg-card rounded-xl p-3 text-center border border-border/40">
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">{stat.label}</div>
+                <div className="text-lg font-black text-foreground mt-0.5">{stat.value}</div>
+                <div className="text-[9px] text-muted-foreground">{stat.sub}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ============ UNLOCK BUTTON ============ */}
+        {!unlocked && (
+          <div className="pt-1">
+            {canGenerate ? (
+              <Button
+                size="lg"
+                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 animate-pulse rounded-xl"
+                onClick={() => setUnlocked(true)}
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Unlock Prediction & Full Analysis
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
+                onClick={() => navigate("/get-premium")}
+              >
+                <Lock className="h-4 w-4 mr-2" />
+                Upgrade Plan to Unlock
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* ============ ANALYSIS SECTIONS ============ */}
+        {unlocked && (isGenerating || analysis) && generatedMatch && (
+          <MatchPreviewAnalysis
+            match={generatedMatch}
+            analysis={analysis}
+            isLoading={isGenerating}
+            prediction={prediction}
+          />
         )}
       </div>
     </>
