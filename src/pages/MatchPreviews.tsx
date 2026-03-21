@@ -17,24 +17,22 @@ import AdSlot from "@/components/ads/AdSlot";
 const PRO_PREVIEW_LIMIT = 5;
 const MAX_MATCHES = 30;
 
-// Quality leagues with priority order (lower = higher priority)
+// Quality men's leagues with priority order (lower = higher priority)
 const LEAGUE_PRIORITY: Record<string, number> = {
-  // England / UK — highest priority
+  // England
   "Premier League": 1,
   "Championship": 2,
   "League One": 3,
   "League Two": 4,
-  "National League": 5,
-  "FA WSL": 6,
   // Germany
   "Bundesliga": 10,
   "2. Bundesliga": 11,
-  // Spain
-  "La Liga": 15,
-  "Segunda División": 16,
   // Italy
-  "Serie A": 20,
-  "Serie B": 21,
+  "Serie A": 15,
+  "Serie B": 16,
+  // Spain
+  "La Liga": 20,
+  "Segunda División": 21,
   // France
   "Ligue 1": 25,
   "Ligue 2": 26,
@@ -45,18 +43,12 @@ const LEAGUE_PRIORITY: Record<string, number> = {
   "Primeira Liga": 35,
   // Belgium
   "Challenger Pro League": 40,
-  // Scotland
-  "Premiership": 45,
   // Turkey
-  "Super Lig": 50,
+  "Super Lig": 45,
   // Poland
-  "Ekstraklasa": 55,
-  // Norway
-  "Eliteserien": 60,
+  "Ekstraklasa": 50,
   // Argentina
-  "Liga Profesional Argentina": 65,
-  // Mexico
-  "Liga MX": 70,
+  "Liga Profesional Argentina": 55,
 };
 
 const QUALITY_SET = new Set(Object.keys(LEAGUE_PRIORITY).map((l) => l.toLowerCase()));
