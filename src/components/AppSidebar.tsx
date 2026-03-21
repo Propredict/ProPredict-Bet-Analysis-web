@@ -133,30 +133,6 @@ export function AppSidebar() {
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <NavLink 
-                  to="/how-ai-works" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
-                  activeClassName="bg-primary/20 text-primary"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                  {!collapsed && <span>How AI Works</span>}
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <NavLink 
-                  to="/help-support?faq=predictions-glossary" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
-                  activeClassName="bg-primary/20 text-primary"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  {!collapsed && <span>Predictions Glossary</span>}
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
@@ -260,7 +236,41 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Admin Section - Only visible to admins */}
+        {/* Learn */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
+            {!collapsed && "Learn"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/how-ai-works" 
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                    activeClassName="bg-primary/20 text-primary"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    {!collapsed && <span>How AI Works</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/help-support?faq=predictions-glossary" 
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                    activeClassName="bg-primary/20 text-primary"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    {!collapsed && <span>Predictions Glossary</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
