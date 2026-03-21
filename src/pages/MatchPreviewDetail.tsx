@@ -40,6 +40,7 @@ function getPredictionLabel(prediction: string | null): string {
 export default function MatchPreviewDetail() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
@@ -47,7 +48,7 @@ export default function MatchPreviewDetail() {
 
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(!!(location.state as any)?.unlocked);
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const canGenerate = isPremiumUser || plan === "basic";
