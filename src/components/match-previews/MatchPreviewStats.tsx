@@ -137,110 +137,19 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
     <Card className="overflow-hidden">
       <div className="p-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          <span className="font-medium text-sm">Match Data & Statistics</span>
+          <Swords className="h-4 w-4 text-primary" />
+          <span className="font-medium text-sm">Head to Head</span>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-3 pt-3 overflow-x-auto">
-          <TabsList className="w-full grid grid-cols-8 h-9 min-w-[500px]">
-            <TabsTrigger value="h2h" className="text-[10px] gap-0.5">
-              <Swords className="h-3 w-3" />
-              <span className="hidden sm:inline">H2H</span>
-            </TabsTrigger>
-            <TabsTrigger value="key-players" className="text-[10px] gap-0.5">
-              <Star className="h-3 w-3" />
-              <span className="hidden sm:inline">Players</span>
-            </TabsTrigger>
-            <TabsTrigger value="injuries" className="text-[10px] gap-0.5">
-              <AlertTriangle className="h-3 w-3" />
-              <span className="hidden sm:inline">Injuries</span>
-            </TabsTrigger>
-            <TabsTrigger value="scorers" className="text-[10px] gap-0.5">
-              <Trophy className="h-3 w-3" />
-              <span className="hidden sm:inline">Scorers</span>
-            </TabsTrigger>
-            <TabsTrigger value="assists" className="text-[10px] gap-0.5">
-              <Handshake className="h-3 w-3" />
-              <span className="hidden sm:inline">Assists</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="text-[10px] gap-0.5">
-              <BarChart3 className="h-3 w-3" />
-              <span className="hidden sm:inline">Stats</span>
-            </TabsTrigger>
-            <TabsTrigger value="lineups" className="text-[10px] gap-0.5">
-              <Users className="h-3 w-3" />
-              <span className="hidden sm:inline">Lineups</span>
-            </TabsTrigger>
-            <TabsTrigger value="events" className="text-[10px] gap-0.5">
-              <Target className="h-3 w-3" />
-              <span className="hidden sm:inline">Events</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <div className="p-3">
-          <TabsContent value="h2h" className="mt-0">
-            <H2HSection 
-              h2hMatches={mergedH2H} 
-              summary={h2hSummary}
-              homeTeam={match.homeTeam}
-              awayTeam={match.awayTeam}
-            />
-          </TabsContent>
-
-          <TabsContent value="key-players" className="mt-0">
-            <KeyPlayersSection
-              scorersData={scorersData}
-              assistsData={assistsData}
-              isLoading={scorersLoading || assistsLoading}
-              homeTeam={match.homeTeam}
-              awayTeam={match.awayTeam}
-              leagueId={leagueId}
-            />
-          </TabsContent>
-
-          <TabsContent value="injuries" className="mt-0">
-            <InjuriesPreviewSection
-              injuries={data?.injuries || []}
-              homeTeam={match.homeTeam}
-              awayTeam={match.awayTeam}
-              loading={detailsLoading}
-            />
-          </TabsContent>
-
-          <TabsContent value="scorers" className="mt-0">
-            <ScorersSection 
-              scorersData={scorersData} 
-              isLoading={scorersLoading}
-              leagueId={leagueId}
-              leagueName={match.league}
-            />
-          </TabsContent>
-
-          <TabsContent value="assists" className="mt-0">
-            <AssistsSection 
-              assistsData={assistsData} 
-              isLoading={assistsLoading}
-              leagueId={leagueId}
-              leagueName={match.league}
-            />
-          </TabsContent>
-
-          <TabsContent value="stats" className="mt-0">
-            <StatsSection data={data} match={match} />
-          </TabsContent>
-
-          <TabsContent value="lineups" className="mt-0">
-            <LineupsSection data={data} match={match} />
-          </TabsContent>
-
-          <TabsContent value="events" className="mt-0">
-            <EventsSection data={data} />
-          </TabsContent>
-        </div>
-      </Tabs>
+      <div className="p-3">
+        <H2HSection 
+          h2hMatches={mergedH2H} 
+          summary={h2hSummary}
+          homeTeam={match.homeTeam}
+          awayTeam={match.awayTeam}
+        />
+      </div>
     </Card>
   );
 }
