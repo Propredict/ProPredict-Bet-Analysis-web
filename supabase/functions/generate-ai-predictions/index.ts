@@ -980,13 +980,18 @@ function generatePremiumAnalysis(params: {
     homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers, injuries,
   } = params;
 
-  const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
-  const favProb = prediction === "1" ? homeWin : prediction === "2" ? awayWin : draw;
+  const is1X2 = prediction === "1" || prediction === "2" || prediction === "X";
+  const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : prediction;
+  const favProb = prediction === "1" ? homeWin : prediction === "2" ? awayWin : prediction === "X" ? draw : 0;
 
   const sections: string[] = [];
 
   // 📊 VERDICT
-  sections.push(`📊 VERDICT: ${favName} ${prediction === "X" ? "Draw" : `to win`} (${favProb}% probability, ${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  if (is1X2) {
+    sections.push(`📊 VERDICT: ${favName} ${prediction === "X" ? "Draw" : `to win`} (${favProb}% probability, ${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  } else {
+    sections.push(`📊 VERDICT: ${prediction} is the strongest pick (${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  }
 
   // 🔥 FORM (Last 10)
   const homeFormStr = formatFormString(homeData.last10);
