@@ -147,7 +147,7 @@ const Index = () => {
           <DashboardHero />
         </Suspense>
 
-
+        <Suspense fallback={<LazyFallback />}>
           <FeaturedPredictions />
         </Suspense>
 
