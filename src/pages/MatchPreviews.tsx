@@ -115,25 +115,19 @@ export default function MatchPreviews() {
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
-  const [previewCount, setPreviewCount] = useState(0);
-  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
-  const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
-  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const navigate = useNavigate();
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
-  const remainingPreviews = Math.max(0, (isPremiumUser ? Infinity : isProUser ? PRO_PREVIEW_LIMIT : 0) - previewCount);
-  const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
+  const canGenerate = isPremiumUser || isProUser;
 
   // Build logo lookup from live scores data
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
     for (const m of liveMatches) {
-      // Match by team names (normalized)
       const key = `${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`;
       map[key] = { home: m.homeLogo, away: m.awayLogo };
-      // Also index by individual team name
       map[m.homeTeam.toLowerCase()] = { home: m.homeLogo, away: null };
       map[m.awayTeam.toLowerCase()] = { home: null, away: m.awayLogo };
     }
@@ -144,7 +138,6 @@ export default function MatchPreviews() {
     const matchKey = `${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
     const matchEntry = logoMap[matchKey];
     if (matchEntry) return side === "home" ? matchEntry.home : matchEntry.away;
-    // Fallback: lookup by individual team name
     const teamName = side === "home" ? homeTeam.toLowerCase() : awayTeam.toLowerCase();
     const entry = logoMap[teamName];
     if (entry) return side === "home" ? entry.home : entry.away;
