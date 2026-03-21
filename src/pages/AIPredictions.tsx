@@ -184,7 +184,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, pickFilter]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
