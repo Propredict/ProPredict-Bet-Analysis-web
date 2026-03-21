@@ -334,7 +334,7 @@ export default function MatchPreviews() {
                               </span>
                             </div>
                           )}
-                          <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.home_team}</span>
+                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-foreground">{match.home_team}</span>
                         </div>
 
                         {/* Center: date, time, VS */}
