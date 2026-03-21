@@ -11,6 +11,7 @@ import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAn
 import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
@@ -114,6 +115,7 @@ function getPredictionLabel(prediction: string | null): string {
 
 export default function MatchPreviews() {
   const { predictions, loading, refetch } = useAIPredictions("today");
+  const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const [previewCount, setPreviewCount] = useState(0);
@@ -127,15 +129,38 @@ export default function MatchPreviews() {
   const remainingPreviews = Math.max(0, (isPremiumUser ? Infinity : isProUser ? PRO_PREVIEW_LIMIT : 0) - previewCount);
   const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
 
+  // Build logo lookup from live scores data
+  const logoMap = useMemo(() => {
+    const map: Record<string, { home: string | null; away: string | null }> = {};
+    for (const m of liveMatches) {
+      // Match by team names (normalized)
+      const key = `${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`;
+      map[key] = { home: m.homeLogo, away: m.awayLogo };
+      // Also index by individual team name
+      map[m.homeTeam.toLowerCase()] = { home: m.homeLogo, away: null };
+      map[m.awayTeam.toLowerCase()] = { home: null, away: m.awayLogo };
+    }
+    return map;
+  }, [liveMatches]);
+
+  function getTeamLogo(homeTeam: string, awayTeam: string, side: "home" | "away"): string | null {
+    const matchKey = `${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
+    const matchEntry = logoMap[matchKey];
+    if (matchEntry) return side === "home" ? matchEntry.home : matchEntry.away;
+    // Fallback: lookup by individual team name
+    const teamName = side === "home" ? homeTeam.toLowerCase() : awayTeam.toLowerCase();
+    const entry = logoMap[teamName];
+    if (entry) return side === "home" ? entry.home : entry.away;
+    return null;
+  }
+
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
     return predictions
       .filter((p) => isQualityLeague(p.league, p.home_team))
       .sort((a, b) => {
-        // Primary: highest confidence first (most low-risk matches on top)
         const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
-        // Secondary: league priority as tiebreaker
         return getLeaguePriority(a.league) - getLeaguePriority(b.league);
       })
       .slice(0, MAX_MATCHES);
@@ -276,9 +301,9 @@ export default function MatchPreviews() {
           <div className="space-y-2">
              {topMatches.map((match) => {
               const risk = getRiskColor(match.confidence);
-              const predLabel = getPredictionLabel(match.prediction);
               const isExpanded = expandedMatchId === match.id;
-              const insight = getInsight(match.prediction, match.home_team, match.away_team, match.confidence);
+              const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
+              const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
 
               return (
                 <div key={match.id} className="space-y-2">
@@ -300,11 +325,15 @@ export default function MatchPreviews() {
                       <div className="flex items-center justify-between gap-2">
                         {/* Home team */}
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
-                            <span className="text-xs font-bold text-violet-300">
-                              {getTeamInitials(match.home_team)}
-                            </span>
-                          </div>
+                          {homeLogo ? (
+                            <img src={homeLogo} alt={match.home_team} className="w-12 h-12 object-contain" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
+                              <span className="text-xs font-bold text-violet-300">
+                                {getTeamInitials(match.home_team)}
+                              </span>
+                            </div>
+                          )}
                           <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.home_team}</span>
                         </div>
 
@@ -324,11 +353,15 @@ export default function MatchPreviews() {
 
                         {/* Away team */}
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary/70">
-                              {getTeamInitials(match.away_team)}
-                            </span>
-                          </div>
+                          {awayLogo ? (
+                            <img src={awayLogo} alt={match.away_team} className="w-12 h-12 object-contain" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                              <span className="text-xs font-bold text-primary/70">
+                                {getTeamInitials(match.away_team)}
+                              </span>
+                            </div>
+                          )}
                           <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.away_team}</span>
                         </div>
                       </div>
