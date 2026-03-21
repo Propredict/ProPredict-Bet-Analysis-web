@@ -216,6 +216,17 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       )}
 
+      {/* Value Bet Badge */}
+      {hasAccess && isValueBet(prediction) && (
+        <div className="flex items-center gap-1.5 pt-1">
+          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg animate-pulse">
+            <Flame className="w-3 h-3 mr-1" />
+            🔥 Value Bet
+          </Badge>
+          <span className="text-[8px] md:text-[9px] text-orange-300/80">Strong edge detected</span>
+        </div>
+      )}
+
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
           <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
@@ -224,7 +235,8 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
             !hasAccess && "blur-sm select-none"
           )}>
             {hasAccess ? (() => {
-              const pick = getBestPickWithIcon(prediction);
+              const picks = getBestPickCandidates(prediction);
+              const pick = picks[0];
               return (
                 <>
                   {pick.icon}
