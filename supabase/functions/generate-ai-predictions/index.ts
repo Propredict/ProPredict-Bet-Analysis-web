@@ -1434,6 +1434,23 @@ async function processBatch(
         awayTeamName
       );
 
+      // Calculate Poisson goal markets for key_factors and more accurate score
+      const homeGoalRate = calculateGoalRate(homeForm);
+      const awayGoalRate = calculateGoalRate(awayForm);
+      const homeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
+      const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+      const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
+
+      // Generate data-driven key_factors
+      const keyFactors = generateKeyFactors(
+        homeTeamName, awayTeamName,
+        homeForm, awayForm,
+        homeStats, awayStats,
+        h2h, homeTeamId,
+        newPrediction.prediction,
+        goalMarkets
+      );
+
       // ⭐ PREMIUM DEEP DIVE: If initial confidence >= 85%, enhance with last 10 matches + 5 H2H
       if (newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
         try {
@@ -1467,6 +1484,9 @@ async function processBatch(
           away_win: newPrediction.away_win,
           risk_level: newPrediction.risk_level,
           analysis: newPrediction.analysis,
+          key_factors: keyFactors.length > 0 ? keyFactors : null,
+          last_home_goals: Math.round(homeXg * 10) / 10,
+          last_away_goals: Math.round(awayXg * 10) / 10,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
@@ -1480,7 +1500,7 @@ async function processBatch(
       updated++;
       const tier = newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE ? "⭐PREMIUM" : "STD";
       console.log(
-        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}%`
+        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
       );
     } catch (e) {
       await markPredictionLocked(
