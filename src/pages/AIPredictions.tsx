@@ -157,19 +157,33 @@ export default function AIPredictions() {
     return [...preds].sort((a, b) => {
       switch (sortBy) {
         case "confidence":
-          // Handle null confidence (masked by view) — push to end
           return (b.confidence ?? 0) - (a.confidence ?? 0);
-        case "kickoff":
-          // Sort by time string
+        case "kickoff": {
           const timeA = a.match_time || "99:99";
           const timeB = b.match_time || "99:99";
           return timeA.localeCompare(timeB);
-        case "risk":
-          // low < medium < high
+        }
+        case "risk": {
           const riskOrder = { low: 0, medium: 1, high: 2 };
           const riskA = riskOrder[a.risk_level as keyof typeof riskOrder] ?? 1;
           const riskB = riskOrder[b.risk_level as keyof typeof riskOrder] ?? 1;
           return riskA - riskB;
+        }
+        case "over25": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.over25 - pa.over25;
+        }
+        case "under25": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.under25 - pa.under25;
+        }
+        case "btts": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.bttsYes - pa.bttsYes;
+        }
         default:
           return 0;
       }
