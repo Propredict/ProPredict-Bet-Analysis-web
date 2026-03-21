@@ -171,7 +171,7 @@ interface TopPlayer {
 /**
  * Fetch team's last N matches form
  */
-async function fetchTeamForm(teamId: number, apiKey: string, count: number = 3): Promise<FormMatch[]> {
+async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5): Promise<FormMatch[]> {
   const cached = teamFormCache.get(teamId);
   if (cached && cached.length >= count) return cached.slice(0, count);
 
