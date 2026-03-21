@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight } from "lucide-react";
+import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight, Clock, Trophy, Target, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -256,71 +256,137 @@ export default function MatchPreviews() {
                 <div key={match.id} className="space-y-2">
                   <Card
                     className={cn(
-                      "p-3 transition-all hover:border-violet-500/40",
-                      isExpanded && "border-violet-500/50 bg-violet-500/5"
+                      "overflow-hidden transition-all hover:border-violet-500/40",
+                      isExpanded && "border-violet-500/50"
                     )}
                   >
-                    {/* League */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
-                        {match.league || "Unknown League"}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {match.match_time || ""}
-                      </span>
-                    </div>
+                    {/* Top accent line */}
+                    <div className={cn(
+                      "h-0.5",
+                      (match.confidence ?? 0) >= 80
+                        ? "bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500"
+                        : (match.confidence ?? 0) >= 65
+                          ? "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"
+                          : "bg-gradient-to-r from-red-500 via-red-400 to-red-500"
+                    )} />
 
-                    {/* Teams */}
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold truncate flex-1">
-                        {match.home_team} vs {match.away_team}
-                      </h3>
-                    </div>
+                    <div className="p-4">
+                      {/* League & Time header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-1.5">
+                          <Trophy className="h-3 w-3 text-violet-400" />
+                          <span className="text-[11px] font-medium text-violet-400 uppercase tracking-wider">
+                            {match.league || "Unknown"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {match.match_time || "TBD"}
+                          </span>
+                        </div>
+                      </div>
 
-                    {/* Prediction row */}
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <Badge variant="outline" className="bg-violet-500/10 text-violet-400 border-violet-500/30 text-xs">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {predLabel}
-                      </Badge>
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
-                        {match.confidence ?? 0}%
-                      </Badge>
-                      <Badge variant="outline" className={cn("text-xs border", risk.bg, risk.color)}>
-                        <Shield className="h-3 w-3 mr-1" />
-                        {risk.label}
-                      </Badge>
-                    </div>
+                      {/* Centered Teams */}
+                      <div className="flex items-center justify-center gap-4 mb-4">
+                        <div className="flex-1 text-right">
+                          <span className="text-sm font-bold">{match.home_team}</span>
+                        </div>
+                        <div className="flex-shrink-0 px-3 py-1 rounded-full bg-muted/30 border border-border/50">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase">vs</span>
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="text-sm font-bold">{match.away_team}</span>
+                        </div>
+                      </div>
 
-                    {/* Unlock button */}
-                    <Button
-                      size="sm"
-                      className="w-full bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 text-xs"
-                      disabled={!canGenerate || (isExpanded && isGenerating)}
-                      onClick={() => handleUnlockPreview(match)}
-                    >
-                      {isExpanded && isGenerating ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                          Generating...
-                        </>
-                      ) : isExpanded && analysis ? (
-                        <>
-                          <Eye className="h-3.5 w-3.5 mr-1.5" />
-                          Preview Generated
-                        </>
-                      ) : isFreeUser ? (
-                        <>
-                          <Lock className="h-3.5 w-3.5 mr-1.5" />
-                          Upgrade to Unlock
-                        </>
-                      ) : (
-                        <>
-                          <ChevronRight className="h-3.5 w-3.5 mr-1.5" />
-                          Unlock Preview
-                        </>
-                      )}
-                    </Button>
+                      {/* Divider */}
+                      <div className="h-px bg-border/40 mb-4" />
+
+                      {/* Prediction Details Grid */}
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {/* Prediction */}
+                        <div className="text-center p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <TrendingUp className="h-3 w-3 text-violet-400" />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">Prediction</span>
+                          <span className="text-xs font-bold text-violet-400">{predLabel}</span>
+                        </div>
+
+                        {/* Predicted Score */}
+                        <div className="text-center p-2 rounded-lg bg-primary/10 border border-primary/20">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <Target className="h-3 w-3 text-primary" />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">Score</span>
+                          <span className="text-xs font-bold text-primary">{match.predicted_score || "—"}</span>
+                        </div>
+
+                        {/* Confidence */}
+                        <div className={cn("text-center p-2 rounded-lg border", risk.bg)}>
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <Shield className="h-3 w-3" />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">
+                            {risk.label}
+                          </span>
+                          <span className={cn("text-xs font-bold", risk.color)}>{match.confidence ?? 0}%</span>
+                        </div>
+                      </div>
+
+                      {/* Confidence Bar */}
+                      <div className="mb-4">
+                        <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all",
+                              (match.confidence ?? 0) >= 80
+                                ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
+                                : (match.confidence ?? 0) >= 65
+                                  ? "bg-gradient-to-r from-amber-500 to-amber-400"
+                                  : "bg-gradient-to-r from-red-500 to-red-400"
+                            )}
+                            style={{ width: `${match.confidence ?? 0}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Unlock button */}
+                      <Button
+                        size="sm"
+                        className={cn(
+                          "w-full text-xs font-semibold",
+                          isExpanded && analysis
+                            ? "bg-emerald-600 hover:bg-emerald-700"
+                            : "bg-gradient-to-r from-violet-600 via-violet-500 to-fuchsia-500 hover:from-violet-700 hover:via-violet-600 hover:to-fuchsia-600 shadow-lg shadow-violet-500/20"
+                        )}
+                        disabled={!canGenerate || (isExpanded && isGenerating)}
+                        onClick={() => handleUnlockPreview(match)}
+                      >
+                        {isExpanded && isGenerating ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                            Generating Preview...
+                          </>
+                        ) : isExpanded && analysis ? (
+                          <>
+                            <Eye className="h-3.5 w-3.5 mr-1.5" />
+                            Preview Ready
+                          </>
+                        ) : isFreeUser ? (
+                          <>
+                            <Lock className="h-3.5 w-3.5 mr-1.5" />
+                            Upgrade to Unlock
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="h-3.5 w-3.5 mr-1.5" />
+                            Unlock Preview
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </Card>
 
                   {/* Expanded Analysis */}
