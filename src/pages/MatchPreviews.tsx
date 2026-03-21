@@ -87,15 +87,14 @@ function getTeamInitials(name: string): string {
 }
 
 function getInsight(prediction: string | null, homeTeam: string, awayTeam: string, confidence: number | null): string {
-  const conf = confidence ?? 50;
   const p = (prediction || "").toLowerCase().trim();
-  if (p === "1" || p === "home") return `${homeTeam} favored based on form & home advantage`;
-  if (p === "2" || p === "away") return `${awayTeam} showing strong away form this season`;
-  if (p === "x" || p === "draw") return `Evenly matched — expect a tight contest`;
-  if (p.includes("over")) return `Both teams averaging high goal counts recently`;
-  if (p.includes("under")) return `Defensive matchup — low scoring expected`;
-  if (p.includes("btts")) return `Both sides finding the net consistently`;
-  return `AI analysis based on ${conf}% confidence model`;
+  if (p === "1" || p === "home") return `${homeTeam} showing dominant home form — AI backs a decisive result`;
+  if (p === "2" || p === "away") return `${awayTeam} on a strong away run — our model sees an upset brewing`;
+  if (p === "x" || p === "draw") return `Tight tactical battle expected — both sides evenly matched in key metrics`;
+  if (p.includes("over")) return `High-scoring affair likely — both attacks in top form recently`;
+  if (p.includes("under")) return `Defensive masterclass incoming — clean sheets dominating recent form`;
+  if (p.includes("btts")) return `Both defenses leaking goals — expect end-to-end action`;
+  return `AI has identified a strong signal in this matchup`;
 }
 
 function getPredictionLabel(prediction: string | null): string {
