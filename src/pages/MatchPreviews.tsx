@@ -364,6 +364,7 @@ export default function MatchPreviews() {
                           )}
                           <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.away_team}</span>
                         </div>
+                      </div>
 
                       {/* Confidence & Risk row */}
                       <div className="flex items-center justify-center gap-4 text-xs pt-1">
