@@ -370,8 +370,8 @@ export default function MatchPreviews() {
                       <div className="flex items-center justify-center gap-5 text-sm pt-2">
                         <div className="flex items-center gap-2">
                           <Sparkles className="h-4 w-4 text-violet-500 dark:text-primary" />
-                          <span className="text-gray-500 dark:text-muted-foreground font-medium">Confidence</span>
-                          <span className="font-bold text-gray-800 dark:text-foreground text-base">{match.confidence ?? 0}%</span>
+                          <span className="text-gray-500 dark:text-muted-foreground font-bold">Confidence</span>
+                          <span className="font-extrabold text-gray-800 dark:text-foreground text-base">{match.confidence ?? 0}%</span>
                         </div>
                         <span className="text-gray-300 dark:text-border">•</span>
                         <div className="flex items-center gap-2">
