@@ -251,13 +251,12 @@ function deriveAIPicks(pred: any): AIPick[] {
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 6);
 
-    for (const pick of fallback) {
-      finalPicks.push(pick);
-      if (finalPicks.length >= 5) break;
-    }
-  }
+  // Ensure goals & btts picks are always included
+  const included = new Set(finalPicks.map(p => p.label));
+  if (!included.has(goalsPick.label)) finalPicks.push(goalsPick);
+  if (!included.has(bttsPick.label)) finalPicks.push(bttsPick);
 
-  return finalPicks.slice(0, 8);
+  return finalPicks.slice(0, 7);
 }
 
 function deriveStatsGrid(pred: any) {
