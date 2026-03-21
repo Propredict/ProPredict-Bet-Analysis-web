@@ -63,10 +63,10 @@ function deriveAIPicks(pred: any): AIPick[] {
   const draw = pred.draw ?? 0;
   const homeGoals = pred.last_home_goals ?? 0;
   const awayGoals = pred.last_away_goals ?? 0;
-  const avgGoals = (homeGoals + awayGoals) / 2;
+  const totalGoalsAvg = homeGoals + awayGoals;
   const confidence = pred.confidence ?? 60;
 
-  // Main pick
+  // 1. Main 1X2 pick — highest probability wins
   if (homeWin >= awayWin && homeWin >= draw) {
     picks.push({ emoji: "🟢", label: `Home Win — ${pred.home_team}`, confidence: homeWin, color: "text-emerald-600" });
   } else if (awayWin > homeWin && awayWin > draw) {
@@ -75,26 +75,50 @@ function deriveAIPicks(pred: any): AIPick[] {
     picks.push({ emoji: "🟡", label: "Draw", confidence: draw, color: "text-amber-600" });
   }
 
-  // Over/Under 1.5
-  const over15Conf = Math.min(95, Math.round(avgGoals >= 1.2 ? 65 + avgGoals * 10 : 45 + avgGoals * 8));
-  picks.push({
-    emoji: over15Conf >= 70 ? "🟢" : "🟡",
-    label: avgGoals >= 1.2 ? "Over 1.5 Goals" : "Under 1.5 Goals",
-    confidence: over15Conf,
-    color: over15Conf >= 70 ? "text-emerald-600" : "text-amber-600",
-  });
+  // 2. Smart Over/Under — pick the best goal line based on actual avg goals
+  const goalMarkets: AIPick[] = [];
+  
+  // Over 0.5
+  const o05 = Math.min(97, Math.round(55 + totalGoalsAvg * 15));
+  goalMarkets.push({ emoji: "🟢", label: "Over 0.5 Goals", confidence: o05, color: "text-emerald-600" });
+  
+  // Over 1.5
+  const o15 = Math.min(95, Math.round(40 + totalGoalsAvg * 12));
+  goalMarkets.push({ emoji: o15 >= 70 ? "🟢" : "🟡", label: "Over 1.5 Goals", confidence: o15, color: o15 >= 70 ? "text-emerald-600" : "text-amber-600" });
+  
+  // Over 2.5
+  const o25 = Math.min(92, Math.round(25 + totalGoalsAvg * 10));
+  goalMarkets.push({ emoji: o25 >= 70 ? "🟢" : "🟡", label: "Over 2.5 Goals", confidence: o25, color: o25 >= 70 ? "text-emerald-600" : "text-amber-600" });
+  
+  // Over 3.5
+  const o35 = Math.min(88, Math.round(15 + totalGoalsAvg * 8));
+  goalMarkets.push({ emoji: o35 >= 70 ? "🟢" : "🟡", label: "Over 3.5 Goals", confidence: o35, color: o35 >= 70 ? "text-emerald-600" : "text-amber-600" });
 
-  // BTTS
+  // Under markets
+  const u25 = Math.min(90, Math.round(85 - totalGoalsAvg * 10));
+  const u15 = Math.min(85, Math.round(70 - totalGoalsAvg * 12));
+  if (u25 > o25) goalMarkets.push({ emoji: u25 >= 70 ? "🟢" : "🟡", label: "Under 2.5 Goals", confidence: u25, color: u25 >= 70 ? "text-emerald-600" : "text-amber-600" });
+  if (u15 > o15 && totalGoalsAvg < 1.5) goalMarkets.push({ emoji: u15 >= 60 ? "🟡" : "⚠️", label: "Under 1.5 Goals", confidence: Math.max(45, u15), color: u15 >= 60 ? "text-amber-600" : "text-red-500" });
+
+  // Pick the best goal market (highest confidence that's not trivially obvious like Over 0.5 at 97%)
+  const bestGoal = goalMarkets
+    .filter(g => g.confidence >= 55 && g.confidence <= 93) // exclude trivial picks
+    .sort((a, b) => b.confidence - a.confidence)[0] 
+    || goalMarkets.sort((a, b) => b.confidence - a.confidence)[0];
+  
+  if (bestGoal) picks.push(bestGoal);
+
+  // 3. BTTS — based on both teams' scoring ability
   const bttsYes = homeGoals >= 1.0 && awayGoals >= 1.0;
   const bttsConf = Math.min(90, Math.round(bttsYes ? 55 + Math.min(homeGoals, awayGoals) * 12 : 40 + (2 - Math.max(homeGoals, awayGoals)) * 10));
   picks.push({
-    emoji: bttsConf < 60 ? "⚠️" : "🟡",
+    emoji: bttsConf >= 70 ? "🟢" : bttsConf >= 55 ? "🟡" : "⚠️",
     label: `BTTS — ${bttsYes ? "Yes" : "No"}`,
     confidence: Math.max(45, bttsConf),
-    color: bttsConf < 60 ? "text-red-500" : "text-amber-600",
+    color: bttsConf >= 70 ? "text-emerald-600" : bttsConf >= 55 ? "text-amber-600" : "text-red-500",
   });
 
-  // Draw No Bet
+  // 4. Draw No Bet — strongest team
   const dnbConf = Math.max(homeWin, awayWin);
   const dnbTeam = homeWin >= awayWin ? pred.home_team : pred.away_team;
   picks.push({
@@ -104,7 +128,8 @@ function deriveAIPicks(pred: any): AIPick[] {
     color: dnbConf >= 65 ? "text-emerald-600" : "text-amber-600",
   });
 
-  return picks;
+  // Sort by confidence descending so best picks appear first
+  return picks.sort((a, b) => b.confidence - a.confidence);
 }
 
 export default function MatchPreviewDetail() {
