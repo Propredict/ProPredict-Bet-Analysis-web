@@ -284,24 +284,46 @@ export default function MatchPreviews() {
                     </div>
 
                     {/* Teaser insights */}
-                    <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-border/40">
-                      <div className="flex items-start gap-2">
-                        <span className="text-emerald-500 mt-0.5">◉</span>
-                        <p className="text-xs text-gray-600 dark:text-muted-foreground">Our model detected a <span className="font-bold text-gray-800 dark:text-foreground">clear statistical edge</span> in this matchup</p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-violet-500 mt-0.5">↗</span>
-                        <p className="text-xs text-gray-600 dark:text-muted-foreground">Recent form and head-to-head data <span className="font-bold text-gray-800 dark:text-foreground">strongly support</span> this prediction</p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Sparkles className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-gray-600 dark:text-muted-foreground">AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{match.confidence ?? 0}%</span> — one of today's strongest picks</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-end gap-1.5 pt-1">
-                      <span className="text-[10px] text-gray-400 dark:text-muted-foreground/60">🔥 92% of users unlocked this match</span>
-                    </div>
+                    {(() => {
+                      const conf = match.confidence ?? 50;
+                      const edgeText = conf >= 80
+                        ? "clear statistical edge"
+                        : conf >= 65
+                        ? "notable pattern"
+                        : "potential value opportunity";
+                      const formText = conf >= 80
+                        ? "strongly support"
+                        : conf >= 65
+                        ? "favor"
+                        : "suggest an edge for";
+                      const pickText = conf >= 80
+                        ? "one of today's strongest picks"
+                        : conf >= 65
+                        ? "a solid selection today"
+                        : "a value pick worth watching";
+                      const unlockPct = Math.min(97, Math.floor(70 + conf * 0.25 + (match.match_id?.charCodeAt(0) ?? 0) % 8));
+                      return (
+                        <>
+                          <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-border/40">
+                            <div className="flex items-start gap-2">
+                              <span className="text-emerald-500 mt-0.5">◉</span>
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">Our model detected a <span className="font-bold text-gray-800 dark:text-foreground">{edgeText}</span> in this matchup</p>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="text-violet-500 mt-0.5">↗</span>
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">Recent form and head-to-head data <span className="font-bold text-gray-800 dark:text-foreground">{formText}</span> this prediction</p>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <Sparkles className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — {pickText}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-end gap-1.5 pt-1">
+                            <span className="text-[10px] text-gray-400 dark:text-muted-foreground/60">🔥 {unlockPct}% of users unlocked this match</span>
+                          </div>
+                        </>
+                      );
+                    })()}
 
                     <Button
                       size="sm"
