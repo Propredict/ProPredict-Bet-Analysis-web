@@ -313,10 +313,10 @@ export default function MatchPreviews() {
                       isExpanded && "border-violet-500/40 shadow-lg shadow-violet-500/10"
                     )}
                   >
-                    <div className="p-4 space-y-3">
+                    <div className="p-5 space-y-4">
                       {/* League header */}
                       <div className="text-center">
-                        <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">
+                        <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
                           {match.league || "Unknown"}
                         </span>
                       </div>
@@ -324,56 +324,56 @@ export default function MatchPreviews() {
                       {/* Match announcement layout: Home - Info - Away */}
                       <div className="flex items-center justify-between gap-2">
                         {/* Home team */}
-                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                           {homeLogo ? (
-                            <img src={homeLogo} alt={match.home_team} className="w-12 h-12 object-contain" />
+                            <img src={homeLogo} alt={match.home_team} className="w-14 h-14 object-contain drop-shadow-sm" />
                           ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
-                              <span className="text-xs font-bold text-violet-300">
+                            <div className="w-14 h-14 rounded-full bg-violet-100 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center">
+                              <span className="text-sm font-bold text-violet-600 dark:text-violet-300">
                                 {getTeamInitials(match.home_team)}
                               </span>
                             </div>
                           )}
-                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-foreground">{match.home_team}</span>
+                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.home_team}</span>
                         </div>
 
                         {/* Center: date, time, VS */}
-                        <div className="flex flex-col items-center gap-1 flex-shrink-0 px-2">
-                          <span className="text-[10px] text-muted-foreground font-medium">
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0 px-3">
+                          <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium">
                             {match.match_date || "Today"}
                           </span>
-                          <span className="text-lg font-black text-foreground tracking-tight">VS</span>
+                          <span className="text-xl font-black text-gray-800 dark:text-foreground tracking-tight">VS</span>
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-muted-foreground/60" />
-                            <span className="text-xs font-semibold text-muted-foreground">
+                            <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground/60" />
+                            <span className="text-xs font-semibold text-gray-600 dark:text-muted-foreground">
                               {match.match_time || "TBD"}
                             </span>
                           </div>
                         </div>
 
                         {/* Away team */}
-                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                           {awayLogo ? (
-                            <img src={awayLogo} alt={match.away_team} className="w-12 h-12 object-contain" />
+                            <img src={awayLogo} alt={match.away_team} className="w-14 h-14 object-contain drop-shadow-sm" />
                           ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                              <span className="text-xs font-bold text-primary/70">
+                            <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-primary/20 border border-blue-200 dark:border-primary/20 flex items-center justify-center">
+                              <span className="text-sm font-bold text-blue-600 dark:text-primary/70">
                                 {getTeamInitials(match.away_team)}
                               </span>
                             </div>
                           )}
-                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-foreground">{match.away_team}</span>
+                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.away_team}</span>
                         </div>
                       </div>
 
                       {/* Confidence & Risk row */}
                       <div className="flex items-center justify-center gap-4 text-xs pt-1">
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3 w-3 text-primary" />
-                          <span className="text-muted-foreground">Confidence</span>
-                          <span className="font-bold text-foreground">{match.confidence ?? 0}%</span>
+                          <Sparkles className="h-3 w-3 text-violet-500 dark:text-primary" />
+                          <span className="text-gray-500 dark:text-muted-foreground">Confidence</span>
+                          <span className="font-bold text-gray-800 dark:text-foreground">{match.confidence ?? 0}%</span>
                         </div>
-                        <span className="text-border">•</span>
+                        <span className="text-gray-300 dark:text-border">•</span>
                         <div className="flex items-center gap-1.5">
                           <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
                           <span className={cn("font-medium", risk.color)}>{risk.label}</span>
