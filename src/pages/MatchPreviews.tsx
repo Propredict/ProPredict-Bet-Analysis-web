@@ -309,7 +309,7 @@ export default function MatchPreviews() {
                 <div key={match.id} className="space-y-2">
                   <Card
                     className={cn(
-                      "overflow-hidden transition-all border-border/60 hover:shadow-lg hover:shadow-violet-500/5",
+                      "overflow-hidden transition-all bg-white dark:bg-card border-border/60 hover:shadow-lg hover:shadow-violet-500/5",
                       isExpanded && "border-violet-500/40 shadow-lg shadow-violet-500/10"
                     )}
                   >
@@ -334,7 +334,7 @@ export default function MatchPreviews() {
                               </span>
                             </div>
                           )}
-                          <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.home_team}</span>
+                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-foreground">{match.home_team}</span>
                         </div>
 
                         {/* Center: date, time, VS */}
@@ -362,7 +362,7 @@ export default function MatchPreviews() {
                               </span>
                             </div>
                           )}
-                          <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.away_team}</span>
+                          <span className="text-sm font-bold text-center leading-tight line-clamp-2 text-foreground">{match.away_team}</span>
                         </div>
                       </div>
 
