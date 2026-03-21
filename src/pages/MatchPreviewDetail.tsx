@@ -229,17 +229,22 @@ function deriveAIPicks(pred: any): AIPick[] {
   const awayPickConf = mainPrediction === "2" || mainPrediction === "away" ? clamp(Math.max(awayWin, confidence * 0.85), 76, 92) : awayWin;
   const drawPickConf = mainPrediction === "x" || mainPrediction === "draw" ? clamp(Math.max(draw, confidence * 0.8), 75, 88) : draw;
 
-  // Double chance — always strong
+  // Double chance — only show the side aligned with main prediction
   const dc1x = clamp(homePickConf + draw * 0.6, 78, 95);
   const dcx2 = clamp(awayPickConf + draw * 0.6, 78, 95);
   const dnbConf = clamp(Math.max(homePickConf, awayPickConf) + draw * 0.3, 76, 92);
+
+  // Determine main prediction direction to filter contradictions
+  const favorsHome = homeWin > awayWin && homeWin > draw;
+  const favorsAway = awayWin > homeWin && awayWin > draw;
 
   const candidatePicks: AIPick[] = [
     makePick("Home Win", homePickConf, seed),
     makePick("Draw", drawPickConf, seed),
     makePick("Away Win", awayPickConf, seed),
-    makePick("1X (Home/Draw)", dc1x, seed),
-    makePick("X2 (Draw/Away)", dcx2, seed),
+    // Only show double chance aligned with the favored side
+    ...(favorsAway ? [] : [makePick("1X (Home/Draw)", dc1x, seed)]),
+    ...(favorsHome ? [] : [makePick("X2 (Draw/Away)", dcx2, seed)]),
     makePick(homeWin >= awayWin ? "DNB Home" : "DNB Away", dnbConf, seed),
     goalsPick,
     bttsPick,
