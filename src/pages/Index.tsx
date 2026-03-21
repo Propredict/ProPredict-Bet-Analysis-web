@@ -97,7 +97,12 @@ const Index = () => {
           </p>
         </div>
 
-        {/* What We Do – Web only */}
+        {/* Dashboard Stats Hero */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardHero />
+        </Suspense>
+
+
         {!isAndroid && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-card border border-border rounded-lg p-4">
