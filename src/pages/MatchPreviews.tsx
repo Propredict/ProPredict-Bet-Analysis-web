@@ -284,39 +284,88 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
-                    {/* Teaser insights */}
+                    {/* Teaser insights - unique per match */}
                     {(() => {
                       const conf = match.confidence ?? 50;
-                      const edgeText = conf >= 80
-                        ? "clear statistical edge"
-                        : conf >= 65
-                        ? "notable pattern"
-                        : "potential value opportunity";
-                      const formText = conf >= 80
-                        ? "strongly support"
-                        : conf >= 65
-                        ? "favor"
-                        : "suggest an edge for";
-                      const pickText = conf >= 80
-                        ? "one of today's strongest picks"
-                        : conf >= 65
-                        ? "a solid selection today"
-                        : "a value pick worth watching";
+                      const hw = match.home_win ?? 33;
+                      const aw = match.away_win ?? 33;
+                      const dw = match.draw ?? 33;
+                      const diff = Math.abs(hw - aw);
+                      const totalGoals = (match.last_home_goals ?? 0) + (match.last_away_goals ?? 0);
+                      const riskLvl = (match.risk_level ?? "medium").toLowerCase();
+                      const pred = (match.prediction ?? "").toUpperCase();
+                      const isHomeFav = hw > aw;
+                      const favTeam = isHomeFav ? match.home_team : match.away_team;
+                      const favPct = isHomeFav ? hw : aw;
+
+                      // Line 1: unique per match situation
+                      let line1Icon = "◉";
+                      let line1Color = "text-emerald-500";
+                      let line1: React.ReactNode;
+                      if (diff >= 30 && conf >= 75) {
+                        line1 = <><span className="font-bold text-gray-800 dark:text-foreground">{favTeam}</span> dominates with <span className="font-bold text-gray-800 dark:text-foreground">{favPct}%</span> win probability — clear edge</>;
+                      } else if (totalGoals >= 3) {
+                        line1Icon = "⚡";
+                        line1Color = "text-amber-500";
+                        line1 = <>High-scoring profile detected — <span className="font-bold text-gray-800 dark:text-foreground">{totalGoals.toFixed(1)} goals avg</span> between both sides</>;
+                      } else if (dw >= 30) {
+                        line1Icon = "⚖";
+                        line1Color = "text-blue-500";
+                        line1 = <>Tight matchup — draw probability at <span className="font-bold text-gray-800 dark:text-foreground">{dw}%</span>, expect a cagey affair</>;
+                      } else if (riskLvl === "low") {
+                        line1 = <>Our model detected a <span className="font-bold text-gray-800 dark:text-foreground">low-risk opportunity</span> in this matchup</>;
+                      } else if (diff >= 15) {
+                        line1 = <><span className="font-bold text-gray-800 dark:text-foreground">{favTeam}</span> holds a statistical advantage at <span className="font-bold text-gray-800 dark:text-foreground">{favPct}%</span></>;
+                      } else {
+                        line1 = <>Both teams evenly matched — <span className="font-bold text-gray-800 dark:text-foreground">value pick</span> identified</>;
+                      }
+
+                      // Line 2: unique per prediction type
+                      let line2Icon = "↗";
+                      let line2: React.ReactNode;
+                      if (pred === "1" || pred === "HOME") {
+                        line2 = <>Home advantage and recent form <span className="font-bold text-gray-800 dark:text-foreground">strongly favor {match.home_team}</span></>;
+                      } else if (pred === "2" || pred === "AWAY") {
+                        line2Icon = "↘";
+                        line2 = <><span className="font-bold text-gray-800 dark:text-foreground">{match.away_team}</span> showing superior away form and defensive solidity</>;
+                      } else if (pred === "X" || pred === "DRAW") {
+                        line2Icon = "↔";
+                        line2 = <>Similar form and stats point to a <span className="font-bold text-gray-800 dark:text-foreground">balanced contest</span></>;
+                      } else if (totalGoals >= 2.5) {
+                        line2 = <>Goal trends and defensive weaknesses <span className="font-bold text-gray-800 dark:text-foreground">support an open game</span></>;
+                      } else {
+                        line2 = <>Key metrics and form data <span className="font-bold text-gray-800 dark:text-foreground">align with this prediction</span></>;
+                      }
+
+                      // Line 3: confidence-based unique text
+                      let line3: React.ReactNode;
+                      if (conf >= 85) {
+                        line3 = <>AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — <span className="font-bold text-gray-800 dark:text-foreground">top pick of the day</span></>;
+                      } else if (conf >= 75) {
+                        line3 = <>AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — strong conviction pick</>;
+                      } else if (conf >= 65) {
+                        line3 = <>AI confidence at <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — solid selection today</>;
+                      } else if (conf >= 50) {
+                        line3 = <>AI sees <span className="font-bold text-gray-800 dark:text-foreground">{conf}% edge</span> — value opportunity spotted</>;
+                      } else {
+                        line3 = <>AI rates this at <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — speculative pick</>;
+                      }
+
                       const unlockPct = Math.min(97, Math.floor(70 + conf * 0.25 + (match.match_id?.charCodeAt(0) ?? 0) % 8));
                       return (
                         <>
                           <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-border/40">
                             <div className="flex items-start gap-2">
-                              <span className="text-emerald-500 mt-0.5">◉</span>
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">Our model detected a <span className="font-bold text-gray-800 dark:text-foreground">{edgeText}</span> in this matchup</p>
+                              <span className={cn(line1Color, "mt-0.5")}>{line1Icon}</span>
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line1}</p>
                             </div>
                             <div className="flex items-start gap-2">
-                              <span className="text-violet-500 mt-0.5">↗</span>
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">Recent form and head-to-head data <span className="font-bold text-gray-800 dark:text-foreground">{formText}</span> this prediction</p>
+                              <span className="text-violet-500 mt-0.5">{line2Icon}</span>
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line2}</p>
                             </div>
                             <div className="flex items-start gap-2">
                               <Sparkles className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — {pickText}</p>
+                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line3}</p>
                             </div>
                           </div>
                           <div className="flex items-center justify-end gap-1.5 pt-1">
