@@ -216,6 +216,7 @@ const App = () => {
                     <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
+                    <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
 
                     {/* Protected */}
                     <Route
