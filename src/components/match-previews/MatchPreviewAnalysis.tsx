@@ -493,6 +493,7 @@ function deriveMatchInsights(pred: any, parsed: ParsedAnalysis, analysis: MatchA
   return insights.slice(0, 5);
 }
 
+const TrendIcon = ({ trend }: { trend: "positive" | "negative" | "neutral" }) => {
   if (trend === "positive") return <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />;
   if (trend === "negative") return <TrendingDown className="h-3.5 w-3.5 text-red-400" />;
   return <Minus className="h-3.5 w-3.5 text-amber-400" />;
