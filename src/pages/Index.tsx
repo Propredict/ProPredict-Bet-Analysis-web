@@ -17,6 +17,7 @@ const BettingTickets = lazy(() => import("@/components/dashboard/BettingTickets"
 const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStandings").then(m => ({ default: m.LeagueStandings })));
 const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
+const DashboardHero = lazy(() => import("@/components/dashboard/DashboardHero").then(m => ({ default: m.DashboardHero })));
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
@@ -96,7 +97,12 @@ const Index = () => {
           </p>
         </div>
 
-        {/* What We Do – Web only */}
+        {/* Dashboard Stats Hero */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardHero />
+        </Suspense>
+
+
         {!isAndroid && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-card border border-border rounded-lg p-4">
