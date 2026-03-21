@@ -58,10 +58,10 @@ const packagesItems = [
 
 const tools = [
   { title: "AI Predictions", url: "/ai-predictions", icon: Brain },
+  { title: "Match Previews", url: "/match-previews", icon: Eye },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
-  { title: "Match Previews", url: "/match-previews", icon: Eye },
 ];
 
 const adminItems = [
