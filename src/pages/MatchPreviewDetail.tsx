@@ -55,15 +55,37 @@ interface AIPick {
   bg: string;
 }
 
+function extractGoalsFromAnalysis(analysis: string | null): { homeGoals: number; awayGoals: number; homeConc: number; awayConc: number } {
+  if (!analysis) return { homeGoals: 0, awayGoals: 0, homeConc: 0, awayConc: 0 };
+  let homeGoals = 0, awayGoals = 0, homeConc = 0, awayConc = 0;
+  const homeAtHome = analysis.match(/at home:.*?avg\s*([\d.]+)\/([\d.]+)/i);
+  if (homeAtHome) { homeGoals = parseFloat(homeAtHome[1]); homeConc = parseFloat(homeAtHome[2]); }
+  const awayFromHome = analysis.match(/away:.*?avg\s*([\d.]+)\/([\d.]+)/i);
+  if (awayFromHome) { awayGoals = parseFloat(awayFromHome[1]); awayConc = parseFloat(awayFromHome[2]); }
+  if (!homeGoals) {
+    const formSection = analysis.match(/FORM.*?(?=⚔️|🏟️|$)/s) || [];
+    const avgMatches = (formSection[0] || "").match(/avg\s*([\d.]+)\/([\d.]+)/g);
+    if (avgMatches) {
+      const m1 = avgMatches[0]?.match(/avg\s*([\d.]+)\/([\d.]+)/);
+      if (m1) { homeGoals = parseFloat(m1[1]); homeConc = parseFloat(m1[2]); }
+      const m2 = avgMatches[1]?.match(/avg\s*([\d.]+)\/([\d.]+)/);
+      if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
+    }
+  }
+  return { homeGoals, awayGoals, homeConc, awayConc };
+}
+
 function deriveAIPicks(pred: any): AIPick[] {
   const allPicks: AIPick[] = [];
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const draw = pred.draw ?? 0;
-  const homeGoals = pred.last_home_goals ?? 0;
-  const awayGoals = pred.last_away_goals ?? 0;
+  const extracted = extractGoalsFromAnalysis(pred.analysis);
+  const homeGoals = pred.last_home_goals ?? extracted.homeGoals;
+  const awayGoals = pred.last_away_goals ?? extracted.awayGoals;
+  const homeConc = extracted.homeConc;
+  const awayConc = extracted.awayConc;
   const totalGoalsAvg = homeGoals + awayGoals;
-  const confidence = pred.confidence ?? 60;
 
   const seed = (pred.match_id || "").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 10;
   const jitter = (base: number) => base + (seed - 5) * 0.5;
@@ -76,55 +98,54 @@ function deriveAIPicks(pred: any): AIPick[] {
     allPicks.push({ emoji, label, confidence: conf, color, bg });
   };
 
-  // 1X2
   pick(`Home Win`, homeWin);
   pick("Draw", draw);
   pick(`Away Win`, awayWin);
-
-  // Double Chance
   pick(`1X (Home/Draw)`, Math.min(95, homeWin + draw * 0.6));
   pick(`X2 (Draw/Away)`, Math.min(95, draw * 0.6 + awayWin));
   pick(`12 (No Draw)`, Math.min(95, homeWin + awayWin * 0.5));
 
-  // Over/Under
   const overBase = 20 + totalGoalsAvg * 12;
   pick("Over 0.5", Math.min(95, 50 + totalGoalsAvg * 15));
   pick("Over 1.5", Math.min(93, 35 + totalGoalsAvg * 13));
   pick("Over 2.5", Math.min(90, overBase));
   pick("Over 3.5", Math.min(85, overBase - 15));
-  pick("Under 0.5", Math.max(30, 50 - totalGoalsAvg * 15));
-  pick("Under 1.5", Math.max(30, 60 - totalGoalsAvg * 12));
-  pick("Under 2.5", Math.max(30, 72 - totalGoalsAvg * 10));
-  pick("Under 3.5", Math.max(35, 82 - totalGoalsAvg * 8));
-  pick("Under 4.5", Math.max(40, 90 - totalGoalsAvg * 6));
+  pick("Under 0.5", Math.max(30, 95 - totalGoalsAvg * 25));
+  pick("Under 1.5", Math.max(30, 85 - totalGoalsAvg * 18));
+  pick("Under 2.5", Math.max(30, 80 - totalGoalsAvg * 14));
+  pick("Under 3.5", Math.max(35, 85 - totalGoalsAvg * 10));
+  pick("Under 4.5", Math.max(40, 92 - totalGoalsAvg * 8));
 
-  // BTTS
   const bttsYesConf = 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
-  const bttsNoConf = 30 + (2.5 - Math.min(homeGoals, awayGoals)) * 15 + (homeGoals < 0.8 || awayGoals < 0.8 ? 15 : 0);
+  const bttsNoConf = homeConc <= 0.8 || awayConc <= 0.8
+    ? 45 + (homeConc <= 0.8 ? 15 : 0) + (awayConc <= 0.8 ? 15 : 0)
+    : 30 + (2.5 - Math.min(homeGoals, awayGoals)) * 15;
   pick("BTTS Yes", bttsYesConf);
   pick("BTTS No", bttsNoConf);
 
-  // Draw No Bet
   pick(`DNB Home`, homeWin + draw * 0.3);
   pick(`DNB Away`, awayWin + draw * 0.3);
-
-  // Clean Sheet
-  pick(`Home CS`, Math.max(30, 65 - awayGoals * 18));
-  pick(`Away CS`, Math.max(30, 65 - homeGoals * 18));
+  pick(`Home CS`, Math.max(30, homeConc > 0 ? 65 - homeConc * 18 : 65 - awayGoals * 18));
+  pick(`Away CS`, Math.max(30, awayConc > 0 ? 65 - awayConc * 18 : 65 - homeGoals * 18));
 
   return allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence).slice(0, 8);
 }
 
 function deriveStatsGrid(pred: any) {
-  const homeGoals = pred.last_home_goals ?? 0;
-  const awayGoals = pred.last_away_goals ?? 0;
+  const extracted = extractGoalsFromAnalysis(pred.analysis);
+  const homeGoals = pred.last_home_goals ?? extracted.homeGoals;
+  const awayGoals = pred.last_away_goals ?? extracted.awayGoals;
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const totalAvg = homeGoals + awayGoals;
   const bttsChance = Math.min(95, 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0));
 
-  // Form indicator
-  const formLabel = homeWin >= 60 ? "Strong" : homeWin >= 45 ? "Good" : homeWin >= 30 ? "Average" : "Weak";
+  const formMatch = pred.analysis?.match(/([WDL]{5,})/);
+  const formStr = formMatch ? formMatch[1] : null;
+  const formWins = formStr ? (formStr.match(/W/g) || []).length : 0;
+  const formLabel = formStr
+    ? (formWins >= 7 ? "Dominant" : formWins >= 5 ? "Strong" : formWins >= 3 ? "Average" : "Weak")
+    : (homeWin >= 60 ? "Strong" : homeWin >= 45 ? "Good" : homeWin >= 30 ? "Average" : "Weak");
 
   return [
     { label: "Win %", value: `${Math.max(homeWin, awayWin)}%`, sub: homeWin > awayWin ? "Home" : "Away" },

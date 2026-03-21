@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, Lightbulb, BarChart3, CheckCircle2, ChevronDown, ChevronUp, Swords, Shield, Flame, TrendingUp, TrendingDown, Minus, Target, Activity } from "lucide-react";
+import { Brain, Lightbulb, BarChart3, CheckCircle2, ChevronDown, ChevronUp, Swords, Shield, Flame, TrendingUp, TrendingDown, Minus, Target, Activity, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,17 +32,204 @@ export interface MatchAnalysis {
   gameType?: { label: string; tags: string[] };
 }
 
-/* ─── Derived helpers ─── */
+/* ─── Parse the AI analysis text for real match-specific data ─── */
 
-function deriveAttackAnalysis(pred: any): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
+interface ParsedAnalysis {
+  homeForm: string | null;
+  awayForm: string | null;
+  homeFormRecord: string | null; // e.g. "7W 1D 2L"
+  awayFormRecord: string | null;
+  homeGoalsScored: number | null;
+  homeGoalsConceded: number | null;
+  awayGoalsScored: number | null;
+  awayGoalsConceded: number | null;
+  homeStreak: string | null;
+  awayStreak: string | null;
+  h2hHome: number | null;
+  h2hDraws: number | null;
+  h2hAway: number | null;
+  h2hAvgGoals: number | null;
+  homeRecord: string | null; // e.g. "13W 1D 2L"
+  awayRecord: string | null;
+  homeSeasonRecord: string | null;
+  awaySeasonRecord: string | null;
+  homeWinRate: string | null;
+  awayWinRate: string | null;
+  homeGD: string | null;
+  awayGD: string | null;
+  homeCleanSheets: number | null;
+  awayCleanSheets: number | null;
+  injuries: string[];
+  verdict: string | null;
+}
+
+function parseAnalysisText(text: string | null): ParsedAnalysis {
+  const result: ParsedAnalysis = {
+    homeForm: null, awayForm: null,
+    homeFormRecord: null, awayFormRecord: null,
+    homeGoalsScored: null, homeGoalsConceded: null,
+    awayGoalsScored: null, awayGoalsConceded: null,
+    homeStreak: null, awayStreak: null,
+    h2hHome: null, h2hDraws: null, h2hAway: null, h2hAvgGoals: null,
+    homeRecord: null, awayRecord: null,
+    homeSeasonRecord: null, awaySeasonRecord: null,
+    homeWinRate: null, awayWinRate: null,
+    homeGD: null, awayGD: null,
+    homeCleanSheets: null, awayCleanSheets: null,
+    injuries: [], verdict: null,
+  };
+
+  if (!text) return result;
+
+  // Extract verdict
+  const verdictMatch = text.match(/VERDICT:\s*(.+?)(?:\.|$)/m);
+  if (verdictMatch) result.verdict = verdictMatch[1].trim();
+
+  // Extract form strings like "WWWWDWWLWL"
+  const formLines = text.match(/•\s*(.+?):\s*([WDL]{3,})\s*\(([^)]+)\)/g);
+  if (formLines) {
+    formLines.forEach((line, idx) => {
+      const m = line.match(/•\s*(.+?):\s*([WDL]{3,})\s*\(([^)]+)\)/);
+      if (!m) return;
+      const formStr = m[2];
+      const record = m[3]; // e.g. "7W 1D 2L"
+
+      // Extract goals info from the same line context
+      const goalsMatch = line.match(/(\d+)\s*goals?\s*scored.*?(\d+)\s*conceded/i);
+      const avgMatch = line.match(/avg\s*([\d.]+)\/([\d.]+)/i);
+
+      if (idx === 0) {
+        result.homeForm = formStr;
+        result.homeFormRecord = record;
+        if (avgMatch) {
+          result.homeGoalsScored = parseFloat(avgMatch[1]);
+          result.homeGoalsConceded = parseFloat(avgMatch[2]);
+        }
+      } else {
+        result.awayForm = formStr;
+        result.awayFormRecord = record;
+        if (avgMatch) {
+          result.awayGoalsScored = parseFloat(avgMatch[1]);
+          result.awayGoalsConceded = parseFloat(avgMatch[2]);
+        }
+      }
+    });
+  }
+
+  // Also try to get goals from the full text around FORM section
+  const formSection = text.match(/FORM.*?(?=⚔️|🏟️|📈|$)/s)?.[0] || "";
+  const teamGoalsMatches = formSection.match(/•\s*(.+?):\s*[WDL]+.*?—\s*(\d+)\s*goals?\s*scored.*?(\d+)\s*conceded.*?avg\s*([\d.]+)\/([\d.]+)/g);
+  if (teamGoalsMatches) {
+    teamGoalsMatches.forEach((line, idx) => {
+      const m = line.match(/avg\s*([\d.]+)\/([\d.]+)/);
+      if (m) {
+        if (idx === 0) {
+          result.homeGoalsScored = parseFloat(m[1]);
+          result.homeGoalsConceded = parseFloat(m[2]);
+        } else {
+          result.awayGoalsScored = parseFloat(m[1]);
+          result.awayGoalsConceded = parseFloat(m[2]);
+        }
+      }
+    });
+  }
+
+  // Extract streaks
+  const streakMatches = text.match(/Current streak:\s*([WDL]\d+)/gi);
+  if (streakMatches) {
+    result.homeStreak = streakMatches[0]?.replace(/Current streak:\s*/i, "") || null;
+    result.awayStreak = streakMatches[1]?.replace(/Current streak:\s*/i, "") || null;
+  }
+
+  // Extract H2H
+  const h2hSection = text.match(/HEAD-TO-HEAD.*?(?=🏟️|📈|$)/s)?.[0] || "";
+  const h2hWinsMatch = h2hSection.match(/(\w+)\s*wins?:\s*(\d+)\s*\|\s*Draws?:\s*(\d+)\s*\|\s*(\w+)\s*wins?:\s*(\d+)/i);
+  if (h2hWinsMatch) {
+    result.h2hHome = parseInt(h2hWinsMatch[2]);
+    result.h2hDraws = parseInt(h2hWinsMatch[3]);
+    result.h2hAway = parseInt(h2hWinsMatch[5]);
+  }
+  const h2hAvgMatch = h2hSection.match(/Avg goals\/match:\s*([\d.]+)/i);
+  if (h2hAvgMatch) result.h2hAvgGoals = parseFloat(h2hAvgMatch[1]);
+
+  // Extract home/away splits
+  const homeAtHome = text.match(/at home:\s*(\d+W\s*\d+D\s*\d+L).*?GF\s*(\d+).*?GA\s*(\d+).*?avg\s*([\d.]+)\/([\d.]+)/i);
+  if (homeAtHome) {
+    result.homeRecord = homeAtHome[1];
+    if (!result.homeGoalsScored) result.homeGoalsScored = parseFloat(homeAtHome[4]);
+    if (!result.homeGoalsConceded) result.homeGoalsConceded = parseFloat(homeAtHome[5]);
+  }
+
+  const awayFromHome = text.match(/away:\s*(\d+W\s*\d+D\s*\d+L).*?GF\s*(\d+).*?GA\s*(\d+).*?avg\s*([\d.]+)\/([\d.]+)/i);
+  if (awayFromHome) {
+    result.awayRecord = awayFromHome[1];
+    if (!result.awayGoalsScored) result.awayGoalsScored = parseFloat(awayFromHome[4]);
+    if (!result.awayGoalsConceded) result.awayGoalsConceded = parseFloat(awayFromHome[5]);
+  }
+
+  // Extract season stats
+  const seasonSection = text.match(/SEASON STATS.*?(?=🛡️|🔥|🚑|$)/s)?.[0] || "";
+  const seasonLines = seasonSection.match(/•\s*(.+?):\s*(\d+W\s*\d+D\s*\d+L)\s*\((\d+%)\s*win rate\).*?GD\s*([+-]?\d+)/gi);
+  if (seasonLines) {
+    seasonLines.forEach((line, idx) => {
+      const m = line.match(/(\d+W\s*\d+D\s*\d+L)\s*\((\d+%)\s*win rate\).*?GD\s*([+-]?\d+)/i);
+      if (m) {
+        if (idx === 0) {
+          result.homeSeasonRecord = m[1];
+          result.homeWinRate = m[2];
+          result.homeGD = m[3];
+        } else {
+          result.awaySeasonRecord = m[1];
+          result.awayWinRate = m[2];
+          result.awayGD = m[3];
+        }
+      }
+    });
+  }
+
+  // Extract clean sheets
+  const csMatch = text.match(/clean sheets/gi);
+  if (csMatch) {
+    const csLines = text.match(/•\s*(.+?):\s*(\d+)\s*clean sheets/gi);
+    if (csLines) {
+      csLines.forEach((line, idx) => {
+        const m = line.match(/(\d+)\s*clean sheets/i);
+        if (m) {
+          if (idx === 0) result.homeCleanSheets = parseInt(m[1]);
+          else result.awayCleanSheets = parseInt(m[1]);
+        }
+      });
+    }
+  }
+
+  // Extract injuries
+  const injurySection = text.match(/INJURIES.*?(?=🎯|$)/s)?.[0] || "";
+  const injuryItems = injurySection.match(/•\s*(.+?):\s*(.+)/g);
+  if (injuryItems) {
+    injuryItems.forEach(line => {
+      const m = line.match(/•\s*(.+?):\s*(.+)/);
+      if (m) {
+        // Deduplicate injury names
+        const players = [...new Set(m[2].split(",").map(s => s.trim()))];
+        result.injuries.push(`${m[1].trim()}: ${players.join(", ")}`);
+      }
+    });
+  }
+
+  return result;
+}
+
+/* ─── Derived helpers using parsed data ─── */
+
+function deriveAttackAnalysis(pred: any, parsed: ParsedAnalysis): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
   if (!pred) return [];
-  const hg = pred.last_home_goals ?? 0;
-  const ag = pred.last_away_goals ?? 0;
   const items: { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] = [];
+  const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
+  const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
 
   items.push({
     label: `${pred.home_team} Attack`,
-    detail: hg >= 2 ? `Averaging ${hg.toFixed(1)} goals — elite offensive output` : hg >= 1.2 ? `${hg.toFixed(1)} goals/game — solid attack` : `Only ${hg.toFixed(1)} goals/game — limited firepower`,
+    detail: hg >= 2 ? `Averaging ${hg.toFixed(1)} goals/game — elite offensive output` : hg >= 1.2 ? `${hg.toFixed(1)} goals/game — solid attacking form` : `Only ${hg.toFixed(1)} goals/game — limited firepower`,
     trend: hg >= 1.5 ? "positive" : hg >= 1 ? "neutral" : "negative",
   });
 
@@ -55,53 +242,86 @@ function deriveAttackAnalysis(pred: any): { label: string; detail: string; trend
   return items;
 }
 
-function deriveDefenseAnalysis(pred: any): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
+function deriveDefenseAnalysis(pred: any, parsed: ParsedAnalysis): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
   if (!pred) return [];
-  const hg = pred.last_home_goals ?? 0;
-  const ag = pred.last_away_goals ?? 0;
   const items: { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] = [];
+  const hConc = parsed.homeGoalsConceded ?? pred.last_away_goals ?? 0;
+  const aConc = parsed.awayGoalsConceded ?? pred.last_home_goals ?? 0;
 
-  // Defense = opponent's goals against them
+  const hCS = parsed.homeCleanSheets;
+  const aCS = parsed.awayCleanSheets;
+
   items.push({
     label: `${pred.home_team} Defense`,
-    detail: ag <= 0.8 ? `Conceding only ${ag.toFixed(1)} — rock-solid at home` : ag <= 1.5 ? `${ag.toFixed(1)} conceded — average defense` : `${ag.toFixed(1)} conceded — vulnerable at back`,
-    trend: ag <= 0.8 ? "positive" : ag <= 1.5 ? "neutral" : "negative",
+    detail: hConc <= 0.8
+      ? `Conceding ${hConc.toFixed(1)}/game${hCS ? ` — ${hCS} clean sheets` : ""} — rock-solid`
+      : hConc <= 1.5
+      ? `${hConc.toFixed(1)} conceded/game${hCS ? ` (${hCS} CS)` : ""} — average defense`
+      : `${hConc.toFixed(1)} conceded/game${hCS ? ` (${hCS} CS)` : ""} — vulnerable`,
+    trend: hConc <= 0.8 ? "positive" : hConc <= 1.5 ? "neutral" : "negative",
   });
 
   items.push({
     label: `${pred.away_team} Defense`,
-    detail: hg <= 0.8 ? `Conceding ${hg.toFixed(1)} away — well organized` : hg <= 1.5 ? `${hg.toFixed(1)} conceded away — can be exposed` : `${hg.toFixed(1)} conceded away — leaky defense`,
-    trend: hg <= 0.8 ? "positive" : hg <= 1.5 ? "neutral" : "negative",
+    detail: aConc <= 0.8
+      ? `Conceding ${aConc.toFixed(1)} away${aCS ? ` — ${aCS} clean sheets` : ""} — well organized`
+      : aConc <= 1.5
+      ? `${aConc.toFixed(1)} conceded away${aCS ? ` (${aCS} CS)` : ""} — can be exposed`
+      : `${aConc.toFixed(1)} conceded away${aCS ? ` (${aCS} CS)` : ""} — leaky defense`,
+    trend: aConc <= 0.8 ? "positive" : aConc <= 1.5 ? "neutral" : "negative",
   });
 
   return items;
 }
 
-function deriveFormAnalysis(pred: any): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
+function deriveFormAnalysis(pred: any, parsed: ParsedAnalysis): { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] {
   if (!pred) return [];
-  const hw = pred.home_win ?? 0;
-  const aw = pred.away_win ?? 0;
   const items: { label: string; detail: string; trend: "positive" | "negative" | "neutral" }[] = [];
 
-  items.push({
-    label: `${pred.home_team} Form`,
-    detail: hw >= 60 ? `${hw}% home win rate — dominant at home` : hw >= 40 ? `${hw}% win rate — competitive form` : `${hw}% win rate — inconsistent`,
-    trend: hw >= 55 ? "positive" : hw >= 35 ? "neutral" : "negative",
-  });
+  const homeFormStr = parsed.homeForm;
+  const awayFormStr = parsed.awayForm;
+  const hw = pred.home_win ?? 0;
+  const aw = pred.away_win ?? 0;
 
-  items.push({
-    label: `${pred.away_team} Form`,
-    detail: aw >= 50 ? `${aw}% away win rate — strong travellers` : aw >= 30 ? `${aw}% away win rate — average on road` : `${aw}% away win rate — struggles away`,
-    trend: aw >= 45 ? "positive" : aw >= 25 ? "neutral" : "negative",
-  });
+  if (homeFormStr) {
+    const record = parsed.homeFormRecord || "";
+    const streak = parsed.homeStreak || "";
+    items.push({
+      label: `${pred.home_team} Form`,
+      detail: `${homeFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      trend: hw >= 55 ? "positive" : hw >= 35 ? "neutral" : "negative",
+    });
+  } else {
+    items.push({
+      label: `${pred.home_team} Form`,
+      detail: hw >= 60 ? `${hw}% home win rate — dominant at home` : hw >= 40 ? `${hw}% win rate — competitive form` : `${hw}% win rate — inconsistent`,
+      trend: hw >= 55 ? "positive" : hw >= 35 ? "neutral" : "negative",
+    });
+  }
+
+  if (awayFormStr) {
+    const record = parsed.awayFormRecord || "";
+    const streak = parsed.awayStreak || "";
+    items.push({
+      label: `${pred.away_team} Form`,
+      detail: `${awayFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      trend: aw >= 45 ? "positive" : aw >= 25 ? "neutral" : "negative",
+    });
+  } else {
+    items.push({
+      label: `${pred.away_team} Form`,
+      detail: aw >= 50 ? `${aw}% away win rate — strong travellers` : aw >= 30 ? `${aw}% away win rate — average on road` : `${aw}% away win rate — struggles away`,
+      trend: aw >= 45 ? "positive" : aw >= 25 ? "neutral" : "negative",
+    });
+  }
 
   return items;
 }
 
-function deriveGoalTrends(pred: any): { label: string; value: string; detail: string }[] {
+function deriveGoalTrends(pred: any, parsed: ParsedAnalysis): { label: string; value: string; detail: string }[] {
   if (!pred) return [];
-  const hg = pred.last_home_goals ?? 0;
-  const ag = pred.last_away_goals ?? 0;
+  const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
+  const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
   const total = hg + ag;
   const btts = Math.min(95, 30 + Math.min(hg, ag) * 20 + (hg >= 1 && ag >= 1 ? 15 : 0));
 
@@ -112,53 +332,79 @@ function deriveGoalTrends(pred: any): { label: string; value: string; detail: st
   ];
 }
 
-function deriveWhyThisPrediction(pred: any): string[] {
+function deriveWhyThisPrediction(pred: any, parsed: ParsedAnalysis): string[] {
   if (!pred) return [];
   const reasons: string[] = [];
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
-  const homeGoals = pred.last_home_goals ?? 0;
-  const awayGoals = pred.last_away_goals ?? 0;
   const confidence = pred.confidence ?? 60;
   const prediction = (pred.prediction || "").toLowerCase();
-  const totalAvg = homeGoals + awayGoals;
+  const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
+  const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
 
   if (prediction === "1" || prediction === "home") {
     reasons.push(`Home probability ${homeWin}% vs away ${awayWin}%`);
-    if (homeGoals >= 1.5) reasons.push(`${pred.home_team} avg ${homeGoals.toFixed(1)} goals at home`);
-    if (awayGoals < 1.2) reasons.push(`${pred.away_team} only ${awayGoals.toFixed(1)} goals away`);
+    if (parsed.homeForm) reasons.push(`Home form: ${parsed.homeForm} (${parsed.homeFormRecord})`);
+    if (parsed.homeRecord) reasons.push(`Home record: ${parsed.homeRecord}`);
+    if (hg >= 1.2) reasons.push(`${pred.home_team} avg ${hg.toFixed(1)} goals at home`);
+    if (parsed.awayRecord) reasons.push(`${pred.away_team} away: ${parsed.awayRecord}`);
   } else if (prediction === "2" || prediction === "away") {
     reasons.push(`Away probability ${awayWin}% outperforms home ${homeWin}%`);
-    if (awayGoals >= 1.5) reasons.push(`${pred.away_team} avg ${awayGoals.toFixed(1)} goals away`);
+    if (parsed.awayForm) reasons.push(`Away form: ${parsed.awayForm} (${parsed.awayFormRecord})`);
+    if (ag >= 1.2) reasons.push(`${pred.away_team} avg ${ag.toFixed(1)} goals away`);
   } else if (prediction.includes("over")) {
-    reasons.push(`Combined avg ${totalAvg.toFixed(1)} goals supports over`);
-    reasons.push(`${pred.home_team}: ${homeGoals.toFixed(1)}, ${pred.away_team}: ${awayGoals.toFixed(1)}`);
+    const total = hg + ag;
+    reasons.push(`Combined avg ${total.toFixed(1)} goals supports over`);
+    reasons.push(`${pred.home_team}: ${hg.toFixed(1)}, ${pred.away_team}: ${ag.toFixed(1)}`);
   } else if (prediction.includes("under")) {
-    reasons.push(`Low combined avg ${totalAvg.toFixed(1)} goals`);
+    const total = hg + ag;
+    reasons.push(`Low combined avg ${total.toFixed(1)} goals`);
     reasons.push(`Limited firepower from both sides`);
   } else {
     reasons.push(`Win probabilities: Home ${homeWin}% | Draw ${pred.draw}% | Away ${awayWin}%`);
   }
 
-  if (pred.key_factors?.length > 0) {
-    pred.key_factors.slice(0, 2).forEach((f: string) => reasons.push(f));
+  // Add H2H info from parsed data
+  if (parsed.h2hHome !== null) {
+    reasons.push(`H2H record: ${parsed.h2hHome}W-${parsed.h2hDraws}D-${parsed.h2hAway}L`);
+  }
+
+  // Add season context
+  if (parsed.homeWinRate && (prediction === "1" || prediction === "home")) {
+    reasons.push(`Season win rate: ${parsed.homeWinRate} (GD: ${parsed.homeGD})`);
   }
 
   reasons.push(`AI confidence: ${confidence}%`);
-  return reasons.slice(0, 5);
+  return reasons.slice(0, 6);
 }
 
-function deriveAIInsight(pred: any): string {
+function deriveAIInsight(pred: any, parsed: ParsedAnalysis): string {
   if (!pred) return "";
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const confidence = pred.confidence ?? 60;
-  const totalGoals = (pred.last_home_goals ?? 0) + (pred.last_away_goals ?? 0);
+  const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
+  const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
+  const totalGoals = hg + ag;
   const diff = Math.abs(homeWin - awayWin);
   const prediction = (pred.prediction || "").toLowerCase();
 
+  // Use parsed data for more specific insights
+  if (parsed.homeForm && parsed.awayForm) {
+    const homeWins = (parsed.homeForm.match(/W/g) || []).length;
+    const awayLosses = (parsed.awayForm.match(/L/g) || []).length;
+    if (homeWins >= 6 && awayLosses >= 5)
+      return `Dominant home form (${homeWins}/10 wins) vs struggling visitors (${awayLosses}/10 losses) — strong value detected`;
+  }
+
+  if (parsed.h2hHome !== null && parsed.h2hAway !== null) {
+    const total = (parsed.h2hHome || 0) + (parsed.h2hDraws || 0) + (parsed.h2hAway || 0);
+    if (parsed.h2hHome >= 4 && total >= 5)
+      return `H2H dominance (${parsed.h2hHome}/${total} wins) reinforces prediction at ${confidence}% confidence`;
+  }
+
   if (prediction.includes("over") && totalGoals >= 3)
-    return `High goal expectancy detected (avg ${totalGoals.toFixed(1)}) — over market strongest`;
+    return `High goal expectancy (avg ${totalGoals.toFixed(1)}) — over market strongest`;
   if (prediction.includes("under") && totalGoals <= 2)
     return `Defensive pattern flagged — under market favored`;
   if (diff >= 30 && confidence >= 80)
@@ -170,6 +416,19 @@ function deriveAIInsight(pred: any): string {
   if (totalGoals <= 1.5)
     return `Tight defensive matchup — low scoring outcome likely`;
   return `Model confidence at ${confidence}% — moderate signal detected`;
+}
+
+/* ─── Season Stats Grid ─── */
+
+function deriveSeasonStats(pred: any, parsed: ParsedAnalysis): { team: string; record: string; winRate: string; gd: string }[] {
+  const stats: { team: string; record: string; winRate: string; gd: string }[] = [];
+  if (parsed.homeSeasonRecord && parsed.homeWinRate) {
+    stats.push({ team: pred.home_team, record: parsed.homeSeasonRecord, winRate: parsed.homeWinRate, gd: parsed.homeGD || "0" });
+  }
+  if (parsed.awaySeasonRecord && parsed.awayWinRate) {
+    stats.push({ team: pred.away_team, record: parsed.awaySeasonRecord, winRate: parsed.awayWinRate, gd: parsed.awayGD || "0" });
+  }
+  return stats;
 }
 
 const TrendIcon = ({ trend }: { trend: "positive" | "negative" | "neutral" }) => {
@@ -196,12 +455,16 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
   if (isLoading) return <AnalysisSkeleton />;
   if (!analysis) return null;
 
-  const whyReasons = deriveWhyThisPrediction(prediction);
-  const attackAnalysis = deriveAttackAnalysis(prediction);
-  const defenseAnalysis = deriveDefenseAnalysis(prediction);
-  const formAnalysis = deriveFormAnalysis(prediction);
-  const goalTrends = deriveGoalTrends(prediction);
-  const aiInsight = deriveAIInsight(prediction);
+  // Parse the rich analysis text for match-specific data
+  const parsed = parseAnalysisText(prediction?.analysis);
+
+  const whyReasons = deriveWhyThisPrediction(prediction, parsed);
+  const attackAnalysis = deriveAttackAnalysis(prediction, parsed);
+  const defenseAnalysis = deriveDefenseAnalysis(prediction, parsed);
+  const formAnalysis = deriveFormAnalysis(prediction, parsed);
+  const goalTrends = deriveGoalTrends(prediction, parsed);
+  const aiInsight = deriveAIInsight(prediction, parsed);
+  const seasonStats = deriveSeasonStats(prediction, parsed);
 
   return (
     <div className="space-y-3">
@@ -275,6 +538,52 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
           </div>
         </div>
       </SectionCard>
+
+      {/* 📈 Season Comparison */}
+      {seasonStats.length > 0 && (
+        <SectionCard
+          icon={<TrendingUp className="h-3.5 w-3.5" />}
+          iconGradient="from-emerald-600 to-teal-600"
+          title="📈 Season Stats"
+        >
+          <div className="space-y-2">
+            {seasonStats.map((s, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-xl p-3 border border-border/20">
+                <span className="text-xs font-bold text-foreground truncate flex-1">{s.team}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant="secondary" className="text-[9px] font-bold">{s.record}</Badge>
+                  <span className={cn(
+                    "text-xs font-black",
+                    parseInt(s.winRate) >= 50 ? "text-emerald-400" : parseInt(s.winRate) >= 30 ? "text-amber-400" : "text-red-400"
+                  )}>{s.winRate}</span>
+                  <span className={cn(
+                    "text-[10px] font-bold",
+                    s.gd.startsWith("+") ? "text-emerald-400" : s.gd.startsWith("-") ? "text-red-400" : "text-muted-foreground"
+                  )}>GD {s.gd}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* 🚑 Injuries */}
+      {parsed.injuries.length > 0 && (
+        <SectionCard
+          icon={<AlertTriangle className="h-3.5 w-3.5" />}
+          iconGradient="from-red-600 to-rose-600"
+          title="🚑 Injuries & Suspensions"
+        >
+          <div className="space-y-1.5">
+            {parsed.injuries.map((injury, idx) => (
+              <div key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <span className="text-red-400 shrink-0">•</span>
+                <span>{injury}</span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
 
       {/* 💡 AI Insight */}
       {aiInsight && (
