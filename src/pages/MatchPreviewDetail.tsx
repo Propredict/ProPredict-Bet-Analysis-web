@@ -64,69 +64,73 @@ function deriveAIPicks(pred: any): AIPick[] {
   const homeGoals = pred.last_home_goals ?? 0;
   const awayGoals = pred.last_away_goals ?? 0;
   const totalGoalsAvg = homeGoals + awayGoals;
+  const confidence = pred.confidence ?? 60;
+
+  // Use match-specific seed for subtle variation
+  const seed = (pred.match_id || "").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 10;
+  const jitter = (base: number) => base + (seed - 5) * 0.5; // ±2.5% variation per match
 
   const pick = (label: string, conf: number) => {
-    conf = Math.max(30, Math.min(95, Math.round(conf)));
+    conf = Math.max(30, Math.min(95, Math.round(jitter(conf))));
     const emoji = conf >= 75 ? "🟢" : conf >= 55 ? "🟡" : "⚠️";
     const color = conf >= 75 ? "text-emerald-600" : conf >= 55 ? "text-amber-600" : "text-red-500";
     allPicks.push({ emoji, label, confidence: conf, color });
   };
 
-  // === 1X2 ===
+  // 1X2
   pick(`Home Win — ${pred.home_team}`, homeWin);
   pick("Draw", draw);
   pick(`Away Win — ${pred.away_team}`, awayWin);
 
-  // === Double Chance ===
-  pick(`1X (${pred.home_team} or Draw)`, homeWin + draw);
-  pick(`X2 (Draw or ${pred.away_team})`, draw + awayWin);
-  pick(`12 (No Draw)`, homeWin + awayWin);
+  // Double Chance
+  pick(`1X (${pred.home_team} or Draw)`, Math.min(95, homeWin + draw * 0.6));
+  pick(`X2 (Draw or ${pred.away_team})`, Math.min(95, draw * 0.6 + awayWin));
+  pick(`12 (No Draw)`, Math.min(95, homeWin + awayWin * 0.5));
 
-  // === Over/Under Goals ===
-  // Over: higher avg goals = higher confidence. Under: lower avg goals = higher confidence.
-  pick("Over 0.5 Goals", 55 + totalGoalsAvg * 15);
-  pick("Under 0.5 Goals", 45 - totalGoalsAvg * 10);
-  pick("Over 1.5 Goals", 40 + totalGoalsAvg * 12);
-  pick("Under 1.5 Goals", 55 - totalGoalsAvg * 10);
-  pick("Over 2.5 Goals", 25 + totalGoalsAvg * 10);
-  pick("Under 2.5 Goals", 65 - totalGoalsAvg * 8);
-  pick("Over 3.5 Goals", 15 + totalGoalsAvg * 8);
-  pick("Under 3.5 Goals", 75 - totalGoalsAvg * 7);
-  pick("Over 4.5 Goals", 8 + totalGoalsAvg * 6);
-  pick("Under 4.5 Goals", 85 - totalGoalsAvg * 6);
+  // Over/Under - logically consistent scaling
+  const overBase = 20 + totalGoalsAvg * 12;
+  pick("Over 0.5 Goals", Math.min(95, 50 + totalGoalsAvg * 15));
+  pick("Over 1.5 Goals", Math.min(93, 35 + totalGoalsAvg * 13));
+  pick("Over 2.5 Goals", Math.min(90, overBase));
+  pick("Over 3.5 Goals", Math.min(85, overBase - 15));
+  pick("Over 4.5 Goals", Math.min(80, overBase - 30));
+  
+  // Under markets scale inversely
+  pick("Under 0.5 Goals", Math.max(30, 50 - totalGoalsAvg * 15));
+  pick("Under 1.5 Goals", Math.max(30, 60 - totalGoalsAvg * 12));
+  pick("Under 2.5 Goals", Math.max(30, 72 - totalGoalsAvg * 10));
+  pick("Under 3.5 Goals", Math.max(35, 82 - totalGoalsAvg * 8));
+  pick("Under 4.5 Goals", Math.max(40, 90 - totalGoalsAvg * 6));
 
-  // === BTTS ===
-  const bttsYesConf = 35 + Math.min(homeGoals, awayGoals) * 18 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
-  const bttsNoConf = 35 + (2.5 - Math.min(homeGoals, awayGoals)) * 15 + (homeGoals < 0.8 || awayGoals < 0.8 ? 15 : 0);
+  // BTTS
+  const bttsYesConf = 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
+  const bttsNoConf = 30 + (2.5 - Math.min(homeGoals, awayGoals)) * 15 + (homeGoals < 0.8 || awayGoals < 0.8 ? 15 : 0);
   pick("BTTS — Yes", bttsYesConf);
   pick("BTTS — No", bttsNoConf);
 
-  // === Draw No Bet ===
+  // Draw No Bet
   pick(`Draw No Bet — ${pred.home_team}`, homeWin + draw * 0.3);
   pick(`Draw No Bet — ${pred.away_team}`, awayWin + draw * 0.3);
 
-  // === Correct Score (top pick from predicted_score) ===
+  // Correct Score
   if (pred.predicted_score) {
-    pick(`Correct Score ${pred.predicted_score}`, pred.confidence * 0.45);
+    pick(`Correct Score ${pred.predicted_score}`, confidence * 0.4);
   }
 
-  // === Half-Time/Full-Time combos ===
-  if (homeWin >= 55) pick(`HT/FT — ${pred.home_team}/${pred.home_team}`, homeWin * 0.7);
-  if (awayWin >= 55) pick(`HT/FT — ${pred.away_team}/${pred.away_team}`, awayWin * 0.7);
-  if (draw >= 30 && homeWin >= 40) pick(`HT/FT — Draw/${pred.home_team}`, draw * 0.5 + homeWin * 0.3);
-  if (draw >= 30 && awayWin >= 40) pick(`HT/FT — Draw/${pred.away_team}`, draw * 0.5 + awayWin * 0.3);
+  // HT/FT
+  if (homeWin >= 55) pick(`HT/FT — ${pred.home_team}/${pred.home_team}`, homeWin * 0.65);
+  if (awayWin >= 55) pick(`HT/FT — ${pred.away_team}/${pred.away_team}`, awayWin * 0.65);
+  if (draw >= 30 && homeWin >= 40) pick(`HT/FT — Draw/${pred.home_team}`, draw * 0.4 + homeWin * 0.3);
 
-  // === Clean Sheet ===
-  const homeCS = Math.max(30, 70 - awayGoals * 20);
-  const awayCS = Math.max(30, 70 - homeGoals * 20);
-  pick(`${pred.home_team} Clean Sheet`, homeCS);
-  pick(`${pred.away_team} Clean Sheet`, awayCS);
+  // Clean Sheet
+  pick(`${pred.home_team} Clean Sheet`, Math.max(30, 65 - awayGoals * 18));
+  pick(`${pred.away_team} Clean Sheet`, Math.max(30, 65 - homeGoals * 18));
 
-  // === Win to Nil ===
-  pick(`${pred.home_team} Win to Nil`, homeWin * 0.6 * (1 - awayGoals * 0.15));
-  pick(`${pred.away_team} Win to Nil`, awayWin * 0.6 * (1 - homeGoals * 0.15));
+  // Win to Nil
+  pick(`${pred.home_team} Win to Nil`, homeWin * 0.55 * Math.max(0.3, 1 - awayGoals * 0.2));
+  pick(`${pred.away_team} Win to Nil`, awayWin * 0.55 * Math.max(0.3, 1 - homeGoals * 0.2));
 
-  // Sort by confidence — AI recommends the best picks first
+  // Filter >75% and sort by confidence
   return allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence);
 }
 
