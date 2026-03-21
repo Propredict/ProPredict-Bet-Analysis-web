@@ -143,12 +143,12 @@ export function TodaysMatches() {
           <div className="p-3 border-t border-border/30 bg-background/50">
             <Button
               variant="ghost"
-              className="w-full bg-primary/10 hover:bg-primary/20 border border-primary/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(15,155,142,0.4)] animate-[pulse_3s_ease-in-out_infinite]"
+              className="w-full bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]"
               onClick={() => navigate("/live-scores")}
             >
-              <Zap className="h-4 w-4 mr-1.5 text-primary" />
-              <span className="text-xs text-primary">Watch live score results</span>
-              <ChevronRight className="h-4 w-4 ml-1 text-primary transition-transform group-hover:translate-x-0.5" />
+              <Zap className="h-4 w-4 mr-1.5 text-violet-400" />
+              <span className="text-xs text-violet-400">Watch live score results</span>
+              <ChevronRight className="h-4 w-4 ml-1 text-violet-400 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </div>
         )}
