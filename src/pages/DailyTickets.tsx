@@ -113,9 +113,7 @@ export default function DailyTickets() {
           />
           </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < dailyTickets.length - 1 && (
-            <div className="col-span-full">
-              <AdSlot />
-            </div>
+              <AdSlot className="col-span-full" />
           )}
         </React.Fragment>
       );

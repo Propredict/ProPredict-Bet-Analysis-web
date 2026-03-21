@@ -226,9 +226,7 @@ export default function PremiumTickets() {
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
           </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTickets.length - 1 && (
-            <div className="col-span-full">
-              <AdSlot />
-            </div>
+              <AdSlot className="col-span-full" />
           )}
         </React.Fragment>;
       })}
