@@ -284,11 +284,12 @@ function deriveFormAnalysis(pred: any, parsed: ParsedAnalysis): { label: string;
   const aw = pred.away_win ?? 0;
 
   if (homeFormStr) {
-    const record = parsed.homeFormRecord || "";
-    const streak = parsed.homeStreak || "";
+    const w = (homeFormStr.match(/W/g) || []).length;
+    const d = (homeFormStr.match(/D/g) || []).length;
+    const l = (homeFormStr.match(/L/g) || []).length;
     items.push({
       label: `${pred.home_team} Form`,
-      detail: `${homeFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      detail: `${w} wins, ${d} draws, ${l} losses in last ${homeFormStr.length} — ${w >= 7 ? "excellent form" : w >= 5 ? "strong form" : w >= 3 ? "mixed form" : "poor form"}`,
       trend: hw >= 55 ? "positive" : hw >= 35 ? "neutral" : "negative",
     });
   } else {
@@ -300,11 +301,12 @@ function deriveFormAnalysis(pred: any, parsed: ParsedAnalysis): { label: string;
   }
 
   if (awayFormStr) {
-    const record = parsed.awayFormRecord || "";
-    const streak = parsed.awayStreak || "";
+    const w = (awayFormStr.match(/W/g) || []).length;
+    const d = (awayFormStr.match(/D/g) || []).length;
+    const l = (awayFormStr.match(/L/g) || []).length;
     items.push({
       label: `${pred.away_team} Form`,
-      detail: `${awayFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      detail: `${w} wins, ${d} draws, ${l} losses in last ${awayFormStr.length} — ${w >= 7 ? "dominant" : w >= 5 ? "solid" : w >= 3 ? "average" : "struggling"}`,
       trend: aw >= 45 ? "positive" : aw >= 25 ? "neutral" : "negative",
     });
   } else {
@@ -341,41 +343,58 @@ function deriveWhyThisPrediction(pred: any, parsed: ParsedAnalysis): string[] {
   const prediction = (pred.prediction || "").toLowerCase();
   const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
   const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
+  const homeTeam = pred.home_team || "Home";
+  const awayTeam = pred.away_team || "Away";
 
   if (prediction === "1" || prediction === "home") {
-    reasons.push(`Home probability ${homeWin}% vs away ${awayWin}%`);
-    if (parsed.homeForm) reasons.push(`Home form: ${parsed.homeForm} (${parsed.homeFormRecord})`);
-    if (parsed.homeRecord) reasons.push(`Home record: ${parsed.homeRecord}`);
-    if (hg >= 1.2) reasons.push(`${pred.home_team} avg ${hg.toFixed(1)} goals at home`);
-    if (parsed.awayRecord) reasons.push(`${pred.away_team} away: ${parsed.awayRecord}`);
+    reasons.push(`${homeTeam} has a ${homeWin}% chance of winning — significantly higher than ${awayTeam}'s ${awayWin}%.`);
+    if (parsed.homeForm) {
+      const w = (parsed.homeForm.match(/W/g) || []).length;
+      reasons.push(`${homeTeam} won ${w} of their last ${parsed.homeForm.length} matches — ${w >= 7 ? "excellent" : w >= 5 ? "strong" : "decent"} recent form.`);
+    }
+    if (parsed.homeRecord) {
+      const rm = parsed.homeRecord.match(/(\d+)W\s*(\d+)D\s*(\d+)L/);
+      if (rm) reasons.push(`At home this season: ${rm[1]} wins, ${rm[2]} draws, ${rm[3]} losses.`);
+    }
+    if (hg >= 1.2) reasons.push(`${homeTeam} scores an average of ${hg.toFixed(1)} goals per home game.`);
+    if (parsed.awayRecord) {
+      const rm = parsed.awayRecord.match(/(\d+)W\s*(\d+)D\s*(\d+)L/);
+      if (rm) reasons.push(`${awayTeam} struggles away: only ${rm[1]} wins in ${parseInt(rm[1]) + parseInt(rm[2]) + parseInt(rm[3])} away games.`);
+    }
   } else if (prediction === "2" || prediction === "away") {
-    reasons.push(`Away probability ${awayWin}% outperforms home ${homeWin}%`);
-    if (parsed.awayForm) reasons.push(`Away form: ${parsed.awayForm} (${parsed.awayFormRecord})`);
-    if (ag >= 1.2) reasons.push(`${pred.away_team} avg ${ag.toFixed(1)} goals away`);
+    reasons.push(`${awayTeam} is favored at ${awayWin}% despite playing away — ${homeTeam} sits at just ${homeWin}%.`);
+    if (parsed.awayForm) {
+      const w = (parsed.awayForm.match(/W/g) || []).length;
+      reasons.push(`${awayTeam} won ${w} of their last ${parsed.awayForm.length} matches — ${w >= 7 ? "dominant" : w >= 5 ? "solid" : "decent"} form.`);
+    }
+    if (ag >= 1.2) reasons.push(`${awayTeam} averages ${ag.toFixed(1)} goals per away game this season.`);
   } else if (prediction.includes("over")) {
     const total = hg + ag;
-    reasons.push(`Combined avg ${total.toFixed(1)} goals supports over`);
-    reasons.push(`${pred.home_team}: ${hg.toFixed(1)}, ${pred.away_team}: ${ag.toFixed(1)}`);
+    reasons.push(`Combined average of ${total.toFixed(1)} goals per match supports the over market.`);
+    reasons.push(`${homeTeam} averages ${hg.toFixed(1)} and ${awayTeam} averages ${ag.toFixed(1)} goals per game.`);
   } else if (prediction.includes("under")) {
     const total = hg + ag;
-    reasons.push(`Low combined avg ${total.toFixed(1)} goals`);
-    reasons.push(`Limited firepower from both sides`);
+    reasons.push(`Low combined average of ${total.toFixed(1)} goals per match favors the under.`);
+    reasons.push(`Both teams tend to play tight, low-scoring games.`);
   } else {
-    reasons.push(`Win probabilities: Home ${homeWin}% | Draw ${pred.draw}% | Away ${awayWin}%`);
+    reasons.push(`Probabilities are close: ${homeTeam} ${homeWin}%, Draw ${pred.draw}%, ${awayTeam} ${awayWin}%.`);
   }
 
-  // Add H2H info from parsed data
-  if (parsed.h2hHome !== null) {
-    reasons.push(`H2H record: ${parsed.h2hHome}W-${parsed.h2hDraws}D-${parsed.h2hAway}L`);
+  // H2H in readable format
+  if (parsed.h2hHome !== null && parsed.h2hAway !== null) {
+    const total = (parsed.h2hHome || 0) + (parsed.h2hDraws || 0) + (parsed.h2hAway || 0);
+    if (total > 0) {
+      reasons.push(`In the last ${total} head-to-head meetings: ${homeTeam} won ${parsed.h2hHome}, drawn ${parsed.h2hDraws}, ${awayTeam} won ${parsed.h2hAway}.`);
+    }
   }
 
-  // Add season context
+  // Season context in readable format
   if (parsed.homeWinRate && (prediction === "1" || prediction === "home")) {
-    reasons.push(`Season win rate: ${parsed.homeWinRate} (GD: ${parsed.homeGD})`);
+    reasons.push(`${homeTeam}'s overall season win rate is ${parsed.homeWinRate} with a goal difference of ${parsed.homeGD}.`);
   }
 
-  reasons.push(`AI confidence: ${confidence}%`);
-  return reasons.slice(0, 6);
+  reasons.push(`AI model confidence: ${confidence}% — ${confidence >= 80 ? "very high conviction" : confidence >= 65 ? "strong signal" : "moderate signal"}.`);
+  return reasons.slice(0, 5);
 }
 
 function deriveAIInsight(pred: any, parsed: ParsedAnalysis): string {
@@ -446,7 +465,8 @@ function deriveMatchInsights(pred: any, parsed: ParsedAnalysis, analysis: MatchA
   // Home form insight
   if (parsed.homeForm) {
     const homeWins = (parsed.homeForm.match(/W/g) || []).length;
-    insights.push(`${homeTeam} has won ${homeWins} of their last ${parsed.homeForm.length} home matches.`);
+    const total = parsed.homeForm.length;
+    insights.push(`${homeTeam} has won ${homeWins} of their last ${total} home matches — ${homeWins >= 7 ? "outstanding" : homeWins >= 5 ? "strong" : "mixed"} form.`);
   } else if (hw >= 55) {
     insights.push(`${homeTeam} shows strong home form with ${hw}% win probability.`);
   }
@@ -595,22 +615,26 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
           title="📈 Season Stats"
         >
           <div className="space-y-2">
-            {seasonStats.map((s, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-xl p-3 border border-border/20">
-                <span className="text-xs font-bold text-foreground truncate flex-1">{s.team}</span>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant="secondary" className="text-[9px] font-bold">{s.record}</Badge>
-                  <span className={cn(
-                    "text-xs font-black",
-                    parseInt(s.winRate) >= 50 ? "text-emerald-400" : parseInt(s.winRate) >= 30 ? "text-amber-400" : "text-red-400"
-                  )}>{s.winRate}</span>
-                  <span className={cn(
-                    "text-[10px] font-bold",
-                    s.gd.startsWith("+") ? "text-emerald-400" : s.gd.startsWith("-") ? "text-red-400" : "text-muted-foreground"
-                  )}>GD {s.gd}</span>
+            {seasonStats.map((s, idx) => {
+              const rm = s.record.match(/(\d+)W\s*(\d+)D\s*(\d+)L/);
+              const readableRecord = rm ? `${rm[1]}W ${rm[2]}D ${rm[3]}L` : s.record;
+              return (
+                <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-xl p-3 border border-border/20">
+                  <span className="text-xs font-bold text-foreground truncate flex-1">{s.team}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Badge variant="secondary" className="text-[9px] font-bold">{readableRecord}</Badge>
+                    <span className={cn(
+                      "text-xs font-black",
+                      parseInt(s.winRate) >= 50 ? "text-emerald-400" : parseInt(s.winRate) >= 30 ? "text-amber-400" : "text-red-400"
+                    )}>{s.winRate}</span>
+                    <span className={cn(
+                      "text-[10px] font-bold",
+                      s.gd.startsWith("+") ? "text-emerald-400" : s.gd.startsWith("-") ? "text-red-400" : "text-muted-foreground"
+                    )}>GD {s.gd}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </SectionCard>
       )}
