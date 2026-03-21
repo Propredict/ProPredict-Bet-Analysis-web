@@ -17,41 +17,61 @@ import AdSlot from "@/components/ads/AdSlot";
 const PRO_PREVIEW_LIMIT = 5;
 const MAX_MATCHES = 30;
 
-// Quality leagues filter — exact match on DB league names
-const QUALITY_LEAGUES = [
-  // Priority 5
-  "Premier League",
-  "La Liga",
-  "Bundesliga",
-  "Serie A",
-  "Ligue 1",
-  // Additional
-  "Eredivisie",
-  "Primeira Liga",
-  "Challenger Pro League",
-  "Championship",
-  "Super Lig",
-  // Secondary
-  "2. Bundesliga",
-  "Serie B",
-  "Ligue 2",
-  "Segunda División",
-  "Liga Profesional Argentina",
-  "Ekstraklasa",
-  "Eliteserien",
-  "Premiership",
-  "Eerste Divisie",
-  "Major League Soccer",
-  "Liga MX",
-  "J1 League",
-  "K League 1",
-];
+// Quality leagues with priority order (lower = higher priority)
+const LEAGUE_PRIORITY: Record<string, number> = {
+  // England / UK — highest priority
+  "Premier League": 1,
+  "Championship": 2,
+  "League One": 3,
+  "League Two": 4,
+  "National League": 5,
+  "FA WSL": 6,
+  // Germany
+  "Bundesliga": 10,
+  "2. Bundesliga": 11,
+  // Spain
+  "La Liga": 15,
+  "Segunda División": 16,
+  // Italy
+  "Serie A": 20,
+  "Serie B": 21,
+  // France
+  "Ligue 1": 25,
+  "Ligue 2": 26,
+  // Netherlands
+  "Eredivisie": 30,
+  "Eerste Divisie": 31,
+  // Portugal
+  "Primeira Liga": 35,
+  // Belgium
+  "Challenger Pro League": 40,
+  // Scotland
+  "Premiership": 45,
+  // Turkey
+  "Super Lig": 50,
+  // Poland
+  "Ekstraklasa": 55,
+  // Norway
+  "Eliteserien": 60,
+  // Argentina
+  "Liga Profesional Argentina": 65,
+  // Mexico
+  "Liga MX": 70,
+};
 
-const QUALITY_SET = new Set(QUALITY_LEAGUES.map((l) => l.toLowerCase()));
+const QUALITY_SET = new Set(Object.keys(LEAGUE_PRIORITY).map((l) => l.toLowerCase()));
 
 function isQualityLeague(league: string | null): boolean {
   if (!league) return false;
   return QUALITY_SET.has(league.toLowerCase());
+}
+
+function getLeaguePriority(league: string | null): number {
+  if (!league) return 999;
+  const entry = Object.entries(LEAGUE_PRIORITY).find(
+    ([key]) => key.toLowerCase() === league.toLowerCase()
+  );
+  return entry ? entry[1] : 999;
 }
 
 function getRiskColor(confidence: number | null) {
