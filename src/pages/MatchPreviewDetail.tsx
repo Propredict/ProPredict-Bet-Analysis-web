@@ -337,7 +337,34 @@ export default function MatchPreviewDetail() {
               </div>
             )}
 
-            {/* LOCKED: CTA */}
+            {/* 🎯 AI Picks */}
+            {unlocked && (
+              <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border/40 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b bg-gray-50 dark:bg-muted/20 border-gray-100 dark:border-border/30">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
+                    <Target className="h-3.5 w-3.5" />
+                  </div>
+                  <h3 className="font-bold text-sm text-gray-800 dark:text-foreground">🎯 AI Picks</h3>
+                  <Badge className="ml-auto bg-emerald-50 dark:bg-primary/20 text-emerald-700 dark:text-primary border-emerald-200 dark:border-primary/30 text-[9px]">
+                    Multi-Market
+                  </Badge>
+                </div>
+                <div className="p-3 space-y-2">
+                  {deriveAIPicks(prediction).map((pick, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border/20"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-base">{pick.emoji}</span>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-foreground">{pick.label}</span>
+                      </div>
+                      <span className={cn("text-sm font-black", pick.color)}>{pick.confidence}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {!unlocked && (
               <div className="space-y-3 pt-1">
                 {canGenerate ? (
