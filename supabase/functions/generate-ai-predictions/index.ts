@@ -785,6 +785,22 @@ function generateAnalysisV2(params: {
     return `${awayTeamName} enters with stronger recent indicators and can be the favorite even away from home. The model leans toward ${awayTeamName} (${awayWin}% vs ${homeWin}%) with a controlled draw probability (${draw}%).`;
   }
 
+  if (prediction === "Over 2.5") {
+    return `Both attacks are productive enough to expect goals. The model projects Over 2.5 goals as the strongest pick here, with ${homeTeamName} and ${awayTeamName} combining for a high-scoring affair.`;
+  }
+
+  if (prediction === "Under 2.5") {
+    return `Defensive solidity and low conversion rates point to a tight game. Under 2.5 goals is the model's top pick, with both ${homeTeamName} and ${awayTeamName} struggling to break through consistently.`;
+  }
+
+  if (prediction === "BTTS Yes") {
+    return `Both ${homeTeamName} and ${awayTeamName} have been finding the net regularly. BTTS Yes stands out as the best-value pick, reflecting both teams' attacking capabilities.`;
+  }
+
+  if (prediction === "BTTS No") {
+    return `At least one side is expected to keep a clean sheet. BTTS No emerges as the strongest pick, driven by defensive form from ${homeTeamName} or ${awayTeamName}.`;
+  }
+
   const why = Math.abs(formDiff) < 10 && Math.abs(qualityDiff) < 10
     ? `both teams show similar form and quality`
     : `neither side has a clear enough advantage`;
