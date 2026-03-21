@@ -55,6 +55,7 @@ const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
 const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
+const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
