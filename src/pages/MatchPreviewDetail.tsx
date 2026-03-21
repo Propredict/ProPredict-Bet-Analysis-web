@@ -163,8 +163,8 @@ function resolveGoalMetrics(pred: any) {
   };
 }
 
-function makePick(label: string, confidence: number, seed: number): AIPick {
-  const conf = clamp(Math.round(confidence + (seed - 5) * 0.5), 30, 95);
+function makePick(label: string, confidence: number, _seed: number): AIPick {
+  const conf = clamp(Math.round(confidence), 30, 95);
   const emoji = conf >= 80 ? "🔥" : conf >= 75 ? "🟢" : conf >= 60 ? "🟡" : "⚠️";
   const color = conf >= 75 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400";
   const bg =
@@ -181,76 +181,82 @@ function deriveAIPicks(pred: any): AIPick[] {
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const draw = pred.draw ?? 0;
-  const { homeGoals, awayGoals, homeConc, awayConc, totalGoalsAvg } = resolveGoalMetrics(pred);
+  const confidence = pred.confidence ?? 60;
+  const { homeGoals, awayGoals, totalGoalsAvg } = resolveGoalMetrics(pred);
 
-  // Use predicted_score as primary source for goals markets
   const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
   const predictedTotal = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : null;
-  // If we have a predicted score, use it; otherwise fall back to goal averages
-  const goalsRef = predictedTotal !== null ? predictedTotal : totalGoalsAvg;
+  const predictedHome = scoreParts ? parseInt(scoreParts[1]) : 0;
+  const predictedAway = scoreParts ? parseInt(scoreParts[2]) : 0;
+  const predictedBothScored = scoreParts ? predictedHome > 0 && predictedAway > 0 : null;
 
   const seed = (pred.match_id || "")
     .split("")
     .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
 
-  // Over/Under derived from predicted score first
-  const over25Raw = predictedTotal !== null
-    ? (predictedTotal >= 3 ? clamp(70 + (predictedTotal - 3) * 8, 72, 92) : clamp(25 + predictedTotal * 10, 25, 48))
-    : clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
-  const under25Raw = clamp(100 - over25Raw, 30, 92);
-  const goalsPick =
-    over25Raw >= under25Raw
-      ? makePick("Over 2.5", over25Raw, seed)
-      : makePick("Under 2.5", under25Raw, seed);
+  // Over/Under — strong confidence aligned with predicted score
+  let goalsPick: AIPick;
+  if (predictedTotal !== null) {
+    if (predictedTotal >= 3) {
+      goalsPick = makePick("Over 2.5", clamp(78 + (predictedTotal - 3) * 5 + seed * 0.3, 78, 92), seed);
+    } else {
+      // Under 2.5 should be HIGH confidence when score is 1-0, 0-0, etc.
+      goalsPick = makePick("Under 2.5", clamp(82 + (2 - predictedTotal) * 4 + seed * 0.3, 80, 92), seed);
+    }
+  } else {
+    const isOver = totalGoalsAvg >= 2.5;
+    goalsPick = isOver
+      ? makePick("Over 2.5", clamp(75 + totalGoalsAvg * 3, 76, 90), seed)
+      : makePick("Under 2.5", clamp(75 + (3 - totalGoalsAvg) * 4, 76, 90), seed);
+  }
 
-  // BTTS also uses predicted score when available
-  const predictedBothScored = scoreParts ? parseInt(scoreParts[1]) > 0 && parseInt(scoreParts[2]) > 0 : null;
-  const bttsYesRaw = predictedBothScored !== null
-    ? (predictedBothScored ? clamp(68 + seed, 68, 85) : clamp(30 + seed, 28, 42))
-    : clamp(32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6), 30, 90);
-  const bttsNoRaw = clamp(100 - bttsYesRaw, 30, 90);
-  const bttsPick =
-    bttsYesRaw >= bttsNoRaw
-      ? makePick("BTTS Yes", bttsYesRaw, seed)
-      : makePick("BTTS No", bttsNoRaw, seed);
+  // BTTS — strong confidence aligned with predicted score
+  let bttsPick: AIPick;
+  if (predictedBothScored !== null) {
+    bttsPick = predictedBothScored
+      ? makePick("BTTS Yes", clamp(78 + seed * 0.5, 78, 88), seed)
+      : makePick("BTTS No", clamp(82 + seed * 0.3, 80, 90), seed);
+  } else {
+    const bothScore = homeGoals >= 1 && awayGoals >= 1;
+    bttsPick = bothScore
+      ? makePick("BTTS Yes", clamp(76 + Math.min(homeGoals, awayGoals) * 3, 76, 88), seed)
+      : makePick("BTTS No", clamp(76 + (1.5 - Math.min(homeGoals, awayGoals)) * 5, 76, 88), seed);
+  }
+
+  // 1X2 picks — boost the strong side to 75+
+  const mainPrediction = (pred.prediction || "").toLowerCase();
+  const homePickConf = mainPrediction === "1" || mainPrediction === "home" ? clamp(Math.max(homeWin, confidence * 0.85), 76, 92) : homeWin;
+  const awayPickConf = mainPrediction === "2" || mainPrediction === "away" ? clamp(Math.max(awayWin, confidence * 0.85), 76, 92) : awayWin;
+  const drawPickConf = mainPrediction === "x" || mainPrediction === "draw" ? clamp(Math.max(draw, confidence * 0.8), 75, 88) : draw;
+
+  // Double chance — always strong
+  const dc1x = clamp(homePickConf + draw * 0.6, 78, 95);
+  const dcx2 = clamp(awayPickConf + draw * 0.6, 78, 95);
+  const dnbConf = clamp(Math.max(homePickConf, awayPickConf) + draw * 0.3, 76, 92);
 
   const candidatePicks: AIPick[] = [
-    makePick("Home Win", homeWin, seed),
-    makePick("Draw", draw, seed),
-    makePick("Away Win", awayWin, seed),
-    makePick("1X (Home/Draw)", clamp(homeWin + draw * 0.65, 35, 95), seed),
-    makePick("X2 (Draw/Away)", clamp(awayWin + draw * 0.65, 35, 95), seed),
-    makePick(homeWin >= awayWin ? "DNB Home" : "DNB Away", clamp(Math.max(homeWin, awayWin) + draw * 0.35, 35, 92), seed),
+    makePick("Home Win", homePickConf, seed),
+    makePick("Draw", drawPickConf, seed),
+    makePick("Away Win", awayPickConf, seed),
+    makePick("1X (Home/Draw)", dc1x, seed),
+    makePick("X2 (Draw/Away)", dcx2, seed),
+    makePick(homeWin >= awayWin ? "DNB Home" : "DNB Away", dnbConf, seed),
     goalsPick,
     bttsPick,
   ];
 
-  const highConfidence = candidatePicks
+  // Only show picks with 75%+ confidence (green), sorted by confidence
+  const finalPicks = candidatePicks
     .filter((pick) => pick.confidence >= 75)
-    .sort((a, b) => b.confidence - a.confidence);
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 6);
 
-  const finalPicks = [...highConfidence];
-  const included = new Set(finalPicks.map((pick) => pick.label));
+  // Ensure goals & btts picks are always included
+  const included = new Set(finalPicks.map(p => p.label));
+  if (!included.has(goalsPick.label)) finalPicks.push(goalsPick);
+  if (!included.has(bttsPick.label)) finalPicks.push(bttsPick);
 
-  for (const mandatoryPick of [goalsPick, bttsPick]) {
-    if (!included.has(mandatoryPick.label)) {
-      finalPicks.push(mandatoryPick);
-      included.add(mandatoryPick.label);
-    }
-  }
-
-  if (finalPicks.length < 5) {
-    const fallback = candidatePicks
-      .filter((pick) => !included.has(pick.label))
-      .sort((a, b) => b.confidence - a.confidence);
-
-    for (const pick of fallback) {
-      finalPicks.push(pick);
-      if (finalPicks.length >= 5) break;
-    }
-  }
-
-  return finalPicks.slice(0, 8);
+  return finalPicks.slice(0, 7);
 }
 
 function deriveStatsGrid(pred: any) {
