@@ -288,55 +288,53 @@ export default function MatchPreviews() {
                       isExpanded && "border-violet-500/40 shadow-lg shadow-violet-500/10"
                     )}
                   >
-                    <div className="p-4 space-y-4">
-                      {/* League & Time */}
-                      <div className="flex items-center justify-between">
+                    <div className="p-4 space-y-3">
+                      {/* League header */}
+                      <div className="text-center">
                         <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">
                           {match.league || "Unknown"}
                         </span>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-muted-foreground/60" />
-                          <span className="text-[11px] font-medium text-muted-foreground">
-                            {match.match_time || "TBD"}
-                          </span>
-                        </div>
                       </div>
 
-                      {/* Teams with logos */}
-                      <div className="flex items-center justify-between gap-3">
-                        {/* Home */}
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-bold text-violet-300">
+                      {/* Match announcement layout: Home - Info - Away */}
+                      <div className="flex items-center justify-between gap-2">
+                        {/* Home team */}
+                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
+                            <span className="text-xs font-bold text-violet-300">
                               {getTeamInitials(match.home_team)}
                             </span>
                           </div>
-                          <span className="text-sm font-semibold truncate">{match.home_team}</span>
+                          <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.home_team}</span>
                         </div>
 
-                        {/* VS */}
-                        <span className="text-[10px] font-bold text-muted-foreground/40 flex-shrink-0 px-1">VS</span>
-
-                        {/* Away */}
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
-                          <span className="text-sm font-semibold truncate text-right">{match.away_team}</span>
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-bold text-primary/70">
-                              {getTeamInitials(match.away_team)}
+                        {/* Center: date, time, VS */}
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0 px-2">
+                          <span className="text-[10px] text-muted-foreground font-medium">
+                            {match.match_date || "Today"}
+                          </span>
+                          <span className="text-lg font-black text-foreground tracking-tight">VS</span>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-muted-foreground/60" />
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              {match.match_time || "TBD"}
                             </span>
                           </div>
                         </div>
+
+                        {/* Away team */}
+                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                            <span className="text-xs font-bold text-primary/70">
+                              {getTeamInitials(match.away_team)}
+                            </span>
+                          </div>
+                          <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.away_team}</span>
+                        </div>
                       </div>
 
-                      {/* Main Prediction — center focus */}
-                      <div className="text-center py-2">
-                        <span className="text-lg font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                          {predLabel}
-                        </span>
-                      </div>
-
-                      {/* Confidence & Risk — simple text row */}
-                      <div className="flex items-center justify-center gap-4 text-xs">
+                      {/* Confidence & Risk row */}
+                      <div className="flex items-center justify-center gap-4 text-xs pt-1">
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="h-3 w-3 text-primary" />
                           <span className="text-muted-foreground">Confidence</span>
@@ -348,11 +346,6 @@ export default function MatchPreviews() {
                           <span className={cn("font-medium", risk.color)}>{risk.label}</span>
                         </div>
                       </div>
-
-                      {/* One-line insight */}
-                      <p className="text-[11px] text-center text-muted-foreground/70 italic leading-relaxed">
-                        "{insight}"
-                      </p>
 
                       {/* CTA Button */}
                       <Button
