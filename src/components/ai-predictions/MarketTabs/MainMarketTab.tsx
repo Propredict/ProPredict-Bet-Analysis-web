@@ -9,22 +9,22 @@ import {
   calculateGoalMarketProbs,
 } from "../utils/marketDerivation";
 import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame } from "lucide-react";
+
+type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
 /** Determine the best pick across all markets with an icon, using Poisson data */
-function getBestPickWithIcon(prediction: AIPrediction) {
+function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
   const probs = calculateGoalMarketProbs(prediction);
 
-  // Normalize 1X2 to 2-way equivalent for fair comparison
   const norm1 = Math.round(hw * (100 / (hw + Math.max(aw, d))));
   const norm2 = Math.round(aw * (100 / (aw + Math.max(hw, d))));
   const normX = Math.round(d * (100 / (d + Math.max(hw, aw))));
 
-  type Pick = { label: string; conf: number; icon: React.ReactNode };
-  const candidates: Pick[] = [
+  const candidates: PickCandidate[] = [
     { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
     { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
     { label: "Draw", conf: normX, icon: <Target className="w-3.5 h-3.5 text-blue-400" /> },
@@ -35,7 +35,14 @@ function getBestPickWithIcon(prediction: AIPrediction) {
   ];
 
   candidates.sort((a, b) => b.conf - a.conf);
-  return candidates[0];
+  return candidates;
+}
+
+/** Detect Value Bet: best pick ≥72% AND edge over 2nd best ≥12% */
+export function isValueBet(prediction: AIPrediction): boolean {
+  const c = getBestPickCandidates(prediction);
+  if (c.length < 2) return false;
+  return c[0].conf >= 72 && (c[0].conf - c[1].conf) >= 12;
 }
 
 interface Props {
