@@ -105,8 +105,7 @@ export function DashboardAIPredictions() {
       {predictions.length > 0 && (
         <div className="flex justify-center">
           <Button
-            variant="default"
-            className="px-8 group"
+            className="px-8 group bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white border-0"
             onClick={() => navigate("/ai-predictions")}
           >
             <span>See all AI Predictions</span>
