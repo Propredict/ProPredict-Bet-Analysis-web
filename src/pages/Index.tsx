@@ -100,43 +100,6 @@ const Index = () => {
 
 
 
-
-        {!isAndroid && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">🔹 AI Match Analysis</h3>
-              <p className="text-[11px] text-muted-foreground">We apply machine learning algorithms to evaluate match performance metrics and generate structured probability insights.</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">🔹 Statistical Forecasting</h3>
-              <p className="text-[11px] text-muted-foreground">Our models use historical data and regression techniques to estimate potential match outcomes based on measurable indicators.</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">🔹 Performance Trend Tracking</h3>
-              <p className="text-[11px] text-muted-foreground">Users can review team trends, recent form patterns, and long-term performance indicators.</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-1">🔹 Data Transparency</h3>
-              <p className="text-[11px] text-muted-foreground">We provide analytical insights based on measurable statistics — not subjective advice.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Learn More CTA – Web only */}
-        {!isAndroid && (
-          <section className="bg-card border border-border rounded-xl p-5 md:p-6 text-center">
-            <p className="text-[11px] md:text-xs text-muted-foreground mb-3">
-              👉 Read more about our methodology and mission
-            </p>
-            <Link
-              to="/about-us"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/25 transition-colors"
-            >
-              Learn More About ProPredict
-            </Link>
-          </section>
-        )}
-
         {/* Social Proof Section */}
         <Suspense fallback={<LazyFallback />}>
           <DashboardSocialProof />
