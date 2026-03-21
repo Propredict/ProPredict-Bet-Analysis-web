@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Eye, Calendar, Trophy, Loader2, RefreshCw, Lock } from "lucide-react";
+import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useFixtures, type Match } from "@/hooks/useFixtures";
+import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { MatchPreviewSelector } from "@/components/match-previews/MatchPreviewSelector";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
@@ -16,71 +15,109 @@ import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
 const PRO_PREVIEW_LIMIT = 5;
+const MAX_MATCHES = 30;
+
+// Quality leagues filter
+const PRIORITY_LEAGUES = [
+  "premier league",
+  "la liga",
+  "bundesliga",
+  "serie a",
+  "ligue 1",
+];
+
+const ADDITIONAL_LEAGUES = [
+  "eredivisie",
+  "primeira liga",
+  "jupiler pro league",
+  "süper lig",
+  "super lig",
+  "championship",
+  "liga portugal",
+  "belgian pro league",
+  "turkish süper lig",
+];
+
+const ALL_QUALITY_LEAGUES = [...PRIORITY_LEAGUES, ...ADDITIONAL_LEAGUES];
+
+function isQualityLeague(league: string | null): boolean {
+  if (!league) return false;
+  const lower = league.toLowerCase();
+  return ALL_QUALITY_LEAGUES.some((q) => lower.includes(q) || q.includes(lower));
+}
+
+function getRiskColor(confidence: number | null) {
+  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted/20" };
+  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" };
+  if (confidence >= 65) return { label: "Medium", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30" };
+  return { label: "High Risk", color: "text-red-400", bg: "bg-red-500/10 border-red-500/30" };
+}
+
+function getPredictionLabel(prediction: string | null): string {
+  if (!prediction) return "—";
+  const p = prediction.toLowerCase().trim();
+  if (p === "1" || p === "home") return "Home Win";
+  if (p === "x" || p === "draw") return "Draw";
+  if (p === "2" || p === "away") return "Away Win";
+  if (p.includes("over")) return "Over 2.5";
+  if (p.includes("under")) return "Under 2.5";
+  if (p.includes("btts")) return "BTTS";
+  return prediction;
+}
 
 export default function MatchPreviews() {
-  // Fetch today's matches only
-  const { matches: todayMatches, isLoading, error, refetch } = useFixtures("today");
-  
+  const { predictions, loading, refetch } = useAIPredictions("today");
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [previewCount, setPreviewCount] = useState(0);
+  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
   const { maybeShowInterstitial } = useAndroidInterstitial();
 
-  // Filter out finished matches
-  const allMatches = todayMatches.filter((m) => m.status !== "finished");
-  
-  const todayCount = allMatches.length;
-
-  // Access rules: Free = 0, Pro (basic) = 5, Premium = unlimited
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
-  
-  // Calculate remaining previews and access
-  const getPreviewLimit = () => {
-    if (isPremiumUser) return Infinity;
-    if (isProUser) return PRO_PREVIEW_LIMIT;
-    return 0; // Free users
-  };
-  
-  const previewLimit = getPreviewLimit();
-  const remainingPreviews = Math.max(0, previewLimit - previewCount);
+  const remainingPreviews = Math.max(0, (isPremiumUser ? Infinity : isProUser ? PRO_PREVIEW_LIMIT : 0) - previewCount);
   const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
 
-  const handleGenerate = async () => {
-    if (!selectedMatch || !canGenerate) return;
-    
-    // Android only: show interstitial on match preview generation (if not already shown this session)
+  // Filter quality leagues, sort by confidence, limit to 30
+  const topMatches = useMemo(() => {
+    return predictions
+      .filter((p) => isQualityLeague(p.league))
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
+      .slice(0, MAX_MATCHES);
+  }, [predictions]);
+
+  const handleUnlockPreview = async (prediction: typeof topMatches[0]) => {
+    if (!canGenerate) return;
     maybeShowInterstitial("match_preview");
-    
-    await generate(selectedMatch);
-    
-    // Only track count for Pro users (Premium is unlimited, Free can't generate)
+
+    const mockMatch = {
+      id: prediction.match_id,
+      homeTeam: prediction.home_team,
+      awayTeam: prediction.away_team,
+      startTime: prediction.match_time || "",
+      status: "upcoming" as const,
+      league: prediction.league || "",
+      homeScore: null,
+      awayScore: null,
+      minute: null,
+      leagueCountry: "",
+    };
+
+    setExpandedMatchId(prediction.id);
+    await generate(mockMatch);
+
     if (isProUser) {
       setPreviewCount((prev) => prev + 1);
     }
   };
 
-  const handleMatchSelect = (match: Match | null) => {
-    setSelectedMatch(match);
-    reset();
-  };
-
-  const leagueCount = new Set(allMatches.map((m) => m.league)).size;
-  const matchCount = allMatches.length;
-
   return (
     <>
       <Helmet>
         <title>Match Previews – AI Sports Predictions | ProPredict</title>
-        <meta name="description" content="AI-powered match analysis and predictions for today's top football matches. For informational and entertainment purposes only." />
-        <meta property="og:title" content="Match Previews – ProPredict" />
-        <meta property="og:description" content="AI-powered match analysis and predictions for today's top football matches." />
-        <meta property="og:image" content="https://propredict.me/og-image.png" />
-        <meta property="og:url" content="https://propredict.me/match-previews" />
-        <meta property="og:type" content="website" />
+        <meta name="description" content="AI-powered match analysis and predictions for today's top football matches." />
       </Helmet>
 
       <div className="page-content space-y-4">
@@ -92,9 +129,9 @@ export default function MatchPreviews() {
                 <Eye className="h-5 w-5 text-violet-400" />
               </div>
               <div>
-                <h1 className="text-lg font-bold">Your Match Preview</h1>
+                <h1 className="text-lg font-bold">Today's AI Matches</h1>
                 <p className="text-xs text-muted-foreground">
-                  AI-powered analysis for top matches
+                  Top {topMatches.length} matches · Sorted by confidence
                 </p>
               </div>
             </div>
@@ -102,72 +139,11 @@ export default function MatchPreviews() {
               variant="outline"
               size="sm"
               onClick={() => refetch()}
-              disabled={isLoading}
+              disabled={loading}
               className="h-8"
             >
-              <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
+              <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
             </Button>
-          </div>
-        </div>
-
-        {/* Description Card */}
-        <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
-          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>
-              Select any match directly and instantly view AI-powered analysis and predictions for that specific game.
-            </li>
-            <li>
-              The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.
-            </li>
-            <li>
-              This feature is designed to help you understand the matchup better and follow the analysis in one place.
-            </li>
-            <li className="text-xs text-muted-foreground/70 italic">
-              For informational and entertainment purposes only.
-            </li>
-          </ul>
-          
-          {/* Access Tiers */}
-          <div className="mt-4 pt-3 border-t border-border/50 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
-              <span className="text-sm">
-                <span className="font-semibold text-amber-400">PRO</span>
-                <span className="text-muted-foreground"> — Limited to 5 Match Previews daily</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-fuchsia-500"></span>
-              <span className="text-sm">
-                <span className="font-semibold text-fuchsia-400">PREMIUM</span>
-                <span className="text-muted-foreground"> — Unlimited Match Previews</span>
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Stats Bar */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-gradient-to-br from-violet-500/20 via-violet-500/10 to-transparent border border-violet-500/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Calendar className="h-3.5 w-3.5 text-violet-400" />
-              <span className="text-sm font-bold text-violet-400">{todayCount}</span>
-            </div>
-            <span className="text-[10px] text-violet-400/70">Matches</span>
-          </div>
-          <div className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Trophy className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-sm font-bold text-emerald-400">{leagueCount}</span>
-            </div>
-            <span className="text-[10px] text-emerald-400/70">Leagues</span>
-          </div>
-          <div className="bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent border border-amber-500/30 rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Eye className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-sm font-bold text-amber-400">{matchCount}</span>
-            </div>
-            <span className="text-[10px] text-amber-400/70">Total</span>
           </div>
         </div>
 
@@ -182,12 +158,12 @@ export default function MatchPreviews() {
                 </span>
               </div>
               <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">
-                Upgrade to Pro
+                Upgrade
               </Badge>
             </div>
           </Card>
         )}
-        
+
         {isProUser && (
           <Card className="p-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
             <div className="flex items-center justify-between">
@@ -195,7 +171,7 @@ export default function MatchPreviews() {
                 <Eye className="h-4 w-4 text-amber-400" />
                 <span className="text-sm">
                   <span className="font-medium text-amber-400">{remainingPreviews}</span>
-                  <span className="text-muted-foreground"> of {PRO_PREVIEW_LIMIT} previews remaining today</span>
+                  <span className="text-muted-foreground"> of {PRO_PREVIEW_LIMIT} previews remaining</span>
                 </span>
               </div>
               <Badge variant="outline" className="text-[10px] bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40">
@@ -206,71 +182,114 @@ export default function MatchPreviews() {
         )}
 
         {/* Content */}
-        {isLoading ? (
+        {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : error ? (
-          <Card className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-3">
-              Try Again
-            </Button>
-          </Card>
-        ) : matchCount === 0 ? (
+        ) : topMatches.length === 0 ? (
           <Card className="p-6 text-center">
             <Eye className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">
-              No top league matches scheduled for today
+              No quality league matches available today
             </p>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {/* Match Selector */}
-            <MatchPreviewSelector
-              matches={allMatches}
-              selectedMatch={selectedMatch}
-              onMatchSelect={handleMatchSelect}
-              onGenerate={handleGenerate}
-              isGenerating={isGenerating}
-              canGenerate={canGenerate}
-              isFreeUser={isFreeUser}
-              isProUser={isProUser}
-              remainingPreviews={remainingPreviews}
-            />
+          <div className="space-y-2">
+            {topMatches.map((match) => {
+              const risk = getRiskColor(match.confidence);
+              const predLabel = getPredictionLabel(match.prediction);
+              const isExpanded = expandedMatchId === match.id;
 
-            {/* Analysis Section */}
-            {(analysis || isGenerating) && generatedMatch && (
-              <>
-                <MatchPreviewAnalysis
-                  match={generatedMatch}
-                  analysis={analysis}
-                  isLoading={isGenerating}
-                />
-                
-                {/* Match Stats Tabs - H2H, Stats, Lineups, Events */}
-                {analysis && (
-                  <MatchPreviewStats match={generatedMatch} />
-                )}
-              </>
-            )}
+              return (
+                <div key={match.id} className="space-y-2">
+                  <Card
+                    className={cn(
+                      "p-3 transition-all hover:border-violet-500/40",
+                      isExpanded && "border-violet-500/50 bg-violet-500/5"
+                    )}
+                  >
+                    {/* League */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
+                        {match.league || "Unknown League"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {match.match_time || ""}
+                      </span>
+                    </div>
 
-            {/* Empty state when no match selected */}
-            {!selectedMatch && !analysis && (
-              <Card className="p-8 text-center border-dashed">
-                <Eye className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="font-medium text-muted-foreground mb-1">
-                  Select a match to preview
-                </h3>
-                <p className="text-xs text-muted-foreground/70">
-                  Choose a league and match above, then generate AI analysis
-                </p>
-              </Card>
-            )}
+                    {/* Teams */}
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold truncate flex-1">
+                        {match.home_team} vs {match.away_team}
+                      </h3>
+                    </div>
+
+                    {/* Prediction row */}
+                    <div className="flex items-center gap-2 flex-wrap mb-3">
+                      <Badge variant="outline" className="bg-violet-500/10 text-violet-400 border-violet-500/30 text-xs">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {predLabel}
+                      </Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+                        {match.confidence ?? 0}%
+                      </Badge>
+                      <Badge variant="outline" className={cn("text-xs border", risk.bg, risk.color)}>
+                        <Shield className="h-3 w-3 mr-1" />
+                        {risk.label}
+                      </Badge>
+                    </div>
+
+                    {/* Unlock button */}
+                    <Button
+                      size="sm"
+                      className="w-full bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 text-xs"
+                      disabled={!canGenerate || (isExpanded && isGenerating)}
+                      onClick={() => handleUnlockPreview(match)}
+                    >
+                      {isExpanded && isGenerating ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                          Generating...
+                        </>
+                      ) : isExpanded && analysis ? (
+                        <>
+                          <Eye className="h-3.5 w-3.5 mr-1.5" />
+                          Preview Generated
+                        </>
+                      ) : isFreeUser ? (
+                        <>
+                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          Upgrade to Unlock
+                        </>
+                      ) : (
+                        <>
+                          <ChevronRight className="h-3.5 w-3.5 mr-1.5" />
+                          Unlock Preview
+                        </>
+                      )}
+                    </Button>
+                  </Card>
+
+                  {/* Expanded Analysis */}
+                  {isExpanded && (analysis || isGenerating) && generatedMatch && (
+                    <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
+                      <MatchPreviewAnalysis
+                        match={generatedMatch}
+                        analysis={analysis}
+                        isLoading={isGenerating}
+                      />
+                      {analysis && (
+                        <MatchPreviewStats match={generatedMatch} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Footer Ad */}
         <AdSlot />
       </div>
     </>
