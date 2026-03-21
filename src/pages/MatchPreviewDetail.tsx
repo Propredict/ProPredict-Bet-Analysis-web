@@ -25,6 +25,18 @@ function getRiskColor(confidence: number | null) {
   return { label: "High Risk", color: "text-red-500", dot: "bg-red-500" };
 }
 
+function getPredictionLabel(prediction: string | null): string {
+  if (!prediction) return "—";
+  const p = prediction.toLowerCase().trim();
+  if (p === "1" || p === "home") return "Home Win";
+  if (p === "x" || p === "draw") return "Draw";
+  if (p === "2" || p === "away") return "Away Win";
+  if (p.includes("over")) return "Over 2.5 Goals";
+  if (p.includes("under")) return "Under 2.5 Goals";
+  if (p.includes("btts")) return "Both Teams to Score";
+  return prediction;
+}
+
 export default function MatchPreviewDetail() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
