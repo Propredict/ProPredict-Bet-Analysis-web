@@ -325,11 +325,15 @@ export default function MatchPreviews() {
                       <div className="flex items-center justify-between gap-2">
                         {/* Home team */}
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
-                            <span className="text-xs font-bold text-violet-300">
-                              {getTeamInitials(match.home_team)}
-                            </span>
-                          </div>
+                          {homeLogo ? (
+                            <img src={homeLogo} alt={match.home_team} className="w-12 h-12 object-contain" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center">
+                              <span className="text-xs font-bold text-violet-300">
+                                {getTeamInitials(match.home_team)}
+                              </span>
+                            </div>
+                          )}
                           <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.home_team}</span>
                         </div>
 
