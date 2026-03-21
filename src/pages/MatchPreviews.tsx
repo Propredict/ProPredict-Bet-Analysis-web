@@ -78,10 +78,26 @@ function getLeaguePriority(league: string | null): number {
 }
 
 function getRiskColor(confidence: number | null) {
-  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted/20" };
-  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" };
-  if (confidence >= 65) return { label: "Medium", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30" };
-  return { label: "High Risk", color: "text-red-400", bg: "bg-red-500/10 border-red-500/30" };
+  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", dot: "bg-muted-foreground" };
+  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
+  if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
+  return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
+}
+
+function getTeamInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+}
+
+function getInsight(prediction: string | null, homeTeam: string, awayTeam: string, confidence: number | null): string {
+  const conf = confidence ?? 50;
+  const p = (prediction || "").toLowerCase().trim();
+  if (p === "1" || p === "home") return `${homeTeam} favored based on form & home advantage`;
+  if (p === "2" || p === "away") return `${awayTeam} showing strong away form this season`;
+  if (p === "x" || p === "draw") return `Evenly matched — expect a tight contest`;
+  if (p.includes("over")) return `Both teams averaging high goal counts recently`;
+  if (p.includes("under")) return `Defensive matchup — low scoring expected`;
+  if (p.includes("btts")) return `Both sides finding the net consistently`;
+  return `AI analysis based on ${conf}% confidence model`;
 }
 
 function getPredictionLabel(prediction: string | null): string {
