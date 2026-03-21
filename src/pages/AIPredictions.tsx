@@ -26,7 +26,7 @@ import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/mark
 
 
 
-type SortOption = "confidence" | "kickoff" | "risk";
+type SortOption = "confidence" | "kickoff" | "risk" | "over25" | "under25" | "btts";
 type TierFilter = "all" | "free" | "pro" | "premium";
 type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts";
 
@@ -157,19 +157,33 @@ export default function AIPredictions() {
     return [...preds].sort((a, b) => {
       switch (sortBy) {
         case "confidence":
-          // Handle null confidence (masked by view) — push to end
           return (b.confidence ?? 0) - (a.confidence ?? 0);
-        case "kickoff":
-          // Sort by time string
+        case "kickoff": {
           const timeA = a.match_time || "99:99";
           const timeB = b.match_time || "99:99";
           return timeA.localeCompare(timeB);
-        case "risk":
-          // low < medium < high
+        }
+        case "risk": {
           const riskOrder = { low: 0, medium: 1, high: 2 };
           const riskA = riskOrder[a.risk_level as keyof typeof riskOrder] ?? 1;
           const riskB = riskOrder[b.risk_level as keyof typeof riskOrder] ?? 1;
           return riskA - riskB;
+        }
+        case "over25": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.over25 - pa.over25;
+        }
+        case "under25": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.under25 - pa.under25;
+        }
+        case "btts": {
+          const pa = calculateGoalMarketProbs(a);
+          const pb = calculateGoalMarketProbs(b);
+          return pb.bttsYes - pa.bttsYes;
+        }
         default:
           return 0;
       }
@@ -494,6 +508,20 @@ export default function AIPredictions() {
                 />
               </div>
             </div>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="w-[110px] md:w-[140px] h-8 md:h-9 text-[10px] md:text-xs bg-card border-border rounded-lg">
+                <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
+                <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff Time</SelectItem>
+                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk Level</SelectItem>
+                <SelectItem value="over25" className="text-[10px] md:text-xs">⬆️ Over 2.5 %</SelectItem>
+                <SelectItem value="under25" className="text-[10px] md:text-xs">⬇️ Under 2.5 %</SelectItem>
+                <SelectItem value="btts" className="text-[10px] md:text-xs">⚡ BTTS %</SelectItem>
+              </SelectContent>
+            </Select>
             <Toggle
               pressed={showFavoritesOnly}
               onPressedChange={setShowFavoritesOnly}
