@@ -384,7 +384,7 @@ export default function MatchPreviews() {
                           ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
                           : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15 animate-pulse"
                       )}
-                      onClick={(e) => { e.stopPropagation(); handleCardClick(match); }}
+                      onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
                       {isFreeUser ? (
                         <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade Plan to Unlock</>
