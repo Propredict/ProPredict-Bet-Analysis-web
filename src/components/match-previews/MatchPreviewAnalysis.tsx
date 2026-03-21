@@ -284,11 +284,12 @@ function deriveFormAnalysis(pred: any, parsed: ParsedAnalysis): { label: string;
   const aw = pred.away_win ?? 0;
 
   if (homeFormStr) {
-    const record = parsed.homeFormRecord || "";
-    const streak = parsed.homeStreak || "";
+    const w = (homeFormStr.match(/W/g) || []).length;
+    const d = (homeFormStr.match(/D/g) || []).length;
+    const l = (homeFormStr.match(/L/g) || []).length;
     items.push({
       label: `${pred.home_team} Form`,
-      detail: `${homeFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      detail: `${w} wins, ${d} draws, ${l} losses in last ${homeFormStr.length} — ${w >= 7 ? "excellent form" : w >= 5 ? "strong form" : w >= 3 ? "mixed form" : "poor form"}`,
       trend: hw >= 55 ? "positive" : hw >= 35 ? "neutral" : "negative",
     });
   } else {
@@ -300,11 +301,12 @@ function deriveFormAnalysis(pred: any, parsed: ParsedAnalysis): { label: string;
   }
 
   if (awayFormStr) {
-    const record = parsed.awayFormRecord || "";
-    const streak = parsed.awayStreak || "";
+    const w = (awayFormStr.match(/W/g) || []).length;
+    const d = (awayFormStr.match(/D/g) || []).length;
+    const l = (awayFormStr.match(/L/g) || []).length;
     items.push({
       label: `${pred.away_team} Form`,
-      detail: `${awayFormStr} (${record})${streak ? ` — streak: ${streak}` : ""}`,
+      detail: `${w} wins, ${d} draws, ${l} losses in last ${awayFormStr.length} — ${w >= 7 ? "dominant" : w >= 5 ? "solid" : w >= 3 ? "average" : "struggling"}`,
       trend: aw >= 45 ? "positive" : aw >= 25 ? "neutral" : "negative",
     });
   } else {
