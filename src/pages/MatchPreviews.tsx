@@ -428,6 +428,16 @@ export default function MatchPreviews() {
                       {analysis && (
                         <MatchPreviewStats match={generatedMatch} />
                       )}
+                      {/* Close / collapse button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-9 text-sm font-semibold gap-2 border-violet-300 dark:border-violet-500/40 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10"
+                        onClick={() => { setExpandedMatchId(null); reset(); }}
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                        Close Analysis
+                      </Button>
                     </div>
                   )}
                 </div>
