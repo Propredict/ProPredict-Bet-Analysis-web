@@ -41,34 +41,6 @@ export function MatchPreviewAnalysis({
 
   return (
     <div className="space-y-4">
-      {/* Match Header */}
-      <Card className="p-4 bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/30">
-        <div className="flex items-center justify-between mb-3">
-          <Badge variant="outline" className="bg-violet-500/20 text-violet-300 border-violet-500/40">
-            <Brain className="h-3 w-3 mr-1" />
-            AI Analysis
-          </Badge>
-          <span className="text-xs text-muted-foreground">{match.startTime}</span>
-        </div>
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            {match.homeLogo && (
-              <img src={match.homeLogo} alt="" className="h-8 w-8 object-contain" />
-            )}
-            <span className="font-semibold text-sm">{match.homeTeam}</span>
-          </div>
-          <span className="text-xs text-muted-foreground px-3">vs</span>
-          <div className="flex items-center gap-2 flex-1">
-            <span className="font-semibold text-sm">{match.awayTeam}</span>
-            {match.awayLogo && (
-              <img src={match.awayLogo} alt="" className="h-8 w-8 object-contain" />
-            )}
-          </div>
-        </div>
-        <div className="text-center mt-2">
-          <span className="text-xs text-muted-foreground">{match.league}</span>
-        </div>
-      </Card>
 
       {/* AI Overview */}
       <Card className="p-4">
