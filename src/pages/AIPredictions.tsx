@@ -508,6 +508,20 @@ export default function AIPredictions() {
                 />
               </div>
             </div>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="w-[110px] md:w-[140px] h-8 md:h-9 text-[10px] md:text-xs bg-card border-border rounded-lg">
+                <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
+                <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff Time</SelectItem>
+                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk Level</SelectItem>
+                <SelectItem value="over25" className="text-[10px] md:text-xs">⬆️ Over 2.5 %</SelectItem>
+                <SelectItem value="under25" className="text-[10px] md:text-xs">⬇️ Under 2.5 %</SelectItem>
+                <SelectItem value="btts" className="text-[10px] md:text-xs">⚡ BTTS %</SelectItem>
+              </SelectContent>
+            </Select>
             <Toggle
               pressed={showFavoritesOnly}
               onPressedChange={setShowFavoritesOnly}
