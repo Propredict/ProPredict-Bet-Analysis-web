@@ -49,7 +49,7 @@ const ticketsItems = [
   { title: "Daily Multi-Match", url: "/daily-predictions", icon: Calendar },
   { title: "Pro Multi-Match", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Multi-Match", url: "/premium-predictions", icon: Crown },
-  { title: "Prediction History", url: "/winning-history", icon: Layers },
+  
 ];
 
 const packagesItems = [
@@ -264,6 +264,18 @@ export function AppSidebar() {
                   >
                     <BookOpen className="h-4 w-4" />
                     {!collapsed && <span>Predictions Glossary</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/winning-history" 
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                    activeClassName="bg-primary/20 text-primary"
+                  >
+                    <Layers className="h-4 w-4" />
+                    {!collapsed && <span>Match History</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

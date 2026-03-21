@@ -157,17 +157,17 @@ export default function AllTickets() {
   return (
     <>
       <Helmet>
-        <title>Prediction History – AI Sports Analysis | ProPredict</title>
+        <title>Match History – AI Sports Analysis | ProPredict</title>
         <meta
           name="description"
-          content="Browse our complete archive of AI sports predictions and analysis. Track prediction history and analyze past performance."
+          content="Browse our complete archive of AI sports predictions and analysis. Track match history and analyze past performance."
         />
-        <meta name="keywords" content="AI predictions history, sports analysis archive, prediction accuracy, sports predictions history" />
+        <meta name="keywords" content="AI match history, sports analysis archive, prediction accuracy, sports predictions history" />
         <link rel="canonical" href="https://propredict.me/winning-history" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Prediction History – AI Sports Analysis | ProPredict" />
-        <meta property="og:description" content="Browse our complete archive of AI sports predictions and analysis. Track prediction history and analyze past performance." />
+        <meta property="og:title" content="Match History – AI Sports Analysis | ProPredict" />
+        <meta property="og:description" content="Browse our complete archive of AI sports predictions and analysis. Track match history and analyze past performance." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://propredict.me/winning-history" />
         
@@ -178,7 +178,7 @@ export default function AllTickets() {
             "@type": "BreadcrumbList",
             "itemListElement": [
               { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propredict.me/" },
-              { "@type": "ListItem", "position": 2, "name": "Prediction History", "item": "https://propredict.me/winning-history" }
+              { "@type": "ListItem", "position": 2, "name": "Match History", "item": "https://propredict.me/winning-history" }
             ]
           })}
         </script>
@@ -192,7 +192,7 @@ export default function AllTickets() {
               <History className="h-4 w-4 text-primary" />
             </div>
             <div>
-               <h1 className="text-sm sm:text-base font-semibold text-foreground">Prediction History</h1>
+               <h1 className="text-sm sm:text-base font-semibold text-foreground">Match History</h1>
                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Last 30 days of Predictions & Multi-Match Predictions</p>
             </div>
           </div>
