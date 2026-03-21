@@ -4,11 +4,13 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 type AdSlotProps = {
   slot?: string;
   style?: React.CSSProperties;
+  className?: string;
 };
 
 export default function AdSlot({
   slot = "4037677571",
   style,
+  className,
 }: AdSlotProps) {
   const isAndroid = getIsAndroidApp();
   const wrapperRef = useRef<HTMLDivElement>(null);
