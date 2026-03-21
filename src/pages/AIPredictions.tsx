@@ -27,6 +27,19 @@ import AdSlot from "@/components/ads/AdSlot";
 
 type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
+type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts";
+
+/** Derive pick type from prediction data */
+function getPickType(prediction: { prediction: string | null; predicted_score?: string | null }): PickFilter {
+  const p = (prediction.prediction || "").toLowerCase();
+  if (p.includes("over")) return "over25";
+  if (p.includes("under")) return "under25";
+  if (p.includes("btts")) return "btts";
+  if (p === "1" || p === "home") return "home";
+  if (p === "2" || p === "away") return "away";
+  if (p === "x" || p === "draw") return "draw";
+  return "home"; // fallback
+}
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
