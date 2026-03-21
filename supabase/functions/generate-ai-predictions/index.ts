@@ -615,18 +615,26 @@ function calculatePrediction(
   const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
 
   // === BEST PICK SELECTION ===
-  // Compare ALL markets: 1X2, Over/Under 2.5, BTTS and pick the highest probability
-  const allPicks: { label: string; prob: number }[] = [
-    { label: "1", prob: homeWin },
-    { label: "2", prob: awayWin },
-    { label: "X", prob: draw },
-    { label: "Over 2.5", prob: goalMarkets.over25 },
-    { label: "Under 2.5", prob: goalMarkets.under25 },
-    { label: "BTTS Yes", prob: goalMarkets.bttsYes },
-    { label: "BTTS No", prob: goalMarkets.bttsNo },
+  // Compare ALL markets: 1X2, Over/Under 2.5, BTTS
+  // IMPORTANT: 1X2 is a 3-way market (probs sum to 100), while O/U and BTTS are 2-way (sum to 100).
+  // To compare fairly, we normalize 1X2 probs: multiply by 1.33 (100/75 max) so a 75% home win
+  // competes fairly against an 80% Over 2.5.
+  const max1X2 = Math.max(homeWin, awayWin, draw);
+  const normalizedHomeWin = Math.round(homeWin * (100 / (homeWin + Math.max(awayWin, draw))));
+  const normalizedAwayWin = Math.round(awayWin * (100 / (awayWin + Math.max(homeWin, draw))));
+  const normalizedDraw = Math.round(draw * (100 / (draw + Math.max(homeWin, awayWin))));
+
+  const allPicks: { label: string; prob: number; rawProb: number }[] = [
+    { label: "1", prob: normalizedHomeWin, rawProb: homeWin },
+    { label: "2", prob: normalizedAwayWin, rawProb: awayWin },
+    { label: "X", prob: normalizedDraw, rawProb: draw },
+    { label: "Over 2.5", prob: goalMarkets.over25, rawProb: goalMarkets.over25 },
+    { label: "Under 2.5", prob: goalMarkets.under25, rawProb: goalMarkets.under25 },
+    { label: "BTTS Yes", prob: goalMarkets.bttsYes, rawProb: goalMarkets.bttsYes },
+    { label: "BTTS No", prob: goalMarkets.bttsNo, rawProb: goalMarkets.bttsNo },
   ];
   
-  // Sort by probability descending, pick the best
+  // Sort by normalized probability descending, pick the best
   allPicks.sort((a, b) => b.prob - a.prob);
   const prediction = allPicks[0].label;
 
