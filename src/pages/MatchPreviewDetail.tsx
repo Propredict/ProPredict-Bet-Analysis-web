@@ -203,12 +203,12 @@ function deriveAIPicks(pred: any): AIPick[] {
       ? makePick("Over 2.5", over25Raw, seed)
       : makePick("Under 2.5", under25Raw, seed);
 
-  const bttsYesRaw = clamp(
-    32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6),
-    30,
-    90
-  );
-  const bttsNoRaw = clamp(100 - bttsYesRaw + (homeConc <= 0.9 || awayConc <= 0.9 ? 8 : 0), 30, 90);
+  // BTTS also uses predicted score when available
+  const predictedBothScored = scoreParts ? parseInt(scoreParts[1]) > 0 && parseInt(scoreParts[2]) > 0 : null;
+  const bttsYesRaw = predictedBothScored !== null
+    ? (predictedBothScored ? clamp(68 + seed, 68, 85) : clamp(30 + seed, 28, 42))
+    : clamp(32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6), 30, 90);
+  const bttsNoRaw = clamp(100 - bttsYesRaw, 30, 90);
   const bttsPick =
     bttsYesRaw >= bttsNoRaw
       ? makePick("BTTS Yes", bttsYesRaw, seed)
