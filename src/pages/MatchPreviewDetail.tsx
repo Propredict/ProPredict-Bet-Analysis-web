@@ -239,11 +239,6 @@ export default function MatchPreviewDetail() {
                 <span className="text-2xl font-black text-white tracking-tight">
                   {getPredictionLabel(prediction.prediction)}
                 </span>
-                {prediction.predicted_score && (
-                  <div className="mt-1 text-sm font-semibold text-white/70">
-                    Predicted Score: {prediction.predicted_score}
-                  </div>
-                )}
               </div>
             )}
 
