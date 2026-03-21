@@ -24,8 +24,7 @@ const LEAGUE_PRIORITY: Record<string, number> = {
   "Championship": 2,
   "League One": 3,
   "League Two": 4,
-  // Scotland
-  "Premiership": 5,
+  // Germany
   "Bundesliga": 10,
   "2. Bundesliga": 11,
   // Italy
