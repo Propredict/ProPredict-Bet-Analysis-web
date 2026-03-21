@@ -309,8 +309,8 @@ export default function MatchPreviews() {
                 <div key={match.id} className="space-y-2">
                   <Card
                     className={cn(
-                      "overflow-hidden transition-all bg-white dark:bg-card border-border/60 hover:shadow-lg hover:shadow-violet-500/5",
-                      isExpanded && "border-violet-500/40 shadow-lg shadow-violet-500/10"
+                      "overflow-hidden transition-all bg-white dark:bg-card border border-gray-200 dark:border-border/60 hover:shadow-lg hover:shadow-violet-500/10 shadow-sm",
+                      isExpanded && "border-violet-400 dark:border-violet-500/40 shadow-lg shadow-violet-500/10"
                     )}
                   >
                     <div className="p-5 space-y-4">
