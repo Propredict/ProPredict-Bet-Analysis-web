@@ -320,28 +320,32 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
 }
 
 /**
- * Calculate form score (0-100) from last 3 matches using points + goal diff.
- * - Win=3, Draw=1, Loss=0 (max 9)
+ * Calculate form score (0-100) from last 5 matches using weighted recency.
+ * Most recent match has highest weight, older matches decay.
+ * - Win=3, Draw=1, Loss=0
  * - Goal impact is a small stabilizer
  */
 function calculateFormScore(form: FormMatch[]): number {
   if (form.length === 0) return 50;
 
-  const matches = form.slice(0, 3);
-  let points = 0;
+  const matches = form.slice(0, 5);
+  let weightedPoints = 0;
+  let weightSum = 0;
   let gf = 0;
   let ga = 0;
 
-  for (const m of matches) {
-    if (m.result === "W") points += 3;
-    else if (m.result === "D") points += 1;
-    gf += m.goalsFor;
-    ga += m.goalsAgainst;
+  for (let i = 0; i < matches.length; i++) {
+    const weight = 1.0 - (i * 0.12); // Most recent=1.0, 5th=0.52
+    const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
+    weightedPoints += pts * weight;
+    weightSum += 3 * weight;
+    gf += matches[i].goalsFor;
+    ga += matches[i].goalsAgainst;
   }
 
-  const pointsScore = (points / 9) * 100; // 0..100
+  const pointsScore = (weightedPoints / weightSum) * 100;
   const goalDiff = gf - ga;
-  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 8));
+  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 6));
 
   return Math.round(pointsScore * 0.75 + gdScore * 0.25);
 }
