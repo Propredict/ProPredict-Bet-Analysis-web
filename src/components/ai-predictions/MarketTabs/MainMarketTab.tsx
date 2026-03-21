@@ -51,8 +51,17 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
   
   const getPredictedOutcome = () => {
     if (!prediction.prediction) return "unknown";
-    if (prediction.prediction === "1") return "home";
-    if (prediction.prediction === "2") return "away";
+    const p = prediction.prediction.toLowerCase();
+    if (p === "1" || p === "home") return "home";
+    if (p === "2" || p === "away") return "away";
+    if (p.includes("over") || p.includes("under") || p.includes("btts")) {
+      // For goal markets, derive 1X2 from probabilities
+      const hw = prediction.home_win ?? 0;
+      const aw = prediction.away_win ?? 0;
+      if (hw > aw) return "home";
+      if (aw > hw) return "away";
+      return "draw";
+    }
     return "draw";
   };
 
