@@ -291,7 +291,8 @@ export default function MatchPreviews() {
                       const aw = match.away_win ?? 33;
                       const dw = match.draw ?? 33;
                       const diff = Math.abs(hw - aw);
-                      const totalGoals = (match.last_home_goals ?? 0) + (match.last_away_goals ?? 0);
+                      const scoreParts = (match.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                      const totalGoals = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : 0;
                       const riskLvl = (match.risk_level ?? "medium").toLowerCase();
                       const pred = (match.prediction ?? "").toUpperCase();
                       const isHomeFav = hw > aw;
