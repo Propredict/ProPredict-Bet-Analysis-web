@@ -115,6 +115,7 @@ function getPredictionLabel(prediction: string | null): string {
 
 export default function MatchPreviews() {
   const { predictions, loading, refetch } = useAIPredictions("today");
+  const { allMatches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const [previewCount, setPreviewCount] = useState(0);
@@ -128,15 +129,38 @@ export default function MatchPreviews() {
   const remainingPreviews = Math.max(0, (isPremiumUser ? Infinity : isProUser ? PRO_PREVIEW_LIMIT : 0) - previewCount);
   const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
 
+  // Build logo lookup from live scores data
+  const logoMap = useMemo(() => {
+    const map: Record<string, { home: string | null; away: string | null }> = {};
+    for (const m of liveMatches) {
+      // Match by team names (normalized)
+      const key = `${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`;
+      map[key] = { home: m.homeLogo, away: m.awayLogo };
+      // Also index by individual team name
+      map[m.homeTeam.toLowerCase()] = { home: m.homeLogo, away: null };
+      map[m.awayTeam.toLowerCase()] = { home: null, away: m.awayLogo };
+    }
+    return map;
+  }, [liveMatches]);
+
+  function getTeamLogo(homeTeam: string, awayTeam: string, side: "home" | "away"): string | null {
+    const matchKey = `${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
+    const matchEntry = logoMap[matchKey];
+    if (matchEntry) return side === "home" ? matchEntry.home : matchEntry.away;
+    // Fallback: lookup by individual team name
+    const teamName = side === "home" ? homeTeam.toLowerCase() : awayTeam.toLowerCase();
+    const entry = logoMap[teamName];
+    if (entry) return side === "home" ? entry.home : entry.away;
+    return null;
+  }
+
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
     return predictions
       .filter((p) => isQualityLeague(p.league, p.home_team))
       .sort((a, b) => {
-        // Primary: highest confidence first (most low-risk matches on top)
         const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
-        // Secondary: league priority as tiebreaker
         return getLeaguePriority(a.league) - getLeaguePriority(b.league);
       })
       .slice(0, MAX_MATCHES);
