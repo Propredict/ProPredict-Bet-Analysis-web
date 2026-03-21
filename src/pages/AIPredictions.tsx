@@ -28,7 +28,7 @@ import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/mark
 
 type SortOption = "confidence" | "kickoff" | "risk" | "over25" | "under25" | "btts";
 type TierFilter = "all" | "free" | "pro" | "premium";
-type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts";
+type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts" | "value";
 
 /** Derive pick type from prediction field (for new predictions with market labels) */
 function getPickTypeFromPrediction(p: string): PickFilter | null {
