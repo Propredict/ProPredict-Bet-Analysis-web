@@ -615,22 +615,26 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
           title="📈 Season Stats"
         >
           <div className="space-y-2">
-            {seasonStats.map((s, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-xl p-3 border border-border/20">
-                <span className="text-xs font-bold text-foreground truncate flex-1">{s.team}</span>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant="secondary" className="text-[9px] font-bold">{s.record}</Badge>
-                  <span className={cn(
-                    "text-xs font-black",
-                    parseInt(s.winRate) >= 50 ? "text-emerald-400" : parseInt(s.winRate) >= 30 ? "text-amber-400" : "text-red-400"
-                  )}>{s.winRate}</span>
-                  <span className={cn(
-                    "text-[10px] font-bold",
-                    s.gd.startsWith("+") ? "text-emerald-400" : s.gd.startsWith("-") ? "text-red-400" : "text-muted-foreground"
-                  )}>GD {s.gd}</span>
+            {seasonStats.map((s, idx) => {
+              const rm = s.record.match(/(\d+)W\s*(\d+)D\s*(\d+)L/);
+              const readableRecord = rm ? `${rm[1]}W ${rm[2]}D ${rm[3]}L` : s.record;
+              return (
+                <div key={idx} className="flex items-center justify-between bg-muted/20 rounded-xl p-3 border border-border/20">
+                  <span className="text-xs font-bold text-foreground truncate flex-1">{s.team}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Badge variant="secondary" className="text-[9px] font-bold">{readableRecord}</Badge>
+                    <span className={cn(
+                      "text-xs font-black",
+                      parseInt(s.winRate) >= 50 ? "text-emerald-400" : parseInt(s.winRate) >= 30 ? "text-amber-400" : "text-red-400"
+                    )}>{s.winRate}</span>
+                    <span className={cn(
+                      "text-[10px] font-bold",
+                      s.gd.startsWith("+") ? "text-emerald-400" : s.gd.startsWith("-") ? "text-red-400" : "text-muted-foreground"
+                    )}>GD {s.gd}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </SectionCard>
       )}
