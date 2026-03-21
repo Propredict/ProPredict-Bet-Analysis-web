@@ -381,7 +381,7 @@ export default function MatchPreviews() {
                       className={cn(
                         "w-full text-sm font-bold h-10",
                         isFreeUser
-                          ? "bg-gray-500 hover:bg-gray-600"
+                          ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
                           : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15 animate-pulse"
                       )}
                       onClick={(e) => { e.stopPropagation(); handleCardClick(match); }}
