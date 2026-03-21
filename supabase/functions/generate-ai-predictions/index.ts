@@ -1261,7 +1261,7 @@ const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
   const avgScored = stats.played > 0 ? stats.goalsFor / stats.played : 1.0;
   const avgConceded = stats.played > 0 ? stats.goalsAgainst / stats.played : 1.0;
 
-  const recent = stats.form.slice(-3).split("");
+  const recent = stats.form.slice(-5).split("");
   return recent.map((ch) => {
     const result = ch === "W" ? "W" : ch === "L" ? "L" : "D";
     return {
@@ -1272,6 +1272,86 @@ const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
     };
   });
 };
+
+/**
+ * Generate specific key_factors from real match data instead of generic ones.
+ */
+function generateKeyFactors(
+  homeTeamName: string,
+  awayTeamName: string,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[],
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  h2h: H2HMatch[],
+  homeTeamId: number,
+  prediction: string,
+  goalMarkets: { over25: number; bttsYes: number; expectedTotalGoals: number }
+): string[] {
+  const factors: string[] = [];
+
+  // 1. Form streaks
+  if (homeForm.length >= 3) {
+    const lastThree = homeForm.slice(0, 3);
+    const wins = lastThree.filter(m => m.result === "W").length;
+    const losses = lastThree.filter(m => m.result === "L").length;
+    if (wins === 3) factors.push(`${homeTeamName}: 3 wins in a row`);
+    else if (losses >= 2) factors.push(`${homeTeamName}: Poor recent form`);
+  }
+  if (awayForm.length >= 3) {
+    const lastThree = awayForm.slice(0, 3);
+    const wins = lastThree.filter(m => m.result === "W").length;
+    const losses = lastThree.filter(m => m.result === "L").length;
+    if (wins === 3) factors.push(`${awayTeamName}: 3 wins in a row`);
+    else if (losses >= 2) factors.push(`${awayTeamName}: Poor recent form`);
+  }
+
+  // 2. Home/Away strength
+  if (homeStats && homeStats.home.played > 3) {
+    const homeWinRate = homeStats.home.wins / homeStats.home.played;
+    if (homeWinRate >= 0.7) factors.push(`Strong home record (${Math.round(homeWinRate * 100)}% wins)`);
+    else if (homeWinRate <= 0.25) factors.push(`Weak home record`);
+  }
+  if (awayStats && awayStats.away.played > 3) {
+    const awayWinRate = awayStats.away.wins / awayStats.away.played;
+    if (awayWinRate >= 0.5) factors.push(`${awayTeamName}: Strong away form`);
+    else if (awayWinRate <= 0.2) factors.push(`${awayTeamName}: Struggles away`);
+  }
+
+  // 3. H2H dominance
+  if (h2h.length >= 3) {
+    const homeH2HWins = h2h.filter(m => {
+      const isHome = m.homeTeamId === homeTeamId;
+      const hGoals = isHome ? m.homeGoals : m.awayGoals;
+      const aGoals = isHome ? m.awayGoals : m.homeGoals;
+      return hGoals > aGoals;
+    }).length;
+    if (homeH2HWins >= 3) factors.push(`H2H: ${homeTeamName} dominates`);
+    else if (homeH2HWins === 0) factors.push(`H2H: ${awayTeamName} dominates`);
+  }
+
+  // 4. Clean sheets / defensive
+  if (homeStats && homeStats.cleanSheets.total > 0) {
+    const csRate = homeStats.cleanSheets.total / homeStats.played;
+    if (csRate >= 0.4) factors.push(`${homeTeamName}: Strong defense (${homeStats.cleanSheets.total} clean sheets)`);
+  }
+
+  // 5. Goal market insights (Poisson-derived)
+  if (goalMarkets.over25 >= 65) factors.push(`High-scoring trend (Over 2.5: ${goalMarkets.over25}%)`);
+  else if (goalMarkets.over25 <= 35) factors.push(`Low-scoring trend (Under 2.5: ${100 - goalMarkets.over25}%)`);
+  
+  if (goalMarkets.bttsYes >= 65) factors.push(`Both teams likely to score (${goalMarkets.bttsYes}%)`);
+  else if (goalMarkets.bttsYes <= 30) factors.push(`Clean sheet expected (BTTS No: ${100 - goalMarkets.bttsYes}%)`);
+
+  // 6. Season goal averages
+  if (homeStats && awayStats) {
+    const totalAvg = homeStats.goalsForAvg + awayStats.goalsForAvg;
+    if (totalAvg >= 3.5) factors.push(`High-scoring teams (avg ${totalAvg.toFixed(1)} goals combined)`);
+  }
+
+  // Limit to 5 most relevant factors
+  return factors.slice(0, 5);
+}
 
 /**
  * Process a single batch of predictions
