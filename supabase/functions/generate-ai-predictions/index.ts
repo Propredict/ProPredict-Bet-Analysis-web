@@ -707,95 +707,33 @@ function predictScoreV2(params: {
   draw: number;
   prediction: string;
 }): string {
-  const { homeGoalRate, awayGoalRate, homeWin, awayWin, prediction } = params;
+  const { homeGoalRate, awayGoalRate, prediction } = params;
 
-  // Base expected goals from attack vs defense matchup
+  // Calculate xG from attack vs defense matchup
   let homeXg = (homeGoalRate.scored + awayGoalRate.conceded) / 2;
   let awayXg = (awayGoalRate.scored + homeGoalRate.conceded) / 2;
-
-  // Mild adjustments for strong favorites (much smaller than before)
-  const strongHomeFav = prediction === "1" && homeWin >= 65;
-  const strongAwayFav = prediction === "2" && awayWin >= 65;
-  const balanced = prediction === "X";
-
-  if (strongHomeFav) {
-    homeXg += 0.25;
-    awayXg -= 0.1;
-  } else if (strongAwayFav) {
-    awayXg += 0.25;
-    homeXg -= 0.1;
-  } else if (balanced) {
-    const avg = (homeXg + awayXg) / 2;
-    homeXg = avg;
-    awayXg = avg;
-  }
 
   homeXg = clamp(homeXg, 0.3, 3.0);
   awayXg = clamp(awayXg, 0.3, 3.0);
 
-  // Deterministic seed from xG values for consistent but varied results per match
-  const seed = Math.abs(Math.sin(homeXg * 1000 + awayXg * 7777)) * 10000;
-  const rnd = (seed % 100) / 100; // 0..1 deterministic per matchup
+  // Use Poisson to find most likely score
+  const markets = poissonGoalMarkets(homeXg, awayXg);
+  let bestScore = markets.mostLikelyScore;
 
-  // Pick from plausible score lines based on xG ranges
-  let homeGoals: number;
-  let awayGoals: number;
+  // Ensure the predicted score matches the prediction direction
+  const parts = bestScore.split("-").map(Number);
+  let homeGoals = parts[0];
+  let awayGoals = parts[1];
 
-  if (prediction === "X") {
-    // Draw scores: 0-0, 1-1, 2-2
-    const totalXg = homeXg + awayXg;
-    if (totalXg < 1.5) {
-      homeGoals = rnd < 0.4 ? 0 : 1;
-      awayGoals = homeGoals;
-    } else if (totalXg < 3.0) {
-      homeGoals = rnd < 0.65 ? 1 : 2;
-      awayGoals = homeGoals;
-    } else {
-      homeGoals = rnd < 0.5 ? 2 : rnd < 0.8 ? 1 : 3;
-      awayGoals = homeGoals;
-    }
-    // Avoid 0-0 when both teams score regularly
-    if (homeGoals === 0 && (homeGoalRate.scored >= 1.0 || awayGoalRate.scored >= 1.0)) {
-      homeGoals = 1;
-      awayGoals = 1;
-    }
-  } else {
-    // Winner prediction ("1" or "2")
-    const favXg = prediction === "1" ? homeXg : awayXg;
-    const undXg = prediction === "1" ? awayXg : homeXg;
-
-    // Favorite goals from xG with variety
-    let favGoals: number;
-    if (favXg < 1.0) {
-      favGoals = 1;
-    } else if (favXg < 1.6) {
-      favGoals = rnd < 0.55 ? 1 : 2;
-    } else if (favXg < 2.3) {
-      favGoals = rnd < 0.35 ? 1 : rnd < 0.8 ? 2 : 3;
-    } else {
-      favGoals = rnd < 0.2 ? 2 : rnd < 0.7 ? 3 : 4;
-    }
-
-    // Underdog goals from their xG
-    let undGoals: number;
-    if (undXg < 0.7) {
-      undGoals = rnd < 0.6 ? 0 : 1;
-    } else if (undXg < 1.3) {
-      undGoals = rnd < 0.45 ? 0 : 1;
-    } else {
-      undGoals = rnd < 0.3 ? 1 : 2;
-    }
-
-    // Ensure winner actually wins
-    if (favGoals <= undGoals) favGoals = undGoals + 1;
-
-    if (prediction === "1") {
-      homeGoals = favGoals;
-      awayGoals = undGoals;
-    } else {
-      homeGoals = undGoals;
-      awayGoals = favGoals;
-    }
+  if (prediction === "1" && homeGoals <= awayGoals) {
+    // Force a home win score using Poisson-weighted selection
+    homeGoals = Math.max(awayGoals + 1, 1);
+  } else if (prediction === "2" && awayGoals <= homeGoals) {
+    awayGoals = Math.max(homeGoals + 1, 1);
+  } else if (prediction === "X" && homeGoals !== awayGoals) {
+    const avg = Math.round((homeGoals + awayGoals) / 2);
+    homeGoals = avg;
+    awayGoals = avg;
   }
 
   homeGoals = clamp(homeGoals, 0, 4);
