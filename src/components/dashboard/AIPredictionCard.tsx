@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Brain, TrendingUp, Target } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Brain, TrendingUp, Target, Trophy, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -337,16 +337,16 @@ export function AIPredictionCard({
               <Target className="h-4 w-4 text-accent" />
               <span className="text-xs text-muted-foreground">Best Pick</span>
             </div>
-            <p className="text-lg font-bold text-foreground">
+            <p className="text-lg font-bold text-foreground flex items-center gap-1.5">
               {(() => {
                 const p = (prediction.prediction || "").toLowerCase();
-                if (p === "1" || p === "home") return "Home Win";
-                if (p === "2" || p === "away") return "Away Win";
-                if (p === "x" || p === "draw") return "Draw";
-                if (p.includes("over")) return "Over 2.5";
-                if (p.includes("under")) return "Under 2.5";
-                if (p.includes("btts")) return "BTTS Yes";
-                return prediction.prediction || "—";
+                if (p.includes("over")) return <><TrendingUp className="h-4 w-4 text-green-400" />Over 2.5</>;
+                if (p.includes("under")) return <><TrendingUp className="h-4 w-4 text-orange-400" />Under 2.5</>;
+                if (p.includes("btts")) return <><Zap className="h-4 w-4 text-yellow-400" />BTTS Yes</>;
+                if (p === "1" || p === "home") return <><Trophy className="h-4 w-4 text-amber-400" />Home Win</>;
+                if (p === "2" || p === "away") return <><Trophy className="h-4 w-4 text-amber-400" />Away Win</>;
+                if (p === "x" || p === "draw") return <><Target className="h-4 w-4 text-blue-400" />Draw</>;
+                return <><Trophy className="h-4 w-4 text-amber-400" />{prediction.prediction || "—"}</>;
               })()}
             </p>
           </div>
