@@ -11,35 +11,31 @@ import {
 import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
 import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown } from "lucide-react";
 
-/** Determine the best pick across all markets with an icon */
+/** Determine the best pick across all markets with an icon, using Poisson data */
 function getBestPickWithIcon(prediction: AIPrediction) {
-  const p = (prediction.prediction || "").toLowerCase();
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
-  const mainConf = prediction.confidence ?? 0;
+  const probs = calculateGoalMarketProbs(prediction);
 
-  // Direct mapping from backend prediction value
-  if (p.includes("over")) {
-    return { label: "Over 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> };
-  }
-  if (p.includes("under")) {
-    return { label: "Under 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> };
-  }
-  if (p === "btts yes") {
-    return { label: "BTTS Yes", conf: mainConf, icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> };
-  }
-  if (p === "btts no") {
-    return { label: "BTTS No", conf: mainConf, icon: <Zap className="w-3.5 h-3.5 text-red-400" /> };
-  }
-  if (p === "x" || p === "draw") {
-    return { label: "Draw", conf: Math.max(d, mainConf), icon: <Target className="w-3.5 h-3.5 text-blue-400" /> };
-  }
-  if (p === "2" || p === "away") {
-    return { label: `${prediction.away_team} Win`, conf: Math.max(aw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
-  }
-  // Default: home win
-  return { label: `${prediction.home_team} Win`, conf: Math.max(hw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
+  // Normalize 1X2 to 2-way equivalent for fair comparison
+  const norm1 = Math.round(hw * (100 / (hw + Math.max(aw, d))));
+  const norm2 = Math.round(aw * (100 / (aw + Math.max(hw, d))));
+  const normX = Math.round(d * (100 / (d + Math.max(hw, aw))));
+
+  type Pick = { label: string; conf: number; icon: React.ReactNode };
+  const candidates: Pick[] = [
+    { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
+    { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
+    { label: "Draw", conf: normX, icon: <Target className="w-3.5 h-3.5 text-blue-400" /> },
+    { label: "Over 2.5 Goals", conf: probs.over25, icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> },
+    { label: "Under 2.5 Goals", conf: probs.under25, icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> },
+    { label: "BTTS Yes", conf: probs.bttsYes, icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> },
+    { label: "BTTS No", conf: probs.bttsNo, icon: <Zap className="w-3.5 h-3.5 text-red-400" /> },
+  ];
+
+  candidates.sort((a, b) => b.conf - a.conf);
+  return candidates[0];
 }
 
 interface Props {
