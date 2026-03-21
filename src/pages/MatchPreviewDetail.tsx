@@ -183,23 +183,32 @@ function deriveAIPicks(pred: any): AIPick[] {
   const draw = pred.draw ?? 0;
   const { homeGoals, awayGoals, homeConc, awayConc, totalGoalsAvg } = resolveGoalMetrics(pred);
 
+  // Use predicted_score as primary source for goals markets
+  const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+  const predictedTotal = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : null;
+  // If we have a predicted score, use it; otherwise fall back to goal averages
+  const goalsRef = predictedTotal !== null ? predictedTotal : totalGoalsAvg;
+
   const seed = (pred.match_id || "")
     .split("")
     .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
 
-  const over25Raw = clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
+  // Over/Under derived from predicted score first
+  const over25Raw = predictedTotal !== null
+    ? (predictedTotal >= 3 ? clamp(70 + (predictedTotal - 3) * 8, 72, 92) : clamp(25 + predictedTotal * 10, 25, 48))
+    : clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
   const under25Raw = clamp(100 - over25Raw, 30, 92);
   const goalsPick =
     over25Raw >= under25Raw
       ? makePick("Over 2.5", over25Raw, seed)
       : makePick("Under 2.5", under25Raw, seed);
 
-  const bttsYesRaw = clamp(
-    32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6),
-    30,
-    90
-  );
-  const bttsNoRaw = clamp(100 - bttsYesRaw + (homeConc <= 0.9 || awayConc <= 0.9 ? 8 : 0), 30, 90);
+  // BTTS also uses predicted score when available
+  const predictedBothScored = scoreParts ? parseInt(scoreParts[1]) > 0 && parseInt(scoreParts[2]) > 0 : null;
+  const bttsYesRaw = predictedBothScored !== null
+    ? (predictedBothScored ? clamp(68 + seed, 68, 85) : clamp(30 + seed, 28, 42))
+    : clamp(32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6), 30, 90);
+  const bttsNoRaw = clamp(100 - bttsYesRaw, 30, 90);
   const bttsPick =
     bttsYesRaw >= bttsNoRaw
       ? makePick("BTTS Yes", bttsYesRaw, seed)
