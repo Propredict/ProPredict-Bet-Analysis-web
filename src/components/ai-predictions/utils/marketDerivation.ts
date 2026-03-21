@@ -37,6 +37,64 @@ function parseScore(predictedScore: string | null): { home: number; away: number
 }
 
 /**
+ * Poisson probability function: P(k) = (λ^k * e^-λ) / k!
+ */
+function poissonProb(lambda: number, k: number): number {
+  let result = Math.exp(-lambda);
+  for (let i = 1; i <= k; i++) {
+    result *= lambda / i;
+  }
+  return result;
+}
+
+/**
+ * Calculate Poisson-based goal market probabilities from predicted score or goal rates.
+ * Uses the predicted score to estimate xG for each team.
+ */
+export interface GoalMarketProbs {
+  over15: number;
+  over25: number;
+  over35: number;
+  under15: number;
+  under25: number;
+  under35: number;
+  bttsYes: number;
+  bttsNo: number;
+}
+
+export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
+  const score = parseScore(prediction.predicted_score);
+  // Estimate xG from predicted score with slight regression to mean (1.3 goals)
+  const homeXg = score ? Math.max(0.4, score.home * 0.85 + 0.2) : 1.3;
+  const awayXg = score ? Math.max(0.3, score.away * 0.85 + 0.15) : 1.0;
+
+  let over15 = 0, over25 = 0, over35 = 0;
+  let bttsYes = 0;
+
+  for (let h = 0; h <= 6; h++) {
+    for (let a = 0; a <= 6; a++) {
+      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
+      const total = h + a;
+      if (total > 1) over15 += p;
+      if (total > 2) over25 += p;
+      if (total > 3) over35 += p;
+      if (h > 0 && a > 0) bttsYes += p;
+    }
+  }
+
+  return {
+    over15: Math.round(over15 * 100),
+    over25: Math.round(over25 * 100),
+    over35: Math.round(over35 * 100),
+    under15: Math.round((1 - over15) * 100),
+    under25: Math.round((1 - over25) * 100),
+    under35: Math.round((1 - over35) * 100),
+    bttsYes: Math.round(bttsYes * 100),
+    bttsNo: Math.round((1 - bttsYes) * 100),
+  };
+}
+
+/**
  * Get confidence explanation based on level
  */
 export function getConfidenceExplanation(confidence: number): string {
