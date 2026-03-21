@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp, Lock, Zap, Trophy, Target } from "lucide-react";
+import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,30 @@ import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
 
+interface PredictionRouteState {
+  unlocked?: boolean;
+  predictionId?: string;
+}
+
+interface AIPick {
+  emoji: string;
+  label: string;
+  confidence: number;
+  color: string;
+  bg: string;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 function getTeamInitials(name: string): string {
-  return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
 }
 
 function getRiskLabel(confidence: number | null) {
@@ -47,149 +69,210 @@ function getPredictionEmoji(prediction: string | null) {
   return "📊";
 }
 
-interface AIPick {
-  emoji: string;
-  label: string;
-  confidence: number;
-  color: string;
-  bg: string;
-}
-
-function extractGoalsFromAnalysis(analysis: string | null): { homeGoals: number; awayGoals: number; homeConc: number; awayConc: number } {
+function extractGoalsFromAnalysis(analysis: string | null): {
+  homeGoals: number;
+  awayGoals: number;
+  homeConc: number;
+  awayConc: number;
+} {
   if (!analysis) return { homeGoals: 0, awayGoals: 0, homeConc: 0, awayConc: 0 };
-  let homeGoals = 0, awayGoals = 0, homeConc = 0, awayConc = 0;
 
-  // Priority 1: HOME/AWAY SPLITS section
+  let homeGoals = 0;
+  let awayGoals = 0;
+  let homeConc = 0;
+  let awayConc = 0;
+
   const splitsSection = analysis.match(/HOME\/AWAY SPLITS.*?(?=📈|🛡️|🔥|$)/s);
   if (splitsSection) {
     const homeMatch = splitsSection[0].match(/at home.*?avg\s*([\d.]+)\/([\d.]+)/i);
-    if (homeMatch) { homeGoals = parseFloat(homeMatch[1]); homeConc = parseFloat(homeMatch[2]); }
+    if (homeMatch) {
+      homeGoals = parseFloat(homeMatch[1]);
+      homeConc = parseFloat(homeMatch[2]);
+    }
+
     const awayMatch = splitsSection[0].match(/away.*?avg\s*([\d.]+)\/([\d.]+)/i);
-    if (awayMatch) { awayGoals = parseFloat(awayMatch[1]); awayConc = parseFloat(awayMatch[2]); }
+    if (awayMatch) {
+      awayGoals = parseFloat(awayMatch[1]);
+      awayConc = parseFloat(awayMatch[2]);
+    }
   }
 
-  // Priority 2: SEASON STATS
-  if (!homeGoals) {
+  if (!homeGoals || !awayGoals) {
     const seasonSection = analysis.match(/SEASON STATS.*?(?=🛡️|🔥|🚑|$)/s);
     if (seasonSection) {
       const avgMatches = seasonSection[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/gi);
-      if (avgMatches && avgMatches.length >= 1) {
+      if (avgMatches?.[0] && !homeGoals) {
         const m1 = avgMatches[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
-        if (m1) { homeGoals = parseFloat(m1[1]); homeConc = parseFloat(m1[2]); }
+        if (m1) {
+          homeGoals = parseFloat(m1[1]);
+          homeConc = parseFloat(m1[2]);
+        }
       }
-      if (avgMatches && avgMatches.length >= 2) {
+
+      if (avgMatches?.[1] && !awayGoals) {
         const m2 = avgMatches[1].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
-        if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
+        if (m2) {
+          awayGoals = parseFloat(m2[1]);
+          awayConc = parseFloat(m2[2]);
+        }
       }
     }
   }
 
-  // Priority 3: FORM section
-  if (!homeGoals) {
-    const formSection = analysis.match(/FORM.*?(?=⚔️|🏟️|$)/s) || [];
-    const avgMatches = (formSection[0] || "").match(/avg\s*([\d.]+)\/([\d.]+)/g);
-    if (avgMatches) {
-      const m1 = avgMatches[0]?.match(/avg\s*([\d.]+)\/([\d.]+)/);
-      if (m1) { homeGoals = parseFloat(m1[1]); homeConc = parseFloat(m1[2]); }
-      const m2 = avgMatches[1]?.match(/avg\s*([\d.]+)\/([\d.]+)/);
-      if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
+  if (!homeGoals || !awayGoals) {
+    const pairs = [...analysis.matchAll(/avg\s*([\d.]+)\s*\/\s*([\d.]+)/gi)];
+    if (pairs[0] && !homeGoals) {
+      homeGoals = parseFloat(pairs[0][1]);
+      homeConc = parseFloat(pairs[0][2]);
+    }
+    if (pairs[1] && !awayGoals) {
+      awayGoals = parseFloat(pairs[1][1]);
+      awayConc = parseFloat(pairs[1][2]);
     }
   }
 
   return { homeGoals, awayGoals, homeConc, awayConc };
 }
 
+function resolveGoalMetrics(pred: any) {
+  const extracted = extractGoalsFromAnalysis(pred.analysis);
+
+  let homeGoals = pred.last_home_goals && pred.last_home_goals > 0 ? pred.last_home_goals : extracted.homeGoals;
+  let awayGoals = pred.last_away_goals && pred.last_away_goals > 0 ? pred.last_away_goals : extracted.awayGoals;
+
+  const homeWin = pred.home_win ?? 33;
+  const draw = pred.draw ?? 34;
+  const awayWin = pred.away_win ?? 33;
+
+  if (homeGoals <= 0 || awayGoals <= 0) {
+    const estimatedTotal = clamp(2 + (100 - draw) / 110 + Math.abs(homeWin - awayWin) / 180, 1.7, 3.7);
+    const homeShare = clamp((homeWin + draw * 0.5) / 100, 0.35, 0.7);
+    homeGoals = homeGoals > 0 ? homeGoals : Number((estimatedTotal * homeShare).toFixed(1));
+    awayGoals = awayGoals > 0 ? awayGoals : Number((estimatedTotal - homeGoals).toFixed(1));
+  }
+
+  const homeConc = extracted.homeConc > 0 ? extracted.homeConc : awayGoals;
+  const awayConc = extracted.awayConc > 0 ? extracted.awayConc : homeGoals;
+
+  return {
+    homeGoals,
+    awayGoals,
+    homeConc,
+    awayConc,
+    totalGoalsAvg: Number((homeGoals + awayGoals).toFixed(1)),
+  };
+}
+
+function makePick(label: string, confidence: number, seed: number): AIPick {
+  const conf = clamp(Math.round(confidence + (seed - 5) * 0.5), 30, 95);
+  const emoji = conf >= 80 ? "🔥" : conf >= 75 ? "🟢" : conf >= 60 ? "🟡" : "⚠️";
+  const color = conf >= 75 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400";
+  const bg =
+    conf >= 75
+      ? "bg-emerald-500/10 border-emerald-500/20"
+      : conf >= 60
+        ? "bg-amber-500/10 border-amber-500/20"
+        : "bg-red-500/10 border-red-500/20";
+
+  return { emoji, label, confidence: conf, color, bg };
+}
+
 function deriveAIPicks(pred: any): AIPick[] {
-  const allPicks: AIPick[] = [];
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const draw = pred.draw ?? 0;
-  const extracted = extractGoalsFromAnalysis(pred.analysis);
-  const homeGoals = pred.last_home_goals ?? extracted.homeGoals;
-  const awayGoals = pred.last_away_goals ?? extracted.awayGoals;
-  const homeConc = extracted.homeConc;
-  const awayConc = extracted.awayConc;
-  const totalGoalsAvg = homeGoals + awayGoals;
+  const { homeGoals, awayGoals, homeConc, awayConc, totalGoalsAvg } = resolveGoalMetrics(pred);
 
-  const seed = (pred.match_id || "").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 10;
-  const jitter = (base: number) => base + (seed - 5) * 0.5;
+  const seed = (pred.match_id || "")
+    .split("")
+    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
 
-  const pick = (label: string, conf: number) => {
-    conf = Math.max(30, Math.min(95, Math.round(jitter(conf))));
-    const emoji = conf >= 80 ? "🔥" : conf >= 75 ? "🟢" : conf >= 60 ? "🟡" : "⚠️";
-    const color = conf >= 75 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400";
-    const bg = conf >= 75 ? "bg-emerald-500/10 border-emerald-500/20" : conf >= 60 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
-    allPicks.push({ emoji, label, confidence: conf, color, bg });
-  };
+  const over25Raw = clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
+  const under25Raw = clamp(100 - over25Raw, 30, 92);
+  const goalsPick =
+    over25Raw >= under25Raw
+      ? makePick("Over 2.5", over25Raw, seed)
+      : makePick("Under 2.5", under25Raw, seed);
 
-  pick(`Home Win`, homeWin);
-  pick("Draw", draw);
-  pick(`Away Win`, awayWin);
-  pick(`1X (Home/Draw)`, Math.min(95, homeWin + draw * 0.6));
-  pick(`X2 (Draw/Away)`, Math.min(95, draw * 0.6 + awayWin));
-  pick(`12 (No Draw)`, Math.min(95, homeWin + awayWin * 0.5));
+  const bttsYesRaw = clamp(
+    32 + Math.min(homeGoals, awayGoals) * 22 + (homeGoals >= 1 && awayGoals >= 1 ? 10 : -6),
+    30,
+    90
+  );
+  const bttsNoRaw = clamp(100 - bttsYesRaw + (homeConc <= 0.9 || awayConc <= 0.9 ? 8 : 0), 30, 90);
+  const bttsPick =
+    bttsYesRaw >= bttsNoRaw
+      ? makePick("BTTS Yes", bttsYesRaw, seed)
+      : makePick("BTTS No", bttsNoRaw, seed);
 
-  const overBase = 20 + totalGoalsAvg * 12;
-  pick("Over 0.5", Math.min(95, 50 + totalGoalsAvg * 15));
-  pick("Over 1.5", Math.min(93, 35 + totalGoalsAvg * 13));
-  pick("Over 2.5", Math.min(90, overBase));
-  pick("Over 3.5", Math.min(85, overBase - 15));
-  pick("Under 0.5", Math.max(30, 95 - totalGoalsAvg * 25));
-  pick("Under 1.5", Math.max(30, 85 - totalGoalsAvg * 18));
-  pick("Under 2.5", Math.max(30, 80 - totalGoalsAvg * 14));
-  pick("Under 3.5", Math.max(35, 85 - totalGoalsAvg * 10));
-  pick("Under 4.5", Math.max(40, 92 - totalGoalsAvg * 8));
+  const candidatePicks: AIPick[] = [
+    makePick("Home Win", homeWin, seed),
+    makePick("Draw", draw, seed),
+    makePick("Away Win", awayWin, seed),
+    makePick("1X (Home/Draw)", clamp(homeWin + draw * 0.65, 35, 95), seed),
+    makePick("X2 (Draw/Away)", clamp(awayWin + draw * 0.65, 35, 95), seed),
+    makePick(homeWin >= awayWin ? "DNB Home" : "DNB Away", clamp(Math.max(homeWin, awayWin) + draw * 0.35, 35, 92), seed),
+    goalsPick,
+    bttsPick,
+  ];
 
-  const bttsYesConf = 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
-  const bttsNoConf = homeConc <= 0.8 || awayConc <= 0.8
-    ? 45 + (homeConc <= 0.8 ? 15 : 0) + (awayConc <= 0.8 ? 15 : 0)
-    : 30 + (2.5 - Math.min(homeGoals, awayGoals)) * 15;
-  pick("BTTS Yes", bttsYesConf);
-  pick("BTTS No", bttsNoConf);
+  const highConfidence = candidatePicks
+    .filter((pick) => pick.confidence >= 75)
+    .sort((a, b) => b.confidence - a.confidence);
 
-  pick(`DNB Home`, homeWin + draw * 0.3);
-  pick(`DNB Away`, awayWin + draw * 0.3);
-  pick(`Home CS`, Math.max(30, homeConc > 0 ? 65 - homeConc * 18 : 65 - awayGoals * 18));
-  pick(`Away CS`, Math.max(30, awayConc > 0 ? 65 - awayConc * 18 : 65 - homeGoals * 18));
+  const finalPicks = [...highConfidence];
+  const included = new Set(finalPicks.map((pick) => pick.label));
 
-  // Always include the best Over/Under 2.5 pick and best BTTS pick
-  const over25 = allPicks.find(p => p.label === "Over 2.5");
-  const under25 = allPicks.find(p => p.label === "Under 2.5");
-  const bestGoalsPick = over25 && under25 ? (over25.confidence >= under25.confidence ? over25 : under25) : (over25 || under25);
-  const bttsYes = allPicks.find(p => p.label === "BTTS Yes");
-  const bttsNo = allPicks.find(p => p.label === "BTTS No");
-  const bestBtts = bttsYes && bttsNo ? (bttsYes.confidence >= bttsNo.confidence ? bttsYes : bttsNo) : (bttsYes || bttsNo);
+  for (const mandatoryPick of [goalsPick, bttsPick]) {
+    if (!included.has(mandatoryPick.label)) {
+      finalPicks.push(mandatoryPick);
+      included.add(mandatoryPick.label);
+    }
+  }
 
-  const filtered = allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence).slice(0, 8);
+  if (finalPicks.length < 5) {
+    const fallback = candidatePicks
+      .filter((pick) => !included.has(pick.label))
+      .sort((a, b) => b.confidence - a.confidence);
 
-  // Ensure goals & BTTS picks are always present
-  const ensured = new Set(filtered.map(p => p.label));
-  if (bestGoalsPick && !ensured.has(bestGoalsPick.label)) filtered.push(bestGoalsPick);
-  if (bestBtts && !ensured.has(bestBtts.label)) filtered.push(bestBtts);
+    for (const pick of fallback) {
+      finalPicks.push(pick);
+      if (finalPicks.length >= 5) break;
+    }
+  }
 
-  return filtered;
+  return finalPicks.slice(0, 8);
 }
 
 function deriveStatsGrid(pred: any) {
-  const extracted = extractGoalsFromAnalysis(pred.analysis);
-  const homeGoals = pred.last_home_goals ?? extracted.homeGoals;
-  const awayGoals = pred.last_away_goals ?? extracted.awayGoals;
+  const { homeGoals, awayGoals, totalGoalsAvg } = resolveGoalMetrics(pred);
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
-  const totalAvg = homeGoals + awayGoals;
-  const bttsChance = Math.min(95, 30 + Math.min(homeGoals, awayGoals) * 20 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0));
+  const bttsChance = Math.round(clamp(32 + Math.min(homeGoals, awayGoals) * 22, 30, 90));
 
   const formMatch = pred.analysis?.match(/([WDL]{5,})/);
   const formStr = formMatch ? formMatch[1] : null;
   const formWins = formStr ? (formStr.match(/W/g) || []).length : 0;
   const formLabel = formStr
-    ? (formWins >= 7 ? "Dominant" : formWins >= 5 ? "Strong" : formWins >= 3 ? "Average" : "Weak")
-    : (homeWin >= 60 ? "Strong" : homeWin >= 45 ? "Good" : homeWin >= 30 ? "Average" : "Weak");
+    ? formWins >= 7
+      ? "Dominant"
+      : formWins >= 5
+        ? "Strong"
+        : formWins >= 3
+          ? "Average"
+          : "Weak"
+    : homeWin >= 60
+      ? "Strong"
+      : homeWin >= 45
+        ? "Good"
+        : homeWin >= 30
+          ? "Average"
+          : "Weak";
 
   return [
-    { label: "Win %", value: `${Math.max(homeWin, awayWin)}%`, sub: homeWin > awayWin ? "Home" : "Away" },
-    { label: "Goals Avg", value: totalAvg.toFixed(1), sub: "Combined" },
-    { label: "BTTS", value: `${Math.round(bttsChance)}%`, sub: "Chance" },
+    { label: "Win %", value: `${Math.max(homeWin, awayWin)}%`, sub: homeWin >= awayWin ? "Home" : "Away" },
+    { label: "Goals Avg", value: totalGoalsAvg.toFixed(1), sub: "Combined" },
+    { label: "BTTS", value: `${bttsChance}%`, sub: "Chance" },
     { label: "Form", value: formLabel, sub: "Home" },
   ];
 }
@@ -198,71 +281,89 @@ export default function MatchPreviewDetail() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const routeState = (location.state as PredictionRouteState | null) ?? null;
+  const predictionIdFromState = routeState?.predictionId;
+
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
-  const { isGenerating, analysis, generatedMatch, generate } = useMatchPreviewGenerator();
+  const { isGenerating, analysis, generatedMatch, generateFromPrediction } = useMatchPreviewGenerator();
 
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [unlocked, setUnlocked] = useState(!!(location.state as any)?.unlocked);
+  const [unlocked, setUnlocked] = useState(Boolean(routeState?.unlocked));
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const canGenerate = isPremiumUser || plan === "basic";
 
   useEffect(() => {
-    if (!matchId) return;
+    if (!matchId && !predictionIdFromState) return;
+
     async function fetchPrediction() {
       setLoading(true);
-      const { data } = await supabase
-        .from("ai_predictions")
-        .select("*")
-        .eq("match_id", matchId)
-        .maybeSingle();
-      if (!data) {
-        const { data: byId } = await supabase
+      let resolvedPrediction: any = null;
+
+      if (predictionIdFromState) {
+        const { data } = await supabase.from("ai_predictions").select("*").eq("id", predictionIdFromState).maybeSingle();
+        if (data) resolvedPrediction = data;
+      }
+
+      if (!resolvedPrediction && matchId) {
+        const { data } = await supabase
           .from("ai_predictions")
           .select("*")
-          .eq("id", matchId)
+          .eq("match_id", matchId)
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
-        setPrediction(byId);
-      } else {
-        setPrediction(data);
+
+        if (data) resolvedPrediction = data;
       }
+
+      if (!resolvedPrediction && matchId) {
+        const { data } = await supabase.from("ai_predictions").select("*").eq("id", matchId).maybeSingle();
+        if (data) resolvedPrediction = data;
+      }
+
+      setPrediction(resolvedPrediction);
       setLoading(false);
     }
+
     fetchPrediction();
-  }, [matchId]);
+  }, [matchId, predictionIdFromState]);
 
   useEffect(() => {
-    if (!prediction || !unlocked || analysis || isGenerating) return;
-    if (!canGenerate) return;
-    const lm = liveMatches.find(
-      m => m.homeTeam === prediction.home_team && m.awayTeam === prediction.away_team
+    if (!prediction || !unlocked || analysis || isGenerating || !canGenerate) return;
+
+    const liveMatchForLogos = liveMatches.find(
+      (match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team
     );
-    const mockMatch: Match = {
+
+    const detailMatch: Match = {
       id: prediction.match_id,
       homeTeam: prediction.home_team,
       awayTeam: prediction.away_team,
-      homeTeamId: lm?.homeTeamId ?? 0,
-      awayTeamId: lm?.awayTeamId ?? 0,
-      startTime: prediction.match_time || "",
-      status: "upcoming" as const,
+      homeTeamId: liveMatchForLogos?.homeTeamId ?? 0,
+      awayTeamId: liveMatchForLogos?.awayTeamId ?? 0,
+      startTime: liveMatchForLogos?.startTime || prediction.match_time || "",
+      status: "upcoming",
       league: prediction.league || "",
       homeScore: null,
       awayScore: null,
       minute: null,
-      leagueCountry: "",
-      homeLogo: lm?.homeLogo || null,
-      awayLogo: lm?.awayLogo || null,
-      leagueLogo: lm?.leagueLogo || null,
+      leagueCountry: liveMatchForLogos?.leagueCountry || "",
+      homeLogo: liveMatchForLogos?.homeLogo || null,
+      awayLogo: liveMatchForLogos?.awayLogo || null,
+      leagueLogo: liveMatchForLogos?.leagueLogo || null,
     };
-    generate(mockMatch);
-  }, [prediction, liveMatches, unlocked, analysis, isGenerating, canGenerate, generate]);
+
+    generateFromPrediction(detailMatch, prediction);
+  }, [prediction, unlocked, analysis, isGenerating, canGenerate, liveMatches, generateFromPrediction]);
 
   const liveMatch = prediction
-    ? liveMatches.find(m => m.homeTeam === prediction.home_team && m.awayTeam === prediction.away_team)
+    ? liveMatches.find((match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team)
     : null;
+
   const homeLogo = liveMatch?.homeLogo || null;
   const awayLogo = liveMatch?.awayLogo || null;
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
