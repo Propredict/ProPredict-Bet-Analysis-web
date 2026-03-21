@@ -51,11 +51,27 @@ const LEAGUE_PRIORITY: Record<string, number> = {
   "Liga Profesional Argentina": 55,
 };
 
+// English Premier League teams whitelist — to filter out Kuwait, Egypt, etc. "Premier League"
+const EPL_TEAMS = new Set([
+  "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+  "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
+  "Ipswich", "Leeds", "Leicester", "Liverpool", "Luton",
+  "Manchester City", "Manchester United", "Newcastle", "Nottingham Forest",
+  "Sheffield United", "Southampton", "Tottenham", "West Ham", "Wolverhampton",
+  "Wolves", "Norwich", "Watford", "West Brom", "Sheffield Wed",
+]);
+
 const QUALITY_SET = new Set(Object.keys(LEAGUE_PRIORITY).map((l) => l.toLowerCase()));
 
-function isQualityLeague(league: string | null): boolean {
+function isQualityLeague(league: string | null, homeTeam?: string): boolean {
   if (!league) return false;
-  return QUALITY_SET.has(league.toLowerCase());
+  const lower = league.toLowerCase();
+  if (!QUALITY_SET.has(lower)) return false;
+  // For "Premier League", only allow English teams
+  if (lower === "premier league" && homeTeam) {
+    return EPL_TEAMS.has(homeTeam);
+  }
+  return true;
 }
 
 function getLeaguePriority(league: string | null): number {
@@ -103,7 +119,7 @@ export default function MatchPreviews() {
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
     return predictions
-      .filter((p) => isQualityLeague(p.league))
+      .filter((p) => isQualityLeague(p.league, p.home_team))
       .sort((a, b) => {
         // Primary: highest confidence first (most low-risk matches on top)
         const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
