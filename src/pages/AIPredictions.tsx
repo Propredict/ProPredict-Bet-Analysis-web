@@ -155,6 +155,11 @@ export default function AIPredictions() {
     if (tierFilter !== "all") {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
+
+    // Filter by pick type
+    if (pickFilter !== "all") {
+      result = result.filter((p) => getPickType(p) === pickFilter);
+    }
     
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
