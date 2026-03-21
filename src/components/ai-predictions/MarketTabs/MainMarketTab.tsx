@@ -197,25 +197,17 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         <div>
           <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
           <div className={cn(
-            "text-sm md:text-base font-bold text-white",
+            "text-sm md:text-base font-bold text-white flex items-center gap-1.5",
             !hasAccess && "blur-sm select-none"
           )}>
             {hasAccess ? (() => {
-              const p = (prediction.prediction || "").toLowerCase();
-              const hw = prediction.home_win ?? 0;
-              const aw = prediction.away_win ?? 0;
-              const d = prediction.draw ?? 0;
-              // Determine best market with highest confidence
-              if (p === "1" || p === "home") return `${prediction.home_team} Win`;
-              if (p === "2" || p === "away") return `${prediction.away_team} Win`;
-              if (p === "x" || p === "draw") return "Draw";
-              if (p.includes("over")) return "Over 2.5 Goals";
-              if (p.includes("under")) return "Under 2.5 Goals";
-              if (p.includes("btts")) return "BTTS Yes";
-              // Fallback: highest probability
-              if (hw >= aw && hw >= d) return `${prediction.home_team} Win`;
-              if (aw >= hw && aw >= d) return `${prediction.away_team} Win`;
-              return "Draw";
+              const pick = getBestPickWithIcon(prediction);
+              return (
+                <>
+                  {pick.icon}
+                  {pick.label}
+                </>
+              );
             })() : "? ? ?"}
           </div>
         </div>
