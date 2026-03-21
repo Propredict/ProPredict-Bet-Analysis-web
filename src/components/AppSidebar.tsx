@@ -89,7 +89,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 flex items-center bg-primary">
+      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 flex items-center justify-between bg-primary">
         <div className="flex items-center gap-2">
           <img 
             src={logoImage} 
@@ -103,6 +103,15 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+        {isMobile && (
+          <button
+            onClick={() => setOpenMobile(false)}
+            className="p-1.5 rounded-md text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </SidebarHeader>
 
       <SidebarContent className="px-1.5">
