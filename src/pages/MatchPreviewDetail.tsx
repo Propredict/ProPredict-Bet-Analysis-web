@@ -214,6 +214,17 @@ export default function MatchPreviewDetail() {
               </div>
             </div>
 
+            {/* AI Prediction — hero banner */}
+            <div className="text-center py-3 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/20">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-white/80" />
+                <span className="text-xs font-semibold text-white/80 uppercase tracking-wider">AI Prediction</span>
+              </div>
+              <span className="text-2xl font-black text-white tracking-tight">
+                {getPredictionLabel(prediction.prediction)}
+              </span>
+            </div>
+
             {/* Confidence & Risk */}
             <div className="flex items-center justify-center gap-5 text-sm pt-2">
               <div className="flex items-center gap-2">
