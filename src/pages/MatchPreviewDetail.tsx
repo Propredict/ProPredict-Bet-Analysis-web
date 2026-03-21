@@ -58,10 +58,33 @@ interface AIPick {
 function extractGoalsFromAnalysis(analysis: string | null): { homeGoals: number; awayGoals: number; homeConc: number; awayConc: number } {
   if (!analysis) return { homeGoals: 0, awayGoals: 0, homeConc: 0, awayConc: 0 };
   let homeGoals = 0, awayGoals = 0, homeConc = 0, awayConc = 0;
-  const homeAtHome = analysis.match(/at home:.*?avg\s*([\d.]+)\/([\d.]+)/i);
-  if (homeAtHome) { homeGoals = parseFloat(homeAtHome[1]); homeConc = parseFloat(homeAtHome[2]); }
-  const awayFromHome = analysis.match(/away:.*?avg\s*([\d.]+)\/([\d.]+)/i);
-  if (awayFromHome) { awayGoals = parseFloat(awayFromHome[1]); awayConc = parseFloat(awayFromHome[2]); }
+
+  // Priority 1: HOME/AWAY SPLITS section
+  const splitsSection = analysis.match(/HOME\/AWAY SPLITS.*?(?=📈|🛡️|🔥|$)/s);
+  if (splitsSection) {
+    const homeMatch = splitsSection[0].match(/at home.*?avg\s*([\d.]+)\/([\d.]+)/i);
+    if (homeMatch) { homeGoals = parseFloat(homeMatch[1]); homeConc = parseFloat(homeMatch[2]); }
+    const awayMatch = splitsSection[0].match(/away.*?avg\s*([\d.]+)\/([\d.]+)/i);
+    if (awayMatch) { awayGoals = parseFloat(awayMatch[1]); awayConc = parseFloat(awayMatch[2]); }
+  }
+
+  // Priority 2: SEASON STATS
+  if (!homeGoals) {
+    const seasonSection = analysis.match(/SEASON STATS.*?(?=🛡️|🔥|🚑|$)/s);
+    if (seasonSection) {
+      const avgMatches = seasonSection[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/gi);
+      if (avgMatches && avgMatches.length >= 1) {
+        const m1 = avgMatches[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
+        if (m1) { homeGoals = parseFloat(m1[1]); homeConc = parseFloat(m1[2]); }
+      }
+      if (avgMatches && avgMatches.length >= 2) {
+        const m2 = avgMatches[1].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
+        if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
+      }
+    }
+  }
+
+  // Priority 3: FORM section
   if (!homeGoals) {
     const formSection = analysis.match(/FORM.*?(?=⚔️|🏟️|$)/s) || [];
     const avgMatches = (formSection[0] || "").match(/avg\s*([\d.]+)\/([\d.]+)/g);
@@ -72,6 +95,7 @@ function extractGoalsFromAnalysis(analysis: string | null): { homeGoals: number;
       if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
     }
   }
+
   return { homeGoals, awayGoals, homeConc, awayConc };
 }
 
