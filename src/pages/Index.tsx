@@ -141,10 +141,10 @@ const Index = () => {
           <FeaturedPredictions />
         </Suspense>
 
-        {/* Prediction Analytics Charts – Web only */}
+        {/* Prediction Analytics Charts – Desktop web only */}
         {!isAndroid && (
           <Suspense fallback={<LazyFallback />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
               <PredictionOutcomeChart />
               <ConfidenceDistributionChart />
             </div>
@@ -171,10 +171,10 @@ const Index = () => {
           <DashboardAIPredictions />
         </Suspense>
 
-        {/* Model Analytics Charts – Web only (after AI Predictions) */}
+        {/* Model Analytics Charts – Desktop web only */}
         {!isAndroid && (
           <Suspense fallback={<LazyFallback />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
               <ModelAccuracyTrendChart />
               <AIAdoptionChart />
             </div>
