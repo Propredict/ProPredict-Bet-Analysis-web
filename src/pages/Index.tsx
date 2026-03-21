@@ -97,10 +97,8 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Dashboard Stats Hero */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardHero />
-        </Suspense>
+
+
 
 
         {!isAndroid && (
