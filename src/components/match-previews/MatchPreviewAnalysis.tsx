@@ -492,35 +492,47 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
         </SectionCard>
       )}
 
-      {/* 📊 Full Match Analysis */}
+      {/* 📊 AI Match Analysis — text overview */}
       <SectionCard
         icon={<BarChart3 className="h-3.5 w-3.5" />}
         iconGradient="from-blue-600 to-indigo-600"
-        title="📊 Match Analysis"
+        title="📊 AI Match Analysis"
       >
-        <div className="space-y-4">
-          {/* Attack Strength */}
-          <AnalysisSubSection icon={<Flame className="h-3.5 w-3.5 text-orange-400" />} title="Attack Strength">
-            {attackAnalysis.map((item, idx) => (
-              <AnalysisRow key={idx} label={item.label} detail={item.detail} trend={item.trend} />
-            ))}
-          </AnalysisSubSection>
+        <div className="space-y-3">
+          {/* Main overview paragraph from AI */}
+          {analysis.overview && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {analysis.overview}
+            </p>
+          )}
 
-          {/* Defensive Solidity */}
-          <AnalysisSubSection icon={<Shield className="h-3.5 w-3.5 text-blue-400" />} title="Defensive Solidity">
-            {defenseAnalysis.map((item, idx) => (
-              <AnalysisRow key={idx} label={item.label} detail={item.detail} trend={item.trend} />
-            ))}
-          </AnalysisSubSection>
+          {/* AI reasoning / prediction logic */}
+          {analysis.prediction?.reasoning && (
+            <div className="bg-muted/20 rounded-xl p-3 border border-border/20">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Brain className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">AI Reasoning</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {analysis.prediction.reasoning}
+              </p>
+            </div>
+          )}
 
-          {/* Current Form */}
-          <AnalysisSubSection icon={<Activity className="h-3.5 w-3.5 text-emerald-400" />} title="Current Form">
-            {formAnalysis.map((item, idx) => (
-              <AnalysisRow key={idx} label={item.label} detail={item.detail} trend={item.trend} />
-            ))}
-          </AnalysisSubSection>
+          {/* Key factors as concise bullet points */}
+          {prediction?.key_factors && prediction.key_factors.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Key Factors</span>
+              {prediction.key_factors.slice(0, 5).map((factor: string, idx: number) => (
+                <div key={idx} className="flex items-start gap-2">
+                  <span className="text-emerald-400 mt-0.5 shrink-0">•</span>
+                  <span className="text-xs text-muted-foreground leading-relaxed">{factor}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Goal Trends - mini grid */}
+          {/* Goal Trends mini grid */}
           <div className="pt-1">
             <div className="flex items-center gap-1.5 mb-2">
               <Target className="h-3.5 w-3.5 text-primary" />
