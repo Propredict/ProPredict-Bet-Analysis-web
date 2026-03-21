@@ -40,12 +40,10 @@ function buildAnalysisFromPrediction(
   else if (prediction.includes("btts")) outcome = "Both Teams to Score";
   else outcome = row.prediction || "Analysis pending";
 
-  // Generate match-specific overview
+  // Generate clean, short overview — never use raw analysis text
   let overview: string;
-  if (row.analysis) {
-    overview = row.analysis;
-  } else if (homeWin >= 60) {
-    overview = `${homeTeam} enters this ${match.league} fixture as clear favorites with a ${homeWin}% win probability. Their home record shows ${homeGoals.toFixed(1)} goals per game average, suggesting they'll look to control proceedings from the start. ${awayTeam}, with just ${awayWin}% away win chance, will need to be defensively disciplined.`;
+  if (homeWin >= 60) {
+    overview = `${homeTeam} enters this ${match.league} fixture as clear favorites with a ${homeWin}% win probability. Their home record shows ${homeGoals.toFixed(1)} goals per game average, suggesting they'll control proceedings. ${awayTeam}, with just ${awayWin}% away win chance, will need to be defensively disciplined.`;
   } else if (awayWin >= 55) {
     overview = `${awayTeam} carries impressive away form into this ${match.league} clash with ${awayWin}% win probability. Despite playing away, their ${awayGoals.toFixed(1)} goals average suggests they'll pose a real threat. ${homeTeam} at ${homeWin}% will need to capitalize on home advantage.`;
   } else if (drawProb >= 30) {
