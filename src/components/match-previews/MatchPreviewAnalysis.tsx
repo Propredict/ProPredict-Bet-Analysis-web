@@ -431,6 +431,68 @@ function deriveSeasonStats(pred: any, parsed: ParsedAnalysis): { team: string; r
   return stats;
 }
 
+/* ─── Match Insights ─── */
+
+function deriveMatchInsights(pred: any, parsed: ParsedAnalysis, analysis: MatchAnalysis | null): string[] {
+  if (!pred) return [];
+  const insights: string[] = [];
+  const homeTeam = pred.home_team || "Home";
+  const awayTeam = pred.away_team || "Away";
+  const hw = pred.home_win ?? 0;
+  const aw = pred.away_win ?? 0;
+  const hg = parsed.homeGoalsScored ?? pred.last_home_goals ?? 0;
+  const ag = parsed.awayGoalsScored ?? pred.last_away_goals ?? 0;
+
+  // Home form insight
+  if (parsed.homeForm) {
+    const homeWins = (parsed.homeForm.match(/W/g) || []).length;
+    insights.push(`${homeTeam} has won ${homeWins} of their last ${parsed.homeForm.length} home matches.`);
+  } else if (hw >= 55) {
+    insights.push(`${homeTeam} shows strong home form with ${hw}% win probability.`);
+  }
+
+  // Away scoring
+  if (ag > 0) {
+    insights.push(`${awayTeam} averaging ${ag.toFixed(1)} goals per game on the road this season.`);
+  }
+
+  // H2H
+  if (parsed.h2hHome !== null && parsed.h2hAway !== null) {
+    const total = (parsed.h2hHome || 0) + (parsed.h2hDraws || 0) + (parsed.h2hAway || 0);
+    if (total > 0 && parsed.h2hAvgGoals) {
+      insights.push(`The last ${total} meetings have produced ${parsed.h2hAvgGoals.toFixed(1)} goals on average.`);
+    }
+  }
+
+  // Goal trend
+  const totalGoals = hg + ag;
+  if (totalGoals >= 3) {
+    insights.push(`High-scoring pattern detected — combined average of ${totalGoals.toFixed(1)} goals per match.`);
+  } else if (totalGoals <= 1.8) {
+    insights.push(`Low-scoring trend in recent matches — expect a tight defensive battle.`);
+  }
+
+  // Home advantage
+  if (hw >= 60) {
+    insights.push(`${homeTeam}'s home record gives them a strong psychological advantage heading into this fixture.`);
+  }
+
+  // Defense
+  if (parsed.homeCleanSheets && parsed.homeCleanSheets >= 4) {
+    insights.push(`${homeTeam} has kept ${parsed.homeCleanSheets} clean sheets — solid defensive structure.`);
+  }
+
+  // Key factors from AI
+  if (pred.key_factors && pred.key_factors.length > 0) {
+    const unusedFactor = pred.key_factors.find((f: string) =>
+      !insights.some(i => i.toLowerCase().includes(f.toLowerCase().slice(0, 15)))
+    );
+    if (unusedFactor) insights.push(unusedFactor);
+  }
+
+  return insights.slice(0, 5);
+}
+
 const TrendIcon = ({ trend }: { trend: "positive" | "negative" | "neutral" }) => {
   if (trend === "positive") return <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />;
   if (trend === "negative") return <TrendingDown className="h-3.5 w-3.5 text-red-400" />;
@@ -496,13 +558,34 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
       <SectionCard
         icon={<BarChart3 className="h-3.5 w-3.5" />}
         iconGradient="from-blue-600 to-indigo-600"
-        title="📊 AI Analysis"
+        title="✨ AI Overview"
       >
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           {analysis.overview}
-          {analysis.prediction?.reasoning ? ` ${analysis.prediction.reasoning}` : ""}
         </p>
       </SectionCard>
+
+      {/* 💡 Match Insights */}
+      {(() => {
+        const insights = deriveMatchInsights(prediction, parsed, analysis);
+        if (insights.length === 0) return null;
+        return (
+          <SectionCard
+            icon={<Lightbulb className="h-3.5 w-3.5" />}
+            iconGradient="from-amber-500 to-yellow-500"
+            title="💡 Match Insights"
+          >
+            <div className="space-y-3">
+              {insights.map((insight, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">{insight}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        );
+      })()}
 
       {/* 📈 Season Comparison */}
       {seasonStats.length > 0 && (
