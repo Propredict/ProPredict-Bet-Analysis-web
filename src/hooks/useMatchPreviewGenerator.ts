@@ -8,15 +8,32 @@ function extractGoalsFromAnalysis(text: string | null): { homeGoals: number; awa
   if (!text) return { homeGoals: 0, awayGoals: 0, homeConc: 0, awayConc: 0 };
   let homeGoals = 0, awayGoals = 0, homeConc = 0, awayConc = 0;
 
-  // Try "at home: ... avg X/Y"
-  const homeAtHome = text.match(/at home[^.]*avg\s*([\d.]+)\/([\d.]+)/i);
-  if (homeAtHome) { homeGoals = parseFloat(homeAtHome[1]); homeConc = parseFloat(homeAtHome[2]); }
+  // Priority 1: HOME/AWAY SPLITS section — most accurate per-venue data
+  const splitsSection = text.match(/HOME\/AWAY SPLITS.*?(?=📈|🛡️|🔥|$)/s);
+  if (splitsSection) {
+    const homeMatch = splitsSection[0].match(/at home.*?avg\s*([\d.]+)\/([\d.]+)/i);
+    if (homeMatch) { homeGoals = parseFloat(homeMatch[1]); homeConc = parseFloat(homeMatch[2]); }
+    const awayMatch = splitsSection[0].match(/away.*?avg\s*([\d.]+)\/([\d.]+)/i);
+    if (awayMatch) { awayGoals = parseFloat(awayMatch[1]); awayConc = parseFloat(awayMatch[2]); }
+  }
 
-  // Try "away: ... avg X/Y"
-  const awayFromHome = text.match(/away[^.]*avg\s*([\d.]+)\/([\d.]+)/i);
-  if (awayFromHome) { awayGoals = parseFloat(awayFromHome[1]); awayConc = parseFloat(awayFromHome[2]); }
+  // Priority 2: SEASON STATS — "Avg goals: X scored, Y conceded"
+  if (!homeGoals) {
+    const seasonSection = text.match(/SEASON STATS.*?(?=🛡️|🔥|🚑|$)/s);
+    if (seasonSection) {
+      const avgMatches = seasonSection[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/gi);
+      if (avgMatches && avgMatches.length >= 1) {
+        const m1 = avgMatches[0].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
+        if (m1) { homeGoals = parseFloat(m1[1]); homeConc = parseFloat(m1[2]); }
+      }
+      if (avgMatches && avgMatches.length >= 2) {
+        const m2 = avgMatches[1].match(/Avg goals:\s*([\d.]+)\s*scored,\s*([\d.]+)\s*conceded/i);
+        if (m2) { awayGoals = parseFloat(m2[1]); awayConc = parseFloat(m2[2]); }
+      }
+    }
+  }
 
-  // Fallback: any "avg X/Y" patterns in FORM section
+  // Priority 3: FORM section avg patterns
   if (!homeGoals) {
     const formSection = text.match(/FORM.*?(?=⚔️|🏟️|📊|$)/s);
     if (formSection) {
@@ -30,35 +47,17 @@ function extractGoalsFromAnalysis(text: string | null): { homeGoals: number; awa
     }
   }
 
-  // Fallback: "Avg goals: X scored, Y conceded"
-  if (!homeGoals) {
-    const scored = text.match(/Avg goals:\s*([\d.]+)\s*scored/gi);
-    if (scored && scored.length >= 2) {
-      const m1 = scored[0].match(/([\d.]+)\s*scored/i);
-      const m2 = scored[1].match(/([\d.]+)\s*scored/i);
-      if (m1) homeGoals = parseFloat(m1[1]);
-      if (m2) awayGoals = parseFloat(m2[1]);
-    }
-  }
-
-  // Fallback: "GF X GA Y" pattern
+  // Priority 4: GF/GA season totals
   if (!homeGoals) {
     const gfMatches = text.match(/GF\s*(\d+)\s*GA\s*(\d+)/gi);
     if (gfMatches && gfMatches.length >= 1) {
+      const gamesMatch = text.match(/(\d+)W\s*\d+D\s*(\d+)L/);
+      const gamesEst = gamesMatch ? parseInt(gamesMatch[1]) + parseInt(gamesMatch[2]) + 5 : 30;
       const m1 = gfMatches[0].match(/GF\s*(\d+)\s*GA\s*(\d+)/i);
-      if (m1) {
-        // Estimate per-game from season total (assume ~30 games)
-        const gamesEst = 30;
-        homeGoals = parseFloat(m1[1]) / gamesEst;
-        homeConc = parseFloat(m1[2]) / gamesEst;
-      }
-      if (gfMatches[1]) {
+      if (m1) { homeGoals = parseFloat(m1[1]) / gamesEst; homeConc = parseFloat(m1[2]) / gamesEst; }
+      if (gfMatches.length >= 2) {
         const m2 = gfMatches[1].match(/GF\s*(\d+)\s*GA\s*(\d+)/i);
-        if (m2) {
-          const gamesEst = 30;
-          awayGoals = parseFloat(m2[1]) / gamesEst;
-          awayConc = parseFloat(m2[2]) / gamesEst;
-        }
+        if (m2) { awayGoals = parseFloat(m2[1]) / gamesEst; awayConc = parseFloat(m2[2]) / gamesEst; }
       }
     }
   }
