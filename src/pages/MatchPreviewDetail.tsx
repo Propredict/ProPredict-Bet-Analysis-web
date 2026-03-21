@@ -183,11 +183,20 @@ function deriveAIPicks(pred: any): AIPick[] {
   const draw = pred.draw ?? 0;
   const { homeGoals, awayGoals, homeConc, awayConc, totalGoalsAvg } = resolveGoalMetrics(pred);
 
+  // Use predicted_score as primary source for goals markets
+  const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+  const predictedTotal = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : null;
+  // If we have a predicted score, use it; otherwise fall back to goal averages
+  const goalsRef = predictedTotal !== null ? predictedTotal : totalGoalsAvg;
+
   const seed = (pred.match_id || "")
     .split("")
     .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
 
-  const over25Raw = clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
+  // Over/Under derived from predicted score first
+  const over25Raw = predictedTotal !== null
+    ? (predictedTotal >= 3 ? clamp(70 + (predictedTotal - 3) * 8, 72, 92) : clamp(25 + predictedTotal * 10, 25, 48))
+    : clamp(28 + totalGoalsAvg * 18 - ((homeConc + awayConc) / 2 > 1.6 ? 8 : 0), 30, 92);
   const under25Raw = clamp(100 - over25Raw, 30, 92);
   const goalsPick =
     over25Raw >= under25Raw
