@@ -47,6 +47,7 @@ export default function MatchPreviewDetail() {
 
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [unlocked, setUnlocked] = useState(false);
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const canGenerate = isPremiumUser || plan === "basic";
