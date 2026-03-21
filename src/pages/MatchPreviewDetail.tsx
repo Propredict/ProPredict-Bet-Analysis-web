@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp, Lock, Zap, Users, Eye, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
