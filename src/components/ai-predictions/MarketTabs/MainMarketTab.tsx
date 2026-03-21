@@ -218,12 +218,11 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
 
       {/* Value Bet Badge */}
       {hasAccess && isValueBet(prediction) && (
-        <div className="flex items-center gap-1.5 pt-1">
-          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg animate-pulse">
+        <div className="pt-1">
+          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg">
             <Flame className="w-3 h-3 mr-1" />
             🔥 Value Bet
           </Badge>
-          <span className="text-[8px] md:text-[9px] text-orange-300/80">Strong edge detected</span>
         </div>
       )}
 
