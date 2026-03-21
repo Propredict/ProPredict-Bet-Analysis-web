@@ -603,6 +603,7 @@ export default function AIPredictions() {
           <div className="flex flex-wrap gap-1.5 md:gap-2">
             {([
               { value: "all", label: "All Picks", icon: "🎯" },
+              { value: "value", label: "Value Bets", icon: "🔥" },
               { value: "home", label: "Home Win", icon: "🏠" },
               { value: "away", label: "Away Win", icon: "✈️" },
               { value: "draw", label: "Draw", icon: "🤝" },
