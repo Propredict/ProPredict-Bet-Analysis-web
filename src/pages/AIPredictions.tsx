@@ -23,12 +23,13 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
 
 
 
 type SortOption = "confidence" | "kickoff" | "risk" | "over25" | "under25" | "btts";
 type TierFilter = "all" | "free" | "pro" | "premium";
-type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts";
+type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts" | "value";
 
 /** Derive pick type from prediction field (for new predictions with market labels) */
 function getPickTypeFromPrediction(p: string): PickFilter | null {
@@ -45,6 +46,7 @@ function getPickTypeFromPrediction(p: string): PickFilter | null {
 /** Check if a prediction matches a pick filter using both prediction field AND Poisson data */
 function matchesPickFilter(prediction: AIPrediction, filter: PickFilter): boolean {
   if (filter === "all") return true;
+  if (filter === "value") return isValueBet(prediction);
   
   // First check the prediction field directly
   const directType = getPickTypeFromPrediction(prediction.prediction || "");
@@ -601,6 +603,7 @@ export default function AIPredictions() {
           <div className="flex flex-wrap gap-1.5 md:gap-2">
             {([
               { value: "all", label: "All Picks", icon: "🎯" },
+              { value: "value", label: "Value Bets", icon: "🔥" },
               { value: "home", label: "Home Win", icon: "🏠" },
               { value: "away", label: "Away Win", icon: "✈️" },
               { value: "draw", label: "Draw", icon: "🤝" },
@@ -619,8 +622,12 @@ export default function AIPredictions() {
                   className={cn(
                     "h-7 md:h-8 px-2 md:px-3 text-[10px] md:text-xs rounded-full transition-all duration-200 gap-1",
                     pickFilter === item.value
-                      ? "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
-                      : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
+                      ? item.value === "value"
+                        ? "bg-gradient-to-r from-orange-500/25 to-red-500/25 text-orange-400 border border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]"
+                        : "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+                      : item.value === "value"
+                        ? "bg-orange-500/10 text-orange-400 border border-orange-500/30 hover:border-orange-500/60"
+                        : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
                   )}
                   onClick={() => setPickFilter(item.value)}
                 >

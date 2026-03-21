@@ -9,22 +9,22 @@ import {
   calculateGoalMarketProbs,
 } from "../utils/marketDerivation";
 import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame } from "lucide-react";
+
+type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
 /** Determine the best pick across all markets with an icon, using Poisson data */
-function getBestPickWithIcon(prediction: AIPrediction) {
+function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
   const probs = calculateGoalMarketProbs(prediction);
 
-  // Normalize 1X2 to 2-way equivalent for fair comparison
   const norm1 = Math.round(hw * (100 / (hw + Math.max(aw, d))));
   const norm2 = Math.round(aw * (100 / (aw + Math.max(hw, d))));
   const normX = Math.round(d * (100 / (d + Math.max(hw, aw))));
 
-  type Pick = { label: string; conf: number; icon: React.ReactNode };
-  const candidates: Pick[] = [
+  const candidates: PickCandidate[] = [
     { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
     { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
     { label: "Draw", conf: normX, icon: <Target className="w-3.5 h-3.5 text-blue-400" /> },
@@ -35,7 +35,14 @@ function getBestPickWithIcon(prediction: AIPrediction) {
   ];
 
   candidates.sort((a, b) => b.conf - a.conf);
-  return candidates[0];
+  return candidates;
+}
+
+/** Detect Value Bet: best pick ≥72% AND edge over 2nd best ≥12% */
+export function isValueBet(prediction: AIPrediction): boolean {
+  const c = getBestPickCandidates(prediction);
+  if (c.length < 2) return false;
+  return c[0].conf >= 72 && (c[0].conf - c[1].conf) >= 12;
 }
 
 interface Props {
@@ -209,6 +216,17 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       )}
 
+      {/* Value Bet Badge */}
+      {hasAccess && isValueBet(prediction) && (
+        <div className="flex items-center gap-1.5 pt-1">
+          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg animate-pulse">
+            <Flame className="w-3 h-3 mr-1" />
+            🔥 Value Bet
+          </Badge>
+          <span className="text-[8px] md:text-[9px] text-orange-300/80">Strong edge detected</span>
+        </div>
+      )}
+
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
           <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
@@ -217,7 +235,8 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
             !hasAccess && "blur-sm select-none"
           )}>
             {hasAccess ? (() => {
-              const pick = getBestPickWithIcon(prediction);
+              const picks = getBestPickCandidates(prediction);
+              const pick = picks[0];
               return (
                 <>
                   {pick.icon}
