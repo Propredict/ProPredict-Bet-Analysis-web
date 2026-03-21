@@ -193,15 +193,15 @@ export function AIPredictionCard({
           </div>
         </div>
 
-        {/* Predicted Score & Confidence - BLURRED */}
+        {/* Best Pick & Confidence - BLURRED */}
         <div className="px-4 pb-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-muted/20 rounded-lg border border-border/50 blur-sm opacity-50">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="h-4 w-4 text-accent" />
-                <span className="text-xs text-muted-foreground">Predicted Score</span>
+                <span className="text-xs text-muted-foreground">Best Pick</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{predictedScore}</p>
+              <p className="text-lg font-bold text-foreground">Home Win</p>
             </div>
             <div className="p-3 bg-muted/20 rounded-lg border border-border/50 blur-sm opacity-50">
               <div className="flex items-center gap-2 mb-1">
@@ -329,15 +329,26 @@ export function AIPredictionCard({
         </div>
       </div>
 
-      {/* Predicted Score & Confidence */}
+      {/* Best Pick & Confidence */}
       <div className="px-4 pb-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-muted/20 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-1">
               <Target className="h-4 w-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Predicted Score</span>
+              <span className="text-xs text-muted-foreground">Best Pick</span>
             </div>
-            <p className="text-xl font-bold text-foreground">{predictedScore}</p>
+            <p className="text-lg font-bold text-foreground">
+              {(() => {
+                const p = (prediction.prediction || "").toLowerCase();
+                if (p === "1" || p === "home") return "Home Win";
+                if (p === "2" || p === "away") return "Away Win";
+                if (p === "x" || p === "draw") return "Draw";
+                if (p.includes("over")) return "Over 2.5";
+                if (p.includes("under")) return "Under 2.5";
+                if (p.includes("btts")) return "BTTS Yes";
+                return prediction.prediction || "—";
+              })()}
+            </p>
           </div>
           <div className="p-3 bg-muted/20 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-1">
