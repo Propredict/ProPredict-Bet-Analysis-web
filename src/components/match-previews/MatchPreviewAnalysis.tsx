@@ -492,63 +492,16 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
         </SectionCard>
       )}
 
-      {/* 📊 AI Match Analysis — text overview */}
+      {/* 📊 AI Analysis — clean text overview */}
       <SectionCard
         icon={<BarChart3 className="h-3.5 w-3.5" />}
         iconGradient="from-blue-600 to-indigo-600"
-        title="📊 AI Match Analysis"
+        title="📊 AI Analysis"
       >
-        <div className="space-y-3">
-          {/* Main overview paragraph from AI */}
-          {analysis.overview && (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {analysis.overview}
-            </p>
-          )}
-
-          {/* AI reasoning / prediction logic */}
-          {analysis.prediction?.reasoning && (
-            <div className="bg-muted/20 rounded-xl p-3 border border-border/20">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Brain className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">AI Reasoning</span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {analysis.prediction.reasoning}
-              </p>
-            </div>
-          )}
-
-          {/* Key factors as concise bullet points */}
-          {prediction?.key_factors && prediction.key_factors.length > 0 && (
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Key Factors</span>
-              {prediction.key_factors.slice(0, 5).map((factor: string, idx: number) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <span className="text-emerald-400 mt-0.5 shrink-0">•</span>
-                  <span className="text-xs text-muted-foreground leading-relaxed">{factor}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Goal Trends mini grid */}
-          <div className="pt-1">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Target className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Goal Trends</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {goalTrends.map((gt, idx) => (
-                <div key={idx} className="bg-muted/30 rounded-xl p-2.5 text-center border border-border/30">
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">{gt.label}</div>
-                  <div className="text-base font-black text-foreground mt-0.5">{gt.value}</div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5">{gt.detail}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {analysis.overview}
+          {analysis.prediction?.reasoning ? ` ${analysis.prediction.reasoning}` : ""}
+        </p>
       </SectionCard>
 
       {/* 📈 Season Comparison */}
