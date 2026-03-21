@@ -22,22 +22,12 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
 
   const loading = detailsLoading || h2hLoading;
 
-  // Merge H2H data from both sources - prefer dedicated H2H hook
   const mergedH2H = useMemo(() => {
     if (h2hData?.seasons) {
-      // Flatten all matches from H2H hook
-      return h2hData.seasons.flatMap(season => 
+      return h2hData.seasons.flatMap(season =>
         season.matches.map(m => ({
-          fixture: {
-            id: m.fixture.id,
-            date: m.fixture.date,
-            venue: null
-          },
-          league: {
-            name: m.league.name,
-            country: "",
-            logo: ""
-          },
+          fixture: { id: m.fixture.id, date: m.fixture.date, venue: null },
+          league: { name: m.league.name, country: "", logo: "" },
           teams: m.teams,
           goals: m.goals
         }))
@@ -46,7 +36,6 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
     return data?.h2h || [];
   }, [h2hData, data?.h2h]);
 
-  // Get H2H summary from hook or calculate from match details
   const h2hSummary = useMemo(() => {
     if (h2hData?.summary) {
       return {
@@ -56,16 +45,15 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
         totalMatches: h2hData.summary.totalMatches
       };
     }
-    // Calculate from match details H2H
     const h2hMatches = data?.h2h || [];
     const homeTeamId = match.homeTeamId;
     let homeWins = 0, awayWins = 0, draws = 0;
-    
+
     h2hMatches.forEach((m) => {
       const homeGoals = m.goals.home ?? 0;
       const awayGoals = m.goals.away ?? 0;
       const isHomeTeamHome = m.teams.home.id === homeTeamId;
-      
+
       if (homeGoals === awayGoals) {
         draws++;
       } else if (homeGoals > awayGoals) {
@@ -77,12 +65,7 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
       }
     });
 
-    return {
-      team1Wins: homeWins,
-      draws,
-      team2Wins: awayWins,
-      totalMatches: h2hMatches.length
-    };
+    return { team1Wins: homeWins, draws, team2Wins: awayWins, totalMatches: h2hMatches.length };
   }, [h2hData, data?.h2h, match.homeTeamId]);
 
   if (loading) {
@@ -102,10 +85,9 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
           <span className="font-medium text-sm">Head to Head</span>
         </div>
       </div>
-
       <div className="p-3">
-        <H2HSection 
-          h2hMatches={mergedH2H} 
+        <H2HSection
+          h2hMatches={mergedH2H}
           summary={h2hSummary}
           homeTeam={match.homeTeam}
           awayTeam={match.awayTeam}
@@ -115,21 +97,17 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
   );
 }
 
-// Empty state component - wrapped with forwardRef for Radix UI compatibility
 const EmptyState = forwardRef<HTMLDivElement, { icon: any; title: string; subtitle: string }>(
-  ({ icon: Icon, title, subtitle }, ref) => {
-    return (
-      <div ref={ref} className="text-center py-6">
-        <Icon className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
-      </div>
-    );
-  }
+  ({ icon: Icon, title, subtitle }, ref) => (
+    <div ref={ref} className="text-center py-6">
+      <Icon className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+      <p className="text-sm text-muted-foreground">{title}</p>
+      <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
+    </div>
+  )
 );
 EmptyState.displayName = "EmptyState";
 
-// H2H Section with better data handling
 interface H2HSectionProps {
   h2hMatches: H2HMatch[];
   summary: { team1Wins: number; draws: number; team2Wins: number; totalMatches: number };
@@ -140,9 +118,9 @@ interface H2HSectionProps {
 function H2HSection({ h2hMatches, summary, homeTeam, awayTeam }: H2HSectionProps) {
   if (h2hMatches.length === 0) {
     return (
-      <EmptyState 
-        icon={Swords} 
-        title="No head-to-head history" 
+      <EmptyState
+        icon={Swords}
+        title="No head-to-head history"
         subtitle="These teams haven't played each other recently"
       />
     );
@@ -150,7 +128,6 @@ function H2HSection({ h2hMatches, summary, homeTeam, awayTeam }: H2HSectionProps
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
           <p className="text-xl font-bold text-primary">{summary.team1Wins}</p>
@@ -166,14 +143,12 @@ function H2HSection({ h2hMatches, summary, homeTeam, awayTeam }: H2HSectionProps
         </div>
       </div>
 
-      {/* Total matches badge */}
       <div className="flex justify-center">
         <Badge variant="outline" className="text-xs">
-          {summary.totalMatches} previous {summary.totalMatches === 1 ? 'match' : 'matches'}
+          {summary.totalMatches} previous {summary.totalMatches === 1 ? "match" : "matches"}
         </Badge>
       </div>
 
-      {/* Recent Matches */}
       <div className="space-y-1">
         <p className="text-xs text-muted-foreground mb-2">Recent Meetings</p>
         {h2hMatches.slice(0, 5).map((match, idx) => (
@@ -211,528 +186,6 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
           {match.teams.away.name}
         </span>
       </div>
-    </div>
-  );
-}
-function StatsSection({ data, match }: { data: MatchDetails | null; match: Match }) {
-  const stats = data?.statistics || [];
-
-  if (stats.length === 0) {
-    return (
-      <div className="space-y-4">
-        <EmptyState 
-          icon={BarChart3} 
-          title="Statistics not yet available" 
-          subtitle="Stats appear during or after the match"
-        />
-        {/* Show team info as placeholder */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border">
-          <div className="flex items-center gap-2">
-            {match.homeLogo && (
-              <img src={match.homeLogo} alt="" className="h-6 w-6 object-contain" />
-            )}
-            <span className="text-sm font-medium">{match.homeTeam}</span>
-          </div>
-          <span className="text-xs text-muted-foreground">vs</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{match.awayTeam}</span>
-            {match.awayLogo && (
-              <img src={match.awayLogo} alt="" className="h-6 w-6 object-contain" />
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {/* Team Headers */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          {data?.teams?.home?.logo && (
-            <img src={data.teams.home.logo} alt="" className="h-5 w-5 object-contain" />
-          )}
-          <span className="text-xs font-medium truncate max-w-[80px]">{data?.teams?.home?.name}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium truncate max-w-[80px]">{data?.teams?.away?.name}</span>
-          {data?.teams?.away?.logo && (
-            <img src={data.teams.away.logo} alt="" className="h-5 w-5 object-contain" />
-          )}
-        </div>
-      </div>
-
-      {stats.slice(0, 10).map((stat, idx) => (
-        <StatRow key={idx} stat={stat} />
-      ))}
-    </div>
-  );
-}
-
-function StatRow({ stat }: { stat: { type: string; home: string | number | null; away: string | number | null } }) {
-  const homeVal = typeof stat.home === "string" ? parseInt(stat.home) || 0 : (stat.home ?? 0);
-  const awayVal = typeof stat.away === "string" ? parseInt(stat.away) || 0 : (stat.away ?? 0);
-  const total = homeVal + awayVal || 1;
-  const homePercent = (homeVal / total) * 100;
-
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium">{stat.home ?? 0}</span>
-        <span className="text-muted-foreground">{stat.type}</span>
-        <span className="font-medium">{stat.away ?? 0}</span>
-      </div>
-      <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden flex">
-        <div 
-          className="bg-primary h-full transition-all" 
-          style={{ width: `${homePercent}%` }} 
-        />
-        <div 
-          className="bg-muted-foreground/50 h-full transition-all" 
-          style={{ width: `${100 - homePercent}%` }} 
-        />
-      </div>
-    </div>
-  );
-}
-
-// Lineups Section with fallback
-function LineupsSection({ data, match }: { data: MatchDetails | null; match: Match }) {
-  const lineups = data?.lineups || [];
-
-  if (lineups.length === 0) {
-    return (
-      <div className="space-y-4">
-        <EmptyState 
-          icon={Users} 
-          title="Lineups not yet announced" 
-          subtitle="Usually available 1 hour before kickoff"
-        />
-        {/* Show team placeholder */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-3 rounded-lg bg-muted/20 border border-border text-center">
-            {match.homeLogo && (
-              <img src={match.homeLogo} alt="" className="h-8 w-8 object-contain mx-auto mb-2" />
-            )}
-            <p className="text-xs font-medium truncate">{match.homeTeam}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Awaiting lineup</p>
-          </div>
-          <div className="p-3 rounded-lg bg-muted/20 border border-border text-center">
-            {match.awayLogo && (
-              <img src={match.awayLogo} alt="" className="h-8 w-8 object-contain mx-auto mb-2" />
-            )}
-            <p className="text-xs font-medium truncate">{match.awayTeam}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Awaiting lineup</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      {lineups.map((lineup, idx) => (
-        <div key={idx} className="space-y-2">
-          <div className="flex items-center gap-2 mb-2">
-            {lineup.team.logo && (
-              <img src={lineup.team.logo} alt="" className="h-4 w-4 object-contain" />
-            )}
-            <span className="text-xs font-medium truncate">{lineup.team.name}</span>
-            {lineup.formation && (
-              <Badge variant="outline" className="text-[9px] ml-auto">{lineup.formation}</Badge>
-            )}
-          </div>
-          <div className="space-y-0.5">
-            {lineup.startXI.slice(0, 11).map((player, pIdx) => (
-              <div key={pIdx} className="flex items-center gap-1 text-[10px]">
-                <span className="w-4 text-muted-foreground">{player.number}</span>
-                <span className="truncate">{player.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Injuries Preview Section
-function InjuriesPreviewSection({ injuries, homeTeam, awayTeam, loading }: { 
-  injuries: any[]; homeTeam: string; awayTeam: string; loading: boolean 
-}) {
-  if (loading) {
-    return <Skeleton className="h-32 w-full" />;
-  }
-
-  if (injuries.length === 0) {
-    return (
-      <EmptyState 
-        icon={AlertTriangle} 
-        title="No injury data available" 
-        subtitle="Injury reports appear closer to match day"
-      />
-    );
-  }
-
-  // Group by team
-  const grouped = injuries.reduce<Record<string, { team: any; players: any[] }>>((acc, inj) => {
-    const key = String(inj.team?.id || "unknown");
-    if (!acc[key]) acc[key] = { team: inj.team, players: [] };
-    acc[key].players.push(inj);
-    return acc;
-  }, {});
-
-  const getTypeBadge = (type: string) => {
-    const lower = (type || "").toLowerCase();
-    if (lower.includes("missing") || lower === "out") {
-      return <Badge className="bg-destructive/15 text-destructive border-0 text-[10px]">Out</Badge>;
-    }
-    if (lower.includes("doubtful")) {
-      return <Badge className="bg-amber-500/15 text-amber-500 border-0 text-[10px]">Doubtful</Badge>;
-    }
-    return <Badge variant="outline" className="text-[10px]">{type}</Badge>;
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-1">
-        <AlertTriangle className="h-4 w-4 text-destructive" />
-        <span className="text-xs font-medium">Injuries & Suspensions</span>
-        <Badge variant="secondary" className="text-[10px] ml-auto">{injuries.length} players</Badge>
-      </div>
-      {Object.values(grouped).map(({ team, players }) => (
-        <div key={team?.id || "unknown"} className="space-y-1">
-          <div className="flex items-center gap-1.5 mb-1">
-            {team?.logo && <img src={team.logo} alt="" className="h-4 w-4 object-contain" />}
-            <span className="text-[11px] font-medium">{team?.name}</span>
-          </div>
-          {players.map((inj: any, idx: number) => (
-            <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-muted/20">
-              {inj.player?.photo ? (
-                <img src={inj.player.photo} alt="" className="h-6 w-6 rounded-full object-cover" />
-              ) : (
-                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[9px]">?</div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium truncate">{inj.player?.name}</p>
-                <p className="text-[9px] text-muted-foreground truncate">{inj.player?.reason}</p>
-              </div>
-              {getTypeBadge(inj.player?.type || "")}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Events Section with fallback
-function EventsSection({ data }: { data: MatchDetails | null }) {
-  const events = data?.events || [];
-
-  if (events.length === 0) {
-    return (
-      <EmptyState 
-        icon={Target} 
-        title="No match events yet" 
-        subtitle="Events appear during the match"
-      />
-    );
-  }
-
-  const getEventIcon = (type: string, detail: string) => {
-    if (type === "Goal") return "⚽";
-    if (type === "Card" && detail.includes("Red")) return "🟥";
-    if (type === "Card" && detail.includes("Yellow")) return "🟨";
-    if (type === "subst") return "🔄";
-    return "•";
-  };
-
-  return (
-    <div className="space-y-2 max-h-64 overflow-y-auto">
-      {events.map((event, idx) => (
-        <div key={idx} className="flex items-center gap-2 p-2 rounded bg-muted/20">
-          <span className="text-xs font-bold text-primary w-8 shrink-0">
-            {event.time.elapsed}'{event.time.extra ? `+${event.time.extra}` : ''}
-          </span>
-          <span className="text-sm">{getEventIcon(event.type, event.detail)}</span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-medium truncate">{event.player.name}</span>
-              <span className="text-[10px] text-muted-foreground">({event.detail})</span>
-            </div>
-            {event.assist.name && (
-              <p className="text-[10px] text-muted-foreground truncate">
-                Assist: {event.assist.name}
-              </p>
-            )}
-          </div>
-          {event.team.logo && (
-            <img src={event.team.logo} alt="" className="h-4 w-4 object-contain shrink-0" />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Key Players Section - filtered by match teams
-interface KeyPlayersSectionProps {
-  scorersData: any;
-  assistsData: any;
-  isLoading: boolean;
-  homeTeam: string;
-  awayTeam: string;
-  leagueId: string | null;
-}
-
-function KeyPlayersSection({ scorersData, assistsData, isLoading, homeTeam, awayTeam, leagueId }: KeyPlayersSectionProps) {
-  if (!leagueId) {
-    return (
-      <EmptyState 
-        icon={Star} 
-        title="Key players not available" 
-        subtitle="Player data not supported for this league"
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
-      </div>
-    );
-  }
-
-  const allScorers: PlayerStats[] = (scorersData as any)?.players || [];
-  const allAssists: PlayerStats[] = (assistsData as any)?.players || [];
-
-  // Helper: fuzzy team name match
-  const matchTeam = (teamName: string, target: string) => {
-    const tLower = target.toLowerCase();
-    const nLower = teamName.toLowerCase();
-    return nLower.includes(tLower) || tLower.includes(nLower) || 
-           nLower.split(" ").some(w => w.length > 3 && tLower.includes(w));
-  };
-
-  const homeScorers = allScorers.filter(p => matchTeam(p.team.name, homeTeam)).slice(0, 3);
-  const awayScorers = allScorers.filter(p => matchTeam(p.team.name, awayTeam)).slice(0, 3);
-  const homeAssists = allAssists.filter(p => matchTeam(p.team.name, homeTeam)).slice(0, 3);
-  const awayAssists = allAssists.filter(p => matchTeam(p.team.name, awayTeam)).slice(0, 3);
-
-  const hasData = homeScorers.length > 0 || awayScorers.length > 0;
-
-  if (!hasData) {
-    return (
-      <EmptyState 
-        icon={Star} 
-        title="No key players found" 
-        subtitle="Top scorers/assists for these teams will appear here"
-      />
-    );
-  }
-
-  const renderPlayerCard = (player: PlayerStats, stat: "goals" | "assists") => (
-    <div key={`${player.player.id}-${stat}`} className="flex items-center gap-2 p-2 rounded-lg bg-muted/20">
-      <img 
-        src={player.player.photo} 
-        alt="" 
-        className="h-8 w-8 rounded-full object-cover bg-muted flex-shrink-0"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium truncate">{player.player.name}</p>
-        <p className="text-[10px] text-muted-foreground">{player.games.appearances} apps</p>
-      </div>
-      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-        {stat === "goals" ? `⚽ ${player.goals}` : `🅰️ ${player.assists}`}
-      </Badge>
-    </div>
-  );
-
-  return (
-    <div className="space-y-4 max-h-[350px] overflow-y-auto">
-      {/* Home Team */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Star className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-semibold">{homeTeam}</span>
-        </div>
-        <div className="space-y-1.5">
-          {homeScorers.map(p => renderPlayerCard(p, "goals"))}
-          {homeAssists.map(p => renderPlayerCard(p, "assists"))}
-          {homeScorers.length === 0 && homeAssists.length === 0 && (
-            <p className="text-[10px] text-muted-foreground px-2">No top players found in league rankings</p>
-          )}
-        </div>
-      </div>
-
-      {/* Away Team */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Star className="h-3.5 w-3.5 text-destructive" />
-          <span className="text-xs font-semibold">{awayTeam}</span>
-        </div>
-        <div className="space-y-1.5">
-          {awayScorers.map(p => renderPlayerCard(p, "goals"))}
-          {awayAssists.map(p => renderPlayerCard(p, "assists"))}
-          {awayScorers.length === 0 && awayAssists.length === 0 && (
-            <p className="text-[10px] text-muted-foreground px-2">No top players found in league rankings</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Scorers Section
-interface ScorersSectionProps {
-  scorersData: any;
-  isLoading: boolean;
-  leagueId: string | null;
-  leagueName: string;
-}
-
-function ScorersSection({ scorersData, isLoading, leagueId, leagueName }: ScorersSectionProps) {
-  if (!leagueId) {
-    return (
-      <EmptyState 
-        icon={Trophy} 
-        title="Scorers not available" 
-        subtitle={`Top scorers data not supported for ${leagueName}`}
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  const players = (scorersData as any)?.players || [];
-
-  if (players.length === 0) {
-    return (
-      <EmptyState 
-        icon={Trophy} 
-        title="No scorers data" 
-        subtitle="Top scorers will appear here"
-      />
-    );
-  }
-
-  return (
-    <div className="space-y-2 max-h-64 overflow-y-auto">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground px-2 mb-1">
-        <span>Player</span>
-        <span>Goals</span>
-      </div>
-      {players.slice(0, 10).map((item: PlayerStats, idx: number) => (
-        <div key={item.player.id || idx} className="flex items-center gap-2 p-2 rounded bg-muted/20 hover:bg-muted/30 transition-colors">
-          <span className="text-xs font-bold text-primary w-5">{idx + 1}</span>
-          <img 
-            src={item.player.photo} 
-            alt="" 
-            className="h-7 w-7 rounded-full object-cover bg-muted"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{item.player.name}</p>
-            <div className="flex items-center gap-1">
-              {item.team.logo && (
-                <img src={item.team.logo} alt="" className="h-3 w-3 object-contain" />
-              )}
-              <span className="text-[10px] text-muted-foreground truncate">{item.team.name}</span>
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-sm font-bold text-primary">{item.goals}</p>
-            <p className="text-[9px] text-muted-foreground">{item.games.appearances} apps</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Assists Section
-interface AssistsSectionProps {
-  assistsData: any;
-  isLoading: boolean;
-  leagueId: string | null;
-  leagueName: string;
-}
-
-function AssistsSection({ assistsData, isLoading, leagueId, leagueName }: AssistsSectionProps) {
-  if (!leagueId) {
-    return (
-      <EmptyState 
-        icon={Handshake} 
-        title="Assists not available" 
-        subtitle={`Top assists data not supported for ${leagueName}`}
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  const players = (assistsData as any)?.players || [];
-
-  if (players.length === 0) {
-    return (
-      <EmptyState 
-        icon={Handshake} 
-        title="No assists data" 
-        subtitle="Top assists will appear here"
-      />
-    );
-  }
-
-  return (
-    <div className="space-y-2 max-h-64 overflow-y-auto">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground px-2 mb-1">
-        <span>Player</span>
-        <span>Assists</span>
-      </div>
-      {players.slice(0, 10).map((item: PlayerStats, idx: number) => (
-        <div key={item.player.id || idx} className="flex items-center gap-2 p-2 rounded bg-muted/20 hover:bg-muted/30 transition-colors">
-          <span className="text-xs font-bold text-primary w-5">{idx + 1}</span>
-          <img 
-            src={item.player.photo} 
-            alt="" 
-            className="h-7 w-7 rounded-full object-cover bg-muted"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{item.player.name}</p>
-            <div className="flex items-center gap-1">
-              {item.team.logo && (
-                <img src={item.team.logo} alt="" className="h-3 w-3 object-contain" />
-              )}
-              <span className="text-[10px] text-muted-foreground truncate">{item.team.name}</span>
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-sm font-bold text-primary">{item.assists}</p>
-            <p className="text-[9px] text-muted-foreground">{item.games.appearances} apps</p>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
