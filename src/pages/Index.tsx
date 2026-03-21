@@ -110,9 +110,8 @@ const Index = () => {
           <DashboardHero />
         </Suspense>
 
-        <Suspense fallback={<LazyFallback />}>
-          <FeaturedPredictions />
-        </Suspense>
+
+
 
         {/* Prediction Analytics Charts – Desktop web only */}
         {!isAndroid && (
