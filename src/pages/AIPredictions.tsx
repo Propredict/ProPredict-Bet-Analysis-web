@@ -206,7 +206,7 @@ export default function AIPredictions() {
   useEffect(() => {
     setVisibleFeaturedCount(INITIAL_COUNT);
     setVisibleRegularCount(INITIAL_COUNT);
-  }, [day, tierFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
+  }, [day, tierFilter, pickFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
