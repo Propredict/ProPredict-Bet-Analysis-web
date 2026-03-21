@@ -17,33 +17,41 @@ import AdSlot from "@/components/ads/AdSlot";
 const PRO_PREVIEW_LIMIT = 5;
 const MAX_MATCHES = 30;
 
-// Quality leagues filter
-const PRIORITY_LEAGUES = [
-  "premier league",
-  "la liga",
-  "bundesliga",
-  "serie a",
-  "ligue 1",
+// Quality leagues filter — exact match on DB league names
+const QUALITY_LEAGUES = [
+  // Priority 5
+  "Premier League",
+  "La Liga",
+  "Bundesliga",
+  "Serie A",
+  "Ligue 1",
+  // Additional
+  "Eredivisie",
+  "Primeira Liga",
+  "Challenger Pro League",
+  "Championship",
+  "Super Lig",
+  // Secondary
+  "2. Bundesliga",
+  "Serie B",
+  "Ligue 2",
+  "Segunda División",
+  "Liga Profesional Argentina",
+  "Ekstraklasa",
+  "Eliteserien",
+  "Premiership",
+  "Eerste Divisie",
+  "Major League Soccer",
+  "Liga MX",
+  "J1 League",
+  "K League 1",
 ];
 
-const ADDITIONAL_LEAGUES = [
-  "eredivisie",
-  "primeira liga",
-  "jupiler pro league",
-  "süper lig",
-  "super lig",
-  "championship",
-  "liga portugal",
-  "belgian pro league",
-  "turkish süper lig",
-];
-
-const ALL_QUALITY_LEAGUES = [...PRIORITY_LEAGUES, ...ADDITIONAL_LEAGUES];
+const QUALITY_SET = new Set(QUALITY_LEAGUES.map((l) => l.toLowerCase()));
 
 function isQualityLeague(league: string | null): boolean {
   if (!league) return false;
-  const lower = league.toLowerCase();
-  return ALL_QUALITY_LEAGUES.some((q) => lower.includes(q) || q.includes(lower));
+  return QUALITY_SET.has(league.toLowerCase());
 }
 
 function getRiskColor(confidence: number | null) {
