@@ -465,37 +465,14 @@ export default function AIPredictions() {
                 />
               </div>
             </div>
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-              <SelectTrigger className="w-[90px] md:w-[120px] h-7 md:h-8 text-[10px] md:text-xs bg-card border-border rounded">
-                <ArrowUpDown className="w-2.5 h-2.5 mr-1" />
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
-                <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff</SelectItem>
-                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk</SelectItem>
-              </SelectContent>
-            </Select>
             <Toggle
               pressed={showFavoritesOnly}
               onPressedChange={setShowFavoritesOnly}
-              className="h-7 w-7 md:h-8 md:w-8 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded"
+              className="h-9 w-9 md:h-10 md:w-10 data-[state=on]:bg-destructive/15 data-[state=on]:text-destructive border border-border rounded-lg"
               aria-label="Show favorites only"
             >
-              <Heart className={cn("w-3 md:w-3.5 h-3 md:h-3.5", showFavoritesOnly && "fill-current")} />
+              <Heart className={cn("w-5 md:w-5 h-5 md:h-5", showFavoritesOnly && "fill-current")} />
             </Toggle>
-            <Badge className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0.5 text-[9px] md:text-[10px] hidden sm:flex rounded">
-              <Sparkles className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
-              ML
-            </Badge>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-7 w-7 md:h-8 md:w-8 border-border rounded"
-              onClick={handleRefresh}
-            >
-              <RefreshCw className="w-3 md:w-3.5 h-3 md:h-3.5" />
-            </Button>
           </div>
 
           {/* Tier Filter Tabs - In Gradient Card */}
