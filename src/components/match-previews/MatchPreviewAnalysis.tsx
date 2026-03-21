@@ -465,7 +465,8 @@ function deriveMatchInsights(pred: any, parsed: ParsedAnalysis, analysis: MatchA
   // Home form insight
   if (parsed.homeForm) {
     const homeWins = (parsed.homeForm.match(/W/g) || []).length;
-    insights.push(`${homeTeam} has won ${homeWins} of their last ${parsed.homeForm.length} home matches.`);
+    const total = parsed.homeForm.length;
+    insights.push(`${homeTeam} has won ${homeWins} of their last ${total} home matches — ${homeWins >= 7 ? "outstanding" : homeWins >= 5 ? "strong" : "mixed"} form.`);
   } else if (hw >= 55) {
     insights.push(`${homeTeam} shows strong home form with ${hw}% win probability.`);
   }
