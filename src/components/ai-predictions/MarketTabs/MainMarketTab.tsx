@@ -168,7 +168,51 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
-      {/* Best Pick & Confidence */}
+      {/* ⚽ Goal Market Probabilities (Poisson) */}
+      {hasAccess && (
+        <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
+          {/* Over 2.5 */}
+          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
+            <div className="flex items-center justify-center gap-0.5 mb-0.5">
+              <ArrowUp className="w-2.5 h-2.5 text-green-400" />
+              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">Over 2.5</span>
+            </div>
+            <span className={cn(
+              "text-xs md:text-sm font-bold",
+              goalProbs.over25 >= 60 ? "text-green-400" : goalProbs.over25 >= 45 ? "text-amber-400" : "text-red-400"
+            )}>
+              {goalProbs.over25}%
+            </span>
+          </div>
+          {/* Under 2.5 */}
+          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
+            <div className="flex items-center justify-center gap-0.5 mb-0.5">
+              <ArrowDown className="w-2.5 h-2.5 text-orange-400" />
+              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">Under 2.5</span>
+            </div>
+            <span className={cn(
+              "text-xs md:text-sm font-bold",
+              goalProbs.under25 >= 60 ? "text-green-400" : goalProbs.under25 >= 45 ? "text-amber-400" : "text-red-400"
+            )}>
+              {goalProbs.under25}%
+            </span>
+          </div>
+          {/* BTTS */}
+          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
+            <div className="flex items-center justify-center gap-0.5 mb-0.5">
+              <Zap className="w-2.5 h-2.5 text-yellow-400" />
+              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">BTTS</span>
+            </div>
+            <span className={cn(
+              "text-xs md:text-sm font-bold",
+              goalProbs.bttsYes >= 60 ? "text-green-400" : goalProbs.bttsYes >= 45 ? "text-amber-400" : "text-red-400"
+            )}>
+              {goalProbs.bttsYes}%
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
           <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
