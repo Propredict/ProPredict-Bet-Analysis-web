@@ -26,17 +26,43 @@ export default function AdSlot({
     }
   }, [isAndroid]);
 
-  // Observe if the ad actually renders content
+  // Show ad slot only when AdSense reports a filled ad
   useEffect(() => {
     if (isAndroid || !wrapperRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setHasAd(entry.contentRect.height > 0);
+
+    const ins = wrapperRef.current.querySelector("ins.adsbygoogle") as HTMLElement | null;
+    if (!ins) return;
+
+    const updateHasAd = () => {
+      const adStatus = ins.getAttribute("data-ad-status");
+      if (adStatus === "filled") {
+        setHasAd(true);
+        return;
       }
+      if (adStatus === "unfilled") {
+        setHasAd(false);
+        return;
+      }
+
+      const iframe = ins.querySelector("iframe");
+      setHasAd(Boolean(iframe) && ins.getBoundingClientRect().height > 20);
+    };
+
+    updateHasAd();
+
+    const attrObserver = new MutationObserver(updateHasAd);
+    attrObserver.observe(ins, {
+      attributes: true,
+      attributeFilter: ["data-ad-status"],
     });
-    const ins = wrapperRef.current.querySelector("ins");
-    if (ins) observer.observe(ins);
-    return () => observer.disconnect();
+
+    const childObserver = new MutationObserver(updateHasAd);
+    childObserver.observe(ins, { childList: true, subtree: true });
+
+    return () => {
+      attrObserver.disconnect();
+      childObserver.disconnect();
+    };
   }, [isAndroid]);
 
   // Hide AdSense on Android — native AdMob handles ads there
@@ -47,12 +73,10 @@ export default function AdSlot({
       ref={wrapperRef}
       className={`adslot-wrapper ${className || ""}`}
       style={{
+        display: hasAd ? "block" : "none",
         margin: hasAd ? "24px 0" : 0,
         textAlign: "center",
         overflow: "hidden",
-        minHeight: 0,
-        maxHeight: hasAd ? "none" : 0,
-        transition: "margin 0.2s",
         ...style,
       }}
     >
