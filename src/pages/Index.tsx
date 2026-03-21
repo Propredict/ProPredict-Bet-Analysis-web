@@ -142,7 +142,12 @@ const Index = () => {
           <DashboardSocialProof />
         </Suspense>
 
+        {/* Dashboard Stats Hero */}
         <Suspense fallback={<LazyFallback />}>
+          <DashboardHero />
+        </Suspense>
+
+
           <FeaturedPredictions />
         </Suspense>
 
