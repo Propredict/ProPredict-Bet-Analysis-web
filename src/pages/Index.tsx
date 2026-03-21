@@ -172,6 +172,11 @@ const Index = () => {
           <DashboardAIPredictions />
         </Suspense>
 
+        {/* Match Previews Section */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardMatchPreviews />
+        </Suspense>
+
         {/* Model Analytics Charts – Desktop web only */}
         {!isAndroid && (
           <Suspense fallback={<LazyFallback />}>
