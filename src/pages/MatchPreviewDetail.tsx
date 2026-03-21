@@ -554,6 +554,112 @@ export default function MatchPreviewDetail() {
           </div>
         )}
 
+        {/* ============ PREDICTED SCORE ============ */}
+        {unlocked && prediction.predicted_score && (
+          <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-cyan-600 to-blue-600">
+                <Target className="h-3.5 w-3.5" />
+              </div>
+              <span className="font-bold text-sm text-foreground">⚽ Predicted Score</span>
+            </div>
+            <div className="p-5">
+              {(() => {
+                const parts = (prediction.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                const hGoals = parts ? parseInt(parts[1]) : 0;
+                const aGoals = parts ? parseInt(parts[2]) : 0;
+                return (
+                  <div className="flex items-center justify-center gap-6">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-xs font-bold text-muted-foreground truncate max-w-[100px]">{prediction.home_team}</span>
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 flex items-center justify-center">
+                        <span className="text-3xl sm:text-4xl font-black text-emerald-400">{hGoals}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">AI Score</span>
+                      <span className="text-lg font-black text-muted-foreground/40">—</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-xs font-bold text-muted-foreground truncate max-w-[100px]">{prediction.away_team}</span>
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 flex items-center justify-center">
+                        <span className="text-3xl sm:text-4xl font-black text-blue-400">{aGoals}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-[10px] text-muted-foreground/60 text-center mt-3 italic">
+                Most likely final score based on AI analysis
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ============ AI CONFIDENCE METER ============ */}
+        {unlocked && (
+          <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-violet-600 to-purple-600">
+                <Gauge className="h-3.5 w-3.5" />
+              </div>
+              <span className="font-bold text-sm text-foreground">🎯 AI Confidence Meter</span>
+            </div>
+            <div className="p-5 space-y-4">
+              {/* Main gauge bar */}
+              {(() => {
+                const conf = prediction.confidence ?? 0;
+                const barColor = conf >= 80 ? "from-emerald-500 to-emerald-400" : conf >= 60 ? "from-amber-500 to-yellow-400" : "from-red-500 to-orange-400";
+                const label = conf >= 85 ? "Very High" : conf >= 75 ? "High" : conf >= 60 ? "Moderate" : conf >= 45 ? "Low" : "Very Low";
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">Overall Confidence</span>
+                      <span className={cn(
+                        "text-lg font-black",
+                        conf >= 80 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400"
+                      )}>{conf}%</span>
+                    </div>
+                    <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-1000", barColor)}
+                        style={{ width: `${conf}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+                      <span>0%</span>
+                      <span className={cn(
+                        "font-bold uppercase tracking-wider",
+                        conf >= 80 ? "text-emerald-400" : conf >= 60 ? "text-amber-400" : "text-red-400"
+                      )}>{label}</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Sub-meters */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Home Win", value: prediction.home_win ?? 0, color: "text-emerald-400", bg: "bg-emerald-500" },
+                  { label: "Draw", value: prediction.draw ?? 0, color: "text-amber-400", bg: "bg-amber-500" },
+                  { label: "Away Win", value: prediction.away_win ?? 0, color: "text-blue-400", bg: "bg-blue-500" },
+                ].map((m) => (
+                  <div key={m.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] text-muted-foreground font-semibold">{m.label}</span>
+                      <span className={cn("text-xs font-black", m.color)}>{m.value}%</span>
+                    </div>
+                    <div className="h-1.5 bg-muted/20 rounded-full overflow-hidden">
+                      <div className={cn("h-full rounded-full transition-all duration-700", m.bg)} style={{ width: `${m.value}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ============ STATS MINI GRID ============ */}
         {unlocked && statsGrid.length > 0 && (
           <div className="grid grid-cols-4 gap-2">
