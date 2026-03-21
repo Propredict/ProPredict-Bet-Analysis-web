@@ -301,9 +301,9 @@ export default function MatchPreviews() {
           <div className="space-y-2">
              {topMatches.map((match) => {
               const risk = getRiskColor(match.confidence);
-              const predLabel = getPredictionLabel(match.prediction);
               const isExpanded = expandedMatchId === match.id;
-              const insight = getInsight(match.prediction, match.home_team, match.away_team, match.confidence);
+              const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
+              const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
 
               return (
                 <div key={match.id} className="space-y-2">
