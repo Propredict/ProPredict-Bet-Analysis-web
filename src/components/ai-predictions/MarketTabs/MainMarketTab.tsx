@@ -49,6 +49,7 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess }: Props) {
   const markets = deriveMarkets(prediction);
+  const goalProbs = calculateGoalMarketProbs(prediction);
   
   const getPredictedOutcome = () => {
     if (!prediction.prediction) return "unknown";
