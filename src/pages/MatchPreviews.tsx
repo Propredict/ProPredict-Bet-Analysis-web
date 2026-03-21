@@ -101,6 +101,8 @@ export default function MatchPreviews() {
       league: prediction.league || "",
       homeScore: null,
       awayScore: null,
+      minute: null,
+      leagueCountry: "",
     };
 
     setExpandedMatchId(prediction.id);
