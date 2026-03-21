@@ -245,7 +245,7 @@ export default function MatchPreviewDetail() {
           className="gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back
+          Back to Match Previews
         </Button>
 
         {/* ============ HERO SECTION ============ */}
