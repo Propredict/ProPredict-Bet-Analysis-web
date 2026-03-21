@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp, Lock, Zap, Shield, Activity, Target, BarChart3, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -47,6 +47,64 @@ function getPredictionIcon(prediction: string | null) {
   if (p.includes("under")) return "🛡️";
   if (p.includes("btts")) return "🎯";
   return "📊";
+}
+
+interface AIPick {
+  emoji: string;
+  label: string;
+  confidence: number;
+  color: string;
+}
+
+function deriveAIPicks(pred: any): AIPick[] {
+  const picks: AIPick[] = [];
+  const homeWin = pred.home_win ?? 0;
+  const awayWin = pred.away_win ?? 0;
+  const draw = pred.draw ?? 0;
+  const homeGoals = pred.last_home_goals ?? 0;
+  const awayGoals = pred.last_away_goals ?? 0;
+  const avgGoals = (homeGoals + awayGoals) / 2;
+  const confidence = pred.confidence ?? 60;
+
+  // Main pick
+  if (homeWin >= awayWin && homeWin >= draw) {
+    picks.push({ emoji: "🟢", label: `Home Win — ${pred.home_team}`, confidence: homeWin, color: "text-emerald-600" });
+  } else if (awayWin > homeWin && awayWin > draw) {
+    picks.push({ emoji: "🟢", label: `Away Win — ${pred.away_team}`, confidence: awayWin, color: "text-emerald-600" });
+  } else {
+    picks.push({ emoji: "🟡", label: "Draw", confidence: draw, color: "text-amber-600" });
+  }
+
+  // Over/Under 1.5
+  const over15Conf = Math.min(95, Math.round(avgGoals >= 1.2 ? 65 + avgGoals * 10 : 45 + avgGoals * 8));
+  picks.push({
+    emoji: over15Conf >= 70 ? "🟢" : "🟡",
+    label: avgGoals >= 1.2 ? "Over 1.5 Goals" : "Under 1.5 Goals",
+    confidence: over15Conf,
+    color: over15Conf >= 70 ? "text-emerald-600" : "text-amber-600",
+  });
+
+  // BTTS
+  const bttsYes = homeGoals >= 1.0 && awayGoals >= 1.0;
+  const bttsConf = Math.min(90, Math.round(bttsYes ? 55 + Math.min(homeGoals, awayGoals) * 12 : 40 + (2 - Math.max(homeGoals, awayGoals)) * 10));
+  picks.push({
+    emoji: bttsConf < 60 ? "⚠️" : "🟡",
+    label: `BTTS — ${bttsYes ? "Yes" : "No"}`,
+    confidence: Math.max(45, bttsConf),
+    color: bttsConf < 60 ? "text-red-500" : "text-amber-600",
+  });
+
+  // Draw No Bet
+  const dnbConf = Math.max(homeWin, awayWin);
+  const dnbTeam = homeWin >= awayWin ? pred.home_team : pred.away_team;
+  picks.push({
+    emoji: dnbConf >= 65 ? "🟢" : "🟡",
+    label: `Draw No Bet — ${dnbTeam}`,
+    confidence: dnbConf,
+    color: dnbConf >= 65 ? "text-emerald-600" : "text-amber-600",
+  });
+
+  return picks;
 }
 
 export default function MatchPreviewDetail() {
@@ -279,7 +337,34 @@ export default function MatchPreviewDetail() {
               </div>
             )}
 
-            {/* LOCKED: CTA */}
+            {/* 🎯 AI Picks */}
+            {unlocked && (
+              <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border/40 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b bg-gray-50 dark:bg-muted/20 border-gray-100 dark:border-border/30">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
+                    <Target className="h-3.5 w-3.5" />
+                  </div>
+                  <h3 className="font-bold text-sm text-gray-800 dark:text-foreground">🎯 AI Picks</h3>
+                  <Badge className="ml-auto bg-emerald-50 dark:bg-primary/20 text-emerald-700 dark:text-primary border-emerald-200 dark:border-primary/30 text-[9px]">
+                    Multi-Market
+                  </Badge>
+                </div>
+                <div className="p-3 space-y-2">
+                  {deriveAIPicks(prediction).map((pick, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border/20"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-base">{pick.emoji}</span>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-foreground">{pick.label}</span>
+                      </div>
+                      <span className={cn("text-sm font-black", pick.color)}>{pick.confidence}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {!unlocked && (
               <div className="space-y-3 pt-1">
                 {canGenerate ? (
