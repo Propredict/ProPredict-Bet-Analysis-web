@@ -496,13 +496,34 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
       <SectionCard
         icon={<BarChart3 className="h-3.5 w-3.5" />}
         iconGradient="from-blue-600 to-indigo-600"
-        title="📊 AI Analysis"
+        title="✨ AI Overview"
       >
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           {analysis.overview}
-          {analysis.prediction?.reasoning ? ` ${analysis.prediction.reasoning}` : ""}
         </p>
       </SectionCard>
+
+      {/* 💡 Match Insights */}
+      {(() => {
+        const insights = deriveMatchInsights(prediction, parsed, analysis);
+        if (insights.length === 0) return null;
+        return (
+          <SectionCard
+            icon={<Lightbulb className="h-3.5 w-3.5" />}
+            iconGradient="from-amber-500 to-yellow-500"
+            title="💡 Match Insights"
+          >
+            <div className="space-y-3">
+              {insights.map((insight, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">{insight}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        );
+      })()}
 
       {/* 📈 Season Comparison */}
       {seasonStats.length > 0 && (
