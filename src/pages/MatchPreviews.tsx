@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, RefreshCw, Lock, Clock, Zap, Sparkles, ChevronRight } from "lucide-react";
+import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,15 +87,14 @@ function getTeamInitials(name: string): string {
 }
 
 function getInsight(prediction: string | null, homeTeam: string, awayTeam: string, confidence: number | null): string {
-  const conf = confidence ?? 50;
   const p = (prediction || "").toLowerCase().trim();
-  if (p === "1" || p === "home") return `${homeTeam} favored based on form & home advantage`;
-  if (p === "2" || p === "away") return `${awayTeam} showing strong away form this season`;
-  if (p === "x" || p === "draw") return `Evenly matched — expect a tight contest`;
-  if (p.includes("over")) return `Both teams averaging high goal counts recently`;
-  if (p.includes("under")) return `Defensive matchup — low scoring expected`;
-  if (p.includes("btts")) return `Both sides finding the net consistently`;
-  return `AI analysis based on ${conf}% confidence model`;
+  if (p === "1" || p === "home") return `${homeTeam} showing dominant home form — AI backs a decisive result`;
+  if (p === "2" || p === "away") return `${awayTeam} on a strong away run — our model sees an upset brewing`;
+  if (p === "x" || p === "draw") return `Tight tactical battle expected — both sides evenly matched in key metrics`;
+  if (p.includes("over")) return `High-scoring affair likely — both attacks in top form recently`;
+  if (p.includes("under")) return `Defensive masterclass incoming — clean sheets dominating recent form`;
+  if (p.includes("btts")) return `Both defenses leaking goals — expect end-to-end action`;
+  return `AI has identified a strong signal in this matchup`;
 }
 
 function getPredictionLabel(prediction: string | null): string {
@@ -170,30 +169,30 @@ export default function MatchPreviews() {
 
       <div className="page-content space-y-4">
         <div className="page-header">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
-                <Eye className="h-5 w-5 text-violet-400" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">Today's AI Matches</h1>
-                <p className="text-xs text-muted-foreground">
-                  Top {topMatches.length} matches · Sorted by confidence
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
+              <Eye className="h-5 w-5 text-violet-400" />
             </div>
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={loading} className="h-8">
-              <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            </Button>
+            <div>
+              <h1 className="text-lg font-bold">Your Match Preview</h1>
+              <p className="text-xs text-muted-foreground">
+                AI-powered analysis for top matches
+              </p>
+            </div>
           </div>
         </div>
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Select any match to view AI-powered analysis and predictions.</li>
-            <li>AI evaluates team form, statistics, and trends to generate match previews.</li>
+            <li>Select any match directly and instantly view AI-powered analysis and predictions for that specific game.</li>
+            <li>The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.</li>
+            <li>This feature is designed to help you understand the matchup better and follow the analysis in one place.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
+          <div className="mt-3 space-y-1">
+            <p className="text-sm"><span className="text-amber-400 font-bold">● PRO</span> — Limited to 5 Match Previews daily</p>
+            <p className="text-sm"><span className="text-fuchsia-400 font-bold">● PREMIUM</span> — Unlimited Match Previews</p>
+          </div>
         </Card>
 
         {isFreeUser && (
@@ -338,7 +337,7 @@ export default function MatchPreviews() {
                       {isFreeUser ? (
                         <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade Plan to Unlock</>
                       ) : (
-                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Match Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
                     </Button>
                   </div>
