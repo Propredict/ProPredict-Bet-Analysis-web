@@ -263,7 +263,7 @@ export default function MatchPreviewDetail() {
               className="mt-3 bg-gradient-to-r from-violet-600 to-fuchsia-500"
               onClick={() => navigate("/get-premium")}
             >
-              Upgrade Now
+              Upgrade Plan to Unlock
             </Button>
           </Card>
         )}
