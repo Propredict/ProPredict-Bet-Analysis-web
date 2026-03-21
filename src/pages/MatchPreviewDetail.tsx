@@ -128,7 +128,22 @@ function deriveAIPicks(pred: any): AIPick[] {
   pick(`Home CS`, Math.max(30, homeConc > 0 ? 65 - homeConc * 18 : 65 - awayGoals * 18));
   pick(`Away CS`, Math.max(30, awayConc > 0 ? 65 - awayConc * 18 : 65 - homeGoals * 18));
 
-  return allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence).slice(0, 8);
+  // Always include the best Over/Under 2.5 pick and best BTTS pick
+  const over25 = allPicks.find(p => p.label === "Over 2.5");
+  const under25 = allPicks.find(p => p.label === "Under 2.5");
+  const bestGoalsPick = over25 && under25 ? (over25.confidence >= under25.confidence ? over25 : under25) : (over25 || under25);
+  const bttsYes = allPicks.find(p => p.label === "BTTS Yes");
+  const bttsNo = allPicks.find(p => p.label === "BTTS No");
+  const bestBtts = bttsYes && bttsNo ? (bttsYes.confidence >= bttsNo.confidence ? bttsYes : bttsNo) : (bttsYes || bttsNo);
+
+  const filtered = allPicks.filter(p => p.confidence > 75).sort((a, b) => b.confidence - a.confidence).slice(0, 8);
+
+  // Ensure goals & BTTS picks are always present
+  const ensured = new Set(filtered.map(p => p.label));
+  if (bestGoalsPick && !ensured.has(bestGoalsPick.label)) filtered.push(bestGoalsPick);
+  if (bestBtts && !ensured.has(bestBtts.label)) filtered.push(bestBtts);
+
+  return filtered;
 }
 
 function deriveStatsGrid(pred: any) {
