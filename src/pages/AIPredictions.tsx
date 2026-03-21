@@ -46,6 +46,7 @@ function getPickTypeFromPrediction(p: string): PickFilter | null {
 /** Check if a prediction matches a pick filter using both prediction field AND Poisson data */
 function matchesPickFilter(prediction: AIPrediction, filter: PickFilter): boolean {
   if (filter === "all") return true;
+  if (filter === "value") return isValueBet(prediction);
   
   // First check the prediction field directly
   const directType = getPickTypeFromPrediction(prediction.prediction || "");
