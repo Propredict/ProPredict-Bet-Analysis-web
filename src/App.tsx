@@ -55,6 +55,7 @@ const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
 const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
+const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -215,6 +216,7 @@ const App = () => {
                     <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
+                    <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
 
                     {/* Protected */}
                     <Route

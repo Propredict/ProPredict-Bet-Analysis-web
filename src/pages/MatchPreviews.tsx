@@ -1,16 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight, Clock, Trophy, Zap, Sparkles, ChevronUp } from "lucide-react";
+import { Eye, Loader2, RefreshCw, Lock, Clock, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
-import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
-import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
-import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
@@ -118,25 +115,19 @@ export default function MatchPreviews() {
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
-  const [previewCount, setPreviewCount] = useState(0);
-  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
-  const { isGenerating, analysis, generatedMatch, generate, reset } = useMatchPreviewGenerator();
-  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const navigate = useNavigate();
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
-  const remainingPreviews = Math.max(0, (isPremiumUser ? Infinity : isProUser ? PRO_PREVIEW_LIMIT : 0) - previewCount);
-  const canGenerate = isPremiumUser || (isProUser && previewCount < PRO_PREVIEW_LIMIT);
+  const canGenerate = isPremiumUser || isProUser;
 
   // Build logo lookup from live scores data
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
     for (const m of liveMatches) {
-      // Match by team names (normalized)
       const key = `${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`;
       map[key] = { home: m.homeLogo, away: m.awayLogo };
-      // Also index by individual team name
       map[m.homeTeam.toLowerCase()] = { home: m.homeLogo, away: null };
       map[m.awayTeam.toLowerCase()] = { home: null, away: m.awayLogo };
     }
@@ -147,7 +138,6 @@ export default function MatchPreviews() {
     const matchKey = `${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
     const matchEntry = logoMap[matchKey];
     if (matchEntry) return side === "home" ? matchEntry.home : matchEntry.away;
-    // Fallback: lookup by individual team name
     const teamName = side === "home" ? homeTeam.toLowerCase() : awayTeam.toLowerCase();
     const entry = logoMap[teamName];
     if (entry) return side === "home" ? entry.home : entry.away;
@@ -166,29 +156,9 @@ export default function MatchPreviews() {
       .slice(0, MAX_MATCHES);
   }, [predictions]);
 
-  const handleUnlockPreview = async (prediction: typeof topMatches[0]) => {
-    if (!canGenerate) return;
-    maybeShowInterstitial("match_preview");
-
-    const mockMatch = {
-      id: prediction.match_id,
-      homeTeam: prediction.home_team,
-      awayTeam: prediction.away_team,
-      startTime: prediction.match_time || "",
-      status: "upcoming" as const,
-      league: prediction.league || "",
-      homeScore: null,
-      awayScore: null,
-      minute: null,
-      leagueCountry: "",
-    };
-
-    setExpandedMatchId(prediction.id);
-    await generate(mockMatch);
-
-    if (isProUser) {
-      setPreviewCount((prev) => prev + 1);
-    }
+  const handleCardClick = (match: typeof topMatches[0]) => {
+    if (isFreeUser) return;
+    navigate(`/match-preview/${match.match_id}`);
   };
 
   return (
@@ -199,7 +169,6 @@ export default function MatchPreviews() {
       </Helmet>
 
       <div className="page-content space-y-4">
-        {/* Header */}
         <div className="page-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -213,79 +182,32 @@ export default function MatchPreviews() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              disabled={loading}
-              className="h-8"
-            >
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={loading} className="h-8">
               <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
             </Button>
           </div>
         </div>
 
-        {/* Description Card */}
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Select any match directly and instantly view AI-powered analysis and predictions for that specific game.</li>
-            <li>The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.</li>
-            <li>This feature is designed to help you understand the matchup better and follow the analysis in one place.</li>
+            <li>Select any match to view AI-powered analysis and predictions.</li>
+            <li>AI evaluates team form, statistics, and trends to generate match previews.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
-          <div className="mt-4 pt-3 border-t border-border/50 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
-              <span className="text-sm">
-                <span className="font-semibold text-amber-400">PRO</span>
-                <span className="text-muted-foreground"> — Limited to 5 Match Previews daily</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-fuchsia-500"></span>
-              <span className="text-sm">
-                <span className="font-semibold text-fuchsia-400">PREMIUM</span>
-                <span className="text-muted-foreground"> — Unlimited Match Previews</span>
-              </span>
-            </div>
-          </div>
         </Card>
 
-        {/* Access Banner */}
         {isFreeUser && (
           <Card className="p-3 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border-red-500/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-red-400" />
-                <span className="text-sm text-muted-foreground">
-                  Match previews require a Pro or Premium subscription
-                </span>
+                <span className="text-sm text-muted-foreground">Match previews require a Pro or Premium subscription</span>
               </div>
-              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">
-                Upgrade
-              </Badge>
+              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">Upgrade</Badge>
             </div>
           </Card>
         )}
 
-        {isProUser && (
-          <Card className="p-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-amber-400" />
-                <span className="text-sm">
-                  <span className="font-medium text-amber-400">{remainingPreviews}</span>
-                  <span className="text-muted-foreground"> of {PRO_PREVIEW_LIMIT} previews remaining</span>
-                </span>
-              </div>
-              <Badge variant="outline" className="text-[10px] bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40">
-                Premium = Unlimited
-              </Badge>
-            </div>
-          </Card>
-        )}
-
-        {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -293,154 +215,92 @@ export default function MatchPreviews() {
         ) : topMatches.length === 0 ? (
           <Card className="p-6 text-center">
             <Eye className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              No quality league matches available today
-            </p>
+            <p className="text-sm text-muted-foreground">No quality league matches available today</p>
           </Card>
         ) : (
           <div className="space-y-2">
-             {topMatches.map((match) => {
+            {topMatches.map((match) => {
               const risk = getRiskColor(match.confidence);
-              const isExpanded = expandedMatchId === match.id;
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
 
               return (
-                <div key={match.id} className="space-y-2">
-                  <Card
-                    className={cn(
-                      "overflow-hidden transition-all bg-white dark:bg-card border border-gray-200 dark:border-border/60 hover:shadow-lg hover:shadow-violet-500/10 shadow-sm",
-                      isExpanded && "border-violet-400 dark:border-violet-500/40 shadow-lg shadow-violet-500/10"
-                    )}
-                  >
-                    <div className="p-5 space-y-4">
-                      {/* League header */}
-                      <div className="text-center">
-                        <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
-                          {match.league || "Unknown"}
-                        </span>
-                      </div>
+                <Card
+                  key={match.id}
+                  className="overflow-hidden transition-all bg-white dark:bg-card border border-gray-200 dark:border-border/60 hover:shadow-lg hover:shadow-violet-500/10 shadow-sm cursor-pointer"
+                  onClick={() => handleCardClick(match)}
+                >
+                  <div className="p-5 space-y-4">
+                    <div className="text-center">
+                      <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+                        {match.league || "Unknown"}
+                      </span>
+                    </div>
 
-                      {/* Match announcement layout: Home - Info - Away */}
-                      <div className="flex items-center justify-between gap-2">
-                        {/* Home team */}
-                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                          {homeLogo ? (
-                            <img src={homeLogo} alt={match.home_team} className="w-20 h-20 object-contain drop-shadow-sm" />
-                          ) : (
-                            <div className="w-20 h-20 rounded-full bg-violet-100 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center">
-                              <span className="text-lg font-bold text-violet-600 dark:text-violet-300">
-                                {getTeamInitials(match.home_team)}
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.home_team}</span>
-                        </div>
-
-                        {/* Center: date, time, VS */}
-                        <div className="flex flex-col items-center gap-1 flex-shrink-0 px-3">
-                          <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium">
-                            {match.match_date || "Today"}
-                          </span>
-                          <span className="text-xl font-black text-gray-800 dark:text-foreground tracking-tight">VS</span>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground/60" />
-                            <span className="text-xs font-semibold text-gray-600 dark:text-muted-foreground">
-                              {match.match_time || "TBD"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Away team */}
-                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                          {awayLogo ? (
-                            <img src={awayLogo} alt={match.away_team} className="w-20 h-20 object-contain drop-shadow-sm" />
-                          ) : (
-                            <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-primary/20 border border-blue-200 dark:border-primary/20 flex items-center justify-center">
-                              <span className="text-lg font-bold text-blue-600 dark:text-primary/70">
-                                {getTeamInitials(match.away_team)}
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.away_team}</span>
-                        </div>
-                      </div>
-
-                      {/* Confidence & Risk row */}
-                      <div className="flex items-center justify-center gap-5 text-sm pt-2">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-violet-500 dark:text-primary" />
-                          <span className="text-gray-500 dark:text-muted-foreground font-bold">Confidence</span>
-                          <span className="font-extrabold text-gray-800 dark:text-foreground text-base">{match.confidence ?? 0}%</span>
-                        </div>
-                        <span className="text-gray-300 dark:text-border">•</span>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("w-2 h-2 rounded-full", risk.dot)} />
-                          <span className={cn("font-semibold text-base", risk.color)}>{risk.label}</span>
-                        </div>
-                      </div>
-
-                      {/* CTA Button */}
-                      <Button
-                        size="sm"
-                        className={cn(
-                          "w-full text-sm font-bold h-10 animate-pulse",
-                          isExpanded && analysis
-                            ? "bg-emerald-600 hover:bg-emerald-700 animate-none"
-                            : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
-                        )}
-                        disabled={!canGenerate || (isExpanded && isGenerating)}
-                        onClick={() => handleUnlockPreview(match)}
-                      >
-                        {isExpanded && isGenerating ? (
-                          <>
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                            Generating...
-                          </>
-                        ) : isExpanded && analysis ? (
-                          <>
-                            <Eye className="h-3.5 w-3.5 mr-1.5" />
-                            Analysis Ready
-                          </>
-                        ) : isFreeUser ? (
-                          <>
-                            <Lock className="h-3.5 w-3.5 mr-1.5" />
-                            Upgrade to Unlock
-                          </>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                        {homeLogo ? (
+                          <img src={homeLogo} alt={match.home_team} className="w-20 h-20 object-contain drop-shadow-sm" />
                         ) : (
-                          <>
-                            <Zap className="h-3.5 w-3.5 mr-1.5" />
-                            Unlock Full Analysis
-                          </>
+                          <div className="w-20 h-20 rounded-full bg-violet-100 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center">
+                            <span className="text-lg font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
+                          </div>
                         )}
-                      </Button>
-                    </div>
-                  </Card>
+                        <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.home_team}</span>
+                      </div>
 
-                  {/* Expanded Analysis */}
-                  {isExpanded && (analysis || isGenerating) && generatedMatch && (
-                    <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
-                      <MatchPreviewAnalysis
-                        match={generatedMatch}
-                        analysis={analysis}
-                        isLoading={isGenerating}
-                      />
-                      {analysis && (
-                        <MatchPreviewStats match={generatedMatch} />
-                      )}
-                      {/* Close / collapse button */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full h-9 text-sm font-semibold gap-2 border-violet-300 dark:border-violet-500/40 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10"
-                        onClick={() => { setExpandedMatchId(null); reset(); }}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                        Close Analysis
-                      </Button>
+                      <div className="flex flex-col items-center gap-1 flex-shrink-0 px-3">
+                        <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium">{match.match_date || "Today"}</span>
+                        <span className="text-xl font-black text-gray-800 dark:text-foreground tracking-tight">VS</span>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground/60" />
+                          <span className="text-xs font-semibold text-gray-600 dark:text-muted-foreground">{match.match_time || "TBD"}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                        {awayLogo ? (
+                          <img src={awayLogo} alt={match.away_team} className="w-20 h-20 object-contain drop-shadow-sm" />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-primary/20 border border-blue-200 dark:border-primary/20 flex items-center justify-center">
+                            <span className="text-lg font-bold text-blue-600 dark:text-primary/70">{getTeamInitials(match.away_team)}</span>
+                          </div>
+                        )}
+                        <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.away_team}</span>
+                      </div>
                     </div>
-                  )}
-                </div>
+
+                    <div className="flex items-center justify-center gap-5 text-sm pt-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-violet-500 dark:text-primary" />
+                        <span className="text-gray-500 dark:text-muted-foreground font-bold">Confidence</span>
+                        <span className="font-extrabold text-gray-800 dark:text-foreground text-base">{match.confidence ?? 0}%</span>
+                      </div>
+                      <span className="text-gray-300 dark:text-border">•</span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("w-2 h-2 rounded-full", risk.dot)} />
+                        <span className={cn("font-semibold text-base", risk.color)}>{risk.label}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      className={cn(
+                        "w-full text-sm font-bold h-10",
+                        isFreeUser
+                          ? "bg-gray-500 hover:bg-gray-600"
+                          : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15 animate-pulse"
+                      )}
+                      onClick={(e) => { e.stopPropagation(); handleCardClick(match); }}
+                    >
+                      {isFreeUser ? (
+                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
+                      ) : (
+                        <><Zap className="h-3.5 w-3.5 mr-1.5" />View Full Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                      )}
+                    </Button>
+                  </div>
+                </Card>
               );
             })}
           </div>
