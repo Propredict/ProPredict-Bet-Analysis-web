@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Loader2, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, Clock, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,18 @@ function getRiskColor(confidence: number | null) {
   if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-500", dot: "bg-emerald-500" };
   if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-500", dot: "bg-amber-500" };
   return { label: "High Risk", color: "text-red-500", dot: "bg-red-500" };
+}
+
+function getPredictionLabel(prediction: string | null): string {
+  if (!prediction) return "—";
+  const p = prediction.toLowerCase().trim();
+  if (p === "1" || p === "home") return "Home Win";
+  if (p === "x" || p === "draw") return "Draw";
+  if (p === "2" || p === "away") return "Away Win";
+  if (p.includes("over")) return "Over 2.5 Goals";
+  if (p.includes("under")) return "Under 2.5 Goals";
+  if (p.includes("btts")) return "Both Teams to Score";
+  return prediction;
 }
 
 export default function MatchPreviewDetail() {
@@ -200,6 +212,17 @@ export default function MatchPreviewDetail() {
                   {prediction.away_team}
                 </span>
               </div>
+            </div>
+
+            {/* AI Prediction — hero banner */}
+            <div className="text-center py-3 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/20">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-white/80" />
+                <span className="text-xs font-semibold text-white/80 uppercase tracking-wider">AI Prediction</span>
+              </div>
+              <span className="text-2xl font-black text-white tracking-tight">
+                {getPredictionLabel(prediction.prediction)}
+              </span>
             </div>
 
             {/* Confidence & Risk */}
