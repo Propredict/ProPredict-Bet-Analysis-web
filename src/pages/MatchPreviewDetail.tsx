@@ -83,16 +83,17 @@ function deriveAIPicks(pred: any): AIPick[] {
   pick(`12 (No Draw)`, homeWin + awayWin);
 
   // === Over/Under Goals ===
+  // Over: higher avg goals = higher confidence. Under: lower avg goals = higher confidence.
   pick("Over 0.5 Goals", 55 + totalGoalsAvg * 15);
-  pick("Under 0.5 Goals", 95 - totalGoalsAvg * 15);
+  pick("Under 0.5 Goals", 45 - totalGoalsAvg * 10);
   pick("Over 1.5 Goals", 40 + totalGoalsAvg * 12);
-  pick("Under 1.5 Goals", 70 - totalGoalsAvg * 12);
+  pick("Under 1.5 Goals", 55 - totalGoalsAvg * 10);
   pick("Over 2.5 Goals", 25 + totalGoalsAvg * 10);
-  pick("Under 2.5 Goals", 85 - totalGoalsAvg * 10);
+  pick("Under 2.5 Goals", 65 - totalGoalsAvg * 8);
   pick("Over 3.5 Goals", 15 + totalGoalsAvg * 8);
-  pick("Under 3.5 Goals", 90 - totalGoalsAvg * 8);
+  pick("Under 3.5 Goals", 75 - totalGoalsAvg * 7);
   pick("Over 4.5 Goals", 8 + totalGoalsAvg * 6);
-  pick("Under 4.5 Goals", 93 - totalGoalsAvg * 6);
+  pick("Under 4.5 Goals", 85 - totalGoalsAvg * 6);
 
   // === BTTS ===
   const bttsYesConf = 35 + Math.min(homeGoals, awayGoals) * 18 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0);
