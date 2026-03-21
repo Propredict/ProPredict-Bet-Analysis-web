@@ -11,6 +11,7 @@ import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAn
 import { MatchPreviewStats } from "@/components/match-previews/MatchPreviewStats";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
