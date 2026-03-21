@@ -230,9 +230,7 @@ export default function PremiumTips() {
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />
           </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTips.length - 1 && (
-            <div className="col-span-full">
-              <AdSlot />
-            </div>
+              <AdSlot className="col-span-full" />
           )}
         </React.Fragment>;
       })}

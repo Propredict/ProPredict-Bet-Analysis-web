@@ -45,7 +45,7 @@ export default function AdSlot({
   return (
     <div
       ref={wrapperRef}
-      className="adslot-wrapper"
+      className={`adslot-wrapper ${className || ""}`}
       style={{
         margin: hasAd ? "24px 0" : 0,
         textAlign: "center",
