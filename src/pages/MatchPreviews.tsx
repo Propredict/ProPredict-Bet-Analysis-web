@@ -384,9 +384,9 @@ export default function MatchPreviews() {
                       <Button
                         size="sm"
                         className={cn(
-                          "w-full text-xs font-semibold h-9",
+                          "w-full text-sm font-bold h-10 animate-pulse",
                           isExpanded && analysis
-                            ? "bg-emerald-600 hover:bg-emerald-700"
+                            ? "bg-emerald-600 hover:bg-emerald-700 animate-none"
                             : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
                         )}
                         disabled={!canGenerate || (isExpanded && isGenerating)}
