@@ -59,6 +59,7 @@ export default function AIPredictions() {
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
+  const [pickFilter, setPickFilter] = useState<PickFilter>("all");
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
