@@ -334,43 +334,43 @@ export function MatchPreviewAnalysis({ match, analysis, isLoading, prediction }:
               </div>
 
               {/* Recent matches */}
-              <div className="space-y-1.5">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Recent Matches</div>
-                {h2hData.seasons.flatMap(s => s.matches).slice(0, 6).map((m, idx) => {
-                  const homeWon = m.teams.home.winner === true;
-                  const awayWon = m.teams.away.winner === true;
-                  const draw = !homeWon && !awayWon;
-                  return (
-                    <div key={idx} className="flex items-center gap-2 bg-muted/20 rounded-lg p-2 border border-border/20">
-                      <div className="text-[9px] text-muted-foreground w-16 shrink-0">
-                        {new Date(m.fixture.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}
-                      </div>
-                      <div className="flex-1 flex items-center justify-between min-w-0">
-                        <span className={cn("text-[11px] font-semibold truncate", homeWon ? "text-emerald-400" : "text-foreground/70")}>
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Recent Matches</div>
+                <div className="divide-y divide-border/20">
+                  {h2hData.seasons.flatMap(s => s.matches).slice(0, 6).map((m, idx) => {
+                    const homeWon = m.teams.home.winner === true;
+                    const awayWon = m.teams.away.winner === true;
+                    const draw = !homeWon && !awayWon;
+                    return (
+                      <div key={idx} className="flex items-center py-3 px-1 gap-3">
+                        <span className="text-[10px] text-muted-foreground w-[70px] shrink-0">
+                          {new Date(m.fixture.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}
+                        </span>
+                        <span className={cn("text-xs font-semibold flex-1 truncate", homeWon ? "text-emerald-400" : "text-foreground/80")}>
                           {m.teams.home.name}
                         </span>
-                        <div className="flex items-center gap-1 shrink-0 mx-2">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <span className={cn(
-                            "text-xs font-black px-1.5 py-0.5 rounded",
-                            homeWon ? "bg-emerald-500/20 text-emerald-400" : draw ? "bg-muted/40 text-foreground/60" : "text-foreground/40"
+                            "text-sm font-black w-7 h-7 rounded-md flex items-center justify-center",
+                            homeWon ? "bg-emerald-500/20 text-emerald-400" : draw ? "bg-muted/30 text-foreground/60" : "bg-muted/20 text-foreground/50"
                           )}>
                             {m.goals.home ?? 0}
                           </span>
-                          <span className="text-[9px] text-muted-foreground">-</span>
+                          <span className="text-[10px] text-muted-foreground">-</span>
                           <span className={cn(
-                            "text-xs font-black px-1.5 py-0.5 rounded",
-                            awayWon ? "bg-blue-500/20 text-blue-400" : draw ? "bg-muted/40 text-foreground/60" : "text-foreground/40"
+                            "text-sm font-black w-7 h-7 rounded-md flex items-center justify-center",
+                            awayWon ? "bg-emerald-500/20 text-emerald-400" : draw ? "bg-muted/30 text-foreground/60" : "bg-muted/20 text-foreground/50"
                           )}>
                             {m.goals.away ?? 0}
                           </span>
                         </div>
-                        <span className={cn("text-[11px] font-semibold truncate text-right", awayWon ? "text-blue-400" : "text-foreground/70")}>
+                        <span className={cn("text-xs font-semibold flex-1 truncate text-right", awayWon ? "text-emerald-400" : "text-foreground/80")}>
                           {m.teams.away.name}
                         </span>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : (
