@@ -622,8 +622,12 @@ export default function AIPredictions() {
                   className={cn(
                     "h-7 md:h-8 px-2 md:px-3 text-[10px] md:text-xs rounded-full transition-all duration-200 gap-1",
                     pickFilter === item.value
-                      ? "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
-                      : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
+                      ? item.value === "value"
+                        ? "bg-gradient-to-r from-orange-500/25 to-red-500/25 text-orange-400 border border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]"
+                        : "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+                      : item.value === "value"
+                        ? "bg-orange-500/10 text-orange-400 border border-orange-500/30 hover:border-orange-500/60"
+                        : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
                   )}
                   onClick={() => setPickFilter(item.value)}
                 >
