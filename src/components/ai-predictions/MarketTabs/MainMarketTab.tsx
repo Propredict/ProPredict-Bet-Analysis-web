@@ -45,6 +45,41 @@ export function isValueBet(prediction: AIPrediction): boolean {
   return c[0].conf >= 72 && (c[0].conf - c[1].conf) >= 12;
 }
 
+/** Generate a short reason why this Best Pick was chosen */
+function getBestPickReason(prediction: AIPrediction): string {
+  const candidates = getBestPickCandidates(prediction);
+  if (candidates.length < 2) return "";
+  const best = candidates[0];
+  const second = candidates[1];
+  const edge = best.conf - second.conf;
+  const probs = calculateGoalMarketProbs(prediction);
+
+  // Goal market picks
+  if (best.label === "Over 2.5 Goals") {
+    return `Both teams average high goal output (combined xG supports ${probs.over25}% chance of 3+ goals).`;
+  }
+  if (best.label === "Under 2.5 Goals") {
+    return `Low-scoring profiles from both sides suggest fewer than 3 goals (${probs.under25}% probability).`;
+  }
+  if (best.label === "BTTS Yes") {
+    return `Both teams score regularly — ${probs.bttsYes}% chance both find the net.`;
+  }
+  if (best.label === "BTTS No") {
+    return `At least one side struggles to score — ${probs.bttsNo}% chance of a clean sheet.`;
+  }
+  if (best.label === "Draw") {
+    return `Teams are evenly matched with ${prediction.draw}% draw probability and only ${edge}pp edge over next option.`;
+  }
+
+  // Home/Away win
+  const isHome = best.label.includes(prediction.home_team);
+  const winPct = isHome ? prediction.home_win : prediction.away_win;
+  if (edge >= 20) {
+    return `Dominant ${winPct}% win probability — ${edge}pp clear of any other market.`;
+  }
+  return `Strongest signal at ${winPct}% win probability with ${edge}pp edge over ${second.label}.`;
+}
+
 interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
@@ -255,6 +290,13 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Best Pick Reason */}
+      {hasAccess && (
+        <p className="text-[9px] md:text-[10px] text-muted-foreground/80 mt-1 line-clamp-2">
+          {getBestPickReason(prediction)}
+        </p>
+      )}
 
       {/* Confidence Explanation - Dynamic based on prediction context */}
       {hasAccess && (
