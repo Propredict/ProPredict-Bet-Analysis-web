@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight, Clock, Trophy, Target, Zap } from "lucide-react";
+import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight, Clock, Trophy, Zap, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,10 +78,26 @@ function getLeaguePriority(league: string | null): number {
 }
 
 function getRiskColor(confidence: number | null) {
-  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted/20" };
-  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" };
-  if (confidence >= 65) return { label: "Medium", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30" };
-  return { label: "High Risk", color: "text-red-400", bg: "bg-red-500/10 border-red-500/30" };
+  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", dot: "bg-muted-foreground" };
+  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
+  if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
+  return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
+}
+
+function getTeamInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+}
+
+function getInsight(prediction: string | null, homeTeam: string, awayTeam: string, confidence: number | null): string {
+  const conf = confidence ?? 50;
+  const p = (prediction || "").toLowerCase().trim();
+  if (p === "1" || p === "home") return `${homeTeam} favored based on form & home advantage`;
+  if (p === "2" || p === "away") return `${awayTeam} showing strong away form this season`;
+  if (p === "x" || p === "draw") return `Evenly matched — expect a tight contest`;
+  if (p.includes("over")) return `Both teams averaging high goal counts recently`;
+  if (p.includes("under")) return `Defensive matchup — low scoring expected`;
+  if (p.includes("btts")) return `Both sides finding the net consistently`;
+  return `AI analysis based on ${conf}% confidence model`;
 }
 
 function getPredictionLabel(prediction: string | null): string {
@@ -258,119 +274,94 @@ export default function MatchPreviews() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {topMatches.map((match) => {
+             {topMatches.map((match) => {
               const risk = getRiskColor(match.confidence);
               const predLabel = getPredictionLabel(match.prediction);
               const isExpanded = expandedMatchId === match.id;
+              const insight = getInsight(match.prediction, match.home_team, match.away_team, match.confidence);
 
               return (
                 <div key={match.id} className="space-y-2">
                   <Card
                     className={cn(
-                      "overflow-hidden transition-all hover:border-violet-500/40",
-                      isExpanded && "border-violet-500/50"
+                      "overflow-hidden transition-all border-border/60 hover:shadow-lg hover:shadow-violet-500/5",
+                      isExpanded && "border-violet-500/40 shadow-lg shadow-violet-500/10"
                     )}
                   >
-                    {/* Top accent line */}
-                    <div className={cn(
-                      "h-0.5",
-                      (match.confidence ?? 0) >= 80
-                        ? "bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500"
-                        : (match.confidence ?? 0) >= 65
-                          ? "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"
-                          : "bg-gradient-to-r from-red-500 via-red-400 to-red-500"
-                    )} />
-
-                    <div className="p-4">
-                      {/* League & Time header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-1.5">
-                          <Trophy className="h-3 w-3 text-violet-400" />
-                          <span className="text-[11px] font-medium text-violet-400 uppercase tracking-wider">
-                            {match.league || "Unknown"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground font-medium">
+                    <div className="p-4 space-y-4">
+                      {/* League & Time */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">
+                          {match.league || "Unknown"}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-muted-foreground/60" />
+                          <span className="text-[11px] font-medium text-muted-foreground">
                             {match.match_time || "TBD"}
                           </span>
                         </div>
                       </div>
 
-                      {/* Centered Teams */}
-                      <div className="flex items-center justify-center gap-4 mb-4">
-                        <div className="flex-1 text-right">
-                          <span className="text-sm font-bold">{match.home_team}</span>
+                      {/* Teams with logos */}
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Home */}
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-bold text-violet-300">
+                              {getTeamInitials(match.home_team)}
+                            </span>
+                          </div>
+                          <span className="text-sm font-semibold truncate">{match.home_team}</span>
                         </div>
-                        <div className="flex-shrink-0 px-3 py-1 rounded-full bg-muted/30 border border-border/50">
-                          <span className="text-[10px] font-semibold text-muted-foreground uppercase">vs</span>
-                        </div>
-                        <div className="flex-1 text-left">
-                          <span className="text-sm font-bold">{match.away_team}</span>
+
+                        {/* VS */}
+                        <span className="text-[10px] font-bold text-muted-foreground/40 flex-shrink-0 px-1">VS</span>
+
+                        {/* Away */}
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                          <span className="text-sm font-semibold truncate text-right">{match.away_team}</span>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-bold text-primary/70">
+                              {getTeamInitials(match.away_team)}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Divider */}
-                      <div className="h-px bg-border/40 mb-4" />
+                      {/* Main Prediction — center focus */}
+                      <div className="text-center py-2">
+                        <span className="text-lg font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                          {predLabel}
+                        </span>
+                      </div>
 
-                      {/* Prediction Details Grid */}
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        {/* Prediction */}
-                        <div className="text-center p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <TrendingUp className="h-3 w-3 text-violet-400" />
-                          </div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">Prediction</span>
-                          <span className="text-xs font-bold text-violet-400">{predLabel}</span>
+                      {/* Confidence & Risk — simple text row */}
+                      <div className="flex items-center justify-center gap-4 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3 text-primary" />
+                          <span className="text-muted-foreground">Confidence</span>
+                          <span className="font-bold text-foreground">{match.confidence ?? 0}%</span>
                         </div>
-
-                        {/* Predicted Score */}
-                        <div className="text-center p-2 rounded-lg bg-primary/10 border border-primary/20">
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Target className="h-3 w-3 text-primary" />
-                          </div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">Score</span>
-                          <span className="text-xs font-bold text-primary">{match.predicted_score || "—"}</span>
-                        </div>
-
-                        {/* Confidence */}
-                        <div className={cn("text-center p-2 rounded-lg border", risk.bg)}>
-                          <div className="flex items-center justify-center gap-1 mb-1">
-                            <Shield className="h-3 w-3" />
-                          </div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide block">
-                            {risk.label}
-                          </span>
-                          <span className={cn("text-xs font-bold", risk.color)}>{match.confidence ?? 0}%</span>
+                        <span className="text-border">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
+                          <span className={cn("font-medium", risk.color)}>{risk.label}</span>
                         </div>
                       </div>
 
-                      {/* Confidence Bar */}
-                      <div className="mb-4">
-                        <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
-                          <div
-                            className={cn(
-                              "h-full rounded-full transition-all",
-                              (match.confidence ?? 0) >= 80
-                                ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                                : (match.confidence ?? 0) >= 65
-                                  ? "bg-gradient-to-r from-amber-500 to-amber-400"
-                                  : "bg-gradient-to-r from-red-500 to-red-400"
-                            )}
-                            style={{ width: `${match.confidence ?? 0}%` }}
-                          />
-                        </div>
-                      </div>
+                      {/* One-line insight */}
+                      <p className="text-[11px] text-center text-muted-foreground/70 italic leading-relaxed">
+                        "{insight}"
+                      </p>
 
-                      {/* Unlock button */}
+                      {/* CTA Button */}
                       <Button
                         size="sm"
                         className={cn(
-                          "w-full text-xs font-semibold",
+                          "w-full text-xs font-semibold h-9",
                           isExpanded && analysis
                             ? "bg-emerald-600 hover:bg-emerald-700"
-                            : "bg-gradient-to-r from-violet-600 via-violet-500 to-fuchsia-500 hover:from-violet-700 hover:via-violet-600 hover:to-fuchsia-600 shadow-lg shadow-violet-500/20"
+                            : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
                         )}
                         disabled={!canGenerate || (isExpanded && isGenerating)}
                         onClick={() => handleUnlockPreview(match)}
@@ -378,12 +369,12 @@ export default function MatchPreviews() {
                         {isExpanded && isGenerating ? (
                           <>
                             <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                            Generating Preview...
+                            Generating...
                           </>
                         ) : isExpanded && analysis ? (
                           <>
                             <Eye className="h-3.5 w-3.5 mr-1.5" />
-                            Preview Ready
+                            Analysis Ready
                           </>
                         ) : isFreeUser ? (
                           <>
@@ -393,7 +384,7 @@ export default function MatchPreviews() {
                         ) : (
                           <>
                             <Zap className="h-3.5 w-3.5 mr-1.5" />
-                            Unlock Preview
+                            Unlock Full Analysis
                           </>
                         )}
                       </Button>
