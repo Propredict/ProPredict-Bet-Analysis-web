@@ -291,6 +291,13 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
+      {/* Best Pick Reason */}
+      {hasAccess && (
+        <p className="text-[9px] md:text-[10px] text-muted-foreground/80 mt-1 line-clamp-2">
+          {getBestPickReason(prediction)}
+        </p>
+      )}
+
       {/* Confidence Explanation - Dynamic based on prediction context */}
       {hasAccess && (
         <p className="text-[10px] md:text-xs text-muted-foreground italic border-t border-[#1e3a5f]/30 pt-2 md:pt-3 line-clamp-2">
