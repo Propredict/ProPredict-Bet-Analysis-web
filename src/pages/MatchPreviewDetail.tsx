@@ -221,7 +221,7 @@ export default function MatchPreviewDetail() {
     return (
       <div className="page-content space-y-4">
         <Button variant="ghost" size="sm" onClick={() => navigate("/match-previews")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> Back to Match Previews
         </Button>
         <div className="p-6 text-center rounded-2xl bg-card border border-border">
           <p className="text-muted-foreground">Match not found.</p>
@@ -245,7 +245,7 @@ export default function MatchPreviewDetail() {
           className="gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back
+          Back to Match Previews
         </Button>
 
         {/* ============ HERO SECTION ============ */}
