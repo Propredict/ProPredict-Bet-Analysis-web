@@ -113,11 +113,11 @@ export default function MatchPreviews() {
     return predictions
       .filter((p) => isQualityLeague(p.league))
       .sort((a, b) => {
-        // First by league priority (England first, then Bundesliga, etc.)
-        const prioDiff = getLeaguePriority(a.league) - getLeaguePriority(b.league);
-        if (prioDiff !== 0) return prioDiff;
-        // Then by confidence within same league
-        return (b.confidence ?? 0) - (a.confidence ?? 0);
+        // Primary: highest confidence first (most low-risk matches on top)
+        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+        if (confDiff !== 0) return confDiff;
+        // Secondary: league priority as tiebreaker
+        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
       })
       .slice(0, MAX_MATCHES);
   }, [predictions]);
