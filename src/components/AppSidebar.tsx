@@ -89,29 +89,31 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 flex items-center justify-between bg-primary">
-        <div className="flex items-center gap-2">
-          <img 
-            src={logoImage} 
-            alt="ProPredict" 
-            className="h-8 w-8 object-contain rounded-lg"
-          />
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-base font-bold text-primary-foreground">ProPredict</span>
-              <span className="text-xs text-primary-foreground/80">AI Predictions & Analysis</span>
-            </div>
+      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 bg-primary">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <img 
+              src={logoImage} 
+              alt="ProPredict" 
+              className="h-8 w-8 object-contain rounded-lg"
+            />
+            {!collapsed && (
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-primary-foreground">ProPredict</span>
+                <span className="text-xs text-primary-foreground/80">AI Predictions & Analysis</span>
+              </div>
+            )}
+          </div>
+          {isMobile && (
+            <button
+              onClick={() => setOpenMobile(false)}
+              className="p-1.5 rounded-md text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
           )}
         </div>
-        {isMobile && (
-          <button
-            onClick={() => setOpenMobile(false)}
-            className="p-1.5 rounded-md text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
-            aria-label="Close menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
       </SidebarHeader>
 
       <SidebarContent className="px-1.5">
