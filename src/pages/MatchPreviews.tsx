@@ -353,14 +353,17 @@ export default function MatchPreviews() {
 
                         {/* Away team */}
                         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary/70">
-                              {getTeamInitials(match.away_team)}
-                            </span>
-                          </div>
+                          {awayLogo ? (
+                            <img src={awayLogo} alt={match.away_team} className="w-12 h-12 object-contain" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                              <span className="text-xs font-bold text-primary/70">
+                                {getTeamInitials(match.away_team)}
+                              </span>
+                            </div>
+                          )}
                           <span className="text-xs font-semibold text-center leading-tight line-clamp-2">{match.away_team}</span>
                         </div>
-                      </div>
 
                       {/* Confidence & Risk row */}
                       <div className="flex items-center justify-center gap-4 text-xs pt-1">
