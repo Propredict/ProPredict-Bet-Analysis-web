@@ -171,7 +171,7 @@ interface TopPlayer {
 /**
  * Fetch team's last N matches form
  */
-async function fetchTeamForm(teamId: number, apiKey: string, count: number = 3): Promise<FormMatch[]> {
+async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5): Promise<FormMatch[]> {
   const cached = teamFormCache.get(teamId);
   if (cached && cached.length >= count) return cached.slice(0, count);
 
@@ -320,39 +320,43 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
 }
 
 /**
- * Calculate form score (0-100) from last 3 matches using points + goal diff.
- * - Win=3, Draw=1, Loss=0 (max 9)
+ * Calculate form score (0-100) from last 5 matches using weighted recency.
+ * Most recent match has highest weight, older matches decay.
+ * - Win=3, Draw=1, Loss=0
  * - Goal impact is a small stabilizer
  */
 function calculateFormScore(form: FormMatch[]): number {
   if (form.length === 0) return 50;
 
-  const matches = form.slice(0, 3);
-  let points = 0;
+  const matches = form.slice(0, 5);
+  let weightedPoints = 0;
+  let weightSum = 0;
   let gf = 0;
   let ga = 0;
 
-  for (const m of matches) {
-    if (m.result === "W") points += 3;
-    else if (m.result === "D") points += 1;
-    gf += m.goalsFor;
-    ga += m.goalsAgainst;
+  for (let i = 0; i < matches.length; i++) {
+    const weight = 1.0 - (i * 0.12); // Most recent=1.0, 5th=0.52
+    const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
+    weightedPoints += pts * weight;
+    weightSum += 3 * weight;
+    gf += matches[i].goalsFor;
+    ga += matches[i].goalsAgainst;
   }
 
-  const pointsScore = (points / 9) * 100; // 0..100
+  const pointsScore = (weightedPoints / weightSum) * 100;
   const goalDiff = gf - ga;
-  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 8));
+  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 6));
 
   return Math.round(pointsScore * 0.75 + gdScore * 0.25);
 }
 
 /**
- * Average goals (scored/conceded) from last 3 matches.
+ * Average goals (scored/conceded) from last 5 matches.
  */
 function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: number } {
   if (form.length === 0) return { scored: 1.0, conceded: 1.0 };
 
-  const matches = form.slice(0, 3);
+  const matches = form.slice(0, 5);
   let scored = 0;
   let conceded = 0;
 
@@ -364,6 +368,72 @@ function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: numbe
   return {
     scored: scored / matches.length,
     conceded: conceded / matches.length,
+  };
+}
+
+/**
+ * Poisson probability: P(X=k) = (lambda^k * e^-lambda) / k!
+ */
+function poissonPmf(lambda: number, k: number): number {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  let factorial = 1;
+  for (let i = 2; i <= k; i++) factorial *= i;
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial;
+}
+
+/**
+ * Calculate Poisson-based goal probabilities for Over/Under and BTTS markets.
+ */
+function poissonGoalMarkets(homeXg: number, awayXg: number): {
+  over15: number; over25: number; over35: number;
+  under15: number; under25: number; under35: number;
+  bttsYes: number; bttsNo: number;
+  mostLikelyScore: string;
+  expectedTotalGoals: number;
+} {
+  const maxGoals = 6;
+  let scoreProbs: number[][] = [];
+  
+  for (let h = 0; h <= maxGoals; h++) {
+    scoreProbs[h] = [];
+    for (let a = 0; a <= maxGoals; a++) {
+      scoreProbs[h][a] = poissonPmf(homeXg, h) * poissonPmf(awayXg, a);
+    }
+  }
+
+  let over15 = 0, over25 = 0, over35 = 0;
+  let bttsYes = 0;
+  let bestProb = 0;
+  let bestScore = "1-0";
+
+  for (let h = 0; h <= maxGoals; h++) {
+    for (let a = 0; a <= maxGoals; a++) {
+      const p = scoreProbs[h][a];
+      const total = h + a;
+      
+      if (total > 1) over15 += p;
+      if (total > 2) over25 += p;
+      if (total > 3) over35 += p;
+      if (h > 0 && a > 0) bttsYes += p;
+      
+      if (p > bestProb) {
+        bestProb = p;
+        bestScore = `${h}-${a}`;
+      }
+    }
+  }
+
+  return {
+    over15: Math.round(over15 * 100),
+    over25: Math.round(over25 * 100),
+    over35: Math.round(over35 * 100),
+    under15: Math.round((1 - over15) * 100),
+    under25: Math.round((1 - over25) * 100),
+    under35: Math.round((1 - over35) * 100),
+    bttsYes: Math.round(bttsYes * 100),
+    bttsNo: Math.round((1 - bttsYes) * 100),
+    mostLikelyScore: bestScore,
+    expectedTotalGoals: homeXg + awayXg,
   };
 }
 
@@ -637,95 +707,33 @@ function predictScoreV2(params: {
   draw: number;
   prediction: string;
 }): string {
-  const { homeGoalRate, awayGoalRate, homeWin, awayWin, prediction } = params;
+  const { homeGoalRate, awayGoalRate, prediction } = params;
 
-  // Base expected goals from attack vs defense matchup
+  // Calculate xG from attack vs defense matchup
   let homeXg = (homeGoalRate.scored + awayGoalRate.conceded) / 2;
   let awayXg = (awayGoalRate.scored + homeGoalRate.conceded) / 2;
-
-  // Mild adjustments for strong favorites (much smaller than before)
-  const strongHomeFav = prediction === "1" && homeWin >= 65;
-  const strongAwayFav = prediction === "2" && awayWin >= 65;
-  const balanced = prediction === "X";
-
-  if (strongHomeFav) {
-    homeXg += 0.25;
-    awayXg -= 0.1;
-  } else if (strongAwayFav) {
-    awayXg += 0.25;
-    homeXg -= 0.1;
-  } else if (balanced) {
-    const avg = (homeXg + awayXg) / 2;
-    homeXg = avg;
-    awayXg = avg;
-  }
 
   homeXg = clamp(homeXg, 0.3, 3.0);
   awayXg = clamp(awayXg, 0.3, 3.0);
 
-  // Deterministic seed from xG values for consistent but varied results per match
-  const seed = Math.abs(Math.sin(homeXg * 1000 + awayXg * 7777)) * 10000;
-  const rnd = (seed % 100) / 100; // 0..1 deterministic per matchup
+  // Use Poisson to find most likely score
+  const markets = poissonGoalMarkets(homeXg, awayXg);
+  let bestScore = markets.mostLikelyScore;
 
-  // Pick from plausible score lines based on xG ranges
-  let homeGoals: number;
-  let awayGoals: number;
+  // Ensure the predicted score matches the prediction direction
+  const parts = bestScore.split("-").map(Number);
+  let homeGoals = parts[0];
+  let awayGoals = parts[1];
 
-  if (prediction === "X") {
-    // Draw scores: 0-0, 1-1, 2-2
-    const totalXg = homeXg + awayXg;
-    if (totalXg < 1.5) {
-      homeGoals = rnd < 0.4 ? 0 : 1;
-      awayGoals = homeGoals;
-    } else if (totalXg < 3.0) {
-      homeGoals = rnd < 0.65 ? 1 : 2;
-      awayGoals = homeGoals;
-    } else {
-      homeGoals = rnd < 0.5 ? 2 : rnd < 0.8 ? 1 : 3;
-      awayGoals = homeGoals;
-    }
-    // Avoid 0-0 when both teams score regularly
-    if (homeGoals === 0 && (homeGoalRate.scored >= 1.0 || awayGoalRate.scored >= 1.0)) {
-      homeGoals = 1;
-      awayGoals = 1;
-    }
-  } else {
-    // Winner prediction ("1" or "2")
-    const favXg = prediction === "1" ? homeXg : awayXg;
-    const undXg = prediction === "1" ? awayXg : homeXg;
-
-    // Favorite goals from xG with variety
-    let favGoals: number;
-    if (favXg < 1.0) {
-      favGoals = 1;
-    } else if (favXg < 1.6) {
-      favGoals = rnd < 0.55 ? 1 : 2;
-    } else if (favXg < 2.3) {
-      favGoals = rnd < 0.35 ? 1 : rnd < 0.8 ? 2 : 3;
-    } else {
-      favGoals = rnd < 0.2 ? 2 : rnd < 0.7 ? 3 : 4;
-    }
-
-    // Underdog goals from their xG
-    let undGoals: number;
-    if (undXg < 0.7) {
-      undGoals = rnd < 0.6 ? 0 : 1;
-    } else if (undXg < 1.3) {
-      undGoals = rnd < 0.45 ? 0 : 1;
-    } else {
-      undGoals = rnd < 0.3 ? 1 : 2;
-    }
-
-    // Ensure winner actually wins
-    if (favGoals <= undGoals) favGoals = undGoals + 1;
-
-    if (prediction === "1") {
-      homeGoals = favGoals;
-      awayGoals = undGoals;
-    } else {
-      homeGoals = undGoals;
-      awayGoals = favGoals;
-    }
+  if (prediction === "1" && homeGoals <= awayGoals) {
+    // Force a home win score using Poisson-weighted selection
+    homeGoals = Math.max(awayGoals + 1, 1);
+  } else if (prediction === "2" && awayGoals <= homeGoals) {
+    awayGoals = Math.max(homeGoals + 1, 1);
+  } else if (prediction === "X" && homeGoals !== awayGoals) {
+    const avg = Math.round((homeGoals + awayGoals) / 2);
+    homeGoals = avg;
+    awayGoals = avg;
   }
 
   homeGoals = clamp(homeGoals, 0, 4);
@@ -1253,7 +1261,7 @@ const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
   const avgScored = stats.played > 0 ? stats.goalsFor / stats.played : 1.0;
   const avgConceded = stats.played > 0 ? stats.goalsAgainst / stats.played : 1.0;
 
-  const recent = stats.form.slice(-3).split("");
+  const recent = stats.form.slice(-5).split("");
   return recent.map((ch) => {
     const result = ch === "W" ? "W" : ch === "L" ? "L" : "D";
     return {
@@ -1264,6 +1272,86 @@ const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
     };
   });
 };
+
+/**
+ * Generate specific key_factors from real match data instead of generic ones.
+ */
+function generateKeyFactors(
+  homeTeamName: string,
+  awayTeamName: string,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[],
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  h2h: H2HMatch[],
+  homeTeamId: number,
+  prediction: string,
+  goalMarkets: { over25: number; bttsYes: number; expectedTotalGoals: number }
+): string[] {
+  const factors: string[] = [];
+
+  // 1. Form streaks
+  if (homeForm.length >= 3) {
+    const lastThree = homeForm.slice(0, 3);
+    const wins = lastThree.filter(m => m.result === "W").length;
+    const losses = lastThree.filter(m => m.result === "L").length;
+    if (wins === 3) factors.push(`${homeTeamName}: 3 wins in a row`);
+    else if (losses >= 2) factors.push(`${homeTeamName}: Poor recent form`);
+  }
+  if (awayForm.length >= 3) {
+    const lastThree = awayForm.slice(0, 3);
+    const wins = lastThree.filter(m => m.result === "W").length;
+    const losses = lastThree.filter(m => m.result === "L").length;
+    if (wins === 3) factors.push(`${awayTeamName}: 3 wins in a row`);
+    else if (losses >= 2) factors.push(`${awayTeamName}: Poor recent form`);
+  }
+
+  // 2. Home/Away strength
+  if (homeStats && homeStats.home.played > 3) {
+    const homeWinRate = homeStats.home.wins / homeStats.home.played;
+    if (homeWinRate >= 0.7) factors.push(`Strong home record (${Math.round(homeWinRate * 100)}% wins)`);
+    else if (homeWinRate <= 0.25) factors.push(`Weak home record`);
+  }
+  if (awayStats && awayStats.away.played > 3) {
+    const awayWinRate = awayStats.away.wins / awayStats.away.played;
+    if (awayWinRate >= 0.5) factors.push(`${awayTeamName}: Strong away form`);
+    else if (awayWinRate <= 0.2) factors.push(`${awayTeamName}: Struggles away`);
+  }
+
+  // 3. H2H dominance
+  if (h2h.length >= 3) {
+    const homeH2HWins = h2h.filter(m => {
+      const isHome = m.homeTeamId === homeTeamId;
+      const hGoals = isHome ? m.homeGoals : m.awayGoals;
+      const aGoals = isHome ? m.awayGoals : m.homeGoals;
+      return hGoals > aGoals;
+    }).length;
+    if (homeH2HWins >= 3) factors.push(`H2H: ${homeTeamName} dominates`);
+    else if (homeH2HWins === 0) factors.push(`H2H: ${awayTeamName} dominates`);
+  }
+
+  // 4. Clean sheets / defensive
+  if (homeStats && homeStats.cleanSheets.total > 0) {
+    const csRate = homeStats.cleanSheets.total / homeStats.played;
+    if (csRate >= 0.4) factors.push(`${homeTeamName}: Strong defense (${homeStats.cleanSheets.total} clean sheets)`);
+  }
+
+  // 5. Goal market insights (Poisson-derived)
+  if (goalMarkets.over25 >= 65) factors.push(`High-scoring trend (Over 2.5: ${goalMarkets.over25}%)`);
+  else if (goalMarkets.over25 <= 35) factors.push(`Low-scoring trend (Under 2.5: ${100 - goalMarkets.over25}%)`);
+  
+  if (goalMarkets.bttsYes >= 65) factors.push(`Both teams likely to score (${goalMarkets.bttsYes}%)`);
+  else if (goalMarkets.bttsYes <= 30) factors.push(`Clean sheet expected (BTTS No: ${100 - goalMarkets.bttsYes}%)`);
+
+  // 6. Season goal averages
+  if (homeStats && awayStats) {
+    const totalAvg = homeStats.goalsForAvg + awayStats.goalsForAvg;
+    if (totalAvg >= 3.5) factors.push(`High-scoring teams (avg ${totalAvg.toFixed(1)} goals combined)`);
+  }
+
+  // Limit to 5 most relevant factors
+  return factors.slice(0, 5);
+}
 
 /**
  * Process a single batch of predictions
@@ -1346,6 +1434,23 @@ async function processBatch(
         awayTeamName
       );
 
+      // Calculate Poisson goal markets for key_factors and more accurate score
+      const homeGoalRate = calculateGoalRate(homeForm);
+      const awayGoalRate = calculateGoalRate(awayForm);
+      const homeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
+      const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+      const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
+
+      // Generate data-driven key_factors
+      const keyFactors = generateKeyFactors(
+        homeTeamName, awayTeamName,
+        homeForm, awayForm,
+        homeStats, awayStats,
+        h2h, homeTeamId,
+        newPrediction.prediction,
+        goalMarkets
+      );
+
       // ⭐ PREMIUM DEEP DIVE: If initial confidence >= 85%, enhance with last 10 matches + 5 H2H
       if (newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
         try {
@@ -1379,6 +1484,9 @@ async function processBatch(
           away_win: newPrediction.away_win,
           risk_level: newPrediction.risk_level,
           analysis: newPrediction.analysis,
+          key_factors: keyFactors.length > 0 ? keyFactors : null,
+          last_home_goals: Math.round(homeXg * 10) / 10,
+          last_away_goals: Math.round(awayXg * 10) / 10,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
@@ -1392,7 +1500,7 @@ async function processBatch(
       updated++;
       const tier = newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE ? "⭐PREMIUM" : "STD";
       console.log(
-        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}%`
+        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
       );
     } catch (e) {
       await markPredictionLocked(
