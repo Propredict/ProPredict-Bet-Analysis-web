@@ -119,7 +119,7 @@ export default function MatchPreviews() {
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
     return predictions
-      .filter((p) => isQualityLeague(p.league))
+      .filter((p) => isQualityLeague(p.league, p.home_team))
       .sort((a, b) => {
         // Primary: highest confidence first (most low-risk matches on top)
         const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
