@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 type AdSlotProps = {
@@ -11,6 +11,8 @@ export default function AdSlot({
   style,
 }: AdSlotProps) {
   const isAndroid = getIsAndroidApp();
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [hasAd, setHasAd] = useState(false);
 
   useEffect(() => {
     if (isAndroid) return;
@@ -22,17 +24,33 @@ export default function AdSlot({
     }
   }, [isAndroid]);
 
+  // Observe if the ad actually renders content
+  useEffect(() => {
+    if (isAndroid || !wrapperRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setHasAd(entry.contentRect.height > 0);
+      }
+    });
+    const ins = wrapperRef.current.querySelector("ins");
+    if (ins) observer.observe(ins);
+    return () => observer.disconnect();
+  }, [isAndroid]);
+
   // Hide AdSense on Android — native AdMob handles ads there
   if (isAndroid) return null;
 
   return (
     <div
+      ref={wrapperRef}
       className="adslot-wrapper"
       style={{
-        margin: "24px 0",
+        margin: hasAd ? "24px 0" : 0,
         textAlign: "center",
         overflow: "hidden",
         minHeight: 0,
+        maxHeight: hasAd ? "none" : 0,
+        transition: "margin 0.2s",
         ...style,
       }}
     >
