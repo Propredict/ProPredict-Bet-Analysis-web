@@ -214,8 +214,6 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
     </div>
   );
 }
-
-// Stats Section with fallback
 function StatsSection({ data, match }: { data: MatchDetails | null; match: Match }) {
   const stats = data?.statistics || [];
 
