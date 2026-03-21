@@ -170,30 +170,30 @@ export default function MatchPreviews() {
 
       <div className="page-content space-y-4">
         <div className="page-header">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
-                <Eye className="h-5 w-5 text-violet-400" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">Today's AI Matches</h1>
-                <p className="text-xs text-muted-foreground">
-                  Top {topMatches.length} matches · Sorted by confidence
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
+              <Eye className="h-5 w-5 text-violet-400" />
             </div>
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={loading} className="h-8">
-              <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            </Button>
+            <div>
+              <h1 className="text-lg font-bold">Your Match Preview</h1>
+              <p className="text-xs text-muted-foreground">
+                AI-powered analysis for top matches
+              </p>
+            </div>
           </div>
         </div>
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Select any match to view AI-powered analysis and predictions.</li>
-            <li>AI evaluates team form, statistics, and trends to generate match previews.</li>
+            <li>Select any match directly and instantly view AI-powered analysis and predictions for that specific game.</li>
+            <li>The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.</li>
+            <li>This feature is designed to help you understand the matchup better and follow the analysis in one place.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
+          <div className="mt-3 space-y-1">
+            <p className="text-sm"><span className="text-amber-400 font-bold">● PRO</span> — Limited to 5 Match Previews daily</p>
+            <p className="text-sm"><span className="text-fuchsia-400 font-bold">● PREMIUM</span> — Unlimited Match Previews</p>
+          </div>
         </Card>
 
         {isFreeUser && (
