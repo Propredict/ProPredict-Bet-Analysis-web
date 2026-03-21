@@ -5,10 +5,11 @@ import {
   deriveMarkets, 
   getBadgeStyles, 
   getBadgeLabel, 
-  getRiskLevelColor
+  getRiskLevelColor,
+  calculateGoalMarketProbs,
 } from "../utils/marketDerivation";
 import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown } from "lucide-react";
 
 /** Determine the best pick across all markets with an icon */
 function getBestPickWithIcon(prediction: AIPrediction) {
