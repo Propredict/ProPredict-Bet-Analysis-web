@@ -351,12 +351,12 @@ function calculateFormScore(form: FormMatch[]): number {
 }
 
 /**
- * Average goals (scored/conceded) from last 3 matches.
+ * Average goals (scored/conceded) from last 5 matches.
  */
 function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: number } {
   if (form.length === 0) return { scored: 1.0, conceded: 1.0 };
 
-  const matches = form.slice(0, 3);
+  const matches = form.slice(0, 5);
   let scored = 0;
   let conceded = 0;
 
@@ -368,6 +368,72 @@ function calculateGoalRate(form: FormMatch[]): { scored: number; conceded: numbe
   return {
     scored: scored / matches.length,
     conceded: conceded / matches.length,
+  };
+}
+
+/**
+ * Poisson probability: P(X=k) = (lambda^k * e^-lambda) / k!
+ */
+function poissonPmf(lambda: number, k: number): number {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  let factorial = 1;
+  for (let i = 2; i <= k; i++) factorial *= i;
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial;
+}
+
+/**
+ * Calculate Poisson-based goal probabilities for Over/Under and BTTS markets.
+ */
+function poissonGoalMarkets(homeXg: number, awayXg: number): {
+  over15: number; over25: number; over35: number;
+  under15: number; under25: number; under35: number;
+  bttsYes: number; bttsNo: number;
+  mostLikelyScore: string;
+  expectedTotalGoals: number;
+} {
+  const maxGoals = 6;
+  let scoreProbs: number[][] = [];
+  
+  for (let h = 0; h <= maxGoals; h++) {
+    scoreProbs[h] = [];
+    for (let a = 0; a <= maxGoals; a++) {
+      scoreProbs[h][a] = poissonPmf(homeXg, h) * poissonPmf(awayXg, a);
+    }
+  }
+
+  let over15 = 0, over25 = 0, over35 = 0;
+  let bttsYes = 0;
+  let bestProb = 0;
+  let bestScore = "1-0";
+
+  for (let h = 0; h <= maxGoals; h++) {
+    for (let a = 0; a <= maxGoals; a++) {
+      const p = scoreProbs[h][a];
+      const total = h + a;
+      
+      if (total > 1) over15 += p;
+      if (total > 2) over25 += p;
+      if (total > 3) over35 += p;
+      if (h > 0 && a > 0) bttsYes += p;
+      
+      if (p > bestProb) {
+        bestProb = p;
+        bestScore = `${h}-${a}`;
+      }
+    }
+  }
+
+  return {
+    over15: Math.round(over15 * 100),
+    over25: Math.round(over25 * 100),
+    over35: Math.round(over35 * 100),
+    under15: Math.round((1 - over15) * 100),
+    under25: Math.round((1 - over25) * 100),
+    under35: Math.round((1 - over35) * 100),
+    bttsYes: Math.round(bttsYes * 100),
+    bttsNo: Math.round((1 - bttsYes) * 100),
+    mostLikelyScore: bestScore,
+    expectedTotalGoals: homeXg + awayXg,
   };
 }
 
