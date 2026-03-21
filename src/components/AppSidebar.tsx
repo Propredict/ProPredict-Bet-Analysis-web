@@ -49,7 +49,7 @@ const ticketsItems = [
   { title: "Daily Multi-Match", url: "/daily-predictions", icon: Calendar },
   { title: "Pro Multi-Match", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Multi-Match", url: "/premium-predictions", icon: Crown },
-  { title: "Prediction History", url: "/winning-history", icon: Layers },
+  
 ];
 
 const packagesItems = [
