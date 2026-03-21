@@ -19,36 +19,31 @@ const MAX_MATCHES = 30;
 
 // Quality men's leagues with priority order (lower = higher priority)
 const LEAGUE_PRIORITY: Record<string, number> = {
-  // England
+  // 1. England
   "Premier League": 1,
   "Championship": 2,
   "League One": 3,
   "League Two": 4,
-  // Germany
-  "Bundesliga": 10,
-  "2. Bundesliga": 11,
-  // Italy
-  "Serie A": 15,
-  "Serie B": 16,
-  // Spain
-  "La Liga": 20,
-  "Segunda División": 21,
-  // France
-  "Ligue 1": 25,
-  "Ligue 2": 26,
-  // Netherlands
-  "Eredivisie": 30,
-  "Eerste Divisie": 31,
-  // Portugal
-  "Primeira Liga": 35,
-  // Belgium
-  "Challenger Pro League": 40,
-  // Turkey
-  "Super Lig": 45,
-  // Poland
-  "Ekstraklasa": 50,
-  // Argentina
-  "Liga Profesional Argentina": 55,
+  // 2. Spain
+  "La Liga": 5,
+  "Segunda División": 6,
+  // 3. Germany
+  "Bundesliga": 7,
+  "2. Bundesliga": 8,
+  // 4. Italy
+  "Serie A": 9,
+  "Serie B": 10,
+  // 5. France
+  "Ligue 1": 11,
+  "Ligue 2": 12,
+  // Additional
+  "Eredivisie": 20,
+  "Eerste Divisie": 21,
+  "Primeira Liga": 25,
+  "Challenger Pro League": 30,
+  "Super Lig": 35,
+  "Ekstraklasa": 40,
+  "Liga Profesional Argentina": 45,
 };
 
 // English Premier League teams whitelist — to filter out Kuwait, Egypt, etc. "Premier League"
