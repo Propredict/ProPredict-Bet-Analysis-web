@@ -1,99 +1,112 @@
 import { useState, useCallback } from "react";
 import type { Match } from "@/hooks/useFixtures";
 import type { MatchAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
+import { supabase } from "@/integrations/supabase/client";
 
-// Generate AI-like analysis from existing match data
-function generateAnalysis(match: Match): MatchAnalysis {
+/**
+ * Build a consistent analysis from the real AI prediction row
+ * stored in the ai_predictions table — no random numbers.
+ */
+function buildAnalysisFromPrediction(
+  match: Match,
+  row: {
+    prediction: string | null;
+    confidence: number | null;
+    analysis: string | null;
+    key_factors: string[] | null;
+    home_win: number | null;
+    draw: number | null;
+    away_win: number | null;
+    predicted_score: string | null;
+    risk_level: string | null;
+    last_home_goals: number | null;
+    last_away_goals: number | null;
+  }
+): MatchAnalysis {
   const homeTeam = match.homeTeam;
   const awayTeam = match.awayTeam;
-  
-  // Simulate analysis based on match data patterns
-  const homeStrength = Math.random();
-  const awayStrength = Math.random();
-  const isHomeStronger = homeStrength > awayStrength;
-  
-  // Generate realistic stats
-  const homeGoalsAvg = (1.2 + Math.random() * 1.5).toFixed(1);
-  const awayGoalsAvg = (0.8 + Math.random() * 1.2).toFixed(1);
-  const homeCleanSheets = Math.floor(2 + Math.random() * 4);
-  const awayCleanSheets = Math.floor(1 + Math.random() * 3);
-  const h2hMeetings = Math.floor(5 + Math.random() * 10);
-  const homeWins = Math.floor(h2hMeetings * (0.3 + Math.random() * 0.3));
-  const draws = Math.floor((h2hMeetings - homeWins) * 0.3);
-  
-  // Determine likely outcome
-  const confidenceBase = 55 + Math.floor(Math.random() * 30);
+  const confidence = row.confidence ?? 60;
+  const prediction = (row.prediction || "").toLowerCase().trim();
+
+  // Determine outcome label
   let outcome: string;
-  let reasoning: string;
-  
-  if (homeStrength > awayStrength + 0.2) {
-    outcome = `${homeTeam} to win`;
-    reasoning = `${homeTeam} enters this fixture with strong form at home. Their attacking metrics and defensive solidity suggest they have the edge in this encounter. Historical data and current momentum favor the hosts.`;
-  } else if (awayStrength > homeStrength + 0.2) {
-    outcome = `${awayTeam} to win`;
-    reasoning = `${awayTeam} has shown impressive away form this season. Their ability to score on the road combined with ${homeTeam}'s recent struggles at home points towards an away victory.`;
-  } else if (Math.random() > 0.5) {
-    outcome = "Draw likely";
-    reasoning = `Both teams are evenly matched based on current form and historical encounters. The tactical setups and similar playing styles suggest this could end in a stalemate.`;
-  } else {
-    outcome = "Goals expected";
-    reasoning = `Both teams have shown attacking intent this season. With their combined scoring averages and defensive vulnerabilities, expect an entertaining match with goals on both ends.`;
-  }
-  
-  const overview = isHomeStronger
-    ? `${homeTeam} welcomes ${awayTeam} in what promises to be an intriguing ${match.league} clash. The hosts have demonstrated solid form, particularly at home, where they've been difficult to overcome. ${awayTeam} will look to upset the odds but face a tough challenge against a well-organized side.`
-    : `${awayTeam} travels to face ${homeTeam} in a crucial ${match.league} fixture. The visitors arrive with momentum on their side, having shown resilience in recent outings. ${homeTeam} will need to be at their best to contain an in-form opponent.`;
-  
+  if (prediction === "1" || prediction === "home") outcome = `${homeTeam} to win`;
+  else if (prediction === "2" || prediction === "away") outcome = `${awayTeam} to win`;
+  else if (prediction === "x" || prediction === "draw") outcome = "Draw likely";
+  else if (prediction.includes("over")) outcome = "Over 2.5 Goals";
+  else if (prediction.includes("under")) outcome = "Under 2.5 Goals";
+  else if (prediction.includes("btts")) outcome = "Both Teams to Score";
+  else outcome = row.prediction || "Analysis pending";
+
+  // Overview from AI analysis or generate meaningful one
+  const overview =
+    row.analysis ||
+    `${homeTeam} faces ${awayTeam} in a ${match.league} fixture. Based on our AI model's analysis with ${confidence}% confidence, this match presents an interesting tactical battle.`;
+
+  // Reasoning
+  const reasoning =
+    row.key_factors && row.key_factors.length > 0
+      ? row.key_factors.join(". ") + "."
+      : `Our AI engine has analyzed team form, head-to-head records, and current standings to arrive at this prediction with ${confidence}% confidence.`;
+
+  // Key stats from real data
+  const homeGoals = row.last_home_goals ?? 0;
+  const awayGoals = row.last_away_goals ?? 0;
+  const homeWinProb = row.home_win ?? 0;
+  const drawProb = row.draw ?? 0;
+  const awayWinProb = row.away_win ?? 0;
+
   const keyStats = [
     {
-      label: `${homeTeam} Goals/Match`,
-      value: homeGoalsAvg,
-      trend: parseFloat(homeGoalsAvg) >= 1.5 ? "positive" as const : "neutral" as const,
+      label: `${homeTeam} Win Probability`,
+      value: `${homeWinProb}%`,
+      trend: (homeWinProb >= 50 ? "positive" : "neutral") as "positive" | "neutral",
     },
     {
-      label: `${awayTeam} Goals/Match`,
-      value: awayGoalsAvg,
-      trend: parseFloat(awayGoalsAvg) >= 1.3 ? "positive" as const : "neutral" as const,
+      label: `${awayTeam} Win Probability`,
+      value: `${awayWinProb}%`,
+      trend: (awayWinProb >= 50 ? "positive" : "neutral") as "positive" | "neutral",
     },
     {
-      label: "Clean Sheets (Home)",
-      value: `${homeCleanSheets} in last 10`,
-      trend: homeCleanSheets >= 4 ? "positive" as const : "neutral" as const,
-    },
-    {
-      label: "Clean Sheets (Away)",
-      value: `${awayCleanSheets} in last 10`,
-      trend: awayCleanSheets >= 3 ? "positive" as const : "neutral" as const,
-    },
-    {
-      label: "Head-to-Head",
-      value: `${homeWins}W ${draws}D ${h2hMeetings - homeWins - draws}L`,
+      label: "Draw Probability",
+      value: `${drawProb}%`,
       trend: "neutral" as const,
     },
     {
-      label: "Recent Form",
-      value: isHomeStronger ? "Home advantage" : "Away form strong",
-      trend: "neutral" as const,
+      label: "Risk Level",
+      value: row.risk_level || "Medium",
+      trend: (row.risk_level === "Low" ? "positive" : row.risk_level === "High" ? "negative" : "neutral") as "positive" | "negative" | "neutral",
+    },
+    {
+      label: `${homeTeam} Recent Goals`,
+      value: `${homeGoals} avg`,
+      trend: (homeGoals >= 1.5 ? "positive" : "neutral") as "positive" | "neutral",
+    },
+    {
+      label: `${awayTeam} Recent Goals`,
+      value: `${awayGoals} avg`,
+      trend: (awayGoals >= 1.5 ? "positive" : "neutral") as "positive" | "neutral",
     },
   ];
-  
-  const insights = [
-    `${homeTeam} has ${isHomeStronger ? "won" : "struggled in"} ${Math.floor(2 + Math.random() * 3)} of their last 5 home matches.`,
-    `${awayTeam} averaging ${awayGoalsAvg} goals per game on the road this season.`,
-    `The last ${Math.min(3, h2hMeetings)} meetings have produced ${Math.floor(2 + Math.random() * 2)} goals on average.`,
-    `Key players are expected to be available for both sides, setting up an intriguing tactical battle.`,
-    isHomeStronger
-      ? `${homeTeam}'s home record gives them a psychological advantage heading into this fixture.`
-      : `${awayTeam}'s recent performances suggest they're capable of getting a result here.`,
-  ];
-  
+
+  // Insights from key_factors or fallback
+  const insights =
+    row.key_factors && row.key_factors.length > 0
+      ? row.key_factors
+      : [
+          `AI model confidence: ${confidence}%`,
+          `Home win probability: ${homeWinProb}%`,
+          `Away win probability: ${awayWinProb}%`,
+          `Predicted risk level: ${row.risk_level || "Medium"}`,
+        ];
+
   return {
     overview,
     keyStats,
     insights,
     prediction: {
       outcome,
-      confidence: confidenceBase,
+      confidence,
       reasoning,
     },
   };
@@ -108,15 +121,57 @@ export function useMatchPreviewGenerator() {
     setIsGenerating(true);
     setAnalysis(null);
     setGeneratedMatch(match);
-    
-    // Simulate AI generation time
-    await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 1000));
-    
-    const result = generateAnalysis(match);
-    setAnalysis(result);
-    setIsGenerating(false);
-    
-    return result;
+
+    try {
+      // Fetch real prediction from ai_predictions table
+      const { data, error } = await supabase
+        .from("ai_predictions")
+        .select("prediction, confidence, analysis, key_factors, home_win, draw, away_win, predicted_score, risk_level, last_home_goals, last_away_goals")
+        .eq("match_id", match.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching AI prediction:", error);
+      }
+
+      if (data) {
+        const result = buildAnalysisFromPrediction(match, data);
+        setAnalysis(result);
+        return result;
+      }
+
+      // Fallback: try matching by team names if match_id didn't work
+      const { data: fallbackData } = await supabase
+        .from("ai_predictions")
+        .select("prediction, confidence, analysis, key_factors, home_win, draw, away_win, predicted_score, risk_level, last_home_goals, last_away_goals")
+        .eq("home_team", match.homeTeam)
+        .eq("away_team", match.awayTeam)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fallbackData) {
+        const result = buildAnalysisFromPrediction(match, fallbackData);
+        setAnalysis(result);
+        return result;
+      }
+
+      // No data found — show message
+      const noDataAnalysis: MatchAnalysis = {
+        overview: `No AI prediction data available yet for ${match.homeTeam} vs ${match.awayTeam}. Check back closer to match time.`,
+        keyStats: [],
+        insights: ["AI prediction data will be available when the model processes this match."],
+        prediction: {
+          outcome: "Pending",
+          confidence: 0,
+          reasoning: "This match has not yet been analyzed by our AI engine.",
+        },
+      };
+      setAnalysis(noDataAnalysis);
+      return noDataAnalysis;
+    } finally {
+      setIsGenerating(false);
+    }
   }, []);
 
   const reset = useCallback(() => {
