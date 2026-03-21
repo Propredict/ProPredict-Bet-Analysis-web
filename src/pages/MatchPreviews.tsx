@@ -174,6 +174,32 @@ export default function MatchPreviews() {
           </div>
         </div>
 
+        {/* Description Card */}
+        <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
+          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+            <li>Select any match directly and instantly view AI-powered analysis and predictions for that specific game.</li>
+            <li>The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.</li>
+            <li>This feature is designed to help you understand the matchup better and follow the analysis in one place.</li>
+            <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
+          </ul>
+          <div className="mt-4 pt-3 border-t border-border/50 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+              <span className="text-sm">
+                <span className="font-semibold text-amber-400">PRO</span>
+                <span className="text-muted-foreground"> — Limited to 5 Match Previews daily</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-fuchsia-500"></span>
+              <span className="text-sm">
+                <span className="font-semibold text-fuchsia-400">PREMIUM</span>
+                <span className="text-muted-foreground"> — Unlimited Match Previews</span>
+              </span>
+            </div>
+          </div>
+        </Card>
+
         {/* Access Banner */}
         {isFreeUser && (
           <Card className="p-3 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border-red-500/30">
