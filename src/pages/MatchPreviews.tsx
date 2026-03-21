@@ -158,7 +158,7 @@ export default function MatchPreviews() {
 
   const handleCardClick = (match: typeof topMatches[0]) => {
     if (isFreeUser) return;
-    navigate(`/match-preview/${match.match_id}`);
+    navigate(`/match-preview/${match.match_id}`, { state: { unlocked: true } });
   };
 
   return (
