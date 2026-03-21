@@ -187,7 +187,7 @@ export default function AIPredictions() {
 
     // Filter by pick type
     if (pickFilter !== "all") {
-      result = result.filter((p) => getPickType(p) === pickFilter);
+      result = result.filter((p) => matchesPickFilter(p, pickFilter));
     }
     
     // Filter by favorites if enabled
