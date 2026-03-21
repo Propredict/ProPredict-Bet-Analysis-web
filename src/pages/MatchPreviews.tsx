@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight } from "lucide-react";
+import { Eye, Loader2, RefreshCw, Lock, Shield, TrendingUp, ChevronRight, Clock, Trophy, Target, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
