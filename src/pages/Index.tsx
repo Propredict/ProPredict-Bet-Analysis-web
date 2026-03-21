@@ -17,6 +17,7 @@ const BettingTickets = lazy(() => import("@/components/dashboard/BettingTickets"
 const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStandings").then(m => ({ default: m.LeagueStandings })));
 const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
+const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
 
@@ -169,6 +170,11 @@ const Index = () => {
         {/* AI Predictions Section */}
         <Suspense fallback={<LazyFallback />}>
           <DashboardAIPredictions />
+        </Suspense>
+
+        {/* Match Previews Section */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardMatchPreviews />
         </Suspense>
 
         {/* Model Analytics Charts – Desktop web only */}
