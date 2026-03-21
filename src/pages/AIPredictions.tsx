@@ -6,7 +6,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
-import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -22,6 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 
 
 
@@ -29,16 +30,44 @@ type SortOption = "confidence" | "kickoff" | "risk";
 type TierFilter = "all" | "free" | "pro" | "premium";
 type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts";
 
-/** Derive pick type from prediction data */
-function getPickType(prediction: { prediction: string | null; predicted_score?: string | null }): PickFilter {
-  const p = (prediction.prediction || "").toLowerCase();
-  if (p.includes("over")) return "over25";
-  if (p.includes("under")) return "under25";
-  if (p.includes("btts")) return "btts";
-  if (p === "1" || p === "home") return "home";
-  if (p === "2" || p === "away") return "away";
-  if (p === "x" || p === "draw") return "draw";
-  return "home"; // fallback
+/** Derive pick type from prediction field (for new predictions with market labels) */
+function getPickTypeFromPrediction(p: string): PickFilter | null {
+  const lower = p.toLowerCase();
+  if (lower.includes("over")) return "over25";
+  if (lower.includes("under")) return "under25";
+  if (lower.includes("btts")) return "btts";
+  if (lower === "1" || lower === "home") return "home";
+  if (lower === "2" || lower === "away") return "away";
+  if (lower === "x" || lower === "draw") return "draw";
+  return null;
+}
+
+/** Check if a prediction matches a pick filter using both prediction field AND Poisson data */
+function matchesPickFilter(prediction: AIPrediction, filter: PickFilter): boolean {
+  if (filter === "all") return true;
+  
+  // First check the prediction field directly
+  const directType = getPickTypeFromPrediction(prediction.prediction || "");
+  if (directType === filter) return true;
+  
+  // For goal markets, also check Poisson probabilities (works for old "1"/"2"/"X" predictions)
+  const probs = calculateGoalMarketProbs(prediction);
+  
+  switch (filter) {
+    case "over25": return probs.over25 >= 55;
+    case "under25": return probs.under25 >= 55;
+    case "btts": return probs.bttsYes >= 55;
+    case "home": return directType === "home" || (prediction.home_win ?? 0) > (prediction.away_win ?? 0) && (prediction.home_win ?? 0) > (prediction.draw ?? 0);
+    case "away": return directType === "away" || (prediction.away_win ?? 0) > (prediction.home_win ?? 0) && (prediction.away_win ?? 0) > (prediction.draw ?? 0);
+    case "draw": return directType === "draw" || (prediction.draw ?? 0) >= (prediction.home_win ?? 0) && (prediction.draw ?? 0) >= (prediction.away_win ?? 0);
+    default: return true;
+  }
+}
+
+/** Count predictions matching a filter */
+function countByFilter(predictions: AIPrediction[], filter: PickFilter): number {
+  if (filter === "all") return predictions.length;
+  return predictions.filter(p => matchesPickFilter(p, filter)).length;
 }
 
 export default function AIPredictions() {
@@ -158,7 +187,7 @@ export default function AIPredictions() {
 
     // Filter by pick type
     if (pickFilter !== "all") {
-      result = result.filter((p) => getPickType(p) === pickFilter);
+      result = result.filter((p) => matchesPickFilter(p, pickFilter));
     }
     
     // Filter by favorites if enabled
@@ -553,7 +582,7 @@ export default function AIPredictions() {
             ] as { value: PickFilter; label: string; icon: string }[]).map((item) => {
               const count = item.value === "all"
                 ? predictions.length
-                : predictions.filter((p) => getPickType(p) === item.value).length;
+                : countByFilter(predictions, item.value as PickFilter);
               return (
                 <Button
                   key={item.value}
