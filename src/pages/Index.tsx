@@ -177,6 +177,7 @@ const Index = () => {
         </p>
       </div>
       <GuestSignInModal />
+      <AppDownloadPopup />
     </>
   );
 };
