@@ -582,7 +582,7 @@ export default function AIPredictions() {
             ] as { value: PickFilter; label: string; icon: string }[]).map((item) => {
               const count = item.value === "all"
                 ? predictions.length
-                : predictions.filter((p) => getPickType(p) === item.value).length;
+                : countByFilter(predictions, item.value as PickFilter);
               return (
                 <Button
                   key={item.value}
