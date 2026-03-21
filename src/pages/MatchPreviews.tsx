@@ -283,6 +283,16 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
+                    {/* Teaser */}
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      <Badge className="bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30 text-[10px] font-semibold px-2 py-0.5">
+                        ⚡ Strong AI Signal Detected
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-center text-gray-500 dark:text-muted-foreground/80 italic">
+                      {getInsight(match.prediction, match.home_team, match.away_team, match.confidence)}
+                    </p>
+
                     <Button
                       size="sm"
                       className={cn(
@@ -296,7 +306,7 @@ export default function MatchPreviews() {
                       {isFreeUser ? (
                         <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade Plan to Unlock</>
                       ) : (
-                        <><Zap className="h-3.5 w-3.5 mr-1.5" />View Full Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
                     </Button>
                   </div>
