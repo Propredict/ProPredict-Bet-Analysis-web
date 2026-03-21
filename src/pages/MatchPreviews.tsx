@@ -294,7 +294,7 @@ export default function MatchPreviews() {
                       onClick={(e) => { e.stopPropagation(); handleCardClick(match); }}
                     >
                       {isFreeUser ? (
-                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
+                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade Plan to Unlock</>
                       ) : (
                         <><Zap className="h-3.5 w-3.5 mr-1.5" />View Full Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
