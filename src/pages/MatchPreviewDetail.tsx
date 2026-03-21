@@ -81,13 +81,12 @@ export default function MatchPreviewDetail() {
     fetchPrediction();
   }, [matchId]);
 
-  // Auto-generate analysis once prediction is loaded
+  // Generate analysis only after unlock
   useEffect(() => {
-    if (!prediction || analysis || isGenerating) return;
+    if (!prediction || !unlocked || analysis || isGenerating) return;
     if (!canGenerate) return;
 
-    // Find logo from live matches
-    const liveMatch = liveMatches.find(
+    const lm = liveMatches.find(
       m => m.homeTeam === prediction.home_team && m.awayTeam === prediction.away_team
     );
 
@@ -104,13 +103,13 @@ export default function MatchPreviewDetail() {
       awayScore: null,
       minute: null,
       leagueCountry: "",
-      homeLogo: liveMatch?.homeLogo || null,
-      awayLogo: liveMatch?.awayLogo || null,
-      leagueLogo: liveMatch?.leagueLogo || null,
+      homeLogo: lm?.homeLogo || null,
+      awayLogo: lm?.awayLogo || null,
+      leagueLogo: lm?.leagueLogo || null,
     };
 
     generate(mockMatch);
-  }, [prediction, liveMatches, analysis, isGenerating, canGenerate, generate]);
+  }, [prediction, liveMatches, unlocked, analysis, isGenerating, canGenerate, generate]);
 
   // Get logos
   const liveMatch = prediction
