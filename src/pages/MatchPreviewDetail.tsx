@@ -126,7 +126,7 @@ function deriveAIPicks(pred: any): AIPick[] {
   pick(`${pred.away_team} Win to Nil`, awayWin * 0.6 * (1 - homeGoals * 0.15));
 
   // Sort by confidence — AI recommends the best picks first
-  return allPicks.sort((a, b) => b.confidence - a.confidence);
+  return allPicks.filter(p => p.confidence >= 70).sort((a, b) => b.confidence - a.confidence);
 }
 
 export default function MatchPreviewDetail() {
