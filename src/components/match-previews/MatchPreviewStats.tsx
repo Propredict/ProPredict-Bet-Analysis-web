@@ -1,38 +1,13 @@
-import { useState, useMemo, forwardRef } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useMemo, forwardRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Swords, 
-  Users, 
-  Target,
-  BarChart3,
-  Trophy,
-  Handshake,
-  Star,
-  AlertTriangle
-} from "lucide-react";
-import { useMatchDetails, type MatchDetails, type H2HMatch } from "@/hooks/useMatchDetails";
+import { Swords } from "lucide-react";
+import { useMatchDetails, type H2HMatch } from "@/hooks/useMatchDetails";
 import { useH2H } from "@/hooks/useH2H";
-import { useLeagueScorers, useLeagueAssists, type PlayerStats } from "@/hooks/useLeagueStats";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Match } from "@/hooks/useFixtures";
-
-// League name to API ID mapping
-const LEAGUE_ID_MAP: Record<string, string> = {
-  "premier league": "39",
-  "la liga": "140",
-  "bundesliga": "78",
-  "serie a": "135",
-  "ligue 1": "61",
-  "champions league": "2",
-  "europa league": "3",
-  "eredivisie": "88",
-  "primeira liga": "94",
-  "jupiler pro league": "144",
-};
 
 interface MatchPreviewStatsProps {
   match: Match;
@@ -44,20 +19,6 @@ export function MatchPreviewStats({ match }: MatchPreviewStatsProps) {
     match.homeTeamId ?? null,
     match.awayTeamId ?? null
   );
-  const [activeTab, setActiveTab] = useState("h2h");
-
-  // Get league ID for scorers/assists data
-  const leagueId = useMemo(() => {
-    const leagueLower = match.league?.toLowerCase() || "";
-    for (const [name, id] of Object.entries(LEAGUE_ID_MAP)) {
-      if (leagueLower.includes(name)) return id;
-    }
-    return null;
-  }, [match.league]);
-
-  // Fetch scorers and assists for the league
-  const { data: scorersData, isLoading: scorersLoading } = useLeagueScorers(leagueId || "", "2025");
-  const { data: assistsData, isLoading: assistsLoading } = useLeagueAssists(leagueId || "", "2025");
 
   const loading = detailsLoading || h2hLoading;
 
