@@ -126,15 +126,31 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
-      {/* Predicted Score & Confidence */}
+      {/* Best Pick & Confidence */}
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
-          <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Score</div>
+          <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
           <div className={cn(
-            "text-base md:text-lg font-bold text-white",
+            "text-sm md:text-base font-bold text-white",
             !hasAccess && "blur-sm select-none"
           )}>
-            {hasAccess ? (prediction.predicted_score || "—") : "? - ?"}
+            {hasAccess ? (() => {
+              const p = (prediction.prediction || "").toLowerCase();
+              const hw = prediction.home_win ?? 0;
+              const aw = prediction.away_win ?? 0;
+              const d = prediction.draw ?? 0;
+              // Determine best market with highest confidence
+              if (p === "1" || p === "home") return `${prediction.home_team} Win`;
+              if (p === "2" || p === "away") return `${prediction.away_team} Win`;
+              if (p === "x" || p === "draw") return "Draw";
+              if (p.includes("over")) return "Over 2.5 Goals";
+              if (p.includes("under")) return "Under 2.5 Goals";
+              if (p.includes("btts")) return "BTTS Yes";
+              // Fallback: highest probability
+              if (hw >= aw && hw >= d) return `${prediction.home_team} Win`;
+              if (aw >= hw && aw >= d) return `${prediction.away_team} Win`;
+              return "Draw";
+            })() : "? ? ?"}
           </div>
         </div>
         <div className="text-right">
