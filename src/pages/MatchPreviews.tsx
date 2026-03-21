@@ -115,7 +115,7 @@ function getPredictionLabel(prediction: string | null): string {
 
 export default function MatchPreviews() {
   const { predictions, loading, refetch } = useAIPredictions("today");
-  const { allMatches: liveMatches } = useLiveScores({ dateMode: "today" });
+  const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const [previewCount, setPreviewCount] = useState(0);
