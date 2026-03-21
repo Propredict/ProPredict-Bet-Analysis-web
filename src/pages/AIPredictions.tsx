@@ -23,6 +23,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
 
 
 
