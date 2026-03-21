@@ -16,64 +16,29 @@ function getBestPickWithIcon(prediction: AIPrediction) {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
-
-  // Parse predicted score for goal markets
-  const scoreMatch = (prediction.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
-  const totalGoals = scoreMatch ? parseInt(scoreMatch[1]) + parseInt(scoreMatch[2]) : null;
-  const bothScore = scoreMatch ? parseInt(scoreMatch[1]) > 0 && parseInt(scoreMatch[2]) > 0 : false;
-
-  // Build candidate picks with confidence
-  type Pick = { label: string; conf: number; icon: React.ReactNode };
-  const candidates: Pick[] = [];
-
-  // 1X2 picks
   const mainConf = prediction.confidence ?? 0;
-  if (p === "1" || p === "home" || (hw >= aw && hw >= d && !p.includes("over") && !p.includes("under") && !p.includes("btts"))) {
-    candidates.push({ label: `${prediction.home_team} Win`, conf: Math.max(hw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> });
-  }
-  if (p === "2" || p === "away" || (aw > hw && aw >= d && !p.includes("over") && !p.includes("under") && !p.includes("btts"))) {
-    candidates.push({ label: `${prediction.away_team} Win`, conf: Math.max(aw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> });
-  }
-  if (p === "x" || p === "draw") {
-    candidates.push({ label: "Draw", conf: Math.max(d, mainConf), icon: <Target className="w-3.5 h-3.5 text-blue-400" /> });
-  }
 
-  // Over/Under based on predicted score
-  if (totalGoals !== null) {
-    if (totalGoals >= 3) {
-      candidates.push({ label: "Over 2.5 Goals", conf: Math.min(70 + (totalGoals - 3) * 6, 92), icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> });
-    } else {
-      candidates.push({ label: "Under 2.5 Goals", conf: Math.min(75 + (2 - totalGoals) * 5, 90), icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> });
-    }
-  }
+  // Direct mapping from backend prediction value
   if (p.includes("over")) {
-    candidates.push({ label: "Over 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> });
+    return { label: "Over 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> };
   }
   if (p.includes("under")) {
-    candidates.push({ label: "Under 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> });
+    return { label: "Under 2.5 Goals", conf: mainConf, icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> };
   }
-
-  // BTTS based on predicted score
-  if (totalGoals !== null) {
-    if (bothScore) {
-      candidates.push({ label: "BTTS Yes", conf: Math.min(72 + totalGoals * 3, 88), icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> });
-    } else {
-      candidates.push({ label: "BTTS No", conf: Math.min(78, 90), icon: <Zap className="w-3.5 h-3.5 text-red-400" /> });
-    }
+  if (p === "btts yes") {
+    return { label: "BTTS Yes", conf: mainConf, icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> };
   }
-  if (p.includes("btts")) {
-    candidates.push({ label: "BTTS Yes", conf: mainConf, icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> });
+  if (p === "btts no") {
+    return { label: "BTTS No", conf: mainConf, icon: <Zap className="w-3.5 h-3.5 text-red-400" /> };
   }
-
-  // Sort by confidence descending, pick the best
-  candidates.sort((a, b) => b.conf - a.conf);
-
-  if (candidates.length > 0) return candidates[0];
-
-  // Fallback
-  if (hw >= aw && hw >= d) return { label: `${prediction.home_team} Win`, conf: hw, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
-  if (aw >= hw && aw >= d) return { label: `${prediction.away_team} Win`, conf: aw, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
-  return { label: "Draw", conf: d, icon: <Target className="w-3.5 h-3.5 text-blue-400" /> };
+  if (p === "x" || p === "draw") {
+    return { label: "Draw", conf: Math.max(d, mainConf), icon: <Target className="w-3.5 h-3.5 text-blue-400" /> };
+  }
+  if (p === "2" || p === "away") {
+    return { label: `${prediction.away_team} Win`, conf: Math.max(aw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
+  }
+  // Default: home win
+  return { label: `${prediction.home_team} Win`, conf: Math.max(hw, mainConf), icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> };
 }
 
 interface Props {
@@ -86,8 +51,17 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
   
   const getPredictedOutcome = () => {
     if (!prediction.prediction) return "unknown";
-    if (prediction.prediction === "1") return "home";
-    if (prediction.prediction === "2") return "away";
+    const p = prediction.prediction.toLowerCase();
+    if (p === "1" || p === "home") return "home";
+    if (p === "2" || p === "away") return "away";
+    if (p.includes("over") || p.includes("under") || p.includes("btts")) {
+      // For goal markets, derive 1X2 from probabilities
+      const hw = prediction.home_win ?? 0;
+      const aw = prediction.away_win ?? 0;
+      if (hw > aw) return "home";
+      if (aw > hw) return "away";
+      return "draw";
+    }
     return "draw";
   };
 

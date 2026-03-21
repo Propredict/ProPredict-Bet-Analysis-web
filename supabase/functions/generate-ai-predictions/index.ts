@@ -609,11 +609,26 @@ function calculatePrediction(
     awayWin = 100 - draw - homeWin;
   }
 
-  // === OUTCOME ===
-  let prediction: string;
-  if (homeWin > awayWin && homeWin > draw) prediction = "1";
-  else if (awayWin > homeWin && awayWin > draw) prediction = "2";
-  else prediction = "X";
+  // === GOAL MARKETS (Poisson) ===
+  const homeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
+  const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+  const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
+
+  // === BEST PICK SELECTION ===
+  // Compare ALL markets: 1X2, Over/Under 2.5, BTTS and pick the highest probability
+  const allPicks: { label: string; prob: number }[] = [
+    { label: "1", prob: homeWin },
+    { label: "2", prob: awayWin },
+    { label: "X", prob: draw },
+    { label: "Over 2.5", prob: goalMarkets.over25 },
+    { label: "Under 2.5", prob: goalMarkets.under25 },
+    { label: "BTTS Yes", prob: goalMarkets.bttsYes },
+    { label: "BTTS No", prob: goalMarkets.bttsNo },
+  ];
+  
+  // Sort by probability descending, pick the best
+  allPicks.sort((a, b) => b.prob - a.prob);
+  const prediction = allPicks[0].label;
 
   // === SCORE ===
   const predictedScore = predictScoreV2({
@@ -622,50 +637,42 @@ function calculatePrediction(
     homeWin,
     awayWin,
     draw,
-    prediction,
+    prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction : 
+                (homeWin >= awayWin ? "1" : "2"), // For goal markets, use 1X2 for score alignment
   });
 
   // === CONFIDENCE (50..92) ===
-  // Rules:
-  // - Balanced match: 60–65
-  // - Clear favorite: 72–78
-  // - Very clear favorite (premium-class): 85–92 (never 95%+)
-  // - Weak leagues / missing season stats: cap at 65
-  const maxProb = Math.max(homeWin, awayWin, draw);
+  // Use the best pick's probability for confidence calculation
+  const bestProb = allPicks[0].prob;
+  const maxProb = Math.max(homeWin, awayWin, draw, goalMarkets.over25, goalMarkets.under25, goalMarkets.bttsYes, goalMarkets.bttsNo);
 
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
-  const isBalanced = Math.abs(homeWin - awayWin) < 8 && maxProb < 45;
+  const isBalanced = bestProb < 45;
 
   let confidence: number;
 
   if (isBalanced) {
-    // Balanced: keep in 60–65 band
-    confidence = 60 + clamp((45 - maxProb) * 0.25, 0, 5);
+    confidence = 60 + clamp((45 - bestProb) * 0.25, 0, 5);
   } else {
-    // Base confidence from how decisive the favorite probability is
-    // maxProb 45 -> ~62, maxProb 70 -> ~80 ("normal" cap)
-    const edge = clamp((maxProb - 45) / 25, 0, 1);
-    confidence = 62 + edge * 18; // 62..80
+    const edge = clamp((bestProb - 45) / 25, 0, 1);
+    confidence = 62 + edge * 18;
 
-    // Premium boost only when data is strong and favorite is very clear
-    // This allows 85–92 for the very best matches.
-    const premiumBoostEligible = hasSeasonStats && maxProb >= 68;
+    const premiumBoostEligible = hasSeasonStats && bestProb >= 68;
     if (premiumBoostEligible) {
-      const boost = clamp((maxProb - 68) / 10, 0, 1) * 12; // up to +12
-      confidence += boost; // up to ~92
+      const boost = clamp((bestProb - 68) / 10, 0, 1) * 12;
+      confidence += boost;
     }
   }
 
   confidence = Math.round(clamp(confidence, 50, 92));
 
-  // Weak signal / weak league proxy: without season stats, don't exceed 65
   if (!hasSeasonStats) {
     confidence = Math.min(confidence, 65);
   }
 
   // === RISK ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 72 && maxProb >= 60) riskLevel = "low";
+  if (confidence >= 72 && bestProb >= 60) riskLevel = "low";
   else if (confidence >= 62) riskLevel = "medium";
   else riskLevel = "high";
 
@@ -776,6 +783,22 @@ function generateAnalysisV2(params: {
 
   if (prediction === "2") {
     return `${awayTeamName} enters with stronger recent indicators and can be the favorite even away from home. The model leans toward ${awayTeamName} (${awayWin}% vs ${homeWin}%) with a controlled draw probability (${draw}%).`;
+  }
+
+  if (prediction === "Over 2.5") {
+    return `Both attacks are productive enough to expect goals. The model projects Over 2.5 goals as the strongest pick here, with ${homeTeamName} and ${awayTeamName} combining for a high-scoring affair.`;
+  }
+
+  if (prediction === "Under 2.5") {
+    return `Defensive solidity and low conversion rates point to a tight game. Under 2.5 goals is the model's top pick, with both ${homeTeamName} and ${awayTeamName} struggling to break through consistently.`;
+  }
+
+  if (prediction === "BTTS Yes") {
+    return `Both ${homeTeamName} and ${awayTeamName} have been finding the net regularly. BTTS Yes stands out as the best-value pick, reflecting both teams' attacking capabilities.`;
+  }
+
+  if (prediction === "BTTS No") {
+    return `At least one side is expected to keep a clean sheet. BTTS No emerges as the strongest pick, driven by defensive form from ${homeTeamName} or ${awayTeamName}.`;
   }
 
   const why = Math.abs(formDiff) < 10 && Math.abs(qualityDiff) < 10
@@ -957,13 +980,18 @@ function generatePremiumAnalysis(params: {
     homeWin, draw, awayWin, homeData, awayData, h2hSummary, homeStats, awayStats, topScorers, injuries,
   } = params;
 
-  const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : "Neither";
-  const favProb = prediction === "1" ? homeWin : prediction === "2" ? awayWin : draw;
+  const is1X2 = prediction === "1" || prediction === "2" || prediction === "X";
+  const favName = prediction === "1" ? homeTeamName : prediction === "2" ? awayTeamName : prediction;
+  const favProb = prediction === "1" ? homeWin : prediction === "2" ? awayWin : prediction === "X" ? draw : 0;
 
   const sections: string[] = [];
 
   // 📊 VERDICT
-  sections.push(`📊 VERDICT: ${favName} ${prediction === "X" ? "Draw" : `to win`} (${favProb}% probability, ${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  if (is1X2) {
+    sections.push(`📊 VERDICT: ${favName} ${prediction === "X" ? "Draw" : `to win`} (${favProb}% probability, ${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  } else {
+    sections.push(`📊 VERDICT: ${prediction} is the strongest pick (${confidence}% confidence). Predicted score: ${predictedScore}.`);
+  }
 
   // 🔥 FORM (Last 10)
   const homeFormStr = formatFormString(homeData.last10);

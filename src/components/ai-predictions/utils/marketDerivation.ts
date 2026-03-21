@@ -99,13 +99,18 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     ng: { recommended: !bothScored },
   };
 
-  // Double Chance derived from main prediction
+  // Double Chance derived from main prediction (use 1X2 probabilities for goal market predictions)
+  const p = (prediction.prediction || "").toLowerCase();
+  const is1X2 = p === "1" || p === "2" || p === "x" || p === "draw";
+  const effectivePrediction = is1X2 ? prediction.prediction : 
+    ((prediction.home_win ?? 0) >= (prediction.away_win ?? 0) ? "1" : "2");
+  
   let doubleChanceOption: "1X" | "12" | "X2" = "1X";
-  if (prediction.prediction === "1") {
+  if (effectivePrediction === "1") {
     doubleChanceOption = "1X";
-  } else if (prediction.prediction === "X") {
+  } else if (effectivePrediction === "X" || effectivePrediction === "draw") {
     doubleChanceOption = "12";
-  } else if (prediction.prediction === "2") {
+  } else if (effectivePrediction === "2") {
     doubleChanceOption = "X2";
   }
 
@@ -117,7 +122,7 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
   // Combos - max 2 options based on prediction
   const combos: { label: string; recommended: boolean }[] = [];
   
-  if (prediction.prediction === "1") {
+  if (effectivePrediction === "1") {
     // Home win combos
     if (totalGoals > 1.5) {
       combos.push({ label: "1 & Over 1.5", recommended: true });
@@ -127,7 +132,7 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     } else if (combos.length < 2) {
       combos.push({ label: "1 & Over 1.5", recommended: totalGoals >= 2 });
     }
-  } else if (prediction.prediction === "2") {
+  } else if (effectivePrediction === "2") {
     // Away win combos
     if (totalGoals > 1.5) {
       combos.push({ label: "2 & Over 1.5", recommended: true });
