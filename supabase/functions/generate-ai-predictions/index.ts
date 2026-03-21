@@ -609,11 +609,26 @@ function calculatePrediction(
     awayWin = 100 - draw - homeWin;
   }
 
-  // === OUTCOME ===
-  let prediction: string;
-  if (homeWin > awayWin && homeWin > draw) prediction = "1";
-  else if (awayWin > homeWin && awayWin > draw) prediction = "2";
-  else prediction = "X";
+  // === GOAL MARKETS (Poisson) ===
+  const homeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
+  const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+  const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
+
+  // === BEST PICK SELECTION ===
+  // Compare ALL markets: 1X2, Over/Under 2.5, BTTS and pick the highest probability
+  const allPicks: { label: string; prob: number }[] = [
+    { label: "1", prob: homeWin },
+    { label: "2", prob: awayWin },
+    { label: "X", prob: draw },
+    { label: "Over 2.5", prob: goalMarkets.over25 },
+    { label: "Under 2.5", prob: goalMarkets.under25 },
+    { label: "BTTS Yes", prob: goalMarkets.bttsYes },
+    { label: "BTTS No", prob: goalMarkets.bttsNo },
+  ];
+  
+  // Sort by probability descending, pick the best
+  allPicks.sort((a, b) => b.prob - a.prob);
+  const prediction = allPicks[0].label;
 
   // === SCORE ===
   const predictedScore = predictScoreV2({
@@ -622,50 +637,42 @@ function calculatePrediction(
     homeWin,
     awayWin,
     draw,
-    prediction,
+    prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction : 
+                (homeWin >= awayWin ? "1" : "2"), // For goal markets, use 1X2 for score alignment
   });
 
   // === CONFIDENCE (50..92) ===
-  // Rules:
-  // - Balanced match: 60–65
-  // - Clear favorite: 72–78
-  // - Very clear favorite (premium-class): 85–92 (never 95%+)
-  // - Weak leagues / missing season stats: cap at 65
-  const maxProb = Math.max(homeWin, awayWin, draw);
+  // Use the best pick's probability for confidence calculation
+  const bestProb = allPicks[0].prob;
+  const maxProb = Math.max(homeWin, awayWin, draw, goalMarkets.over25, goalMarkets.under25, goalMarkets.bttsYes, goalMarkets.bttsNo);
 
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
-  const isBalanced = Math.abs(homeWin - awayWin) < 8 && maxProb < 45;
+  const isBalanced = bestProb < 45;
 
   let confidence: number;
 
   if (isBalanced) {
-    // Balanced: keep in 60–65 band
-    confidence = 60 + clamp((45 - maxProb) * 0.25, 0, 5);
+    confidence = 60 + clamp((45 - bestProb) * 0.25, 0, 5);
   } else {
-    // Base confidence from how decisive the favorite probability is
-    // maxProb 45 -> ~62, maxProb 70 -> ~80 ("normal" cap)
-    const edge = clamp((maxProb - 45) / 25, 0, 1);
-    confidence = 62 + edge * 18; // 62..80
+    const edge = clamp((bestProb - 45) / 25, 0, 1);
+    confidence = 62 + edge * 18;
 
-    // Premium boost only when data is strong and favorite is very clear
-    // This allows 85–92 for the very best matches.
-    const premiumBoostEligible = hasSeasonStats && maxProb >= 68;
+    const premiumBoostEligible = hasSeasonStats && bestProb >= 68;
     if (premiumBoostEligible) {
-      const boost = clamp((maxProb - 68) / 10, 0, 1) * 12; // up to +12
-      confidence += boost; // up to ~92
+      const boost = clamp((bestProb - 68) / 10, 0, 1) * 12;
+      confidence += boost;
     }
   }
 
   confidence = Math.round(clamp(confidence, 50, 92));
 
-  // Weak signal / weak league proxy: without season stats, don't exceed 65
   if (!hasSeasonStats) {
     confidence = Math.min(confidence, 65);
   }
 
   // === RISK ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 72 && maxProb >= 60) riskLevel = "low";
+  if (confidence >= 72 && bestProb >= 60) riskLevel = "low";
   else if (confidence >= 62) riskLevel = "medium";
   else riskLevel = "high";
 
