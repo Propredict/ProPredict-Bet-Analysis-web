@@ -49,6 +49,64 @@ function getPredictionIcon(prediction: string | null) {
   return "📊";
 }
 
+interface AIPick {
+  emoji: string;
+  label: string;
+  confidence: number;
+  color: string;
+}
+
+function deriveAIPicks(pred: any): AIPick[] {
+  const picks: AIPick[] = [];
+  const homeWin = pred.home_win ?? 0;
+  const awayWin = pred.away_win ?? 0;
+  const draw = pred.draw ?? 0;
+  const homeGoals = pred.last_home_goals ?? 0;
+  const awayGoals = pred.last_away_goals ?? 0;
+  const avgGoals = (homeGoals + awayGoals) / 2;
+  const confidence = pred.confidence ?? 60;
+
+  // Main pick
+  if (homeWin >= awayWin && homeWin >= draw) {
+    picks.push({ emoji: "🟢", label: `Home Win — ${pred.home_team}`, confidence: homeWin, color: "text-emerald-600" });
+  } else if (awayWin > homeWin && awayWin > draw) {
+    picks.push({ emoji: "🟢", label: `Away Win — ${pred.away_team}`, confidence: awayWin, color: "text-emerald-600" });
+  } else {
+    picks.push({ emoji: "🟡", label: "Draw", confidence: draw, color: "text-amber-600" });
+  }
+
+  // Over/Under 1.5
+  const over15Conf = Math.min(95, Math.round(avgGoals >= 1.2 ? 65 + avgGoals * 10 : 45 + avgGoals * 8));
+  picks.push({
+    emoji: over15Conf >= 70 ? "🟢" : "🟡",
+    label: avgGoals >= 1.2 ? "Over 1.5 Goals" : "Under 1.5 Goals",
+    confidence: over15Conf,
+    color: over15Conf >= 70 ? "text-emerald-600" : "text-amber-600",
+  });
+
+  // BTTS
+  const bttsYes = homeGoals >= 1.0 && awayGoals >= 1.0;
+  const bttsConf = Math.min(90, Math.round(bttsYes ? 55 + Math.min(homeGoals, awayGoals) * 12 : 40 + (2 - Math.max(homeGoals, awayGoals)) * 10));
+  picks.push({
+    emoji: bttsConf < 60 ? "⚠️" : "🟡",
+    label: `BTTS — ${bttsYes ? "Yes" : "No"}`,
+    confidence: Math.max(45, bttsConf),
+    color: bttsConf < 60 ? "text-red-500" : "text-amber-600",
+  });
+
+  // Draw No Bet
+  const dnbConf = Math.max(homeWin, awayWin);
+  const dnbTeam = homeWin >= awayWin ? pred.home_team : pred.away_team;
+  picks.push({
+    emoji: dnbConf >= 65 ? "🟢" : "🟡",
+    label: `Draw No Bet — ${dnbTeam}`,
+    confidence: dnbConf,
+    color: dnbConf >= 65 ? "text-emerald-600" : "text-amber-600",
+  });
+
+  return picks;
+}
+
 export default function MatchPreviewDetail() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
