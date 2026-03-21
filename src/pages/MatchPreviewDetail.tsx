@@ -108,14 +108,17 @@ function deriveAIPicks(pred: any): AIPick[] {
   
   if (bestGoal) picks.push(bestGoal);
 
-  // 3. BTTS — based on both teams' scoring ability
-  const bttsYes = homeGoals >= 1.0 && awayGoals >= 1.0;
-  const bttsConf = Math.min(90, Math.round(bttsYes ? 55 + Math.min(homeGoals, awayGoals) * 12 : 40 + (2 - Math.max(homeGoals, awayGoals)) * 10));
+  // 3. BTTS — pick whichever (Yes or No) has higher confidence
+  const bttsYesConf = Math.min(90, Math.round(35 + Math.min(homeGoals, awayGoals) * 18 + (homeGoals >= 1 && awayGoals >= 1 ? 15 : 0)));
+  const bttsNoConf = Math.min(90, Math.round(35 + (2.5 - Math.min(homeGoals, awayGoals)) * 15 + (homeGoals < 0.8 || awayGoals < 0.8 ? 15 : 0)));
+  const bestBtts = bttsYesConf >= bttsNoConf
+    ? { label: "BTTS — Yes", confidence: bttsYesConf }
+    : { label: "BTTS — No", confidence: bttsNoConf };
   picks.push({
-    emoji: bttsConf >= 70 ? "🟢" : bttsConf >= 55 ? "🟡" : "⚠️",
-    label: `BTTS — ${bttsYes ? "Yes" : "No"}`,
-    confidence: Math.max(45, bttsConf),
-    color: bttsConf >= 70 ? "text-emerald-600" : bttsConf >= 55 ? "text-amber-600" : "text-red-500",
+    emoji: bestBtts.confidence >= 70 ? "🟢" : bestBtts.confidence >= 55 ? "🟡" : "⚠️",
+    label: bestBtts.label,
+    confidence: Math.max(45, bestBtts.confidence),
+    color: bestBtts.confidence >= 70 ? "text-emerald-600" : bestBtts.confidence >= 55 ? "text-amber-600" : "text-red-500",
   });
 
   // 4. Draw No Bet — strongest team
