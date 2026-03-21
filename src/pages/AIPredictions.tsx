@@ -563,7 +563,41 @@ export default function AIPredictions() {
             </div>
           </Card>
 
-          {/* Featured (Pro/Premium) - always visible regardless of auth */}
+          {/* Best Pick Filter */}
+          <div className="flex flex-wrap gap-1.5 md:gap-2">
+            {([
+              { value: "all", label: "All Picks", icon: "🎯" },
+              { value: "home", label: "Home Win", icon: "🏠" },
+              { value: "away", label: "Away Win", icon: "✈️" },
+              { value: "draw", label: "Draw", icon: "🤝" },
+              { value: "over25", label: "Over 2.5", icon: "⬆️" },
+              { value: "under25", label: "Under 2.5", icon: "⬇️" },
+              { value: "btts", label: "BTTS", icon: "⚡" },
+            ] as { value: PickFilter; label: string; icon: string }[]).map((item) => {
+              const count = item.value === "all"
+                ? predictions.length
+                : predictions.filter((p) => getPickType(p) === item.value).length;
+              return (
+                <Button
+                  key={item.value}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-7 md:h-8 px-2 md:px-3 text-[10px] md:text-xs rounded-full transition-all duration-200 gap-1",
+                    pickFilter === item.value
+                      ? "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+                      : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
+                  )}
+                  onClick={() => setPickFilter(item.value)}
+                >
+                  <span>{item.icon}</span>
+                  {item.label}
+                  <span className="text-[8px] md:text-[9px] opacity-70">({count})</span>
+                </Button>
+              );
+            })}
+          </div>
+
           {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
