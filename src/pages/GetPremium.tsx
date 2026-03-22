@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import appBannerImg from "@/assets/google-play-banner.jfif";
 import { Helmet } from "react-helmet-async";
 import {
   Check,
@@ -774,10 +775,20 @@ export default function GetPremium() {
 
       {/* App Download CTA - Website only */}
       {!isAndroidApp && (
-        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg">
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg overflow-hidden">
           <div className="text-center space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Why use the app?</h2>
             <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile</p>
+          </div>
+
+          {/* App Banner Image */}
+          <div className="rounded-xl overflow-hidden border border-border/30 shadow-md">
+            <img
+              src={appBannerImg}
+              alt="ProPredict App - AI-Powered Sports Analysis with Live Scores, AI Predictions and League Stats"
+              className="w-full h-auto object-cover"
+              loading="lazy"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
