@@ -10,6 +10,7 @@ import { DashboardTipsPopup } from "@/components/dashboard/DashboardTipsPopup";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { AppDownloadPopup } from "@/components/AppDownloadPopup";
+import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 
 // Heavy components – lazy loaded for faster initial paint
 const FeaturedPredictions = lazy(() => import("@/components/dashboard/FeaturedPredictions").then(m => ({ default: m.FeaturedPredictions })));
@@ -178,6 +179,7 @@ const Index = () => {
       </div>
       <GuestSignInModal />
       <AppDownloadPopup />
+      <ExitIntentPopup />
     </>
   );
 };
