@@ -76,7 +76,7 @@ const Index = () => {
             <div className="flex flex-col items-center gap-2.5">
               <div className="text-center">
                 <p className="text-base sm:text-xl font-bold text-foreground">📱 ProPredict is now on Google Play!</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Get faster predictions & real-time alerts on the go — completely free!</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">📲 Get FREE Daily and Pro tips on the app — completely free!</p>
               </div>
               <span className="rounded-lg bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-7 py-2 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
                 ⬇ Download App
