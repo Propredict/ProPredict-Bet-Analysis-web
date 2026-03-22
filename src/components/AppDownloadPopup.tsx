@@ -19,7 +19,7 @@ export function AppDownloadPopup() {
     // Don't show on Android app or if already dismissed today
     if (isAndroid || wasDismissedToday()) return;
 
-    const timer = setTimeout(() => setShow(true), 5 * 60 * 1000); // 5 minutes
+    const timer = setTimeout(() => setShow(true), 60 * 1000); // 60 seconds
     return () => clearTimeout(timer);
   }, [isAndroid]);
 
