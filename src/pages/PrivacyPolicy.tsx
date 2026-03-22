@@ -230,7 +230,7 @@ const PrivacyPolicy = () => {
             </ul>
             <p className="text-xs text-muted-foreground">
               Users may request account deletion at any time via the{" "}
-              <a href="/data-deletion" className="text-primary hover:underline">Data Deletion Request</a>{" "}
+              <Link to="/data-deletion" className="text-primary hover:underline">Data Deletion Request</Link>{" "}
               page or by contacting us at{" "}
               <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>.
             </p>
