@@ -19,7 +19,7 @@ export function AppDownloadPopup() {
     // Don't show on Android app or if already dismissed today
     if (isAndroid || wasDismissedToday()) return;
 
-    const timer = setTimeout(() => setShow(true), 5 * 60 * 1000); // 5 minutes
+    const timer = setTimeout(() => setShow(true), 60 * 1000); // 60 seconds
     return () => clearTimeout(timer);
   }, [isAndroid]);
 
@@ -52,9 +52,9 @@ export function AppDownloadPopup() {
 
           {/* Title */}
           <div>
-            <h3 className="text-lg font-bold text-foreground mb-1">Get ProPredict App</h3>
+            <h3 className="text-lg font-bold text-foreground mb-1">📲 Get FREE DAILY and PRO tips faster on mobile</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Faster predictions, real-time alerts & offline access — completely free!
+              Access PRO insights anytime, anywhere
             </p>
           </div>
 
@@ -88,7 +88,7 @@ export function AppDownloadPopup() {
             onClick={dismiss}
             className="block w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
           >
-            ⬇ Download Free App
+            ⬇ Download Now
           </a>
 
           {/* Skip */}
