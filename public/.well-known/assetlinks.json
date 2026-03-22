@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.propredict.app",
+      "sha256_cert_fingerprints":
+        ["39:46:EB:D0:31:CF:D4:1E:23:1E:D6:F1:9D:71:CB:24:6A:6F:FD:3A:77:09:C4:C4:34:51:A2:11:6E:D4:54:FE"]
+    }
+  }
+]
