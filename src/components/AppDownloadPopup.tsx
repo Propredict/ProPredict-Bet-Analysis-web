@@ -88,7 +88,7 @@ export function AppDownloadPopup() {
             onClick={dismiss}
             className="block w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
           >
-            ⬇ Download Free App
+            ⬇ Download Now
           </a>
 
           {/* Skip */}
