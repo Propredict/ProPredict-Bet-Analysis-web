@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Shield, Lock, ArrowLeft } from "lucide-react";
@@ -199,7 +199,7 @@ const PrivacyPolicy = () => {
             <p className="text-xs text-muted-foreground mb-1.5">Users may control cookies through browser settings.</p>
             <p className="text-xs text-muted-foreground">
               For additional details, please refer to our{" "}
-              <a href="/cookie-policy" className="text-primary hover:underline">Cookie Policy</a>.
+              <Link to="/cookie-policy" className="text-primary hover:underline">Cookie Policy</Link>.
             </p>
           </div>
 
@@ -230,7 +230,7 @@ const PrivacyPolicy = () => {
             </ul>
             <p className="text-xs text-muted-foreground">
               Users may request account deletion at any time via the{" "}
-              <a href="/data-deletion" className="text-primary hover:underline">Data Deletion Request</a>{" "}
+              <Link to="/data-deletion" className="text-primary hover:underline">Data Deletion Request</Link>{" "}
               page or by contacting us at{" "}
               <a href="mailto:propredictsupp@gmail.com" className="text-primary hover:underline">propredictsupp@gmail.com</a>.
             </p>
