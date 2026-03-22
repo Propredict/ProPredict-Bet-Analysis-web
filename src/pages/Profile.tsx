@@ -588,15 +588,13 @@ const Profile = () => {
               <Trash2 className="mr-1.5 h-3 w-3" />
               Delete Account
             </Button>
-            <a
-              href="https://propredict.me/data-deletion"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/data-deletion"
               className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
             >
               Alternatively, you can submit a deletion request here
               <ExternalLink className="h-2.5 w-2.5" />
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>
