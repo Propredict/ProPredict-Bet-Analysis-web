@@ -772,6 +772,50 @@ export default function GetPremium() {
         🔥 Over 247 users upgraded to Premium this month.
       </p>
 
+      {/* App Download CTA - Website only */}
+      {!isAndroid && (
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg">
+          <div className="text-center space-y-2">
+            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Why use the app?</h2>
+            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { emoji: "⚡", title: "Faster predictions", desc: "Instant push notifications" },
+              { emoji: "📊", title: "Full match insights", desc: "Live stats & analysis" },
+              { emoji: "🔒", title: "Exclusive PRO tips", desc: "Daily & Premium access" },
+            ].map((f) => (
+              <div key={f.title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
+                <span className="text-xl mt-0.5">{f.emoji}</span>
+                <div>
+                  <p className="text-xs font-semibold text-foreground">{f.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 text-warning fill-warning" />
+              ))}
+              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users</span>
+            </div>
+
+            <a
+              href="https://play.google.com/store/apps/details?id=com.propredict.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm transition-opacity shadow-lg shadow-violet-500/20"
+            >
+              👉 Download Now
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* FAQ Section */}
       <div className="space-y-4">
         <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions</h2>
