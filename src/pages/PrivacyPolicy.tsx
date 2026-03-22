@@ -199,7 +199,7 @@ const PrivacyPolicy = () => {
             <p className="text-xs text-muted-foreground mb-1.5">Users may control cookies through browser settings.</p>
             <p className="text-xs text-muted-foreground">
               For additional details, please refer to our{" "}
-              <a href="/cookie-policy" className="text-primary hover:underline">Cookie Policy</a>.
+              <Link to="/cookie-policy" className="text-primary hover:underline">Cookie Policy</Link>.
             </p>
           </div>
 
