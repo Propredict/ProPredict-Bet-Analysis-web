@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import appBannerImg from "@/assets/google-play-banner.jfif";
 import { Helmet } from "react-helmet-async";
 import {
   Check,
