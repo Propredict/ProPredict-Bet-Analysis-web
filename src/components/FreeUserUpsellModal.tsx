@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, X, Ticket, Brain } from "lucide-react";
+import { Crown, X, Ticket, Brain, Flame, Trophy, Zap, Clock, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,42 +48,47 @@ export function FreeUserUpsellModal() {
         <div className="p-6 pt-7 flex flex-col items-center text-center gap-4">
           {/* Icon */}
           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500/20 to-primary/20 flex items-center justify-center">
-            <Crown className="h-7 w-7 text-amber-500" />
+            <Lock className="h-7 w-7 text-amber-500" />
           </div>
 
-          <DialogTitle className="text-lg font-bold leading-snug">
-            Don't miss today's winning tickets
+          <DialogTitle className="text-lg font-bold leading-snug flex items-center gap-1.5 justify-center">
+            <Flame className="h-5 w-5 text-orange-500" />
+            Premium Winning Tickets are Locked
           </DialogTitle>
 
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            <span className="font-bold text-foreground">Premium</span> users already have access
+          <p className="text-sm text-muted-foreground leading-relaxed flex items-center gap-1.5 justify-center">
+            <Trophy className="h-4 w-4 text-amber-500" />
+            Others are already winning
           </p>
 
           {/* Feature list */}
-          <div className="w-full text-left space-y-1.5 px-2">
-            <p className="text-xs text-muted-foreground mb-1">Unlock now and get:</p>
+          <div className="w-full text-left space-y-2 px-2">
+            <p className="text-xs text-muted-foreground mb-1.5">Unlock now and get:</p>
             <div className="flex items-center gap-2 text-sm text-foreground">
               <Ticket className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>Top winning picks</span>
+              <span>🎯 Top picks</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span>⚡ Early access</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
               <Brain className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>Early access</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-foreground">
-              <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span>Full analysis</span>
+              <span>📊 Full analysis</span>
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground">Get today's tickets</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center">
+            <Clock className="h-3 w-3" />
+            Updated just minutes ago
+          </p>
 
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
             className="w-full h-11 bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl"
           >
-            Unlock Premium
+            🔓 Get Today's Tickets
           </Button>
 
           <button
