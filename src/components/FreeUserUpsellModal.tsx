@@ -52,32 +52,38 @@ export function FreeUserUpsellModal() {
           </div>
 
           <DialogTitle className="text-lg font-bold leading-snug">
-            Unlock All Tickets &amp; Predictions
+            Don't miss today's winning tickets
           </DialogTitle>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Get full access to every Daily, Pro &amp; Premium ticket and AI prediction with a single subscription.
+            <span className="font-bold text-foreground">Premium</span> users already have access
           </p>
 
-          {/* Feature pills */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary rounded-full px-2.5 py-1">
-              <Ticket className="h-3 w-3" /> All Tickets
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary rounded-full px-2.5 py-1">
-              <Brain className="h-3 w-3" /> AI Predictions
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-amber-500/10 text-amber-500 rounded-full px-2.5 py-1">
-              <Crown className="h-3 w-3" /> Premium Analysis
-            </span>
+          {/* Feature list */}
+          <div className="w-full text-left space-y-1.5 px-2">
+            <p className="text-xs text-muted-foreground mb-1">Unlock now and get:</p>
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Ticket className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span>Top winning picks</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Brain className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span>Early access</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span>Full analysis</span>
+            </div>
           </div>
+
+          <p className="text-xs text-muted-foreground">Get today's tickets</p>
 
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
             className="w-full h-11 bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl"
           >
-            View Plans
+            Unlock Premium
           </Button>
 
           <button
