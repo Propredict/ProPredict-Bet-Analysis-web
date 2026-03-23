@@ -86,7 +86,7 @@ export function FreeUserUpsellModal() {
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
-            className="w-full h-11 bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl animate-pulse"
+            className="w-full h-12 text-base bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl animate-pulse"
           >
             👉 Unlock Winning Tickets
           </Button>
