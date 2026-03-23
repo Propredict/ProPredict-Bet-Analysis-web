@@ -65,15 +65,12 @@ export function FreeUserUpsellModal() {
           <div className="w-full text-left space-y-2 px-2">
             <p className="text-xs text-muted-foreground mb-1.5">Unlock now and get:</p>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <Ticket className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>🎯 Top picks</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <span>⚡ Early access</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <Brain className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>📊 Full analysis</span>
             </div>
           </div>
