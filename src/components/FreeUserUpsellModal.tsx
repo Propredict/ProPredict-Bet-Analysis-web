@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, X, Ticket, Brain } from "lucide-react";
+import { Crown, X, Ticket, Brain, Flame, Trophy, Zap, Clock, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
