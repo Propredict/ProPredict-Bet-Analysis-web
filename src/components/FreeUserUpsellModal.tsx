@@ -86,14 +86,14 @@ export function FreeUserUpsellModal() {
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
-            className="w-full h-11 bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl"
+            className="w-full h-11 bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl animate-pulse"
           >
-            🔓 Get Today's Tickets
+            👉 Unlock Winning Tickets
           </Button>
 
           <button
             onClick={handleClose}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors pb-1"
+            className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors pb-1"
           >
             Continue as Free
           </button>
