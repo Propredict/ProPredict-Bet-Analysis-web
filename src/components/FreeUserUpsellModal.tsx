@@ -80,6 +80,10 @@ export function FreeUserUpsellModal() {
             Updated just minutes ago
           </p>
 
+          <p className="text-xs text-amber-500 font-medium flex items-center gap-1 justify-center">
+            🔥 12 users unlocked winning tickets in the last hour
+          </p>
+
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
