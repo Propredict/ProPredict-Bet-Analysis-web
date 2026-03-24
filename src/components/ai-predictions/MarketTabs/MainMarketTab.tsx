@@ -20,9 +20,11 @@ const MARKET_META: Record<MarketType, { getLabel: (p: AIPrediction) => string; i
   btts_no: { getLabel: () => "BTTS No", icon: <Zap className="w-4 h-4 text-red-400" /> },
 };
 
-/** Determine the best pick across all markets */
-function getBestPick(prediction: AIPrediction): PickCandidate {
-  const bestType = getBestPickType(prediction);
+const ONE_X_TWO: MarketType[] = ["home_win", "away_win", "draw"];
+const GOAL_MARKETS: MarketType[] = ["over25", "under25"];
+
+/** Get raw (display) probabilities for all markets */
+function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
@@ -32,12 +34,17 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
   const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
-  const rawProbs: Record<MarketType, number> = {
+  return {
     home_win: norm1, away_win: norm2, draw: normX,
     over25: probs.over25, under25: probs.under25,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
+}
 
+/** Determine the best pick across all markets */
+function getBestPick(prediction: AIPrediction): PickCandidate {
+  const bestType = getBestPickType(prediction);
+  const rawProbs = getAllRawProbs(prediction);
   const meta = MARKET_META[bestType];
   return {
     label: meta.getLabel(prediction),
@@ -45,6 +52,24 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
     icon: meta.icon,
     type: bestType,
   };
+}
+
+/** Get 2 picks for Free tier: best 1X2 + best Over/Under 2.5 */
+function getFreeDualPicks(prediction: AIPrediction): PickCandidate[] {
+  const rawProbs = getAllRawProbs(prediction);
+
+  // Best 1X2
+  const best1x2Type = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
+  const best1x2Meta = MARKET_META[best1x2Type];
+
+  // Best goal market (Over or Under 2.5)
+  const bestGoalType = GOAL_MARKETS.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, GOAL_MARKETS[0]);
+  const bestGoalMeta = MARKET_META[bestGoalType];
+
+  return [
+    { label: best1x2Meta.getLabel(prediction), conf: rawProbs[best1x2Type], icon: best1x2Meta.icon, type: best1x2Type },
+    { label: bestGoalMeta.getLabel(prediction), conf: rawProbs[bestGoalType], icon: bestGoalMeta.icon, type: bestGoalType },
+  ];
 }
 
 interface Props {
