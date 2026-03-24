@@ -289,39 +289,27 @@ export default function AIvsCommunity() {
         {/* Daily Votes Info + How it Works */}
         <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
           {/* Daily Votes Per Plan */}
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-primary" />
               Daily Predictions by Plan
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              <div className={cn(
-                "rounded-lg border p-2.5 text-center space-y-1",
-                userTier === "free" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
-              )}>
-                <p className="text-lg font-extrabold text-foreground">3</p>
-                <p className="text-[9px] text-muted-foreground font-medium">Free</p>
-                {userTier === "free" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
-              </div>
-              <div className={cn(
-                "rounded-lg border p-2.5 text-center space-y-1",
-                userTier === "pro" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
-              )}>
-                <p className="text-lg font-extrabold text-foreground">5</p>
-                <p className="text-[9px] text-muted-foreground font-medium">Pro</p>
-                {userTier === "pro" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
-              </div>
-              <div className={cn(
-                "rounded-lg border p-2.5 text-center space-y-1",
-                userTier === "exclusive" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
-              )}>
-                <p className="text-lg font-extrabold text-foreground">10</p>
-                <p className="text-[9px] text-muted-foreground font-medium">Premium</p>
-                {userTier === "exclusive" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
-              </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                <span className="inline-block w-2 h-2 rounded-full bg-muted-foreground mr-1.5 align-middle" />
+                <span className="font-bold text-foreground">FREE</span> — 3 Predictions daily
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1.5 align-middle" />
+                <span className="font-bold text-yellow-500">PRO</span> — 5 Predictions daily
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" />
+                <span className="font-bold text-primary">PREMIUM</span> — 10 Predictions daily
+              </p>
             </div>
-            <p className="text-[9px] text-muted-foreground text-center">
-              You've used <span className="font-bold text-foreground">{dailyCount}</span> / <span className="font-bold text-foreground">{dailyLimit}</span> predictions today
+            <p className="text-[9px] text-muted-foreground italic mt-1">
+              You've used {dailyCount}/{dailyLimit} predictions today
             </p>
           </div>
 
