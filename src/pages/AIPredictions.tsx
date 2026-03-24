@@ -155,7 +155,11 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    
+    // Filter by market type
+    if (marketFilter !== "all") {
+      result = result.filter((p) => getBestPickType(p) === marketFilter);
+    }
+
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
       result = result.filter((p) => isFavorite(p.match_id));
@@ -179,7 +183,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
