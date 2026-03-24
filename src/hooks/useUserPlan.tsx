@@ -438,7 +438,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       // Add to local state (deduplicated)
-      const endOfDay = new Date(today + "T23:59:59Z");
+      const endOfDay = new Date(today + "T23:59:59+01:00");
       setUnlockedContent((prev) => {
         const exists = prev.some(
           (u) => u.contentType === contentType && u.contentId === contentId
