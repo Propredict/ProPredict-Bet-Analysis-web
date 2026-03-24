@@ -21,7 +21,6 @@ const MARKET_META: Record<MarketType, { getLabel: (p: AIPrediction) => string; i
 };
 
 const ONE_X_TWO: MarketType[] = ["home_win", "away_win", "draw"];
-const GOAL_MARKETS: MarketType[] = ["over25", "under25"];
 
 /** Get raw (display) probabilities for all markets */
 function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
@@ -41,35 +40,23 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
   };
 }
 
-/** Determine the best pick across all markets */
+/** Best pick across all markets (Pro/Premium) */
 function getBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
   const rawProbs = getAllRawProbs(prediction);
   const meta = MARKET_META[bestType];
-  return {
-    label: meta.getLabel(prediction),
-    conf: rawProbs[bestType],
-    icon: meta.icon,
-    type: bestType,
-  };
+  return { label: meta.getLabel(prediction), conf: rawProbs[bestType], icon: meta.icon, type: bestType };
 }
 
-/** Get 2 picks for Free tier: best 1X2 + best Over/Under 2.5 */
-function getFreeDualPicks(prediction: AIPrediction): PickCandidate[] {
+/** 
+ * Free tier: always show the best 1X2 pick (match favorite).
+ * Prevents monotonous "Under 2.5" on every Free card.
+ */
+function getFreePick(prediction: AIPrediction): PickCandidate {
   const rawProbs = getAllRawProbs(prediction);
-
-  // Best 1X2
-  const best1x2Type = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
-  const best1x2Meta = MARKET_META[best1x2Type];
-
-  // Best goal market (Over or Under 2.5)
-  const bestGoalType = GOAL_MARKETS.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, GOAL_MARKETS[0]);
-  const bestGoalMeta = MARKET_META[bestGoalType];
-
-  return [
-    { label: best1x2Meta.getLabel(prediction), conf: rawProbs[best1x2Type], icon: best1x2Meta.icon, type: best1x2Type },
-    { label: bestGoalMeta.getLabel(prediction), conf: rawProbs[bestGoalType], icon: bestGoalMeta.icon, type: bestGoalType },
-  ];
+  const best1x2 = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
+  const meta = MARKET_META[best1x2];
+  return { label: meta.getLabel(prediction), conf: rawProbs[best1x2], icon: meta.icon, type: best1x2 };
 }
 
 interface Props {
@@ -79,118 +66,68 @@ interface Props {
 }
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
-  const bestPick = getBestPick(prediction);
-  const freePicks = displayTier === "free" ? getFreeDualPicks(prediction) : [];
+  const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* ===== BEST PICKS — HERO SECTION ===== */}
+      {/* ===== BEST PICK — HERO SECTION ===== */}
       {hasAccess ? (
-        displayTier === "free" ? (
-          /* FREE TIER: Show 2 picks side by side — 1X2 + Over/Under */
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
-                AI Picks
-              </span>
-              <Badge className="ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                FREE
-              </Badge>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {freePicks.map((pick, i) => {
-                const prob = pick.conf;
-                return (
-                  <div
-                    key={pick.type}
-                    className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent p-2.5 md:p-3 space-y-1.5"
-                  >
-                    <div className="text-[8px] md:text-[9px] text-muted-foreground/70 uppercase tracking-wider font-medium">
-                      {i === 0 ? "Match Result" : "Goals"}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {pick.icon}
-                      <span className="text-xs md:text-sm font-bold text-foreground leading-tight">
-                        {pick.label}
-                      </span>
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className={cn(
-                        "text-lg md:text-xl font-extrabold tabular-nums",
-                        prob >= 80 ? "text-green-400" : prob >= 70 ? "text-emerald-400" : prob >= 60 ? "text-amber-400" : "text-orange-400"
-                      )}>
-                        {prob}%
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all duration-500",
-                          prob >= 80 ? "bg-green-500" : prob >= 70 ? "bg-emerald-500" : prob >= 60 ? "bg-amber-500" : "bg-orange-500"
-                        )}
-                        style={{ width: `${Math.max(10, prob)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {/* Predicted Score */}
-            {prediction.predicted_score && (
-              <p className="text-[10px] md:text-xs text-muted-foreground/80">
-                Predicted Score: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
-              </p>
-            )}
+        <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
+          {/* Label */}
+          <div className="flex items-center gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+              Best Pick
+            </span>
+            <Badge className={cn(
+              "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
+              displayTier === "premium" 
+                ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30" 
+                : displayTier === "pro" 
+                ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+            )}>
+              {displayTier === "premium" ? "PREMIUM" : displayTier === "pro" ? "PRO" : "FREE"}
+            </Badge>
           </div>
-        ) : (
-          /* PRO / PREMIUM: Single best pick hero */
-          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
-                Best Pick
-              </span>
-              <Badge className={cn(
-                "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
-                displayTier === "premium" 
-                  ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30" 
-                  : "bg-amber-500/20 text-amber-400 border-amber-500/30"
-              )}>
-                {displayTier === "premium" ? "PREMIUM" : "PRO"}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              {bestPick.icon}
-              <span className="text-base md:text-lg font-bold text-foreground">
-                {bestPick.label}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className={cn(
-                "text-2xl md:text-3xl font-extrabold tabular-nums",
-                bestPick.conf >= 80 ? "text-green-400" : bestPick.conf >= 70 ? "text-emerald-400" : bestPick.conf >= 60 ? "text-amber-400" : "text-orange-400"
-              )}>
-                {bestPick.conf}%
-              </span>
-              <span className="text-xs text-muted-foreground">probability</span>
-            </div>
-            <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500",
-                  bestPick.conf >= 80 ? "bg-green-500" : bestPick.conf >= 70 ? "bg-emerald-500" : bestPick.conf >= 60 ? "bg-amber-500" : "bg-orange-500"
-                )}
-                style={{ width: `${Math.max(10, bestPick.conf)}%` }}
-              />
-            </div>
-            {prediction.predicted_score && (
-              <p className="text-[10px] md:text-xs text-muted-foreground/80">
-                Predicted Score: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
-              </p>
-            )}
+
+          {/* Pick Name */}
+          <div className="flex items-center gap-2">
+            {pick.icon}
+            <span className="text-base md:text-lg font-bold text-foreground">
+              {pick.label}
+            </span>
           </div>
-        )
+
+          {/* Probability */}
+          <div className="flex items-baseline gap-2">
+            <span className={cn(
+              "text-2xl md:text-3xl font-extrabold tabular-nums",
+              pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-emerald-400" : pick.conf >= 60 ? "text-amber-400" : "text-orange-400"
+            )}>
+              {pick.conf}%
+            </span>
+            <span className="text-xs text-muted-foreground">probability</span>
+          </div>
+
+          {/* Probability bar */}
+          <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                pick.conf >= 80 ? "bg-green-500" : pick.conf >= 70 ? "bg-emerald-500" : pick.conf >= 60 ? "bg-amber-500" : "bg-orange-500"
+              )}
+              style={{ width: `${Math.max(10, pick.conf)}%` }}
+            />
+          </div>
+
+          {/* Predicted Score */}
+          {prediction.predicted_score && (
+            <p className="text-[10px] md:text-xs text-muted-foreground/80">
+              Predicted Score: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
+            </p>
+          )}
+        </div>
       ) : (
         /* Locked state */
         <div className="rounded-lg border border-border/50 bg-card/30 p-3 md:p-4">
