@@ -1252,9 +1252,29 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === CONFIDENCE = BEST MARKET PROBABILITY (SIMPLE) ===
-  // The confidence IS the probability of our best pick. No complex adjustments.
+  // === CONFIDENCE = BEST MARKET PROBABILITY + ADJUSTMENTS ===
   let confidence = bestProb;
+
+  // === CLOSE-CALL PENALTY: top 2 markets within 5% = unreliable pick ===
+  const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
+  if (sortedForCloseCall.length >= 2) {
+    const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
+    if (top2diff <= 5) {
+      confidence -= 4; // Penalty for coin-flip picks
+    } else if (top2diff <= 10) {
+      confidence -= 2; // Small penalty for close calls
+    }
+  }
+
+  // === PROGRESSIVE DAMPENING (replaces fixed ×0.90) ===
+  // High-confidence predictions need less dampening, low-confidence need more
+  if (confidence >= 80) {
+    confidence = Math.round(confidence * 0.95); // Light touch for strong picks
+  } else if (confidence >= 65) {
+    confidence = Math.round(confidence * 0.90); // Standard dampening
+  } else {
+    confidence = Math.round(confidence * 0.85); // Heavy dampening for weak picks
+  }
 
   // Only cap if data is very weak
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
