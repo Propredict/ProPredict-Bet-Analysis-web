@@ -243,15 +243,15 @@ export default function MatchPreviews() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {topMatches.map((match, index) => {
-              const rank = index + 1;
+            {topMatches.map((match) => {
+              const rank = match.rank;
               const risk = getRiskColor(match.confidence);
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const rankStyle = getRankStyle(rank);
               const isTop3 = rank <= 3;
 
-              // Generate blurred preview snippets from analysis/key_factors
+              // Generate preview snippets
               const snippets = getPreviewSnippets(match);
 
               return (
