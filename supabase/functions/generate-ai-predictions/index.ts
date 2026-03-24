@@ -1775,7 +1775,8 @@ async function premiumEnhance(
       awayTeamName,
       standings,
       odds,
-      pred.league || undefined
+      pred.league || undefined,
+      leagueId
     );
 
   // Keep the higher confidence (deep analysis should confirm or raise)
