@@ -7,8 +7,9 @@ import {
   getBadgeLabel, 
   getRiskLevelColor,
   calculateGoalMarketProbs,
+  getBestMarketProbability,
 } from "../utils/marketDerivation";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, Flame, CheckCircle } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
@@ -19,18 +20,18 @@ function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const d = prediction.draw ?? 0;
   const probs = calculateGoalMarketProbs(prediction);
 
-  const norm1 = Math.round(hw * (100 / (hw + Math.max(aw, d))));
-  const norm2 = Math.round(aw * (100 / (aw + Math.max(hw, d))));
-  const normX = Math.round(d * (100 / (d + Math.max(hw, aw))));
+  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
+  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
+  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
   const candidates: PickCandidate[] = [
-    { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
-    { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-3.5 h-3.5 text-amber-400" /> },
-    { label: "Draw", conf: normX, icon: <Target className="w-3.5 h-3.5 text-blue-400" /> },
-    { label: "Over 2.5 Goals", conf: probs.over25, icon: <TrendingUp className="w-3.5 h-3.5 text-green-400" /> },
-    { label: "Under 2.5 Goals", conf: probs.under25, icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> },
-    { label: "BTTS Yes", conf: probs.bttsYes, icon: <Zap className="w-3.5 h-3.5 text-yellow-400" /> },
-    { label: "BTTS No", conf: probs.bttsNo, icon: <Zap className="w-3.5 h-3.5 text-red-400" /> },
+    { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+    { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+    { label: "Draw", conf: normX, icon: <Target className="w-4 h-4 text-blue-400" /> },
+    { label: "Over 2.5 Goals", conf: probs.over25, icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
+    { label: "Under 2.5 Goals", conf: probs.under25, icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
+    { label: "BTTS Yes", conf: probs.bttsYes, icon: <Zap className="w-4 h-4 text-yellow-400" /> },
+    { label: "BTTS No", conf: probs.bttsNo, icon: <Zap className="w-4 h-4 text-red-400" /> },
   ];
 
   candidates.sort((a, b) => b.conf - a.conf);
@@ -53,30 +54,25 @@ function getBestPickReason(prediction: AIPrediction): string {
   const edge = best.conf - second.conf;
   const probs = calculateGoalMarketProbs(prediction);
 
-  // Goal market picks
   if (best.label === "Over 2.5 Goals") {
-    return `Both teams average high goal output (combined xG supports ${probs.over25}% chance of 3+ goals).`;
+    return `High goal output expected — ${probs.over25}% chance of 3+ goals. ${edge}pp edge over next market.`;
   }
   if (best.label === "Under 2.5 Goals") {
-    return `Low-scoring profiles from both sides suggest fewer than 3 goals (${probs.under25}% probability).`;
+    return `Low-scoring profiles — ${probs.under25}% probability of fewer than 3 goals.`;
   }
   if (best.label === "BTTS Yes") {
     return `Both teams score regularly — ${probs.bttsYes}% chance both find the net.`;
   }
   if (best.label === "BTTS No") {
-    return `At least one side struggles to score — ${probs.bttsNo}% chance of a clean sheet.`;
+    return `At least one side struggles to score — ${probs.bttsNo}% clean sheet probability.`;
   }
   if (best.label === "Draw") {
-    return `Teams are evenly matched with ${prediction.draw}% draw probability and only ${edge}pp edge over next option.`;
+    return `Evenly matched teams — ${best.conf}% draw probability.`;
   }
 
-  // Home/Away win
   const isHome = best.label.includes(prediction.home_team);
   const winPct = isHome ? prediction.home_win : prediction.away_win;
-  if (edge >= 20) {
-    return `Dominant ${winPct}% win probability — ${edge}pp clear of any other market.`;
-  }
-  return `Strongest signal at ${winPct}% win probability with ${edge}pp edge over ${second.label}.`;
+  return `Dominant ${winPct}% win probability — ${edge}pp clear of any other market.`;
 }
 
 interface Props {
@@ -87,29 +83,17 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const markets = deriveMarkets(prediction);
-  const goalProbs = calculateGoalMarketProbs(prediction);
-  
-  const getPredictedOutcome = () => {
-    if (!prediction.prediction) return "unknown";
-    const p = prediction.prediction.toLowerCase();
-    if (p === "1" || p === "home") return "home";
-    if (p === "2" || p === "away") return "away";
-    if (p.includes("over") || p.includes("under") || p.includes("btts")) {
-      // For goal markets, derive 1X2 from probabilities
-      const hw = prediction.home_win ?? 0;
-      const aw = prediction.away_win ?? 0;
-      if (hw > aw) return "home";
-      if (aw > hw) return "away";
-      return "draw";
-    }
-    return "draw";
-  };
+  const picks = getBestPickCandidates(prediction);
+  const bestPick = picks[0];
+  const secondPick = picks[1];
+  const bestProb = bestPick.conf;
 
-  const predictedOutcome = getPredictedOutcome();
+  // Get strong secondary markets (≥60% and not the same as best pick)
+  const strongSecondary = picks.filter((p, i) => i > 0 && p.conf >= 60).slice(0, 2);
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* AI Guidance Badge */}
+      {/* AI Guidance Badge + Risk */}
       <div className="flex items-center justify-between">
         <Badge className={cn("text-[10px] md:text-xs rounded-lg", getBadgeStyles(markets.guidance.badge))}>
           {getBadgeLabel(markets.guidance.badge)}
@@ -122,193 +106,133 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         )}
       </div>
 
-      {/* Probability Bars */}
-      <div className="space-y-2 md:space-y-3">
-        {/* Home Team */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs md:text-sm text-white flex items-center gap-1">
-              <span className="truncate max-w-[120px] md:max-w-none">{prediction.home_team}</span>
-              {predictedOutcome === "home" && hasAccess && (
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 text-amber-400 fill-amber-400" />
-              )}
-            </span>
-            <span className={cn(
-              "text-xs md:text-sm text-white/90",
-              !hasAccess && "blur-sm select-none"
-            )}>
-              {hasAccess ? `${prediction.home_win}%` : "??"}
-            </span>
-          </div>
-          <div className="h-1 md:h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                predictedOutcome === "home" ? "bg-green-500" : "bg-orange-500"
-              )}
-              style={{ width: hasAccess ? `${Math.max(8, prediction.home_win)}%` : "65%" }}
-            />
-          </div>
-        </div>
-
-        {/* Draw */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs md:text-sm text-white flex items-center gap-1">
-              Draw
-              {predictedOutcome === "draw" && hasAccess && (
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 text-amber-400 fill-amber-400" />
-              )}
-            </span>
-            <span className={cn(
-              "text-xs md:text-sm text-white/90",
-              !hasAccess && "blur-sm select-none"
-            )}>
-              {hasAccess ? `${prediction.draw}%` : "??"}
-            </span>
-          </div>
-          <div className="h-1 md:h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                predictedOutcome === "draw" ? "bg-green-500" : "bg-orange-500"
-              )}
-              style={{ width: hasAccess ? `${Math.max(8, prediction.draw)}%` : "25%" }}
-            />
-          </div>
-        </div>
-
-        {/* Away Team */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs md:text-sm text-white flex items-center gap-1">
-              <span className="truncate max-w-[120px] md:max-w-none">{prediction.away_team}</span>
-              {predictedOutcome === "away" && hasAccess && (
-                <Star className="w-2.5 md:w-3 h-2.5 md:h-3 text-amber-400 fill-amber-400" />
-              )}
-            </span>
-            <span className={cn(
-              "text-xs md:text-sm text-white/90",
-              !hasAccess && "blur-sm select-none"
-            )}>
-              {hasAccess ? `${prediction.away_win}%` : "??"}
-            </span>
-          </div>
-          <div className="h-1 md:h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                predictedOutcome === "away" ? "bg-green-500" : "bg-orange-500"
-              )}
-              style={{ width: hasAccess ? `${Math.max(8, prediction.away_win)}%` : "45%" }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ⚽ Goal Market Probabilities (Poisson) - PRO and PREMIUM only */}
-      {hasAccess && displayTier !== "free" && (
-        <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
-          {/* Over 2.5 */}
-          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 mb-0.5">
-              <ArrowUp className="w-2.5 h-2.5 text-green-400" />
-              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">Over 2.5</span>
-            </div>
-            <span className={cn(
-              "text-xs md:text-sm font-bold",
-              goalProbs.over25 >= 60 ? "text-green-400" : goalProbs.over25 >= 45 ? "text-amber-400" : "text-red-400"
-            )}>
-              {goalProbs.over25}%
-            </span>
-          </div>
-          {/* Under 2.5 */}
-          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 mb-0.5">
-              <ArrowDown className="w-2.5 h-2.5 text-orange-400" />
-              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">Under 2.5</span>
-            </div>
-            <span className={cn(
-              "text-xs md:text-sm font-bold",
-              goalProbs.under25 >= 60 ? "text-green-400" : goalProbs.under25 >= 45 ? "text-amber-400" : "text-red-400"
-            )}>
-              {goalProbs.under25}%
-            </span>
-          </div>
-          {/* BTTS */}
-          <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
-            <div className="flex items-center justify-center gap-0.5 mb-0.5">
-              <Zap className="w-2.5 h-2.5 text-yellow-400" />
-              <span className="text-[8px] md:text-[10px] text-muted-foreground font-medium">BTTS</span>
-            </div>
-            <span className={cn(
-              "text-xs md:text-sm font-bold",
-              goalProbs.bttsYes >= 60 ? "text-green-400" : goalProbs.bttsYes >= 45 ? "text-amber-400" : "text-red-400"
-            )}>
-              {goalProbs.bttsYes}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Value Bet Badge - PRO and PREMIUM only */}
-      {hasAccess && displayTier !== "free" && isValueBet(prediction) && (
-        <div className="pt-1">
-          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg">
-            <Flame className="w-3 h-3 mr-1" />
-            🔥 Value Bet
-          </Badge>
-        </div>
-      )}
-
-      {/* Best Pick Section - Clean, simple */}
-      {hasAccess ? (() => {
-        const picks = getBestPickCandidates(prediction);
-        const bestPick = picks[0];
-        const probability = bestPick.conf;
-
-        return (
-          <div className="pt-2 md:pt-3 border-t border-[#1e3a5f]/40 space-y-2.5 md:space-y-3">
-            {/* Best Pick Label + Name */}
-            <div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground/70 uppercase tracking-wider mb-1">
-                {displayTier === "free" ? "Safe Pick" : "Best Pick"}
-              </div>
-              <div className="text-sm md:text-base font-bold text-white flex items-center gap-1.5">
-                {bestPick.icon}
-                {bestPick.label}
-              </div>
-            </div>
-
-            {/* Probability as the single clear number */}
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                "text-lg md:text-xl font-bold tabular-nums",
-                probability >= 75 ? "text-green-400" : probability >= 60 ? "text-amber-400" : "text-orange-400"
-              )}>
-                {probability}%
+      {/* ===== BEST PICK — HERO SECTION ===== */}
+      {hasAccess ? (
+        <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
+          {/* Label */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+                {displayTier === "free" ? "Safe Pick" : displayTier === "pro" ? "🔥 Best Pick" : "⭐ Best Pick"}
               </span>
-              <span className="text-[9px] md:text-[10px] text-muted-foreground/60">probability</span>
             </div>
-
-            {/* Best Pick Reason - PRO and PREMIUM only */}
-            {displayTier !== "free" && (
-              <p className="text-[9px] md:text-[10px] text-muted-foreground/80 line-clamp-2">
-                {getBestPickReason(prediction)}
-              </p>
+            {isValueBet(prediction) && displayTier !== "free" && (
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1.5 py-0.5 font-semibold rounded-lg">
+                <Flame className="w-2.5 h-2.5 mr-0.5" />
+                Value
+              </Badge>
             )}
           </div>
-        );
-      })() : (
-        <div className="flex items-end justify-between pt-2 md:pt-3 border-t border-[#1e3a5f]/40">
-          <div>
-            <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
-            <div className="text-sm md:text-base font-bold text-white blur-sm select-none">? ? ?</div>
+
+          {/* Pick Name — Large */}
+          <div className="flex items-center gap-2">
+            {bestPick.icon}
+            <span className="text-base md:text-lg font-bold text-foreground">
+              {bestPick.label}
+            </span>
           </div>
-          <div className="text-right">
-            <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Probability</div>
-            <div className="text-base md:text-lg font-bold text-white blur-sm select-none">??%</div>
+
+          {/* Probability — Very Prominent */}
+          <div className="flex items-baseline gap-2">
+            <span className={cn(
+              "text-2xl md:text-3xl font-extrabold tabular-nums",
+              bestProb >= 80 ? "text-green-400" : bestProb >= 70 ? "text-emerald-400" : bestProb >= 60 ? "text-amber-400" : "text-orange-400"
+            )}>
+              {bestProb}%
+            </span>
+            <span className="text-xs text-muted-foreground">probability</span>
           </div>
+
+          {/* Probability bar */}
+          <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                bestProb >= 80 ? "bg-green-500" : bestProb >= 70 ? "bg-emerald-500" : bestProb >= 60 ? "bg-amber-500" : "bg-orange-500"
+              )}
+              style={{ width: `${Math.max(10, bestProb)}%` }}
+            />
+          </div>
+
+          {/* Best Pick Reason — PRO and PREMIUM */}
+          {displayTier !== "free" && (
+            <p className="text-[10px] md:text-xs text-muted-foreground/80 leading-relaxed">
+              {getBestPickReason(prediction)}
+            </p>
+          )}
+        </div>
+      ) : (
+        /* Locked state */
+        <div className="rounded-lg border border-border/50 bg-card/30 p-3 md:p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <CheckCircle className="w-3.5 h-3.5 text-muted-foreground/50" />
+            <span className="text-[10px] md:text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
+              Best Pick
+            </span>
+          </div>
+          <div className="flex items-end justify-between">
+            <div className="text-base md:text-lg font-bold text-white blur-sm select-none">? ? ?</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-white blur-sm select-none">??%</div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== STRONG SECONDARY MARKETS — PRO/PREMIUM only ===== */}
+      {hasAccess && displayTier !== "free" && strongSecondary.length > 0 && (
+        <div className="space-y-1.5">
+          <span className="text-[9px] md:text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+            Also strong
+          </span>
+          <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+            {strongSecondary.map((pick, i) => (
+              <div key={i} className="bg-card/40 border border-border/50 rounded-lg p-2 md:p-2.5 flex items-center gap-2">
+                {pick.icon}
+                <div className="min-w-0">
+                  <div className="text-[10px] md:text-xs font-semibold text-foreground truncate">{pick.label}</div>
+                  <div className={cn(
+                    "text-sm md:text-base font-bold tabular-nums",
+                    pick.conf >= 70 ? "text-green-400" : "text-amber-400"
+                  )}>
+                    {pick.conf}%
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== 1X2 Probabilities — compact row ===== */}
+      {hasAccess && (
+        <div className="grid grid-cols-3 gap-1 pt-1">
+          {[
+            { label: prediction.home_team, pct: prediction.home_win, outcome: "home" as const },
+            { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
+            { label: prediction.away_team, pct: prediction.away_win, outcome: "away" as const },
+          ].map((item) => {
+            const predictedOutcome = (() => {
+              const p = (prediction.prediction || "").toLowerCase();
+              if (p === "1" || p === "home") return "home";
+              if (p === "2" || p === "away") return "away";
+              return "draw";
+            })();
+            const isSelected = predictedOutcome === item.outcome;
+            return (
+              <div key={item.outcome} className={cn(
+                "text-center py-1.5 rounded-md border",
+                isSelected ? "border-primary/40 bg-primary/10" : "border-border/30 bg-card/20"
+              )}>
+                <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
+                <div className={cn(
+                  "text-xs md:text-sm font-bold",
+                  isSelected ? "text-primary" : "text-foreground/80"
+                )}>
+                  {item.pct}%
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
