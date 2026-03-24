@@ -1893,28 +1893,39 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  const premiumIds = allPredictions
-    .filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE)
-    .map((p: any) => p.id);
+  // === DYNAMIC DISTRIBUTION ===
+  // Sort by confidence descending (already sorted from query)
+  const sorted = allPredictions.filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE);
+  const total = sorted.length;
+  
+  if (total === 0) {
+    console.log("No predictions to distribute across tiers.");
+    return { free: 0, pro: 0, premium: 0 };
+  }
 
-  const proIds = allPredictions
-    .filter(
-      (p: any) =>
-        (p.confidence ?? 0) >= PRO_MIN_CONFIDENCE && (p.confidence ?? 0) <= PRO_MAX_CONFIDENCE
-    )
-    .map((p: any) => p.id);
+  // Dynamic cutoffs: top 10% Premium, next 30% Pro, rest Free
+  const premiumCutoff = Math.max(1, Math.ceil(total * PREMIUM_PERCENT)); // at least 1
+  const proCutoff = Math.max(1, Math.ceil(total * PRO_PERCENT)); // at least 1
 
-  const freeIds = allPredictions
-    .filter((p: any) => (p.confidence ?? 0) <= FREE_MAX_CONFIDENCE)
-    .map((p: any) => p.id);
+  const premiumPreds = sorted.slice(0, premiumCutoff);
+  const proPreds = sorted.slice(premiumCutoff, premiumCutoff + proCutoff);
+  const freePreds = sorted.slice(premiumCutoff + proCutoff);
 
-  console.log(`\n=== STRICT TIER ASSIGNMENT (by confidence only) ===`);
-  console.log(`FREE (60-74%): ${freeIds.length}`);
-  console.log(`PRO (75–84%): ${proIds.length}`);
-  console.log(`PREMIUM (>=85%): ${premiumIds.length}`);
+  const premiumIds = premiumPreds.map((p: any) => p.id);
+  const proIds = proPreds.map((p: any) => p.id);
+  const freeIds = freePreds.map((p: any) => p.id);
 
-  // Reset all to not premium for the two dates, then set premium = true
-  // (Other tiers are derived from confidence, but PREMIUM must be explicit in DB.)
+  // Log the dynamic thresholds for debugging
+  const premiumMinConf = premiumPreds.length > 0 ? premiumPreds[premiumPreds.length - 1].confidence : 0;
+  const proMinConf = proPreds.length > 0 ? proPreds[proPreds.length - 1].confidence : 0;
+
+  console.log(`\n=== DYNAMIC TIER DISTRIBUTION ===`);
+  console.log(`Total eligible: ${total}`);
+  console.log(`PREMIUM (top ${Math.round(PREMIUM_PERCENT * 100)}%): ${premiumIds.length} (conf >= ${premiumMinConf})`);
+  console.log(`PRO (next ${Math.round(PRO_PERCENT * 100)}%): ${proIds.length} (conf >= ${proMinConf})`);
+  console.log(`FREE (rest): ${freeIds.length}`);
+
+  // Reset all to not premium for the two dates
   const { error: resetError } = await supabase
     .from("ai_predictions")
     .update({ is_premium: false })
@@ -1924,6 +1935,7 @@ async function assignTiers(
     console.error("Error resetting premium flags:", resetError);
   }
 
+  // Mark premium predictions
   if (premiumIds.length > 0) {
     const { error: premiumError } = await supabase
       .from("ai_predictions")
@@ -1934,6 +1946,12 @@ async function assignTiers(
       console.error("Error assigning premium flags:", premiumError);
     }
   }
+
+  // Store the dynamic thresholds in the analysis field of predictions
+  // so the frontend can read them. We'll use a different approach:
+  // Set risk_level to encode tier: premium predictions get "premium_tier",
+  // pro predictions get "pro_tier" - but this breaks existing risk_level.
+  // Better approach: the frontend uses is_premium flag + confidence ranking.
 
   return { free: freeIds.length, pro: proIds.length, premium: premiumIds.length };
 }
