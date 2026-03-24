@@ -278,7 +278,7 @@ export function getRiskLevelColor(riskLevel: string | null) {
  * 2) Tiered boost: 65%+ gets +5%, 70%+ gets +8%
  * 3) Cap at 92%
  */
-function calibrate(raw: number): number {
+export function calibrateProb(raw: number): number {
   let p = raw * 1.2;
   if (p >= 70) p += 8;
   else if (p >= 65) p += 5;
@@ -300,7 +300,7 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
   const rawBest = Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
-  return calibrate(rawBest);
+  return calibrateProb(rawBest);
 }
 
 /**
