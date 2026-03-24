@@ -4,6 +4,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
   getBestMarketProbability,
+  calibrateProb,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
 
@@ -21,13 +22,13 @@ function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
   const candidates: PickCandidate[] = [
-    { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
-    { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
-    { label: "Draw", conf: normX, icon: <Target className="w-4 h-4 text-blue-400" /> },
-    { label: "Over 2.5 Goals", conf: probs.over25, icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
-    { label: "Under 2.5 Goals", conf: probs.under25, icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
-    { label: "BTTS Yes", conf: probs.bttsYes, icon: <Zap className="w-4 h-4 text-yellow-400" /> },
-    { label: "BTTS No", conf: probs.bttsNo, icon: <Zap className="w-4 h-4 text-red-400" /> },
+    { label: `${prediction.home_team} Win`, conf: calibrateProb(norm1), icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+    { label: `${prediction.away_team} Win`, conf: calibrateProb(norm2), icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+    { label: "Draw", conf: calibrateProb(normX), icon: <Target className="w-4 h-4 text-blue-400" /> },
+    { label: "Over 2.5 Goals", conf: calibrateProb(probs.over25), icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
+    { label: "Under 2.5 Goals", conf: calibrateProb(probs.under25), icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
+    { label: "BTTS Yes", conf: calibrateProb(probs.bttsYes), icon: <Zap className="w-4 h-4 text-yellow-400" /> },
+    { label: "BTTS No", conf: calibrateProb(probs.bttsNo), icon: <Zap className="w-4 h-4 text-red-400" /> },
   ];
 
   candidates.sort((a, b) => b.conf - a.conf);
