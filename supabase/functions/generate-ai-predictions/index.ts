@@ -1655,8 +1655,22 @@ function generateKeyFactors(
     if (totalAvg >= 3.5) factors.push(`High-scoring teams (avg ${totalAvg.toFixed(1)} goals combined)`);
   }
 
-  // Limit to 5 most relevant factors
-  return factors.slice(0, 5);
+  // 7. Last 10 matches form summary
+  if (homeForm.length >= 8) {
+    const wins = homeForm.filter(m => m.result === "W").length;
+    const ratio = wins / homeForm.length;
+    if (ratio >= 0.7) factors.push(`${homeTeamName}: ${wins}/${homeForm.length} wins in recent matches`);
+    else if (ratio <= 0.2) factors.push(`${homeTeamName}: Only ${wins}/${homeForm.length} recent wins`);
+  }
+  if (awayForm.length >= 8) {
+    const wins = awayForm.filter(m => m.result === "W").length;
+    const ratio = wins / awayForm.length;
+    if (ratio >= 0.7) factors.push(`${awayTeamName}: ${wins}/${awayForm.length} wins in recent matches`);
+    else if (ratio <= 0.2) factors.push(`${awayTeamName}: Only ${wins}/${awayForm.length} recent wins`);
+  }
+
+  // Limit to 6 most relevant factors
+  return factors.slice(0, 6);
 }
 
 /**
