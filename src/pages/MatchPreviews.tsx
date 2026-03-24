@@ -55,6 +55,12 @@ function getRiskColor(confidence: number | null) {
   return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
 }
 
+function getRiskRating(confidence: number): string {
+  if (confidence >= 80) return "low";
+  if (confidence >= 65) return "medium";
+  return "high";
+}
+
 function getTeamInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
 }
