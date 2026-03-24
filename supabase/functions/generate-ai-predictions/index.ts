@@ -23,12 +23,58 @@ const PREMIUM_MAX_COUNT = 10;
 const PREMIUM_MIN_COUNT = 5;
 const PREMIUM_ALLOWED_RISK = ["low", "medium"];
 
+// ============ MINIMUM DATA THRESHOLDS ============
+const MIN_SEASON_MATCHES = 5;       // Teams with fewer matches get capped confidence
+const MIN_SEASON_CONFIDENCE_CAP = 62; // Max confidence when team has < MIN_SEASON_MATCHES
+
+// ============ QUALITY LEAGUE IDS (API-Football) ============
+// Only these leagues can produce PREMIUM (≥85%) predictions
+// Top 20 leagues with most reliable data and predictable patterns
+const QUALITY_LEAGUE_IDS = new Set([
+  39,   // Premier League (England)
+  140,  // La Liga (Spain)
+  135,  // Serie A (Italy)
+  78,   // Bundesliga (Germany)
+  61,   // Ligue 1 (France)
+  94,   // Primeira Liga (Portugal)
+  88,   // Eredivisie (Netherlands)
+  144,  // Jupiler Pro League (Belgium)
+  203,  // Super Lig (Turkey)
+  179,  // Scottish Premiership
+  235,  // Russian Premier League
+  218,  // Austrian Bundesliga
+  169,  // Super League (Switzerland)
+  113,  // Greek Super League
+  106,  // Ekstraklasa (Poland)
+  119,  // Danish Superliga
+  103,  // Eliteserien (Norway)
+  113,  // Allsvenskan (Sweden)
+  2,    // UEFA Champions League
+  3,    // UEFA Europa League
+  848,  // UEFA Conference League
+  1,    // World Cup
+  4,    // Euro Championship
+  253,  // MLS (USA)
+  71,   // Serie A (Brazil)
+  128,  // Liga MX (Mexico)
+  262,  // Liga Profesional (Argentina)
+  307,  // Saudi Pro League
+  188,  // J1 League (Japan)
+  292,  // K League 1 (South Korea)
+  333,  // A-League (Australia)
+  40,   // Championship (England)
+  141,  // La Liga 2 (Spain)
+  79,   // 2. Bundesliga (Germany)
+  136,  // Serie B (Italy)
+  62,   // Ligue 2 (France)
+]);
+
 // ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.40;         // 40% - Recent form (last 3 matches)
+const WEIGHT_FORM = 0.35;         // 35% - Recent form (last 5 real matches)
 const WEIGHT_QUALITY = 0.25;      // 25% - Team quality
 const WEIGHT_SQUAD = 0.15;        // 15% - Squad strength / injuries
 const WEIGHT_HOME = 0.10;         // 10% - Home advantage (MAX)
-const WEIGHT_H2H = 0.10;          // 10% - Head-to-Head history
+const WEIGHT_H2H = 0.15;          // 15% - Head-to-Head history (increased from 10%)
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
