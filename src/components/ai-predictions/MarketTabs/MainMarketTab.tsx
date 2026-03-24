@@ -54,8 +54,7 @@ interface Props {
 }
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
-  const picks = getBestPickCandidates(prediction);
-  const bestPick = picks[0];
+  const bestPick = getBestPick(prediction);
   const bestProb = bestPick.conf;
 
   return (
