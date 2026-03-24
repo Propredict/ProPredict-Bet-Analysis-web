@@ -8,8 +8,7 @@ import {
   getRiskLevelColor,
   calculateGoalMarketProbs,
 } from "../utils/marketDerivation";
-import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame, Signal, Lock, AlertTriangle } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
@@ -262,22 +261,11 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* Best Pick Section - Redesigned with proper hierarchy */}
+      {/* Best Pick Section - Clean, simple */}
       {hasAccess ? (() => {
         const picks = getBestPickCandidates(prediction);
         const bestPick = picks[0];
-        const confidence = prediction.confidence ?? 0;
         const probability = bestPick.conf;
-        
-        // Signal strength based on combination of confidence + probability
-        const avgScore = (confidence + probability) / 2;
-        const signalLabel = avgScore >= 80 ? "Strong" : avgScore >= 65 ? "Medium" : "Weak";
-        const signalColor = avgScore >= 80 
-          ? "text-green-400 bg-green-500/15 border-green-500/30" 
-          : avgScore >= 65 
-            ? "text-amber-400 bg-amber-500/15 border-amber-500/30" 
-            : "text-red-400 bg-red-500/15 border-red-500/30";
-        const signalBars = avgScore >= 80 ? 3 : avgScore >= 65 ? 2 : 1;
 
         return (
           <div className="pt-2 md:pt-3 border-t border-[#1e3a5f]/40 space-y-2.5 md:space-y-3">
@@ -292,70 +280,21 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </div>
             </div>
 
-            {/* Confidence = MAIN NUMBER */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="text-[9px] md:text-[10px] text-muted-foreground/70 mb-0.5">Confidence</div>
-                <div className={cn(
-                  "text-lg md:text-xl font-bold tabular-nums",
-                  confidence >= 75 ? "text-green-400" : confidence >= 65 ? "text-amber-400" : "text-orange-400"
-                )}>
-                  {confidence}%
-                </div>
-              </div>
-
-              {/* Signal Strength Indicator */}
-              <div className={cn("flex flex-col items-center gap-1 px-3 py-2 rounded-lg border", signalColor)}>
-                <div className="flex items-end gap-[2px] h-4">
-                  {[1, 2, 3].map((bar) => (
-                    <div
-                      key={bar}
-                      className={cn(
-                        "w-[4px] rounded-sm transition-all",
-                        bar <= signalBars ? "bg-current" : "bg-current/20",
-                        bar === 1 ? "h-2" : bar === 2 ? "h-3" : "h-4"
-                      )}
-                    />
-                  ))}
-                </div>
-                <span className="text-[8px] md:text-[9px] font-semibold uppercase tracking-wider">{signalLabel}</span>
-              </div>
-            </div>
-
-            {/* Secondary info: Model Probability */}
-            <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-muted-foreground/70">
-              <span>Model probability:</span>
+            {/* Probability as the single clear number */}
+            <div className="flex items-center gap-2">
               <span className={cn(
-                "font-semibold",
-                probability >= 70 ? "text-green-400/80" : probability >= 50 ? "text-amber-400/80" : "text-muted-foreground"
+                "text-lg md:text-xl font-bold tabular-nums",
+                probability >= 75 ? "text-green-400" : probability >= 60 ? "text-amber-400" : "text-orange-400"
               )}>
                 {probability}%
               </span>
-              {probability >= 75 && (
-                <Badge className="bg-green-500/10 text-green-400/80 border-green-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                  <Lock className="w-2 h-2 mr-0.5" />
-                  High Probability
-                </Badge>
-              )}
-              {probability >= 50 && probability < 75 && (
-                <Badge className="bg-amber-500/10 text-amber-400/80 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                  <AlertTriangle className="w-2 h-2 mr-0.5" />
-                  Moderate
-                </Badge>
-              )}
+              <span className="text-[9px] md:text-[10px] text-muted-foreground/60">probability</span>
             </div>
 
             {/* Best Pick Reason - PRO and PREMIUM only */}
             {displayTier !== "free" && (
               <p className="text-[9px] md:text-[10px] text-muted-foreground/80 line-clamp-2">
                 {getBestPickReason(prediction)}
-              </p>
-            )}
-
-            {/* Confidence Explanation - PRO and PREMIUM only */}
-            {displayTier !== "free" && (
-              <p className="text-[9px] md:text-[10px] text-muted-foreground/60 italic line-clamp-2">
-                {getShortConfidenceExplanation(prediction)}
               </p>
             )}
           </div>
@@ -367,7 +306,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <div className="text-sm md:text-base font-bold text-white blur-sm select-none">? ? ?</div>
           </div>
           <div className="text-right">
-            <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Confidence</div>
+            <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Probability</div>
             <div className="text-base md:text-lg font-bold text-white blur-sm select-none">??%</div>
           </div>
         </div>
