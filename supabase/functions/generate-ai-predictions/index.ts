@@ -1744,7 +1744,9 @@ async function processBatch(
         homeTeamId,
         awayTeamId,
         homeTeamName,
-        awayTeamName
+        awayTeamName,
+        standings,
+        odds
       );
 
       // Calculate Poisson goal markets for key_factors and more accurate score
