@@ -1374,7 +1374,9 @@ async function premiumEnhance(
   awayStats: TeamStats | null,
   apiKey: string,
   leagueId?: number,
-  season?: number
+  season?: number,
+  standings?: StandingEntry[],
+  odds?: OddsData | null
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
@@ -1387,22 +1389,19 @@ async function premiumEnhance(
     leagueId && season ? fetchInjuries(leagueId, season, apiKey) : Promise.resolve([]),
   ]);
 
-  // Recalculate with deeper form data (use last 10 for form score)
-  const deepHomeFormScore = calculateFormScoreDeep(homeForm10);
-  const deepAwayFormScore = calculateFormScoreDeep(awayForm10);
-  const deepH2HScore = calculateH2HScore(h2h5, homeTeamId, awayTeamId);
-
-  // Recalculate prediction with deep data
+  // Recalculate with deeper form data — pass ALL 10 matches + standings + odds
   const deepResult = calculatePrediction(
-    homeForm10.slice(0, 5), // Use last 5 for core calculation (more than 3)
-    awayForm10.slice(0, 5),
+    homeForm10,
+    awayForm10,
     homeStats,
     awayStats,
     h2h5,
     homeTeamId,
     awayTeamId,
     homeTeamName,
-    awayTeamName
+    awayTeamName,
+    standings,
+    odds
   );
 
   // Keep the higher confidence (deep analysis should confirm or raise)
