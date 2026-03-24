@@ -2202,12 +2202,16 @@ async function handleBatchRegenerate(
           };
         });
 
+        // Filter out predictions below minimum display confidence (60%)
+        const displayInserts = inserts.filter((p: any) => p.confidence >= MIN_DISPLAY_CONFIDENCE);
+        console.log(`[DEBUG] Filtered ${inserts.length - displayInserts.length} predictions below ${MIN_DISPLAY_CONFIDENCE}% confidence`);
+
         const CHUNK_SIZE = 100;
         let totalInserted = 0;
         let insertErrors: string[] = [];
         
-        for (let i = 0; i < inserts.length; i += CHUNK_SIZE) {
-          const chunk = inserts.slice(i, i + CHUNK_SIZE);
+        for (let i = 0; i < displayInserts.length; i += CHUNK_SIZE) {
+          const chunk = displayInserts.slice(i, i + CHUNK_SIZE);
           const { error: insertError, data: insertData } = await supabase.from("ai_predictions").insert(chunk).select("id");
           if (insertError) {
             console.error(`[DEBUG] Insert chunk ${i}-${i + chunk.length} error:`, insertError.message, insertError.details, insertError.hint);
