@@ -243,17 +243,15 @@ serve(async (req: Request) => {
     }
 
     // Step 2: Filter out pending predictions, sort by risk (low first) then confidence
-    // Filter: exclude truly invalid predictions
+    // Filter: exclude truly invalid predictions (placeholder data only)
     const validPredictions = predictions.filter(
       (p: any) => {
         const analysis = (p.analysis || "").toLowerCase();
-        // Exclude if analysis says "pending regeneration" or "not found in api" — truly no data
+        // Exclude "pending regeneration" — no processing happened
         if (analysis.includes("pending regeneration")) return false;
-        if (analysis.includes("not found in api")) return false;
-        if (analysis.includes("insufficient form data") && p.confidence <= 50) return false;
-        // Exclude if probabilities are exactly 33/34/33 — placeholder
+        // Exclude if probabilities are exactly 33/34/33 — pure placeholder with no real data
         if (p.home_win === 33 && p.draw === 34 && p.away_win === 33) return false;
-        // Include odds-based fallback predictions (e.g. "Limited team-form data")
+        // Include everything else: real predictions, odds-based fallbacks, limited data, etc.
         return true;
       }
     );
