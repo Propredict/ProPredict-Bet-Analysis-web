@@ -913,6 +913,29 @@ function calculatePrediction(
     }
   }
 
+  // Odds alignment bonus: if bookmaker agrees with our prediction, boost confidence
+  if (odds) {
+    const ourFav = homeWin >= awayWin ? "home" : "away";
+    const bookFav = odds.homeProb >= odds.awayProb ? "home" : "away";
+    const bookFavProb = ourFav === "home" ? odds.homeProb : odds.awayProb;
+    
+    if (ourFav === bookFav && bookFavProb >= 55) {
+      // Strong alignment: both model and bookmaker agree
+      confidence += clamp((bookFavProb - 55) / 10, 0, 1) * 4;
+    } else if (ourFav !== bookFav && bookFavProb >= 60) {
+      // Disagreement with bookmaker: reduce confidence (bookmakers are usually right)
+      confidence -= 3;
+    }
+  }
+
+  // Standings bonus: if top team vs bottom team, boost
+  if (standings && standings.length > 0) {
+    const standingsDiff = Math.abs(homeStandingsScore - awayStandingsScore);
+    if (standingsDiff >= 40) {
+      confidence += 2; // Clear gap in table positions
+    }
+  }
+
   confidence = Math.round(clamp(confidence, 50, 92));
 
   // Cap confidence for teams with insufficient season data
@@ -923,8 +946,6 @@ function calculatePrediction(
   }
 
   // === CALIBRATION: dampen overconfident raw scores ===
-  // Apply mild sigmoid calibration to prevent inflated confidence
-  // This maps raw 50-92 range more conservatively
   confidence = calibrateConfidence(confidence);
 
   // === RISK ===
