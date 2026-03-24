@@ -124,7 +124,7 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
 }
 
 function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
-  if (tier === "exclusive") return 6;
+  if (tier === "exclusive") return 10;
   if (tier === "pro") return 5;
   return 3;
 }
@@ -283,6 +283,75 @@ export default function AIvsCommunity() {
             <p className="text-center text-[10px] text-primary/70 font-medium mt-3">
               ⚡ Pick your side and win rewards
             </p>
+          </div>
+        </div>
+
+        {/* Daily Votes Info + How it Works */}
+        <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+          {/* Daily Votes Per Plan */}
+          <div className="space-y-2.5">
+            <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+              Daily Predictions by Plan
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className={cn(
+                "rounded-lg border p-2.5 text-center space-y-1",
+                userTier === "free" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
+              )}>
+                <p className="text-lg font-extrabold text-foreground">3</p>
+                <p className="text-[9px] text-muted-foreground font-medium">Free</p>
+                {userTier === "free" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
+              </div>
+              <div className={cn(
+                "rounded-lg border p-2.5 text-center space-y-1",
+                userTier === "pro" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
+              )}>
+                <p className="text-lg font-extrabold text-foreground">5</p>
+                <p className="text-[9px] text-muted-foreground font-medium">Pro</p>
+                {userTier === "pro" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
+              </div>
+              <div className={cn(
+                "rounded-lg border p-2.5 text-center space-y-1",
+                userTier === "exclusive" ? "border-primary/50 bg-primary/5" : "border-border/40 bg-muted/20"
+              )}>
+                <p className="text-lg font-extrabold text-foreground">10</p>
+                <p className="text-[9px] text-muted-foreground font-medium">Premium</p>
+                {userTier === "exclusive" && <Badge className="text-[8px] h-4 bg-primary/15 text-primary border-primary/30">You</Badge>}
+              </div>
+            </div>
+            <p className="text-[9px] text-muted-foreground text-center">
+              You've used <span className="font-bold text-foreground">{dailyCount}</span> / <span className="font-bold text-foreground">{dailyLimit}</span> predictions today
+            </p>
+          </div>
+
+          {/* How it Works */}
+          <div className="border-t border-border/30 pt-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                How it Works
+              </p>
+              <Link
+                to="/how-ai-vs-members-works"
+                className="text-[10px] text-primary font-medium flex items-center gap-1 hover:underline"
+              >
+                <CircleHelp className="h-3 w-3" /> Full Guide
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-1.5">
+              {[
+                { icon: "🎯", text: "Pick your prediction before kickoff" },
+                { icon: "🤖", text: "Compare your pick against the AI" },
+                { icon: "✅", text: "Earn points for each correct prediction" },
+                { icon: "🏆", text: "Reach 1000 points → unlock free Pro month" },
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-2 p-1.5 rounded-md bg-muted/20">
+                  <span className="text-sm">{step.icon}</span>
+                  <span className="text-[10px] text-muted-foreground">{step.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
