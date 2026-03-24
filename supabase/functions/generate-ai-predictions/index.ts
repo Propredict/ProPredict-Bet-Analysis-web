@@ -1156,6 +1156,16 @@ function calculatePrediction(
     confidence += 2;
   }
 
+  // === CONFLICT FILTER penalty ===
+  if (isConflicted) {
+    confidence -= 6; // Model isn't sure → push below display threshold
+  }
+
+  // === No viable market (all below 60%) → hard penalty ===
+  if (viableMarkets.length === 0) {
+    confidence -= 8;
+  }
+
   // Self-learning league penalty/boost
   if (leagueName && leagueAccuracyCache.has(leagueName)) {
     const acc = leagueAccuracyCache.get(leagueName)!;
@@ -1179,9 +1189,18 @@ function calculatePrediction(
   const confidenceLabel = confidence >= 78 ? "HIGH" : confidence >= 65 ? "MEDIUM" : "LOW";
   const xgTotal = (homeXg + awayXg).toFixed(1);
   const analysisReasons: string[] = [];
+
+  // Smart market switch reasoning
+  if (isLowGoals && bothDefensive) analysisReasons.push(`Low-scoring profile (xG: ${xgTotal}) → Under/BTTS No favored`);
+  else if (isHighGoals && bothHighScoring) analysisReasons.push(`High-scoring profile (xG: ${xgTotal}) → Over/BTTS favored`);
+  else if (dominantTeam) analysisReasons.push(`Clear quality gap → ${homeWin > awayWin ? homeTeamName : awayTeamName} dominant`);
+
   if (prediction.includes("Over")) analysisReasons.push(`Expected goals: ${xgTotal} (${homeXg.toFixed(1)} + ${awayXg.toFixed(1)})`);
   else if (prediction.includes("Under")) analysisReasons.push(`Low expected goals: ${xgTotal}`);
+  else if (prediction.includes("BTTS")) analysisReasons.push(`xG: ${homeTeamName} ${homeXg.toFixed(1)} - ${awayTeamName} ${awayXg.toFixed(1)}`);
+  else if (prediction.includes("DC")) analysisReasons.push(`Double Chance covers ${prediction.replace("DC ", "")}: combined ${bestProb}%`);
   else analysisReasons.push(`xG: ${homeTeamName} ${homeXg.toFixed(1)} - ${awayTeamName} ${awayXg.toFixed(1)}`);
+
   if (Math.abs(homeFormScore - awayFormScore) >= 15) {
     analysisReasons.push(`${homeFormScore > awayFormScore ? homeTeamName : awayTeamName} in stronger recent form`);
   }
@@ -1196,6 +1215,11 @@ function calculatePrediction(
   const awayRecentWins = awayForm.slice(0, 5).filter(m => m.result === "W").length;
   if (homeRecentWins >= 4) analysisReasons.push(`${homeTeamName}: ${homeRecentWins}/5 recent wins`);
   if (awayRecentWins >= 4) analysisReasons.push(`${awayTeamName}: ${awayRecentWins}/5 recent wins`);
+
+  // Alternative pick reasoning
+  if (altMarket) {
+    analysisReasons.push(`Alternative pick: ${altMarket.label} (${altMarket.prob}%)`);
+  }
 
   const analysis = generateAnalysisV2({
     homeTeamName, awayTeamName, prediction,
