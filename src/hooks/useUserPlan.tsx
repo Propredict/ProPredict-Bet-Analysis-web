@@ -157,7 +157,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       /* ===== UNLOCKED CONTENT ===== */
       if (Array.isArray(unlocksRes.data)) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = getTodayBelgrade();
         const validUnlocks = unlocksRes.data.filter((u: any) => u.unlocked_date === today);
         setUnlockedContent(
           validUnlocks.map((u: any) => ({
@@ -423,7 +423,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     async (contentType: ContentType, contentId: string) => {
       if (!user) return false;
 
-      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const today = getTodayBelgrade();
 
       const { error } = await supabase.from("user_unlocks").insert({
         user_id: user.id,
@@ -480,8 +480,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         console.log("[UserPlan] 🔓 Unlocking:", contentType, contentId);
 
         // IMMEDIATELY update local state for instant card re-render
-        const today = new Date().toISOString().split("T")[0];
-        const endOfDay = new Date(today + "T23:59:59Z");
+        const today = getTodayBelgrade();
+        const endOfDay = new Date(today + "T23:59:59+01:00"); // CET end-of-day
         setUnlockedContent((prev) => {
           const next = [...prev, { contentType, contentId, expiresAt: endOfDay }];
           console.log("[UserPlan] 📦 unlockedContent updated, count:", next.length);
