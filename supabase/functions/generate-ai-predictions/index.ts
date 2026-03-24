@@ -720,13 +720,10 @@ function calibrateConfidence(raw: number): number {
 }
 
 /**
- * Main prediction calculation using required weights:
- * Form 40%, Quality 25%, Squad 15%, Home 10% max, H2H 10%.
+ * Main prediction calculation using enhanced weights:
+ * Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%.
  *
- * Constraints:
- * - Home advantage is minor (never dominant)
- * - Probabilities always sum to 100
- * - Confidence capped at 78% (no 90%+)
+ * Uses real last 10 matches, league position, and bookmaker odds for calibration.
  */
 function calculatePrediction(
   homeForm: FormMatch[],
@@ -737,66 +734,75 @@ function calculatePrediction(
   homeTeamId: number,
   awayTeamId: number,
   homeTeamName: string,
-  awayTeamName: string
+  awayTeamName: string,
+  standings?: StandingEntry[],
+  odds?: OddsData | null
 ): PredictionResult {
-  // === FORM (40%) ===
-  const homeFormScore = calculateFormScore(homeForm);
-  const awayFormScore = calculateFormScore(awayForm);
+  // === FORM (30%) — use up to 10 matches with weighted recency ===
+  const homeFormScore = homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm);
+  const awayFormScore = awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm);
 
-  // === QUALITY (25%) ===
+  // === QUALITY (20%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
   const awayQualityScore = calculateQualityScore(awayStats);
 
-  // === SQUAD / AVAILABILITY (15%) ===
-  // Enhanced: use season goals average when available, fallback to form-based
+  // === SQUAD / AVAILABILITY (10%) ===
   const homeGoalRate = calculateGoalRate(homeForm);
   const awayGoalRate = calculateGoalRate(awayForm);
 
-  // If we have season stats, use home goals avg for home team and away goals avg for away team
   const homeEffectiveScored = homeStats?.homeGoalsForAvg || homeGoalRate.scored;
   const homeEffectiveConceded = homeStats?.homeGoalsAgainstAvg || homeGoalRate.conceded;
   const awayEffectiveScored = awayStats?.awayGoalsForAvg || awayGoalRate.scored;
   const awayEffectiveConceded = awayStats?.awayGoalsAgainstAvg || awayGoalRate.conceded;
 
-  const homeSquadScore = clamp(
-    50 + (homeEffectiveScored - homeEffectiveConceded) * 18,
-    0,
-    100
-  );
-  const awaySquadScore = clamp(
-    50 + (awayEffectiveScored - awayEffectiveConceded) * 18,
-    0,
-    100
-  );
+  const homeSquadScore = clamp(50 + (homeEffectiveScored - homeEffectiveConceded) * 18, 0, 100);
+  const awaySquadScore = clamp(50 + (awayEffectiveScored - awayEffectiveConceded) * 18, 0, 100);
 
-  // === HOME ADVANTAGE (10% MAX — use real home/away win rates when available) ===
+  // === HOME ADVANTAGE (8%) ===
   let homeAdvantageScore = 51;
   let awayAdvantageScore = 49;
   if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
     const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
     const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
-    // Slight boost based on actual home/away performance, capped to avoid bias
     homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
     awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
   }
 
-  // === H2H (10%, secondary) ===
+  // === H2H (12%) ===
   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
   const awayH2HScore = 100 - homeH2HScore;
+
+  // === STANDINGS (10%) — league table position ===
+  const homeStandingsScore = standings ? getStandingsScore(standings, homeTeamId) : 50;
+  const awayStandingsScore = standings ? getStandingsScore(standings, awayTeamId) : 50;
+
+  // === ODDS (10%) — bookmaker implied probabilities ===
+  // Convert odds to a 0-100 score for each team
+  let homeOddsScore = 50;
+  let awayOddsScore = 50;
+  if (odds) {
+    // Direct use of bookmaker implied probabilities
+    homeOddsScore = clamp(odds.homeProb, 10, 90);
+    awayOddsScore = clamp(odds.awayProb, 10, 90);
+  }
 
   const homeTotal =
     homeFormScore * WEIGHT_FORM +
     homeQualityScore * WEIGHT_QUALITY +
     homeSquadScore * WEIGHT_SQUAD +
     homeAdvantageScore * WEIGHT_HOME +
-    homeH2HScore * WEIGHT_H2H;
+    homeH2HScore * WEIGHT_H2H +
+    homeStandingsScore * WEIGHT_STANDINGS +
+    homeOddsScore * WEIGHT_ODDS;
 
   const awayTotal =
     awayFormScore * WEIGHT_FORM +
     awayQualityScore * WEIGHT_QUALITY +
     awaySquadScore * WEIGHT_SQUAD +
     awayAdvantageScore * WEIGHT_HOME +
-    awayH2HScore * WEIGHT_H2H;
+    awayH2HScore * WEIGHT_H2H +
+    awayStandingsScore * WEIGHT_STANDINGS +
+    awayOddsScore * WEIGHT_ODDS;
 
   // === PROBABILITIES ===
   const diff = homeTotal - awayTotal;
