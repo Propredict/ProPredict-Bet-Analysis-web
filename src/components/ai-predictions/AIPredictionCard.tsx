@@ -54,8 +54,8 @@ const AIPredictionCardInner = ({
   const isDailyTier = displayTier === "free";
 
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
-  const hasAccess = canAccess(contentTier, "tip", prediction.match_id);
-  const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.match_id);
+  const hasAccess = canAccess(contentTier, "tip", prediction.id!);
+  const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
@@ -270,7 +270,7 @@ const AIPredictionCardInner = ({
               <div className="flex flex-col gap-1.5">
                 <Button
                   className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-medium rounded"
-                  onClick={() => onUnlockClick?.("tip", prediction.match_id, contentTier)}
+                onClick={() => onUnlockClick?.("tip", prediction.id!, contentTier)}
                   disabled={isUnlocking}
                 >
                   {isUnlocking ? (
@@ -300,7 +300,7 @@ const AIPredictionCardInner = ({
             ) : unlockMethod.type === "watch_ad" ? (
               <Button
                 className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-medium rounded"
-                onClick={() => onUnlockClick?.("tip", prediction.match_id, contentTier)}
+                onClick={() => onUnlockClick?.("tip", prediction.id!, contentTier)}
                 disabled={isUnlocking}
               >
                 {isUnlocking ? (
