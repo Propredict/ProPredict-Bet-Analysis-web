@@ -1801,7 +1801,9 @@ async function processBatch(
             awayStats,
             apiKey,
             leagueId,
-            season
+            season,
+            standings,
+            odds
           );
         } catch (e) {
           console.warn(`Premium enhance failed for ${homeTeamName} vs ${awayTeamName}, keeping standard result:`, e);
