@@ -22,55 +22,10 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { calculateGoalMarketProbs, getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
-import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
+import { getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 
-
-
-type SortOption = "confidence" | "kickoff" | "risk" | "over25" | "under25" | "btts";
+type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
-type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts" | "value";
-
-/** Derive pick type from prediction field (for new predictions with market labels) */
-function getPickTypeFromPrediction(p: string): PickFilter | null {
-  const lower = p.toLowerCase();
-  if (lower.includes("over")) return "over25";
-  if (lower.includes("under")) return "under25";
-  if (lower.includes("btts")) return "btts";
-  if (lower === "1" || lower === "home") return "home";
-  if (lower === "2" || lower === "away") return "away";
-  if (lower === "x" || lower === "draw") return "draw";
-  return null;
-}
-
-/** Check if a prediction matches a pick filter using both prediction field AND Poisson data */
-function matchesPickFilter(prediction: AIPrediction, filter: PickFilter): boolean {
-  if (filter === "all") return true;
-  if (filter === "value") return isValueBet(prediction);
-  
-  // First check the prediction field directly
-  const directType = getPickTypeFromPrediction(prediction.prediction || "");
-  if (directType === filter) return true;
-  
-  // For goal markets, also check Poisson probabilities (works for old "1"/"2"/"X" predictions)
-  const probs = calculateGoalMarketProbs(prediction);
-  
-  switch (filter) {
-    case "over25": return probs.over25 >= 55;
-    case "under25": return probs.under25 >= 55;
-    case "btts": return probs.bttsYes >= 55;
-    case "home": return directType === "home" || (prediction.home_win ?? 0) > (prediction.away_win ?? 0) && (prediction.home_win ?? 0) > (prediction.draw ?? 0);
-    case "away": return directType === "away" || (prediction.away_win ?? 0) > (prediction.home_win ?? 0) && (prediction.away_win ?? 0) > (prediction.draw ?? 0);
-    case "draw": return directType === "draw" || (prediction.draw ?? 0) >= (prediction.home_win ?? 0) && (prediction.draw ?? 0) >= (prediction.away_win ?? 0);
-    default: return true;
-  }
-}
-
-/** Count predictions matching a filter */
-function countByFilter(predictions: AIPrediction[], filter: PickFilter): number {
-  if (filter === "all") return predictions.length;
-  return predictions.filter(p => matchesPickFilter(p, filter)).length;
-}
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
@@ -90,7 +45,7 @@ export default function AIPredictions() {
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
-  const [pickFilter, setPickFilter] = useState<PickFilter>("all");
+  
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
@@ -169,27 +124,6 @@ export default function AIPredictions() {
           const timeB = b.match_time || "99:99";
           return timeA.localeCompare(timeB);
         }
-        case "risk": {
-          const riskOrder = { low: 0, medium: 1, high: 2 };
-          const riskA = riskOrder[a.risk_level as keyof typeof riskOrder] ?? 1;
-          const riskB = riskOrder[b.risk_level as keyof typeof riskOrder] ?? 1;
-          return riskA - riskB;
-        }
-        case "over25": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.over25 - pa.over25;
-        }
-        case "under25": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.under25 - pa.under25;
-        }
-        case "btts": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.bttsYes - pa.bttsYes;
-        }
         default:
           return 0;
       }
@@ -206,10 +140,6 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    // Filter by pick type
-    if (pickFilter !== "all") {
-      result = result.filter((p) => matchesPickFilter(p, pickFilter));
-    }
     
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
@@ -234,7 +164,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, pickFilter]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
@@ -245,22 +175,6 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
-  // Top 5 Picks: ranked by confidence + value signal from analysis
-  const topPicks = useMemo(() => {
-    const scored = predictions
-      .filter((p) => p.confidence != null && p.confidence >= 50)
-      .map((p) => {
-        let valueScore = 0;
-        if (p.analysis?.includes("SUPER VALUE")) valueScore = 20;
-        else if (p.analysis?.includes("STRONG VALUE BET")) valueScore = 15;
-        else if (p.analysis?.includes("Value Bet")) valueScore = 10;
-        else if (p.analysis?.includes("Value edge")) valueScore = 5;
-        return { prediction: p, score: (p.confidence ?? 0) + valueScore };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
-    return scored.map((s) => s.prediction);
-  }, [predictions]);
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
@@ -273,7 +187,7 @@ export default function AIPredictions() {
   useEffect(() => {
     setVisibleFeaturedCount(INITIAL_COUNT);
     setVisibleRegularCount(INITIAL_COUNT);
-  }, [day, tierFilter, pickFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
+  }, [day, tierFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
@@ -540,10 +454,6 @@ export default function AIPredictions() {
               <SelectContent className="bg-card border-border">
                 <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
                 <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff Time</SelectItem>
-                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk Level</SelectItem>
-                <SelectItem value="over25" className="text-[10px] md:text-xs">⬆️ Over 2.5 %</SelectItem>
-                <SelectItem value="under25" className="text-[10px] md:text-xs">⬇️ Under 2.5 %</SelectItem>
-                <SelectItem value="btts" className="text-[10px] md:text-xs">⚡ BTTS %</SelectItem>
               </SelectContent>
             </Select>
             <Toggle
@@ -621,102 +531,6 @@ export default function AIPredictions() {
             </div>
           </Card>
 
-          {/* Best Pick Filter */}
-          <div className="flex flex-wrap gap-1.5 md:gap-2">
-            {([
-              { value: "all", label: "All Picks", icon: "🎯" },
-              { value: "value", label: "Value Bets", icon: "🔥" },
-              { value: "home", label: "Home Win", icon: "🏠" },
-              { value: "away", label: "Away Win", icon: "✈️" },
-              { value: "draw", label: "Draw", icon: "🤝" },
-              { value: "over25", label: "Over 2.5", icon: "⬆️" },
-              { value: "under25", label: "Under 2.5", icon: "⬇️" },
-              { value: "btts", label: "BTTS", icon: "⚡" },
-            ] as { value: PickFilter; label: string; icon: string }[]).map((item) => {
-              const count = item.value === "all"
-                ? predictions.length
-                : countByFilter(predictions, item.value as PickFilter);
-              return (
-                <Button
-                  key={item.value}
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-7 md:h-8 px-2 md:px-3 text-[10px] md:text-xs rounded-full transition-all duration-200 gap-1",
-                    pickFilter === item.value
-                      ? item.value === "value"
-                        ? "bg-gradient-to-r from-orange-500/25 to-red-500/25 text-orange-400 border border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]"
-                        : "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
-                      : item.value === "value"
-                        ? "bg-orange-500/10 text-orange-400 border border-orange-500/30 hover:border-orange-500/60"
-                        : "bg-card/60 text-muted-foreground border border-border hover:text-foreground hover:border-primary/40"
-                  )}
-                  onClick={() => setPickFilter(item.value)}
-                >
-                  <span>{item.icon}</span>
-                  {item.label}
-                  <span className="text-[8px] md:text-[9px] opacity-70">({count})</span>
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* 🔥 Top 5 AI Picks Today */}
-          {topPicks.length > 0 && tierFilter === "all" && pickFilter === "all" && !searchQuery && !selectedLeague && !showFavoritesOnly && (
-            <Card className="bg-gradient-to-br from-orange-500/10 via-card to-red-500/5 border-orange-500/20 overflow-hidden">
-              <CardContent className="p-3 md:p-4">
-                <div className="flex items-center gap-1.5 mb-2.5 md:mb-3">
-                  <span className="text-base">🔥</span>
-                  <h2 className="text-sm md:text-base font-bold text-foreground">Top 5 AI Picks {day === "today" ? "Today" : "Tomorrow"}</h2>
-                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] px-1.5 py-0.5 rounded ml-auto">
-                    BEST VALUE
-                  </Badge>
-                </div>
-                <div className="space-y-1.5">
-                  {topPicks.map((p, i) => {
-                    const hasSuperValue = p.analysis?.includes("SUPER VALUE");
-                    const hasStrongValue = p.analysis?.includes("STRONG VALUE BET");
-                    const hasValue = p.analysis?.includes("Value Bet");
-                    return (
-                      <div key={p.id} onClick={() => {
-                        const el = document.getElementById(`prediction-${p.id}`);
-                        if (el) {
-                          el.scrollIntoView({ behavior: "smooth", block: "center" });
-                          el.classList.add("ring-2", "ring-orange-500/50");
-                          setTimeout(() => el.classList.remove("ring-2", "ring-orange-500/50"), 2000);
-                        }
-                      }} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/50 hover:border-orange-500/30 transition-colors cursor-pointer">
-                        <span className="text-sm font-bold text-orange-400 w-5 text-center">#{i + 1}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] md:text-xs font-medium text-foreground truncate">
-                            {p.home_team} vs {p.away_team}
-                          </p>
-                          <p className="text-[9px] md:text-[10px] text-muted-foreground truncate">
-                            {p.league} • {p.match_time?.slice(0, 5)} • Best: {p.prediction}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          {hasSuperValue && <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 text-[7px] px-1 py-0 font-bold rounded">🔥 SUPER</Badge>}
-                          {!hasSuperValue && hasStrongValue && <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[7px] px-1 py-0 rounded">🔥 STRONG</Badge>}
-                          {!hasSuperValue && !hasStrongValue && hasValue && <Badge className="bg-orange-500/10 text-orange-400/80 border-orange-500/20 text-[7px] px-1 py-0 rounded">🔥</Badge>}
-                          <Badge className={cn(
-                            "text-[8px] px-1.5 py-0.5 font-bold rounded",
-                            getPredictionTier(p) === "premium"
-                              ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
-                              : getPredictionTier(p) === "pro"
-                              ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                              : "bg-teal-500/20 text-teal-400 border-teal-500/30"
-                          )}>
-                            {p.confidence}%
-                          </Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {featuredPredictions.length > 0 && (
             <div>

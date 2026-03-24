@@ -2,18 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
-  deriveMarkets, 
-  getBadgeStyles, 
-  getBadgeLabel, 
-  getRiskLevelColor,
   calculateGoalMarketProbs,
   getBestMarketProbability,
 } from "../utils/marketDerivation";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, Flame, CheckCircle } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
-/** Determine the best pick across all markets with an icon, using Poisson data */
+/** Determine the best pick across all markets */
 function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
@@ -38,43 +34,6 @@ function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   return candidates;
 }
 
-/** Detect Value Bet: best pick ≥72% AND edge over 2nd best ≥12% */
-export function isValueBet(prediction: AIPrediction): boolean {
-  const c = getBestPickCandidates(prediction);
-  if (c.length < 2) return false;
-  return c[0].conf >= 72 && (c[0].conf - c[1].conf) >= 12;
-}
-
-/** Generate a short reason why this Best Pick was chosen */
-function getBestPickReason(prediction: AIPrediction): string {
-  const candidates = getBestPickCandidates(prediction);
-  if (candidates.length < 2) return "";
-  const best = candidates[0];
-  const second = candidates[1];
-  const edge = best.conf - second.conf;
-  const probs = calculateGoalMarketProbs(prediction);
-
-  if (best.label === "Over 2.5 Goals") {
-    return `High goal output expected — ${probs.over25}% chance of 3+ goals. ${edge}pp edge over next market.`;
-  }
-  if (best.label === "Under 2.5 Goals") {
-    return `Low-scoring profiles — ${probs.under25}% probability of fewer than 3 goals.`;
-  }
-  if (best.label === "BTTS Yes") {
-    return `Both teams score regularly — ${probs.bttsYes}% chance both find the net.`;
-  }
-  if (best.label === "BTTS No") {
-    return `At least one side struggles to score — ${probs.bttsNo}% clean sheet probability.`;
-  }
-  if (best.label === "Draw") {
-    return `Evenly matched teams — ${best.conf}% draw probability.`;
-  }
-
-  const isHome = best.label.includes(prediction.home_team);
-  const winPct = isHome ? prediction.home_win : prediction.away_win;
-  return `Dominant ${winPct}% win probability — ${edge}pp clear of any other market.`;
-}
-
 interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
@@ -82,47 +41,31 @@ interface Props {
 }
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
-  const markets = deriveMarkets(prediction);
   const picks = getBestPickCandidates(prediction);
   const bestPick = picks[0];
-  const secondPick = picks[1];
   const bestProb = bestPick.conf;
-
-  // Get strong secondary markets (≥60% and not the same as best pick)
-  const strongSecondary = picks.filter((p, i) => i > 0 && p.conf >= 60).slice(0, 2);
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* AI Guidance Badge + Risk */}
-      <div className="flex items-center justify-between">
-        <Badge className={cn("text-[10px] md:text-xs rounded-lg", getBadgeStyles(markets.guidance.badge))}>
-          {getBadgeLabel(markets.guidance.badge)}
-        </Badge>
-        {prediction.risk_level && (
-          <Badge className={cn("text-[10px] md:text-xs capitalize rounded-lg", getRiskLevelColor(prediction.risk_level))}>
-            <Shield className="w-2.5 md:w-3 h-2.5 md:h-3 mr-0.5 md:mr-1" />
-            {prediction.risk_level}
-          </Badge>
-        )}
-      </div>
-
       {/* ===== BEST PICK — HERO SECTION ===== */}
       {hasAccess ? (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
-                {displayTier === "free" ? "Safe Pick" : displayTier === "pro" ? "🔥 Best Pick" : "⭐ Best Pick"}
-              </span>
-            </div>
-            {isValueBet(prediction) && displayTier !== "free" && (
-              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1.5 py-0.5 font-semibold rounded-lg">
-                <Flame className="w-2.5 h-2.5 mr-0.5" />
-                Value
-              </Badge>
-            )}
+          <div className="flex items-center gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+              Best Pick
+            </span>
+            <Badge className={cn(
+              "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
+              displayTier === "premium" 
+                ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30" 
+                : displayTier === "pro" 
+                ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+            )}>
+              {displayTier === "premium" ? "PREMIUM" : displayTier === "pro" ? "PRO" : "FREE"}
+            </Badge>
           </div>
 
           {/* Pick Name — Large */}
@@ -155,10 +98,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             />
           </div>
 
-          {/* Best Pick Reason — PRO and PREMIUM */}
-          {displayTier !== "free" && (
-            <p className="text-[10px] md:text-xs text-muted-foreground/80 leading-relaxed">
-              {getBestPickReason(prediction)}
+          {/* Predicted Score */}
+          {prediction.predicted_score && (
+            <p className="text-[10px] md:text-xs text-muted-foreground/80">
+              Predicted Score: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
             </p>
           )}
         </div>
@@ -174,31 +117,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           <div className="flex items-end justify-between">
             <div className="text-base md:text-lg font-bold text-white blur-sm select-none">? ? ?</div>
             <div className="text-2xl md:text-3xl font-extrabold text-white blur-sm select-none">??%</div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== STRONG SECONDARY MARKETS — PRO/PREMIUM only ===== */}
-      {hasAccess && displayTier !== "free" && strongSecondary.length > 0 && (
-        <div className="space-y-1.5">
-          <span className="text-[9px] md:text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-            Also strong
-          </span>
-          <div className="grid grid-cols-2 gap-1.5 md:gap-2">
-            {strongSecondary.map((pick, i) => (
-              <div key={i} className="bg-card/40 border border-border/50 rounded-lg p-2 md:p-2.5 flex items-center gap-2">
-                {pick.icon}
-                <div className="min-w-0">
-                  <div className="text-[10px] md:text-xs font-semibold text-foreground truncate">{pick.label}</div>
-                  <div className={cn(
-                    "text-sm md:text-base font-bold tabular-nums",
-                    pick.conf >= 70 ? "text-green-400" : "text-amber-400"
-                  )}>
-                    {pick.conf}%
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       )}
