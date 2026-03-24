@@ -1887,8 +1887,9 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === GUARANTEED TIER DISTRIBUTION WITH MINIMUM CONFIDENCE ===
-  // Sort by confidence descending (already sorted from query)
+  // === SIMPLE TIER DISTRIBUTION ===
+  // Tier is now determined on frontend by best market probability (Poisson).
+  // Backend just marks is_premium for the top-confidence predictions as a hint.
   const sorted = allPredictions
     .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
     .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
@@ -1899,39 +1900,14 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // MINIMUM CONFIDENCE THRESHOLDS - predictions MUST meet these to be in a tier
-  const TIER_MIN_CONFIDENCE_PREMIUM = 75;
-  const TIER_MIN_CONFIDENCE_PRO = 65;
-
-  // TARGET COUNTS (soft targets, only if confidence threshold is met)
-  const PREMIUM_TARGET = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
-  const PRO_TARGET = Math.min(15, Math.max(5, Math.ceil(total * 0.30)));
-
-  // Step 1: Premium = top matches that have confidence >= 75%, up to target
-  const premiumEligible = sorted.filter((p: any) => (p.confidence ?? 0) >= TIER_MIN_CONFIDENCE_PREMIUM);
-  const premiumPreds = premiumEligible.slice(0, PREMIUM_TARGET);
-  const premiumIdSet = new Set(premiumPreds.map((p: any) => p.id));
-
-  // Step 2: Pro = next matches (not already premium) with confidence >= 65%, up to target
-  const proEligible = sorted.filter((p: any) => !premiumIdSet.has(p.id) && (p.confidence ?? 0) >= TIER_MIN_CONFIDENCE_PRO);
-  const proPreds = proEligible.slice(0, PRO_TARGET);
-  const proIdSet = new Set(proPreds.map((p: any) => p.id));
-
-  // Step 3: Rest = Free (everything not premium or pro)
-  const freePreds = sorted.filter((p: any) => !premiumIdSet.has(p.id) && !proIdSet.has(p.id));
-
+  // Mark top 10% as is_premium hint (frontend may override with market probability)
+  const premiumCount = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
+  const premiumPreds = sorted.slice(0, premiumCount);
   const premiumIds = premiumPreds.map((p: any) => p.id);
-  const proIds = proPreds.map((p: any) => p.id);
-  const freeIds = freePreds.map((p: any) => p.id);
 
-  const premiumMinConf = premiumPreds.length > 0 ? premiumPreds[premiumPreds.length - 1].confidence : 0;
-  const proMinConf = proPreds.length > 0 ? proPreds[proPreds.length - 1].confidence : 0;
-
-  console.log(`\n=== TIER DISTRIBUTION (with min confidence thresholds) ===`);
-  console.log(`Total eligible: ${total}`);
-  console.log(`PREMIUM: ${premiumIds.length} (min conf: ${premiumMinConf}, threshold: ≥${TIER_MIN_CONFIDENCE_PREMIUM})`);
-  console.log(`PRO: ${proIds.length} (min conf: ${proMinConf}, threshold: ≥${TIER_MIN_CONFIDENCE_PRO})`);
-  console.log(`FREE: ${freeIds.length}`);
+  console.log(`\n=== TIER DISTRIBUTION (simple) ===`);
+  console.log(`Total: ${total}, Premium hint: ${premiumIds.length}`);
+  console.log(`Frontend uses best market probability: 85%+ Premium, 75-84% Pro, rest Free`);
 
   // Reset all to not premium for the two dates
   const { error: resetError } = await supabase
@@ -1955,7 +1931,7 @@ async function assignTiers(
     }
   }
 
-  return { free: freeIds.length, pro: proIds.length, premium: premiumIds.length };
+  return { free: total - premiumIds.length, pro: 0, premium: premiumIds.length };
 }
 
 async function markPredictionLocked(
