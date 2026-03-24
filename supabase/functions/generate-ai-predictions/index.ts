@@ -1341,14 +1341,17 @@ function generateAnalysisV2(params: {
     sections.push(`\n${homeTeamName} has the edge in recent form and quality. Home advantage boosts the case. Model: ${homeWin}% vs ${awayWin}%.`);
   } else if (prediction === "2") {
     sections.push(`\n${awayTeamName} shows stronger signals even away. Model: ${awayWin}% vs ${homeWin}%.`);
-  } else if (prediction === "Over 2.5") {
-    sections.push(`\nGoal expectation: ${xgTotal ?? "2.5+"} total. Both attacks productive for Over 2.5.`);
-  } else if (prediction === "Under 2.5") {
-    sections.push(`\nLow xG (${xgTotal ?? "<2.5"}). Defensive profiles favor Under 2.5.`);
+  } else if (prediction.includes("Over")) {
+    sections.push(`\nGoal expectation: ${xgTotal ?? "2.5+"} total. Both attacks productive for ${prediction}.`);
+  } else if (prediction.includes("Under")) {
+    sections.push(`\nLow xG (${xgTotal ?? "<2.5"}). Defensive profiles favor ${prediction}.`);
   } else if (prediction === "BTTS Yes") {
     sections.push(`\nBoth teams scoring regularly. xG: ${homeXg?.toFixed(1) ?? "?"}-${awayXg?.toFixed(1) ?? "?"}.`);
   } else if (prediction === "BTTS No") {
     sections.push(`\nClean sheet expected. Defensive form drives BTTS No.`);
+  } else if (prediction.startsWith("DC")) {
+    const dcLabel = prediction.replace("DC ", "");
+    sections.push(`\nDouble Chance ${dcLabel} offers safety: combined probability ${bestProb}%. Model: ${homeWin}%/${draw}%/${awayWin}%.`);
   } else {
     sections.push(`\nBalanced: Draw ${draw}%, split ${homeWin}%/${awayWin}%.`);
   }
