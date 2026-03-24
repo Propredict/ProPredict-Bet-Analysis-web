@@ -10,11 +10,13 @@ const corsHeaders = {
 };
 
 // ============ TIER CRITERIA ============
-// FREE: confidence < 65%
-// PRO (exclusive): confidence >= 65% AND < 85%
+// HIDDEN: confidence < 60% (not saved/displayed)
+// FREE: confidence >= 60% AND < 75%
+// PRO (exclusive): confidence >= 75% AND < 85%
 // PREMIUM: confidence >= 85%
-const FREE_MAX_CONFIDENCE = 64;
-const PRO_MIN_CONFIDENCE = 65;
+const MIN_DISPLAY_CONFIDENCE = 60;
+const FREE_MAX_CONFIDENCE = 74;
+const PRO_MIN_CONFIDENCE = 75;
 const PRO_MAX_CONFIDENCE = 84;
 const PREMIUM_MIN_CONFIDENCE = 85;
 
@@ -2200,12 +2202,16 @@ async function handleBatchRegenerate(
           };
         });
 
+        // Filter out predictions below minimum display confidence (60%)
+        const displayInserts = inserts.filter((p: any) => p.confidence >= MIN_DISPLAY_CONFIDENCE);
+        console.log(`[DEBUG] Filtered ${inserts.length - displayInserts.length} predictions below ${MIN_DISPLAY_CONFIDENCE}% confidence`);
+
         const CHUNK_SIZE = 100;
         let totalInserted = 0;
         let insertErrors: string[] = [];
         
-        for (let i = 0; i < inserts.length; i += CHUNK_SIZE) {
-          const chunk = inserts.slice(i, i + CHUNK_SIZE);
+        for (let i = 0; i < displayInserts.length; i += CHUNK_SIZE) {
+          const chunk = displayInserts.slice(i, i + CHUNK_SIZE);
           const { error: insertError, data: insertData } = await supabase.from("ai_predictions").insert(chunk).select("id");
           if (insertError) {
             console.error(`[DEBUG] Insert chunk ${i}-${i + chunk.length} error:`, insertError.message, insertError.details, insertError.hint);
@@ -2215,7 +2221,7 @@ async function handleBatchRegenerate(
           }
         }
         
-        console.log(`[DEBUG] Insert complete for ${matchDate}: ${totalInserted}/${inserts.length} rows. Errors: ${insertErrors.length}`);
+        console.log(`[DEBUG] Insert complete for ${matchDate}: ${totalInserted}/${displayInserts.length} rows (${inserts.length - displayInserts.length} filtered <${MIN_DISPLAY_CONFIDENCE}%). Errors: ${insertErrors.length}`);
         if (insertErrors.length > 0) {
           console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
         }
