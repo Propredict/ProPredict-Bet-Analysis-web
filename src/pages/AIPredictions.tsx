@@ -239,6 +239,23 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
+  // Top 5 Picks: ranked by confidence + value signal from analysis
+  const topPicks = useMemo(() => {
+    const scored = predictions
+      .filter((p) => p.confidence != null && p.confidence >= 60)
+      .map((p) => {
+        let valueScore = 0;
+        if (p.analysis?.includes("SUPER VALUE")) valueScore = 20;
+        else if (p.analysis?.includes("STRONG VALUE BET")) valueScore = 15;
+        else if (p.analysis?.includes("Value Bet")) valueScore = 10;
+        else if (p.analysis?.includes("Value edge")) valueScore = 5;
+        return { prediction: p, score: (p.confidence ?? 0) + valueScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    return scored.map((s) => s.prediction);
+  }, [predictions]);
+
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
   const LOAD_MORE_COUNT = 12;
