@@ -359,6 +359,81 @@ export type Database = {
         }
         Relationships: []
       }
+      match_previews: {
+        Row: {
+          away_form: string | null
+          away_team: string
+          away_win_prob: number | null
+          confidence_score: number
+          created_at: string | null
+          draw_prob: number | null
+          h2h_summary: string | null
+          home_form: string | null
+          home_team: string
+          home_win_prob: number | null
+          id: string
+          key_stats: Json | null
+          league: string | null
+          match_date: string | null
+          match_id: string
+          match_time: string | null
+          predicted_score: string | null
+          preview_analysis: string | null
+          rank: number | null
+          risk_rating: string | null
+          tactical_notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          away_form?: string | null
+          away_team: string
+          away_win_prob?: number | null
+          confidence_score?: number
+          created_at?: string | null
+          draw_prob?: number | null
+          h2h_summary?: string | null
+          home_form?: string | null
+          home_team: string
+          home_win_prob?: number | null
+          id?: string
+          key_stats?: Json | null
+          league?: string | null
+          match_date?: string | null
+          match_id: string
+          match_time?: string | null
+          predicted_score?: string | null
+          preview_analysis?: string | null
+          rank?: number | null
+          risk_rating?: string | null
+          tactical_notes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          away_form?: string | null
+          away_team?: string
+          away_win_prob?: number | null
+          confidence_score?: number
+          created_at?: string | null
+          draw_prob?: number | null
+          h2h_summary?: string | null
+          home_form?: string | null
+          home_team?: string
+          home_win_prob?: number | null
+          id?: string
+          key_stats?: Json | null
+          league?: string | null
+          match_date?: string | null
+          match_id?: string
+          match_time?: string | null
+          predicted_score?: string | null
+          preview_analysis?: string | null
+          rank?: number | null
+          risk_rating?: string | null
+          tactical_notes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       match_scores_cache: {
         Row: {
           away_score: number | null
