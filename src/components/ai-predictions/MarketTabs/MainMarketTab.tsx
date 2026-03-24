@@ -41,7 +41,7 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
   };
 }
 
-/** Determine the best pick across all markets */
+/** Determine the best pick across all markets (used for Pro/Premium) */
 function getBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
   const rawProbs = getAllRawProbs(prediction);
@@ -54,22 +54,20 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
   };
 }
 
-/** Get 2 picks for Free tier: best 1X2 + best Over/Under 2.5 */
-function getFreeDualPicks(prediction: AIPrediction): PickCandidate[] {
+/** 
+ * Free tier pick: always use the best 1X2 market (the match favorite).
+ * This avoids monotonous "Under 2.5" on every card.
+ */
+function getFreePick(prediction: AIPrediction): PickCandidate {
   const rawProbs = getAllRawProbs(prediction);
-
-  // Best 1X2
-  const best1x2Type = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
-  const best1x2Meta = MARKET_META[best1x2Type];
-
-  // Best goal market (Over or Under 2.5)
-  const bestGoalType = GOAL_MARKETS.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, GOAL_MARKETS[0]);
-  const bestGoalMeta = MARKET_META[bestGoalType];
-
-  return [
-    { label: best1x2Meta.getLabel(prediction), conf: rawProbs[best1x2Type], icon: best1x2Meta.icon, type: best1x2Type },
-    { label: bestGoalMeta.getLabel(prediction), conf: rawProbs[bestGoalType], icon: bestGoalMeta.icon, type: bestGoalType },
-  ];
+  const best1x2 = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
+  const meta = MARKET_META[best1x2];
+  return {
+    label: meta.getLabel(prediction),
+    conf: rawProbs[best1x2],
+    icon: meta.icon,
+    type: best1x2,
+  };
 }
 
 interface Props {
