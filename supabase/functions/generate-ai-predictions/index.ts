@@ -828,19 +828,19 @@ function sigmoid(x: number) {
  * This prevents overconfident predictions while preserving relative ordering.
  */
 function calibrateConfidence(raw: number): number {
-  if (raw <= 55) return raw;
+  if (raw <= 58) return raw;
   
-  // Map raw confidence through a dampening curve
-  // Anchor points: 60→58, 70→67, 80→75, 85→80, 90→86
-  const dampened = 55 + (raw - 55) * 0.82;
+  // Gentler dampening: preserve more of the calculated confidence
+  // Anchor points: 60→59, 65→63, 70→68, 75→73, 80→77, 85→82, 90→87
+  const dampened = 58 + (raw - 58) * 0.90;
   
-  // For very high values, apply additional dampening
-  if (raw >= 80) {
-    const excess = raw - 80;
-    return Math.round(clamp(dampened + excess * 0.12, 55, 92));
+  // For very high values, apply mild additional dampening
+  if (raw >= 85) {
+    const excess = raw - 85;
+    return Math.round(clamp(dampened - excess * 0.15, 55, 94));
   }
   
-  return Math.round(clamp(dampened, 50, 92));
+  return Math.round(clamp(dampened, 50, 94));
 }
 
 /**
@@ -1192,12 +1192,12 @@ function calculatePrediction(
 
   let confidence: number;
   if (isBalanced) {
-    confidence = 60 + clamp((45 - bestProb) * 0.3, 0, 6); // Was 56 base
+    confidence = 62 + clamp((45 - bestProb) * 0.3, 0, 6); // Balanced matches get 62-68
   } else {
     const edge = clamp((bestProb - 45) / 25, 0, 1);
-    confidence = 62 + edge * 18; // Was 58 + edge*16 → now reaches ~80 at bestProb=70
+    confidence = 64 + edge * 20; // Reaches ~84 at bestProb=70
     if (hasMinMatches && bestProb >= 65 && signalStrength >= 0.6) {
-      confidence += clamp((bestProb - 65) / 10, 0, 1) * 14; // More generous boost
+      confidence += clamp((bestProb - 65) / 10, 0, 1) * 12;
     }
   }
 
@@ -1266,13 +1266,11 @@ function calculatePrediction(
   
   confidence = calibrateConfidence(confidence);
 
-  // === 9. VALUE + CONFIDENCE COMBO FINAL GATE ===
-  // FINAL PICK must have: confidence ≥ 60, value ≥ 8% (if odds available), no conflict
-  // If NOT → push below display threshold (effectively NO BET)
-  if (odds && valuePercent < 5) {
-    // Only penalize when value is really bad (< 5%), not 8%
-    const valuePenalty = Math.min(Math.round((5 - valuePercent) * 1.0), 6); // Was *1.5 max 12
-    confidence = Math.max(confidence - valuePenalty, 50);
+  // === 9. VALUE GATE — only penalize truly negative value ===
+  // Only penalize when AI pick has NEGATIVE value vs bookmaker (valuePercent < 0)
+  if (odds && valuePercent < 0) {
+    const valuePenalty = Math.min(Math.round(Math.abs(valuePercent) * 0.5), 4);
+    confidence = Math.max(confidence - valuePenalty, 52);
   }
 
   // Check strong/super value bet status with final confidence
