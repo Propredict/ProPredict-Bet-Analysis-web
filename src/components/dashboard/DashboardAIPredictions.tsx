@@ -64,7 +64,7 @@ function PredictionCard({ prediction, onClick }: { prediction: any; onClick: () 
             <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/20 text-[10px] px-2">
               {prediction.prediction}
             </Badge>
-            {confidence >= 83 && (
+            {confidence >= 75 && (
               <div className="flex items-center gap-0.5 text-accent">
                 <Zap className="h-3 w-3" />
                 <span className="text-[9px] font-semibold">PREMIUM</span>

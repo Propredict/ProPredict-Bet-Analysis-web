@@ -26,6 +26,8 @@ interface Props {
   isSavingFavorite?: boolean;
   onToggleFavorite?: (matchId: string) => void;
   onGoPremium: () => void;
+  /** Override tier from parent (dynamic distribution) */
+  overrideTier?: "free" | "pro" | "premium";
   /** Unlock handler passed from parent (page-level useUnlockHandler) */
   onUnlockClick?: (contentType: "tip", contentId: string, tier: ContentTier) => void;
   /** Whether this specific card is currently unlocking (ad playing) */
@@ -41,6 +43,7 @@ const AIPredictionCardInner = ({
   isSavingFavorite = false,
   onToggleFavorite,
   onGoPremium,
+  overrideTier,
   onUnlockClick,
   isUnlocking = false,
 }: Props) => {
@@ -49,10 +52,9 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Determine prediction tier based on confidence thresholds
-  // FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
-  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 83) || (prediction.is_premium && prediction.confidence == null);
-  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 73;
+  // Use overrideTier from parent (dynamic distribution) or fallback to is_premium flag
+  const isPremiumTier = overrideTier === "premium" || (!overrideTier && prediction.is_premium === true);
+  const isProTier = overrideTier === "pro" || (!overrideTier && !isPremiumTier && (prediction.confidence ?? 0) >= 73);
   const isDailyTier = !isPremiumTier && !isProTier;
   const displayTier: "free" | "pro" | "premium" = isPremiumTier ? "premium" : isProTier ? "pro" : "free";
 

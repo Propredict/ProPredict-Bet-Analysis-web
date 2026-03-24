@@ -116,12 +116,23 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier rules (must match backend tier thresholds)
-  // HIDDEN: <60% (filtered out below), FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
+  // Dynamic tier distribution: top 10% → Premium, next 30% → Pro, rest → Free
+  // Computed from all visible predictions sorted by confidence
+  const tierCutoffs = useMemo(() => {
+    const sorted = [...predictions].filter(p => (p.confidence ?? 0) >= 60).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    const total = sorted.length;
+    const premiumCount = Math.max(1, Math.ceil(total * 0.10));
+    const proCount = Math.max(1, Math.ceil(total * 0.30));
+    const premiumMinConf = sorted[premiumCount - 1]?.confidence ?? 83;
+    const proMinConf = sorted[premiumCount + proCount - 1]?.confidence ?? 73;
+    return { premiumMinConf, proMinConf };
+  }, [predictions]);
+
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    if (prediction.is_premium && prediction.confidence == null) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 83) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 73) return "pro";
+    if (prediction.is_premium) return "premium";
+    const conf = prediction.confidence ?? 0;
+    if (conf >= tierCutoffs.premiumMinConf) return "premium";
+    if (conf >= tierCutoffs.proMinConf) return "pro";
     return "free";
   };
 
@@ -695,9 +706,9 @@ export default function AIPredictions() {
                           {!hasSuperValue && !hasStrongValue && hasValue && <Badge className="bg-orange-500/10 text-orange-400/80 border-orange-500/20 text-[7px] px-1 py-0 rounded">🔥</Badge>}
                           <Badge className={cn(
                             "text-[8px] px-1.5 py-0.5 font-bold rounded",
-                            (p.confidence ?? 0) >= 83
+                            getPredictionTier(p) === "premium"
                               ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
-                              : (p.confidence ?? 0) >= 73
+                              : getPredictionTier(p) === "pro"
                               ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
                               : "bg-teal-500/20 text-teal-400 border-teal-500/30"
                           )}>
@@ -724,6 +735,7 @@ export default function AIPredictions() {
                   return (
                     <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
+                        overrideTier={getPredictionTier(prediction)}
                         prediction={prediction}
                         isAdmin={isAdmin}
                         isPremiumUser={isPremiumUser}
@@ -803,6 +815,7 @@ export default function AIPredictions() {
                   return (
                     <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
+                        overrideTier={getPredictionTier(prediction)}
                         prediction={prediction}
                         isAdmin={isAdmin}
                         isPremiumUser={isPremiumUser}
