@@ -146,9 +146,14 @@ export default function MatchPreviews() {
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
     const isLowRisk = (p: typeof predictions[0]) => (p.confidence ?? 0) >= 75;
+    const isPending = (p: typeof predictions[0]) =>
+      (p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending"));
+
+    // Filter out placeholder/pending predictions that AI hasn't processed yet
+    const processed = predictions.filter((p) => !isPending(p));
 
     // 1. Low-risk from quality leagues
-    const qualityLow = predictions
+    const qualityLow = processed
       .filter((p) => isQualityLeague(p.league, p.home_team) && isLowRisk(p));
 
     // 2. Low-risk from ANY league (fallback)
