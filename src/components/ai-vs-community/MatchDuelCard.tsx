@@ -51,7 +51,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
   }, [prediction.match_date, prediction.match_time]);
-  const { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
+  const { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, limitReached } = useArenaPrediction(
     prediction.match_id, seasonId, matchTimestamp,
     { dailyUsed, dailyLimit, tier: userTier }
   );
