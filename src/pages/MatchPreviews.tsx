@@ -97,15 +97,24 @@ export default function MatchPreviews() {
     return null;
   }
 
-  // Guaranteed top 30 by confidence — no hard cutoff
+  // Guaranteed top 30 — Low Risk first, then Medium, then High Risk
   const topMatches = useMemo(() => {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
 
     const pool = predictions.filter(p => !isPending(p));
 
-    // Sort: quality leagues first at same confidence, then by confidence desc
+    // Risk tier: Low (>=80) > Medium (>=65) > High (<65)
+    function riskTier(conf: number | null): number {
+      if (!conf) return 3;
+      if (conf >= 80) return 1; // Low Risk
+      if (conf >= 65) return 2; // Medium Risk
+      return 3; // High Risk
+    }
+
     pool.sort((a, b) => {
+      const tierDiff = riskTier(a.confidence) - riskTier(b.confidence);
+      if (tierDiff !== 0) return tierDiff;
       const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
       if (confDiff !== 0) return confDiff;
       return getLeaguePriority(a.league) - getLeaguePriority(b.league);
