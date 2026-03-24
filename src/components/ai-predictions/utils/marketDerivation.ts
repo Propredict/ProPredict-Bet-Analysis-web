@@ -273,9 +273,20 @@ export function getRiskLevelColor(riskLevel: string | null) {
 }
 
 /**
- * Get the highest market probability for a prediction.
- * Checks 1X2 (normalized), Over/Under 2.5, BTTS — returns the best one.
- * This is the SINGLE number used for tier assignment.
+ * Calibrate a raw probability to account for model conservatism.
+ * 1) Multiply by 1.2
+ * 2) Tiered boost: 65%+ gets +5%, 70%+ gets +8%
+ * 3) Cap at 92%
+ */
+function calibrate(raw: number): number {
+  let p = raw * 1.2;
+  if (p >= 70) p += 8;
+  else if (p >= 65) p += 5;
+  return Math.min(92, Math.round(p));
+}
+
+/**
+ * Get the highest market probability for a prediction (calibrated).
  */
 export function getBestMarketProbability(prediction: AIPrediction): number {
   const hw = prediction.home_win ?? 0;
@@ -288,7 +299,8 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
   const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
-  return Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
+  const rawBest = Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
+  return calibrate(rawBest);
 }
 
 /**
