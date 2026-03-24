@@ -50,9 +50,9 @@ const AIPredictionCardInner = ({
   const { isAndroidApp } = usePlatform();
 
   // Determine prediction tier based on confidence thresholds
-  // FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
-  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 85) || (prediction.is_premium && prediction.confidence == null);
-  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 75;
+  // FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
+  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 83) || (prediction.is_premium && prediction.confidence == null);
+  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 73;
   const isDailyTier = !isPremiumTier && !isProTier;
 
   // Map to content tier for useUserPlan
@@ -132,13 +132,20 @@ const AIPredictionCardInner = ({
                 PREMIUM
               </Badge>
             )}
-            {/* Value Bet badge - detected from analysis text */}
-            {prediction.analysis?.includes("STRONG VALUE BET") && (
+            {/* SUPER VALUE badge */}
+            {prediction.analysis?.includes("SUPER VALUE") && (
+              <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
+                🔥 SUPER VALUE
+              </Badge>
+            )}
+            {/* STRONG VALUE badge */}
+            {!prediction.analysis?.includes("SUPER VALUE") && prediction.analysis?.includes("STRONG VALUE BET") && (
               <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
                 🔥 STRONG VALUE
               </Badge>
             )}
-            {!prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
+            {/* Regular Value badge */}
+            {!prediction.analysis?.includes("SUPER VALUE") && !prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
               <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
                 🔥 Value
               </Badge>

@@ -117,11 +117,11 @@ export default function AIPredictions() {
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
   // Tier rules (must match backend tier thresholds)
-  // HIDDEN: <60% (filtered out below), FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
+  // HIDDEN: <60% (filtered out below), FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
     if (prediction.is_premium && prediction.confidence == null) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 85) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 75) return "pro";
+    if (prediction.confidence != null && prediction.confidence >= 83) return "premium";
+    if (prediction.confidence != null && prediction.confidence >= 73) return "pro";
     return "free";
   };
 
@@ -238,6 +238,23 @@ export default function AIPredictions() {
   const regularPredictions = useMemo(() => {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
+
+  // Top 5 Picks: ranked by confidence + value signal from analysis
+  const topPicks = useMemo(() => {
+    const scored = predictions
+      .filter((p) => p.confidence != null && p.confidence >= 60)
+      .map((p) => {
+        let valueScore = 0;
+        if (p.analysis?.includes("SUPER VALUE")) valueScore = 20;
+        else if (p.analysis?.includes("STRONG VALUE BET")) valueScore = 15;
+        else if (p.analysis?.includes("Value Bet")) valueScore = 10;
+        else if (p.analysis?.includes("Value edge")) valueScore = 5;
+        return { prediction: p, score: (p.confidence ?? 0) + valueScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    return scored.map((s) => s.prediction);
+  }, [predictions]);
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
@@ -637,6 +654,56 @@ export default function AIPredictions() {
               );
             })}
           </div>
+
+          {/* 🔥 Top 5 AI Picks Today */}
+          {topPicks.length > 0 && tierFilter === "all" && pickFilter === "all" && !searchQuery && !selectedLeague && !showFavoritesOnly && (
+            <Card className="bg-gradient-to-br from-orange-500/10 via-card to-red-500/5 border-orange-500/20 overflow-hidden">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex items-center gap-1.5 mb-2.5 md:mb-3">
+                  <span className="text-base">🔥</span>
+                  <h2 className="text-sm md:text-base font-bold text-foreground">Top 5 AI Picks {day === "today" ? "Today" : "Tomorrow"}</h2>
+                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] px-1.5 py-0.5 rounded ml-auto">
+                    BEST VALUE
+                  </Badge>
+                </div>
+                <div className="space-y-1.5">
+                  {topPicks.map((p, i) => {
+                    const hasSuperValue = p.analysis?.includes("SUPER VALUE");
+                    const hasStrongValue = p.analysis?.includes("STRONG VALUE BET");
+                    const hasValue = p.analysis?.includes("Value Bet");
+                    return (
+                      <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/50 hover:border-orange-500/30 transition-colors">
+                        <span className="text-sm font-bold text-orange-400 w-5 text-center">#{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] md:text-xs font-medium text-foreground truncate">
+                            {p.home_team} vs {p.away_team}
+                          </p>
+                          <p className="text-[9px] md:text-[10px] text-muted-foreground truncate">
+                            {p.league} • {p.match_time?.slice(0, 5)} • Best: {p.prediction}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {hasSuperValue && <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 text-[7px] px-1 py-0 font-bold rounded">🔥 SUPER</Badge>}
+                          {!hasSuperValue && hasStrongValue && <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[7px] px-1 py-0 rounded">🔥 STRONG</Badge>}
+                          {!hasSuperValue && !hasStrongValue && hasValue && <Badge className="bg-orange-500/10 text-orange-400/80 border-orange-500/20 text-[7px] px-1 py-0 rounded">🔥</Badge>}
+                          <Badge className={cn(
+                            "text-[8px] px-1.5 py-0.5 font-bold rounded",
+                            (p.confidence ?? 0) >= 83
+                              ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
+                              : (p.confidence ?? 0) >= 73
+                              ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                              : "bg-teal-500/20 text-teal-400 border-teal-500/30"
+                          )}>
+                            {p.confidence}%
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {featuredPredictions.length > 0 && (
             <div>

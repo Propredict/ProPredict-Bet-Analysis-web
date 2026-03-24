@@ -11,14 +11,14 @@ const corsHeaders = {
 
 // ============ TIER CRITERIA ============
 // HIDDEN: confidence < 60% (not saved/displayed)
-// FREE: confidence >= 60% AND < 75%
-// PRO (exclusive): confidence >= 75% AND < 85%
-// PREMIUM: confidence >= 85%
+// FREE: confidence >= 60% AND < 73%
+// PRO (exclusive): confidence >= 73% AND < 83%
+// PREMIUM: confidence >= 83%
 const MIN_DISPLAY_CONFIDENCE = 60;
-const FREE_MAX_CONFIDENCE = 74;
-const PRO_MIN_CONFIDENCE = 75;
-const PRO_MAX_CONFIDENCE = 84;
-const PREMIUM_MIN_CONFIDENCE = 85;
+const FREE_MAX_CONFIDENCE = 72;
+const PRO_MIN_CONFIDENCE = 73;
+const PRO_MAX_CONFIDENCE = 82;
+const PREMIUM_MIN_CONFIDENCE = 83;
 
 const PREMIUM_MAX_DRAWS = 1;
 const PREMIUM_MAX_COUNT = 10;
@@ -1266,13 +1266,15 @@ function calculatePrediction(
   // === 9. VALUE + CONFIDENCE COMBO FINAL GATE ===
   // FINAL PICK must have: confidence ≥ 60, value ≥ 8% (if odds available), no conflict
   // If NOT → push below display threshold (effectively NO BET)
-  if (odds && valuePercent < 5) {
-    // No value at all → strong penalty to hide
-    confidence = Math.min(confidence, 58);
+  if (odds && valuePercent < 8) {
+    // Low value → penalty proportional to how far below 8% we are
+    const valuePenalty = Math.min(Math.round((8 - valuePercent) * 1.5), 12);
+    confidence = Math.max(confidence - valuePenalty, 50);
   }
 
-  // Check strong value bet status with final confidence
+  // Check strong/super value bet status with final confidence
   const finalIsStrongValueBet = valuePercent >= 10 && confidence >= 75;
+  const finalIsSuperValueBet = valuePercent >= 12 && confidence >= 75;
 
   // === RISK ===
   let riskLevel: "low" | "medium" | "high";
@@ -1303,7 +1305,9 @@ function calculatePrediction(
   
   // Value bet reasoning
   if (odds && valuePercent !== 0) {
-    if (finalIsStrongValueBet) {
+    if (finalIsSuperValueBet) {
+      analysisReasons.push(`🔥 SUPER VALUE: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
+    } else if (finalIsStrongValueBet) {
       analysisReasons.push(`🔥 STRONG VALUE BET: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
     } else if (isValueBet) {
       analysisReasons.push(`🔥 Value Bet: +${Math.round(valuePercent)}% edge vs bookmaker`);
