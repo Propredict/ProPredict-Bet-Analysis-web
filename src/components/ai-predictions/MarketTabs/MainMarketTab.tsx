@@ -297,7 +297,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               <div className="flex-1">
                 <div className="text-[9px] md:text-[10px] text-muted-foreground/70 mb-0.5">Confidence</div>
                 <div className={cn(
-                  "text-2xl md:text-3xl font-extrabold tabular-nums",
+                  "text-lg md:text-xl font-bold tabular-nums",
                   confidence >= 75 ? "text-green-400" : confidence >= 65 ? "text-amber-400" : "text-orange-400"
                 )}>
                   {confidence}%
