@@ -2221,7 +2221,7 @@ async function handleBatchRegenerate(
           }
         }
         
-        console.log(`[DEBUG] Insert complete for ${matchDate}: ${totalInserted}/${inserts.length} rows. Errors: ${insertErrors.length}`);
+        console.log(`[DEBUG] Insert complete for ${matchDate}: ${totalInserted}/${displayInserts.length} rows (${inserts.length - displayInserts.length} filtered <${MIN_DISPLAY_CONFIDENCE}%). Errors: ${insertErrors.length}`);
         if (insertErrors.length > 0) {
           console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
         }
