@@ -116,33 +116,49 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Guaranteed tier distribution: Premium ≥3, Pro ≥5, rest Free
-  // Mirrors backend logic exactly
+  // Tier distribution with minimum confidence thresholds
+  // Premium requires ≥75%, Pro requires ≥65%, rest is Free
   const tierAssignment = useMemo(() => {
+    const TIER_MIN_PREMIUM = 75;
+    const TIER_MIN_PRO = 65;
+
     const sorted = [...predictions]
       .filter(p => (p.confidence ?? 0) >= 50)
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     const total = sorted.length;
     if (total === 0) return new Map<string, "free" | "pro" | "premium">();
 
-    const premiumCount = Math.min(
-      Math.min(10, Math.max(5, Math.ceil(total * 0.10))),
-      Math.max(3, Math.ceil(total * 0.10)),
-      total
-    );
-    const remaining = total - premiumCount;
-    const proCount = Math.min(
-      Math.max(15, Math.ceil(total * 0.30)),
-      Math.max(5, Math.ceil(total * 0.30)),
-      remaining
-    );
+    const premiumTarget = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
+    const proTarget = Math.min(15, Math.max(5, Math.ceil(total * 0.30)));
 
     const map = new Map<string, "free" | "pro" | "premium">();
-    sorted.forEach((p, i) => {
-      if (i < premiumCount) map.set(p.id!, "premium");
-      else if (i < premiumCount + proCount) map.set(p.id!, "pro");
-      else map.set(p.id!, "free");
-    });
+    const premiumIds = new Set<string>();
+    const proIds = new Set<string>();
+
+    // Premium: top matches with confidence ≥75%
+    for (const p of sorted) {
+      if (premiumIds.size >= premiumTarget) break;
+      if ((p.confidence ?? 0) >= TIER_MIN_PREMIUM) {
+        premiumIds.add(p.id!);
+        map.set(p.id!, "premium");
+      }
+    }
+
+    // Pro: next matches with confidence ≥65%
+    for (const p of sorted) {
+      if (proIds.size >= proTarget) break;
+      if (premiumIds.has(p.id!)) continue;
+      if ((p.confidence ?? 0) >= TIER_MIN_PRO) {
+        proIds.add(p.id!);
+        map.set(p.id!, "pro");
+      }
+    }
+
+    // Rest = Free
+    for (const p of sorted) {
+      if (!map.has(p.id!)) map.set(p.id!, "free");
+    }
+
     return map;
   }, [predictions]);
 
