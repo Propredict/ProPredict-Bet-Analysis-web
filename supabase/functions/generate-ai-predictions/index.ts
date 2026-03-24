@@ -976,22 +976,99 @@ function calculatePrediction(
   // === MATCH CONTEXT ENGINE ===
   const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId) : { confidenceBoost: 0, factors: [] };
 
-  // === BEST PICK SELECTION ===
-  const normalizedHomeWin = Math.round(homeWin * (100 / (homeWin + Math.max(awayWin, draw))));
-  const normalizedAwayWin = Math.round(awayWin * (100 / (awayWin + Math.max(homeWin, draw))));
-  const normalizedDraw = Math.round(draw * (100 / (draw + Math.max(homeWin, awayWin))));
-  const allPicks: { label: string; prob: number; rawProb: number }[] = [
-    { label: "1", prob: normalizedHomeWin, rawProb: homeWin },
-    { label: "2", prob: normalizedAwayWin, rawProb: awayWin },
-    { label: "X", prob: normalizedDraw, rawProb: draw },
-    { label: "Over 2.5", prob: adjustedOver25, rawProb: adjustedOver25 },
-    { label: "Under 2.5", prob: adjustedUnder25, rawProb: adjustedUnder25 },
-    { label: "BTTS Yes", prob: adjustedBttsYes, rawProb: adjustedBttsYes },
-    { label: "BTTS No", prob: adjustedBttsNo, rawProb: adjustedBttsNo },
+  // === SMART MARKET SELECTION ENGINE ===
+  // Extended markets: 1X2, Over/Under (1.5/2.5/3.5), BTTS, Double Chance
+  const dc1X = homeWin + draw; // Double Chance: Home or Draw
+  const dc12 = homeWin + awayWin; // Double Chance: Home or Away (no draw)
+  const dcX2 = awayWin + draw; // Double Chance: Away or Draw
+
+  // Market priority tiers (profitability ranking):
+  // HIGH ACCURACY: Under 3.5, Over 1.5, BTTS, Double Chance
+  // MEDIUM: Over 2.5, Under 2.5
+  // LOW (avoid): Exact score, Draw (unless strong signal)
+  const MARKET_PRIORITY: Record<string, number> = {
+    "Under 3.5": 1.08,   // HIGH accuracy boost
+    "Over 1.5": 1.06,
+    "BTTS Yes": 1.05,
+    "BTTS No": 1.05,
+    "DC 1X": 1.04,
+    "DC X2": 1.04,
+    "DC 12": 1.02,
+    "Over 2.5": 1.00,    // MEDIUM - baseline
+    "Under 2.5": 1.00,
+    "1": 0.97,            // 1X2 slightly penalized (harder to hit)
+    "2": 0.97,
+    "Over 3.5": 0.95,
+    "Under 1.5": 0.93,
+    "X": 0.85,            // Draw penalized (unpredictable)
+  };
+
+  const allMarkets: { label: string; prob: number; priorityProb: number }[] = [
+    { label: "1", prob: homeWin, priorityProb: homeWin * (MARKET_PRIORITY["1"] || 1) },
+    { label: "2", prob: awayWin, priorityProb: awayWin * (MARKET_PRIORITY["2"] || 1) },
+    { label: "X", prob: draw, priorityProb: draw * (MARKET_PRIORITY["X"] || 1) },
+    { label: "Over 2.5", prob: adjustedOver25, priorityProb: adjustedOver25 * (MARKET_PRIORITY["Over 2.5"] || 1) },
+    { label: "Under 2.5", prob: adjustedUnder25, priorityProb: adjustedUnder25 * (MARKET_PRIORITY["Under 2.5"] || 1) },
+    { label: "Over 1.5", prob: goalMarkets.over15, priorityProb: goalMarkets.over15 * (MARKET_PRIORITY["Over 1.5"] || 1) },
+    { label: "Under 3.5", prob: goalMarkets.under35, priorityProb: goalMarkets.under35 * (MARKET_PRIORITY["Under 3.5"] || 1) },
+    { label: "Over 3.5", prob: goalMarkets.over35, priorityProb: goalMarkets.over35 * (MARKET_PRIORITY["Over 3.5"] || 1) },
+    { label: "Under 1.5", prob: goalMarkets.under15, priorityProb: goalMarkets.under15 * (MARKET_PRIORITY["Under 1.5"] || 1) },
+    { label: "BTTS Yes", prob: adjustedBttsYes, priorityProb: adjustedBttsYes * (MARKET_PRIORITY["BTTS Yes"] || 1) },
+    { label: "BTTS No", prob: adjustedBttsNo, priorityProb: adjustedBttsNo * (MARKET_PRIORITY["BTTS No"] || 1) },
+    { label: "DC 1X", prob: dc1X, priorityProb: Math.min(dc1X, 92) * (MARKET_PRIORITY["DC 1X"] || 1) },
+    { label: "DC X2", prob: dcX2, priorityProb: Math.min(dcX2, 92) * (MARKET_PRIORITY["DC X2"] || 1) },
+    { label: "DC 12", prob: dc12, priorityProb: Math.min(dc12, 92) * (MARKET_PRIORITY["DC 12"] || 1) },
   ];
-  allPicks.sort((a, b) => b.prob - a.prob);
-  const prediction = allPicks[0].label;
-  const bestProb = allPicks[0].prob;
+
+  // === SMART MARKET SWITCHING based on xG profile ===
+  const totalXg = homeXg + awayXg;
+  const isLowGoals = totalXg < 2.3;
+  const isHighGoals = totalXg > 2.8;
+  const bothHighScoring = homeXg > 1.3 && awayXg > 1.0;
+  const bothDefensive = homeXg < 1.0 && awayXg < 0.9;
+  const dominantTeam = Math.abs(homeWin - awayWin) >= 25;
+
+  // Apply smart boosts based on match profile
+  for (const m of allMarkets) {
+    if (isLowGoals && bothDefensive) {
+      // LOW GOALS: boost Under markets
+      if (m.label === "Under 2.5") m.priorityProb *= 1.12;
+      if (m.label === "Under 3.5") m.priorityProb *= 1.10;
+      if (m.label === "BTTS No") m.priorityProb *= 1.08;
+      if (m.label.startsWith("Over")) m.priorityProb *= 0.90;
+    }
+    if (isHighGoals && bothHighScoring) {
+      // HIGH GOALS: boost Over + BTTS
+      if (m.label === "Over 2.5") m.priorityProb *= 1.12;
+      if (m.label === "BTTS Yes") m.priorityProb *= 1.10;
+      if (m.label === "Over 1.5") m.priorityProb *= 1.08;
+      if (m.label.startsWith("Under")) m.priorityProb *= 0.90;
+    }
+    if (dominantTeam) {
+      // DOMINANT TEAM: boost winner + DC
+      const strongerIsHome = homeWin > awayWin;
+      if (strongerIsHome && (m.label === "1" || m.label === "DC 1X")) m.priorityProb *= 1.08;
+      if (!strongerIsHome && (m.label === "2" || m.label === "DC X2")) m.priorityProb *= 1.08;
+    }
+  }
+
+  // === CONFLICT FILTER: skip match if top 2 opposing markets are too close ===
+  const overUnder25Diff = Math.abs(adjustedOver25 - adjustedUnder25);
+  const isConflicted = overUnder25Diff < 8 && Math.abs(homeWin - awayWin) < 10;
+
+  // Sort by priority-weighted probability
+  allMarkets.sort((a, b) => b.priorityProb - a.priorityProb);
+
+  // Filter: only markets with raw probability >= 60%
+  const viableMarkets = allMarkets.filter(m => m.prob >= 60);
+
+  // If no viable market OR conflicted → will get low confidence (filtered by MIN_DISPLAY_CONFIDENCE)
+  const bestMarket = viableMarkets.length > 0 ? viableMarkets[0] : allMarkets[0];
+  const prediction = bestMarket.label;
+  const bestProb = bestMarket.prob;
+
+  // === SECONDARY/ALTERNATIVE PICK ===
+  const altMarket = viableMarkets.length > 1 ? viableMarkets[1] : null;
 
   // === SCORE ===
   const predictedScore = predictScoreV2({
