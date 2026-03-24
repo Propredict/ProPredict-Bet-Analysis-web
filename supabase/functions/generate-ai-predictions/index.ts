@@ -131,6 +131,7 @@ interface FormMatch {
   goalsFor: number;
   goalsAgainst: number;
   isHome: boolean;
+  opponentId: number;
 }
 
 interface PredictionResult {
@@ -266,12 +267,13 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5):
       const goalsFor = isHome ? m.goals.home : m.goals.away;
       const goalsAgainst = isHome ? m.goals.away : m.goals.home;
       const won = isHome ? m.teams.home.winner : m.teams.away.winner;
+      const opponentId = isHome ? m.teams.away.id : m.teams.home.id;
 
       let result: "W" | "D" | "L" = "D";
       if (won === true) result = "W";
       else if (won === false) result = "L";
 
-      return { result, goalsFor, goalsAgainst, isHome };
+      return { result, goalsFor, goalsAgainst, isHome, opponentId };
     });
 
     teamFormCache.set(teamId, normalized);
@@ -529,6 +531,51 @@ function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
 
   oddsCache.set(fixtureId, result);
   return result;
+}
+
+/**
+ * Get opponent strength weight based on their league position.
+ * Top third → 1.5 (strong), Middle third → 1.0, Bottom third → 0.5 (weak)
+ */
+function getOpponentStrengthWeight(standings: StandingEntry[], opponentId: number): number {
+  if (standings.length === 0) return 1.0; // No data → neutral
+  const entry = standings.find(s => s.teamId === opponentId);
+  if (!entry || entry.totalTeams === 0) return 1.0;
+
+  const thirdSize = Math.ceil(entry.totalTeams / 3);
+  if (entry.rank <= thirdSize) return 1.5;       // Top third → strong
+  if (entry.rank <= thirdSize * 2) return 1.0;    // Middle third → medium
+  return 0.5;                                      // Bottom third → weak
+}
+
+/**
+ * Calculate OPPONENT-STRENGTH WEIGHTED form score (0-100).
+ * Wins vs strong opponents count 1.5×, wins vs weak opponents count 0.5×.
+ * Combined with recency weighting for last 5 matches.
+ */
+function calculateWeightedFormScore(form: FormMatch[], standings: StandingEntry[]): number {
+  if (form.length === 0) return 50;
+  const matches = form.slice(0, 5);
+  let weightedPoints = 0;
+  let weightSum = 0;
+  let gf = 0, ga = 0;
+
+  for (let i = 0; i < matches.length; i++) {
+    const recencyWeight = 1.0 - (i * 0.1); // 1.0, 0.9, 0.8, 0.7, 0.6
+    const opponentWeight = getOpponentStrengthWeight(standings, matches[i].opponentId);
+    const combinedWeight = recencyWeight * opponentWeight;
+
+    const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
+    weightedPoints += pts * combinedWeight;
+    weightSum += 3 * combinedWeight;
+    gf += matches[i].goalsFor;
+    ga += matches[i].goalsAgainst;
+  }
+
+  const pointsScore = weightSum > 0 ? (weightedPoints / weightSum) * 100 : 50;
+  const goalDiff = gf - ga;
+  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 6));
+  return Math.round(pointsScore * 0.75 + gdScore * 0.25);
 }
 
 /**
@@ -841,14 +888,20 @@ function calculatePrediction(
   odds?: OddsData | null,
   leagueName?: string
 ): PredictionResult {
-  // === FORM (30%) — RECENCY WEIGHTED + VENUE SPLIT ===
-  const homeFormAll = homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm);
-  const awayFormAll = awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm);
+  // === FORM (30%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
+  // Use opponent-strength weighting when standings are available
+  const hasStandings = standings && standings.length > 0;
+  const homeFormAll = hasStandings
+    ? calculateWeightedFormScore(homeForm, standings!)
+    : (homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm));
+  const awayFormAll = hasStandings
+    ? calculateWeightedFormScore(awayForm, standings!)
+    : (awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm));
   const homeVenueForm = calculateVenueFormScore(homeForm, true);
   const awayVenueForm = calculateVenueFormScore(awayForm, false);
-  // Blend: 60% venue-specific + 40% overall
-  const homeFormScore = Math.round(homeVenueForm * 0.6 + homeFormAll * 0.4);
-  const awayFormScore = Math.round(awayVenueForm * 0.6 + awayFormAll * 0.4);
+  // Blend: 55% venue-specific + 45% opponent-weighted overall
+  const homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.45);
+  const awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.45);
 
   // === QUALITY (20%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
