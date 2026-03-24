@@ -37,7 +37,6 @@ export function useArenaPrediction(
     const local = new Date(+parts[1], +parts[2] - 1, +parts[3], +parts[4], +parts[5]);
     return local <= new Date();
   })();
-  const isFree = options.tier === "free";
   const limitReached = options.dailyUsed >= options.dailyLimit;
 
   /** Fetch existing prediction from DB — used on load AND after insert */

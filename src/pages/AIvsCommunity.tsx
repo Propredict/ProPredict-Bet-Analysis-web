@@ -126,7 +126,7 @@ function curateMatches(predictions: ReturnType<typeof useAIPredictions>["predict
 function getDailyLimit(tier: "free" | "pro" | "exclusive"): number {
   if (tier === "exclusive") return 6;
   if (tier === "pro") return 5;
-  return 4;
+  return 3;
 }
 
 function getTotalVotesToday(curated: ReturnType<typeof useAIPredictions>["predictions"]): number {
