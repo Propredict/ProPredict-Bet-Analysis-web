@@ -917,7 +917,8 @@ function calculatePrediction(
   awayTeamName: string,
   standings?: StandingEntry[],
   odds?: OddsData | null,
-  leagueName?: string
+  leagueName?: string,
+  leagueId?: number
 ): PredictionResult {
   // === FORM (30%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
   // Use opponent-strength weighting when standings are available
