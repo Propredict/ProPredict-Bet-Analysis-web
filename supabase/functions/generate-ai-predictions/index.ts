@@ -2665,7 +2665,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
       dates: { today: todayStr, tomorrow: tomorrowStr },
       todayBatchTriggered: todayOk,
       tomorrowBatchTriggered: tomorrowOk,
-      algorithm: "Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%",
+      algorithm: "Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty, self-learning.",
       batchSize: BATCH_SIZE,
     }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -2825,16 +2825,18 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch all data in parallel for efficiency
-    const [homeForm, awayForm, h2h, homeStats, awayStats] = await Promise.all([
-      fetchTeamForm(homeTeamId, apiKey, 3),
-      fetchTeamForm(awayTeamId, apiKey, 3),
-      fetchH2H(homeTeamId, awayTeamId, apiKey, 3),
+    // Fetch all data in parallel for efficiency (full analysis like batch mode)
+    const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+      fetchTeamForm(homeTeamId, apiKey, 10, leagueId),  // League-only form, 10 matches
+      fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form, 10 matches
+      fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
       leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
       leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+      leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
+      fetchOdds(String(fixtureId), apiKey),
     ]);
 
-    // Calculate prediction
+    // Calculate prediction with full analysis
     const prediction = calculatePrediction(
       homeForm,
       awayForm,
@@ -2844,7 +2846,11 @@ serve(async (req: Request) => {
       homeTeamId,
       awayTeamId,
       homeTeamName,
-      awayTeamName
+      awayTeamName,
+      standings,
+      odds,
+      fixture.league?.name,
+      leagueId
     );
 
     console.log(`Prediction for ${homeTeamName} vs ${awayTeamName}: ${prediction.prediction} (${prediction.home_win}/${prediction.draw}/${prediction.away_win})`);
