@@ -157,11 +157,11 @@ export default function MatchPreviews() {
       .filter((p) => isQualityLeague(p.league, p.home_team) && isLowRisk(p));
 
     // 2. Low-risk from ANY league (fallback)
-    const otherLow = predictions
+    const otherLow = processed
       .filter((p) => !isQualityLeague(p.league, p.home_team) && isLowRisk(p));
 
     // 3. Remaining quality league matches (medium/high risk)
-    const qualityRest = predictions
+    const qualityRest = processed
       .filter((p) => isQualityLeague(p.league, p.home_team) && !isLowRisk(p));
 
     const sortByConf = (a: typeof predictions[0], b: typeof predictions[0]) => {
