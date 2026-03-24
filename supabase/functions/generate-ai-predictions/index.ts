@@ -1708,13 +1708,15 @@ async function processBatch(
         continue;
       }
 
-      // Fetch core data — use real last 5 matches for form (not pseudo-form)
-      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm] = await Promise.all([
+      // Fetch ALL data in parallel: stats, H2H, real form (10 matches), standings, odds
+      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
-        fetchTeamForm(homeTeamId, apiKey, 5),
-        fetchTeamForm(awayTeamId, apiKey, 5),
+        fetchTeamForm(homeTeamId, apiKey, 10),  // Last 10 real matches
+        fetchTeamForm(awayTeamId, apiKey, 10),  // Last 10 real matches
+        fetchStandings(leagueId, season, apiKey),
+        fetchOdds(fixtureIdStr, apiKey),
       ]);
 
       if (!homeStats || !awayStats) {
