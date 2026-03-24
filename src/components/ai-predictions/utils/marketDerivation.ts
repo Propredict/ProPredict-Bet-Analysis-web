@@ -292,14 +292,13 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 }
 
 /**
- * Simple tier assignment based on best market probability:
- *   85%+ → Premium
- *   75-84% → Pro
- *   60-74% → Free
- *   <60% → Free (still shown)
+ * Tier assignment based on best market probability:
+ *   78%+ → Premium
+ *   65-77% → Pro
+ *   <65% → Free
  */
 export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
-  if (bestProb >= 85) return "premium";
-  if (bestProb >= 75) return "pro";
+  if (bestProb >= 78) return "premium";
+  if (bestProb >= 65) return "pro";
   return "free";
 }
