@@ -83,7 +83,7 @@ export function DashboardAIPredictions() {
   const { predictions, loading } = useAIPredictions("today");
 
   const displayedPredictions = [...predictions]
-    .filter((p) => (p.confidence ?? 0) >= 60)
+    .filter((p) => (p.confidence ?? 0) >= 50)
     .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
     .slice(0, 3);
 

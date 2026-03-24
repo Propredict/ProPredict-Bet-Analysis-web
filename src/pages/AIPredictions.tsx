@@ -120,7 +120,7 @@ export default function AIPredictions() {
   // Mirrors backend logic exactly
   const tierAssignment = useMemo(() => {
     const sorted = [...predictions]
-      .filter(p => (p.confidence ?? 0) >= 60)
+      .filter(p => (p.confidence ?? 0) >= 50)
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     const total = sorted.length;
     if (total === 0) return new Map<string, "free" | "pro" | "premium">();
@@ -219,7 +219,7 @@ export default function AIPredictions() {
   // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
     // Hide predictions below 60% confidence
-    let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 60 : true);
+    let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 50 : true);
     
     // Filter by tier if not "all"
     if (tierFilter !== "all") {
@@ -268,7 +268,7 @@ export default function AIPredictions() {
   // Top 5 Picks: ranked by confidence + value signal from analysis
   const topPicks = useMemo(() => {
     const scored = predictions
-      .filter((p) => p.confidence != null && p.confidence >= 60)
+      .filter((p) => p.confidence != null && p.confidence >= 50)
       .map((p) => {
         let valueScore = 0;
         if (p.analysis?.includes("SUPER VALUE")) valueScore = 20;
