@@ -19,13 +19,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromMarketProbability, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
+type MarketFilter = "all" | MarketType;
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
@@ -45,7 +46,7 @@ export default function AIPredictions() {
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
-  
+  const [marketFilter, setMarketFilter] = useState<MarketFilter>("all");
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
@@ -113,6 +114,20 @@ export default function AIPredictions() {
     return counts;
   }, [predictions]);
 
+  // Count predictions per market type
+  const marketCounts = useMemo(() => {
+    const counts: Record<MarketFilter, number> = {
+      all: predictions.length,
+      home_win: 0, away_win: 0, draw: 0,
+      over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
+    };
+    predictions.forEach((p) => {
+      const mt = getBestPickType(p);
+      counts[mt]++;
+    });
+    return counts;
+  }, [predictions]);
+
   // Sort function
   const sortPredictions = (preds: typeof predictions) => {
     return [...preds].sort((a, b) => {
@@ -140,7 +155,11 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    
+    // Filter by market type
+    if (marketFilter !== "all") {
+      result = result.filter((p) => getBestPickType(p) === marketFilter);
+    }
+
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
       result = result.filter((p) => isFavorite(p.match_id));
@@ -164,7 +183,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
@@ -187,7 +206,7 @@ export default function AIPredictions() {
   useEffect(() => {
     setVisibleFeaturedCount(INITIAL_COUNT);
     setVisibleRegularCount(INITIAL_COUNT);
-  }, [day, tierFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
+  }, [day, tierFilter, marketFilter, searchQuery, selectedLeague, sortBy, showFavoritesOnly]);
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
@@ -531,6 +550,37 @@ export default function AIPredictions() {
             </div>
           </Card>
 
+          {/* Market Type Filter — Horizontal scrollable */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+            {([
+              { key: "all" as MarketFilter, label: "All Picks", icon: <Target className="w-3 h-3" /> },
+              { key: "home_win" as MarketFilter, label: "Home Win", icon: <Trophy className="w-3 h-3" /> },
+              { key: "away_win" as MarketFilter, label: "Away Win", icon: <Sparkles className="w-3 h-3" /> },
+              { key: "draw" as MarketFilter, label: "Draw", icon: <Heart className="w-3 h-3" /> },
+              { key: "over25" as MarketFilter, label: "Over 2.5", icon: <TrendingUp className="w-3 h-3" /> },
+              { key: "under25" as MarketFilter, label: "Under 2.5", icon: <TrendingUp className="w-3 h-3" /> },
+              { key: "btts_yes" as MarketFilter, label: "BTTS", icon: <Zap className="w-3 h-3" /> },
+            ] as const).map((item) => {
+              const count = item.key === "all" ? predictions.length : marketCounts[item.key];
+              return (
+                <Button
+                  key={item.key}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-7 px-2.5 text-[10px] font-medium rounded-full whitespace-nowrap flex-shrink-0 gap-1 transition-all",
+                    marketFilter === item.key
+                      ? "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+                      : "bg-card/60 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/40"
+                  )}
+                  onClick={() => setMarketFilter(item.key)}
+                >
+                  {item.icon}
+                  {item.label} ({count})
+                </Button>
+              );
+            })}
+          </div>
 
           {featuredPredictions.length > 0 && (
             <div>
@@ -542,7 +592,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
                 {visibleFeatured.map((prediction, idx) => {
                   return (
-                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                    <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         overrideTier={getPredictionTier(prediction)}
                         prediction={prediction}
