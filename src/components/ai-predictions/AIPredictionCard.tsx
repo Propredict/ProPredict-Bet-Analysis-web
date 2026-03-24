@@ -54,6 +54,7 @@ const AIPredictionCardInner = ({
   const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 83) || (prediction.is_premium && prediction.confidence == null);
   const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 73;
   const isDailyTier = !isPremiumTier && !isProTier;
+  const displayTier: "free" | "pro" | "premium" = isPremiumTier ? "premium" : isProTier ? "pro" : "free";
 
   // Map to content tier for useUserPlan
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
