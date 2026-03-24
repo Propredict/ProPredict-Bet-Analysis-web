@@ -328,7 +328,16 @@ export default function MatchPreviews() {
       </div>
     </>
   );
+
+// Deterministic pseudo-random unlock % per match (75-96 range)
+function getUnlockPercentage(matchId: string): number {
+  let hash = 0;
+  for (let i = 0; i < matchId.length; i++) {
+    hash = ((hash << 5) - hash + matchId.charCodeAt(i)) | 0;
+  }
+  return 75 + (Math.abs(hash) % 22); // 75-96%
 }
+
 
 function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null }) {
   const snippets: { icon: string; text: string }[] = [];
