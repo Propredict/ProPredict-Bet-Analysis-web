@@ -273,23 +273,7 @@ export function getRiskLevelColor(riskLevel: string | null) {
 }
 
 /**
- * Calibrate raw probability without over-inflating tiers.
- * - Keep low probabilities mostly unchanged
- * - Apply mild uplift for mid/high signals
- * - Cap at 88 to prevent "all Premium" distribution
- */
-export function calibrateProb(raw: number): number {
-  if (raw <= 55) return Math.round(raw);
-
-  let p = raw * 1.08;
-  if (raw >= 70) p += 4;
-  else if (raw >= 65) p += 2;
-
-  return Math.min(88, Math.round(p));
-}
-
-/**
- * Get the highest market probability for a prediction (calibrated).
+ * Get the highest market probability for a prediction (raw, no calibration).
  */
 export function getBestMarketProbability(prediction: AIPrediction): number {
   const hw = prediction.home_win ?? 0;
@@ -302,18 +286,18 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
   const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
-  const rawBest = Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
-  return calibrateProb(rawBest);
+  return Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
 }
 
 /**
- * Simple tier assignment — highest market probability only:
- *   80%+ → Premium
- *   70-79% → Pro
- *   <70% → Free
+ * Simple tier assignment:
+ *   78%+ → Premium
+ *   65-77% → Pro
+ *   55-64% → Free
+ *   <55% → Free (still shown)
  */
 export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
-  if (bestProb >= 80) return "premium";
-  if (bestProb >= 70) return "pro";
+  if (bestProb >= 78) return "premium";
+  if (bestProb >= 65) return "pro";
   return "free";
 }
