@@ -21,6 +21,7 @@ export function DashboardMatchPreviews() {
     if (!predictions.length) return [];
     return [...predictions]
       .filter(p => (p.confidence ?? 0) >= 75)
+      .filter(p => !(p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending")))
       .sort((a, b) => {
         const pa = QUALITY_LEAGUES[a.league || ""] ?? 99;
         const pb = QUALITY_LEAGUES[b.league || ""] ?? 99;
