@@ -706,9 +706,9 @@ export default function AIPredictions() {
                           {!hasSuperValue && !hasStrongValue && hasValue && <Badge className="bg-orange-500/10 text-orange-400/80 border-orange-500/20 text-[7px] px-1 py-0 rounded">🔥</Badge>}
                           <Badge className={cn(
                             "text-[8px] px-1.5 py-0.5 font-bold rounded",
-                            (p.confidence ?? 0) >= 83
+                            getPredictionTier(p) === "premium"
                               ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30"
-                              : (p.confidence ?? 0) >= 73
+                              : getPredictionTier(p) === "pro"
                               ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
                               : "bg-teal-500/20 text-teal-400 border-teal-500/30"
                           )}>
