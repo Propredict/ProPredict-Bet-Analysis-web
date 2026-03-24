@@ -672,7 +672,14 @@ export default function AIPredictions() {
                     const hasStrongValue = p.analysis?.includes("STRONG VALUE BET");
                     const hasValue = p.analysis?.includes("Value Bet");
                     return (
-                      <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/50 hover:border-orange-500/30 transition-colors">
+                      <div key={p.id} onClick={() => {
+                        const el = document.getElementById(`prediction-${p.id}`);
+                        if (el) {
+                          el.scrollIntoView({ behavior: "smooth", block: "center" });
+                          el.classList.add("ring-2", "ring-orange-500/50");
+                          setTimeout(() => el.classList.remove("ring-2", "ring-orange-500/50"), 2000);
+                        }
+                      }} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/50 hover:border-orange-500/30 transition-colors cursor-pointer">
                         <span className="text-sm font-bold text-orange-400 w-5 text-center">#{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-[11px] md:text-xs font-medium text-foreground truncate">
@@ -715,7 +722,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
                 {visibleFeatured.map((prediction, idx) => {
                   return (
-                    <React.Fragment key={prediction.id}>
+                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         prediction={prediction}
                         isAdmin={isAdmin}
@@ -728,7 +735,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                    </React.Fragment>
+                    </div>
                   );
                 })}
               </div>
@@ -794,7 +801,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {visibleRegular.map((prediction, idx) => {
                   return (
-                    <React.Fragment key={prediction.id}>
+                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         prediction={prediction}
                         isAdmin={isAdmin}
@@ -807,7 +814,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                    </React.Fragment>
+                    </div>
                   );
                 })}
               </div>
