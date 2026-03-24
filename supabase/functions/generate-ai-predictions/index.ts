@@ -390,6 +390,138 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
 }
 
 /**
+ * Fetch league standings to determine team positions.
+ * Returns array of standings entries for all teams in the league.
+ */
+async function fetchStandings(leagueId: number, season: number, apiKey: string): Promise<StandingEntry[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (standingsCache.has(cacheKey)) return standingsCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/standings?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response?.[0]?.league?.standings) {
+      standingsCache.set(cacheKey, []);
+      return [];
+    }
+
+    // Standings can be in groups (e.g. Champions League) — flatten all
+    const allGroups = data.response[0].league.standings;
+    const entries: StandingEntry[] = [];
+    
+    for (const group of allGroups) {
+      const totalTeams = group.length;
+      for (const team of group) {
+        entries.push({
+          teamId: team.team?.id || 0,
+          rank: team.rank || 0,
+          points: team.points || 0,
+          played: team.all?.played || 0,
+          goalsDiff: team.goalsDiff || 0,
+          form: team.form || "",
+          totalTeams,
+        });
+      }
+    }
+
+    standingsCache.set(cacheKey, entries);
+    return entries;
+  } catch (e) {
+    console.error("Error fetching standings:", e);
+    standingsCache.set(cacheKey, []);
+    return [];
+  }
+}
+
+/**
+ * Get team's position in standings (0-100 score, 100 = top of table)
+ */
+function getStandingsScore(standings: StandingEntry[], teamId: number): number {
+  if (standings.length === 0) return 50; // Neutral if no standings data
+
+  const entry = standings.find(s => s.teamId === teamId);
+  if (!entry || entry.totalTeams === 0) return 50;
+
+  // Convert rank to 0-100 score (1st place = 100, last place = 0)
+  const positionScore = ((entry.totalTeams - entry.rank) / (entry.totalTeams - 1)) * 100;
+  
+  // Weight by goal difference as a tiebreaker
+  const gdBonus = clamp(entry.goalsDiff * 0.5, -10, 10);
+  
+  return clamp(Math.round(positionScore + gdBonus), 0, 100);
+}
+
+/**
+ * Fetch pre-match bookmaker odds for a fixture.
+ * Uses the first available bookmaker's 1X2 (Match Winner) market.
+ */
+async function fetchOdds(fixtureId: string, apiKey: string): Promise<OddsData | null> {
+  if (oddsCache.has(fixtureId)) return oddsCache.get(fixtureId) ?? null;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/odds?fixture=${fixtureId}&bookmaker=8`; // bet365
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 1, baseDelayMs: 700 });
+    
+    if (!data?.response?.[0]?.bookmakers?.[0]?.bets) {
+      // Try without specific bookmaker
+      const url2 = `${API_FOOTBALL_URL}/odds?fixture=${fixtureId}`;
+      const data2 = await fetchJsonWithRetry(url2, apiKey, { retries: 1, baseDelayMs: 700 });
+      
+      if (!data2?.response?.[0]?.bookmakers?.[0]?.bets) {
+        oddsCache.set(fixtureId, null);
+        return null;
+      }
+      return parseOddsResponse(fixtureId, data2);
+    }
+
+    return parseOddsResponse(fixtureId, data);
+  } catch (e) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+}
+
+function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
+  const bookmaker = data.response[0]?.bookmakers?.[0];
+  if (!bookmaker) { oddsCache.set(fixtureId, null); return null; }
+
+  // Find "Match Winner" bet (id=1 or label containing "Match Winner")
+  const matchWinner = bookmaker.bets?.find((b: any) => 
+    b.id === 1 || b.name?.toLowerCase().includes("match winner")
+  );
+
+  if (!matchWinner?.values || matchWinner.values.length < 3) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+
+  const homeOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Home")?.odd || "0");
+  const drawOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Draw")?.odd || "0");
+  const awayOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Away")?.odd || "0");
+
+  if (homeOdds <= 0 || drawOdds <= 0 || awayOdds <= 0) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+
+  // Convert odds to implied probabilities (remove overround)
+  const rawHomeProb = 1 / homeOdds;
+  const rawDrawProb = 1 / drawOdds;
+  const rawAwayProb = 1 / awayOdds;
+  const overround = rawHomeProb + rawDrawProb + rawAwayProb;
+
+  const result: OddsData = {
+    homeOdds, drawOdds, awayOdds,
+    homeProb: Math.round((rawHomeProb / overround) * 100),
+    drawProb: Math.round((rawDrawProb / overround) * 100),
+    awayProb: Math.round((rawAwayProb / overround) * 100),
+  };
+
+  oddsCache.set(fixtureId, result);
+  return result;
+}
+
+/**
  * Calculate form score (0-100) from last 5 matches using weighted recency.
  * Most recent match has highest weight, older matches decay.
  * - Win=3, Draw=1, Loss=0
