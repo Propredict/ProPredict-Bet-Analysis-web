@@ -149,11 +149,14 @@ export default function MatchPreviews() {
     const isPending = (p: typeof predictions[0]) =>
       (p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending"));
 
-    // Filter out placeholder/pending predictions that AI hasn't processed yet
+    // Try filtering out pending predictions first
     const processed = predictions.filter((p) => !isPending(p));
+    
+    // If too few processed matches, fall back to all predictions
+    const pool = processed.length >= 5 ? processed : predictions;
 
     // 1. Low-risk from quality leagues
-    const qualityLow = processed
+    const qualityLow = pool
       .filter((p) => isQualityLeague(p.league, p.home_team) && isLowRisk(p));
 
     // 2. Low-risk from ANY league (fallback)
