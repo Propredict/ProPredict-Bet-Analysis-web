@@ -120,7 +120,7 @@ export default function AIPredictions() {
   // Mirrors backend logic exactly
   const tierAssignment = useMemo(() => {
     const sorted = [...predictions]
-      .filter(p => (p.confidence ?? 0) >= 60)
+      .filter(p => (p.confidence ?? 0) >= 50)
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     const total = sorted.length;
     if (total === 0) return new Map<string, "free" | "pro" | "premium">();
