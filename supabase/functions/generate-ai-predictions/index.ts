@@ -900,9 +900,10 @@ function sigmoid(x: number) {
 
 /**
  * Main prediction calculation using enhanced weights:
- * Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%.
+ * Form 25%, Quality 18%, Squad 10%, Home 8%, H2H 6%, Standings 10%, Odds 15%.
  *
  * Uses real last 10 matches, league position, and bookmaker odds for calibration.
+ * Per-league home advantage, progressive dampening, and close-call penalty.
  */
 function calculatePrediction(
   homeForm: FormMatch[],
