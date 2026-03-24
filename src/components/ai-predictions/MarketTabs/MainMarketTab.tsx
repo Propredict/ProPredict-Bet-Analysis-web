@@ -83,9 +83,10 @@ function getBestPickReason(prediction: AIPrediction): string {
 interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
+  displayTier?: "free" | "pro" | "premium";
 }
 
-export function MainMarketTab({ prediction, hasAccess }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const markets = deriveMarkets(prediction);
   const goalProbs = calculateGoalMarketProbs(prediction);
   
