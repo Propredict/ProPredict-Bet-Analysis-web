@@ -454,10 +454,6 @@ export default function AIPredictions() {
               <SelectContent className="bg-card border-border">
                 <SelectItem value="confidence" className="text-[10px] md:text-xs">Confidence</SelectItem>
                 <SelectItem value="kickoff" className="text-[10px] md:text-xs">Kickoff Time</SelectItem>
-                <SelectItem value="risk" className="text-[10px] md:text-xs">Risk Level</SelectItem>
-                <SelectItem value="over25" className="text-[10px] md:text-xs">⬆️ Over 2.5 %</SelectItem>
-                <SelectItem value="under25" className="text-[10px] md:text-xs">⬇️ Under 2.5 %</SelectItem>
-                <SelectItem value="btts" className="text-[10px] md:text-xs">⚡ BTTS %</SelectItem>
               </SelectContent>
             </Select>
             <Toggle
