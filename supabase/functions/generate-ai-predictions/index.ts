@@ -819,29 +819,7 @@ function sigmoid(x: number) {
   return 1 / (1 + Math.exp(-x));
 }
 
-/**
- * Calibrate raw confidence to more realistic probabilities.
- * Uses a mild sigmoid dampening:
- * - Values below 60 stay roughly the same
- * - Values 60-75 get slightly reduced  
- * - Values 75-92 get more aggressively dampened
- * This prevents overconfident predictions while preserving relative ordering.
- */
-function calibrateConfidence(raw: number): number {
-  if (raw <= 58) return raw;
-  
-  // Gentler dampening: preserve more of the calculated confidence
-  // Anchor points: 60→59, 65→63, 70→68, 75→73, 80→77, 85→82, 90→87
-  const dampened = 58 + (raw - 58) * 0.90;
-  
-  // For very high values, apply mild additional dampening
-  if (raw >= 85) {
-    const excess = raw - 85;
-    return Math.round(clamp(dampened - excess * 0.15, 55, 94));
-  }
-  
-  return Math.round(clamp(dampened, 50, 94));
-}
+// calibrateConfidence removed — confidence is now the raw best market probability
 
 /**
  * Main prediction calculation using enhanced weights:
