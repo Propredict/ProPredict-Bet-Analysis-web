@@ -1305,7 +1305,9 @@ function calculatePrediction(
   
   // Value bet reasoning
   if (odds && valuePercent !== 0) {
-    if (finalIsStrongValueBet) {
+    if (finalIsSuperValueBet) {
+      analysisReasons.push(`🔥 SUPER VALUE: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
+    } else if (finalIsStrongValueBet) {
       analysisReasons.push(`🔥 STRONG VALUE BET: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
     } else if (isValueBet) {
       analysisReasons.push(`🔥 Value Bet: +${Math.round(valuePercent)}% edge vs bookmaker`);
