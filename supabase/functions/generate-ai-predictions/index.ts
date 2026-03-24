@@ -1077,15 +1077,99 @@ function calculatePrediction(
                 (homeWin >= awayWin ? "1" : "2"),
   });
 
-  // === VALUE DETECTION (AI prob vs bookmaker prob) ===
+  // === 1. PROPER VALUE FORMULA (ai_prob - bookmaker_prob) ===
   let valuePercent = 0;
+  let bookmakerProb = 0;
+  let aiProb = bestProb;
   if (odds) {
-    let bookProb = 0, aiProb = 0;
-    if (prediction === "1") { bookProb = odds.homeProb; aiProb = homeWin; }
-    else if (prediction === "2") { bookProb = odds.awayProb; aiProb = awayWin; }
-    else if (prediction === "X") { bookProb = odds.drawProb; aiProb = draw; }
-    else { aiProb = bestProb; bookProb = 50; }
-    valuePercent = aiProb - bookProb;
+    if (prediction === "1") { bookmakerProb = odds.homeProb; aiProb = homeWin; }
+    else if (prediction === "2") { bookmakerProb = odds.awayProb; aiProb = awayWin; }
+    else if (prediction === "X") { bookmakerProb = odds.drawProb; aiProb = draw; }
+    else { aiProb = bestProb; bookmakerProb = 50; }
+    valuePercent = aiProb - bookmakerProb;
+  }
+
+  // Value classification:
+  // < 5% → IGNORE (no value)
+  // 5-10% → NORMAL
+  // 10%+ → VALUE BET
+  // 10%+ AND confidence ≥ 75 → STRONG VALUE BET
+  const isValueBet = valuePercent >= 10;
+  const isStrongValueBet = valuePercent >= 10 && bestProb >= 72; // will check final confidence later
+
+  // === 2. ODDS VS AI ALIGNMENT (prevent overconfidence) ===
+  // If AI and bookmaker agree → boost confidence
+  // If AI disagrees strongly with bookmaker → reduce confidence (model may be wrong)
+  let oddsAlignmentAdjust = 0;
+  if (odds) {
+    const aiProbForPick = aiProb;
+    const bookProbForPick = bookmakerProb;
+    const probDiff = Math.abs(aiProbForPick - bookProbForPick);
+    
+    if (probDiff <= 10) {
+      // AI and bookmaker AGREE → boost
+      oddsAlignmentAdjust = clamp((10 - probDiff) / 2, 0, 5);
+    } else if (probDiff >= 25) {
+      // AI and bookmaker STRONGLY DISAGREE → penalize
+      oddsAlignmentAdjust = -clamp((probDiff - 20) / 5, 0, 8);
+    } else if (probDiff >= 15) {
+      // Moderate disagreement → mild penalty
+      oddsAlignmentAdjust = -clamp((probDiff - 10) / 5, 0, 3);
+    }
+  }
+
+  // === 3. UNCERTAINTY ZONE (xG 2.2-2.6 = coin flip → NO BET) ===
+  const totalXgForUncertainty = homeXg + awayXg;
+  const isUncertaintyZone = totalXgForUncertainty >= 2.2 && totalXgForUncertainty <= 2.6;
+  // Only apply to Over/Under markets (these are the "coin flip" markets in this zone)
+  const isGoalMarketPick = prediction.includes("Over") || prediction.includes("Under");
+  const uncertaintyPenalty = (isUncertaintyZone && isGoalMarketPick) ? -8 : 0;
+
+  // === 4. LEAGUE-SPECIFIC CALIBRATION ===
+  // Different leagues = different styles
+  // Already have self-learning weights above, but add goal-style adjustments
+  let leagueStyleAdjust = 0;
+  if (leagueName) {
+    const ln = leagueName.toLowerCase();
+    // High-scoring leagues → boost Over, penalize Under
+    if (ln.includes("premier league") || ln.includes("bundesliga") || ln.includes("eredivisie")) {
+      if (prediction.includes("Over")) leagueStyleAdjust = 2;
+      else if (prediction.includes("Under")) leagueStyleAdjust = -2;
+    }
+    // Defensive leagues → boost Under, penalize Over
+    if (ln.includes("serie a") && !ln.includes("brazil") || ln.includes("ligue 1")) {
+      if (prediction.includes("Under")) leagueStyleAdjust = 2;
+      else if (prediction.includes("Over")) leagueStyleAdjust = -2;
+    }
+  }
+
+  // === 6. MULTI-SIGNAL BOOST (form + xG + odds alignment) ===
+  const predicted = prediction === "1" ? "home" : prediction === "2" ? "away" : "neutral";
+  let signalStrength = 0.5;
+  let signalsAligned = 0;
+  let signalsTotal = 0;
+  if (predicted !== "neutral") {
+    const signals = [
+      { label: "form", dir: homeFormScore > awayFormScore ? "home" : "away" },
+      { label: "quality", dir: homeQualityScore > awayQualityScore ? "home" : "away" },
+      { label: "h2h", dir: homeH2HScore > 55 ? "home" : homeH2HScore < 45 ? "away" : "neutral" },
+      { label: "standings", dir: homeStandingsScore > awayStandingsScore ? "home" : "away" },
+      { label: "odds", dir: odds ? (odds.homeProb > odds.awayProb ? "home" : "away") : "neutral" },
+    ];
+    const nonNeutral = signals.filter(f => f.dir !== "neutral");
+    signalsAligned = nonNeutral.filter(f => f.dir === predicted).length;
+    signalsTotal = nonNeutral.length;
+    signalStrength = signalsTotal > 0 ? signalsAligned / signalsTotal : 0.5;
+  }
+
+  // Multi-signal boost: if form + xG + odds ALL agree → +10% confidence
+  // If they disagree → -10%
+  let multiSignalBoost = 0;
+  if (signalsTotal >= 3) {
+    if (signalStrength >= 0.8) multiSignalBoost = 10; // All signals agree
+    else if (signalStrength >= 0.6) multiSignalBoost = 5;
+    else if (signalStrength <= 0.3) multiSignalBoost = -10; // Signals disagree
+    else if (signalStrength <= 0.4) multiSignalBoost = -5;
   }
 
   // === CONFIDENCE — MULTI-FACTOR FORMULA ===
@@ -1101,20 +1185,6 @@ function calculatePrediction(
     (h2h.length >= 3 ? 0.1 : 0) +
     (odds ? 0.1 : 0)
   );
-
-  // Signal strength: how many factors agree with prediction
-  const predicted = prediction === "1" ? "home" : prediction === "2" ? "away" : "neutral";
-  let signalStrength = 0.5;
-  if (predicted !== "neutral") {
-    const signals = [
-      homeFormScore > awayFormScore ? "home" : "away",
-      homeQualityScore > awayQualityScore ? "home" : "away",
-      homeH2HScore > 55 ? "home" : homeH2HScore < 45 ? "away" : "neutral",
-      homeStandingsScore > awayStandingsScore ? "home" : "away",
-      odds ? (odds.homeProb > odds.awayProb ? "home" : "away") : "neutral",
-    ];
-    signalStrength = signals.filter(f => f === predicted).length / signals.filter(f => f !== "neutral").length || 0.5;
-  }
 
   let confidence: number;
   if (isBalanced) {
@@ -1136,18 +1206,24 @@ function calculatePrediction(
     if (Math.abs(calculateH2HScore(h2h, homeTeamId, awayTeamId) - 50) >= 30) confidence += 2;
   }
 
-  // Odds alignment
+  // === Apply odds alignment (feature #2) ===
+  confidence += oddsAlignmentAdjust;
+
+  // === Apply multi-signal boost (feature #6) ===
+  confidence += multiSignalBoost;
+
+  // === Apply uncertainty zone penalty (feature #3) ===
+  confidence += uncertaintyPenalty;
+
+  // === Apply league style adjustment (feature #4) ===
+  confidence += leagueStyleAdjust;
+
+  // Value edge from odds
   if (odds) {
-    const ourFav = homeWin >= awayWin ? "home" : "away";
-    const bookFav = odds.homeProb >= odds.awayProb ? "home" : "away";
-    const bookFavProb = ourFav === "home" ? odds.homeProb : odds.awayProb;
-    if (ourFav === bookFav && bookFavProb >= 55) {
-      confidence += clamp((bookFavProb - 55) / 10, 0, 1) * 4;
-    } else if (ourFav !== bookFav && bookFavProb >= 60) {
-      confidence -= 4;
-    }
-    if (valuePercent >= 8) confidence += 1;
-    else if (valuePercent <= -10) confidence -= 2;
+    if (valuePercent >= 10) confidence += 3; // Strong value
+    else if (valuePercent >= 5) confidence += 1;
+    else if (valuePercent <= -10) confidence -= 4; // Negative value = AI overvalues
+    else if (valuePercent <= -5) confidence -= 2;
   }
 
   // Match context & standings
@@ -1156,32 +1232,51 @@ function calculatePrediction(
     confidence += 2;
   }
 
-  // === CONFLICT FILTER penalty ===
+  // === CONFLICT FILTER penalty (feature #5 from previous, enhanced) ===
   if (isConflicted) {
-    confidence -= 6; // Model isn't sure → push below display threshold
+    confidence -= 8; // Stronger penalty: model isn't sure → push below display threshold
   }
 
   // === No viable market (all below 60%) → hard penalty ===
   if (viableMarkets.length === 0) {
-    confidence -= 8;
+    confidence -= 10;
   }
 
   // Self-learning league penalty/boost
   if (leagueName && leagueAccuracyCache.has(leagueName)) {
     const acc = leagueAccuracyCache.get(leagueName)!;
-    if (acc < 50) confidence -= 3;
-    else if (acc < 60) confidence -= 1;
+    if (acc < 50) confidence -= 4;
+    else if (acc < 60) confidence -= 2;
     else if (acc > 80) confidence += 2;
   }
 
+  // === 7. FAKE HIGH CONFIDENCE FIX ===
+  // Cap confidence when data is weak (small sample, bad league, low data quality)
   confidence = Math.round(clamp(confidence, 50, 92));
   if (!hasMinMatches) confidence = Math.min(confidence, MIN_SEASON_CONFIDENCE_CAP);
   else if (!hasSeasonStats) confidence = Math.min(confidence, 60);
+  
+  // Additional fake confidence caps
+  if (dataQuality < 0.5) confidence = Math.min(confidence, 72); // Weak data → max 72%
+  if (dataQuality < 0.3) confidence = Math.min(confidence, 65); // Very weak data → max 65%
+  if (!odds) confidence = Math.min(confidence, 78); // No odds data → max 78%
+  
   confidence = calibrateConfidence(confidence);
+
+  // === 9. VALUE + CONFIDENCE COMBO FINAL GATE ===
+  // FINAL PICK must have: confidence ≥ 60, value ≥ 8% (if odds available), no conflict
+  // If NOT → push below display threshold (effectively NO BET)
+  if (odds && valuePercent < 5) {
+    // No value at all → strong penalty to hide
+    confidence = Math.min(confidence, 58);
+  }
+
+  // Check strong value bet status with final confidence
+  const finalIsStrongValueBet = valuePercent >= 10 && confidence >= 75;
 
   // === RISK ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 72 && bestProb >= 60) riskLevel = "low";
+  if (confidence >= 72 && bestProb >= 60 && (!odds || valuePercent >= 5)) riskLevel = "low";
   else if (confidence >= 62) riskLevel = "medium";
   else riskLevel = "high";
 
@@ -1205,9 +1300,36 @@ function calculatePrediction(
     analysisReasons.push(`${homeFormScore > awayFormScore ? homeTeamName : awayTeamName} in stronger recent form`);
   }
   if (style.label !== "Balanced matchup") analysisReasons.push(style.label);
+  
+  // Value bet reasoning
   if (odds && valuePercent !== 0) {
-    analysisReasons.push(valuePercent > 0 ? `Value edge: +${Math.round(valuePercent)}% vs market` : `Market divergence: ${Math.round(valuePercent)}%`);
+    if (finalIsStrongValueBet) {
+      analysisReasons.push(`🔥 STRONG VALUE BET: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
+    } else if (isValueBet) {
+      analysisReasons.push(`🔥 Value Bet: +${Math.round(valuePercent)}% edge vs bookmaker`);
+    } else if (valuePercent >= 5) {
+      analysisReasons.push(`Value edge: +${Math.round(valuePercent)}% vs market`);
+    } else if (valuePercent < -5) {
+      analysisReasons.push(`⚠️ Market divergence: ${Math.round(valuePercent)}% (bookmaker disagrees)`);
+    }
   }
+
+  // Multi-signal info
+  if (signalsTotal >= 3) {
+    analysisReasons.push(`Signal alignment: ${signalsAligned}/${signalsTotal} factors agree`);
+  }
+
+  // Uncertainty zone warning
+  if (isUncertaintyZone && isGoalMarketPick) {
+    analysisReasons.push(`⚠️ Uncertainty zone: xG ${xgTotal} is borderline (2.2-2.6)`);
+  }
+
+  // Odds alignment info
+  if (odds && Math.abs(oddsAlignmentAdjust) >= 2) {
+    if (oddsAlignmentAdjust > 0) analysisReasons.push(`✅ AI-Odds aligned: bookmaker confirms pick`);
+    else analysisReasons.push(`⚠️ AI-Odds mismatch: bookmaker disagrees by ${Math.round(Math.abs(aiProb - bookmakerProb))}%`);
+  }
+
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
   // Recent form insight
