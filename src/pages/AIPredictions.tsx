@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
 
 
@@ -116,49 +116,14 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier distribution with minimum confidence thresholds
-  // Premium requires ≥75%, Pro requires ≥65%, rest is Free
+  // Simple tier assignment: use highest market probability
+  // 85%+ → Premium, 75-84% → Pro, rest → Free
   const tierAssignment = useMemo(() => {
-    const TIER_MIN_PREMIUM = 75;
-    const TIER_MIN_PRO = 65;
-
-    const sorted = [...predictions]
-      .filter(p => (p.confidence ?? 0) >= 50)
-      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-    const total = sorted.length;
-    if (total === 0) return new Map<string, "free" | "pro" | "premium">();
-
-    const premiumTarget = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
-    const proTarget = Math.min(15, Math.max(5, Math.ceil(total * 0.30)));
-
     const map = new Map<string, "free" | "pro" | "premium">();
-    const premiumIds = new Set<string>();
-    const proIds = new Set<string>();
-
-    // Premium: top matches with confidence ≥75%
-    for (const p of sorted) {
-      if (premiumIds.size >= premiumTarget) break;
-      if ((p.confidence ?? 0) >= TIER_MIN_PREMIUM) {
-        premiumIds.add(p.id!);
-        map.set(p.id!, "premium");
-      }
+    for (const p of predictions) {
+      const bestProb = getBestMarketProbability(p);
+      map.set(p.id!, getTierFromMarketProbability(bestProb));
     }
-
-    // Pro: next matches with confidence ≥65%
-    for (const p of sorted) {
-      if (proIds.size >= proTarget) break;
-      if (premiumIds.has(p.id!)) continue;
-      if ((p.confidence ?? 0) >= TIER_MIN_PRO) {
-        proIds.add(p.id!);
-        map.set(p.id!, "pro");
-      }
-    }
-
-    // Rest = Free
-    for (const p of sorted) {
-      if (!map.has(p.id!)) map.set(p.id!, "free");
-    }
-
     return map;
   }, [predictions]);
 
@@ -278,7 +243,7 @@ export default function AIPredictions() {
   }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => getPredictionTier(p) === "free" && (p.confidence ?? 0) >= 55);
+    return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
   // Top 5 Picks: ranked by confidence + value signal from analysis

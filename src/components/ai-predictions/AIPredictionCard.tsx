@@ -52,11 +52,11 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Use overrideTier from parent (dynamic distribution) or fallback to is_premium flag
-  const isPremiumTier = overrideTier === "premium" || (!overrideTier && prediction.is_premium === true);
-  const isProTier = overrideTier === "pro" || (!overrideTier && !isPremiumTier && (prediction.confidence ?? 0) >= 73);
-  const isDailyTier = !isPremiumTier && !isProTier;
-  const displayTier: "free" | "pro" | "premium" = isPremiumTier ? "premium" : isProTier ? "pro" : "free";
+  // Use overrideTier from parent (market-probability-based) or fallback
+  const displayTier: "free" | "pro" | "premium" = overrideTier ?? (prediction.is_premium ? "premium" : "free");
+  const isPremiumTier = displayTier === "premium";
+  const isProTier = displayTier === "pro";
+  const isDailyTier = displayTier === "free";
 
   // Map to content tier for useUserPlan
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
