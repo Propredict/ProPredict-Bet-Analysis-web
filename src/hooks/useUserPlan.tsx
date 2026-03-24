@@ -50,6 +50,11 @@ interface UserPlanContextType {
    Helpers
 ===================== */
 
+/** Get today's date in Belgrade timezone (consistent with tip_date) */
+function getTodayBelgrade(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+}
+
 /** Sync plan + user_id tags to OneSignal for push segmentation */
 function syncOneSignalPlanTags(plan: UserPlan, userId: string) {
   const planMap: Record<UserPlan, string> = { free: "free", basic: "pro", premium: "premium" };
@@ -152,7 +157,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       /* ===== UNLOCKED CONTENT ===== */
       if (Array.isArray(unlocksRes.data)) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = getTodayBelgrade();
         const validUnlocks = unlocksRes.data.filter((u: any) => u.unlocked_date === today);
         setUnlockedContent(
           validUnlocks.map((u: any) => ({
@@ -418,7 +423,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     async (contentType: ContentType, contentId: string) => {
       if (!user) return false;
 
-      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const today = getTodayBelgrade();
 
       const { error } = await supabase.from("user_unlocks").insert({
         user_id: user.id,
@@ -433,7 +438,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       }
 
       // Add to local state (deduplicated)
-      const endOfDay = new Date(today + "T23:59:59Z");
+      const endOfDay = new Date(today + "T23:59:59+01:00");
       setUnlockedContent((prev) => {
         const exists = prev.some(
           (u) => u.contentType === contentType && u.contentId === contentId
@@ -475,8 +480,8 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         console.log("[UserPlan] 🔓 Unlocking:", contentType, contentId);
 
         // IMMEDIATELY update local state for instant card re-render
-        const today = new Date().toISOString().split("T")[0];
-        const endOfDay = new Date(today + "T23:59:59Z");
+        const today = getTodayBelgrade();
+        const endOfDay = new Date(today + "T23:59:59+01:00"); // CET end-of-day
         setUnlockedContent((prev) => {
           const next = [...prev, { contentType, contentId, expiresAt: endOfDay }];
           console.log("[UserPlan] 📦 unlockedContent updated, count:", next.length);
@@ -491,11 +496,25 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
         // Persist to Supabase in the background, then refetch so view returns unmasked data
         unlockContent(contentType, contentId)
-          .then((ok) => {
+          .then(async (ok) => {
             console.log("[UserPlan] 💾 DB persist result:", ok);
             if (ok) {
+              // Verify the write by re-reading
+              const { data: verify } = await supabase
+                .from("user_unlocks")
+                .select("id")
+                .eq("user_id", user!.id)
+                .eq("content_id", contentId)
+                .eq("content_type", contentType)
+                .maybeSingle();
+              console.log("[UserPlan] ✅ DB verify:", verify ? "FOUND" : "NOT FOUND");
+              if (!verify) {
+                console.error("[UserPlan] ⚠️ Unlock written but not found on verify!");
+              }
               queryClient.invalidateQueries({ queryKey: ["tips"] });
               queryClient.invalidateQueries({ queryKey: ["tickets"] });
+            } else {
+              console.error("[UserPlan] ⚠️ unlockContent returned false — DB write may have failed");
             }
           })
           .catch((err) =>
