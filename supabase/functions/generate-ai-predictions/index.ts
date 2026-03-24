@@ -203,6 +203,7 @@ const topScorersCache = new Map<string, { name: string; team: string; goals: num
 const injuriesCache = new Map<string, InjuryInfo[]>();
 const standingsCache = new Map<string, StandingEntry[]>();
 const oddsCache = new Map<string, OddsData | null>();
+const leagueAccuracyCache = new Map<string, number>();
 
 interface StandingEntry {
   teamId: number;
