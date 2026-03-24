@@ -1730,8 +1730,9 @@ function calculateFormScoreDeep(form: FormMatch[]): number {
 
 /**
  * Assign tiers to all predictions based on confidence (STRICT):
- * - FREE: confidence < 65%
- * - PRO: 65–84%
+ * - HIDDEN: confidence < 60% (not displayed)
+ * - FREE: confidence >= 60% AND < 75%
+ * - PRO: 75–84%
  * - PREMIUM: >= 85%
  * No exceptions (risk/draw caps must NOT downgrade >=85% into PRO).
  * Tier assignment must run AFTER regeneration.
