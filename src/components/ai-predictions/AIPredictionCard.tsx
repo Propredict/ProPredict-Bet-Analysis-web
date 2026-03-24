@@ -50,9 +50,9 @@ const AIPredictionCardInner = ({
   const { isAndroidApp } = usePlatform();
 
   // Determine prediction tier based on confidence thresholds
-  // FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
-  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 85) || (prediction.is_premium && prediction.confidence == null);
-  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 75;
+  // FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
+  const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 83) || (prediction.is_premium && prediction.confidence == null);
+  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 73;
   const isDailyTier = !isPremiumTier && !isProTier;
 
   // Map to content tier for useUserPlan

@@ -117,11 +117,11 @@ export default function AIPredictions() {
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
   // Tier rules (must match backend tier thresholds)
-  // HIDDEN: <60% (filtered out below), FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
+  // HIDDEN: <60% (filtered out below), FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
     if (prediction.is_premium && prediction.confidence == null) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 85) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 75) return "pro";
+    if (prediction.confidence != null && prediction.confidence >= 83) return "premium";
+    if (prediction.confidence != null && prediction.confidence >= 73) return "pro";
     return "free";
   };
 
