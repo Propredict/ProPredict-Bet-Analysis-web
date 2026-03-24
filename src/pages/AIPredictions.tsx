@@ -550,8 +550,38 @@ export default function AIPredictions() {
             </div>
           </Card>
 
+          {/* Market Type Filter — Horizontal scrollable */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+            {([
+              { key: "all" as MarketFilter, label: "All Picks", icon: <Target className="w-3 h-3" /> },
+              { key: "home_win" as MarketFilter, label: "Home Win", icon: <Trophy className="w-3 h-3" /> },
+              { key: "away_win" as MarketFilter, label: "Away Win", icon: <Sparkles className="w-3 h-3" /> },
+              { key: "draw" as MarketFilter, label: "Draw", icon: <Heart className="w-3 h-3" /> },
+              { key: "over25" as MarketFilter, label: "Over 2.5", icon: <TrendingUp className="w-3 h-3" /> },
+              { key: "under25" as MarketFilter, label: "Under 2.5", icon: <TrendingUp className="w-3 h-3" /> },
+              { key: "btts_yes" as MarketFilter, label: "BTTS", icon: <Zap className="w-3 h-3" /> },
+            ] as const).map((item) => {
+              const count = item.key === "all" ? predictions.length : marketCounts[item.key];
+              return (
+                <Button
+                  key={item.key}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-7 px-2.5 text-[10px] font-medium rounded-full whitespace-nowrap flex-shrink-0 gap-1 transition-all",
+                    marketFilter === item.key
+                      ? "bg-primary/25 text-primary border border-primary shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+                      : "bg-card/60 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/40"
+                  )}
+                  onClick={() => setMarketFilter(item.key)}
+                >
+                  {item.icon}
+                  {item.label} ({count})
+                </Button>
+              );
+            })}
+          </div>
 
-          {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
                 <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
