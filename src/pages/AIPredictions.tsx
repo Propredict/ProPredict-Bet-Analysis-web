@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { calculateGoalMarketProbs, getBestMarketProbability, getBestComboProb, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
 
 
@@ -116,32 +116,12 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier assignment: use highest market probability + value/combo boosts + top 5
+  // Simple tier assignment: highest market probability only
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
-    
-    // First pass: calculate scores and base tiers
-    const scored = predictions.map(p => ({
-      prediction: p,
-      bestProb: getBestMarketProbability(p),
-      comboProb: getBestComboProb(p),
-      valueBet: isValueBet(p),
-    }));
-    
-    // Sort by bestProb descending to find top 5
-    const sorted = [...scored].sort((a, b) => b.bestProb - a.bestProb);
-    const top5Ids = new Set(sorted.slice(0, 5).map(s => s.prediction.id!));
-    
-    for (const s of scored) {
-      // Top 5 always premium
-      if (top5Ids.has(s.prediction.id!)) {
-        map.set(s.prediction.id!, "premium");
-      } else {
-        map.set(s.prediction.id!, getTierFromMarketProbability(s.bestProb, {
-          isValueBet: s.valueBet,
-          comboProb: s.comboProb,
-        }));
-      }
+    for (const p of predictions) {
+      const bestProb = getBestMarketProbability(p);
+      map.set(p.id!, getTierFromMarketProbability(bestProb));
     }
     return map;
   }, [predictions]);

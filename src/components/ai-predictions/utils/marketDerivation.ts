@@ -292,45 +292,13 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 }
 
 /**
- * Get combo market probability (best combo from derived markets)
+ * Simple tier assignment — highest market probability only:
+ *   80%+ → Premium
+ *   70-79% → Pro
+ *   <70% → Free
  */
-export function getBestComboProb(prediction: AIPrediction): number {
-  const probs = calculateGoalMarketProbs(prediction);
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  
-  // Estimate combo probabilities: result + goals market
-  // Combo prob ≈ result_prob * goals_prob (simplified)
-  const bestResult = Math.max(hw, aw) / 100;
-  const bestGoals = Math.max(probs.over15, probs.over25, probs.under25) / 100;
-  const comboProb = Math.round(bestResult * bestGoals * 100);
-  
-  return comboProb;
-}
-
-/**
- * Tier assignment based on best market probability with value & combo boosts:
- *   75%+ → Premium
- *   65-74% → Pro  
- *   <65% → Free
- * 
- * Boosts to Premium:
- *   - probability ≥ 72% AND value bet (edge ≥ 10%) → Premium
- *   - combo probability ≥ 70% → Premium
- */
-export function getTierFromMarketProbability(
-  bestProb: number,
-  options?: { isValueBet?: boolean; comboProb?: number }
-): "free" | "pro" | "premium" {
-  // Base threshold
-  if (bestProb >= 75) return "premium";
-  
-  // Value boost: 72%+ with value bet → Premium
-  if (bestProb >= 72 && options?.isValueBet) return "premium";
-  
-  // Combo boost: combo prob ≥ 70% → Premium
-  if ((options?.comboProb ?? 0) >= 70) return "premium";
-  
-  if (bestProb >= 65) return "pro";
+export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
+  if (bestProb >= 80) return "premium";
+  if (bestProb >= 70) return "pro";
   return "free";
 }
