@@ -207,8 +207,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       </div>
 
-      {/* ⚽ Goal Market Probabilities (Poisson) */}
-      {hasAccess && (
+      {/* ⚽ Goal Market Probabilities (Poisson) - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
           {/* Over 2.5 */}
           <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
@@ -252,8 +252,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* Value Bet Badge */}
-      {hasAccess && isValueBet(prediction) && (
+      {/* Value Bet Badge - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && isValueBet(prediction) && (
         <div className="pt-1">
           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg">
             <Flame className="w-3 h-3 mr-1" />
