@@ -131,6 +131,7 @@ interface FormMatch {
   goalsFor: number;
   goalsAgainst: number;
   isHome: boolean;
+  opponentId: number;
 }
 
 interface PredictionResult {
