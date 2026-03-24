@@ -247,11 +247,13 @@ serve(async (req: Request) => {
     const validPredictions = predictions.filter(
       (p: any) => {
         const analysis = (p.analysis || "").toLowerCase();
-        // Exclude if analysis says pending/not found
-        if (analysis.includes("pending regeneration") || analysis.includes("not found")) return false;
-        // Exclude if confidence is exactly 50 and analysis is generic pending
-        if (p.confidence === 50 && analysis.includes("pending")) return false;
-        // Include everything else — even locked predictions with real fallback analysis
+        // Exclude if analysis says "pending regeneration" or "not found in api" — truly no data
+        if (analysis.includes("pending regeneration")) return false;
+        if (analysis.includes("not found in api")) return false;
+        if (analysis.includes("insufficient form data") && p.confidence <= 50) return false;
+        // Exclude if probabilities are exactly 33/34/33 — placeholder
+        if (p.home_win === 33 && p.draw === 34 && p.away_win === 33) return false;
+        // Include odds-based fallback predictions (e.g. "Limited team-form data")
         return true;
       }
     );
