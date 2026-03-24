@@ -271,3 +271,35 @@ export function getRiskLevelColor(riskLevel: string | null) {
       return "bg-gray-500/20 text-gray-400 border-gray-500/30";
   }
 }
+
+/**
+ * Get the highest market probability for a prediction.
+ * Checks 1X2 (normalized), Over/Under 2.5, BTTS — returns the best one.
+ * This is the SINGLE number used for tier assignment.
+ */
+export function getBestMarketProbability(prediction: AIPrediction): number {
+  const hw = prediction.home_win ?? 0;
+  const aw = prediction.away_win ?? 0;
+  const d = prediction.draw ?? 0;
+  const probs = calculateGoalMarketProbs(prediction);
+
+  // Normalize 1X2 probabilities (pairwise vs strongest rival)
+  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
+  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
+  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+
+  return Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
+}
+
+/**
+ * Simple tier assignment based on best market probability:
+ *   85%+ → Premium
+ *   75-84% → Pro
+ *   60-74% → Free
+ *   <60% → Free (still shown)
+ */
+export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
+  if (bestProb >= 85) return "premium";
+  if (bestProb >= 75) return "pro";
+  return "free";
+}
