@@ -1889,7 +1889,7 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === GUARANTEED TIER DISTRIBUTION ===
+  // === GUARANTEED TIER DISTRIBUTION WITH MINIMUM CONFIDENCE ===
   // Sort by confidence descending (already sorted from query)
   const sorted = allPredictions
     .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
@@ -1901,27 +1901,26 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // GUARANTEED MINIMUMS
-  const PREMIUM_MIN = 3;
-  const PREMIUM_MAX = Math.min(10, Math.max(5, Math.ceil(total * 0.10)));
-  const PRO_MIN = 5;
-  const PRO_MAX = Math.max(15, Math.ceil(total * 0.30));
+  // MINIMUM CONFIDENCE THRESHOLDS - predictions MUST meet these to be in a tier
+  const TIER_MIN_CONFIDENCE_PREMIUM = 75;
+  const TIER_MIN_CONFIDENCE_PRO = 65;
 
-  // Step 1: Assign Premium = top N (at least PREMIUM_MIN, up to PREMIUM_MAX)
-  const premiumCount = Math.min(PREMIUM_MAX, Math.max(PREMIUM_MIN, Math.ceil(total * 0.10)));
-  const actualPremiumCount = Math.min(premiumCount, total);
+  // TARGET COUNTS (soft targets, only if confidence threshold is met)
+  const PREMIUM_TARGET = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
+  const PRO_TARGET = Math.min(15, Math.max(5, Math.ceil(total * 0.30)));
 
-  // Step 2: Assign Pro = next N (at least PRO_MIN, up to PRO_MAX)
-  const remaining = total - actualPremiumCount;
-  const proCount = Math.min(PRO_MAX, Math.max(PRO_MIN, Math.ceil(total * 0.30)));
-  const actualProCount = Math.min(proCount, remaining);
+  // Step 1: Premium = top matches that have confidence >= 75%, up to target
+  const premiumEligible = sorted.filter((p: any) => (p.confidence ?? 0) >= TIER_MIN_CONFIDENCE_PREMIUM);
+  const premiumPreds = premiumEligible.slice(0, PREMIUM_TARGET);
+  const premiumIdSet = new Set(premiumPreds.map((p: any) => p.id));
 
-  // Step 3: Rest = Free
-  const actualFreeCount = total - actualPremiumCount - actualProCount;
+  // Step 2: Pro = next matches (not already premium) with confidence >= 65%, up to target
+  const proEligible = sorted.filter((p: any) => !premiumIdSet.has(p.id) && (p.confidence ?? 0) >= TIER_MIN_CONFIDENCE_PRO);
+  const proPreds = proEligible.slice(0, PRO_TARGET);
+  const proIdSet = new Set(proPreds.map((p: any) => p.id));
 
-  const premiumPreds = sorted.slice(0, actualPremiumCount);
-  const proPreds = sorted.slice(actualPremiumCount, actualPremiumCount + actualProCount);
-  const freePreds = sorted.slice(actualPremiumCount + actualProCount);
+  // Step 3: Rest = Free (everything not premium or pro)
+  const freePreds = sorted.filter((p: any) => !premiumIdSet.has(p.id) && !proIdSet.has(p.id));
 
   const premiumIds = premiumPreds.map((p: any) => p.id);
   const proIds = proPreds.map((p: any) => p.id);
