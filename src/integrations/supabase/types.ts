@@ -770,6 +770,15 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_accuracy_by_league: {
+        Row: {
+          accuracy: number | null
+          league: string | null
+          resolved_count: number | null
+          won_count: number | null
+        }
+        Relationships: []
+      }
       ai_prediction_leagues: {
         Row: {
           league: string | null
