@@ -117,13 +117,11 @@ export default function AIPredictions() {
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
   // Tier rules (must match backend tier thresholds)
+  // HIDDEN: <60% (filtered out below), FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    // When confidence is NULL, the secure view masked it → user lacks access to that tier
-    // If is_premium is true and confidence is null, it's premium tier (masked by view)
     if (prediction.is_premium && prediction.confidence == null) return "premium";
-    // Tier based on confidence thresholds: FREE <65, PRO 65-84, PREMIUM ≥85
     if (prediction.confidence != null && prediction.confidence >= 85) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 65) return "pro";
+    if (prediction.confidence != null && prediction.confidence >= 75) return "pro";
     return "free";
   };
 
@@ -194,7 +192,8 @@ export default function AIPredictions() {
 
   // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
-    let result = predictions;
+    // Hide predictions below 60% confidence
+    let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 60 : true);
     
     // Filter by tier if not "all"
     if (tierFilter !== "all") {

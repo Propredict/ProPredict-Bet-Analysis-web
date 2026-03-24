@@ -49,13 +49,10 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Determine prediction tier based on confidence and is_premium flag
-  // When confidence is NULL, the secure view masked it → user lacks access
-  // Premium: is_premium = true AND (confidence >= 85 OR confidence is null/masked)
-  // Pro/Exclusive: confidence >= 65 (and not premium)
-  // Daily: everything else (open for all)
+  // Determine prediction tier based on confidence thresholds
+  // FREE: 60-74%, PRO: 75-84%, PREMIUM: ≥85%
   const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 85) || (prediction.is_premium && prediction.confidence == null);
-  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 65;
+  const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 75;
   const isDailyTier = !isPremiumTier && !isProTier;
 
   // Map to content tier for useUserPlan

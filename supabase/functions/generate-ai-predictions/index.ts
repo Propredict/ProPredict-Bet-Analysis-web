@@ -10,11 +10,13 @@ const corsHeaders = {
 };
 
 // ============ TIER CRITERIA ============
-// FREE: confidence < 65%
-// PRO (exclusive): confidence >= 65% AND < 85%
+// HIDDEN: confidence < 60% (not saved/displayed)
+// FREE: confidence >= 60% AND < 75%
+// PRO (exclusive): confidence >= 75% AND < 85%
 // PREMIUM: confidence >= 85%
-const FREE_MAX_CONFIDENCE = 64;
-const PRO_MIN_CONFIDENCE = 65;
+const MIN_DISPLAY_CONFIDENCE = 60;
+const FREE_MAX_CONFIDENCE = 74;
+const PRO_MIN_CONFIDENCE = 75;
 const PRO_MAX_CONFIDENCE = 84;
 const PREMIUM_MIN_CONFIDENCE = 85;
 
