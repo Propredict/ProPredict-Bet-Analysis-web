@@ -116,24 +116,39 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Dynamic tier distribution: top 10% → Premium, next 30% → Pro, rest → Free
-  // Computed from all visible predictions sorted by confidence
-  const tierCutoffs = useMemo(() => {
-    const sorted = [...predictions].filter(p => (p.confidence ?? 0) >= 60).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+  // Guaranteed tier distribution: Premium ≥3, Pro ≥5, rest Free
+  // Mirrors backend logic exactly
+  const tierAssignment = useMemo(() => {
+    const sorted = [...predictions]
+      .filter(p => (p.confidence ?? 0) >= 60)
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     const total = sorted.length;
-    const premiumCount = Math.max(1, Math.ceil(total * 0.10));
-    const proCount = Math.max(1, Math.ceil(total * 0.30));
-    const premiumMinConf = sorted[premiumCount - 1]?.confidence ?? 83;
-    const proMinConf = sorted[premiumCount + proCount - 1]?.confidence ?? 73;
-    return { premiumMinConf, proMinConf };
+    if (total === 0) return new Map<string, "free" | "pro" | "premium">();
+
+    const premiumCount = Math.min(
+      Math.min(10, Math.max(5, Math.ceil(total * 0.10))),
+      Math.max(3, Math.ceil(total * 0.10)),
+      total
+    );
+    const remaining = total - premiumCount;
+    const proCount = Math.min(
+      Math.max(15, Math.ceil(total * 0.30)),
+      Math.max(5, Math.ceil(total * 0.30)),
+      remaining
+    );
+
+    const map = new Map<string, "free" | "pro" | "premium">();
+    sorted.forEach((p, i) => {
+      if (i < premiumCount) map.set(p.id!, "premium");
+      else if (i < premiumCount + proCount) map.set(p.id!, "pro");
+      else map.set(p.id!, "free");
+    });
+    return map;
   }, [predictions]);
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
     if (prediction.is_premium) return "premium";
-    const conf = prediction.confidence ?? 0;
-    if (conf >= tierCutoffs.premiumMinConf) return "premium";
-    if (conf >= tierCutoffs.proMinConf) return "pro";
-    return "free";
+    return tierAssignment.get(prediction.id!) ?? "free";
   };
 
   // Calculate accuracy per tier (FREE, PRO, PREMIUM)
