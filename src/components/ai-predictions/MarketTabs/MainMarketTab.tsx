@@ -83,9 +83,10 @@ function getBestPickReason(prediction: AIPrediction): string {
 interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
+  displayTier?: "free" | "pro" | "premium";
 }
 
-export function MainMarketTab({ prediction, hasAccess }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const markets = deriveMarkets(prediction);
   const goalProbs = calculateGoalMarketProbs(prediction);
   
@@ -206,8 +207,8 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
-      {/* ⚽ Goal Market Probabilities (Poisson) */}
-      {hasAccess && (
+      {/* ⚽ Goal Market Probabilities (Poisson) - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
           {/* Over 2.5 */}
           <div className="bg-card/40 border border-border/50 rounded-lg p-1.5 md:p-2 text-center">
@@ -251,8 +252,8 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       )}
 
-      {/* Value Bet Badge */}
-      {hasAccess && isValueBet(prediction) && (
+      {/* Value Bet Badge - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && isValueBet(prediction) && (
         <div className="pt-1">
           <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 font-semibold rounded-lg">
             <Flame className="w-3 h-3 mr-1" />
@@ -263,7 +264,9 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
 
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
-          <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
+        <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">
+          {displayTier === "free" ? "Safe Pick" : "Best Pick"}
+        </div>
           <div className={cn(
             "text-sm md:text-base font-bold text-white flex items-center gap-1.5",
             !hasAccess && "blur-sm select-none"
@@ -291,15 +294,15 @@ export function MainMarketTab({ prediction, hasAccess }: Props) {
         </div>
       </div>
 
-      {/* Best Pick Reason */}
-      {hasAccess && (
+      {/* Best Pick Reason - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <p className="text-[9px] md:text-[10px] text-muted-foreground/80 mt-1 line-clamp-2">
           {getBestPickReason(prediction)}
         </p>
       )}
 
-      {/* Confidence Explanation - Dynamic based on prediction context */}
-      {hasAccess && (
+      {/* Confidence Explanation - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <p className="text-[10px] md:text-xs text-muted-foreground italic border-t border-[#1e3a5f]/30 pt-2 md:pt-3 line-clamp-2">
           {getShortConfidenceExplanation(prediction)}
         </p>

@@ -54,6 +54,7 @@ const AIPredictionCardInner = ({
   const isPremiumTier = (prediction.confidence != null && prediction.confidence >= 83) || (prediction.is_premium && prediction.confidence == null);
   const isProTier = !isPremiumTier && prediction.confidence != null && prediction.confidence >= 73;
   const isDailyTier = !isPremiumTier && !isProTier;
+  const displayTier: "free" | "pro" | "premium" = isPremiumTier ? "premium" : isProTier ? "pro" : "free";
 
   // Map to content tier for useUserPlan
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
@@ -132,20 +133,18 @@ const AIPredictionCardInner = ({
                 PREMIUM
               </Badge>
             )}
-            {/* SUPER VALUE badge */}
-            {prediction.analysis?.includes("SUPER VALUE") && (
+            {/* Value badges - only PRO and PREMIUM */}
+            {displayTier !== "free" && prediction.analysis?.includes("SUPER VALUE") && (
               <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
                 🔥 SUPER VALUE
               </Badge>
             )}
-            {/* STRONG VALUE badge */}
-            {!prediction.analysis?.includes("SUPER VALUE") && prediction.analysis?.includes("STRONG VALUE BET") && (
+            {displayTier !== "free" && !prediction.analysis?.includes("SUPER VALUE") && prediction.analysis?.includes("STRONG VALUE BET") && (
               <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
                 🔥 STRONG VALUE
               </Badge>
             )}
-            {/* Regular Value badge */}
-            {!prediction.analysis?.includes("SUPER VALUE") && !prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
+            {displayTier !== "free" && !prediction.analysis?.includes("SUPER VALUE") && !prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
               <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
                 🔥 Value
               </Badge>
@@ -169,48 +168,67 @@ const AIPredictionCardInner = ({
         {/* Market Tabs */}
         <div className="px-2 md:px-3 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 bg-[#1e3a5f]/30 h-6 md:h-7 rounded">
+            <TabsList className={cn(
+              "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded",
+              displayTier === "free" ? "grid grid-cols-1" : displayTier === "pro" ? "grid grid-cols-3" : "grid grid-cols-5"
+            )}>
               <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                Goals
-              </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                BTTS
-              </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                DC
-              </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                Combo
-              </TabsTrigger>
+              {displayTier !== "free" && (
+                <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                  Goals
+                </TabsTrigger>
+              )}
+              {displayTier !== "free" && (
+                <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                  BTTS
+                </TabsTrigger>
+              )}
+              {displayTier === "premium" && (
+                <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                  DC
+                </TabsTrigger>
+              )}
+              {displayTier === "premium" && (
+                <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                  Combo
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
-              <MainMarketTab prediction={prediction} hasAccess={hasAccess} />
+              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} />
             </TabsContent>
 
-            <TabsContent value="goals" className="mt-2 md:mt-3">
-              <GoalsMarketTab prediction={prediction} hasAccess={hasAccess} />
-            </TabsContent>
+            {displayTier !== "free" && (
+              <TabsContent value="goals" className="mt-2 md:mt-3">
+                <GoalsMarketTab prediction={prediction} hasAccess={hasAccess} />
+              </TabsContent>
+            )}
 
-            <TabsContent value="btts" className="mt-2 md:mt-3">
-              <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
-            </TabsContent>
+            {displayTier !== "free" && (
+              <TabsContent value="btts" className="mt-2 md:mt-3">
+                <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
+              </TabsContent>
+            )}
 
-            <TabsContent value="double" className="mt-2 md:mt-3">
-              <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
-            </TabsContent>
+            {displayTier === "premium" && (
+              <TabsContent value="double" className="mt-2 md:mt-3">
+                <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
+              </TabsContent>
+            )}
 
-            <TabsContent value="combos" className="mt-2 md:mt-3">
-              <CombosMarketTab prediction={prediction} hasAccess={hasAccess} />
-            </TabsContent>
+            {displayTier === "premium" && (
+              <TabsContent value="combos" className="mt-2 md:mt-3">
+                <CombosMarketTab prediction={prediction} hasAccess={hasAccess} />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
 
-        {/* AI Analysis - Only visible when unlocked */}
-        {hasAccess && (
+        {/* AI Analysis - Only visible for PRO/PREMIUM when unlocked */}
+        {hasAccess && displayTier !== "free" && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
