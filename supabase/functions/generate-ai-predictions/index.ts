@@ -1195,49 +1195,13 @@ function calculatePrediction(
   }
   if (style.label !== "Balanced matchup") analysisReasons.push(style.label);
   
-  // Value bet reasoning
-  if (odds && valuePercent !== 0) {
-    if (finalIsSuperValueBet) {
-      analysisReasons.push(`🔥 SUPER VALUE: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
-    } else if (finalIsStrongValueBet) {
-      analysisReasons.push(`🔥 STRONG VALUE BET: +${Math.round(valuePercent)}% edge vs market (conf ${confidence}%)`);
-    } else if (isValueBet) {
-      analysisReasons.push(`🔥 Value Bet: +${Math.round(valuePercent)}% edge vs bookmaker`);
-    } else if (valuePercent >= 5) {
-      analysisReasons.push(`Value edge: +${Math.round(valuePercent)}% vs market`);
-    } else if (valuePercent < -5) {
-      analysisReasons.push(`⚠️ Market divergence: ${Math.round(valuePercent)}% (bookmaker disagrees)`);
-    }
-  }
-
-  // Multi-signal info
-  if (signalsTotal >= 3) {
-    analysisReasons.push(`Signal alignment: ${signalsAligned}/${signalsTotal} factors agree`);
-  }
-
-  // Uncertainty zone warning
-  if (isUncertaintyZone && isGoalMarketPick) {
-    analysisReasons.push(`⚠️ Uncertainty zone: xG ${xgTotal} is borderline (2.2-2.6)`);
-  }
-
-  // Odds alignment info
-  if (odds && Math.abs(oddsAlignmentAdjust) >= 2) {
-    if (oddsAlignmentAdjust > 0) analysisReasons.push(`✅ AI-Odds aligned: bookmaker confirms pick`);
-    else analysisReasons.push(`⚠️ AI-Odds mismatch: bookmaker disagrees by ${Math.round(Math.abs(aiProb - bookmakerProb))}%`);
-  }
-
-  for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
-
   // Recent form insight
   const homeRecentWins = homeForm.slice(0, 5).filter(m => m.result === "W").length;
   const awayRecentWins = awayForm.slice(0, 5).filter(m => m.result === "W").length;
   if (homeRecentWins >= 4) analysisReasons.push(`${homeTeamName}: ${homeRecentWins}/5 recent wins`);
   if (awayRecentWins >= 4) analysisReasons.push(`${awayTeamName}: ${awayRecentWins}/5 recent wins`);
 
-  // Alternative pick reasoning
-  if (altMarket) {
-    analysisReasons.push(`Alternative pick: ${altMarket.label} (${altMarket.prob}%)`);
-  }
+  for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
   const analysis = generateAnalysisV2({
     homeTeamName, awayTeamName, prediction,
