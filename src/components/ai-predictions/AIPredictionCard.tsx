@@ -227,8 +227,8 @@ const AIPredictionCardInner = ({
           </Tabs>
         </div>
 
-        {/* AI Analysis - Only visible when unlocked */}
-        {hasAccess && (
+        {/* AI Analysis - Only visible for PRO/PREMIUM when unlocked */}
+        {hasAccess && displayTier !== "free" && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
