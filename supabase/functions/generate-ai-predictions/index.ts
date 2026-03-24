@@ -949,14 +949,18 @@ function calculatePrediction(
   const homeSquadScore = clamp(50 + (homeEffScored - homeEffConceded) * 18, 0, 100);
   const awaySquadScore = clamp(50 + (awayEffScored - awayEffConceded) * 18, 0, 100);
 
-  // === HOME ADVANTAGE (8%) ===
-  let homeAdvantageScore = 51;
-  let awayAdvantageScore = 49;
+  // === HOME ADVANTAGE (8%) — PER-LEAGUE DYNAMIC ===
+  // Use league-specific home advantage instead of fixed value
+  const leagueHomeAdv = (standings && leagueId) ? calculateLeagueHomeAdvantage(standings, leagueId) : 52;
+  const homeAdvBase = leagueHomeAdv / 100; // Convert to 0-1 range
+  let homeAdvantageScore = clamp(50 + (homeAdvBase - 0.45) * 20, 48, 58);
+  let awayAdvantageScore = clamp(100 - homeAdvantageScore, 42, 52);
   if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
     const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
     const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
-    homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
-    awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
+    // Blend team-specific with league-average (60% team, 40% league)
+    homeAdvantageScore = clamp(homeAdvantageScore * 0.4 + (50 + (homeWinRateAtHome - 0.4) * 12) * 0.6, 46, 60);
+    awayAdvantageScore = clamp(awayAdvantageScore * 0.4 + (50 + (awayWinRateAway - 0.3) * 10) * 0.6, 40, 55);
   }
 
   // === H2H (12%) ===
