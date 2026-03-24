@@ -320,10 +320,27 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
 }
 
 /**
- * Get the highest market probability for a prediction.
+ * Get the RAW (display) probability for the best pick — without PRIMARY_BOOST.
+ * This is what users see AND what determines the tier.
  */
 export function getBestMarketProbability(prediction: AIPrediction): number {
-  return getMarketCandidates(prediction)[0].prob;
+  const bestType = getBestPickType(prediction);
+  const hw = prediction.home_win ?? 0;
+  const aw = prediction.away_win ?? 0;
+  const d = prediction.draw ?? 0;
+  const probs = calculateGoalMarketProbs(prediction);
+
+  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
+  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
+  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+
+  const rawProbs: Record<MarketType, number> = {
+    home_win: norm1, away_win: norm2, draw: normX,
+    over25: probs.over25, under25: probs.under25,
+    btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
+  };
+
+  return rawProbs[bestType];
 }
 
 /**
