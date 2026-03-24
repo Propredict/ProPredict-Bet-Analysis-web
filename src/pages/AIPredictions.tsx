@@ -814,7 +814,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                    </React.Fragment>
+                    </div>
                   );
                 })}
               </div>
