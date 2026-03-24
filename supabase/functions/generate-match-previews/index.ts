@@ -214,8 +214,16 @@ serve(async (req: Request) => {
     }
 
     // Step 2: Filter out pending predictions, sort by risk (low first) then confidence
+    // Filter: exclude predictions that are placeholder/pending with no real analysis
     const validPredictions = predictions.filter(
-      (p: any) => !(p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending"))
+      (p: any) => {
+        // Exclude if confidence is exactly 50 and analysis says pending
+        if (p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending")) return false;
+        // Exclude if locked AND confidence is 0 or null (truly no data)
+        if (p.is_locked && (!p.confidence || p.confidence === 0)) return false;
+        // Include everything else — locked predictions with real data are fine for previews
+        return true;
+      }
     );
 
     // Sort: low risk first, then medium, then high, within each tier by confidence desc
