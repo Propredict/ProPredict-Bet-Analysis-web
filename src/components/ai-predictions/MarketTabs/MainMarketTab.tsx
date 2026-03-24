@@ -264,7 +264,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
       <div className="flex items-end justify-between pt-1.5 md:pt-2">
         <div>
-          <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">Best Pick</div>
+        <div className="text-[9px] md:text-[11px] text-muted-foreground mb-0.5">
+          {displayTier === "free" ? "Safe Pick" : "Best Pick"}
+        </div>
           <div className={cn(
             "text-sm md:text-base font-bold text-white flex items-center gap-1.5",
             !hasAccess && "blur-sm select-none"
@@ -292,15 +294,15 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       </div>
 
-      {/* Best Pick Reason */}
-      {hasAccess && (
+      {/* Best Pick Reason - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <p className="text-[9px] md:text-[10px] text-muted-foreground/80 mt-1 line-clamp-2">
           {getBestPickReason(prediction)}
         </p>
       )}
 
-      {/* Confidence Explanation - Dynamic based on prediction context */}
-      {hasAccess && (
+      {/* Confidence Explanation - PRO and PREMIUM only */}
+      {hasAccess && displayTier !== "free" && (
         <p className="text-[10px] md:text-xs text-muted-foreground italic border-t border-[#1e3a5f]/30 pt-2 md:pt-3 line-clamp-2">
           {getShortConfidenceExplanation(prediction)}
         </p>
