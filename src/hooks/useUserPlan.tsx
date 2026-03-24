@@ -496,11 +496,25 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
         // Persist to Supabase in the background, then refetch so view returns unmasked data
         unlockContent(contentType, contentId)
-          .then((ok) => {
+          .then(async (ok) => {
             console.log("[UserPlan] 💾 DB persist result:", ok);
             if (ok) {
+              // Verify the write by re-reading
+              const { data: verify } = await supabase
+                .from("user_unlocks")
+                .select("id")
+                .eq("user_id", user!.id)
+                .eq("content_id", contentId)
+                .eq("content_type", contentType)
+                .maybeSingle();
+              console.log("[UserPlan] ✅ DB verify:", verify ? "FOUND" : "NOT FOUND");
+              if (!verify) {
+                console.error("[UserPlan] ⚠️ Unlock written but not found on verify!");
+              }
               queryClient.invalidateQueries({ queryKey: ["tips"] });
               queryClient.invalidateQueries({ queryKey: ["tickets"] });
+            } else {
+              console.error("[UserPlan] ⚠️ unlockContent returned false — DB write may have failed");
             }
           })
           .catch((err) =>
