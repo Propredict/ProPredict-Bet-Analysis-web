@@ -201,6 +201,28 @@ const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
 const injuriesCache = new Map<string, InjuryInfo[]>();
+const standingsCache = new Map<string, StandingEntry[]>();
+const oddsCache = new Map<string, OddsData | null>();
+
+interface StandingEntry {
+  teamId: number;
+  rank: number;
+  points: number;
+  played: number;
+  goalsDiff: number;
+  form: string;
+  totalTeams: number;
+}
+
+interface OddsData {
+  homeOdds: number;
+  drawOdds: number;
+  awayOdds: number;
+  // Implied probabilities from bookmaker
+  homeProb: number;
+  drawProb: number;
+  awayProb: number;
+}
 
 interface InjuryInfo {
   name: string;
