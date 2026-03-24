@@ -322,14 +322,22 @@ export default function MatchPreviews() {
   );
 }
 
-function getPredictionLabel(prediction: string | null): string {
-  if (!prediction) return "—";
-  const p = prediction.toLowerCase().trim();
-  if (p === "1" || p === "home") return "Home Win";
-  if (p === "x" || p === "draw") return "Draw";
-  if (p === "2" || p === "away") return "Away Win";
-  if (p.includes("over")) return "Over 2.5";
-  if (p.includes("under")) return "Under 2.5";
-  if (p.includes("btts")) return "BTTS";
-  return prediction;
+function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null }) {
+  const snippets: { icon: string; text: string }[] = [];
+  const hw = match.home_win ?? 0;
+  const aw = match.away_win ?? 0;
+  const favored = hw >= aw ? match.home_team : match.away_team;
+  const pct = Math.max(hw, aw);
+
+  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability — clear edge` });
+
+  if (match.key_factors && match.key_factors.length > 0) {
+    snippets.push({ icon: "🔧", text: match.key_factors[0] });
+  } else {
+    snippets.push({ icon: "🔧", text: "Goal trends and defensive weaknesses support an open game" });
+  }
+
+  snippets.push({ icon: "✨", text: `AI confidence is ${match.confidence ?? 0}% — strong conviction pick` });
+
+  return snippets;
 }
