@@ -1176,111 +1176,24 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === CONFIDENCE — MULTI-FACTOR FORMULA ===
+  // === CONFIDENCE = BEST MARKET PROBABILITY (SIMPLE) ===
+  // The confidence IS the probability of our best pick. No complex adjustments.
+  let confidence = bestProb;
+
+  // Only cap if data is very weak
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
   const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
-  const isBalanced = bestProb < 45;
-
-  // Data quality (0-1)
-  const dataQuality = (
-    (homeForm.length >= 8 ? 0.3 : homeForm.length >= 5 ? 0.2 : 0.1) +
-    (awayForm.length >= 8 ? 0.3 : awayForm.length >= 5 ? 0.2 : 0.1) +
-    (hasSeasonStats ? 0.2 : 0) +
-    (h2h.length >= 3 ? 0.1 : 0) +
-    (odds ? 0.1 : 0)
-  );
-
-  let confidence: number;
-  if (isBalanced) {
-    confidence = 62 + clamp((45 - bestProb) * 0.3, 0, 6); // Balanced matches get 62-68
-  } else {
-    const edge = clamp((bestProb - 45) / 25, 0, 1);
-    confidence = 64 + edge * 20; // Reaches ~84 at bestProb=70
-    if (hasMinMatches && bestProb >= 65 && signalStrength >= 0.6) {
-      confidence += clamp((bestProb - 65) / 10, 0, 1) * 12;
-    }
-  }
-
-  // Data quality & signal modifiers
-  confidence = confidence * (0.85 + dataQuality * 0.15);
-  confidence += (signalStrength - 0.5) * 6;
-
-  // H2H dominance bonus
-  if (h2h.length >= 3) {
-    if (Math.abs(calculateH2HScore(h2h, homeTeamId, awayTeamId) - 50) >= 30) confidence += 2;
-  }
-
-  // === Apply odds alignment (feature #2) ===
-  confidence += oddsAlignmentAdjust;
-
-  // === Apply multi-signal boost (feature #6) ===
-  confidence += multiSignalBoost;
-
-  // === Apply uncertainty zone penalty (feature #3) ===
-  confidence += uncertaintyPenalty;
-
-  // === Apply league style adjustment (feature #4) ===
-  confidence += leagueStyleAdjust;
-
-  // Value edge from odds
-  if (odds) {
-    if (valuePercent >= 10) confidence += 3; // Strong value
-    else if (valuePercent >= 5) confidence += 1;
-    else if (valuePercent <= -10) confidence -= 2; // Was -4
-    else if (valuePercent <= -5) confidence -= 1; // Was -2
-  }
-
-  // Match context & standings
-  confidence += context.confidenceBoost;
-  if (standings && standings.length > 0 && Math.abs(homeStandingsScore - awayStandingsScore) >= 40) {
-    confidence += 2;
-  }
-
-  // === CONFLICT FILTER penalty (feature #5 from previous, enhanced) ===
-  if (isConflicted) {
-    confidence -= 4; // Was -8
-  }
-
-  // === No viable market (all below 60%) → hard penalty ===
-  if (viableMarkets.length === 0) {
-    confidence -= 5; // Was -10
-  }
-
-  // Self-learning league penalty/boost
-  if (leagueName && leagueAccuracyCache.has(leagueName)) {
-    const acc = leagueAccuracyCache.get(leagueName)!;
-    if (acc < 50) confidence -= 2; // Was -4
-    else if (acc < 60) confidence -= 1; // Was -2
-    else if (acc > 80) confidence += 2;
-  }
-
-  // === 7. FAKE HIGH CONFIDENCE FIX ===
-  // Cap confidence when data is weak (small sample, bad league, low data quality)
-  confidence = Math.round(clamp(confidence, 50, 94)); // Was max 92
-  if (!hasMinMatches) confidence = Math.min(confidence, MIN_SEASON_CONFIDENCE_CAP); // 70 now
-  else if (!hasSeasonStats) confidence = Math.min(confidence, 65); // Was 60
   
-  // Softer data quality caps
-  if (dataQuality < 0.3) confidence = Math.min(confidence, 70); // Was 65
-  if (!odds) confidence = Math.min(confidence, 82); // Was 78
-  
-  confidence = calibrateConfidence(confidence);
+  if (!hasMinMatches) confidence = Math.min(confidence, 70);
+  if (!hasSeasonStats) confidence = Math.min(confidence, 65);
 
-  // === 9. VALUE GATE — only penalize truly negative value ===
-  // Only penalize when AI pick has NEGATIVE value vs bookmaker (valuePercent < 0)
-  if (odds && valuePercent < 0) {
-    const valuePenalty = Math.min(Math.round(Math.abs(valuePercent) * 0.5), 4);
-    confidence = Math.max(confidence - valuePenalty, 52);
-  }
+  // Clamp to realistic range
+  confidence = Math.round(clamp(confidence, 45, 92));
 
-  // Check strong/super value bet status with final confidence
-  const finalIsStrongValueBet = valuePercent >= 10 && confidence >= 75;
-  const finalIsSuperValueBet = valuePercent >= 12 && confidence >= 75;
-
-  // === RISK ===
+  // === RISK (simple) ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 72 && bestProb >= 60 && (!odds || valuePercent >= 5)) riskLevel = "low";
-  else if (confidence >= 62) riskLevel = "medium";
+  if (confidence >= 75) riskLevel = "low";
+  else if (confidence >= 60) riskLevel = "medium";
   else riskLevel = "high";
 
   // === RICH ANALYSIS ===
