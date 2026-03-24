@@ -1929,10 +1929,10 @@ async function assignTiers(
   const premiumMinConf = premiumPreds.length > 0 ? premiumPreds[premiumPreds.length - 1].confidence : 0;
   const proMinConf = proPreds.length > 0 ? proPreds[proPreds.length - 1].confidence : 0;
 
-  console.log(`\n=== GUARANTEED TIER DISTRIBUTION ===`);
+  console.log(`\n=== TIER DISTRIBUTION (with min confidence thresholds) ===`);
   console.log(`Total eligible: ${total}`);
-  console.log(`PREMIUM: ${premiumIds.length} (min conf: ${premiumMinConf}) [guaranteed min: ${PREMIUM_MIN}]`);
-  console.log(`PRO: ${proIds.length} (min conf: ${proMinConf}) [guaranteed min: ${PRO_MIN}]`);
+  console.log(`PREMIUM: ${premiumIds.length} (min conf: ${premiumMinConf}, threshold: ≥${TIER_MIN_CONFIDENCE_PREMIUM})`);
+  console.log(`PRO: ${proIds.length} (min conf: ${proMinConf}, threshold: ≥${TIER_MIN_CONFIDENCE_PRO})`);
   console.log(`FREE: ${freeIds.length}`);
 
   // Reset all to not premium for the two dates
