@@ -145,14 +145,44 @@ export default function MatchPreviews() {
 
   // Filter quality leagues, sort by confidence, limit to 30
   const topMatches = useMemo(() => {
-    return predictions
-      .filter((p) => isQualityLeague(p.league, p.home_team))
-      .sort((a, b) => {
-        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
-        if (confDiff !== 0) return confDiff;
-        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
-      })
-      .slice(0, MAX_MATCHES);
+    const isLowRisk = (p: typeof predictions[0]) => (p.confidence ?? 0) >= 75;
+
+    // 1. Low-risk from quality leagues
+    const qualityLow = predictions
+      .filter((p) => isQualityLeague(p.league, p.home_team) && isLowRisk(p));
+
+    // 2. Low-risk from ANY league (fallback)
+    const otherLow = predictions
+      .filter((p) => !isQualityLeague(p.league, p.home_team) && isLowRisk(p));
+
+    // 3. Remaining quality league matches (medium/high risk)
+    const qualityRest = predictions
+      .filter((p) => isQualityLeague(p.league, p.home_team) && !isLowRisk(p));
+
+    const sortByConf = (a: typeof predictions[0], b: typeof predictions[0]) => {
+      const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+      if (confDiff !== 0) return confDiff;
+      return getLeaguePriority(a.league) - getLeaguePriority(b.league);
+    };
+
+    qualityLow.sort(sortByConf);
+    otherLow.sort(sortByConf);
+    qualityRest.sort(sortByConf);
+
+    // Prioritize: low-risk quality → low-risk other → rest quality
+    const MIN_LOW_RISK = 5;
+    let result = [...qualityLow];
+    if (result.length < MIN_LOW_RISK) {
+      result = [...result, ...otherLow.slice(0, MIN_LOW_RISK - result.length)];
+    }
+    result = [...result, ...qualityRest];
+    
+    // Add remaining other low-risk not already included
+    const usedIds = new Set(result.map(r => r.id));
+    const remainingOtherLow = otherLow.filter(p => !usedIds.has(p.id));
+    result = [...result, ...remainingOtherLow];
+
+    return result.slice(0, MAX_MATCHES);
   }, [predictions]);
 
   const handleCardClick = (match: typeof topMatches[0]) => {
