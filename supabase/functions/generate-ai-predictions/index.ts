@@ -1056,11 +1056,9 @@ function calculatePrediction(
   const dc12 = homeWin + awayWin; // Double Chance: Home or Away (no draw)
   const dcX2 = awayWin + draw; // Double Chance: Away or Draw
 
-  // Market priority tiers (profitability ranking):
-  // HIGH ACCURACY: Under 3.5, Over 1.5, BTTS, Double Chance
-  // MEDIUM: Over 2.5, Under 2.5
-  // LOW (avoid): Exact score, Draw (unless strong signal)
-  const MARKET_PRIORITY: Record<string, number> = {
+  // Market priority tiers — AUTO-CALIBRATED from ai_accuracy_by_market when available
+  // Fallback to hand-tuned defaults when no historical data exists
+  const defaultPriority: Record<string, number> = {
     "Under 3.5": 1.08,   // HIGH accuracy boost
     "Over 1.5": 1.06,
     "BTTS Yes": 1.05,
@@ -1076,6 +1074,17 @@ function calculatePrediction(
     "Under 1.5": 0.93,
     "X": 0.85,            // Draw penalized (unpredictable)
   };
+
+  // Override with real accuracy data if available
+  const MARKET_PRIORITY: Record<string, number> = { ...defaultPriority };
+  if (marketAccuracyCache.size > 0) {
+    // Normalize market accuracy to priority multipliers (50% acc → 1.0, 70% → 1.12, 30% → 0.88)
+    for (const [market, acc] of marketAccuracyCache.entries()) {
+      const multiplier = 1.0 + (acc - 50) * 0.006; // ±0.6% per accuracy point
+      MARKET_PRIORITY[market] = clamp(multiplier, 0.80, 1.15);
+    }
+    console.log(`[SELF-LEARN] Market priorities auto-calibrated from ${marketAccuracyCache.size} markets`);
+  }
 
   const allMarkets: { label: string; prob: number; priorityProb: number }[] = [
     { label: "1", prob: homeWin, priorityProb: homeWin * (MARKET_PRIORITY["1"] || 1) },
