@@ -10,15 +10,22 @@ const corsHeaders = {
 };
 
 // ============ TIER CRITERIA ============
-// HIDDEN: confidence < 60% (not saved/displayed)
-// FREE: confidence >= 60% AND < 73%
-// PRO (exclusive): confidence >= 73% AND < 83%
-// PREMIUM: confidence >= 83%
+// Dynamic distribution: predictions sorted by confidence, then:
+//   Top 10% → PREMIUM
+//   Next 30% → PRO  
+//   Bottom 60% → FREE
+// Minimum confidence to display at all: 60%
+// Fallback fixed thresholds (used only when dynamic calc isn't available on frontend)
 const MIN_DISPLAY_CONFIDENCE = 60;
 const FREE_MAX_CONFIDENCE = 72;
 const PRO_MIN_CONFIDENCE = 73;
 const PRO_MAX_CONFIDENCE = 82;
 const PREMIUM_MIN_CONFIDENCE = 83;
+
+// Dynamic distribution percentages
+const PREMIUM_PERCENT = 0.10; // Top 10%
+const PRO_PERCENT = 0.30;     // Next 30%
+// Remaining 60% → FREE
 
 const PREMIUM_MAX_DRAWS = 1;
 const PREMIUM_MAX_COUNT = 10;
