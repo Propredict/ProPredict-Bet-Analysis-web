@@ -1747,24 +1747,6 @@ async function premiumEnhance(
   };
 }
 
-/**
- * Extended form score using up to 10 matches (weighted: recent matches count more)
- */
-function calculateFormScoreDeep(form: FormMatch[]): number {
-  if (form.length === 0) return 50;
-
-  let weightedPoints = 0;
-  let weightSum = 0;
-
-  for (let i = 0; i < form.length; i++) {
-    const weight = 1.0 - (i * 0.07); // Most recent = 1.0, 10th = 0.37
-    const pts = form[i].result === "W" ? 3 : form[i].result === "D" ? 1 : 0;
-    weightedPoints += pts * weight;
-    weightSum += 3 * weight; // Max possible per match
-  }
-
-  return Math.round((weightedPoints / weightSum) * 100);
-}
 
 /**
  * Assign tiers to all predictions based on confidence (STRICT):
@@ -1845,23 +1827,50 @@ async function assignTiers(
 async function markPredictionLocked(
   supabase: any,
   predictionId: string,
-  reason: string
+  reason: string,
+  opts?: { fixtureId?: string; apiKey?: string }
 ) {
   const updatedAt = new Date().toISOString();
+
+  // Default neutral lock state when no usable data exists
+  let fallbackPrediction: "1" | "X" | "2" = "X";
+  let fallbackConfidence = 50;
+  let fallbackHomeWin = 33;
+  let fallbackDraw = 34;
+  let fallbackAwayWin = 33;
+  let fallbackAnalysis = `Pending data from API-Football. ${reason}`;
+
+  // If odds exist, use them as fallback so cards don't all show 33/34/33
+  if (opts?.fixtureId && opts?.apiKey) {
+    const odds = await fetchOdds(opts.fixtureId, opts.apiKey);
+
+    if (odds) {
+      fallbackHomeWin = odds.homeProb;
+      fallbackDraw = odds.drawProb;
+      fallbackAwayWin = odds.awayProb;
+
+      // Best implied 1X2 outcome from bookmaker odds
+      if (odds.homeProb >= odds.drawProb && odds.homeProb >= odds.awayProb) fallbackPrediction = "1";
+      else if (odds.awayProb >= odds.homeProb && odds.awayProb >= odds.drawProb) fallbackPrediction = "2";
+      else fallbackPrediction = "X";
+
+      fallbackConfidence = Math.max(50, Math.max(odds.homeProb, odds.drawProb, odds.awayProb));
+      fallbackAnalysis = `Limited team-form data. Fallback to bookmaker 1X2 odds (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). ${reason}`;
+    }
+  }
 
   const { error } = await supabase
     .from("ai_predictions")
     .update({
       is_locked: true,
-      // Overwrite old engine outputs so UI never shows misleading stale predictions
-      prediction: "X",
+      prediction: fallbackPrediction,
       predicted_score: null,
-      confidence: 50,
-      home_win: 33,
-      draw: 34,
-      away_win: 33,
+      confidence: fallbackConfidence,
+      home_win: fallbackHomeWin,
+      draw: fallbackDraw,
+      away_win: fallbackAwayWin,
       risk_level: "high",
-      analysis: `Pending data from API-Football. ${reason}`,
+      analysis: fallbackAnalysis,
       updated_at: updatedAt,
     })
     .eq("id", predictionId);
@@ -2032,7 +2041,10 @@ async function processBatch(
       }
 
       if (!fixture) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Not found in API`);
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Not found in API`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
         locked++;
         console.log(`Fixture ${fixtureIdStr}: Not found in API - marked as locked`);
         continue;
@@ -2046,7 +2058,10 @@ async function processBatch(
       const season = fixture.league?.season || new Date().getFullYear();
 
       if (!homeTeamId || !awayTeamId || !leagueId) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Invalid fixture data`);
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Invalid fixture data`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
         locked++;
         errors.push(`Fixture ${fixtureIdStr}: Invalid fixture data`);
         continue;
@@ -2064,7 +2079,10 @@ async function processBatch(
       ]);
 
       if (!homeStats || !awayStats) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`);
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
         locked++;
         continue;
       }
@@ -2074,7 +2092,10 @@ async function processBatch(
       const awayForm = realAwayForm.length >= 3 ? realAwayForm : buildPseudoFormFromStats(awayStats);
 
       if (homeForm.length === 0 && awayForm.length === 0) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`);
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
         locked++;
         continue;
       }
@@ -2176,7 +2197,11 @@ async function processBatch(
       await markPredictionLocked(
         supabase,
         pred.id,
-        `Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`
+        `Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`,
+        {
+          fixtureId: String(pred.match_id),
+          apiKey,
+        }
       );
       locked++;
       errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
