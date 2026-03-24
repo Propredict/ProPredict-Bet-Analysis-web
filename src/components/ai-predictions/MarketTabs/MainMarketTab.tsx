@@ -3,14 +3,26 @@ import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
-  getBestMarketProbability,
+  getBestPickType,
+  type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
 
-type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
+type PickCandidate = { label: string; conf: number; icon: React.ReactNode; type: MarketType };
+
+const MARKET_META: Record<MarketType, { getLabel: (p: AIPrediction) => string; icon: React.ReactNode }> = {
+  home_win: { getLabel: (p) => `${p.home_team} Win`, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+  away_win: { getLabel: (p) => `${p.away_team} Win`, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+  draw: { getLabel: () => "Draw", icon: <Target className="w-4 h-4 text-blue-400" /> },
+  over25: { getLabel: () => "Over 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
+  under25: { getLabel: () => "Under 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
+  btts_yes: { getLabel: () => "BTTS Yes", icon: <Zap className="w-4 h-4 text-yellow-400" /> },
+  btts_no: { getLabel: () => "BTTS No", icon: <Zap className="w-4 h-4 text-red-400" /> },
+};
 
 /** Determine the best pick across all markets */
-function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
+function getBestPick(prediction: AIPrediction): PickCandidate {
+  const bestType = getBestPickType(prediction);
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
@@ -20,18 +32,19 @@ function getBestPickCandidates(prediction: AIPrediction): PickCandidate[] {
   const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
-  const candidates: PickCandidate[] = [
-    { label: `${prediction.home_team} Win`, conf: norm1, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
-    { label: `${prediction.away_team} Win`, conf: norm2, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
-    { label: "Draw", conf: normX, icon: <Target className="w-4 h-4 text-blue-400" /> },
-    { label: "Over 2.5 Goals", conf: probs.over25, icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
-    { label: "Under 2.5 Goals", conf: probs.under25, icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
-    { label: "BTTS Yes", conf: probs.bttsYes, icon: <Zap className="w-4 h-4 text-yellow-400" /> },
-    { label: "BTTS No", conf: probs.bttsNo, icon: <Zap className="w-4 h-4 text-red-400" /> },
-  ];
+  const rawProbs: Record<MarketType, number> = {
+    home_win: norm1, away_win: norm2, draw: normX,
+    over25: probs.over25, under25: probs.under25,
+    btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
+  };
 
-  candidates.sort((a, b) => b.conf - a.conf);
-  return candidates;
+  const meta = MARKET_META[bestType];
+  return {
+    label: meta.getLabel(prediction),
+    conf: rawProbs[bestType],
+    icon: meta.icon,
+    type: bestType,
+  };
 }
 
 interface Props {

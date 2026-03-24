@@ -272,10 +272,19 @@ export function getRiskLevelColor(riskLevel: string | null) {
   }
 }
 
+export type MarketType = "home_win" | "away_win" | "draw" | "over25" | "under25" | "btts_yes" | "btts_no";
+
+interface MarketCandidate {
+  type: MarketType;
+  prob: number;
+}
+
 /**
- * Get the highest market probability for a prediction (raw, no calibration).
+ * Get all market candidates with their probabilities.
+ * 1X2 markets get a +5 "primary market" bonus so they compete fairly
+ * against conservative Under markets that naturally dominate Poisson output.
  */
-export function getBestMarketProbability(prediction: AIPrediction): number {
+function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const hw = prediction.home_win ?? 0;
   const aw = prediction.away_win ?? 0;
   const d = prediction.draw ?? 0;
@@ -286,7 +295,35 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
   const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
   const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
 
-  return Math.max(norm1, norm2, normX, probs.over25, probs.under25, probs.bttsYes, probs.bttsNo);
+  // +5 bonus for 1X2 markets to prevent Under 2.5 from always dominating
+  const PRIMARY_BOOST = 5;
+
+  const candidates: MarketCandidate[] = [
+    { type: "home_win", prob: norm1 + PRIMARY_BOOST },
+    { type: "away_win", prob: norm2 + PRIMARY_BOOST },
+    { type: "draw", prob: normX + PRIMARY_BOOST },
+    { type: "over25", prob: probs.over25 },
+    { type: "under25", prob: probs.under25 },
+    { type: "btts_yes", prob: probs.bttsYes },
+    { type: "btts_no", prob: probs.bttsNo },
+  ];
+
+  candidates.sort((a, b) => b.prob - a.prob);
+  return candidates;
+}
+
+/**
+ * Get the best pick's market type for a prediction.
+ */
+export function getBestPickType(prediction: AIPrediction): MarketType {
+  return getMarketCandidates(prediction)[0].type;
+}
+
+/**
+ * Get the highest market probability for a prediction.
+ */
+export function getBestMarketProbability(prediction: AIPrediction): number {
+  return getMarketCandidates(prediction)[0].prob;
 }
 
 /**
