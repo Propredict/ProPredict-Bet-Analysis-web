@@ -188,16 +188,15 @@ serve(async (req: Request) => {
 
     console.log(`[match-previews] Generating previews for ${todayStr}`);
 
-    // Step 1: Fetch today's AI predictions (source data) — include unlocked ones
+    // Step 1: Fetch today's AI predictions — all valid ones regardless of lock status
     const { data: predictions, error: predError } = await supabase
       .from("ai_predictions")
       .select("*")
       .eq("match_date", todayStr)
-      .eq("is_locked", false)
       .order("confidence", { ascending: false })
       .limit(200);
 
-    console.log(`[match-previews] Found ${predictions?.length ?? 0} unlocked predictions for ${todayStr}`);
+    console.log(`[match-previews] Found ${predictions?.length ?? 0} total predictions for ${todayStr}`);
 
     if (predError) {
       console.error("[match-previews] Error fetching predictions:", predError);
