@@ -8,8 +8,7 @@ import {
   getRiskLevelColor,
   calculateGoalMarketProbs,
 } from "../utils/marketDerivation";
-import { getShortConfidenceExplanation } from "../utils/aiExplanationGenerator";
-import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame, Signal, Lock, AlertTriangle } from "lucide-react";
+import { Star, Shield, Trophy, TrendingUp, Target, Zap, ArrowUp, ArrowDown, Flame } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode };
 
