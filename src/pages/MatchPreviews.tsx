@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy } from "lucide-react";
+import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy, TrendingUp, Shield } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -177,7 +177,7 @@ export default function MatchPreviews() {
             <p className="text-sm text-muted-foreground">No matches available today</p>
           </Card>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {topMatches.map((match, index) => {
               const rank = index + 1;
               const risk = getRiskColor(match.confidence);
@@ -186,109 +186,127 @@ export default function MatchPreviews() {
               const rankStyle = getRankStyle(rank);
               const isTop3 = rank <= 3;
 
+              // Generate blurred preview snippets from analysis/key_factors
+              const snippets = getPreviewSnippets(match);
+
               return (
                 <Card
                   key={match.id}
                   className={cn(
-                    "overflow-hidden transition-all bg-white dark:bg-card border shadow-sm cursor-pointer hover:shadow-lg hover:shadow-violet-500/10",
+                    "overflow-hidden transition-all bg-card border shadow-sm cursor-pointer hover:shadow-lg hover:shadow-violet-500/10",
                     isTop3
-                      ? "border-violet-400/40 dark:border-violet-500/40"
-                      : "border-gray-200 dark:border-border/60"
+                      ? "border-violet-400/40"
+                      : "border-border/60"
                   )}
                   onClick={() => handleCardClick(match)}
                 >
-                  <div className="p-4 space-y-3">
-                    {/* Rank + League row */}
-                    <div className="flex items-center justify-between">
+                  <div className="p-5 space-y-4">
+                    {/* Rank badge + League centered */}
+                    <div className="flex flex-col items-center gap-2">
                       <div className="flex items-center gap-2">
                         <div className={cn(
                           "w-7 h-7 rounded-full flex items-center justify-center text-xs font-black",
                           rank <= 3 ? rankStyle.bg : "bg-muted",
                           rank <= 3 ? rankStyle.text : "text-muted-foreground"
                         )}>
-                          {rank <= 3 ? rank : `${rank}`}
+                          {rank}
                         </div>
-                        {isTop3 && (
-                          <span className="text-sm">{rankStyle.label}</span>
-                        )}
+                        {isTop3 && <span className="text-sm">{rankStyle.label}</span>}
                       </div>
-                      <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+                      <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest text-center">
                         {match.league || "Unknown"}
                       </span>
                     </div>
 
-                    {/* Teams row — compact */}
-                    <div className="flex items-center justify-between gap-2">
+                    {/* Teams with big circle logos */}
+                    <div className="flex items-start justify-between gap-2">
                       {/* Home team */}
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <div className="flex flex-col items-center flex-1 min-w-0 gap-2">
                         <div className={cn(
-                          "w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border",
-                          isTop3 ? "border-violet-300 dark:border-violet-500/40" : "border-gray-200 dark:border-border/40"
+                          "w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2 bg-muted/30",
+                          isTop3 ? "border-violet-400/50" : "border-border/50"
                         )}>
                           {homeLogo ? (
-                            <img src={homeLogo} alt={match.home_team} className="w-7 h-7 object-contain" />
+                            <img src={homeLogo} alt={match.home_team} className="w-10 h-10 object-contain" />
                           ) : (
-                            <span className="text-[10px] font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
+                            <span className="text-sm font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
                           )}
                         </div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate">{match.home_team}</span>
+                        <span className="text-xs font-bold text-foreground text-center leading-tight max-w-[100px]">{match.home_team}</span>
                       </div>
 
-                      {/* VS + time */}
-                      <div className="flex flex-col items-center flex-shrink-0 px-2">
-                        <span className="text-xs font-black text-gray-400 dark:text-muted-foreground">VS</span>
-                        <div className="flex items-center gap-0.5">
-                          <Clock className="h-2.5 w-2.5 text-gray-400 dark:text-muted-foreground/60" />
-                          <span className="text-[10px] text-gray-500 dark:text-muted-foreground">{match.match_time?.slice(0, 5) || "TBD"}</span>
+                      {/* VS + date/time center */}
+                      <div className="flex flex-col items-center justify-center pt-2 gap-0.5 flex-shrink-0">
+                        <span className="text-[10px] text-muted-foreground">{match.match_date || ""}</span>
+                        <span className="text-lg font-black text-muted-foreground">VS</span>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-muted-foreground/60" />
+                          <span className="text-[11px] text-muted-foreground">{match.match_time?.slice(0, 5) || "TBD"}</span>
                         </div>
                       </div>
 
                       {/* Away team */}
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
-                        <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate text-right">{match.away_team}</span>
+                      <div className="flex flex-col items-center flex-1 min-w-0 gap-2">
                         <div className={cn(
-                          "w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border",
-                          isTop3 ? "border-violet-300 dark:border-violet-500/40" : "border-gray-200 dark:border-border/40"
+                          "w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2 bg-muted/30",
+                          isTop3 ? "border-violet-400/50" : "border-border/50"
                         )}>
                           {awayLogo ? (
-                            <img src={awayLogo} alt={match.away_team} className="w-7 h-7 object-contain" />
+                            <img src={awayLogo} alt={match.away_team} className="w-10 h-10 object-contain" />
                           ) : (
-                            <span className="text-[10px] font-bold text-blue-600 dark:text-primary/70">{getTeamInitials(match.away_team)}</span>
+                            <span className="text-sm font-bold text-primary/70">{getTeamInitials(match.away_team)}</span>
                           )}
                         </div>
+                        <span className="text-xs font-bold text-foreground text-center leading-tight max-w-[100px]">{match.away_team}</span>
                       </div>
                     </div>
 
-                    {/* Confidence + Risk + Prediction */}
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-border/30">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-violet-500 dark:text-primary" />
-                          <span className="text-xs text-gray-500 dark:text-muted-foreground">Confidence</span>
-                          <span className="text-sm font-extrabold text-gray-800 dark:text-foreground">{match.confidence ?? 0}%</span>
+                    {/* Confidence + Risk */}
+                    <div className="flex items-center justify-center gap-4 pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-violet-500 dark:text-primary" />
+                        <span className="text-xs text-muted-foreground">Confidence</span>
+                        <span className="text-sm font-extrabold text-foreground">{match.confidence ?? 0}%</span>
+                      </div>
+                      <span className="text-muted-foreground/30">·</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn("w-2 h-2 rounded-full", risk.dot)} />
+                        <span className={cn("text-xs font-semibold", risk.color)}>{risk.label}</span>
+                      </div>
+                    </div>
+
+                    {/* Blurred analysis preview */}
+                    {snippets.length > 0 && (
+                      <div className="relative rounded-lg overflow-hidden">
+                        <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
+                          {snippets.map((snippet, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <span className="mt-0.5">{snippet.icon}</span>
+                              <p className="text-xs text-muted-foreground leading-relaxed select-none blur-[5px]">
+                                {snippet.text}
+                              </p>
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
-                          <span className={cn("text-xs font-semibold", risk.color)}>{risk.label}</span>
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-lg">
+                          <div className="flex items-center gap-1.5 bg-background/80 px-3 py-1.5 rounded-full border border-border/50 shadow-sm">
+                            <Lock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-[10px] font-semibold text-muted-foreground">Unlock to read analysis</span>
+                          </div>
                         </div>
                       </div>
-                      {match.prediction && (
-                        <Badge variant="outline" className="text-[10px] border-violet-500/30 text-violet-500 dark:text-violet-400 px-2">
-                          {getPredictionLabel(match.prediction)}
-                        </Badge>
-                      )}
-                    </div>
+                    )}
 
                     {/* CTA */}
                     <Button
                       size="sm"
-                      className="w-full text-xs font-bold h-9 bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-sm"
+                      className="w-full text-xs font-bold h-10 bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-sm"
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
                       {isFreeUser ? (
                         <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
                       ) : (
-                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Match Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
                     </Button>
                   </div>
@@ -304,14 +322,22 @@ export default function MatchPreviews() {
   );
 }
 
-function getPredictionLabel(prediction: string | null): string {
-  if (!prediction) return "—";
-  const p = prediction.toLowerCase().trim();
-  if (p === "1" || p === "home") return "Home Win";
-  if (p === "x" || p === "draw") return "Draw";
-  if (p === "2" || p === "away") return "Away Win";
-  if (p.includes("over")) return "Over 2.5";
-  if (p.includes("under")) return "Under 2.5";
-  if (p.includes("btts")) return "BTTS";
-  return prediction;
+function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null }) {
+  const snippets: { icon: string; text: string }[] = [];
+  const hw = match.home_win ?? 0;
+  const aw = match.away_win ?? 0;
+  const favored = hw >= aw ? match.home_team : match.away_team;
+  const pct = Math.max(hw, aw);
+
+  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability — clear edge` });
+
+  if (match.key_factors && match.key_factors.length > 0) {
+    snippets.push({ icon: "🔧", text: match.key_factors[0] });
+  } else {
+    snippets.push({ icon: "🔧", text: "Goal trends and defensive weaknesses support an open game" });
+  }
+
+  snippets.push({ icon: "✨", text: `AI confidence is ${match.confidence ?? 0}% — strong conviction pick` });
+
+  return snippets;
 }
