@@ -22,55 +22,10 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { calculateGoalMarketProbs, getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
-import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
+import { getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 
-
-
-type SortOption = "confidence" | "kickoff" | "risk" | "over25" | "under25" | "btts";
+type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
-type PickFilter = "all" | "home" | "away" | "draw" | "over25" | "under25" | "btts" | "value";
-
-/** Derive pick type from prediction field (for new predictions with market labels) */
-function getPickTypeFromPrediction(p: string): PickFilter | null {
-  const lower = p.toLowerCase();
-  if (lower.includes("over")) return "over25";
-  if (lower.includes("under")) return "under25";
-  if (lower.includes("btts")) return "btts";
-  if (lower === "1" || lower === "home") return "home";
-  if (lower === "2" || lower === "away") return "away";
-  if (lower === "x" || lower === "draw") return "draw";
-  return null;
-}
-
-/** Check if a prediction matches a pick filter using both prediction field AND Poisson data */
-function matchesPickFilter(prediction: AIPrediction, filter: PickFilter): boolean {
-  if (filter === "all") return true;
-  if (filter === "value") return isValueBet(prediction);
-  
-  // First check the prediction field directly
-  const directType = getPickTypeFromPrediction(prediction.prediction || "");
-  if (directType === filter) return true;
-  
-  // For goal markets, also check Poisson probabilities (works for old "1"/"2"/"X" predictions)
-  const probs = calculateGoalMarketProbs(prediction);
-  
-  switch (filter) {
-    case "over25": return probs.over25 >= 55;
-    case "under25": return probs.under25 >= 55;
-    case "btts": return probs.bttsYes >= 55;
-    case "home": return directType === "home" || (prediction.home_win ?? 0) > (prediction.away_win ?? 0) && (prediction.home_win ?? 0) > (prediction.draw ?? 0);
-    case "away": return directType === "away" || (prediction.away_win ?? 0) > (prediction.home_win ?? 0) && (prediction.away_win ?? 0) > (prediction.draw ?? 0);
-    case "draw": return directType === "draw" || (prediction.draw ?? 0) >= (prediction.home_win ?? 0) && (prediction.draw ?? 0) >= (prediction.away_win ?? 0);
-    default: return true;
-  }
-}
-
-/** Count predictions matching a filter */
-function countByFilter(predictions: AIPrediction[], filter: PickFilter): number {
-  if (filter === "all") return predictions.length;
-  return predictions.filter(p => matchesPickFilter(p, filter)).length;
-}
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
