@@ -534,6 +534,51 @@ function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
 }
 
 /**
+ * Get opponent strength weight based on their league position.
+ * Top third → 1.5 (strong), Middle third → 1.0, Bottom third → 0.5 (weak)
+ */
+function getOpponentStrengthWeight(standings: StandingEntry[], opponentId: number): number {
+  if (standings.length === 0) return 1.0; // No data → neutral
+  const entry = standings.find(s => s.teamId === opponentId);
+  if (!entry || entry.totalTeams === 0) return 1.0;
+
+  const thirdSize = Math.ceil(entry.totalTeams / 3);
+  if (entry.rank <= thirdSize) return 1.5;       // Top third → strong
+  if (entry.rank <= thirdSize * 2) return 1.0;    // Middle third → medium
+  return 0.5;                                      // Bottom third → weak
+}
+
+/**
+ * Calculate OPPONENT-STRENGTH WEIGHTED form score (0-100).
+ * Wins vs strong opponents count 1.5×, wins vs weak opponents count 0.5×.
+ * Combined with recency weighting for last 5 matches.
+ */
+function calculateWeightedFormScore(form: FormMatch[], standings: StandingEntry[]): number {
+  if (form.length === 0) return 50;
+  const matches = form.slice(0, 5);
+  let weightedPoints = 0;
+  let weightSum = 0;
+  let gf = 0, ga = 0;
+
+  for (let i = 0; i < matches.length; i++) {
+    const recencyWeight = 1.0 - (i * 0.1); // 1.0, 0.9, 0.8, 0.7, 0.6
+    const opponentWeight = getOpponentStrengthWeight(standings, matches[i].opponentId);
+    const combinedWeight = recencyWeight * opponentWeight;
+
+    const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
+    weightedPoints += pts * combinedWeight;
+    weightSum += 3 * combinedWeight;
+    gf += matches[i].goalsFor;
+    ga += matches[i].goalsAgainst;
+  }
+
+  const pointsScore = weightSum > 0 ? (weightedPoints / weightSum) * 100 : 50;
+  const goalDiff = gf - ga;
+  const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 6));
+  return Math.round(pointsScore * 0.75 + gdScore * 0.25);
+}
+
+/**
  * Calculate form score (0-100) from last 5 matches with recency weighting.
  * Weights: Match -1 → 1.0, -2 → 0.9, -3 → 0.8, -4 → 0.7, -5 → 0.6
  */
