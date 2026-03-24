@@ -582,6 +582,7 @@ export default function AIPredictions() {
             })}
           </div>
 
+          {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
                 <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
@@ -591,7 +592,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
                 {visibleFeatured.map((prediction, idx) => {
                   return (
-                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                    <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         overrideTier={getPredictionTier(prediction)}
                         prediction={prediction}
