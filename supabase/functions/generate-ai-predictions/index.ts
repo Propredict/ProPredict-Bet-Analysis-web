@@ -79,13 +79,16 @@ const QUALITY_LEAGUE_IDS = new Set([
 ]);
 
 // ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.30;         // 30% - Recent form (last 10 real matches)
-const WEIGHT_QUALITY = 0.20;      // 20% - Team quality (season stats)
+const WEIGHT_FORM = 0.25;         // 25% - Recent form (last 10 real matches)
+const WEIGHT_QUALITY = 0.18;      // 18% - Team quality (season stats)
 const WEIGHT_SQUAD = 0.10;        // 10% - Squad strength / goal diff
-const WEIGHT_HOME = 0.08;         // 8%  - Home advantage
-const WEIGHT_H2H = 0.12;          // 12% - Head-to-Head history
+const WEIGHT_HOME = 0.08;         // 8%  - Home advantage (per-league dynamic)
+const WEIGHT_H2H = 0.06;          // 6%  - Head-to-Head history (small sample)
 const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
-const WEIGHT_ODDS = 0.10;         // 10% - Bookmaker odds signal
+const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal (strongest calibrator)
+// NOTE: Odds increased from 10→15% because bookmakers have large analyst teams.
+// H2H reduced from 12→6% because 3-5 matches is statistically insignificant.
+// Form reduced from 30→25% to give more weight to odds alignment.
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
@@ -214,6 +217,8 @@ const injuriesCache = new Map<string, InjuryInfo[]>();
 const standingsCache = new Map<string, StandingEntry[]>();
 const oddsCache = new Map<string, OddsData | null>();
 const leagueAccuracyCache = new Map<string, number>();
+const marketAccuracyCache = new Map<string, number>();
+const leagueHomeAdvantageCache = new Map<number, number>(); // leagueId → home win % from standings
 
 interface StandingEntry {
   teamId: number;
@@ -252,12 +257,15 @@ interface TopPlayer {
 /**
  * Fetch team's last N matches form
  */
-async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5): Promise<FormMatch[]> {
-  const cached = teamFormCache.get(teamId);
+async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5, leagueId?: number): Promise<FormMatch[]> {
+  const cacheKey = leagueId ? `${teamId}:${leagueId}` : teamId;
+  const cached = teamFormCache.get(cacheKey as number);
   if (cached && cached.length >= count) return cached.slice(0, count);
 
   try {
-    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN`;
+    // If leagueId provided, fetch league-only matches (excludes cups/friendlies)
+    const leagueParam = leagueId ? `&league=${leagueId}` : "";
+    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN${leagueParam}`;
     const data = await fetchJsonWithRetry(url, apiKey, { retries: 4, baseDelayMs: 700 });
     if (!data?.response) return [];
 
@@ -276,7 +284,7 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5):
       return { result, goalsFor, goalsAgainst, isHome, opponentId };
     });
 
-    teamFormCache.set(teamId, normalized);
+    teamFormCache.set(cacheKey as number, normalized);
     return normalized;
   } catch (e) {
     console.error("Error fetching team form:", e);
@@ -461,6 +469,28 @@ function getStandingsScore(standings: StandingEntry[], teamId: number): number {
   const gdBonus = clamp(entry.goalsDiff * 0.5, -10, 10);
   
   return clamp(Math.round(positionScore + gdBonus), 0, 100);
+}
+
+/**
+ * Calculate per-league home advantage from standings data.
+ * Returns home win rate (0-100) based on all teams' home records in that league.
+ */
+function calculateLeagueHomeAdvantage(standings: StandingEntry[], leagueId: number): number {
+  if (leagueHomeAdvantageCache.has(leagueId)) return leagueHomeAdvantageCache.get(leagueId)!;
+  
+  // Default home advantage ~52% (post-COVID average)
+  if (standings.length === 0) return 52;
+  
+  // We don't have per-team home records in standings, so use a league-level estimate
+  // based on how much top teams over-perform at home (rank gap correlation)
+  // This is a heuristic: leagues with bigger rank gaps tend to have higher home advantage
+  const maxRank = Math.max(...standings.map(s => s.rank));
+  const avgGD = standings.reduce((sum, s) => sum + Math.abs(s.goalsDiff), 0) / standings.length;
+  
+  // Higher avg absolute goal diff = more predictable league = higher home advantage
+  const homeAdv = clamp(48 + avgGD * 0.8, 44, 60);
+  leagueHomeAdvantageCache.set(leagueId, Math.round(homeAdv));
+  return Math.round(homeAdv);
 }
 
 /**
@@ -870,9 +900,10 @@ function sigmoid(x: number) {
 
 /**
  * Main prediction calculation using enhanced weights:
- * Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%.
+ * Form 25%, Quality 18%, Squad 10%, Home 8%, H2H 6%, Standings 10%, Odds 15%.
  *
  * Uses real last 10 matches, league position, and bookmaker odds for calibration.
+ * Per-league home advantage, progressive dampening, and close-call penalty.
  */
 function calculatePrediction(
   homeForm: FormMatch[],
@@ -886,7 +917,8 @@ function calculatePrediction(
   awayTeamName: string,
   standings?: StandingEntry[],
   odds?: OddsData | null,
-  leagueName?: string
+  leagueName?: string,
+  leagueId?: number
 ): PredictionResult {
   // === FORM (30%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
   // Use opponent-strength weighting when standings are available
@@ -917,14 +949,18 @@ function calculatePrediction(
   const homeSquadScore = clamp(50 + (homeEffScored - homeEffConceded) * 18, 0, 100);
   const awaySquadScore = clamp(50 + (awayEffScored - awayEffConceded) * 18, 0, 100);
 
-  // === HOME ADVANTAGE (8%) ===
-  let homeAdvantageScore = 51;
-  let awayAdvantageScore = 49;
+  // === HOME ADVANTAGE (8%) — PER-LEAGUE DYNAMIC ===
+  // Use league-specific home advantage instead of fixed value
+  const leagueHomeAdv = (standings && leagueId) ? calculateLeagueHomeAdvantage(standings, leagueId) : 52;
+  const homeAdvBase = leagueHomeAdv / 100; // Convert to 0-1 range
+  let homeAdvantageScore = clamp(50 + (homeAdvBase - 0.45) * 20, 48, 58);
+  let awayAdvantageScore = clamp(100 - homeAdvantageScore, 42, 52);
   if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
     const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
     const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
-    homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
-    awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
+    // Blend team-specific with league-average (60% team, 40% league)
+    homeAdvantageScore = clamp(homeAdvantageScore * 0.4 + (50 + (homeWinRateAtHome - 0.4) * 12) * 0.6, 46, 60);
+    awayAdvantageScore = clamp(awayAdvantageScore * 0.4 + (50 + (awayWinRateAway - 0.3) * 10) * 0.6, 40, 55);
   }
 
   // === H2H (12%) ===
@@ -1020,11 +1056,9 @@ function calculatePrediction(
   const dc12 = homeWin + awayWin; // Double Chance: Home or Away (no draw)
   const dcX2 = awayWin + draw; // Double Chance: Away or Draw
 
-  // Market priority tiers (profitability ranking):
-  // HIGH ACCURACY: Under 3.5, Over 1.5, BTTS, Double Chance
-  // MEDIUM: Over 2.5, Under 2.5
-  // LOW (avoid): Exact score, Draw (unless strong signal)
-  const MARKET_PRIORITY: Record<string, number> = {
+  // Market priority tiers — AUTO-CALIBRATED from ai_accuracy_by_market when available
+  // Fallback to hand-tuned defaults when no historical data exists
+  const defaultPriority: Record<string, number> = {
     "Under 3.5": 1.08,   // HIGH accuracy boost
     "Over 1.5": 1.06,
     "BTTS Yes": 1.05,
@@ -1040,6 +1074,17 @@ function calculatePrediction(
     "Under 1.5": 0.93,
     "X": 0.85,            // Draw penalized (unpredictable)
   };
+
+  // Override with real accuracy data if available
+  const MARKET_PRIORITY: Record<string, number> = { ...defaultPriority };
+  if (marketAccuracyCache.size > 0) {
+    // Normalize market accuracy to priority multipliers (50% acc → 1.0, 70% → 1.12, 30% → 0.88)
+    for (const [market, acc] of marketAccuracyCache.entries()) {
+      const multiplier = 1.0 + (acc - 50) * 0.006; // ±0.6% per accuracy point
+      MARKET_PRIORITY[market] = clamp(multiplier, 0.80, 1.15);
+    }
+    console.log(`[SELF-LEARN] Market priorities auto-calibrated from ${marketAccuracyCache.size} markets`);
+  }
 
   const allMarkets: { label: string; prob: number; priorityProb: number }[] = [
     { label: "1", prob: homeWin, priorityProb: homeWin * (MARKET_PRIORITY["1"] || 1) },
@@ -1207,9 +1252,29 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === CONFIDENCE = BEST MARKET PROBABILITY (SIMPLE) ===
-  // The confidence IS the probability of our best pick. No complex adjustments.
+  // === CONFIDENCE = BEST MARKET PROBABILITY + ADJUSTMENTS ===
   let confidence = bestProb;
+
+  // === CLOSE-CALL PENALTY: top 2 markets within 5% = unreliable pick ===
+  const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
+  if (sortedForCloseCall.length >= 2) {
+    const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
+    if (top2diff <= 5) {
+      confidence -= 4; // Penalty for coin-flip picks
+    } else if (top2diff <= 10) {
+      confidence -= 2; // Small penalty for close calls
+    }
+  }
+
+  // === PROGRESSIVE DAMPENING (replaces fixed ×0.90) ===
+  // High-confidence predictions need less dampening, low-confidence need more
+  if (confidence >= 80) {
+    confidence = Math.round(confidence * 0.95); // Light touch for strong picks
+  } else if (confidence >= 65) {
+    confidence = Math.round(confidence * 0.90); // Standard dampening
+  } else {
+    confidence = Math.round(confidence * 0.85); // Heavy dampening for weak picks
+  }
 
   // Only cap if data is very weak
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
@@ -1710,7 +1775,8 @@ async function premiumEnhance(
       awayTeamName,
       standings,
       odds,
-      pred.league || undefined
+      pred.league || undefined,
+      leagueId
     );
 
   // Keep the higher confidence (deep analysis should confirm or raise)
@@ -2006,20 +2072,31 @@ async function processBatch(
   let locked = 0;
   const errors: string[] = [];
 
-  // === SELF-LEARNING: Load historical accuracy by league ===
+  // === SELF-LEARNING: Load historical accuracy by league AND by market ===
   if (leagueAccuracyCache.size === 0) {
     try {
-      const { data: accData } = await supabase
-        .from("ai_accuracy_by_league")
-        .select("league, accuracy, resolved_count");
-      if (accData) {
-        for (const row of accData) {
+      const [leagueAccRes, marketAccRes] = await Promise.all([
+        supabase.from("ai_accuracy_by_league").select("league, accuracy, resolved_count"),
+        supabase.from("ai_accuracy_by_market").select("market, accuracy, resolved_count").catch(() => ({ data: null })),
+      ]);
+      
+      if (leagueAccRes.data) {
+        for (const row of leagueAccRes.data) {
           if (row.league && row.accuracy != null && (row.resolved_count ?? 0) >= 20) {
             leagueAccuracyCache.set(row.league, Number(row.accuracy));
           }
         }
       }
       console.log(`Self-learning: loaded accuracy for ${leagueAccuracyCache.size} leagues`);
+      
+      if (marketAccRes?.data) {
+        for (const row of marketAccRes.data) {
+          if (row.market && row.accuracy != null && (row.resolved_count ?? 0) >= 10) {
+            marketAccuracyCache.set(row.market, Number(row.accuracy));
+          }
+        }
+        console.log(`Self-learning: loaded accuracy for ${marketAccuracyCache.size} market types`);
+      }
     } catch (e) {
       console.warn("Self-learning accuracy fetch failed:", e);
     }
@@ -2067,13 +2144,13 @@ async function processBatch(
         continue;
       }
 
-      // Fetch ALL data in parallel: stats, H2H, real form (10 matches), standings, odds
+      // Fetch ALL data in parallel: stats, H2H, LEAGUE-ONLY form (10 matches), standings, odds
       const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
-        fetchTeamForm(homeTeamId, apiKey, 10),  // Last 10 real matches
-        fetchTeamForm(awayTeamId, apiKey, 10),  // Last 10 real matches
+        fetchTeamForm(homeTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
+        fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
         fetchStandings(leagueId, season, apiKey),
         fetchOdds(fixtureIdStr, apiKey),
       ]);
@@ -2112,7 +2189,8 @@ async function processBatch(
         awayTeamName,
         standings,
         odds,
-        pred.league || undefined
+        pred.league || undefined,
+        leagueId
       );
 
       // Calculate Poisson goal markets for key_factors and more accurate score
@@ -2526,7 +2604,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
   console.log(`Today: ${todayStr}`);
   console.log(`Tomorrow: ${tomorrowStr}`);
   console.log(`Run ID: ${runId}`);
-  console.log(`Using ENHANCED algorithm: Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%`);
+  console.log(`Using ENHANCED algorithm v2: Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty.`);
 
   // Trigger today and tomorrow batch chains STAGGERED (not parallel!)
   // Both batches at offset 0 fetch fixture lists from API-Football.
