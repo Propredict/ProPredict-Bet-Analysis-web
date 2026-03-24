@@ -132,6 +132,17 @@ const AIPredictionCardInner = ({
                 PREMIUM
               </Badge>
             )}
+            {/* Value Bet badge - detected from analysis text */}
+            {prediction.analysis?.includes("STRONG VALUE BET") && (
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
+                🔥 STRONG VALUE
+              </Badge>
+            )}
+            {!prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
+              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
+                🔥 Value
+              </Badge>
+            )}
             {isProTier && !isPremiumTier && (
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
