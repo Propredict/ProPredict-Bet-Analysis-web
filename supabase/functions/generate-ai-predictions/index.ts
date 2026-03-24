@@ -2071,20 +2071,31 @@ async function processBatch(
   let locked = 0;
   const errors: string[] = [];
 
-  // === SELF-LEARNING: Load historical accuracy by league ===
+  // === SELF-LEARNING: Load historical accuracy by league AND by market ===
   if (leagueAccuracyCache.size === 0) {
     try {
-      const { data: accData } = await supabase
-        .from("ai_accuracy_by_league")
-        .select("league, accuracy, resolved_count");
-      if (accData) {
-        for (const row of accData) {
+      const [leagueAccRes, marketAccRes] = await Promise.all([
+        supabase.from("ai_accuracy_by_league").select("league, accuracy, resolved_count"),
+        supabase.from("ai_accuracy_by_market").select("market, accuracy, resolved_count").catch(() => ({ data: null })),
+      ]);
+      
+      if (leagueAccRes.data) {
+        for (const row of leagueAccRes.data) {
           if (row.league && row.accuracy != null && (row.resolved_count ?? 0) >= 20) {
             leagueAccuracyCache.set(row.league, Number(row.accuracy));
           }
         }
       }
       console.log(`Self-learning: loaded accuracy for ${leagueAccuracyCache.size} leagues`);
+      
+      if (marketAccRes?.data) {
+        for (const row of marketAccRes.data) {
+          if (row.market && row.accuracy != null && (row.resolved_count ?? 0) >= 10) {
+            marketAccuracyCache.set(row.market, Number(row.accuracy));
+          }
+        }
+        console.log(`Self-learning: loaded accuracy for ${marketAccuracyCache.size} market types`);
+      }
     } catch (e) {
       console.warn("Self-learning accuracy fetch failed:", e);
     }
