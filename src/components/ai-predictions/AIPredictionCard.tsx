@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, ShoppingCart, CheckCircle2 } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
@@ -15,7 +15,6 @@ import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
-import { generateAIAnalysis } from "./utils/aiExplanationGenerator";
 
 interface Props {
   prediction: AIPrediction;
@@ -26,11 +25,8 @@ interface Props {
   isSavingFavorite?: boolean;
   onToggleFavorite?: (matchId: string) => void;
   onGoPremium: () => void;
-  /** Override tier from parent (dynamic distribution) */
   overrideTier?: "free" | "pro" | "premium";
-  /** Unlock handler passed from parent (page-level useUnlockHandler) */
   onUnlockClick?: (contentType: "tip", contentId: string, tier: ContentTier) => void;
-  /** Whether this specific card is currently unlocking (ad playing) */
   isUnlocking?: boolean;
 }
 
@@ -52,38 +48,19 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Use overrideTier from parent (market-probability-based) or fallback
   const displayTier: "free" | "pro" | "premium" = overrideTier ?? (prediction.is_premium ? "premium" : "free");
   const isPremiumTier = displayTier === "premium";
   const isProTier = displayTier === "pro";
   const isDailyTier = displayTier === "free";
 
-  // Map to content tier for useUserPlan
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
-
-  // Use centralized access logic from useUserPlan
-  // Pass contentType + contentId so Android ad-unlock state is checked
   const hasAccess = canAccess(contentTier, "tip", prediction.match_id);
   const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.match_id);
 
-  // Generate dynamic AI analysis
-  const generatedAnalysis = useMemo(() => generateAIAnalysis(prediction), [prediction]);
-
-  // Format time as HH:mm
   const formatTime = (time: string | null) => {
     if (!time) return "";
     return time.length >= 5 ? time.slice(0, 5) : time;
   };
-
-  // Format date label from match_day
-  const formatDateLabel = (matchDay: string | null) => {
-    if (matchDay === "today") return "Today";
-    if (matchDay === "tomorrow") return "Tomorrow";
-    return matchDay || "";
-  };
-
-  // Determine badge type for display
-  const showProBadge = isProTier || isPremiumTier;
 
   return (
     <Card className={cn(
@@ -91,10 +68,9 @@ const AIPredictionCardInner = ({
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
-        {/* Header - League, Time, AI/Live/Premium badges, Favorite */}
+        {/* Header */}
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
-            {/* AI Badge - Always visible */}
             <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
               <Bot className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
               AI
@@ -104,7 +80,6 @@ const AIPredictionCardInner = ({
             <span className="whitespace-nowrap">{formatTime(prediction.match_time)}</span>
           </div>
           <div className="flex items-center gap-0.5 md:gap-1">
-            {/* Favorite Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -135,22 +110,6 @@ const AIPredictionCardInner = ({
                 PREMIUM
               </Badge>
             )}
-            {/* Value badges - only PRO and PREMIUM */}
-            {displayTier !== "free" && prediction.analysis?.includes("SUPER VALUE") && (
-              <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
-                🔥 SUPER VALUE
-              </Badge>
-            )}
-            {displayTier !== "free" && !prediction.analysis?.includes("SUPER VALUE") && prediction.analysis?.includes("STRONG VALUE BET") && (
-              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded animate-pulse">
-                🔥 STRONG VALUE
-              </Badge>
-            )}
-            {displayTier !== "free" && !prediction.analysis?.includes("SUPER VALUE") && !prediction.analysis?.includes("STRONG VALUE BET") && prediction.analysis?.includes("Value Bet") && (
-              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
-                🔥 Value
-              </Badge>
-            )}
             {isProTier && !isPremiumTier && (
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
@@ -160,7 +119,7 @@ const AIPredictionCardInner = ({
           </div>
         </div>
 
-        {/* Match Title - ALWAYS VISIBLE */}
+        {/* Match Title */}
         <div className="px-2 md:px-3 pb-1.5 md:pb-2">
           <h3 className="font-semibold text-xs md:text-sm text-white">
             {prediction.home_team} vs {prediction.away_team}
@@ -229,7 +188,7 @@ const AIPredictionCardInner = ({
           </Tabs>
         </div>
 
-        {/* FREE tier upsell: show what PRO/Premium unlocks */}
+        {/* FREE tier upsell */}
         {hasAccess && displayTier === "free" && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <div
@@ -246,9 +205,6 @@ const AIPredictionCardInner = ({
                     <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                       📊 Goals & BTTS
                     </Badge>
-                    <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                      🔥 Value Bets
-                    </Badge>
                     <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                       🧠 AI Analysis
                     </Badge>
@@ -263,7 +219,8 @@ const AIPredictionCardInner = ({
           </div>
         )}
 
-        {hasAccess && displayTier !== "free" && (
+        {/* AI Analysis - Pro/Premium only */}
+        {hasAccess && displayTier !== "free" && prediction.analysis && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
@@ -280,35 +237,20 @@ const AIPredictionCardInner = ({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-[#1e3a5f]/20 rounded space-y-1.5 md:space-y-2">
-                  {/* Dynamic AI Explanation */}
                   <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
-                    {generatedAnalysis.explanation}
+                    {prediction.analysis}
                   </p>
-                  
-                  {/* Dynamic Key Factors */}
-                  <div className="flex flex-wrap gap-0.5">
-                    {generatedAnalysis.keyFactors.slice(0, 3).map((factor, i) => (
-                      <Badge 
-                        key={i} 
-                        variant="secondary" 
-                        className={cn(
-                          "text-[8px] md:text-[9px] px-1 py-0.5 rounded",
-                          i === 0 
-                            ? "bg-green-500/20 text-green-400 border-green-500/30" 
-                            : "bg-[#1e3a5f]/40"
-                        )}
-                      >
-                        {factor}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  {/* Original analysis from DB if available */}
-                  {prediction.analysis && (
-                    <div className="pt-1 md:pt-1.5 border-t border-[#1e3a5f]/30">
-                      <p className="text-[8px] md:text-[9px] text-muted-foreground/70 italic line-clamp-2">
-                        {prediction.analysis}
-                      </p>
+                  {prediction.key_factors && prediction.key_factors.length > 0 && (
+                    <div className="flex flex-wrap gap-0.5">
+                      {prediction.key_factors.slice(0, 3).map((factor, i) => (
+                        <Badge 
+                          key={i} 
+                          variant="secondary" 
+                          className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
+                        >
+                          {factor}
+                        </Badge>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -317,14 +259,13 @@ const AIPredictionCardInner = ({
           </div>
         )}
 
-        {/* Unlock CTA - Only show when locked */}
+        {/* Unlock CTA */}
         {!hasAccess && unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <p className="text-[9px] md:text-[10px] text-muted-foreground text-center mb-1.5 md:mb-2">
               Unlock AI insights
             </p>
             
-            {/* Android dual-button layout for Pro/Exclusive content */}
             {unlockMethod.type === "android_watch_ad_or_pro" ? (
               <div className="flex flex-col gap-1.5">
                 <Button
@@ -390,7 +331,7 @@ const AIPredictionCardInner = ({
           </div>
         )}
 
-        {/* Available indicator - shows for Pro/Premium tiers, AND daily tier on Android after ad unlock */}
+        {/* Available indicator */}
         {hasAccess && !isAdmin && (isProTier || isPremiumTier || (isAndroidApp && isDailyTier)) && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <div className="flex items-center justify-center gap-2 py-2 px-3 bg-green-500/10 rounded-lg border border-green-500/20">
@@ -400,7 +341,7 @@ const AIPredictionCardInner = ({
           </div>
         )}
 
-        {/* Mandatory AI Disclaimer - Always visible */}
+        {/* Disclaimer */}
         <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-[#1e3a5f]/30">
           <p className="text-[8px] md:text-[9px] text-muted-foreground/60 text-center leading-tight">
             AI-generated prediction. No guarantee of accuracy. For informational purposes only.
