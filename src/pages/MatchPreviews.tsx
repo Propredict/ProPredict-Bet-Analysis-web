@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight } from "lucide-react";
+import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,39 +12,17 @@ import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
-const PRO_PREVIEW_LIMIT = 5;
 const MAX_MATCHES = 30;
 
-// Quality men's leagues with priority order (lower = higher priority)
 const LEAGUE_PRIORITY: Record<string, number> = {
-  // 1. England
-  "Premier League": 1,
-  "Championship": 2,
-  "League One": 3,
-  "League Two": 4,
-  // 2. Spain
-  "La Liga": 5,
-  "Segunda División": 6,
-  // 3. Germany
-  "Bundesliga": 7,
-  "2. Bundesliga": 8,
-  // 4. Italy
-  "Serie A": 9,
-  "Serie B": 10,
-  // 5. France
-  "Ligue 1": 11,
-  "Ligue 2": 12,
-  // Additional
-  "Eredivisie": 20,
-  "Eerste Divisie": 21,
-  "Primeira Liga": 25,
-  "Challenger Pro League": 30,
-  "Super Lig": 35,
-  "Ekstraklasa": 40,
+  "Premier League": 1, "Championship": 2, "League One": 3, "League Two": 4,
+  "La Liga": 5, "Segunda División": 6, "Bundesliga": 7, "2. Bundesliga": 8,
+  "Serie A": 9, "Serie B": 10, "Ligue 1": 11, "Ligue 2": 12,
+  "Eredivisie": 20, "Eerste Divisie": 21, "Primeira Liga": 25,
+  "Challenger Pro League": 30, "Super Lig": 35, "Ekstraklasa": 40,
   "Liga Profesional Argentina": 45,
 };
 
-// English Premier League teams whitelist — to filter out Kuwait, Egypt, etc. "Premier League"
 const EPL_TEAMS = new Set([
   "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
   "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
@@ -54,24 +32,18 @@ const EPL_TEAMS = new Set([
   "Wolves", "Norwich", "Watford", "West Brom", "Sheffield Wed",
 ]);
 
-const QUALITY_SET = new Set(Object.keys(LEAGUE_PRIORITY).map((l) => l.toLowerCase()));
-
 function isQualityLeague(league: string | null, homeTeam?: string): boolean {
   if (!league) return false;
   const lower = league.toLowerCase();
-  if (!QUALITY_SET.has(lower)) return false;
-  // For "Premier League", only allow English teams
-  if (lower === "premier league" && homeTeam) {
-    return EPL_TEAMS.has(homeTeam);
-  }
+  const match = Object.keys(LEAGUE_PRIORITY).find(k => k.toLowerCase() === lower);
+  if (!match) return false;
+  if (lower === "premier league" && homeTeam) return EPL_TEAMS.has(homeTeam);
   return true;
 }
 
 function getLeaguePriority(league: string | null): number {
   if (!league) return 999;
-  const entry = Object.entries(LEAGUE_PRIORITY).find(
-    ([key]) => key.toLowerCase() === league.toLowerCase()
-  );
+  const entry = Object.entries(LEAGUE_PRIORITY).find(([key]) => key.toLowerCase() === league.toLowerCase());
   return entry ? entry[1] : 999;
 }
 
@@ -86,31 +58,15 @@ function getTeamInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
 }
 
-function getInsight(prediction: string | null, homeTeam: string, awayTeam: string, confidence: number | null): string {
-  const p = (prediction || "").toLowerCase().trim();
-  if (p === "1" || p === "home") return `${homeTeam} showing dominant home form — AI backs a decisive result`;
-  if (p === "2" || p === "away") return `${awayTeam} on a strong away run — our model sees an upset brewing`;
-  if (p === "x" || p === "draw") return `Tight tactical battle expected — both sides evenly matched in key metrics`;
-  if (p.includes("over")) return `High-scoring affair likely — both attacks in top form recently`;
-  if (p.includes("under")) return `Defensive masterclass incoming — clean sheets dominating recent form`;
-  if (p.includes("btts")) return `Both defenses leaking goals — expect end-to-end action`;
-  return `AI has identified a strong signal in this matchup`;
-}
-
-function getPredictionLabel(prediction: string | null): string {
-  if (!prediction) return "—";
-  const p = prediction.toLowerCase().trim();
-  if (p === "1" || p === "home") return "Home Win";
-  if (p === "x" || p === "draw") return "Draw";
-  if (p === "2" || p === "away") return "Away Win";
-  if (p.includes("over")) return "Over 2.5";
-  if (p.includes("under")) return "Under 2.5";
-  if (p.includes("btts")) return "BTTS";
-  return prediction;
+function getRankStyle(rank: number): { bg: string; text: string; border: string; label: string } {
+  if (rank === 1) return { bg: "bg-gradient-to-br from-yellow-400 to-amber-500", text: "text-yellow-900", border: "ring-2 ring-yellow-400/60", label: "🥇" };
+  if (rank === 2) return { bg: "bg-gradient-to-br from-gray-300 to-gray-400", text: "text-gray-800", border: "ring-2 ring-gray-300/60", label: "🥈" };
+  if (rank === 3) return { bg: "bg-gradient-to-br from-orange-400 to-orange-600", text: "text-orange-900", border: "ring-2 ring-orange-400/60", label: "🥉" };
+  return { bg: "bg-muted", text: "text-muted-foreground", border: "", label: `#${rank}` };
 }
 
 export default function MatchPreviews() {
-  const { predictions, loading, refetch } = useAIPredictions("today");
+  const { predictions, loading } = useAIPredictions("today");
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
@@ -119,9 +75,7 @@ export default function MatchPreviews() {
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
-  const canGenerate = isPremiumUser || isProUser;
 
-  // Build logo lookup from live scores data
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
     for (const m of liveMatches) {
@@ -143,54 +97,21 @@ export default function MatchPreviews() {
     return null;
   }
 
-  // Filter quality leagues, sort by confidence, limit to 30
+  // Guaranteed top 30 by confidence — no hard cutoff
   const topMatches = useMemo(() => {
-    const isLowRisk = (p: typeof predictions[0]) => (p.confidence ?? 0) >= 75;
     const isPending = (p: typeof predictions[0]) =>
-      (p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending"));
+      p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
 
-    // Try filtering out pending predictions first
-    const processed = predictions.filter((p) => !isPending(p));
-    
-    // If too few processed matches, fall back to all predictions
-    const pool = processed.length >= 5 ? processed : predictions;
+    const pool = predictions.filter(p => !isPending(p));
 
-    // 1. Low-risk from quality leagues
-    const qualityLow = pool
-      .filter((p) => isQualityLeague(p.league, p.home_team) && isLowRisk(p));
-
-    // 2. Low-risk from ANY league (fallback)
-    const otherLow = pool
-      .filter((p) => !isQualityLeague(p.league, p.home_team) && isLowRisk(p));
-
-    // 3. Remaining quality league matches (medium/high risk)
-    const qualityRest = pool
-      .filter((p) => isQualityLeague(p.league, p.home_team) && !isLowRisk(p));
-
-    const sortByConf = (a: typeof predictions[0], b: typeof predictions[0]) => {
+    // Sort: quality leagues first at same confidence, then by confidence desc
+    pool.sort((a, b) => {
       const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
       if (confDiff !== 0) return confDiff;
       return getLeaguePriority(a.league) - getLeaguePriority(b.league);
-    };
+    });
 
-    qualityLow.sort(sortByConf);
-    otherLow.sort(sortByConf);
-    qualityRest.sort(sortByConf);
-
-    // Prioritize: low-risk quality → low-risk other → rest quality
-    const MIN_LOW_RISK = 5;
-    let result = [...qualityLow];
-    if (result.length < MIN_LOW_RISK) {
-      result = [...result, ...otherLow.slice(0, MIN_LOW_RISK - result.length)];
-    }
-    result = [...result, ...qualityRest];
-    
-    // Add remaining other low-risk not already included
-    const usedIds = new Set(result.map(r => r.id));
-    const remainingOtherLow = otherLow.filter(p => !usedIds.has(p.id));
-    result = [...result, ...remainingOtherLow];
-
-    return result.slice(0, MAX_MATCHES);
+    return pool.slice(0, MAX_MATCHES);
   }, [predictions]);
 
   const handleCardClick = (match: typeof topMatches[0]) => {
@@ -203,20 +124,20 @@ export default function MatchPreviews() {
   return (
     <>
       <Helmet>
-        <title>Match Previews – AI Sports Predictions | ProPredict</title>
-        <meta name="description" content="AI-powered match analysis and predictions for today's top football matches." />
+        <title>Top 30 Matches of the Day – AI Predictions | ProPredict</title>
+        <meta name="description" content="AI-ranked top 30 football matches of the day with confidence ratings and match analysis." />
       </Helmet>
 
       <div className="page-content space-y-4">
         <div className="page-header">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
-              <Eye className="h-5 w-5 text-violet-400" />
+              <Trophy className="h-5 w-5 text-violet-400" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Your Match Preview</h1>
+              <h1 className="text-lg font-bold">Top 30 Matches of the Day</h1>
               <p className="text-xs text-muted-foreground">
-                AI-powered analysis for top matches
+                AI-ranked by confidence — the best picks today
               </p>
             </div>
           </div>
@@ -224,13 +145,12 @@ export default function MatchPreviews() {
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Select any match directly and instantly view AI-powered analysis and predictions for that specific game.</li>
-            <li>The AI evaluates team form, recent results, statistics, and trends to generate an informative match preview.</li>
-            <li>This feature is designed to help you understand the matchup better and follow the analysis in one place.</li>
+            <li>Our AI ranks the top 30 matches daily by confidence level and statistical edge.</li>
+            <li>Click any match to unlock full AI-powered analysis, predictions, and key factors.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
           <div className="mt-3 space-y-1">
-            <p className="text-sm"><span className="text-amber-400 font-bold">● PRO</span> — Limited to 5 Match Previews daily</p>
+            <p className="text-sm"><span className="text-amber-400 font-bold">● PRO</span> — 5 Match Previews daily</p>
             <p className="text-sm"><span className="text-fuchsia-400 font-bold">● PREMIUM</span> — Unlimited Match Previews</p>
           </div>
         </Card>
@@ -242,7 +162,7 @@ export default function MatchPreviews() {
                 <Lock className="h-4 w-4 text-red-400" />
                 <span className="text-sm text-muted-foreground">Match previews require a Pro or Premium subscription</span>
               </div>
-              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">Upgrade</Badge>
+              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40 cursor-pointer" onClick={() => navigate("/get-premium")}>Upgrade</Badge>
             </div>
           </Card>
         )}
@@ -254,180 +174,121 @@ export default function MatchPreviews() {
         ) : topMatches.length === 0 ? (
           <Card className="p-6 text-center">
             <Eye className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No quality league matches available today</p>
+            <p className="text-sm text-muted-foreground">No matches available today</p>
           </Card>
         ) : (
           <div className="space-y-2">
-            {topMatches.map((match) => {
+            {topMatches.map((match, index) => {
+              const rank = index + 1;
               const risk = getRiskColor(match.confidence);
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
+              const rankStyle = getRankStyle(rank);
+              const isTop3 = rank <= 3;
 
               return (
                 <Card
                   key={match.id}
-                  className="overflow-hidden transition-all bg-white dark:bg-card border border-gray-200 dark:border-border/60 hover:shadow-lg hover:shadow-violet-500/10 shadow-sm cursor-pointer"
+                  className={cn(
+                    "overflow-hidden transition-all bg-white dark:bg-card border shadow-sm cursor-pointer hover:shadow-lg hover:shadow-violet-500/10",
+                    isTop3
+                      ? "border-violet-400/40 dark:border-violet-500/40"
+                      : "border-gray-200 dark:border-border/60"
+                  )}
                   onClick={() => handleCardClick(match)}
                 >
-                  <div className="p-5 space-y-4">
-                    <div className="text-center">
-                      <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+                  <div className="p-4 space-y-3">
+                    {/* Rank + League row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={cn(
+                          "w-7 h-7 rounded-full flex items-center justify-center text-xs font-black",
+                          rank <= 3 ? rankStyle.bg : "bg-muted",
+                          rank <= 3 ? rankStyle.text : "text-muted-foreground"
+                        )}>
+                          {rank <= 3 ? rank : `${rank}`}
+                        </div>
+                        {isTop3 && (
+                          <span className="text-sm">{rankStyle.label}</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">
                         {match.league || "Unknown"}
                       </span>
                     </div>
 
+                    {/* Teams row — compact */}
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        {homeLogo ? (
-                          <img src={homeLogo} alt={match.home_team} className="w-20 h-20 object-contain drop-shadow-sm" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-violet-100 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/20 flex items-center justify-center">
-                            <span className="text-lg font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
-                          </div>
-                        )}
-                        <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.home_team}</span>
+                      {/* Home team */}
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border",
+                          isTop3 ? "border-violet-300 dark:border-violet-500/40" : "border-gray-200 dark:border-border/40"
+                        )}>
+                          {homeLogo ? (
+                            <img src={homeLogo} alt={match.home_team} className="w-7 h-7 object-contain" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
+                          )}
+                        </div>
+                        <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate">{match.home_team}</span>
                       </div>
 
-                      <div className="flex flex-col items-center gap-1 flex-shrink-0 px-3">
-                        <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium">{match.match_date || "Today"}</span>
-                        <span className="text-xl font-black text-gray-800 dark:text-foreground tracking-tight">VS</span>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground/60" />
-                          <span className="text-xs font-semibold text-gray-600 dark:text-muted-foreground">{match.match_time || "TBD"}</span>
+                      {/* VS + time */}
+                      <div className="flex flex-col items-center flex-shrink-0 px-2">
+                        <span className="text-xs font-black text-gray-400 dark:text-muted-foreground">VS</span>
+                        <div className="flex items-center gap-0.5">
+                          <Clock className="h-2.5 w-2.5 text-gray-400 dark:text-muted-foreground/60" />
+                          <span className="text-[10px] text-gray-500 dark:text-muted-foreground">{match.match_time?.slice(0, 5) || "TBD"}</span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        {awayLogo ? (
-                          <img src={awayLogo} alt={match.away_team} className="w-20 h-20 object-contain drop-shadow-sm" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-primary/20 border border-blue-200 dark:border-primary/20 flex items-center justify-center">
-                            <span className="text-lg font-bold text-blue-600 dark:text-primary/70">{getTeamInitials(match.away_team)}</span>
-                          </div>
-                        )}
-                        <span className="text-base font-bold text-center leading-tight line-clamp-2 text-gray-900 dark:text-foreground">{match.away_team}</span>
+                      {/* Away team */}
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                        <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate text-right">{match.away_team}</span>
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border",
+                          isTop3 ? "border-violet-300 dark:border-violet-500/40" : "border-gray-200 dark:border-border/40"
+                        )}>
+                          {awayLogo ? (
+                            <img src={awayLogo} alt={match.away_team} className="w-7 h-7 object-contain" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-primary/70">{getTeamInitials(match.away_team)}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-5 text-sm pt-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-violet-500 dark:text-primary" />
-                        <span className="text-gray-500 dark:text-muted-foreground font-bold">Confidence</span>
-                        <span className="font-extrabold text-gray-800 dark:text-foreground text-base">{match.confidence ?? 0}%</span>
+                    {/* Confidence + Risk + Prediction */}
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-border/30">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-violet-500 dark:text-primary" />
+                          <span className="text-xs text-gray-500 dark:text-muted-foreground">Confidence</span>
+                          <span className="text-sm font-extrabold text-gray-800 dark:text-foreground">{match.confidence ?? 0}%</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("w-1.5 h-1.5 rounded-full", risk.dot)} />
+                          <span className={cn("text-xs font-semibold", risk.color)}>{risk.label}</span>
+                        </div>
                       </div>
-                      <span className="text-gray-300 dark:text-border">•</span>
-                      <div className="flex items-center gap-2">
-                        <span className={cn("w-2 h-2 rounded-full", risk.dot)} />
-                        <span className={cn("font-semibold text-base", risk.color)}>{risk.label}</span>
-                      </div>
+                      {match.prediction && (
+                        <Badge variant="outline" className="text-[10px] border-violet-500/30 text-violet-500 dark:text-violet-400 px-2">
+                          {getPredictionLabel(match.prediction)}
+                        </Badge>
+                      )}
                     </div>
 
-                    {/* Teaser insights - unique per match */}
-                    {(() => {
-                      const conf = match.confidence ?? 50;
-                      const hw = match.home_win ?? 33;
-                      const aw = match.away_win ?? 33;
-                      const dw = match.draw ?? 33;
-                      const diff = Math.abs(hw - aw);
-                      const scoreParts = (match.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
-                      const totalGoals = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : 0;
-                      const riskLvl = (match.risk_level ?? "medium").toLowerCase();
-                      const pred = (match.prediction ?? "").toUpperCase();
-                      const isHomeFav = hw > aw;
-                      const favTeam = isHomeFav ? match.home_team : match.away_team;
-                      const favPct = isHomeFav ? hw : aw;
-
-                      // Line 1: unique per match situation
-                      let line1Icon = "◉";
-                      let line1Color = "text-emerald-500";
-                      let line1: React.ReactNode;
-                      if (diff >= 30 && conf >= 75) {
-                        line1 = <><span className="font-bold text-gray-800 dark:text-foreground">{favTeam}</span> dominates with <span className="font-bold text-gray-800 dark:text-foreground">{favPct}%</span> win probability — clear edge</>;
-                      } else if (totalGoals >= 3) {
-                        line1Icon = "⚡";
-                        line1Color = "text-amber-500";
-                        line1 = <>High-scoring profile detected — <span className="font-bold text-gray-800 dark:text-foreground">{totalGoals.toFixed(1)} goals avg</span> between both sides</>;
-                      } else if (dw >= 30) {
-                        line1Icon = "⚖";
-                        line1Color = "text-blue-500";
-                        line1 = <>Tight matchup — draw probability at <span className="font-bold text-gray-800 dark:text-foreground">{dw}%</span>, expect a cagey affair</>;
-                      } else if (riskLvl === "low") {
-                        line1 = <>Our model detected a <span className="font-bold text-gray-800 dark:text-foreground">low-risk opportunity</span> in this matchup</>;
-                      } else if (diff >= 15) {
-                        line1 = <><span className="font-bold text-gray-800 dark:text-foreground">{favTeam}</span> holds a statistical advantage at <span className="font-bold text-gray-800 dark:text-foreground">{favPct}%</span></>;
-                      } else {
-                        line1 = <>Both teams evenly matched — <span className="font-bold text-gray-800 dark:text-foreground">value pick</span> identified</>;
-                      }
-
-                      // Line 2: unique per prediction type
-                      let line2Icon = "↗";
-                      let line2: React.ReactNode;
-                      if (pred === "1" || pred === "HOME") {
-                        line2 = <>Home advantage and recent form <span className="font-bold text-gray-800 dark:text-foreground">strongly favor {match.home_team}</span></>;
-                      } else if (pred === "2" || pred === "AWAY") {
-                        line2Icon = "↘";
-                        line2 = <><span className="font-bold text-gray-800 dark:text-foreground">{match.away_team}</span> showing superior away form and defensive solidity</>;
-                      } else if (pred === "X" || pred === "DRAW") {
-                        line2Icon = "↔";
-                        line2 = <>Similar form and stats point to a <span className="font-bold text-gray-800 dark:text-foreground">balanced contest</span></>;
-                      } else if (totalGoals >= 2.5) {
-                        line2 = <>Goal trends and defensive weaknesses <span className="font-bold text-gray-800 dark:text-foreground">support an open game</span></>;
-                      } else {
-                        line2 = <>Key metrics and form data <span className="font-bold text-gray-800 dark:text-foreground">align with this prediction</span></>;
-                      }
-
-                      // Line 3: confidence-based unique text
-                      let line3: React.ReactNode;
-                      if (conf >= 85) {
-                        line3 = <>AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — <span className="font-bold text-gray-800 dark:text-foreground">top pick of the day</span></>;
-                      } else if (conf >= 75) {
-                        line3 = <>AI confidence is <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — strong conviction pick</>;
-                      } else if (conf >= 65) {
-                        line3 = <>AI confidence at <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — solid selection today</>;
-                      } else if (conf >= 50) {
-                        line3 = <>AI sees <span className="font-bold text-gray-800 dark:text-foreground">{conf}% edge</span> — value opportunity spotted</>;
-                      } else {
-                        line3 = <>AI rates this at <span className="font-bold text-gray-800 dark:text-foreground">{conf}%</span> — speculative pick</>;
-                      }
-
-                      const unlockPct = Math.min(97, Math.floor(70 + conf * 0.25 + (match.match_id?.charCodeAt(0) ?? 0) % 8));
-                      return (
-                        <>
-                          <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-border/40">
-                            <div className="flex items-start gap-2">
-                              <span className={cn(line1Color, "mt-0.5")}>{line1Icon}</span>
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line1}</p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <span className="text-violet-500 mt-0.5">{line2Icon}</span>
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line2}</p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Sparkles className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                              <p className="text-xs text-gray-600 dark:text-muted-foreground">{line3}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-end gap-1.5 pt-1">
-                            <span className="text-[10px] text-gray-400 dark:text-muted-foreground/60">🔥 {unlockPct}% of users unlocked this match</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-
+                    {/* CTA */}
                     <Button
                       size="sm"
-                      className={cn(
-                        "w-full text-sm font-bold h-10",
-                        isFreeUser
-                          ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15"
-                          : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-md shadow-violet-500/15 animate-pulse"
-                      )}
+                      className="w-full text-xs font-bold h-9 bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-sm"
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
                       {isFreeUser ? (
-                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade Plan to Unlock</>
+                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
                       ) : (
-                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Match Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
                     </Button>
                   </div>
@@ -441,4 +302,16 @@ export default function MatchPreviews() {
       </div>
     </>
   );
+}
+
+function getPredictionLabel(prediction: string | null): string {
+  if (!prediction) return "—";
+  const p = prediction.toLowerCase().trim();
+  if (p === "1" || p === "home") return "Home Win";
+  if (p === "x" || p === "draw") return "Draw";
+  if (p === "2" || p === "away") return "Away Win";
+  if (p.includes("over")) return "Over 2.5";
+  if (p.includes("under")) return "Under 2.5";
+  if (p.includes("btts")) return "BTTS";
+  return prediction;
 }
