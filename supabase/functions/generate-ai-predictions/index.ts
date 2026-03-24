@@ -70,11 +70,13 @@ const QUALITY_LEAGUE_IDS = new Set([
 ]);
 
 // ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.35;         // 35% - Recent form (last 5 real matches)
-const WEIGHT_QUALITY = 0.25;      // 25% - Team quality
-const WEIGHT_SQUAD = 0.15;        // 15% - Squad strength / injuries
-const WEIGHT_HOME = 0.10;         // 10% - Home advantage (MAX)
-const WEIGHT_H2H = 0.15;          // 15% - Head-to-Head history (increased from 10%)
+const WEIGHT_FORM = 0.30;         // 30% - Recent form (last 10 real matches)
+const WEIGHT_QUALITY = 0.20;      // 20% - Team quality (season stats)
+const WEIGHT_SQUAD = 0.10;        // 10% - Squad strength / goal diff
+const WEIGHT_HOME = 0.08;         // 8%  - Home advantage
+const WEIGHT_H2H = 0.12;          // 12% - Head-to-Head history
+const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
+const WEIGHT_ODDS = 0.10;         // 10% - Bookmaker odds signal
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
@@ -199,6 +201,28 @@ const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
 const injuriesCache = new Map<string, InjuryInfo[]>();
+const standingsCache = new Map<string, StandingEntry[]>();
+const oddsCache = new Map<string, OddsData | null>();
+
+interface StandingEntry {
+  teamId: number;
+  rank: number;
+  points: number;
+  played: number;
+  goalsDiff: number;
+  form: string;
+  totalTeams: number;
+}
+
+interface OddsData {
+  homeOdds: number;
+  drawOdds: number;
+  awayOdds: number;
+  // Implied probabilities from bookmaker
+  homeProb: number;
+  drawProb: number;
+  awayProb: number;
+}
 
 interface InjuryInfo {
   name: string;
@@ -363,6 +387,138 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number, 
     teamStatsCache.set(cacheKey, null);
     return null;
   }
+}
+
+/**
+ * Fetch league standings to determine team positions.
+ * Returns array of standings entries for all teams in the league.
+ */
+async function fetchStandings(leagueId: number, season: number, apiKey: string): Promise<StandingEntry[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (standingsCache.has(cacheKey)) return standingsCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/standings?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response?.[0]?.league?.standings) {
+      standingsCache.set(cacheKey, []);
+      return [];
+    }
+
+    // Standings can be in groups (e.g. Champions League) — flatten all
+    const allGroups = data.response[0].league.standings;
+    const entries: StandingEntry[] = [];
+    
+    for (const group of allGroups) {
+      const totalTeams = group.length;
+      for (const team of group) {
+        entries.push({
+          teamId: team.team?.id || 0,
+          rank: team.rank || 0,
+          points: team.points || 0,
+          played: team.all?.played || 0,
+          goalsDiff: team.goalsDiff || 0,
+          form: team.form || "",
+          totalTeams,
+        });
+      }
+    }
+
+    standingsCache.set(cacheKey, entries);
+    return entries;
+  } catch (e) {
+    console.error("Error fetching standings:", e);
+    standingsCache.set(cacheKey, []);
+    return [];
+  }
+}
+
+/**
+ * Get team's position in standings (0-100 score, 100 = top of table)
+ */
+function getStandingsScore(standings: StandingEntry[], teamId: number): number {
+  if (standings.length === 0) return 50; // Neutral if no standings data
+
+  const entry = standings.find(s => s.teamId === teamId);
+  if (!entry || entry.totalTeams === 0) return 50;
+
+  // Convert rank to 0-100 score (1st place = 100, last place = 0)
+  const positionScore = ((entry.totalTeams - entry.rank) / (entry.totalTeams - 1)) * 100;
+  
+  // Weight by goal difference as a tiebreaker
+  const gdBonus = clamp(entry.goalsDiff * 0.5, -10, 10);
+  
+  return clamp(Math.round(positionScore + gdBonus), 0, 100);
+}
+
+/**
+ * Fetch pre-match bookmaker odds for a fixture.
+ * Uses the first available bookmaker's 1X2 (Match Winner) market.
+ */
+async function fetchOdds(fixtureId: string, apiKey: string): Promise<OddsData | null> {
+  if (oddsCache.has(fixtureId)) return oddsCache.get(fixtureId) ?? null;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/odds?fixture=${fixtureId}&bookmaker=8`; // bet365
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 1, baseDelayMs: 700 });
+    
+    if (!data?.response?.[0]?.bookmakers?.[0]?.bets) {
+      // Try without specific bookmaker
+      const url2 = `${API_FOOTBALL_URL}/odds?fixture=${fixtureId}`;
+      const data2 = await fetchJsonWithRetry(url2, apiKey, { retries: 1, baseDelayMs: 700 });
+      
+      if (!data2?.response?.[0]?.bookmakers?.[0]?.bets) {
+        oddsCache.set(fixtureId, null);
+        return null;
+      }
+      return parseOddsResponse(fixtureId, data2);
+    }
+
+    return parseOddsResponse(fixtureId, data);
+  } catch (e) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+}
+
+function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
+  const bookmaker = data.response[0]?.bookmakers?.[0];
+  if (!bookmaker) { oddsCache.set(fixtureId, null); return null; }
+
+  // Find "Match Winner" bet (id=1 or label containing "Match Winner")
+  const matchWinner = bookmaker.bets?.find((b: any) => 
+    b.id === 1 || b.name?.toLowerCase().includes("match winner")
+  );
+
+  if (!matchWinner?.values || matchWinner.values.length < 3) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+
+  const homeOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Home")?.odd || "0");
+  const drawOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Draw")?.odd || "0");
+  const awayOdds = parseFloat(matchWinner.values.find((v: any) => v.value === "Away")?.odd || "0");
+
+  if (homeOdds <= 0 || drawOdds <= 0 || awayOdds <= 0) {
+    oddsCache.set(fixtureId, null);
+    return null;
+  }
+
+  // Convert odds to implied probabilities (remove overround)
+  const rawHomeProb = 1 / homeOdds;
+  const rawDrawProb = 1 / drawOdds;
+  const rawAwayProb = 1 / awayOdds;
+  const overround = rawHomeProb + rawDrawProb + rawAwayProb;
+
+  const result: OddsData = {
+    homeOdds, drawOdds, awayOdds,
+    homeProb: Math.round((rawHomeProb / overround) * 100),
+    drawProb: Math.round((rawDrawProb / overround) * 100),
+    awayProb: Math.round((rawAwayProb / overround) * 100),
+  };
+
+  oddsCache.set(fixtureId, result);
+  return result;
 }
 
 /**
@@ -564,13 +720,10 @@ function calibrateConfidence(raw: number): number {
 }
 
 /**
- * Main prediction calculation using required weights:
- * Form 40%, Quality 25%, Squad 15%, Home 10% max, H2H 10%.
+ * Main prediction calculation using enhanced weights:
+ * Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%.
  *
- * Constraints:
- * - Home advantage is minor (never dominant)
- * - Probabilities always sum to 100
- * - Confidence capped at 78% (no 90%+)
+ * Uses real last 10 matches, league position, and bookmaker odds for calibration.
  */
 function calculatePrediction(
   homeForm: FormMatch[],
@@ -581,66 +734,75 @@ function calculatePrediction(
   homeTeamId: number,
   awayTeamId: number,
   homeTeamName: string,
-  awayTeamName: string
+  awayTeamName: string,
+  standings?: StandingEntry[],
+  odds?: OddsData | null
 ): PredictionResult {
-  // === FORM (40%) ===
-  const homeFormScore = calculateFormScore(homeForm);
-  const awayFormScore = calculateFormScore(awayForm);
+  // === FORM (30%) — use up to 10 matches with weighted recency ===
+  const homeFormScore = homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm);
+  const awayFormScore = awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm);
 
-  // === QUALITY (25%) ===
+  // === QUALITY (20%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
   const awayQualityScore = calculateQualityScore(awayStats);
 
-  // === SQUAD / AVAILABILITY (15%) ===
-  // Enhanced: use season goals average when available, fallback to form-based
+  // === SQUAD / AVAILABILITY (10%) ===
   const homeGoalRate = calculateGoalRate(homeForm);
   const awayGoalRate = calculateGoalRate(awayForm);
 
-  // If we have season stats, use home goals avg for home team and away goals avg for away team
   const homeEffectiveScored = homeStats?.homeGoalsForAvg || homeGoalRate.scored;
   const homeEffectiveConceded = homeStats?.homeGoalsAgainstAvg || homeGoalRate.conceded;
   const awayEffectiveScored = awayStats?.awayGoalsForAvg || awayGoalRate.scored;
   const awayEffectiveConceded = awayStats?.awayGoalsAgainstAvg || awayGoalRate.conceded;
 
-  const homeSquadScore = clamp(
-    50 + (homeEffectiveScored - homeEffectiveConceded) * 18,
-    0,
-    100
-  );
-  const awaySquadScore = clamp(
-    50 + (awayEffectiveScored - awayEffectiveConceded) * 18,
-    0,
-    100
-  );
+  const homeSquadScore = clamp(50 + (homeEffectiveScored - homeEffectiveConceded) * 18, 0, 100);
+  const awaySquadScore = clamp(50 + (awayEffectiveScored - awayEffectiveConceded) * 18, 0, 100);
 
-  // === HOME ADVANTAGE (10% MAX — use real home/away win rates when available) ===
+  // === HOME ADVANTAGE (8%) ===
   let homeAdvantageScore = 51;
   let awayAdvantageScore = 49;
   if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
     const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
     const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
-    // Slight boost based on actual home/away performance, capped to avoid bias
     homeAdvantageScore = clamp(50 + (homeWinRateAtHome - 0.4) * 10, 48, 55);
     awayAdvantageScore = clamp(50 + (awayWinRateAway - 0.3) * 8, 45, 52);
   }
 
-  // === H2H (10%, secondary) ===
+  // === H2H (12%) ===
   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
   const awayH2HScore = 100 - homeH2HScore;
+
+  // === STANDINGS (10%) — league table position ===
+  const homeStandingsScore = standings ? getStandingsScore(standings, homeTeamId) : 50;
+  const awayStandingsScore = standings ? getStandingsScore(standings, awayTeamId) : 50;
+
+  // === ODDS (10%) — bookmaker implied probabilities ===
+  // Convert odds to a 0-100 score for each team
+  let homeOddsScore = 50;
+  let awayOddsScore = 50;
+  if (odds) {
+    // Direct use of bookmaker implied probabilities
+    homeOddsScore = clamp(odds.homeProb, 10, 90);
+    awayOddsScore = clamp(odds.awayProb, 10, 90);
+  }
 
   const homeTotal =
     homeFormScore * WEIGHT_FORM +
     homeQualityScore * WEIGHT_QUALITY +
     homeSquadScore * WEIGHT_SQUAD +
     homeAdvantageScore * WEIGHT_HOME +
-    homeH2HScore * WEIGHT_H2H;
+    homeH2HScore * WEIGHT_H2H +
+    homeStandingsScore * WEIGHT_STANDINGS +
+    homeOddsScore * WEIGHT_ODDS;
 
   const awayTotal =
     awayFormScore * WEIGHT_FORM +
     awayQualityScore * WEIGHT_QUALITY +
     awaySquadScore * WEIGHT_SQUAD +
     awayAdvantageScore * WEIGHT_HOME +
-    awayH2HScore * WEIGHT_H2H;
+    awayH2HScore * WEIGHT_H2H +
+    awayStandingsScore * WEIGHT_STANDINGS +
+    awayOddsScore * WEIGHT_ODDS;
 
   // === PROBABILITIES ===
   const diff = homeTotal - awayTotal;
@@ -751,6 +913,29 @@ function calculatePrediction(
     }
   }
 
+  // Odds alignment bonus: if bookmaker agrees with our prediction, boost confidence
+  if (odds) {
+    const ourFav = homeWin >= awayWin ? "home" : "away";
+    const bookFav = odds.homeProb >= odds.awayProb ? "home" : "away";
+    const bookFavProb = ourFav === "home" ? odds.homeProb : odds.awayProb;
+    
+    if (ourFav === bookFav && bookFavProb >= 55) {
+      // Strong alignment: both model and bookmaker agree
+      confidence += clamp((bookFavProb - 55) / 10, 0, 1) * 4;
+    } else if (ourFav !== bookFav && bookFavProb >= 60) {
+      // Disagreement with bookmaker: reduce confidence (bookmakers are usually right)
+      confidence -= 3;
+    }
+  }
+
+  // Standings bonus: if top team vs bottom team, boost
+  if (standings && standings.length > 0) {
+    const standingsDiff = Math.abs(homeStandingsScore - awayStandingsScore);
+    if (standingsDiff >= 40) {
+      confidence += 2; // Clear gap in table positions
+    }
+  }
+
   confidence = Math.round(clamp(confidence, 50, 92));
 
   // Cap confidence for teams with insufficient season data
@@ -761,8 +946,6 @@ function calculatePrediction(
   }
 
   // === CALIBRATION: dampen overconfident raw scores ===
-  // Apply mild sigmoid calibration to prevent inflated confidence
-  // This maps raw 50-92 range more conservatively
   confidence = calibrateConfidence(confidence);
 
   // === RISK ===
@@ -1191,7 +1374,9 @@ async function premiumEnhance(
   awayStats: TeamStats | null,
   apiKey: string,
   leagueId?: number,
-  season?: number
+  season?: number,
+  standings?: StandingEntry[],
+  odds?: OddsData | null
 ): Promise<PredictionResult> {
   console.log(`⭐ Premium deep-dive for ${homeTeamName} vs ${awayTeamName} (confidence: ${initialResult.confidence}%)`);
 
@@ -1204,22 +1389,19 @@ async function premiumEnhance(
     leagueId && season ? fetchInjuries(leagueId, season, apiKey) : Promise.resolve([]),
   ]);
 
-  // Recalculate with deeper form data (use last 10 for form score)
-  const deepHomeFormScore = calculateFormScoreDeep(homeForm10);
-  const deepAwayFormScore = calculateFormScoreDeep(awayForm10);
-  const deepH2HScore = calculateH2HScore(h2h5, homeTeamId, awayTeamId);
-
-  // Recalculate prediction with deep data
+  // Recalculate with deeper form data — pass ALL 10 matches + standings + odds
   const deepResult = calculatePrediction(
-    homeForm10.slice(0, 5), // Use last 5 for core calculation (more than 3)
-    awayForm10.slice(0, 5),
+    homeForm10,
+    awayForm10,
     homeStats,
     awayStats,
     h2h5,
     homeTeamId,
     awayTeamId,
     homeTeamName,
-    awayTeamName
+    awayTeamName,
+    standings,
+    odds
   );
 
   // Keep the higher confidence (deep analysis should confirm or raise)
@@ -1472,8 +1654,22 @@ function generateKeyFactors(
     if (totalAvg >= 3.5) factors.push(`High-scoring teams (avg ${totalAvg.toFixed(1)} goals combined)`);
   }
 
-  // Limit to 5 most relevant factors
-  return factors.slice(0, 5);
+  // 7. Last 10 matches form summary
+  if (homeForm.length >= 8) {
+    const wins = homeForm.filter(m => m.result === "W").length;
+    const ratio = wins / homeForm.length;
+    if (ratio >= 0.7) factors.push(`${homeTeamName}: ${wins}/${homeForm.length} wins in recent matches`);
+    else if (ratio <= 0.2) factors.push(`${homeTeamName}: Only ${wins}/${homeForm.length} recent wins`);
+  }
+  if (awayForm.length >= 8) {
+    const wins = awayForm.filter(m => m.result === "W").length;
+    const ratio = wins / awayForm.length;
+    if (ratio >= 0.7) factors.push(`${awayTeamName}: ${wins}/${awayForm.length} wins in recent matches`);
+    else if (ratio <= 0.2) factors.push(`${awayTeamName}: Only ${wins}/${awayForm.length} recent wins`);
+  }
+
+  // Limit to 6 most relevant factors
+  return factors.slice(0, 6);
 }
 
 /**
@@ -1525,13 +1721,15 @@ async function processBatch(
         continue;
       }
 
-      // Fetch core data — use real last 5 matches for form (not pseudo-form)
-      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm] = await Promise.all([
+      // Fetch ALL data in parallel: stats, H2H, real form (10 matches), standings, odds
+      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
-        fetchTeamForm(homeTeamId, apiKey, 5),
-        fetchTeamForm(awayTeamId, apiKey, 5),
+        fetchTeamForm(homeTeamId, apiKey, 10),  // Last 10 real matches
+        fetchTeamForm(awayTeamId, apiKey, 10),  // Last 10 real matches
+        fetchStandings(leagueId, season, apiKey),
+        fetchOdds(fixtureIdStr, apiKey),
       ]);
 
       if (!homeStats || !awayStats) {
@@ -1559,7 +1757,9 @@ async function processBatch(
         homeTeamId,
         awayTeamId,
         homeTeamName,
-        awayTeamName
+        awayTeamName,
+        standings,
+        odds
       );
 
       // Calculate Poisson goal markets for key_factors and more accurate score
@@ -1601,7 +1801,9 @@ async function processBatch(
             awayStats,
             apiKey,
             leagueId,
-            season
+            season,
+            standings,
+            odds
           );
         } catch (e) {
           console.warn(`Premium enhance failed for ${homeTeamName} vs ${awayTeamName}, keeping standard result:`, e);
@@ -1963,7 +2165,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
   console.log(`Today: ${todayStr}`);
   console.log(`Tomorrow: ${tomorrowStr}`);
   console.log(`Run ID: ${runId}`);
-  console.log(`Using NEW weighted algorithm: Form 40%, Quality 25%, Squad 15%, Home 10%, H2H 10%`);
+  console.log(`Using ENHANCED algorithm: Form 30%, Quality 20%, Squad 10%, Home 8%, H2H 12%, Standings 10%, Odds 10%`);
 
   // Trigger today and tomorrow batch chains STAGGERED (not parallel!)
   // Both batches at offset 0 fetch fixture lists from API-Football.
