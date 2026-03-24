@@ -1525,10 +1525,14 @@ async function processBatch(
         continue;
       }
 
-      // Fetch core data
-      const homeStats = await fetchTeamStats(homeTeamId, leagueId, season, apiKey);
-      const awayStats = await fetchTeamStats(awayTeamId, leagueId, season, apiKey);
-      const h2h = await fetchH2H(homeTeamId, awayTeamId, apiKey, 3);
+      // Fetch core data — use real last 5 matches for form (not pseudo-form)
+      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm] = await Promise.all([
+        fetchTeamStats(homeTeamId, leagueId, season, apiKey),
+        fetchTeamStats(awayTeamId, leagueId, season, apiKey),
+        fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
+        fetchTeamForm(homeTeamId, apiKey, 5),
+        fetchTeamForm(awayTeamId, apiKey, 5),
+      ]);
 
       if (!homeStats || !awayStats) {
         await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`);
@@ -1536,8 +1540,9 @@ async function processBatch(
         continue;
       }
 
-      const homeForm = buildPseudoFormFromStats(homeStats);
-      const awayForm = buildPseudoFormFromStats(awayStats);
+      // Prefer real form data; fallback to pseudo-form from season stats
+      const homeForm = realHomeForm.length >= 3 ? realHomeForm : buildPseudoFormFromStats(homeStats);
+      const awayForm = realAwayForm.length >= 3 ? realAwayForm : buildPseudoFormFromStats(awayStats);
 
       if (homeForm.length === 0 && awayForm.length === 0) {
         await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`);
@@ -1574,8 +1579,16 @@ async function processBatch(
         goalMarkets
       );
 
-      // ⭐ PREMIUM DEEP DIVE: If initial confidence >= 85%, enhance with last 10 matches + 5 H2H
-      if (newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
+      // === LEAGUE QUALITY GATE ===
+      // Non-quality leagues get capped confidence (can't reach PREMIUM)
+      const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId);
+      if (!isQualityLeague && newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
+        newPrediction.confidence = PREMIUM_MIN_CONFIDENCE - 1; // Cap at 84%
+        console.log(`[QUALITY GATE] ${pred.league} (ID: ${leagueId}) capped from PREMIUM to PRO`);
+      }
+
+      // ⭐ PREMIUM DEEP DIVE: Only for quality leagues with initial confidence >= 85%
+      if (newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE && isQualityLeague) {
         try {
           newPrediction = await premiumEnhance(
             pred,
