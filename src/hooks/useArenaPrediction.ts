@@ -165,9 +165,9 @@ export function useArenaPrediction(
     } finally {
       setSubmitting(false);
     }
-  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, isFree, limitReached, fetchExisting]);
+  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, limitReached, fetchExisting]);
 
-  const canPick = !isKickedOff && !!user && !isFree && !limitReached && !userPick;
+  const canPick = !isKickedOff && !!user && !limitReached && !userPick;
 
-  return { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
+  return { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, loaded, limitReached };
 }
