@@ -251,7 +251,7 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5):
 /**
  * Fetch head-to-head matches between two teams
  */
-async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 3): Promise<H2HMatch[]> {
+async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 5): Promise<H2HMatch[]> {
   const key = `${homeTeamId}-${awayTeamId}-${count}`;
   const cached = h2hCache.get(key);
   if (cached) return cached;
