@@ -37,7 +37,6 @@ export function useArenaPrediction(
     const local = new Date(+parts[1], +parts[2] - 1, +parts[3], +parts[4], +parts[5]);
     return local <= new Date();
   })();
-  const isFree = options.tier === "free";
   const limitReached = options.dailyUsed >= options.dailyLimit;
 
   /** Fetch existing prediction from DB — used on load AND after insert */
@@ -78,7 +77,7 @@ export function useArenaPrediction(
   }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string): Promise<boolean> => {
-    if (!user || isKickedOff || submitting || isFree) return false;
+    if (!user || isKickedOff || submitting) return false;
     if (userPick) return false; // already locked
     if (limitReached) return false;
     setSubmitting(true);
@@ -166,9 +165,9 @@ export function useArenaPrediction(
     } finally {
       setSubmitting(false);
     }
-  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, isFree, limitReached, fetchExisting]);
+  }, [user, matchId, seasonId, isKickedOff, submitting, userPick, limitReached, fetchExisting]);
 
-  const canPick = !isKickedOff && !!user && !isFree && !limitReached && !userPick;
+  const canPick = !isKickedOff && !!user && !limitReached && !userPick;
 
-  return { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, loaded, isFree, limitReached };
+  return { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, loaded, limitReached };
 }

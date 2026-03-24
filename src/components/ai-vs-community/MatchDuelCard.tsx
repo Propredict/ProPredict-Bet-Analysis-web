@@ -51,7 +51,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
     if (!prediction.match_date || !prediction.match_time) return null;
     return `${prediction.match_date}T${prediction.match_time}:00`;
   }, [prediction.match_date, prediction.match_time]);
-  const { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, isFree, limitReached } = useArenaPrediction(
+  const { userPick, userStatus, userMarketLabel, submitPick, submitting, canPick, isKickedOff, limitReached } = useArenaPrediction(
     prediction.match_id, seasonId, matchTimestamp,
     { dailyUsed, dailyLimit, tier: userTier }
   );
@@ -272,26 +272,17 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
 
       {/* Voting / User Prediction Section */}
       <div className="px-4 pb-4">
-        {isFree ? (
-          <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
-            <Lock className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
-            <p className="text-[10px] font-semibold text-foreground">Challenge the AI</p>
-            <p className="text-[9px] text-muted-foreground/70 leading-relaxed">Earn points for correct predictions, track your accuracy, and unlock a free Pro month.</p>
-            <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
-              <Sparkles className="h-3 w-3" /> Get Pro Access
-            </Button>
-          </div>
-        ) : limitReached && !userPick ? (
+        {limitReached && !userPick ? (
           <div className="p-2.5 bg-muted/30 rounded-lg border border-border/40 text-center space-y-1.5">
             <Info className="h-3.5 w-3.5 mx-auto text-muted-foreground" />
             <p className="text-[10px] font-semibold text-foreground">Daily Limit Reached</p>
             <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
               You've used {dailyUsed}/{dailyLimit} predictions today.
-              {userTier === "pro" && " Upgrade to Premium for 10 daily predictions."}
+              {userTier !== "exclusive" && " Upgrade for more daily predictions."}
             </p>
-            {userTier === "pro" && (
+            {userTier !== "exclusive" && (
               <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
-                <Crown className="h-3 w-3" /> Get Premium
+                <Crown className="h-3 w-3" /> Upgrade
               </Button>
             )}
           </div>
