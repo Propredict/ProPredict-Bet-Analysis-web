@@ -328,6 +328,7 @@ export default function MatchPreviews() {
       </div>
     </>
   );
+}
 
 // Deterministic pseudo-random unlock % per match (75-96 range)
 function getUnlockPercentage(matchId: string): number {
