@@ -298,6 +298,13 @@ export default function MatchPreviews() {
                       </div>
                     )}
 
+                    {/* Social proof */}
+                    <div className="flex justify-end">
+                      <span className="text-[11px] text-muted-foreground">
+                        🔥 {getUnlockPercentage(match.match_id)}% of users unlocked this match
+                      </span>
+                    </div>
+
                     {/* CTA */}
                     <Button
                       size="sm"
