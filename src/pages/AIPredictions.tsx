@@ -45,7 +45,7 @@ export default function AIPredictions() {
   const [sortBy, setSortBy] = useState<SortOption>("confidence");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
-  const [pickFilter, setPickFilter] = useState<PickFilter>("all");
+  
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
@@ -124,27 +124,6 @@ export default function AIPredictions() {
           const timeB = b.match_time || "99:99";
           return timeA.localeCompare(timeB);
         }
-        case "risk": {
-          const riskOrder = { low: 0, medium: 1, high: 2 };
-          const riskA = riskOrder[a.risk_level as keyof typeof riskOrder] ?? 1;
-          const riskB = riskOrder[b.risk_level as keyof typeof riskOrder] ?? 1;
-          return riskA - riskB;
-        }
-        case "over25": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.over25 - pa.over25;
-        }
-        case "under25": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.under25 - pa.under25;
-        }
-        case "btts": {
-          const pa = calculateGoalMarketProbs(a);
-          const pb = calculateGoalMarketProbs(b);
-          return pb.bttsYes - pa.bttsYes;
-        }
         default:
           return 0;
       }
@@ -161,10 +140,6 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    // Filter by pick type
-    if (pickFilter !== "all") {
-      result = result.filter((p) => matchesPickFilter(p, pickFilter));
-    }
     
     // Filter by favorites if enabled
     if (showFavoritesOnly) {
@@ -189,7 +164,7 @@ export default function AIPredictions() {
     
     // Apply sorting
     return sortPredictions(result);
-  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, pickFilter]);
+  }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
@@ -200,22 +175,6 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
-  // Top 5 Picks: ranked by confidence + value signal from analysis
-  const topPicks = useMemo(() => {
-    const scored = predictions
-      .filter((p) => p.confidence != null && p.confidence >= 50)
-      .map((p) => {
-        let valueScore = 0;
-        if (p.analysis?.includes("SUPER VALUE")) valueScore = 20;
-        else if (p.analysis?.includes("STRONG VALUE BET")) valueScore = 15;
-        else if (p.analysis?.includes("Value Bet")) valueScore = 10;
-        else if (p.analysis?.includes("Value edge")) valueScore = 5;
-        return { prediction: p, score: (p.confidence ?? 0) + valueScore };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
-    return scored.map((s) => s.prediction);
-  }, [predictions]);
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
