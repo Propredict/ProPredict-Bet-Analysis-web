@@ -1893,9 +1893,11 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === DYNAMIC DISTRIBUTION ===
+  // === GUARANTEED TIER DISTRIBUTION ===
   // Sort by confidence descending (already sorted from query)
-  const sorted = allPredictions.filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE);
+  const sorted = allPredictions
+    .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
+    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
   const total = sorted.length;
   
   if (total === 0) {
@@ -1903,27 +1905,40 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // Dynamic cutoffs: top 10% Premium, next 30% Pro, rest Free
-  const premiumCutoff = Math.max(1, Math.ceil(total * PREMIUM_PERCENT)); // at least 1
-  const proCutoff = Math.max(1, Math.ceil(total * PRO_PERCENT)); // at least 1
+  // GUARANTEED MINIMUMS
+  const PREMIUM_MIN = 3;
+  const PREMIUM_MAX = Math.min(10, Math.max(5, Math.ceil(total * 0.10)));
+  const PRO_MIN = 5;
+  const PRO_MAX = Math.max(15, Math.ceil(total * 0.30));
 
-  const premiumPreds = sorted.slice(0, premiumCutoff);
-  const proPreds = sorted.slice(premiumCutoff, premiumCutoff + proCutoff);
-  const freePreds = sorted.slice(premiumCutoff + proCutoff);
+  // Step 1: Assign Premium = top N (at least PREMIUM_MIN, up to PREMIUM_MAX)
+  const premiumCount = Math.min(PREMIUM_MAX, Math.max(PREMIUM_MIN, Math.ceil(total * 0.10)));
+  const actualPremiumCount = Math.min(premiumCount, total);
+
+  // Step 2: Assign Pro = next N (at least PRO_MIN, up to PRO_MAX)
+  const remaining = total - actualPremiumCount;
+  const proCount = Math.min(PRO_MAX, Math.max(PRO_MIN, Math.ceil(total * 0.30)));
+  const actualProCount = Math.min(proCount, remaining);
+
+  // Step 3: Rest = Free
+  const actualFreeCount = total - actualPremiumCount - actualProCount;
+
+  const premiumPreds = sorted.slice(0, actualPremiumCount);
+  const proPreds = sorted.slice(actualPremiumCount, actualPremiumCount + actualProCount);
+  const freePreds = sorted.slice(actualPremiumCount + actualProCount);
 
   const premiumIds = premiumPreds.map((p: any) => p.id);
   const proIds = proPreds.map((p: any) => p.id);
   const freeIds = freePreds.map((p: any) => p.id);
 
-  // Log the dynamic thresholds for debugging
   const premiumMinConf = premiumPreds.length > 0 ? premiumPreds[premiumPreds.length - 1].confidence : 0;
   const proMinConf = proPreds.length > 0 ? proPreds[proPreds.length - 1].confidence : 0;
 
-  console.log(`\n=== DYNAMIC TIER DISTRIBUTION ===`);
+  console.log(`\n=== GUARANTEED TIER DISTRIBUTION ===`);
   console.log(`Total eligible: ${total}`);
-  console.log(`PREMIUM (top ${Math.round(PREMIUM_PERCENT * 100)}%): ${premiumIds.length} (conf >= ${premiumMinConf})`);
-  console.log(`PRO (next ${Math.round(PRO_PERCENT * 100)}%): ${proIds.length} (conf >= ${proMinConf})`);
-  console.log(`FREE (rest): ${freeIds.length}`);
+  console.log(`PREMIUM: ${premiumIds.length} (min conf: ${premiumMinConf}) [guaranteed min: ${PREMIUM_MIN}]`);
+  console.log(`PRO: ${proIds.length} (min conf: ${proMinConf}) [guaranteed min: ${PRO_MIN}]`);
+  console.log(`FREE: ${freeIds.length}`);
 
   // Reset all to not premium for the two dates
   const { error: resetError } = await supabase
@@ -1946,12 +1961,6 @@ async function assignTiers(
       console.error("Error assigning premium flags:", premiumError);
     }
   }
-
-  // Store the dynamic thresholds in the analysis field of predictions
-  // so the frontend can read them. We'll use a different approach:
-  // Set risk_level to encode tier: premium predictions get "premium_tier",
-  // pro predictions get "pro_tier" - but this breaks existing risk_level.
-  // Better approach: the frontend uses is_premium flag + confidence ranking.
 
   return { free: freeIds.length, pro: proIds.length, premium: premiumIds.length };
 }
