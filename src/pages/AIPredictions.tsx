@@ -114,19 +114,22 @@ export default function AIPredictions() {
     return counts;
   }, [predictions]);
 
-  // Count predictions per market type
+  // Count predictions per market type — scoped to current tier filter
   const marketCounts = useMemo(() => {
+    const base = tierFilter === "all"
+      ? predictions
+      : predictions.filter((p) => getPredictionTier(p) === tierFilter);
     const counts: Record<MarketFilter, number> = {
-      all: predictions.length,
+      all: base.length,
       home_win: 0, away_win: 0, draw: 0,
       over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
     };
-    predictions.forEach((p) => {
+    base.forEach((p) => {
       const mt = getBestPickType(p);
       counts[mt]++;
     });
     return counts;
-  }, [predictions]);
+  }, [predictions, tierFilter]);
 
   // Sort function
   const sortPredictions = (preds: typeof predictions) => {
