@@ -116,12 +116,23 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier rules (must match backend tier thresholds)
-  // HIDDEN: <60% (filtered out below), FREE: 60-72%, PRO: 73-82%, PREMIUM: ≥83%
+  // Dynamic tier distribution: top 10% → Premium, next 30% → Pro, rest → Free
+  // Computed from all visible predictions sorted by confidence
+  const tierCutoffs = useMemo(() => {
+    const sorted = [...predictions].filter(p => (p.confidence ?? 0) >= 60).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    const total = sorted.length;
+    const premiumCount = Math.max(1, Math.ceil(total * 0.10));
+    const proCount = Math.max(1, Math.ceil(total * 0.30));
+    const premiumMinConf = sorted[premiumCount - 1]?.confidence ?? 83;
+    const proMinConf = sorted[premiumCount + proCount - 1]?.confidence ?? 73;
+    return { premiumMinConf, proMinConf };
+  }, [predictions]);
+
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    if (prediction.is_premium && prediction.confidence == null) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 83) return "premium";
-    if (prediction.confidence != null && prediction.confidence >= 73) return "pro";
+    if (prediction.is_premium) return "premium";
+    const conf = prediction.confidence ?? 0;
+    if (conf >= tierCutoffs.premiumMinConf) return "premium";
+    if (conf >= tierCutoffs.proMinConf) return "pro";
     return "free";
   };
 
