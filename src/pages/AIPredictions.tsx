@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getBestMarketProbability, getTierFromMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 import { isValueBet } from "@/components/ai-predictions/MarketTabs/MainMarketTab";
 
 
