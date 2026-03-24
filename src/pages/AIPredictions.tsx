@@ -278,7 +278,7 @@ export default function AIPredictions() {
   }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
+    return filteredPredictions.filter((p) => getPredictionTier(p) === "free" && (p.confidence ?? 0) >= 55);
   }, [filteredPredictions]);
 
   // Top 5 Picks: ranked by confidence + value signal from analysis
