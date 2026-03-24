@@ -275,25 +275,17 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
-                    {/* Blurred analysis preview */}
+                    {/* Analysis preview */}
                     {snippets.length > 0 && (
-                      <div className="relative rounded-lg overflow-hidden">
-                        <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-                          {snippets.map((snippet, i) => (
-                            <div key={i} className="flex items-start gap-2">
-                              <span className="mt-0.5">{snippet.icon}</span>
-                              <p className="text-xs text-muted-foreground leading-relaxed select-none blur-[5px]">
-                                {snippet.text}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-lg">
-                          <div className="flex items-center gap-1.5 bg-background/80 px-3 py-1.5 rounded-full border border-border/50 shadow-sm">
-                            <Lock className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-[10px] font-semibold text-muted-foreground">Unlock to read analysis</span>
+                      <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
+                        {snippets.map((snippet, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="mt-0.5">{snippet.icon}</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              {snippet.text}
+                            </p>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     )}
 
