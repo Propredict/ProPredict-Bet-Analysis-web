@@ -701,28 +701,45 @@ function calculatePrediction(
   const maxProb = Math.max(homeWin, awayWin, draw, goalMarkets.over25, goalMarkets.under25, goalMarkets.bttsYes, goalMarkets.bttsNo);
 
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
+  const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
   const isBalanced = bestProb < 45;
 
   let confidence: number;
 
   if (isBalanced) {
-    confidence = 60 + clamp((45 - bestProb) * 0.25, 0, 5);
+    confidence = 58 + clamp((45 - bestProb) * 0.2, 0, 4);
   } else {
     const edge = clamp((bestProb - 45) / 25, 0, 1);
-    confidence = 62 + edge * 18;
+    confidence = 60 + edge * 18;
 
-    const premiumBoostEligible = hasSeasonStats && bestProb >= 68;
+    const premiumBoostEligible = hasMinMatches && bestProb >= 68;
     if (premiumBoostEligible) {
       const boost = clamp((bestProb - 68) / 10, 0, 1) * 12;
       confidence += boost;
     }
   }
 
+  // H2H bonus: if we have 3+ H2H matches and dominant record, small boost
+  if (h2h.length >= 3) {
+    const h2hDominance = Math.abs(calculateH2HScore(h2h, homeTeamId, awayTeamId) - 50);
+    if (h2hDominance >= 30) {
+      confidence += 2; // Small boost for clear H2H dominance
+    }
+  }
+
   confidence = Math.round(clamp(confidence, 50, 92));
 
-  if (!hasSeasonStats) {
-    confidence = Math.min(confidence, 65);
+  // Cap confidence for teams with insufficient season data
+  if (!hasMinMatches) {
+    confidence = Math.min(confidence, MIN_SEASON_CONFIDENCE_CAP);
+  } else if (!hasSeasonStats) {
+    confidence = Math.min(confidence, 60);
   }
+
+  // === CALIBRATION: dampen overconfident raw scores ===
+  // Apply mild sigmoid calibration to prevent inflated confidence
+  // This maps raw 50-92 range more conservatively
+  confidence = calibrateConfidence(confidence);
 
   // === RISK ===
   let riskLevel: "low" | "medium" | "high";
