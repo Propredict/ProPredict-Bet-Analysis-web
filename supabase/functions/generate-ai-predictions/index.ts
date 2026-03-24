@@ -70,11 +70,13 @@ const QUALITY_LEAGUE_IDS = new Set([
 ]);
 
 // ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.35;         // 35% - Recent form (last 5 real matches)
-const WEIGHT_QUALITY = 0.25;      // 25% - Team quality
-const WEIGHT_SQUAD = 0.15;        // 15% - Squad strength / injuries
-const WEIGHT_HOME = 0.10;         // 10% - Home advantage (MAX)
-const WEIGHT_H2H = 0.15;          // 15% - Head-to-Head history (increased from 10%)
+const WEIGHT_FORM = 0.30;         // 30% - Recent form (last 10 real matches)
+const WEIGHT_QUALITY = 0.20;      // 20% - Team quality (season stats)
+const WEIGHT_SQUAD = 0.10;        // 10% - Squad strength / goal diff
+const WEIGHT_HOME = 0.08;         // 8%  - Home advantage
+const WEIGHT_H2H = 0.12;          // 12% - Head-to-Head history
+const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
+const WEIGHT_ODDS = 0.10;         // 10% - Bookmaker odds signal
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
