@@ -79,13 +79,16 @@ const QUALITY_LEAGUE_IDS = new Set([
 ]);
 
 // ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.30;         // 30% - Recent form (last 10 real matches)
-const WEIGHT_QUALITY = 0.20;      // 20% - Team quality (season stats)
+const WEIGHT_FORM = 0.25;         // 25% - Recent form (last 10 real matches)
+const WEIGHT_QUALITY = 0.18;      // 18% - Team quality (season stats)
 const WEIGHT_SQUAD = 0.10;        // 10% - Squad strength / goal diff
-const WEIGHT_HOME = 0.08;         // 8%  - Home advantage
-const WEIGHT_H2H = 0.12;          // 12% - Head-to-Head history
+const WEIGHT_HOME = 0.08;         // 8%  - Home advantage (per-league dynamic)
+const WEIGHT_H2H = 0.06;          // 6%  - Head-to-Head history (small sample)
 const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
-const WEIGHT_ODDS = 0.10;         // 10% - Bookmaker odds signal
+const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal (strongest calibrator)
+// NOTE: Odds increased from 10→15% because bookmakers have large analyst teams.
+// H2H reduced from 12→6% because 3-5 matches is statistically insignificant.
+// Form reduced from 30→25% to give more weight to odds alignment.
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
@@ -214,6 +217,8 @@ const injuriesCache = new Map<string, InjuryInfo[]>();
 const standingsCache = new Map<string, StandingEntry[]>();
 const oddsCache = new Map<string, OddsData | null>();
 const leagueAccuracyCache = new Map<string, number>();
+const marketAccuracyCache = new Map<string, number>();
+const leagueHomeAdvantageCache = new Map<number, number>(); // leagueId → home win % from standings
 
 interface StandingEntry {
   teamId: number;
