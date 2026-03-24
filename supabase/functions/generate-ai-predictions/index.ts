@@ -257,12 +257,15 @@ interface TopPlayer {
 /**
  * Fetch team's last N matches form
  */
-async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5): Promise<FormMatch[]> {
-  const cached = teamFormCache.get(teamId);
+async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5, leagueId?: number): Promise<FormMatch[]> {
+  const cacheKey = leagueId ? `${teamId}:${leagueId}` : teamId;
+  const cached = teamFormCache.get(cacheKey as number);
   if (cached && cached.length >= count) return cached.slice(0, count);
 
   try {
-    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN`;
+    // If leagueId provided, fetch league-only matches (excludes cups/friendlies)
+    const leagueParam = leagueId ? `&league=${leagueId}` : "";
+    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=${count}&status=FT-AET-PEN${leagueParam}`;
     const data = await fetchJsonWithRetry(url, apiKey, { retries: 4, baseDelayMs: 700 });
     if (!data?.response) return [];
 
@@ -281,7 +284,7 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5):
       return { result, goalsFor, goalsAgainst, isHome, opponentId };
     });
 
-    teamFormCache.set(teamId, normalized);
+    teamFormCache.set(cacheKey as number, normalized);
     return normalized;
   } catch (e) {
     console.error("Error fetching team form:", e);
