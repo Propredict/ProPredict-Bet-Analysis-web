@@ -2143,13 +2143,13 @@ async function processBatch(
         continue;
       }
 
-      // Fetch ALL data in parallel: stats, H2H, real form (10 matches), standings, odds
+      // Fetch ALL data in parallel: stats, H2H, LEAGUE-ONLY form (10 matches), standings, odds
       const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
-        fetchTeamForm(homeTeamId, apiKey, 10),  // Last 10 real matches
-        fetchTeamForm(awayTeamId, apiKey, 10),  // Last 10 real matches
+        fetchTeamForm(homeTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
+        fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
         fetchStandings(leagueId, season, apiKey),
         fetchOdds(fixtureIdStr, apiKey),
       ]);
@@ -2188,7 +2188,8 @@ async function processBatch(
         awayTeamName,
         standings,
         odds,
-        pred.league || undefined
+        pred.league || undefined,
+        leagueId
       );
 
       // Calculate Poisson goal markets for key_factors and more accurate score
