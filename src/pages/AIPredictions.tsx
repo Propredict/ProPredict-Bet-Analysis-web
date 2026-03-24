@@ -722,7 +722,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
                 {visibleFeatured.map((prediction, idx) => {
                   return (
-                    <React.Fragment key={prediction.id}>
+                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         prediction={prediction}
                         isAdmin={isAdmin}
@@ -735,7 +735,7 @@ export default function AIPredictions() {
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                         isUnlocking={unlockingId === prediction.match_id}
                       />
-                    </React.Fragment>
+                    </div>
                   );
                 })}
               </div>
@@ -801,7 +801,7 @@ export default function AIPredictions() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {visibleRegular.map((prediction, idx) => {
                   return (
-                    <React.Fragment key={prediction.id}>
+                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
                         prediction={prediction}
                         isAdmin={isAdmin}
