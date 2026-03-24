@@ -4,6 +4,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
   getBestMarketProbability,
+  calibrateProb,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
 
