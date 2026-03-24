@@ -607,7 +607,7 @@ export default function AIPredictions() {
                         onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                         onGoPremium={() => navigate("/get-premium")}
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.match_id}
+                        isUnlocking={unlockingId === prediction.id}
                       />
                     </div>
                   );
@@ -687,7 +687,7 @@ export default function AIPredictions() {
                         onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
                         onGoPremium={() => navigate("/get-premium")}
                         onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.match_id}
+                        isUnlocking={unlockingId === prediction.id}
                       />
                     </div>
                   );
