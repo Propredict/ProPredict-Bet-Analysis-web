@@ -273,16 +273,19 @@ export function getRiskLevelColor(riskLevel: string | null) {
 }
 
 /**
- * Calibrate a raw probability to account for model conservatism.
- * 1) Multiply by 1.2
- * 2) Tiered boost: 65%+ gets +5%, 70%+ gets +8%
- * 3) Cap at 92%
+ * Calibrate raw probability without over-inflating tiers.
+ * - Keep low probabilities mostly unchanged
+ * - Apply mild uplift for mid/high signals
+ * - Cap at 88 to prevent "all Premium" distribution
  */
 export function calibrateProb(raw: number): number {
-  let p = raw * 1.2;
-  if (p >= 70) p += 8;
-  else if (p >= 65) p += 5;
-  return Math.min(92, Math.round(p));
+  if (raw <= 55) return Math.round(raw);
+
+  let p = raw * 1.08;
+  if (raw >= 70) p += 4;
+  else if (raw >= 65) p += 2;
+
+  return Math.min(88, Math.round(p));
 }
 
 /**
