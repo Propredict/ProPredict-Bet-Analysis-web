@@ -67,7 +67,8 @@ function getRankStyle(rank: number): { bg: string; text: string; border: string;
 }
 
 export default function MatchPreviews() {
-  const { predictions, loading } = useAIPredictions("today");
+  const { previews, loading: previewsLoading } = useMatchPreviews();
+  const { predictions, loading: predictionsLoading } = useAIPredictions("today");
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
@@ -76,6 +77,10 @@ export default function MatchPreviews() {
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
+
+  // Use match_previews if available, fallback to ai_predictions
+  const usePreviewData = previews.length > 0;
+  const loading = usePreviewData ? previewsLoading : predictionsLoading;
 
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
@@ -98,19 +103,43 @@ export default function MatchPreviews() {
     return null;
   }
 
-  // Guaranteed top 30 — Low Risk first, then Medium, then High Risk
+  // Normalize data — previews already ranked, fallback uses AI predictions
   const topMatches = useMemo(() => {
+    if (usePreviewData) {
+      // Already sorted by rank from the database
+      return previews.map(p => ({
+        id: p.id,
+        match_id: p.match_id,
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league,
+        match_date: p.match_date,
+        match_time: p.match_time,
+        confidence: p.confidence_score,
+        risk_rating: p.risk_rating,
+        home_win: p.home_win_prob,
+        away_win: p.away_win_prob,
+        draw: p.draw_prob,
+        key_factors: p.key_stats?.key_factors || null,
+        analysis: p.preview_analysis,
+        tactical_notes: p.tactical_notes,
+        home_form: p.home_form,
+        away_form: p.away_form,
+        h2h_summary: p.h2h_summary,
+        rank: p.rank ?? 0,
+      }));
+    }
+
+    // Fallback: use AI predictions
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
-
     const pool = predictions.filter(p => !isPending(p));
 
-    // Risk tier: Low (>=80) > Medium (>=65) > High (<65)
     function riskTier(conf: number | null): number {
       if (!conf) return 3;
-      if (conf >= 80) return 1; // Low Risk
-      if (conf >= 65) return 2; // Medium Risk
-      return 3; // High Risk
+      if (conf >= 80) return 1;
+      if (conf >= 65) return 2;
+      return 3;
     }
 
     pool.sort((a, b) => {
@@ -121,13 +150,33 @@ export default function MatchPreviews() {
       return getLeaguePriority(a.league) - getLeaguePriority(b.league);
     });
 
-    return pool.slice(0, MAX_MATCHES);
-  }, [predictions]);
+    return pool.slice(0, MAX_MATCHES).map((p, i) => ({
+      id: p.id,
+      match_id: p.match_id,
+      home_team: p.home_team,
+      away_team: p.away_team,
+      league: p.league,
+      match_date: p.match_date,
+      match_time: p.match_time,
+      confidence: p.confidence ?? 0,
+      risk_rating: getRiskRating(p.confidence ?? 0),
+      home_win: p.home_win,
+      away_win: p.away_win,
+      draw: p.draw,
+      key_factors: p.key_factors,
+      analysis: p.analysis,
+      tactical_notes: null as string | null,
+      home_form: null as string | null,
+      away_form: null as string | null,
+      h2h_summary: null as string | null,
+      rank: i + 1,
+    }));
+  }, [usePreviewData, previews, predictions]);
 
   const handleCardClick = (match: typeof topMatches[0]) => {
     if (isFreeUser) return;
     navigate(`/match-preview/${match.match_id}`, {
-      state: { unlocked: true, predictionId: match.id },
+      state: { unlocked: true },
     });
   };
 
