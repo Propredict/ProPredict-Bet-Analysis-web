@@ -1192,12 +1192,12 @@ function calculatePrediction(
 
   let confidence: number;
   if (isBalanced) {
-    confidence = 60 + clamp((45 - bestProb) * 0.3, 0, 6); // Was 56 base
+    confidence = 62 + clamp((45 - bestProb) * 0.3, 0, 6); // Balanced matches get 62-68
   } else {
     const edge = clamp((bestProb - 45) / 25, 0, 1);
-    confidence = 62 + edge * 18; // Was 58 + edge*16 → now reaches ~80 at bestProb=70
+    confidence = 64 + edge * 20; // Reaches ~84 at bestProb=70
     if (hasMinMatches && bestProb >= 65 && signalStrength >= 0.6) {
-      confidence += clamp((bestProb - 65) / 10, 0, 1) * 14; // More generous boost
+      confidence += clamp((bestProb - 65) / 10, 0, 1) * 12;
     }
   }
 
