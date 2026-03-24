@@ -182,21 +182,50 @@ serve(async (req: Request) => {
     const apiKey = Deno.env.get("API_FOOTBALL_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get today's date
+    // Get today's and tomorrow's dates
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
 
-    console.log(`[match-previews] Generating previews for ${todayStr}`);
+    console.log(`[match-previews] Generating previews for ${todayStr} (+ ${tomorrowStr} if needed)`);
 
-    // Step 1: Fetch today's AI predictions — all valid ones regardless of lock status
-    const { data: predictions, error: predError } = await supabase
+    // Step 1: Fetch today's AI predictions
+    const { data: todayPredictions, error: predError } = await supabase
       .from("ai_predictions")
       .select("*")
       .eq("match_date", todayStr)
       .order("confidence", { ascending: false })
       .limit(200);
 
-    console.log(`[match-previews] Found ${predictions?.length ?? 0} total predictions for ${todayStr}`);
+    if (predError) {
+      console.error("[match-previews] Error fetching predictions:", predError);
+      return new Response(JSON.stringify({ error: "Failed to fetch predictions" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // If today doesn't have enough, also fetch tomorrow
+    let allPredictions = todayPredictions || [];
+    console.log(`[match-previews] Today predictions: ${allPredictions.length}`);
+
+    if (allPredictions.length < MAX_PREVIEWS) {
+      const { data: tomorrowPredictions } = await supabase
+        .from("ai_predictions")
+        .select("*")
+        .eq("match_date", tomorrowStr)
+        .order("confidence", { ascending: false })
+        .limit(200);
+      
+      if (tomorrowPredictions && tomorrowPredictions.length > 0) {
+        console.log(`[match-previews] Adding ${tomorrowPredictions.length} tomorrow predictions`);
+        allPredictions = [...allPredictions, ...tomorrowPredictions];
+      }
+    }
+
+    const predictions = allPredictions;
 
     if (predError) {
       console.error("[match-previews] Error fetching predictions:", predError);
