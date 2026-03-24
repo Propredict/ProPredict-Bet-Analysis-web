@@ -815,6 +815,7 @@ export default function AIPredictions() {
                   return (
                     <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                       <AIPredictionCard
+                        overrideTier={getPredictionTier(prediction)}
                         prediction={prediction}
                         isAdmin={isAdmin}
                         isPremiumUser={isPremiumUser}
