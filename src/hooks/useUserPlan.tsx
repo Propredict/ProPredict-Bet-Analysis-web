@@ -50,6 +50,11 @@ interface UserPlanContextType {
    Helpers
 ===================== */
 
+/** Get today's date in Belgrade timezone (consistent with tip_date) */
+function getTodayBelgrade(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+}
+
 /** Sync plan + user_id tags to OneSignal for push segmentation */
 function syncOneSignalPlanTags(plan: UserPlan, userId: string) {
   const planMap: Record<UserPlan, string> = { free: "free", basic: "pro", premium: "premium" };
