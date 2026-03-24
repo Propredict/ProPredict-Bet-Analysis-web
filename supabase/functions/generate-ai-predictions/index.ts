@@ -16,7 +16,7 @@ const corsHeaders = {
 //   Bottom 60% → FREE
 // Minimum confidence to display at all: 60%
 // Fallback fixed thresholds (used only when dynamic calc isn't available on frontend)
-const MIN_DISPLAY_CONFIDENCE = 60;
+const MIN_DISPLAY_CONFIDENCE = 50;
 const FREE_MAX_CONFIDENCE = 72;
 const PRO_MIN_CONFIDENCE = 73;
 const PRO_MAX_CONFIDENCE = 82;
@@ -33,8 +33,8 @@ const PREMIUM_MIN_COUNT = 5;
 const PREMIUM_ALLOWED_RISK = ["low", "medium"];
 
 // ============ MINIMUM DATA THRESHOLDS ============
-const MIN_SEASON_MATCHES = 5;       // Teams with fewer matches get capped confidence
-const MIN_SEASON_CONFIDENCE_CAP = 62; // Max confidence when team has < MIN_SEASON_MATCHES
+const MIN_SEASON_MATCHES = 5;
+const MIN_SEASON_CONFIDENCE_CAP = 70; // Was 62 — too aggressive
 
 // ============ QUALITY LEAGUE IDS (API-Football) ============
 // Only these leagues can produce PREMIUM (≥85%) predictions
@@ -1114,14 +1114,11 @@ function calculatePrediction(
     const probDiff = Math.abs(aiProbForPick - bookProbForPick);
     
     if (probDiff <= 10) {
-      // AI and bookmaker AGREE → boost
       oddsAlignmentAdjust = clamp((10 - probDiff) / 2, 0, 5);
     } else if (probDiff >= 25) {
-      // AI and bookmaker STRONGLY DISAGREE → penalize
-      oddsAlignmentAdjust = -clamp((probDiff - 20) / 5, 0, 8);
+      oddsAlignmentAdjust = -clamp((probDiff - 20) / 5, 0, 4); // Was -8, now max -4
     } else if (probDiff >= 15) {
-      // Moderate disagreement → mild penalty
-      oddsAlignmentAdjust = -clamp((probDiff - 10) / 5, 0, 3);
+      oddsAlignmentAdjust = -clamp((probDiff - 10) / 5, 0, 2); // Was -3, now max -2
     }
   }
 
@@ -1130,7 +1127,7 @@ function calculatePrediction(
   const isUncertaintyZone = totalXgForUncertainty >= 2.2 && totalXgForUncertainty <= 2.6;
   // Only apply to Over/Under markets (these are the "coin flip" markets in this zone)
   const isGoalMarketPick = prediction.includes("Over") || prediction.includes("Under");
-  const uncertaintyPenalty = (isUncertaintyZone && isGoalMarketPick) ? -8 : 0;
+  const uncertaintyPenalty = (isUncertaintyZone && isGoalMarketPick) ? -3 : 0; // Was -8
 
   // === 4. LEAGUE-SPECIFIC CALIBRATION ===
   // Different leagues = different styles
@@ -1173,10 +1170,10 @@ function calculatePrediction(
   // If they disagree → -10%
   let multiSignalBoost = 0;
   if (signalsTotal >= 3) {
-    if (signalStrength >= 0.8) multiSignalBoost = 10; // All signals agree
-    else if (signalStrength >= 0.6) multiSignalBoost = 5;
-    else if (signalStrength <= 0.3) multiSignalBoost = -10; // Signals disagree
-    else if (signalStrength <= 0.4) multiSignalBoost = -5;
+    if (signalStrength >= 0.8) multiSignalBoost = 8;
+    else if (signalStrength >= 0.6) multiSignalBoost = 4;
+    else if (signalStrength <= 0.3) multiSignalBoost = -5; // Was -10
+    else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
   // === CONFIDENCE — MULTI-FACTOR FORMULA ===
@@ -1195,12 +1192,12 @@ function calculatePrediction(
 
   let confidence: number;
   if (isBalanced) {
-    confidence = 56 + clamp((45 - bestProb) * 0.2, 0, 4);
+    confidence = 60 + clamp((45 - bestProb) * 0.3, 0, 6); // Was 56 base
   } else {
     const edge = clamp((bestProb - 45) / 25, 0, 1);
-    confidence = 58 + edge * 16;
-    if (hasMinMatches && bestProb >= 68 && signalStrength >= 0.6) {
-      confidence += clamp((bestProb - 68) / 10, 0, 1) * 12;
+    confidence = 62 + edge * 18; // Was 58 + edge*16 → now reaches ~80 at bestProb=70
+    if (hasMinMatches && bestProb >= 65 && signalStrength >= 0.6) {
+      confidence += clamp((bestProb - 65) / 10, 0, 1) * 14; // More generous boost
     }
   }
 
@@ -1229,8 +1226,8 @@ function calculatePrediction(
   if (odds) {
     if (valuePercent >= 10) confidence += 3; // Strong value
     else if (valuePercent >= 5) confidence += 1;
-    else if (valuePercent <= -10) confidence -= 4; // Negative value = AI overvalues
-    else if (valuePercent <= -5) confidence -= 2;
+    else if (valuePercent <= -10) confidence -= 2; // Was -4
+    else if (valuePercent <= -5) confidence -= 1; // Was -2
   }
 
   // Match context & standings
@@ -1241,41 +1238,40 @@ function calculatePrediction(
 
   // === CONFLICT FILTER penalty (feature #5 from previous, enhanced) ===
   if (isConflicted) {
-    confidence -= 8; // Stronger penalty: model isn't sure → push below display threshold
+    confidence -= 4; // Was -8
   }
 
   // === No viable market (all below 60%) → hard penalty ===
   if (viableMarkets.length === 0) {
-    confidence -= 10;
+    confidence -= 5; // Was -10
   }
 
   // Self-learning league penalty/boost
   if (leagueName && leagueAccuracyCache.has(leagueName)) {
     const acc = leagueAccuracyCache.get(leagueName)!;
-    if (acc < 50) confidence -= 4;
-    else if (acc < 60) confidence -= 2;
+    if (acc < 50) confidence -= 2; // Was -4
+    else if (acc < 60) confidence -= 1; // Was -2
     else if (acc > 80) confidence += 2;
   }
 
   // === 7. FAKE HIGH CONFIDENCE FIX ===
   // Cap confidence when data is weak (small sample, bad league, low data quality)
-  confidence = Math.round(clamp(confidence, 50, 92));
-  if (!hasMinMatches) confidence = Math.min(confidence, MIN_SEASON_CONFIDENCE_CAP);
-  else if (!hasSeasonStats) confidence = Math.min(confidence, 60);
+  confidence = Math.round(clamp(confidence, 50, 94)); // Was max 92
+  if (!hasMinMatches) confidence = Math.min(confidence, MIN_SEASON_CONFIDENCE_CAP); // 70 now
+  else if (!hasSeasonStats) confidence = Math.min(confidence, 65); // Was 60
   
-  // Additional fake confidence caps
-  if (dataQuality < 0.5) confidence = Math.min(confidence, 72); // Weak data → max 72%
-  if (dataQuality < 0.3) confidence = Math.min(confidence, 65); // Very weak data → max 65%
-  if (!odds) confidence = Math.min(confidence, 78); // No odds data → max 78%
+  // Softer data quality caps
+  if (dataQuality < 0.3) confidence = Math.min(confidence, 70); // Was 65
+  if (!odds) confidence = Math.min(confidence, 82); // Was 78
   
   confidence = calibrateConfidence(confidence);
 
   // === 9. VALUE + CONFIDENCE COMBO FINAL GATE ===
   // FINAL PICK must have: confidence ≥ 60, value ≥ 8% (if odds available), no conflict
   // If NOT → push below display threshold (effectively NO BET)
-  if (odds && valuePercent < 8) {
-    // Low value → penalty proportional to how far below 8% we are
-    const valuePenalty = Math.min(Math.round((8 - valuePercent) * 1.5), 12);
+  if (odds && valuePercent < 5) {
+    // Only penalize when value is really bad (< 5%), not 8%
+    const valuePenalty = Math.min(Math.round((5 - valuePercent) * 1.0), 6); // Was *1.5 max 12
     confidence = Math.max(confidence - valuePenalty, 50);
   }
 
