@@ -50,13 +50,36 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
 
 /** 
  * Free tier: always show the best 1X2 pick (match favorite).
- * Prevents monotonous "Under 2.5" on every Free card.
+ * Uses RAW db probabilities. When all three are within 3% of each other,
+ * prefer home_win (home advantage) to avoid every card showing "Draw".
  */
 function getFreePick(prediction: AIPrediction): PickCandidate {
-  const rawProbs = getAllRawProbs(prediction);
-  const best1x2 = ONE_X_TWO.reduce((best, t) => rawProbs[t] > rawProbs[best] ? t : best, ONE_X_TWO[0]);
-  const meta = MARKET_META[best1x2];
-  return { label: meta.getLabel(prediction), conf: rawProbs[best1x2], icon: meta.icon, type: best1x2 };
+  const hw = prediction.home_win ?? 0;
+  const aw = prediction.away_win ?? 0;
+  const d = prediction.draw ?? 0;
+
+  const max = Math.max(hw, aw, d);
+  const min = Math.min(hw, aw, d);
+  const spread = max - min;
+
+  let bestType: MarketType;
+  if (spread <= 3) {
+    // All very close — use home advantage tiebreaker
+    bestType = hw >= aw ? "home_win" : "away_win";
+  } else {
+    // Pick the actual highest raw probability
+    if (hw >= aw && hw >= d) bestType = "home_win";
+    else if (aw >= hw && aw >= d) bestType = "away_win";
+    else bestType = "draw";
+  }
+
+  const rawConf: Record<MarketType, number> = {
+    home_win: hw, away_win: aw, draw: d,
+    over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
+  };
+
+  const meta = MARKET_META[bestType];
+  return { label: meta.getLabel(prediction), conf: rawConf[bestType], icon: meta.icon, type: bestType };
 }
 
 interface Props {
