@@ -1773,8 +1773,8 @@ async function assignTiers(
     .map((p: any) => p.id);
 
   console.log(`\n=== STRICT TIER ASSIGNMENT (by confidence only) ===`);
-  console.log(`FREE (<65%): ${freeIds.length}`);
-  console.log(`PRO (65–84%): ${proIds.length}`);
+  console.log(`FREE (60-74%): ${freeIds.length}`);
+  console.log(`PRO (75–84%): ${proIds.length}`);
   console.log(`PREMIUM (>=85%): ${premiumIds.length}`);
 
   // Reset all to not premium for the two dates, then set premium = true
