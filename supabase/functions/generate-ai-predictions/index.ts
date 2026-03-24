@@ -888,14 +888,20 @@ function calculatePrediction(
   odds?: OddsData | null,
   leagueName?: string
 ): PredictionResult {
-  // === FORM (30%) — RECENCY WEIGHTED + VENUE SPLIT ===
-  const homeFormAll = homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm);
-  const awayFormAll = awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm);
+  // === FORM (30%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
+  // Use opponent-strength weighting when standings are available
+  const hasStandings = standings && standings.length > 0;
+  const homeFormAll = hasStandings
+    ? calculateWeightedFormScore(homeForm, standings!)
+    : (homeForm.length > 5 ? calculateFormScoreDeep(homeForm) : calculateFormScore(homeForm));
+  const awayFormAll = hasStandings
+    ? calculateWeightedFormScore(awayForm, standings!)
+    : (awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm));
   const homeVenueForm = calculateVenueFormScore(homeForm, true);
   const awayVenueForm = calculateVenueFormScore(awayForm, false);
-  // Blend: 60% venue-specific + 40% overall
-  const homeFormScore = Math.round(homeVenueForm * 0.6 + homeFormAll * 0.4);
-  const awayFormScore = Math.round(awayVenueForm * 0.6 + awayFormAll * 0.4);
+  // Blend: 55% venue-specific + 45% opponent-weighted overall
+  const homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.45);
+  const awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.45);
 
   // === QUALITY (20%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
