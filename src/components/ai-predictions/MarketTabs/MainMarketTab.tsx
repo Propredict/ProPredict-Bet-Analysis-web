@@ -73,13 +73,10 @@ function getFreePick(prediction: AIPrediction): PickCandidate {
     else bestType = "draw";
   }
 
-  const rawConf: Record<MarketType, number> = {
-    home_win: hw, away_win: aw, draw: d,
-    over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
-  };
-
   const meta = MARKET_META[bestType];
-  return { label: meta.getLabel(prediction), conf: rawConf[bestType], icon: meta.icon, type: bestType };
+  // Use confidence as display value — raw 1X2 probs are often ~33% and look identical
+  const displayConf = prediction.confidence ?? Math.max(hw, aw, d);
+  return { label: meta.getLabel(prediction), conf: displayConf, icon: meta.icon, type: bestType };
 }
 
 interface Props {
