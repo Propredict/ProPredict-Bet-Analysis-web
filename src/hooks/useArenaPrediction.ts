@@ -77,7 +77,7 @@ export function useArenaPrediction(
   }, [user, matchId, fetchExisting]);
 
   const submitPick = useCallback(async (pick: string): Promise<boolean> => {
-    if (!user || isKickedOff || submitting || isFree) return false;
+    if (!user || isKickedOff || submitting) return false;
     if (userPick) return false; // already locked
     if (limitReached) return false;
     setSubmitting(true);
