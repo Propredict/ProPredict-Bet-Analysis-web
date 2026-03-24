@@ -54,6 +54,9 @@ const AIPredictionCardInner = ({
 
   // Use overrideTier from parent (market-probability-based) or fallback
   const displayTier: "free" | "pro" | "premium" = overrideTier ?? (prediction.is_premium ? "premium" : "free");
+  const isPremiumTier = displayTier === "premium";
+  const isProTier = displayTier === "pro";
+  const isDailyTier = displayTier === "free";
 
   // Map to content tier for useUserPlan
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
