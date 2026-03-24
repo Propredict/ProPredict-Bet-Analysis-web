@@ -267,12 +267,13 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5):
       const goalsFor = isHome ? m.goals.home : m.goals.away;
       const goalsAgainst = isHome ? m.goals.away : m.goals.home;
       const won = isHome ? m.teams.home.winner : m.teams.away.winner;
+      const opponentId = isHome ? m.teams.away.id : m.teams.home.id;
 
       let result: "W" | "D" | "L" = "D";
       if (won === true) result = "W";
       else if (won === false) result = "L";
 
-      return { result, goalsFor, goalsAgainst, isHome };
+      return { result, goalsFor, goalsAgainst, isHome, opponentId };
     });
 
     teamFormCache.set(teamId, normalized);
