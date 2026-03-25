@@ -39,15 +39,15 @@ export function ExitIntentPopup() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-sm rounded-2xl border border-primary/30 bg-card shadow-2xl shadow-primary/10 overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-sm rounded-2xl border border-primary/30 bg-card shadow-2xl shadow-primary/10 animate-scale-in">
         <button
           onClick={dismiss}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors z-10"
+          className="absolute -top-2 -right-2 p-1.5 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors z-20 shadow-md"
         >
           <X className="h-4 w-4" />
         </button>
 
-        <div className="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500" />
+        <div className="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 rounded-t-2xl" />
 
         <div className="p-6 text-center space-y-4">
           <div className="text-4xl">🔥</div>
