@@ -273,15 +273,26 @@ serve(async (req) => {
       }
     }
 
-    // Handle invoice.payment_failed
+    // Handle invoice.payment_failed → mark subscription as past_due
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
       const customerId = invoice.customer as string;
 
       const user = await findUserByCustomerId(customerId);
       if (user) {
-        console.log(`Payment failed for user ${user.id}, email: ${user.email}`);
-        // Stripe handles email notifications; just log for monitoring
+        console.log(`Payment failed for user ${user.id}, marking as past_due`);
+
+        const { error } = await supabase
+          .from("user_subscriptions")
+          .update({
+            status: "past_due",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", user.id);
+
+        if (error) {
+          console.error("Error setting past_due:", error);
+        }
       }
     }
 
