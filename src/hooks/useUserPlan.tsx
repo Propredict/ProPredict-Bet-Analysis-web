@@ -87,6 +87,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   const [unlockedContent, setUnlockedContent] = useState<UnlockedContent[]>([]);
   const purchaseEmailSentRef = useRef(false);
 
+  // Track DB subscription state so RC upgrade logic can check expiry
+  const [dbSubStatus, setDbSubStatus] = useState<string | null>(null);
+  const [dbSubExpiresAt, setDbSubExpiresAt] = useState<string | null>(null);
+
   /* =====================
      Helper: resolve plan from user_subscriptions row
   ===================== */
