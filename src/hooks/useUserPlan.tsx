@@ -203,13 +203,20 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   }, [fetchUserData, user]);
 
   /* =====================
-     Android RevenueCat: can only UPGRADE plan, never downgrade.
-     If RevenueCat returns a higher plan than Supabase, use it.
-     This handles the case where a purchase just happened and
-     the webhook hasn't updated Supabase yet.
+     Android RevenueCat: can only UPGRADE plan when DB subscription
+     is genuinely active. If DB says expired/past_due/free,
+     Supabase is the sole source of truth — ignore stale RC cache.
   ===================== */
   useEffect(() => {
     if (!isMobileApp || revenueCat.isLoading) return;
+
+    // Guard: if DB subscription is expired or inactive, do NOT allow RC upgrade
+    const dbExpired = dbSubExpiresAt && new Date(dbSubExpiresAt) <= new Date();
+    const dbInactive = dbSubStatus === "expired" || dbSubStatus === "past_due";
+    if (dbExpired || dbInactive) {
+      console.log("[UserPlan] DB subscription expired/inactive — ignoring RC cache. status:", dbSubStatus, "expires:", dbSubExpiresAt);
+      return;
+    }
 
     const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2 };
     const rcRank = PLAN_RANK[revenueCat.plan] ?? 0;
@@ -221,7 +228,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       setPlan(revenueCat.plan);
       if (user) syncOneSignalPlanTags(revenueCat.plan, user.id);
     }
-  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, plan, user]);
+  }, [isMobileApp, revenueCat.isLoading, revenueCat.plan, plan, user, dbSubStatus, dbSubExpiresAt]);
 
   /* =====================
      Android Ad-Unlock Event Listener
