@@ -179,6 +179,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       setPlan(resolved.plan);
       setSubscriptionSource(resolved.source);
 
+      // Persist raw DB subscription state for RC guard
+      setDbSubStatus(subRes.data?.status ?? null);
+      setDbSubExpiresAt(subRes.data?.expires_at ?? null);
+
       // Sync plan tags to OneSignal
       syncOneSignalPlanTags(resolved.plan, user.id);
 
