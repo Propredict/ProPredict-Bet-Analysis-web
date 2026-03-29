@@ -20,6 +20,7 @@ import {
   Swords,
   BookOpen,
   X,
+  User,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -63,6 +64,7 @@ const tools = [
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
+  { title: "Player Search", url: "/players", icon: User },
 ];
 
 const adminItems = [
