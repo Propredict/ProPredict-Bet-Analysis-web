@@ -189,7 +189,7 @@ const AIPredictionCardInner = ({
         </div>
 
         {/* FREE tier upsell */}
-        {hasAccess && displayTier === "free" && (
+        {hasAccess && displayTier === "free" && !isPremiumUser && !isProUser && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <div
               onClick={() => navigate("/get-premium")}
