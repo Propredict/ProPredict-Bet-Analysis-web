@@ -197,18 +197,18 @@ const AIPredictionCardInner = ({
             >
               <div className="flex items-start gap-2">
                 <Crown className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <p className="text-[10px] md:text-[11px] font-semibold text-foreground">
-                    Upgrade to unlock more
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                      📊 Goals & BTTS
-                    </Badge>
-                    <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                      🧠 AI Analysis
-                    </Badge>
-                  </div>
+                 <div className="flex-1 min-w-0 space-y-1.5">
+                   <p className="text-[10px] md:text-[11px] font-semibold text-foreground">
+                     Upgrade for more predictions
+                   </p>
+                   <div className="flex flex-wrap gap-1">
+                     <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
+                       🎯 Pro Picks
+                     </Badge>
+                     <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
+                       👑 Premium Analysis
+                     </Badge>
+                   </div>
                   <p className="text-[8px] md:text-[9px] text-muted-foreground/70">
                     Pro from €3.99/mo · Premium from €5.99/mo
                   </p>
