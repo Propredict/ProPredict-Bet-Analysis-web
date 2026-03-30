@@ -66,7 +66,7 @@ serve(async (req: Request) => {
 
 function mapResults(results: any[]) {
   return results.slice(0, 20).map((item: any) => {
-    const player = item.player;
+    const player = item.player || item;
     const stats = item.statistics || [];
     const primary = stats[0] || {};
 
@@ -79,13 +79,13 @@ function mapResults(results: any[]) {
       nationality: player.nationality,
       age: player.age,
       team: {
-        id: primary.team?.id,
-        name: primary.team?.name,
-        logo: primary.team?.logo,
+        id: primary.team?.id || null,
+        name: primary.team?.name || "",
+        logo: primary.team?.logo || "",
       },
       league: {
-        name: primary.league?.name,
-        logo: primary.league?.logo,
+        name: primary.league?.name || "",
+        logo: primary.league?.logo || "",
       },
       position: primary.games?.position || "",
       appearances: primary.games?.appearences || 0,
