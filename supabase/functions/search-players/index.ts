@@ -34,30 +34,23 @@ serve(async (req: Request) => {
 
     const headers = { "x-apisports-key": apiKey };
     const q = encodeURIComponent(search);
+    const searchLower = search.toLowerCase();
 
-    // Fetch first 2 pages of profiles in parallel to find more players
-    const [page1Res, page2Res] = await Promise.all([
-      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=1`, { headers }),
-      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=2`, { headers }),
-    ]);
+    // Fetch 5 pages in parallel to maximize coverage for popular players
+    const pagePromises = [1, 2, 3, 4, 5].map(page =>
+      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=${page}`, { headers })
+        .then(async r => {
+          if (!r.ok) { await r.text(); return []; }
+          const j = await r.json();
+          return j.response || [];
+        })
+        .catch(() => [] as any[])
+    );
 
-    let allProfiles: any[] = [];
+    const pages = await Promise.all(pagePromises);
+    const allProfiles = pages.flat();
     
-    if (page1Res.ok) {
-      const j1 = await page1Res.json();
-      allProfiles.push(...(j1.response || []));
-    } else {
-      await page1Res.text();
-    }
-    
-    if (page2Res.ok) {
-      const j2 = await page2Res.json();
-      allProfiles.push(...(j2.response || []));
-    } else {
-      await page2Res.text();
-    }
-
-    console.log(`Profile search for "${search}" returned ${allProfiles.length} results across 2 pages`);
+    console.log(`Profile search for "${search}" returned ${allProfiles.length} results across 5 pages`);
 
     // Deduplicate by player ID
     const idSet = new Set<number>();
@@ -70,51 +63,56 @@ serve(async (req: Request) => {
       }
     }
 
-    // Take top 10 IDs for hydration
-    const topIds = uniqueProfiles.slice(0, 10).map((p: any) => p.player?.id).filter(Boolean) as number[];
+    // Score and sort: prioritize exact/close name matches
+    const scored = uniqueProfiles.map((p: any) => {
+      const player = p.player || {};
+      const name = (player.name || "").toLowerCase();
+      const firstname = (player.firstname || "").toLowerCase();
+      const lastname = (player.lastname || "").toLowerCase();
+      
+      let score = 0;
+      
+      // Exact lastname match (e.g., searching "Haaland" matches lastname containing "Haaland")
+      if (lastname.split(" ").some((part: string) => part === searchLower)) score += 100;
+      // Name field contains exact search term as a word
+      else if (name.split(" ").some((part: string) => part.replace(".", "") === searchLower)) score += 90;
+      // Lastname starts with search term
+      else if (lastname.startsWith(searchLower)) score += 80;
+      // Firstname exact match
+      else if (firstname.split(" ").some((part: string) => part === searchLower)) score += 50;
+      // Any partial match
+      else if (name.includes(searchLower) || lastname.includes(searchLower)) score += 30;
+      
+      return { profile: p, score };
+    });
 
-    if (topIds.length === 0) {
-      return new Response(
-        JSON.stringify([]),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Sort by relevance score descending
+    scored.sort((a, b) => b.score - a.score);
 
-    // Hydrate each player with full stats in parallel
-    const seasons = [2025, 2024];
-    const hydratedPlayers = await Promise.all(
-      topIds.map(async (id: number) => {
-        for (const season of seasons) {
-          try {
-            const r = await fetch(
-              `${API_FOOTBALL_URL}/players?id=${id}&season=${season}`,
-              { headers }
-            );
-            if (!r.ok) { await r.text(); continue; }
-            const j = await r.json();
-            if (j.response?.length > 0) {
-              return j.response[0];
-            }
-          } catch (e) {
-            console.error(`Error fetching player ${id} season ${season}:`, e);
-          }
-        }
-        // Return basic profile data as fallback
-        const profile = uniqueProfiles.find((p: any) => p.player?.id === id);
-        return profile || null;
-      })
-    );
+    // Take top 20 and map to response format
+    const results = scored.slice(0, 20).map(({ profile }) => {
+      const player = profile.player || {};
+      return {
+        id: player.id,
+        name: player.name,
+        firstname: player.firstname,
+        lastname: player.lastname,
+        photo: player.photo,
+        nationality: player.nationality,
+        age: player.age,
+        team: { id: null, name: "", logo: "" },
+        league: { name: "", logo: "" },
+        position: "",
+        appearances: 0,
+        goals: 0,
+        assists: 0,
+      };
+    });
 
-    const results = hydratedPlayers.filter(Boolean);
-    const mapped = mapResults(results);
-    
-    // Sort: players with stats first, then by appearances + goals
-    mapped.sort((a: any, b: any) => (b.appearances + b.goals) - (a.appearances + a.goals));
-    
-    console.log(`Returning ${mapped.length} players`);
+    console.log(`Returning ${results.length} players`);
 
     return new Response(
-      JSON.stringify(mapped),
+      JSON.stringify(results),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -125,34 +123,3 @@ serve(async (req: Request) => {
     );
   }
 });
-
-function mapResults(results: any[]) {
-  return results.map((item: any) => {
-    const player = item.player || item;
-    const stats = item.statistics || [];
-    const primary = stats[0] || {};
-
-    return {
-      id: player.id,
-      name: player.name,
-      firstname: player.firstname,
-      lastname: player.lastname,
-      photo: player.photo,
-      nationality: player.nationality,
-      age: player.age,
-      team: {
-        id: primary.team?.id || null,
-        name: primary.team?.name || "",
-        logo: primary.team?.logo || "",
-      },
-      league: {
-        name: primary.league?.name || "",
-        logo: primary.league?.logo || "",
-      },
-      position: primary.games?.position || "",
-      appearances: primary.games?.appearences || 0,
-      goals: primary.goals?.total || 0,
-      assists: primary.goals?.assists || 0,
-    };
-  });
-}
