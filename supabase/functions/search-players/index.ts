@@ -33,26 +33,98 @@ serve(async (req: Request) => {
     }
 
     const headers = { "x-apisports-key": apiKey };
+    const q = encodeURIComponent(search);
+    const searchLower = search.toLowerCase();
 
-    // Search players by name using /players/profiles endpoint
-    const res = await fetch(
-      `${API_FOOTBALL_URL}/players/profiles?search=${encodeURIComponent(search)}`,
-      { headers }
+    // Fetch 5 pages in parallel to maximize coverage for popular players
+    const pagePromises = [1, 2, 3, 4, 5].map(page =>
+      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=${page}`, { headers })
+        .then(async r => {
+          if (!r.ok) { await r.text(); return []; }
+          const j = await r.json();
+          return j.response || [];
+        })
+        .catch(() => [] as any[])
     );
 
-    if (!res.ok) {
-      console.error("API-Football error:", res.status, await res.text());
-      return new Response(
-        JSON.stringify({ error: "Failed to search players" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const pages = await Promise.all(pagePromises);
+    const allProfiles = pages.flat();
+    
+    console.log(`Profile search for "${search}" returned ${allProfiles.length} results across 5 pages`);
+
+    // Deduplicate by player ID
+    const idSet = new Set<number>();
+    const uniqueProfiles: any[] = [];
+    for (const p of allProfiles) {
+      const id = p.player?.id;
+      if (id && !idSet.has(id)) {
+        idSet.add(id);
+        uniqueProfiles.push(p);
+      }
     }
 
-    const json = await res.json();
-    const results = json.response || [];
+    // Score and sort: prioritize exact/close name matches and completeness
+    const searchWords = searchLower.split(/\s+/).filter(Boolean);
+    
+    const scored = uniqueProfiles.map((p: any) => {
+      const player = p.player || {};
+      const name = (player.name || "").toLowerCase();
+      const firstname = (player.firstname || "").toLowerCase();
+      const lastname = (player.lastname || "").toLowerCase();
+      const fullName = `${firstname} ${lastname}`.toLowerCase();
+      
+      let score = 0;
+      
+      // Multi-word search: all words match (e.g., "Cristiano Ronaldo")
+      if (searchWords.length > 1 && searchWords.every(w => fullName.includes(w))) {
+        score += 200;
+      }
+      // Exact lastname match as standalone word
+      else if (lastname.split(" ").some((part: string) => part === searchLower)) score += 100;
+      // Name field exact word match (handles "L. Messi" matching "Messi")
+      else if (name.split(/[\s.]+/).some((part: string) => part === searchLower)) score += 95;
+      // Lastname starts with search term  
+      else if (lastname.startsWith(searchLower)) score += 80;
+      // Firstname exact match
+      else if (firstname.split(" ").some((part: string) => part === searchLower)) score += 50;
+      // Any partial match
+      else if (name.includes(searchLower) || lastname.includes(searchLower)) score += 30;
+      
+      // Bonus for having complete profile data (more likely to be real active players)
+      if (player.nationality) score += 5;
+      if (player.firstname && player.lastname) score += 5;
+      if (player.age && player.age > 0) score += 3;
+      
+      return { profile: p, score };
+    });
+
+    // Sort by relevance score descending
+    scored.sort((a, b) => b.score - a.score);
+
+    // Take top 20 and map to response format
+    const results = scored.slice(0, 20).map(({ profile }) => {
+      const player = profile.player || {};
+      return {
+        id: player.id,
+        name: player.name,
+        firstname: player.firstname,
+        lastname: player.lastname,
+        photo: player.photo,
+        nationality: player.nationality,
+        age: player.age,
+        team: { id: null, name: "", logo: "" },
+        league: { name: "", logo: "" },
+        position: "",
+        appearances: 0,
+        goals: 0,
+        assists: 0,
+      };
+    });
+
+    console.log(`Returning ${results.length} players`);
 
     return new Response(
-      JSON.stringify(mapResults(results)),
+      JSON.stringify(results),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -63,34 +135,3 @@ serve(async (req: Request) => {
     );
   }
 });
-
-function mapResults(results: any[]) {
-  return results.slice(0, 20).map((item: any) => {
-    const player = item.player || item;
-    const stats = item.statistics || [];
-    const primary = stats[0] || {};
-
-    return {
-      id: player.id,
-      name: player.name,
-      firstname: player.firstname,
-      lastname: player.lastname,
-      photo: player.photo,
-      nationality: player.nationality,
-      age: player.age,
-      team: {
-        id: primary.team?.id || null,
-        name: primary.team?.name || "",
-        logo: primary.team?.logo || "",
-      },
-      league: {
-        name: primary.league?.name || "",
-        logo: primary.league?.logo || "",
-      },
-      position: primary.games?.position || "",
-      appearances: primary.games?.appearences || 0,
-      goals: primary.goals?.total || 0,
-      assists: primary.goals?.assists || 0,
-    };
-  });
-}
