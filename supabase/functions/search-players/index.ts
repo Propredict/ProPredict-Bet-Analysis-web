@@ -89,6 +89,11 @@ serve(async (req: Request) => {
     );
 
     const results = hydratedPlayers.filter(Boolean);
+    
+    // Sort by appearances (most active players first)
+    const mapped = mapResults(results);
+    mapped.sort((a: any, b: any) => (b.appearances + b.goals) - (a.appearances + a.goals));
+    
     console.log(`Hydrated ${results.length} players out of ${uniqueIds.length} IDs`);
 
     return new Response(
