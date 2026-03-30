@@ -35,51 +35,31 @@ serve(async (req: Request) => {
     const headers = { "x-apisports-key": apiKey };
     const q = encodeURIComponent(search);
 
-    // Step 1: Get player IDs from /players/profiles (lightweight, no season needed)
-    const profileRes = await fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}`, { headers });
-    if (!profileRes.ok) {
-      console.error("Profile search error:", profileRes.status, await profileRes.text());
-      return new Response(
-        JSON.stringify({ error: "Failed to search players" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    // Try multiple seasons to find the player (most recent first)
+    const seasons = [2025, 2024, 2023];
+    let results: any[] = [];
+
+    for (const season of seasons) {
+      const res = await fetch(
+        `${API_FOOTBALL_URL}/players?search=${q}&season=${season}`,
+        { headers }
       );
+
+      if (!res.ok) {
+        console.error(`API error for season ${season}:`, res.status);
+        await res.text(); // consume body
+        continue;
+      }
+
+      const json = await res.json();
+      const data = json.response || [];
+      
+      if (data.length > 0) {
+        results = data;
+        console.log(`Found ${data.length} players for season ${season}`);
+        break;
+      }
     }
-
-    const profileJson = await profileRes.json();
-    const profiles = profileJson.response || [];
-
-    // Deduplicate by player ID, take top 10 to limit API calls
-    const ids = [...new Set(
-      profiles.map((x: any) => (x.player?.id || x.id)).filter(Boolean)
-    )].slice(0, 10) as number[];
-
-    if (ids.length === 0) {
-      return new Response(
-        JSON.stringify([]),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Step 2: Hydrate each player with full stats from /players?id=&season=
-    const seasons = [2025, 2024];
-    const hydratedPlayers = await Promise.all(
-      ids.map(async (id: number) => {
-        for (const season of seasons) {
-          try {
-            const r = await fetch(`${API_FOOTBALL_URL}/players?id=${id}&season=${season}`, { headers });
-            if (!r.ok) { await r.text(); continue; }
-            const j = await r.json();
-            if (j.response?.length) return j.response[0];
-          } catch { /* skip */ }
-        }
-        // Fallback: return basic profile data from the profiles response
-        const profile = profiles.find((p: any) => (p.player?.id || p.id) === id);
-        if (profile) return profile;
-        return null;
-      })
-    );
-
-    const results = hydratedPlayers.filter(Boolean);
 
     return new Response(
       JSON.stringify(mapResults(results)),
@@ -95,7 +75,7 @@ serve(async (req: Request) => {
 });
 
 function mapResults(results: any[]) {
-  return results.map((item: any) => {
+  return results.slice(0, 20).map((item: any) => {
     const player = item.player || item;
     const stats = item.statistics || [];
     const primary = stats[0] || {};
