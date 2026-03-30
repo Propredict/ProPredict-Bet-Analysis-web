@@ -40,24 +40,26 @@ serve(async (req: Request) => {
     let results: any[] = [];
 
     for (const season of seasons) {
-      const res = await fetch(
-        `${API_FOOTBALL_URL}/players?search=${q}&season=${season}`,
-        { headers }
-      );
-
-      if (!res.ok) {
-        console.error(`API error for season ${season}:`, res.status);
-        await res.text(); // consume body
-        continue;
-      }
-
-      const json = await res.json();
-      const data = json.response || [];
+      const apiUrl = `${API_FOOTBALL_URL}/players?search=${q}&season=${season}`;
+      console.log(`Fetching: ${apiUrl}`);
       
-      if (data.length > 0) {
-        results = data;
-        console.log(`Found ${data.length} players for season ${season}`);
-        break;
+      const res = await fetch(apiUrl, { headers });
+      const rawText = await res.text();
+      console.log(`Season ${season} status: ${res.status}, body length: ${rawText.length}, first 500: ${rawText.substring(0, 500)}`);
+
+      if (!res.ok) continue;
+
+      try {
+        const json = JSON.parse(rawText);
+        const data = json.response || [];
+        console.log(`Season ${season}: ${data.length} results, errors: ${JSON.stringify(json.errors)}`);
+        
+        if (data.length > 0) {
+          results = data;
+          break;
+        }
+      } catch (e) {
+        console.error(`Parse error for season ${season}:`, e);
       }
     }
 
