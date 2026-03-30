@@ -63,25 +63,37 @@ serve(async (req: Request) => {
       }
     }
 
-    // Score and sort: prioritize exact/close name matches
+    // Score and sort: prioritize exact/close name matches and completeness
+    const searchWords = searchLower.split(/\s+/).filter(Boolean);
+    
     const scored = uniqueProfiles.map((p: any) => {
       const player = p.player || {};
       const name = (player.name || "").toLowerCase();
       const firstname = (player.firstname || "").toLowerCase();
       const lastname = (player.lastname || "").toLowerCase();
+      const fullName = `${firstname} ${lastname}`.toLowerCase();
       
       let score = 0;
       
-      // Exact lastname match (e.g., searching "Haaland" matches lastname containing "Haaland")
-      if (lastname.split(" ").some((part: string) => part === searchLower)) score += 100;
-      // Name field contains exact search term as a word
-      else if (name.split(" ").some((part: string) => part.replace(".", "") === searchLower)) score += 90;
-      // Lastname starts with search term
+      // Multi-word search: all words match (e.g., "Cristiano Ronaldo")
+      if (searchWords.length > 1 && searchWords.every(w => fullName.includes(w))) {
+        score += 200;
+      }
+      // Exact lastname match as standalone word
+      else if (lastname.split(" ").some((part: string) => part === searchLower)) score += 100;
+      // Name field exact word match (handles "L. Messi" matching "Messi")
+      else if (name.split(/[\s.]+/).some((part: string) => part === searchLower)) score += 95;
+      // Lastname starts with search term  
       else if (lastname.startsWith(searchLower)) score += 80;
       // Firstname exact match
       else if (firstname.split(" ").some((part: string) => part === searchLower)) score += 50;
       // Any partial match
       else if (name.includes(searchLower) || lastname.includes(searchLower)) score += 30;
+      
+      // Bonus for having complete profile data (more likely to be real active players)
+      if (player.nationality) score += 5;
+      if (player.firstname && player.lastname) score += 5;
+      if (player.age && player.age > 0) score += 3;
       
       return { profile: p, score };
     });
