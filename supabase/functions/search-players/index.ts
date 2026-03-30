@@ -33,23 +33,53 @@ serve(async (req: Request) => {
     }
 
     const headers = { "x-apisports-key": apiKey };
+    const q = encodeURIComponent(search);
 
-    // Search players by name using /players/profiles endpoint
-    const res = await fetch(
-      `${API_FOOTBALL_URL}/players/profiles?search=${encodeURIComponent(search)}`,
-      { headers }
-    );
-
-    if (!res.ok) {
-      console.error("API-Football error:", res.status, await res.text());
+    // Step 1: Get player IDs from /players/profiles (lightweight, no season needed)
+    const profileRes = await fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}`, { headers });
+    if (!profileRes.ok) {
+      console.error("Profile search error:", profileRes.status, await profileRes.text());
       return new Response(
         JSON.stringify({ error: "Failed to search players" }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const json = await res.json();
-    const results = json.response || [];
+    const profileJson = await profileRes.json();
+    const profiles = profileJson.response || [];
+
+    // Deduplicate by player ID, take top 10 to limit API calls
+    const ids = [...new Set(
+      profiles.map((x: any) => (x.player?.id || x.id)).filter(Boolean)
+    )].slice(0, 10) as number[];
+
+    if (ids.length === 0) {
+      return new Response(
+        JSON.stringify([]),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Step 2: Hydrate each player with full stats from /players?id=&season=
+    const seasons = [2025, 2024];
+    const hydratedPlayers = await Promise.all(
+      ids.map(async (id: number) => {
+        for (const season of seasons) {
+          try {
+            const r = await fetch(`${API_FOOTBALL_URL}/players?id=${id}&season=${season}`, { headers });
+            if (!r.ok) { await r.text(); continue; }
+            const j = await r.json();
+            if (j.response?.length) return j.response[0];
+          } catch { /* skip */ }
+        }
+        // Fallback: return basic profile data from the profiles response
+        const profile = profiles.find((p: any) => (p.player?.id || p.id) === id);
+        if (profile) return profile;
+        return null;
+      })
+    );
+
+    const results = hydratedPlayers.filter(Boolean);
 
     return new Response(
       JSON.stringify(mapResults(results)),
@@ -65,7 +95,7 @@ serve(async (req: Request) => {
 });
 
 function mapResults(results: any[]) {
-  return results.slice(0, 20).map((item: any) => {
+  return results.map((item: any) => {
     const player = item.player || item;
     const stats = item.statistics || [];
     const primary = stats[0] || {};
