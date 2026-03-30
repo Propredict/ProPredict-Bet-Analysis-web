@@ -34,45 +34,22 @@ serve(async (req: Request) => {
 
     const headers = { "x-apisports-key": apiKey };
 
-    // Search players by name
+    // Search players by name using /players/profiles endpoint
     const res = await fetch(
-      `${API_FOOTBALL_URL}/players?search=${encodeURIComponent(search)}&season=2025`,
+      `${API_FOOTBALL_URL}/players/profiles?search=${encodeURIComponent(search)}`,
       { headers }
     );
 
     if (!res.ok) {
-      // Fallback to previous season
-      const res2 = await fetch(
-        `${API_FOOTBALL_URL}/players?search=${encodeURIComponent(search)}&season=2024`,
-        { headers }
-      );
-      if (!res2.ok) {
-        return new Response(
-          JSON.stringify({ error: "Failed to search players" }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const json2 = await res2.json();
+      console.error("API-Football error:", res.status, await res.text());
       return new Response(
-        JSON.stringify(mapResults(json2.response || [])),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Failed to search players" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const json = await res.json();
-    let results = json.response || [];
-
-    // If no results for 2025, try 2024
-    if (results.length === 0) {
-      const res2 = await fetch(
-        `${API_FOOTBALL_URL}/players?search=${encodeURIComponent(search)}&season=2024`,
-        { headers }
-      );
-      if (res2.ok) {
-        const json2 = await res2.json();
-        results = json2.response || [];
-      }
-    }
+    const results = json.response || [];
 
     return new Response(
       JSON.stringify(mapResults(results)),
@@ -89,7 +66,7 @@ serve(async (req: Request) => {
 
 function mapResults(results: any[]) {
   return results.slice(0, 20).map((item: any) => {
-    const player = item.player;
+    const player = item.player || item;
     const stats = item.statistics || [];
     const primary = stats[0] || {};
 
@@ -102,13 +79,13 @@ function mapResults(results: any[]) {
       nationality: player.nationality,
       age: player.age,
       team: {
-        id: primary.team?.id,
-        name: primary.team?.name,
-        logo: primary.team?.logo,
+        id: primary.team?.id || null,
+        name: primary.team?.name || "",
+        logo: primary.team?.logo || "",
       },
       league: {
-        name: primary.league?.name,
-        logo: primary.league?.logo,
+        name: primary.league?.name || "",
+        logo: primary.league?.logo || "",
       },
       position: primary.games?.position || "",
       appearances: primary.games?.appearences || 0,
