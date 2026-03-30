@@ -97,7 +97,7 @@ serve(async (req: Request) => {
     console.log(`Hydrated ${results.length} players out of ${uniqueIds.length} IDs`);
 
     return new Response(
-      JSON.stringify(mapResults(results)),
+      JSON.stringify(mapped),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
