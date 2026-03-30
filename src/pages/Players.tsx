@@ -332,7 +332,7 @@ export default function Players() {
           <Input
             value={searchInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="Search player name (min 3 characters)..."
+            placeholder="Search by full name (e.g. Messi, Cristiano Ronaldo)..."
             className="pl-10 pr-10 h-11 text-sm"
           />
           {searchInput && (
