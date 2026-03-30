@@ -35,38 +35,55 @@ serve(async (req: Request) => {
     const headers = { "x-apisports-key": apiKey };
     const q = encodeURIComponent(search);
 
-    // Step 1: Get player IDs from /players/profiles
-    const profileRes = await fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}`, { headers });
-    if (!profileRes.ok) {
-      const errText = await profileRes.text();
-      console.error("Profile search error:", profileRes.status, errText);
-      return new Response(
-        JSON.stringify({ error: "Failed to search players" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Fetch first 2 pages of profiles in parallel to find more players
+    const [page1Res, page2Res] = await Promise.all([
+      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=1`, { headers }),
+      fetch(`${API_FOOTBALL_URL}/players/profiles?search=${q}&page=2`, { headers }),
+    ]);
+
+    let allProfiles: any[] = [];
+    
+    if (page1Res.ok) {
+      const j1 = await page1Res.json();
+      allProfiles.push(...(j1.response || []));
+    } else {
+      await page1Res.text();
+    }
+    
+    if (page2Res.ok) {
+      const j2 = await page2Res.json();
+      allProfiles.push(...(j2.response || []));
+    } else {
+      await page2Res.text();
     }
 
-    const profileJson = await profileRes.json();
-    const profiles = profileJson.response || [];
-    console.log(`Profile search for "${search}" returned ${profiles.length} results`);
+    console.log(`Profile search for "${search}" returned ${allProfiles.length} results across 2 pages`);
 
-    // Deduplicate by player ID, take top 8 to limit API calls
-    const uniqueIds = [...new Set(
-      profiles.map((x: any) => x.player?.id).filter(Boolean)
-    )].slice(0, 8) as number[];
+    // Deduplicate by player ID
+    const idSet = new Set<number>();
+    const uniqueProfiles: any[] = [];
+    for (const p of allProfiles) {
+      const id = p.player?.id;
+      if (id && !idSet.has(id)) {
+        idSet.add(id);
+        uniqueProfiles.push(p);
+      }
+    }
 
-    if (uniqueIds.length === 0) {
+    // Take top 10 IDs for hydration
+    const topIds = uniqueProfiles.slice(0, 10).map((p: any) => p.player?.id).filter(Boolean) as number[];
+
+    if (topIds.length === 0) {
       return new Response(
         JSON.stringify([]),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Step 2: Hydrate each player with full stats
-    // Use Promise.all to fetch in parallel, try seasons 2025 then 2024
+    // Hydrate each player with full stats in parallel
     const seasons = [2025, 2024];
     const hydratedPlayers = await Promise.all(
-      uniqueIds.map(async (id: number) => {
+      topIds.map(async (id: number) => {
         for (const season of seasons) {
           try {
             const r = await fetch(
@@ -83,18 +100,18 @@ serve(async (req: Request) => {
           }
         }
         // Return basic profile data as fallback
-        const profile = profiles.find((p: any) => p.player?.id === id);
+        const profile = uniqueProfiles.find((p: any) => p.player?.id === id);
         return profile || null;
       })
     );
 
     const results = hydratedPlayers.filter(Boolean);
-    
-    // Sort by appearances (most active players first)
     const mapped = mapResults(results);
+    
+    // Sort: players with stats first, then by appearances + goals
     mapped.sort((a: any, b: any) => (b.appearances + b.goals) - (a.appearances + a.goals));
     
-    console.log(`Hydrated ${results.length} players out of ${uniqueIds.length} IDs`);
+    console.log(`Returning ${mapped.length} players`);
 
     return new Response(
       JSON.stringify(mapped),
