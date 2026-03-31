@@ -3,6 +3,9 @@ export type TipResult = "pending" | "won" | "lost";
 export type ContentTier = "free" | "daily" | "exclusive" | "premium";
 export type ContentStatus = "draft" | "published";
 
+export type TipCategory = "standard" | "risk_of_day" | "diamond_pick";
+export type TicketCategory = "standard" | "multi_risk";
+
 export interface Tip {
   id: string;
   home_team: string;
@@ -20,6 +23,7 @@ export interface Tip {
   created_at_ts?: string;
   updated_at?: string;
   created_by?: string | null;
+  category?: TipCategory | null;
 }
 
 // Match stored in ticket_matches table
