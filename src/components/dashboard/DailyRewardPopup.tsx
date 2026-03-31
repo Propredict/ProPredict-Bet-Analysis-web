@@ -1,17 +1,24 @@
 import { useState, useEffect } from "react";
 import { X, Gift, Clock, Flame } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const POPUP_DELAY = 8000;
 const DISMISS_KEY = "daily_reward_popup_dismissed";
 
+/**
+ * Daily reward FOMO popup — Android only.
+ * Shows once per day after 8s delay to users who haven't claimed yet.
+ */
 export function DailyRewardPopup() {
   const [visible, setVisible] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const isAndroid = getIsAndroidApp();
 
   useEffect(() => {
+    // Only show on Android
+    if (!isAndroid) return;
+
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed) {
       const dismissedDate = new Date(dismissed).toDateString();
@@ -20,9 +27,9 @@ export function DailyRewardPopup() {
 
     const timer = setTimeout(() => setVisible(true), POPUP_DELAY);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAndroid]);
 
-  if (!visible) return null;
+  if (!visible || !isAndroid) return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, new Date().toISOString());
@@ -31,12 +38,8 @@ export function DailyRewardPopup() {
 
   const handleClaim = () => {
     dismiss();
-    if (!user) {
-      navigate("/login");
-    } else {
-      // Scroll to top where the widget is
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    // Scroll to top where the widget is
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

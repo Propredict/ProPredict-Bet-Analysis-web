@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { X, Gift } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const DISMISS_KEY = "reward_bar_dismissed";
 
+/**
+ * Sticky bar at bottom — Android only.
+ * Reminds users to claim daily reward.
+ */
 export function DailyRewardStickyBar() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const isAndroid = getIsAndroidApp();
 
   const [dismissed, setDismissed] = useState(() => {
     const d = localStorage.getItem(DISMISS_KEY);
@@ -15,7 +19,8 @@ export function DailyRewardStickyBar() {
     return new Date(d).toDateString() === new Date().toDateString();
   });
 
-  if (dismissed) return null;
+  // Only show on Android
+  if (!isAndroid || dismissed) return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, new Date().toISOString());
@@ -23,11 +28,7 @@ export function DailyRewardStickyBar() {
   };
 
   const handleClick = () => {
-    if (!user) {
-      navigate("/login");
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -44,7 +45,7 @@ export function DailyRewardStickyBar() {
             onClick={handleClick}
             className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 border border-white/30 px-3 py-1.5 text-xs font-bold text-white transition-colors"
           >
-            {user ? "Claim Now 🚀" : "Sign In 🚀"}
+            Claim Now 🚀
           </button>
           <button onClick={dismiss} className="text-white/70 hover:text-white transition-colors p-1">
             <X className="h-3.5 w-3.5" />

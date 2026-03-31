@@ -195,8 +195,8 @@ const Index = () => {
       <GuestSignInModal />
       <AppDownloadPopup />
       <ExitIntentPopup />
-      {!isAndroid && <DailyRewardPopup />}
-      {!isAndroid && <DailyRewardStickyBar />}
+      <DailyRewardPopup />
+      <DailyRewardStickyBar />
     </>
   );
 };
