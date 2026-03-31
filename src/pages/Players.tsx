@@ -547,6 +547,7 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
   const teamId = profile?.team?.id ?? null;
   const leagueId = profile?.league?.id ?? null;
   const { data: opponentData } = useNextOpponent(teamId, leagueId);
+  const { data: squadData, isLoading: squadLoading } = useTeamSquad(teamId);
 
   if (isLoading) {
     return (
