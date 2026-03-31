@@ -49,6 +49,7 @@ const POPULAR_PLAYERS: RecentPlayer[] = [
   { id: 348807, name: "F. Wirtz", photo: "https://media.api-sports.io/football/players/348807.png", team: "B. Leverkusen" },
   { id: 629, name: "K. De Bruyne", photo: "https://media.api-sports.io/football/players/629.png", team: "Man City" },
   { id: 3247, name: "W. Zaha", photo: "https://media.api-sports.io/football/players/3247.png", team: "Charlotte FC" },
+  { id: 153, name: "O. Dembélé", photo: "https://media.api-sports.io/football/players/153.png", team: "PSG" },
 ];
 
 function getRecentSearches(): RecentPlayer[] {
