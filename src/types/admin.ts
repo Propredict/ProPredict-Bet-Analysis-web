@@ -59,6 +59,7 @@ export interface Ticket {
   updated_at?: string;
   created_by?: string;
   matches?: TicketMatch[];
+  category?: TicketCategory | null;
 }
 
 export type TipInsert = Omit<Tip, "id" | "created_at" | "created_at_ts" | "updated_at" | "created_by">;
