@@ -795,6 +795,15 @@ export default function Players() {
   const [query, setQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [recentSearches, setRecentSearches] = useState<RecentPlayer[]>([]);
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("players");
+    }
+  }, [maybeShowInterstitial]);
 
   const { data: results, isLoading } = useSearchPlayers(query);
 
