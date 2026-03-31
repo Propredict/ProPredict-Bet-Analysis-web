@@ -123,14 +123,14 @@ serve(async (req) => {
         END IF;
 
         v_points := CASE v_new_streak
-          WHEN 1 THEN 2
-          WHEN 2 THEN 3
-          WHEN 3 THEN 4
-          WHEN 4 THEN 5
-          WHEN 5 THEN 6
-          WHEN 6 THEN 8
+          WHEN 1 THEN 3
+          WHEN 2 THEN 6
+          WHEN 3 THEN 9
+          WHEN 4 THEN 12
+          WHEN 5 THEN 13
+          WHEN 6 THEN 14
           WHEN 7 THEN 15
-          ELSE 2
+          ELSE 3
         END;
 
         INSERT INTO daily_reward_claims (user_id, claim_date, streak_day, points_earned)
