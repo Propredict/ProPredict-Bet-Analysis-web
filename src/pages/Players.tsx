@@ -100,27 +100,27 @@ function LockedValue() {
 // Generate AI prediction from real stats + opponent data
 function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; opponentData?: NextOpponentData | null }) {
   const isAndroid = getIsAndroidApp();
+  const { plan } = useUserPlan();
   const prediction = useMemo(() => calculatePlayerPrediction(profile, opponentData), [profile, opponentData]);
   const opp = prediction.opponentAdjustment;
-  const [unlocked, setUnlocked] = useState(false);
+  const [adUnlocked, setAdUnlocked] = useState(false);
 
-  // Check localStorage for unlock state (per player, per day)
+  // Check localStorage for ad-unlock state (per player, per day)
   useEffect(() => {
     try {
       const today = new Date().toISOString().slice(0, 10);
       const key = `propredict_player_ai_${profile.player.id}_${today}`;
-      if (localStorage.getItem(key) === "1") setUnlocked(true);
+      if (localStorage.getItem(key) === "1") setAdUnlocked(true);
     } catch {}
   }, [profile.player.id]);
 
   const handleAdUnlock = useCallback(() => {
     if (!(window as any).Android?.showRewardedAd) return;
-    // Set up callback
     (window as any).onRewardedAdComplete = () => {
       const today = new Date().toISOString().slice(0, 10);
       const key = `propredict_player_ai_${profile.player.id}_${today}`;
       try { localStorage.setItem(key, "1"); } catch {}
-      setUnlocked(true);
+      setAdUnlocked(true);
     };
     (window as any).Android.showRewardedAd("player_ai_prediction");
   }, [profile.player.id]);
@@ -132,8 +132,20 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const riskBg = prediction.riskLevel === "LOW" ? "bg-green-500/10 border-green-500/20" : prediction.riskLevel === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
   const diffColor = opp?.matchDifficulty === "EASY" ? "text-green-400 bg-green-500/10" : opp?.matchDifficulty === "HARD" ? "text-red-400 bg-red-500/10" : "text-yellow-400 bg-yellow-500/10";
 
-  // On web: always locked (drive app downloads). On Android: unlockable via ad.
-  const showLocked = isAndroid ? !unlocked : true;
+  // Access rules:
+  // Web: Free → locked (download CTA), Pro/Premium → unlocked
+  // Android: Free/Pro → locked (watch ad to unlock), Premium → unlocked
+  const isPremium = plan === "premium";
+  const isProOrAbove = plan === "basic" || plan === "premium";
+  
+  let showLocked: boolean;
+  if (isAndroid) {
+    // Android: only Premium sees everything free; Free/Pro must watch ad
+    showLocked = isPremium ? false : !adUnlocked;
+  } else {
+    // Web: Pro and Premium see everything; Free is locked
+    showLocked = isProOrAbove ? false : true;
+  }
 
   return (
     <Card className="overflow-hidden border-primary/30 shadow-lg shadow-primary/10 animate-fade-in">
