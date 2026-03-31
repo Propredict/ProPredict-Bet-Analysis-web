@@ -611,6 +611,7 @@ export type Database = {
       tickets: {
         Row: {
           ai_analysis: string | null
+          category: string | null
           created_at_ts: string
           created_by: string | null
           description: string | null
@@ -625,6 +626,7 @@ export type Database = {
         }
         Insert: {
           ai_analysis?: string | null
+          category?: string | null
           created_at_ts?: string
           created_by?: string | null
           description?: string | null
@@ -639,6 +641,7 @@ export type Database = {
         }
         Update: {
           ai_analysis?: string | null
+          category?: string | null
           created_at_ts?: string
           created_by?: string | null
           description?: string | null
@@ -657,6 +660,7 @@ export type Database = {
         Row: {
           ai_prediction: string | null
           away_team: string
+          category: string | null
           confidence: number | null
           created_at_ts: string
           created_by: string | null
@@ -674,6 +678,7 @@ export type Database = {
         Insert: {
           ai_prediction?: string | null
           away_team: string
+          category?: string | null
           confidence?: number | null
           created_at_ts?: string
           created_by?: string | null
@@ -691,6 +696,7 @@ export type Database = {
         Update: {
           ai_prediction?: string | null
           away_team?: string
+          category?: string | null
           confidence?: number | null
           created_at_ts?: string
           created_by?: string | null
@@ -1080,6 +1086,7 @@ export type Database = {
       tickets_public: {
         Row: {
           ai_analysis: string | null
+          category: string | null
           created_at_ts: string | null
           created_by: string | null
           description: string | null
@@ -1094,6 +1101,7 @@ export type Database = {
         }
         Insert: {
           ai_analysis?: never
+          category?: string | null
           created_at_ts?: string | null
           created_by?: string | null
           description?: string | null
@@ -1108,6 +1116,7 @@ export type Database = {
         }
         Update: {
           ai_analysis?: never
+          category?: string | null
           created_at_ts?: string | null
           created_by?: string | null
           description?: string | null
@@ -1140,6 +1149,7 @@ export type Database = {
         Row: {
           ai_prediction: string | null
           away_team: string | null
+          category: string | null
           confidence: number | null
           created_at_ts: string | null
           created_by: string | null
@@ -1157,6 +1167,7 @@ export type Database = {
         Insert: {
           ai_prediction?: never
           away_team?: string | null
+          category?: string | null
           confidence?: never
           created_at_ts?: string | null
           created_by?: string | null
@@ -1174,6 +1185,7 @@ export type Database = {
         Update: {
           ai_prediction?: never
           away_team?: string | null
+          category?: string | null
           confidence?: never
           created_at_ts?: string | null
           created_by?: string | null
