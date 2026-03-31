@@ -3,6 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+/** Map category to a dedicated route, or fall back to tier route */
+function getCategoryRoute(category: string | null): string | null {
+  if (category === "diamond_pick") return "/diamond-pick";
+  if (category === "risk_of_the_day") return "/risk-of-the-day";
+  if (category === "multi_risk") return "/multi-risk-matches";
+  return null;
+}
+
 /** Map content tier to the correct route */
 function getTierRoute(type: "tip" | "ticket", tier: string): string {
   const routes: Record<string, Record<string, string>> = {
@@ -20,6 +28,10 @@ function getTierRoute(type: "tip" | "ticket", tier: string): string {
     },
   };
   return routes[type]?.[tier] ?? routes[type].daily;
+}
+
+function getRoute(type: "tip" | "ticket", tier: string, category?: string | null): string {
+  return getCategoryRoute(category ?? null) ?? getTierRoute(type, tier);
 }
 
 function getCategoryLabel(category: string | null): string | null {
