@@ -237,6 +237,15 @@ function AndroidRewardWidget() {
             )}
           </div>
 
+          {/* Arena CTA */}
+          <button
+            onClick={() => navigate("/ai-vs-community")}
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/30 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            ⚡ Play AI vs Members for more points!
+          </button>
+
           <p className="text-[10px] text-muted-foreground text-center">
             🔥 1,200+ users already building their daily streaks
           </p>
