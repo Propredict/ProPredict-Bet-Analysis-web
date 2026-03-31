@@ -15,6 +15,10 @@ const DEFAULT_LEAGUES = [
   { id: 135, name: "Serie A" },
   { id: 78, name: "Bundesliga" },
   { id: 61, name: "Ligue 1" },
+  { id: 88, name: "Eredivisie" },
+  { id: 94, name: "Primeira Liga" },
+  { id: 203, name: "Super Lig" },
+  { id: 144, name: "Pro League" },
 ];
 
 serve(async (req: Request) => {
