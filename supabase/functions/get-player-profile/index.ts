@@ -36,9 +36,9 @@ serve(async (req: Request) => {
 
     const headers = { "x-apisports-key": apiKey };
 
-    // Try current season first, fallback to previous
+    // Try current season first, fallback to previous seasons (up to 3 years back)
     let data: any = null;
-    for (const s of [season, String(Number(season) - 1)]) {
+    for (const s of [season, String(Number(season) - 1), String(Number(season) - 2)]) {
       const res = await fetch(
         `${API_FOOTBALL_URL}/players?id=${playerId}&season=${s}`,
         { headers }
