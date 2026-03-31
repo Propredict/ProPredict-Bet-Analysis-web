@@ -71,6 +71,7 @@ export function useDailyReward() {
             streakDay: data.streak_day,
             pointsEarned: data.points_earned,
             isBonusDay: data.is_bonus_day,
+            bonusReward: data.bonus_reward ?? 'none',
           },
         }));
       } else {
