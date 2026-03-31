@@ -57,6 +57,9 @@ const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 const Players = lazy(() => import("./pages/Players"));
+const RiskOfTheDay = lazy(() => import("./pages/RiskOfTheDay"));
+const DiamondPick = lazy(() => import("./pages/DiamondPick"));
+const MultiRiskMatches = lazy(() => import("./pages/MultiRiskMatches"));
 
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
