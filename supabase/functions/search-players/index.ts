@@ -49,9 +49,9 @@ serve(async (req: Request) => {
             .catch(() => [] as any[])
         )
       ),
-      // Players endpoint with season: try current then previous
+      // Players endpoint with season: try current, previous, and 2 years back
       Promise.all(
-        [currentYear, currentYear - 1].map(season =>
+        [currentYear, currentYear - 1, currentYear - 2].map(season =>
           fetch(`${API_FOOTBALL_URL}/players?search=${q}&season=${season}`, { headers })
             .then(async r => { if (!r.ok) { await r.text(); return []; } const j = await r.json(); return j.response || []; })
             .catch(() => [] as any[])
