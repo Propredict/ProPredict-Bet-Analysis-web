@@ -394,10 +394,11 @@ export default function ManageTickets() {
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                   <SelectContent>
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="exclusive">Pro</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="premium">🎯 Multi Risk Matches</SelectItem>
                   </SelectContent>
                 </Select>
 

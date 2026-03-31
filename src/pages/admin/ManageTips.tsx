@@ -432,7 +432,23 @@ export default function ManageTips() {
               </div>
 
               <div>
-                <Label>Status</Label>
+                <Label>Category</Label>
+                <Select
+                  value={formData.category || "standard"}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, category: v as any })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="risk_of_day">🎯 Risk of the Day</SelectItem>
+                    <SelectItem value="diamond_pick">💎 Diamond Pick</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
                 <Select
                   value={formData.status}
                   onValueChange={(v) =>
