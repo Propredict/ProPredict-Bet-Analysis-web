@@ -1,15 +1,16 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
-import { usePlayerProfile } from "@/hooks/usePlayerProfile";
+import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 
 const RECENT_SEARCHES_KEY = "propredict_recent_players";
 const MAX_RECENT = 8;
