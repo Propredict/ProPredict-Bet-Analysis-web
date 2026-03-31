@@ -89,7 +89,6 @@ function WebRewardWidget() {
             <p>🆓 Free → <span className="text-primary font-semibold">3 days Pro</span> · ⭐ Pro → <span className="text-primary font-semibold">1 day Premium</span> · 👑 Premium → <span className="text-amber-400 font-semibold">+8 bonus pts</span></p>
           </div>
         </div>
-        </div>
 
         {/* CTA → App */}
         <a
