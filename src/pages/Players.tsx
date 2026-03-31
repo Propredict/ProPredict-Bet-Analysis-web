@@ -735,6 +735,38 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           )}
         </TabsContent>
 
+        <TabsContent value="career" className="p-4 mt-0">
+          {profile.careerTeams && profile.careerTeams.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground mb-2">
+                🏟️ {profile.careerTeams.length} clubs in career
+              </p>
+              {profile.careerTeams.map((ct: any, i: number) => (
+                <div key={i} className="flex items-center gap-3 py-2 border-b border-border/20 last:border-0">
+                  {ct.team.logo && <img src={ct.team.logo} alt="" className="w-8 h-8 object-contain flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate">{ct.team.name}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(ct.seasons || []).slice(-6).map((s: number) => (
+                        <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50">
+                          {s}/{String(s + 1).slice(-2)}
+                        </Badge>
+                      ))}
+                      {(ct.seasons || []).length > 6 && (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50">
+                          +{ct.seasons.length - 6}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">No career data available</p>
+          )}
+        </TabsContent>
+
         <TabsContent value="transfers" className="p-4 mt-0">
           {profile.transfers && profile.transfers.length > 0 ? (
             <div className="space-y-1.5">
