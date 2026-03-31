@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+const RECENT_SEARCHES_KEY = "propredict_recent_players";
+const MAX_RECENT = 8;
+
+interface RecentPlayer {
+  id: number;
+  name: string;
+  photo: string;
+  team: string;
+}
+
+const POPULAR_PLAYERS: RecentPlayer[] = [
+  { id: 154, name: "L. Messi", photo: "https://media.api-sports.io/football/players/154.png", team: "Inter Miami" },
+  { id: 874, name: "C. Ronaldo", photo: "https://media.api-sports.io/football/players/874.png", team: "Al Nassr" },
+  { id: 278, name: "K. Mbappé", photo: "https://media.api-sports.io/football/players/278.png", team: "Real Madrid" },
+  { id: 1100, name: "E. Haaland", photo: "https://media.api-sports.io/football/players/1100.png", team: "Man City" },
+  { id: 306, name: "M. Salah", photo: "https://media.api-sports.io/football/players/306.png", team: "Liverpool" },
+  { id: 276, name: "Neymar Jr", photo: "https://media.api-sports.io/football/players/276.png", team: "Santos" },
+  { id: 1460, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/1460.png", team: "Real Madrid" },
+  { id: 629, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/629.png", team: "Real Madrid" },
+];
+
+function getRecentSearches(): RecentPlayer[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]");
+  } catch { return []; }
+}
+
+function saveRecentSearch(player: RecentPlayer) {
+  const recent = getRecentSearches().filter(p => p.id !== player.id);
+  recent.unshift(player);
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+}
+
+function clearRecentSearches() {
+  localStorage.removeItem(RECENT_SEARCHES_KEY);
+}
 
 function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
   let timer: ReturnType<typeof setTimeout>;
@@ -53,6 +90,21 @@ function PlayerSearchCard({ player, onSelect, selected }: { player: PlayerSearch
       <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
         <Badge variant="secondary" className="text-[10px] border-0 bg-secondary/50">{player.position || "–"}</Badge>
         <span className="text-[10px] text-muted-foreground">{player.nationality}</span>
+      </div>
+    </button>
+  );
+}
+
+function QuickPlayerChip({ player, onSelect }: { player: RecentPlayer; onSelect: (id: number) => void }) {
+  return (
+    <button
+      onClick={() => onSelect(player.id)}
+      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card hover:bg-secondary/40 border border-border/30 transition-all"
+    >
+      <img src={player.photo} alt="" className="w-8 h-8 rounded-full object-cover border border-border/40" />
+      <div className="text-left min-w-0">
+        <p className="text-xs font-semibold truncate">{player.name}</p>
+        <p className="text-[10px] text-muted-foreground truncate">{player.team}</p>
       </div>
     </button>
   );
@@ -124,7 +176,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
         </TabsList>
 
         <TabsContent value="stats" className="p-4 space-y-4 mt-0">
-          {/* Personal Info */}
           <div>
             <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Personal Info</h3>
             <div className="grid grid-cols-2 gap-x-4">
@@ -135,7 +186,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* Season Stats */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Season Stats</h3>
@@ -152,7 +202,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* Shooting & Passing */}
           <div>
             <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Shooting & Passing</h3>
             <div className="grid grid-cols-2 gap-x-4">
@@ -164,7 +213,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* Defensive */}
           <div>
             <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Defensive</h3>
             <div className="grid grid-cols-2 gap-x-4">
@@ -175,7 +223,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* Dribbles & Discipline */}
           <div>
             <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Dribbles & Discipline</h3>
             <div className="grid grid-cols-2 gap-x-4">
@@ -186,7 +233,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* Cards */}
           <div>
             <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Cards</h3>
             <div className="flex items-center gap-4">
@@ -201,7 +247,6 @@ function PlayerProfileView({ playerId }: { playerId: number }) {
             </div>
           </div>
 
-          {/* All Teams */}
           {profile.allStats.length > 1 && (
             <div>
               <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">All Teams This Season</h3>
@@ -289,18 +334,30 @@ export default function Players() {
   const [searchInput, setSearchInput] = useState("");
   const [query, setQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+  const [recentSearches, setRecentSearches] = useState<RecentPlayer[]>([]);
 
   const { data: results, isLoading } = useSearchPlayers(query);
 
+  // Filter out players with no useful data (no name or no photo)
+  const filteredResults = results?.filter(p => p.name && p.photo && p.id) || [];
+
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
-    debounce((val: string) => setQuery(val), 500),
+    debounce((val: string) => setQuery(val), 400),
     []
   );
 
   const handleInputChange = (val: string) => {
     setSearchInput(val);
-    debouncedSearch(val);
+    if (val.length >= 2) {
+      debouncedSearch(val);
+    } else {
+      setQuery("");
+    }
   };
 
   const handleClear = () => {
@@ -308,6 +365,41 @@ export default function Players() {
     setQuery("");
     setSelectedPlayerId(null);
   };
+
+  const handleSelectPlayer = (id: number) => {
+    setSelectedPlayerId(id);
+    // Save to recent searches
+    const player = filteredResults.find(p => p.id === id);
+    if (player) {
+      const recent: RecentPlayer = {
+        id: player.id,
+        name: player.name,
+        photo: player.photo,
+        team: player.team.name || "",
+      };
+      saveRecentSearch(recent);
+      setRecentSearches(getRecentSearches());
+    }
+  };
+
+  const handleQuickSelect = (id: number) => {
+    setSelectedPlayerId(id);
+    // Also save popular player to recent
+    const popular = POPULAR_PLAYERS.find(p => p.id === id);
+    const recent = recentSearches.find(p => p.id === id);
+    const player = popular || recent;
+    if (player) {
+      saveRecentSearch(player);
+      setRecentSearches(getRecentSearches());
+    }
+  };
+
+  const handleClearRecent = () => {
+    clearRecentSearches();
+    setRecentSearches([]);
+  };
+
+  const showHomeState = !isLoading && query.length < 2 && !selectedPlayerId;
 
   return (
     <>
@@ -332,7 +424,7 @@ export default function Players() {
           <Input
             value={searchInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="Search by full name (e.g. Messi, Cristiano Ronaldo)..."
+            placeholder="Search player name..."
             className="pl-10 pr-10 h-11 text-sm"
           />
           {searchInput && (
@@ -344,7 +436,7 @@ export default function Players() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
           {/* Results List */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             {isLoading && (
               <div className="space-y-2">
                 {[...Array(5)].map((_, i) => (
@@ -353,7 +445,7 @@ export default function Players() {
               </div>
             )}
 
-            {!isLoading && query.length >= 3 && results && results.length === 0 && (
+            {!isLoading && query.length >= 2 && filteredResults.length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center">
                   <p className="text-sm text-muted-foreground">No players found for "{query}"</p>
@@ -361,14 +453,14 @@ export default function Players() {
               </Card>
             )}
 
-            {!isLoading && results && results.length > 0 && (
+            {!isLoading && filteredResults.length > 0 && (
               <ScrollArea className="max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-200px)]">
                 <div className="space-y-2 pr-2">
-                  {results.map((player) => (
+                  {filteredResults.map((player) => (
                     <PlayerSearchCard
                       key={player.id}
                       player={player}
-                      onSelect={setSelectedPlayerId}
+                      onSelect={handleSelectPlayer}
                       selected={selectedPlayerId === player.id}
                     />
                   ))}
@@ -376,14 +468,42 @@ export default function Players() {
               </ScrollArea>
             )}
 
-            {!isLoading && query.length < 3 && !selectedPlayerId && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Search className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">Type at least 3 characters to search</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Example: Messi, Haaland, Salah...</p>
-                </CardContent>
-              </Card>
+            {/* Home state: Popular + Recent */}
+            {showHomeState && (
+              <div className="space-y-5">
+                {/* Popular Players */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Popular Players</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {POPULAR_PLAYERS.map((player) => (
+                      <QuickPlayerChip key={player.id} player={player} onSelect={handleQuickSelect} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Searches</h3>
+                      </div>
+                      <button onClick={handleClearRecent} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                        Clear all
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {recentSearches.map((player) => (
+                        <QuickPlayerChip key={player.id} player={player} onSelect={handleQuickSelect} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
