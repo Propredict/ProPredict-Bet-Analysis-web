@@ -25,12 +25,9 @@ function WebRewardWidget() {
       <div className="relative p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Gift className="h-6 w-6 text-amber-400 animate-bounce" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-destructive rounded-full animate-ping" />
-            </div>
+            <Gift className="h-6 w-6 text-amber-400 animate-bounce" />
             <h3 className="text-base sm:text-lg font-extrabold text-foreground">
-              🎁 Your Daily Reward is Waiting
+              🎁 Collect daily AI points
             </h3>
           </div>
           <span className="flex items-center gap-1 text-[9px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-400/30 rounded-full px-2 py-0.5">
@@ -38,38 +35,9 @@ function WebRewardWidget() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
-            <Trophy className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-xs text-foreground">Collect AI Arena points <span className="font-bold text-primary">every day</span></span>
-          </div>
-          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
-            <Zap className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="text-xs text-foreground">Reach <span className="font-bold text-amber-400">1,000 pts</span> for free upgrade</span>
-          </div>
-          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
-            <Flame className="h-4 w-4 text-destructive shrink-0" />
-            <span className="text-xs text-foreground">Build streaks for <span className="font-bold text-destructive">more points</span></span>
-          </div>
-        </div>
-
-        {/* 1000 pts milestone */}
-        <div className="bg-gradient-to-r from-amber-500/10 to-primary/10 rounded-lg p-3 border border-amber-400/20 space-y-2">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="space-y-1 text-center sm:text-left">
-              <p className="text-xs font-semibold text-foreground flex items-center gap-1 justify-center sm:justify-start">
-                <Trophy className="h-3.5 w-3.5 text-primary" />
-                Reach 1,000 Arena Points &amp; unlock FREE subscription!
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                🔥 1,200+ users already claiming daily rewards
-              </p>
-            </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
-            <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span> · ⭐ Pro → <span className="text-primary font-semibold">+1 month Pro free</span> · 👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium free</span></p>
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Build your streak and unlock rewards ⚡
+        </p>
 
         <a
           href={PLAY_STORE_URL}
@@ -78,7 +46,7 @@ function WebRewardWidget() {
           className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] py-3 text-sm sm:text-base font-bold text-white shadow-lg shadow-[hsl(30,100%,50%)]/20 hover:opacity-90 transition-opacity animate-pulse"
         >
           <Smartphone className="h-4 w-4" />
-          🚀 Claim Now in App
+          🚀 Unlock Rewards in App
         </a>
       </div>
     </Card>
