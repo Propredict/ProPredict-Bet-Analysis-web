@@ -931,9 +931,26 @@ export default function Players() {
   const { data: results, isLoading } = useSearchPlayers(query);
   const { data: topPlayersData, isLoading: topLoading } = useTopPlayers(topCategory);
 
-  const filteredResults = results?.filter(p => 
-    p.name && p.id && p.nationality
-  ) || [];
+  const filteredResults = useMemo(() => {
+    if (!results) return [];
+    return results
+      .filter(p => {
+        if (!p.name || !p.id || !p.nationality) return false;
+        // Filter out players without a real photo (placeholder/generic avatars)
+        if (!p.photo || p.photo.includes('placeholder')) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        // Prioritize players with real photos that aren't generic silhouettes
+        const aHasData = (a.appearances || 0) + (a.goals || 0) + (a.assists || 0);
+        const bHasData = (b.appearances || 0) + (b.goals || 0) + (b.assists || 0);
+        // Players with stats first
+        if (aHasData > 0 && bHasData === 0) return -1;
+        if (bHasData > 0 && aHasData === 0) return 1;
+        // Then by appearances
+        return (b.appearances || 0) - (a.appearances || 0);
+      });
+  }, [results]);
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());
