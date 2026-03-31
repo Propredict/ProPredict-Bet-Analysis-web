@@ -384,11 +384,20 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
               )}
             </div>
           ) : (
-            /* Web: Download app CTA */
+            /* Web: Download app CTA – personalized for Pro/Premium */
             <div className="flex flex-col items-center gap-3 py-1">
               <div className="text-center">
-                <p className="text-sm font-bold">🔥 This player is in top form right now</p>
-                <p className="text-xs text-muted-foreground mt-0.5">💡 AI detected a strong opportunity</p>
+                {(plan === "premium" || plan === "basic") ? (
+                  <>
+                    <p className="text-sm font-bold">✅ Winning Pick Available on App</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Your {plan === "premium" ? "Premium" : "Pro"} plan includes full access in the app</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold">🔥 This player is in top form right now</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">💡 AI detected a strong opportunity</p>
+                  </>
+                )}
               </div>
               <a
                 href="https://play.google.com/store/apps/details?id=com.propredict.app"
@@ -396,7 +405,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
               >
-                🚀 Unlock Winning Pick Now
+                {(plan === "premium" || plan === "basic") ? "📱 Check Now in App" : "🚀 Unlock Winning Pick Now"}
               </a>
             </div>
           )}
