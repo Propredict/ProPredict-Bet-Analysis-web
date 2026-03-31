@@ -1026,7 +1026,8 @@ export default function Players() {
             <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             Smart Player Picks ⚡
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">AI-powered player analysis & predictions</p>
+          <p className="text-sm text-muted-foreground mt-1">Analyze player stats & current form</p>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">Find players. Check form. Predict the next move.</p>
         </div>
 
         {/* Search Bar */}
