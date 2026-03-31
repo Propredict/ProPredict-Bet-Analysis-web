@@ -117,6 +117,13 @@ serve(async (req: Request) => {
     // Score and sort: prioritize exact/close name matches and completeness
     const searchWords = searchLower.split(/\s+/).filter(Boolean);
     
+    // Well-known player IDs get a big boost to always appear first
+    const FAMOUS_IDS = new Set([
+      154, 874, 278, 1100, 306, 129718, 762, 386828, 521, 184, 1460, 56, 631,
+      186, 21104, 181812, 348807, 629, 3247, 153, 10, 276, 47, 18, 2, 19, 46,
+      1, 35845, 162397, 909, 903, 174, 284, 304, 305, 521, 882, 25, 30, 37,
+    ]);
+
     const scored = allPlayers.map((player: any) => {
       const name = (player.name || "").toLowerCase();
       const firstname = (player.firstname || "").toLowerCase();
