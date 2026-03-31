@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,11 +87,42 @@ function FormBadge({ rating }: { rating: string | null }) {
   return <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px] gap-1">❄️ COLD</Badge>;
 }
 
+// Locked stat placeholder
+function LockedValue() {
+  return (
+    <span className="flex items-center gap-1 text-sm font-bold text-muted-foreground/50">
+      <Lock className="h-3 w-3" /> 🔒
+    </span>
+  );
+}
+
 // Generate AI prediction from real stats + opponent data
 function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; opponentData?: NextOpponentData | null }) {
   const isAndroid = getIsAndroidApp();
   const prediction = useMemo(() => calculatePlayerPrediction(profile, opponentData), [profile, opponentData]);
   const opp = prediction.opponentAdjustment;
+  const [unlocked, setUnlocked] = useState(false);
+
+  // Check localStorage for unlock state (per player, per day)
+  useEffect(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `propredict_player_ai_${profile.player.id}_${today}`;
+      if (localStorage.getItem(key) === "1") setUnlocked(true);
+    } catch {}
+  }, [profile.player.id]);
+
+  const handleAdUnlock = useCallback(() => {
+    if (!(window as any).Android?.showRewardedAd) return;
+    // Set up callback
+    (window as any).onRewardedAdComplete = () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `propredict_player_ai_${profile.player.id}_${today}`;
+      try { localStorage.setItem(key, "1"); } catch {}
+      setUnlocked(true);
+    };
+    (window as any).Android.showRewardedAd("player_ai_prediction");
+  }, [profile.player.id]);
 
   const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
   const assistColor = prediction.assistProbability >= 40 ? "text-green-400" : prediction.assistProbability >= 20 ? "text-yellow-400" : "text-red-400";
@@ -99,6 +130,9 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const riskColor = prediction.riskLevel === "LOW" ? "text-green-400" : prediction.riskLevel === "MEDIUM" ? "text-yellow-400" : "text-red-400";
   const riskBg = prediction.riskLevel === "LOW" ? "bg-green-500/10 border-green-500/20" : prediction.riskLevel === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
   const diffColor = opp?.matchDifficulty === "EASY" ? "text-green-400 bg-green-500/10" : opp?.matchDifficulty === "HARD" ? "text-red-400 bg-red-500/10" : "text-yellow-400 bg-yellow-500/10";
+
+  // On web: always locked (drive app downloads). On Android: unlockable via ad.
+  const showLocked = isAndroid ? !unlocked : true;
 
   return (
     <Card className="overflow-hidden border-primary/30 shadow-lg shadow-primary/10 animate-fade-in">
@@ -116,7 +150,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           </div>
         </div>
 
-        {/* Opponent Info Banner */}
+        {/* Opponent Info Banner – always visible */}
         {opponentData?.opponent && opponentData?.fixture && (
           <div className="flex items-center gap-2.5 bg-background/60 rounded-lg px-3 py-2 mb-3 border border-border/30">
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -137,42 +171,9 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           </div>
         )}
 
-        {/* Opponent Defense Stats */}
-        {opp && opponentData?.opponentStats && (
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
-              <p className="text-[9px] text-muted-foreground">🛡️ Def Rating</p>
-              <p className={`text-xs font-bold ${opp.defenseRating >= 65 ? "text-red-400" : opp.defenseRating <= 40 ? "text-green-400" : "text-yellow-400"}`}>
-                {opp.defenseRating}/100
-              </p>
-            </div>
-            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
-              <p className="text-[9px] text-muted-foreground">⚽ Concede/G</p>
-              <p className={`text-xs font-bold ${opponentData.opponentStats.goalsAgainstPerGame >= 1.5 ? "text-green-400" : "text-red-400"}`}>
-                {opponentData.opponentStats.goalsAgainstPerGame}
-              </p>
-            </div>
-            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
-              <p className="text-[9px] text-muted-foreground">🧤 CS Rate</p>
-              <p className="text-xs font-bold">{opponentData.opponentStats.cleanSheetRate}%</p>
-            </div>
-          </div>
-        )}
-
-        {/* Adjustment Badge */}
-        {opp && (
-          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 mb-3 text-[10px] font-medium border ${
-            opp.goalAdjust > 1 ? "bg-green-500/10 border-green-500/20 text-green-400" : 
-            opp.goalAdjust < 1 ? "bg-red-500/10 border-red-500/20 text-red-400" : 
-            "bg-secondary/30 border-border/30 text-muted-foreground"
-          }`}>
-            <Shield className="h-3 w-3" />
-            <span>Opponent Factor: {opp.label}</span>
-          </div>
-        )}
-
-        {/* Main Stats Grid */}
+        {/* Main Stats Grid – Goal is FREE, rest locked */}
         <div className="grid grid-cols-2 gap-2.5">
+          {/* ⚽ Goal – ALWAYS VISIBLE */}
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">⚽</span>
             <div>
@@ -180,84 +181,136 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
               <p className={`text-sm font-bold ${goalColor}`}>{prediction.goalProbability}%</p>
             </div>
           </div>
+          {/* 🎯 Assist – LOCKED */}
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">🎯</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Assist</p>
-              <p className={`text-sm font-bold ${assistColor}`}>{prediction.assistProbability}%</p>
+              {showLocked ? <LockedValue /> : (
+                <p className={`text-sm font-bold ${assistColor}`}>{prediction.assistProbability}%</p>
+              )}
             </div>
           </div>
+          {/* 🔥 Form – LOCKED */}
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">🔥</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Form</p>
-              <p className={`text-sm font-bold ${formColor}`}>
-                {prediction.formLabel} ({prediction.formScore})
-              </p>
+              {showLocked ? <LockedValue /> : (
+                <p className={`text-sm font-bold ${formColor}`}>
+                  {prediction.formLabel} ({prediction.formScore})
+                </p>
+              )}
             </div>
           </div>
+          {/* 📈 Shots – LOCKED */}
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">📈</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Shots/Game</p>
-              <p className="text-sm font-bold">{prediction.shotsExpected}</p>
+              {showLocked ? <LockedValue /> : (
+                <p className="text-sm font-bold">{prediction.shotsExpected}</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Risk Level */}
-        <div className={`flex items-center gap-2 mt-3 rounded-lg px-3 py-2 border ${riskBg}`}>
+        {/* Risk Level – LOCKED */}
+        <div className={`flex items-center gap-2 mt-3 rounded-lg px-3 py-2 border ${showLocked ? "bg-secondary/10 border-border/20" : riskBg}`}>
           <span className="text-base">⚠️</span>
           <div className="flex items-center gap-1.5">
             <p className="text-[10px] text-muted-foreground">Risk:</p>
-            <p className={`text-sm font-bold ${riskColor}`}>{prediction.riskLevel}</p>
+            {showLocked ? <LockedValue /> : (
+              <p className={`text-sm font-bold ${riskColor}`}>{prediction.riskLevel}</p>
+            )}
           </div>
-          <span className="text-[10px] text-muted-foreground ml-auto">{prediction.riskReason}</span>
+          {!showLocked && <span className="text-[10px] text-muted-foreground ml-auto">{prediction.riskReason}</span>}
         </div>
 
-        {/* Extra Stats */}
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-muted-foreground">Key Passes</p>
-            <p className="text-xs font-bold">{prediction.keyPassesPerGame}/g</p>
-          </div>
-          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-muted-foreground">Starter %</p>
-            <p className="text-xs font-bold">{prediction.starterPercentage}%</p>
-          </div>
-          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-muted-foreground">Minutes %</p>
-            <p className="text-xs font-bold">{prediction.minutesPercentage}%</p>
-          </div>
-        </div>
+        {/* Extra Stats – LOCKED */}
+        {!showLocked && (
+          <>
+            {opp && opponentData?.opponentStats && (
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+                  <p className="text-[9px] text-muted-foreground">🛡️ Def Rating</p>
+                  <p className={`text-xs font-bold ${opp.defenseRating >= 65 ? "text-red-400" : opp.defenseRating <= 40 ? "text-green-400" : "text-yellow-400"}`}>
+                    {opp.defenseRating}/100
+                  </p>
+                </div>
+                <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+                  <p className="text-[9px] text-muted-foreground">⚽ Concede/G</p>
+                  <p className={`text-xs font-bold ${opponentData.opponentStats.goalsAgainstPerGame >= 1.5 ? "text-green-400" : "text-red-400"}`}>
+                    {opponentData.opponentStats.goalsAgainstPerGame}
+                  </p>
+                </div>
+                <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+                  <p className="text-[9px] text-muted-foreground">🧤 CS Rate</p>
+                  <p className="text-xs font-bold">{opponentData.opponentStats.cleanSheetRate}%</p>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Key Passes</p>
+                <p className="text-xs font-bold">{prediction.keyPassesPerGame}/g</p>
+              </div>
+              <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Starter %</p>
+                <p className="text-xs font-bold">{prediction.starterPercentage}%</p>
+              </div>
+              <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Minutes %</p>
+                <p className="text-xs font-bold">{prediction.minutesPercentage}%</p>
+              </div>
+            </div>
+          </>
+        )}
 
-        {/* Best Pick */}
-        <div className="mt-3 bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2.5">
-          <p className="text-[10px] text-muted-foreground mb-1">💡 AI PICK ({prediction.bestPickConfidence}% confidence):</p>
-          <p className="text-sm font-bold text-green-400">
-            👉 {profile.player.name.split(' ').pop()} – {prediction.bestPick} ✅
-          </p>
+        {/* Best Pick – LOCKED */}
+        <div className={`mt-3 rounded-lg px-3 py-2.5 border ${showLocked ? "bg-secondary/10 border-border/20" : "bg-green-500/10 border-green-500/20"}`}>
+          <p className="text-[10px] text-muted-foreground mb-1">💡 AI PICK:</p>
+          {showLocked ? (
+            <div className="flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
+              <span className="text-sm font-bold text-muted-foreground/50">🔒 Unlock to see AI Pick</span>
+            </div>
+          ) : (
+            <p className="text-sm font-bold text-green-400">
+              👉 {profile.player.name.split(' ').pop()} – {prediction.bestPick} ✅
+            </p>
+          )}
         </div>
       </div>
 
-      {/* CTA – Web only */}
-      {!isAndroid && (
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-t border-primary/20 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold">🚀 Want full AI analysis?</p>
-              <p className="text-[10px] text-muted-foreground">📱 Get ProPredict app</p>
-            </div>
-            <a
-              href="https://play.google.com/store/apps/details?id=com.propredict.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+      {/* UNLOCK CTA */}
+      {showLocked && (
+        <div className="bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5">
+          {isAndroid ? (
+            /* Android: Watch Ad to unlock */
+            <button
+              onClick={handleAdUnlock}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
             >
-              <Download className="h-3.5 w-3.5" />
-              Download
-            </a>
-          </div>
+              <Play className="h-4 w-4" />
+              Watch ad to unlock AI prediction
+            </button>
+          ) : (
+            /* Web: Download app CTA */
+            <div className="text-center">
+              <p className="text-xs font-bold mb-1">🔒 Full AI analysis for next match</p>
+              <p className="text-[10px] text-muted-foreground mb-2.5">Unlock Assist%, Form, Risk & AI Pick on the app</p>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                Download ProPredict App
+              </a>
+            </div>
+          )}
         </div>
       )}
     </Card>
