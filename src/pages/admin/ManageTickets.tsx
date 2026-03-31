@@ -93,6 +93,7 @@ export default function ManageTickets() {
   const [title, setTitle] = useState("");
   const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NEW
   const [tier, setTier] = useState<ContentTier>("daily");
+  const [ticketCategory, setTicketCategory] = useState<string>("standard");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
