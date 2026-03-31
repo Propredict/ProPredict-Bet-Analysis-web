@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
-import { X, Gift, Smartphone, Clock } from "lucide-react";
-import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { X, Gift, Clock, Flame } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
-const POPUP_DELAY = 8000; // 8 seconds
+const POPUP_DELAY = 8000;
 const DISMISS_KEY = "daily_reward_popup_dismissed";
 
 export function DailyRewardPopup() {
   const [visible, setVisible] = useState(false);
-  const isAndroid = getIsAndroidApp();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAndroid) return;
-
-    // Don't show if dismissed today
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed) {
       const dismissedDate = new Date(dismissed).toDateString();
@@ -22,19 +20,28 @@ export function DailyRewardPopup() {
 
     const timer = setTimeout(() => setVisible(true), POPUP_DELAY);
     return () => clearTimeout(timer);
-  }, [isAndroid]);
+  }, []);
 
-  if (!visible || isAndroid) return null;
+  if (!visible) return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, new Date().toISOString());
     setVisible(false);
   };
 
+  const handleClaim = () => {
+    dismiss();
+    if (!user) {
+      navigate("/login");
+    } else {
+      // Scroll to top where the widget is
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
       <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/40 bg-card shadow-2xl shadow-amber-500/10 overflow-visible">
-        {/* Close */}
         <button
           onClick={dismiss}
           className="absolute -top-3 -right-3 z-10 rounded-full bg-muted border border-border p-1.5 hover:bg-destructive/20 transition-colors"
@@ -43,7 +50,6 @@ export function DailyRewardPopup() {
         </button>
 
         <div className="p-6 space-y-4 text-center">
-          {/* Icon */}
           <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-500/10 flex items-center justify-center border border-amber-400/30">
             <Gift className="h-8 w-8 text-amber-400 animate-bounce" />
           </div>
@@ -58,28 +64,25 @@ export function DailyRewardPopup() {
             </p>
           </div>
 
-          {/* Timer urgency */}
-          <div className="flex items-center justify-center gap-1.5 text-xs text-amber-400 font-semibold">
-            <Clock className="h-3.5 w-3.5" />
-            <span>⏳ Your streak starts now</span>
+          <div className="flex items-center justify-center gap-3 text-xs">
+            <div className="flex items-center gap-1 text-amber-400 font-semibold">
+              <Clock className="h-3.5 w-3.5" />
+              ⏳ Your streak starts now
+            </div>
+            <div className="flex items-center gap-1 text-destructive font-semibold">
+              <Flame className="h-3.5 w-3.5" />
+              Don't lose it!
+            </div>
           </div>
 
-          {/* CTA */}
-          <a
-            href={PLAY_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleClaim}
             className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] py-3 text-sm font-bold text-white shadow-lg shadow-[hsl(30,100%,50%)]/20 hover:opacity-90 transition-opacity animate-pulse"
           >
-            <Smartphone className="h-4 w-4" />
-            🚀 Get ProPredict App
-          </a>
+            🚀 {user ? "Claim Now" : "Sign In & Claim"}
+          </button>
 
-          {/* Secondary */}
-          <button
-            onClick={dismiss}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={dismiss} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Maybe later
           </button>
         </div>

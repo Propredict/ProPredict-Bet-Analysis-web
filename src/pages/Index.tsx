@@ -146,8 +146,8 @@ const Index = () => {
           </a>
         )}
 
-        {/* Daily Reward Widget – Web only */}
-        {!isAndroid && <DailyRewardWidget />}
+        {/* Daily Reward Widget */}
+        <DailyRewardWidget />
 
         <Suspense fallback={<LazyFallback />}>
           <MatchPredictions />
