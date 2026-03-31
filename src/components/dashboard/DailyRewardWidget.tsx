@@ -231,12 +231,17 @@ function AndroidRewardWidget() {
             <Progress value={progressPercent} className="h-2" />
           </div>
 
-          {/* Day 7 bonus info */}
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/20 rounded-lg p-2.5 text-xs">
-            <Star className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="text-muted-foreground">
-              <span className="text-amber-400 font-bold">Day 7 Bonus:</span> +15 points + Free AI Pick unlock!
-            </span>
+          {/* Day 7 bonus info - tiered */}
+          <div className="bg-amber-500/10 border border-amber-400/20 rounded-lg p-2.5 text-xs space-y-1">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-400 shrink-0" />
+              <span className="text-amber-400 font-bold">Day 7 Streak Bonus:</span>
+            </div>
+            <div className="pl-6 space-y-0.5 text-muted-foreground">
+              <p>🆓 Free users → <span className="text-primary font-semibold">3 days Pro access</span></p>
+              <p>⭐ Pro users → <span className="text-primary font-semibold">1 day Premium access</span></p>
+              <p>👑 Premium users → <span className="text-amber-400 font-semibold">+8 extra bonus points</span></p>
+            </div>
           </div>
 
           <p className="text-[10px] text-muted-foreground text-center">
