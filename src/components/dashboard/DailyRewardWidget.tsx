@@ -278,6 +278,7 @@ function AndroidRewardWidget() {
           streakDay={lastClaimResult.streakDay}
           pointsEarned={lastClaimResult.pointsEarned}
           isBonusDay={lastClaimResult.isBonusDay}
+          bonusReward={lastClaimResult.bonusReward}
           onClose={dismissClaimResult}
         />
       )}
