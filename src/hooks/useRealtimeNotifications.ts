@@ -61,7 +61,7 @@ export function useRealtimeNotifications() {
           if (payload.old && (payload.old as any).status !== "published") {
             const tier = rec.tier ?? "daily";
             const route = getTierRoute("tip", tier);
-            toast(getTierLabel("tip", tier), {
+            toast(getTierLabel("tip", tier, rec.category), {
               description: `${rec.home_team} vs ${rec.away_team}`,
               action: {
                 label: "View",
@@ -85,7 +85,7 @@ export function useRealtimeNotifications() {
           if (payload.old && (payload.old as any).status !== "published") {
             const tier = rec.tier ?? "daily";
             const route = getTierRoute("ticket", tier);
-            toast(getTierLabel("ticket", tier), {
+            toast(getTierLabel("ticket", tier, rec.category), {
               description: rec.title || "A new AI Combo is available!",
               action: {
                 label: "View",
@@ -108,7 +108,7 @@ export function useRealtimeNotifications() {
           const rec = payload.new as any;
           const tier = rec.tier ?? "daily";
           const route = getTierRoute("tip", tier);
-          toast(getTierLabel("tip", tier), {
+          toast(getTierLabel("tip", tier, rec.category), {
             description: `${rec.home_team} vs ${rec.away_team}`,
             action: {
               label: "View",
@@ -130,7 +130,7 @@ export function useRealtimeNotifications() {
           const rec = payload.new as any;
           const tier = rec.tier ?? "daily";
           const route = getTierRoute("ticket", tier);
-          toast(getTierLabel("ticket", tier), {
+          toast(getTierLabel("ticket", tier, rec.category), {
             description: rec.title || "A new AI Combo is available!",
             action: {
               label: "View",
