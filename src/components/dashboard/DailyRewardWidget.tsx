@@ -104,10 +104,13 @@ function AndroidRewardWidget() {
     );
   }
 
+  const arenaPoints = arenaStats.points || 0;
+  const dailyPoints = totalPoints || 0;
+  const combinedPoints = dailyPoints + arenaPoints;
   const displayStreak = currentStreak;
   const progressPercent = (displayStreak / 7) * 100;
-  const pointsTo1000 = Math.max(0, 1000 - totalPoints);
-  const milestoneProgress = Math.min(100, (totalPoints / 1000) * 100);
+  const pointsTo1000 = Math.max(0, 1000 - combinedPoints);
+  const milestoneProgress = Math.min(100, (combinedPoints / 1000) * 100);
 
   return (
     <>
