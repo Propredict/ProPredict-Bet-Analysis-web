@@ -93,6 +93,7 @@ export default function ManageTickets() {
   const [title, setTitle] = useState("");
   const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NEW
   const [tier, setTier] = useState<ContentTier>("daily");
+  const [ticketCategory, setTicketCategory] = useState<string>("standard");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
@@ -138,6 +139,7 @@ export default function ManageTickets() {
     setTitle("");
     setTicketPrediction("");
     setTier("daily");
+    setTicketCategory("standard");
     setStatus("draft");
     setResult("pending");
     setDescription("");
@@ -174,6 +176,7 @@ export default function ManageTickets() {
     setTitle(ticket.title);
     setTicketPrediction(ticket.description ?? "");
     setTier(ticket.tier);
+    setTicketCategory((ticket as any).category || "standard");
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
     setTicketDate((ticket as any).ticket_date || getTodayBelgradeDate());
@@ -221,7 +224,8 @@ export default function ManageTickets() {
           result,
           total_odds: totalOdds,
           ticket_date: ticketDate,
-        },
+          category: ticketCategory,
+        } as any,
         matches: dbMatches,
       });
       toast.success("Ticket updated");
@@ -235,6 +239,7 @@ export default function ManageTickets() {
           result,
           total_odds: totalOdds,
           ticket_date: ticketDate,
+          category: ticketCategory,
         } as any,
         matches: dbMatches,
       });
@@ -389,7 +394,7 @@ export default function ManageTickets() {
                 placeholder="e.g. Safe accumulator"
               />
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 <Select value={tier} onValueChange={(v) => setTier(v as any)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -398,6 +403,16 @@ export default function ManageTickets() {
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="exclusive">Pro</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={ticketCategory} onValueChange={setTicketCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="multi_risk">🎯 Multi Risk</SelectItem>
                   </SelectContent>
                 </Select>
 

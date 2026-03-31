@@ -23,7 +23,7 @@ export default function MultiRiskMatches() {
   const [searchParams] = useSearchParams();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  const premiumTickets = tickets?.filter((t) => t.tier === "premium") || [];
+  const premiumTickets = tickets?.filter((t: any) => t.category === "multi_risk") || [];
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

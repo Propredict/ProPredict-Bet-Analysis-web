@@ -23,7 +23,7 @@ export default function DiamondPick() {
   const [searchParams] = useSearchParams();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  const exclusiveTips = tips?.filter((t) => t.tier === "exclusive") || [];
+  const exclusiveTips = tips?.filter((t: any) => t.category === "diamond_pick") || [];
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

@@ -80,6 +80,7 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   status: "draft",
   result: "pending",
   tip_date: getTodayBelgradeDate(),
+  category: "standard",
 };
 
 /* =====================
@@ -143,6 +144,7 @@ export default function ManageTips() {
       status: tip.status,
       result: tip.result ?? "pending",
       tip_date: tip.tip_date || getTodayBelgradeDate(),
+      category: (tip as any).category || "standard",
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
@@ -426,6 +428,25 @@ export default function ManageTips() {
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="exclusive">Exclusive</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Category</Label>
+                <Select
+                  value={formData.category || "standard"}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, category: v as any })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="risk_of_day">🎯 Risk of the Day</SelectItem>
+                    <SelectItem value="diamond_pick">💎 Diamond Pick</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
