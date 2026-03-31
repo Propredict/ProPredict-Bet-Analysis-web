@@ -142,13 +142,18 @@ serve(async (req: Request) => {
       
       // Big bonus for having actual season stats (real active players)
       if (player.hasStats) score += 50;
-      if (player.appearances > 0) score += 20;
-      if (player.goals > 0) score += 10;
+      if (player.appearances > 0) score += 20 + Math.min(player.appearances, 40);
+      if (player.goals > 0) score += 10 + Math.min(player.goals, 30);
       
       // Bonus for complete profile
       if (player.nationality) score += 5;
       if (player.firstname && player.lastname) score += 5;
-      if (player.team?.name) score += 5;
+      if (player.team?.name) score += 15;
+      if (player.league?.name) score += 10;
+      
+      // Active-age bonus (17-40 = likely active footballer)
+      const age = player.age;
+      if (age && age >= 17 && age <= 40) score += 10;
       
       return { player, score };
     });
