@@ -3,11 +3,22 @@
  * 
  * Uses real season stats (goals, assists, shots, passes, rating, appearances, etc.)
  * to calculate per-game averages and derive probabilities.
+ * Supports opponent-based adjustment when next match data is available.
  * 
  * NOT random — all values are deterministic from the player's actual data.
  */
 
 import type { PlayerProfile } from "@/hooks/usePlayerProfile";
+import type { NextOpponentData } from "@/hooks/useNextOpponent";
+
+export interface OpponentAdjustment {
+  goalAdjust: number;      // multiplier (e.g., 1.15 = +15%)
+  assistAdjust: number;
+  riskAdjust: number;      // 0 = no change, 1 = increase risk
+  label: string;           // e.g., "Weak Defense (+12%)"
+  defenseRating: number;
+  matchDifficulty: "EASY" | "MEDIUM" | "HARD";
+}
 
 export interface PlayerAIPrediction {
   goalProbability: number;       // 0–100
@@ -20,71 +31,124 @@ export interface PlayerAIPrediction {
   bestPick: string;
   bestPickConfidence: number;    // 0–100
   keyPassesPerGame: number;
-  minutesPercentage: number;     // % of total possible minutes played
-  starterPercentage: number;     // % of appearances as starter
+  minutesPercentage: number;
+  starterPercentage: number;
+  opponentAdjustment: OpponentAdjustment | null;
 }
 
-export function calculatePlayerPrediction(profile: PlayerProfile): PlayerAIPrediction {
-  const s = profile.stats;
-  const apps = Math.max(s.appearances, 1); // avoid division by zero
+/**
+ * Calculate opponent-based adjustment multipliers.
+ * Defense rating 0-100 (higher = stronger defense).
+ * Average defense = 50 → no adjustment.
+ * Weak defense (20) → boost goals +20-30%
+ * Strong defense (80) → reduce goals -15-25%
+ */
+function calculateOpponentAdjustment(opponentData: NextOpponentData): OpponentAdjustment | null {
+  if (!opponentData.opponentStats) return null;
 
-  // ─── PER-GAME AVERAGES (based on real season data) ───
+  const { defenseRating, cleanSheetRate, goalsAgainstPerGame, form } = opponentData.opponentStats;
+
+  // Match difficulty based on opponent's win rate and defense
+  const played = opponentData.opponentStats.played || 1;
+  const winRate = (opponentData.opponentStats.wins / played) * 100;
+
+  let matchDifficulty: "EASY" | "MEDIUM" | "HARD";
+  if (defenseRating >= 65 && winRate >= 55) {
+    matchDifficulty = "HARD";
+  } else if (defenseRating <= 40 || winRate <= 35) {
+    matchDifficulty = "EASY";
+  } else {
+    matchDifficulty = "MEDIUM";
+  }
+
+  // Goal adjustment: weak defense = more goals expected
+  // defenseRating 50 = baseline (1.0x), 20 = weak (1.25x), 80 = strong (0.8x)
+  const goalAdjust = 1 + ((50 - defenseRating) / 100) * 0.5;
+  
+  // Assist adjustment: similar but slightly less impact
+  const assistAdjust = 1 + ((50 - defenseRating) / 100) * 0.35;
+
+  // Risk adjustment: strong opponent increases risk
+  const riskAdjust = defenseRating >= 70 ? 1 : 0;
+
+  // Label
+  const adjustPercent = Math.round((goalAdjust - 1) * 100);
+  let label: string;
+  if (adjustPercent > 0) {
+    label = `Weak Defense (+${adjustPercent}%)`;
+  } else if (adjustPercent < 0) {
+    label = `Strong Defense (${adjustPercent}%)`;
+  } else {
+    label = "Average Defense";
+  }
+
+  return {
+    goalAdjust: Math.round(goalAdjust * 100) / 100,
+    assistAdjust: Math.round(assistAdjust * 100) / 100,
+    riskAdjust,
+    label,
+    defenseRating,
+    matchDifficulty,
+  };
+}
+
+export function calculatePlayerPrediction(
+  profile: PlayerProfile,
+  opponentData?: NextOpponentData | null
+): PlayerAIPrediction {
+  const s = profile.stats;
+  const apps = Math.max(s.appearances, 1);
+
+  // ─── PER-GAME AVERAGES ───
   const goalsPerGame = s.goals / apps;
   const assistsPerGame = s.assists / apps;
   const shotsPerGame = s.shots.total / apps;
   const shotsOnTargetPerGame = s.shots.on / apps;
   const keyPassesPerGame = s.passes.key / apps;
-  const dribblesSuccessRate = s.dribbles.attempts > 0
-    ? s.dribbles.success / s.dribbles.attempts
-    : 0;
-  const duelsWinRate = s.duels.total > 0
-    ? s.duels.won / s.duels.total
-    : 0;
   const rating = parseFloat(s.rating || "0");
-
-  // Minutes percentage (out of max possible ~90min * appearances)
   const maxPossibleMinutes = apps * 90;
   const minutesPercentage = Math.min(100, Math.round((s.minutes / maxPossibleMinutes) * 100));
-
-  // Starter percentage
   const starterPercentage = Math.round((s.lineups / apps) * 100);
 
+  // ─── OPPONENT ADJUSTMENT ───
+  const opponentAdj = opponentData ? calculateOpponentAdjustment(opponentData) : null;
+  const goalMultiplier = opponentAdj?.goalAdjust ?? 1;
+  const assistMultiplier = opponentAdj?.assistAdjust ?? 1;
+
   // ─── GOAL PROBABILITY ───
-  // Formula: weighted combination of goal rate, shot accuracy, minutes%, and shot volume
-  const goalRate = goalsPerGame; // goals per game (e.g., 0.6 = 60% base)
+  const goalRate = goalsPerGame;
   const shotAccuracy = shotsPerGame > 0 ? shotsOnTargetPerGame / shotsPerGame : 0;
   
   let goalProbRaw = 
-    (goalRate * 0.40) +                                    // 40% weight: actual goal scoring rate
-    (Math.min(shotsPerGame / 5, 1) * 0.30) +               // 30% weight: shot volume (normalized to 5 max)
-    ((minutesPercentage / 100) * 0.20) +                    // 20% weight: minutes played
-    (shotAccuracy * 0.10);                                  // 10% weight: shot accuracy
+    (goalRate * 0.40) +
+    (Math.min(shotsPerGame / 5, 1) * 0.30) +
+    ((minutesPercentage / 100) * 0.20) +
+    (shotAccuracy * 0.10);
   
-  // Convert to 0-100 scale with realistic ceiling
+  // Apply opponent adjustment
+  goalProbRaw *= goalMultiplier;
+  
   let goalProbability = Math.round(Math.min(95, Math.max(5, goalProbRaw * 100)));
-  
-  // Boost for prolific scorers (>0.5 goals/game)
   if (goalsPerGame > 0.5) goalProbability = Math.min(95, goalProbability + 8);
-  // Penalty for low-volume shooters
   if (shotsPerGame < 1) goalProbability = Math.max(5, goalProbability - 10);
 
   // ─── ASSIST PROBABILITY ───
   const assistRate = assistsPerGame;
   
   let assistProbRaw =
-    (assistRate * 0.50) +                                    // 50% weight: actual assist rate
-    (Math.min(keyPassesPerGame / 3, 1) * 0.30) +             // 30% weight: key passes (normalized to 3)
-    (Math.min(s.passes.accuracy / 100, 1) * 0.20);           // 20% weight: pass accuracy
+    (assistRate * 0.50) +
+    (Math.min(keyPassesPerGame / 3, 1) * 0.30) +
+    (Math.min(s.passes.accuracy / 100, 1) * 0.20);
+  
+  // Apply opponent adjustment
+  assistProbRaw *= assistMultiplier;
   
   let assistProbability = Math.round(Math.min(90, Math.max(3, assistProbRaw * 100)));
-  
-  // Boost for creative players (>0.3 assists/game)
   if (assistsPerGame > 0.3) assistProbability = Math.min(90, assistProbability + 7);
 
   // ─── FORM SCORE (0–100) ───
-  // Weighted: G+A contribution (40%), average rating (30%), consistency via minutes (30%)
-  const gaContribution = Math.min(1, (goalsPerGame + assistsPerGame) / 1.2); // normalized to ~1.2 G+A/game max
-  const ratingNorm = rating > 0 ? Math.min(1, (rating - 5.5) / 2.5) : 0.3;  // 5.5-8.0 range mapped to 0-1
+  const gaContribution = Math.min(1, (goalsPerGame + assistsPerGame) / 1.2);
+  const ratingNorm = rating > 0 ? Math.min(1, (rating - 5.5) / 2.5) : 0.3;
   const consistencyNorm = minutesPercentage / 100;
   
   let formScore = Math.round(
@@ -118,14 +182,16 @@ export function calculatePlayerPrediction(profile: PlayerProfile): PlayerAIPredi
     riskReason = "Limited minutes – possible rotation";
   }
 
-  // ─── SHOTS EXPECTED ───
-  const shotsExpected = Math.round(shotsPerGame * 10) / 10;
+  // Opponent can increase risk
+  if (opponentAdj?.riskAdjust && riskLevel === "LOW") {
+    riskLevel = "MEDIUM";
+    riskReason = "Tough opponent – strong defense";
+  }
+
+  // ─── SHOTS EXPECTED (adjusted by opponent) ───
+  const shotsExpected = Math.round(shotsPerGame * goalMultiplier * 10) / 10;
 
   // ─── AI BEST PICK ───
-  // Deterministic rules based on calculated probabilities
-  let bestPick = "";
-  let bestPickConfidence = 0;
-
   interface PickCandidate {
     pick: string;
     confidence: number;
@@ -160,23 +226,22 @@ export function calculatePlayerPrediction(profile: PlayerProfile): PlayerAIPredi
     },
   ];
 
-  // Pick the highest confidence candidate that meets its condition
   const validCandidates = candidates
     .filter(c => c.condition)
     .sort((a, b) => b.confidence - a.confidence);
 
+  let bestPick: string;
+  let bestPickConfidence: number;
+
   if (validCandidates.length > 0) {
     bestPick = validCandidates[0].pick;
     bestPickConfidence = validCandidates[0].confidence;
+  } else if (shotsPerGame >= 1) {
+    bestPick = "1+ Shot Attempted";
+    bestPickConfidence = Math.round(Math.min(85, shotsPerGame * 40));
   } else {
-    // Fallback: safest pick based on what's available
-    if (shotsPerGame >= 1) {
-      bestPick = "1+ Shot Attempted";
-      bestPickConfidence = Math.round(Math.min(85, shotsPerGame * 40));
-    } else {
-      bestPick = "Player to Feature";
-      bestPickConfidence = Math.round(starterPercentage * 0.9);
-    }
+    bestPick = "Player to Feature";
+    bestPickConfidence = Math.round(starterPercentage * 0.9);
   }
 
   return {
@@ -192,5 +257,6 @@ export function calculatePlayerPrediction(profile: PlayerProfile): PlayerAIPredi
     keyPassesPerGame: Math.round(keyPassesPerGame * 10) / 10,
     minutesPercentage,
     starterPercentage,
+    opponentAdjustment: opponentAdj,
   };
 }
