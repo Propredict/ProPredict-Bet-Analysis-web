@@ -17,9 +17,9 @@ serve(async (req: Request) => {
     const url = new URL(req.url);
     const search = url.searchParams.get("search")?.trim();
 
-    if (!search || search.length < 3) {
+    if (!search || search.length < 2) {
       return new Response(
-        JSON.stringify({ error: "Search query must be at least 3 characters" }),
+        JSON.stringify({ error: "Search query must be at least 2 characters" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
