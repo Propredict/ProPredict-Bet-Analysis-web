@@ -47,6 +47,7 @@ import type {
   ContentTier,
   ContentStatus,
   TicketResult,
+  TicketCategory,
 } from "@/types/admin";
 import { createMatchName, parseMatchName } from "@/types/admin";
 import type { TicketWithMatches } from "@/hooks/useTickets";
@@ -93,7 +94,7 @@ export default function ManageTickets() {
   const [title, setTitle] = useState("");
   const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NEW
   const [tier, setTier] = useState<ContentTier>("daily");
-  const [ticketCategory, setTicketCategory] = useState<string>("standard");
+  const [ticketCategory, setTicketCategory] = useState<TicketCategory | string>("standard");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
@@ -122,7 +123,9 @@ export default function ManageTickets() {
       ? matches.reduce((acc, m) => acc * m.odds, 1)
       : 0;
 
-  const normalizeTicketCategory = (category?: string | null) => {
+  const normalizeTicketCategory = (
+    category?: string | null,
+  ): TicketCategory => {
     if (category === "risk") return "multi_risk";
     return category || "standard";
   };

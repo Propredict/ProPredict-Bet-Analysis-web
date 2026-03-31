@@ -84,7 +84,9 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   category: "standard",
 };
 
-const normalizeTipCategory = (category?: string | null) => {
+const normalizeTipCategory = (
+  category?: string | null,
+): NonNullable<TipInsert["category"]> => {
   if (category === "risk") return "risk_of_day";
   return category || "standard";
 };
