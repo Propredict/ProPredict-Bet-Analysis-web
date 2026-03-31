@@ -91,7 +91,7 @@ export function useTickets(includeAll = false) {
 
       const { data: newTicket, error } = await supabase
         .from("tickets")
-        .insert(ticketPayload)
+        .insert(ticketPayload as any)
         .select()
         .single();
 
@@ -132,7 +132,7 @@ export function useTickets(includeAll = false) {
     }) => {
       const { data, error } = await supabase
         .from("tickets")
-        .update(updates)
+        .update(updates as any)
         .eq("id", id)
         .select()
         .single();
