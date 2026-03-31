@@ -58,6 +58,7 @@ function WebRewardWidget() {
 function AndroidRewardWidget() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const arenaStats = useArenaStats();
   const {
     claimedToday,
     currentStreak,
