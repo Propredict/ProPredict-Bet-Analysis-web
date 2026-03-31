@@ -998,6 +998,7 @@ export default function Players() {
   }, [maybeShowInterstitial]);
 
   const { data: results, isLoading } = useSearchPlayers(query);
+  console.log("[PlayerSearch] query:", query, "results:", results?.length, "isLoading:", isLoading);
   const { data: topPlayersData, isLoading: topLoading } = useTopPlayers(topCategory);
 
   const filteredResults = useMemo(() => {
