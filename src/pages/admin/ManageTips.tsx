@@ -449,6 +449,9 @@ export default function ManageTips() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <Label>Status</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(v) =>
