@@ -839,6 +839,7 @@ export default function Players() {
   const [query, setQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [recentSearches, setRecentSearches] = useState<RecentPlayer[]>([]);
+  const [topCategory, setTopCategory] = useState<"topscorers" | "topassists">("topscorers");
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
 
@@ -850,6 +851,7 @@ export default function Players() {
   }, [maybeShowInterstitial]);
 
   const { data: results, isLoading } = useSearchPlayers(query);
+  const { data: topPlayersData, isLoading: topLoading } = useTopPlayers(topCategory);
 
   const filteredResults = results?.filter(p => 
     p.name && p.id && p.nationality
