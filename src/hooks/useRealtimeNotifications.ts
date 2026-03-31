@@ -72,7 +72,7 @@ export function useRealtimeNotifications() {
           const rec = payload.new as any;
           if (payload.old && (payload.old as any).status !== "published") {
             const tier = rec.tier ?? "daily";
-            const route = getTierRoute("tip", tier);
+            const route = getRoute("tip", tier, rec.category);
             toast(getTierLabel("tip", tier, rec.category), {
               description: `${rec.home_team} vs ${rec.away_team}`,
               action: {
@@ -96,7 +96,7 @@ export function useRealtimeNotifications() {
           const rec = payload.new as any;
           if (payload.old && (payload.old as any).status !== "published") {
             const tier = rec.tier ?? "daily";
-            const route = getTierRoute("ticket", tier);
+            const route = getRoute("ticket", tier, rec.category);
             toast(getTierLabel("ticket", tier, rec.category), {
               description: rec.title || "A new AI Combo is available!",
               action: {
@@ -119,7 +119,7 @@ export function useRealtimeNotifications() {
         (payload) => {
           const rec = payload.new as any;
           const tier = rec.tier ?? "daily";
-          const route = getTierRoute("tip", tier);
+          const route = getRoute("tip", tier, rec.category);
           toast(getTierLabel("tip", tier, rec.category), {
             description: `${rec.home_team} vs ${rec.away_team}`,
             action: {
@@ -141,7 +141,7 @@ export function useRealtimeNotifications() {
         (payload) => {
           const rec = payload.new as any;
           const tier = rec.tier ?? "daily";
-          const route = getTierRoute("ticket", tier);
+          const route = getRoute("ticket", tier, rec.category);
           toast(getTierLabel("ticket", tier, rec.category), {
             description: rec.title || "A new AI Combo is available!",
             action: {
@@ -165,7 +165,7 @@ export function useRealtimeNotifications() {
           const old = payload.old as any;
           if (rec.result === "won" && old?.result !== "won") {
             const tier = rec.tier ?? "daily";
-            const route = getTierRoute("tip", tier);
+            const route = getRoute("tip", tier, rec.category);
             const home = rec.home_team ?? "";
             const away = rec.away_team ?? "";
             const matchLabel = home && away ? `${home} vs ${away}` : "Today's pick";
@@ -193,7 +193,7 @@ export function useRealtimeNotifications() {
           const old = payload.old as any;
           if (rec.result === "won" && old?.result !== "won") {
             const tier = rec.tier ?? "daily";
-            const route = getTierRoute("ticket", tier);
+            const route = getRoute("ticket", tier, rec.category);
             toast("🎫 AI Combo Confirmed!", {
               description: rec.title || "An AI Combo prediction confirmed!",
               action: {
