@@ -29,6 +29,7 @@ function getTodayBelgradeDate() {
 export function useTips(includeAll = false) {
   const queryClient = useQueryClient();
   const { session } = useAuth();
+  const userId = session?.user?.id ?? null;
 
   /* ---------- FETCH ---------- */
 
@@ -38,10 +39,10 @@ export function useTips(includeAll = false) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["tips", includeAll],
+    queryKey: ["tips", includeAll, userId],
     queryFn: async () => {
-      // Admin → base table (all statuses); Public → secure view (masked premium data)
-      const table = includeAll ? "tips" : "tips_public";
+      const isAuthenticated = Boolean(userId);
+      const table = includeAll || isAuthenticated ? "tips" : "tips_public";
 
       let query = supabase
         .from(table as any)
@@ -53,8 +54,14 @@ export function useTips(includeAll = false) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const thirtyDaysAgoStr = thirtyDaysAgo.toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-        // View already filters status=published, just filter by date (last 30 days)
-        query = query.lte("tip_date", today).gte("tip_date", thirtyDaysAgoStr);
+
+        query = query
+          .lte("tip_date", today)
+          .gte("tip_date", thirtyDaysAgoStr);
+
+        if (table === "tips") {
+          query = query.eq("status", "published");
+        }
       }
 
       const { data, error } = await query;
