@@ -284,7 +284,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           {showLocked ? (
             <div className="flex items-center gap-1.5">
               <Lock className="h-3.5 w-3.5 text-muted-foreground/50" />
-              <span className="text-sm font-bold text-muted-foreground/50">🔒 Unlock to see AI Pick</span>
+              <span className="text-sm font-bold text-muted-foreground/50">🔒 Winning pick hidden</span>
             </div>
           ) : (
             <p className="text-sm font-bold text-green-400">
