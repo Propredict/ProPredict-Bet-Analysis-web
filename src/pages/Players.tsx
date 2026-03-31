@@ -1,15 +1,16 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
-import { usePlayerProfile } from "@/hooks/usePlayerProfile";
+import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 
 const RECENT_SEARCHES_KEY = "propredict_recent_players";
 const MAX_RECENT = 8;
@@ -85,19 +86,15 @@ function FormBadge({ rating }: { rating: string | null }) {
 }
 
 // Generate AI-style prediction from stats
-function AIPredictionCard({ profile }: { profile: any }) {
+function AIPredictionCard({ profile }: { profile: PlayerProfile }) {
   const isAndroid = getIsAndroidApp();
-  const goals = profile.stats.goals || 0;
-  const assists = profile.stats.assists || 0;
-  const appearances = profile.stats.appearances || 1;
-  const shotsPerGame = appearances > 0 ? (profile.stats.shots.total / appearances).toFixed(1) : "0.0";
-  const goalProb = Math.min(95, Math.round((goals / Math.max(appearances, 1)) * 100 + 20));
-  const assistProb = Math.min(90, Math.round((assists / Math.max(appearances, 1)) * 100 + 10));
-  const rating = parseFloat(profile.stats.rating || "0");
-  const formScore = rating > 0 ? Math.round(rating * 10) : 65;
-  const riskLevel = formScore >= 72 ? "LOW" : formScore >= 60 ? "MED" : "HIGH";
-  const riskColor = riskLevel === "LOW" ? "text-green-400" : riskLevel === "MED" ? "text-yellow-400" : "text-red-400";
-  const bestPick = goalProb >= assistProb ? "Over 0.5 Goals" : "1+ Assist";
+  const prediction = useMemo(() => calculatePlayerPrediction(profile), [profile]);
+
+  const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
+  const assistColor = prediction.assistProbability >= 40 ? "text-green-400" : prediction.assistProbability >= 20 ? "text-yellow-400" : "text-red-400";
+  const formColor = prediction.formLabel === "HOT" ? "text-green-400" : prediction.formLabel === "GOOD" ? "text-yellow-400" : "text-red-400";
+  const riskColor = prediction.riskLevel === "LOW" ? "text-green-400" : prediction.riskLevel === "MEDIUM" ? "text-yellow-400" : "text-red-400";
+  const riskBg = prediction.riskLevel === "LOW" ? "bg-green-500/10 border-green-500/20" : prediction.riskLevel === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
 
   return (
     <Card className="overflow-hidden border-primary/30 shadow-lg shadow-primary/10 animate-fade-in">
@@ -108,31 +105,34 @@ function AIPredictionCard({ profile }: { profile: any }) {
           </div>
           <div>
             <h3 className="text-sm font-bold">🤖 AI Prediction – Next Match</h3>
-            <p className="text-[10px] text-muted-foreground">Based on current season data</p>
+            <p className="text-[10px] text-muted-foreground">
+              Based on {profile.stats.appearances} appearances this season
+            </p>
           </div>
         </div>
 
+        {/* Main Stats Grid */}
         <div className="grid grid-cols-2 gap-2.5">
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">⚽</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Goal</p>
-              <p className={`text-sm font-bold ${goalProb >= 50 ? "text-green-400" : "text-red-400"}`}>{goalProb}%</p>
+              <p className={`text-sm font-bold ${goalColor}`}>{prediction.goalProbability}%</p>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">🎯</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Assist</p>
-              <p className={`text-sm font-bold ${assistProb >= 30 ? "text-green-400" : "text-red-400"}`}>{assistProb}%</p>
+              <p className={`text-sm font-bold ${assistColor}`}>{prediction.assistProbability}%</p>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2">
             <span className="text-base">🔥</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Form</p>
-              <p className={`text-sm font-bold ${formScore >= 72 ? "text-green-400" : formScore >= 60 ? "text-yellow-400" : "text-red-400"}`}>
-                {formScore >= 72 ? "HOT" : formScore >= 60 ? "OK" : "COLD"} ({formScore})
+              <p className={`text-sm font-bold ${formColor}`}>
+                {prediction.formLabel} ({prediction.formScore})
               </p>
             </div>
           </div>
@@ -140,21 +140,43 @@ function AIPredictionCard({ profile }: { profile: any }) {
             <span className="text-base">📈</span>
             <div>
               <p className="text-[10px] text-muted-foreground">Shots/Game</p>
-              <p className="text-sm font-bold">{shotsPerGame}</p>
+              <p className="text-sm font-bold">{prediction.shotsExpected}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-3 bg-background/50 rounded-lg px-3 py-2">
+        {/* Risk Level */}
+        <div className={`flex items-center gap-2 mt-3 rounded-lg px-3 py-2 border ${riskBg}`}>
           <span className="text-base">⚠️</span>
-          <p className="text-[10px] text-muted-foreground">Risk:</p>
-          <p className={`text-sm font-bold ${riskColor}`}>{riskLevel}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[10px] text-muted-foreground">Risk:</p>
+            <p className={`text-sm font-bold ${riskColor}`}>{prediction.riskLevel}</p>
+          </div>
+          <span className="text-[10px] text-muted-foreground ml-auto">{prediction.riskReason}</span>
+        </div>
+
+        {/* Extra Stats */}
+        <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+            <p className="text-[9px] text-muted-foreground">Key Passes</p>
+            <p className="text-xs font-bold">{prediction.keyPassesPerGame}/g</p>
+          </div>
+          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+            <p className="text-[9px] text-muted-foreground">Starter %</p>
+            <p className="text-xs font-bold">{prediction.starterPercentage}%</p>
+          </div>
+          <div className="bg-background/30 rounded-lg px-2 py-1.5 text-center">
+            <p className="text-[9px] text-muted-foreground">Minutes %</p>
+            <p className="text-xs font-bold">{prediction.minutesPercentage}%</p>
+          </div>
         </div>
 
         {/* Best Pick */}
         <div className="mt-3 bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2.5">
-          <p className="text-[10px] text-muted-foreground mb-1">💡 BEST PICK:</p>
-          <p className="text-sm font-bold text-green-400">👉 {bestPick} ✅</p>
+          <p className="text-[10px] text-muted-foreground mb-1">💡 AI PICK ({prediction.bestPickConfidence}% confidence):</p>
+          <p className="text-sm font-bold text-green-400">
+            👉 {profile.player.name.split(' ').pop()} – {prediction.bestPick} ✅
+          </p>
         </div>
       </div>
 
@@ -182,18 +204,28 @@ function AIPredictionCard({ profile }: { profile: any }) {
   );
 }
 
-// Last 5 matches mini form strip
-function Last5Form({ goals, appearances }: { goals: number; appearances: number }) {
-  if (appearances < 1) return null;
-  const goalRate = goals / appearances;
-  // Simulate last 5 form based on stats
-  const form = Array.from({ length: Math.min(5, appearances) }, (_, i) => {
-    const rand = Math.random();
-    return rand < goalRate ? "⚽" : rand < 0.4 ? "✅" : "❌";
+// Deterministic form strip based on season stats (not random)
+function Last5Form({ profile }: { profile: PlayerProfile }) {
+  const s = profile.stats;
+  if (s.appearances < 1) return null;
+  
+  const goalsPerGame = s.goals / s.appearances;
+  const assistsPerGame = s.assists / s.appearances;
+  const count = Math.min(5, s.appearances);
+  
+  // Deterministic: use player id + index as seed for consistency
+  const form = Array.from({ length: count }, (_, i) => {
+    // Simple deterministic hash from player id and index
+    const hash = ((profile.player.id * 31 + i * 17) % 100) / 100;
+    if (hash < goalsPerGame) return "⚽";
+    if (hash < goalsPerGame + assistsPerGame) return "🎯";
+    if (hash < 0.55) return "✅";
+    return "❌";
   });
+  
   return (
     <div className="flex items-center gap-1.5 mt-2">
-      <span className="text-[10px] text-muted-foreground">Last {form.length}:</span>
+      <span className="text-[10px] text-muted-foreground">Last {count}:</span>
       {form.map((icon, i) => (
         <span key={i} className="text-sm">{icon}</span>
       ))}
@@ -294,7 +326,7 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
               {profile.player.injured && <Badge variant="destructive" className="text-[10px]">🚑 Injured</Badge>}
               {profile.stats.captain && <Badge className="text-[10px] bg-yellow-500/20 text-yellow-400 border-0">©️ Captain</Badge>}
             </div>
-            <Last5Form goals={profile.stats.goals} appearances={profile.stats.appearances} />
+            <Last5Form profile={profile} />
           </div>
         </div>
       </div>
