@@ -300,24 +300,30 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
       {showLocked && (
         <div className="bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5">
           {isAndroid ? (
-            /* Android: Watch Ad to unlock */
+            /* Android: Free & Pro must watch ad */
             <button
               onClick={handleAdUnlock}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
             >
               <Play className="h-4 w-4" />
-              Watch ad to unlock AI prediction
+              Watch ad to unlock Full AI analysis
             </button>
           ) : (
-            /* Web: Download app CTA */
+            /* Web Free: upgrade CTA */
             <div className="text-center">
               <p className="text-xs font-bold mb-1">🔒 Full AI analysis for next match</p>
-              <p className="text-[10px] text-muted-foreground mb-2.5">Unlock Assist%, Form, Risk & AI Pick on the app</p>
+              <p className="text-[10px] text-muted-foreground mb-2.5">Upgrade to Pro or Premium to unlock Assist%, Form, Risk & AI Pick</p>
               <a
-                href="https://play.google.com/store/apps/details?id=com.propredict.app"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/get-premium"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Star className="h-4 w-4" />
+                Get Pro / Premium
+              </a>
+            </div>
+          )}
+        </div>
+      )}
               >
                 <Download className="h-4 w-4" />
                 Download ProPredict App
