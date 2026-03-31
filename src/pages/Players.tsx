@@ -319,14 +319,9 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           ) : (
             /* Web: Download app CTA */
             <div className="flex flex-col items-center gap-3 py-1">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl">🤖</span>
-                <div>
-                  <p className="text-sm font-bold">Want full AI analysis?</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Download className="h-3 w-3" /> Get ProPredict app
-                  </p>
-                </div>
+              <div className="text-center">
+                <p className="text-sm font-bold">🔥 This player is in top form right now</p>
+                <p className="text-xs text-muted-foreground mt-0.5">💡 AI detected a strong opportunity</p>
               </div>
               <a
                 href="https://play.google.com/store/apps/details?id=com.propredict.app"
@@ -334,7 +329,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
               >
-                👉 Unlock AI Pick & Win More 🎯
+                🚀 Unlock Winning Pick Now
               </a>
             </div>
           )}
