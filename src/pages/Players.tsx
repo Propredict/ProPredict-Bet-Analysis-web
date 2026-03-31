@@ -127,14 +127,19 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   }, [profile.player.id]);
 
   const handleAdUnlock = useCallback(() => {
-    if (!(window as any).Android?.showRewardedAd) return;
+    const bridge = (window as any)?.Android;
+    if (typeof bridge?.showRewardedAd !== "function") {
+      // Not on Android – show feedback instead of silently failing
+      import("sonner").then(({ toast }) => toast.error("Rewarded ads are only available in the Android app"));
+      return;
+    }
     (window as any).onRewardedAdComplete = () => {
       const today = new Date().toISOString().slice(0, 10);
       const key = `propredict_player_ai_${profile.player.id}_${today}`;
       try { localStorage.setItem(key, "1"); } catch {}
       setAdUnlocked(true);
     };
-    (window as any).Android.showRewardedAd("player_ai_prediction");
+    bridge.showRewardedAd("player_ai_prediction");
   }, [profile.player.id]);
 
   const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
