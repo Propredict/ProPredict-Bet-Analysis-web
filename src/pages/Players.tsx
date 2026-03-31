@@ -595,7 +595,8 @@ export default function Players() {
   const { data: results, isLoading } = useSearchPlayers(query);
 
   const filteredResults = results?.filter(p => 
-    p.name && p.id && p.nationality
+    p.name && p.id && p.nationality && 
+    p.team?.name && p.appearances > 0
   ) || [];
 
   useEffect(() => {
