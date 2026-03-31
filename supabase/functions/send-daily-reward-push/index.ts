@@ -26,10 +26,11 @@ serve(async (req) => {
   try {
     const today = new Date().toISOString().split("T")[0];
 
-    // Get all users with push tokens who haven't claimed today
+    // Get Android push tokens only (daily rewards are app-only)
     const { data: tokens, error: tokensErr } = await supabase
       .from("users_push_tokens")
-      .select("onesignal_player_id, user_id");
+      .select("onesignal_player_id, user_id")
+      .eq("platform", "android");
 
     if (tokensErr) throw tokensErr;
     if (!tokens || tokens.length === 0) {

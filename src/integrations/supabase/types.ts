@@ -278,6 +278,33 @@ export type Database = {
           },
         ]
       }
+      daily_reward_claims: {
+        Row: {
+          claim_date: string
+          created_at: string | null
+          id: string
+          points_earned: number
+          streak_day: number
+          user_id: string
+        }
+        Insert: {
+          claim_date?: string
+          created_at?: string | null
+          id?: string
+          points_earned?: number
+          streak_day?: number
+          user_id: string
+        }
+        Update: {
+          claim_date?: string
+          created_at?: string | null
+          id?: string
+          points_earned?: number
+          streak_day?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -1204,8 +1231,10 @@ export type Database = {
       }
     }
     Functions: {
+      claim_daily_reward: { Args: never; Returns: Json }
       create_monthly_arena_season: { Args: never; Returns: undefined }
       ensure_arena_user_stats: { Args: never; Returns: undefined }
+      get_daily_reward_status: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
