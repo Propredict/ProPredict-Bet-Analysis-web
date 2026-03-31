@@ -1026,6 +1026,10 @@ export default function Players() {
       });
   }, [results, query]);
 
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
+
   // Debounce search using useEffect (more reliable on Android WebView)
   useEffect(() => {
     if (searchInput.length >= 2) {
