@@ -195,9 +195,13 @@ function AndroidRewardWidget() {
                 <Trophy className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-xs font-bold text-foreground">🎯 1,000 Points Milestone</span>
               </div>
-              <span className="text-[10px] font-semibold text-primary">{totalPoints}/1,000</span>
+              <span className="text-[10px] font-semibold text-primary">{combinedPoints}/1,000</span>
             </div>
             <Progress value={milestoneProgress} className="h-1.5" />
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground pl-1">
+              <span>🎁 Daily: <span className="font-semibold text-foreground">{dailyPoints} pts</span></span>
+              <span>⚔️ AI vs Members: <span className="font-semibold text-foreground">{arenaPoints} pts</span></span>
+            </div>
             {pointsTo1000 > 0 ? (
               <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
                 <p>{pointsTo1000} pts to go! Rewards:</p>
