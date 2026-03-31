@@ -214,6 +214,25 @@ serve(async (req) => {
       $fn$
     `);
 
+    // Schedule daily push reminder at 18:00 UTC
+    await client.queryArray(`
+      SELECT cron.unschedule('daily-reward-push-reminder')
+    `).catch(() => {});
+
+    await client.queryArray(`
+      SELECT cron.schedule(
+        'daily-reward-push-reminder',
+        '0 18 * * *',
+        $$
+        SELECT net.http_post(
+          url := 'https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/send-daily-reward-push',
+          headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA"}'::jsonb,
+          body := '{}'::jsonb
+        ) AS request_id;
+        $$
+      )
+    `);
+
     await client.queryArray("commit");
 
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
