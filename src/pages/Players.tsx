@@ -1001,13 +1001,71 @@ export default function Players() {
                   </div>
                 </div>
 
-                {/* CTA for trending */}
-                <Card className="border-primary/20 bg-gradient-to-r from-primary/10 to-transparent">
-                  <CardContent className="py-3 px-4 text-center">
-                    <p className="text-xs font-bold">🔥 Check trending players</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">See AI-powered stats & predictions</p>
-                  </CardContent>
-                </Card>
+                {/* Top Players Section */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Target className="h-3.5 w-3.5 text-primary" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider">
+                      <span className="text-primary">⭐ Top</span>{" "}
+                      <span className="text-muted-foreground">Players</span>
+                    </h3>
+                  </div>
+                  <div className="flex gap-2 mb-3">
+                    <button
+                      onClick={() => setTopCategory("topscorers")}
+                      className={`text-[10px] px-3 py-1.5 rounded-full font-semibold transition-colors ${topCategory === "topscorers" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
+                    >
+                      ⚽ Top Scorers
+                    </button>
+                    <button
+                      onClick={() => setTopCategory("topassists")}
+                      className={`text-[10px] px-3 py-1.5 rounded-full font-semibold transition-colors ${topCategory === "topassists" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
+                    >
+                      🎯 Top Assists
+                    </button>
+                  </div>
+                  {topLoading ? (
+                    <div className="space-y-2">
+                      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+                    </div>
+                  ) : topPlayersData?.results?.length ? (
+                    <div className="space-y-4">
+                      {topPlayersData.results.slice(0, 3).map((league) => (
+                        <div key={league.league.id}>
+                          <div className="flex items-center gap-2 mb-2">
+                            {league.league.logo && <img src={league.league.logo} alt="" className="w-4 h-4 object-contain" />}
+                            <span className="text-[10px] font-semibold text-muted-foreground">{league.league.name}</span>
+                          </div>
+                          <div className="space-y-1">
+                            {league.players.slice(0, 3).map((p, idx) => (
+                              <button
+                                key={p.id}
+                                onClick={() => handleQuickSelect(p.id)}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card hover:bg-secondary/40 border border-border/30 transition-all hover:border-primary/30 text-left"
+                              >
+                                <span className="text-[10px] font-bold text-muted-foreground w-4">{idx + 1}</span>
+                                <img src={p.photo} alt="" className="w-7 h-7 rounded-full object-cover border border-border/40" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-semibold truncate">{p.name}</p>
+                                  <div className="flex items-center gap-1">
+                                    {p.team.logo && <img src={p.team.logo} alt="" className="w-3 h-3 object-contain" />}
+                                    <span className="text-[10px] text-muted-foreground truncate">{p.team.name}</span>
+                                  </div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-xs font-bold text-primary">
+                                    {topCategory === "topscorers" ? `${p.stats.goals} ⚽` : `${p.stats.assists} 🎯`}
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground">{p.stats.appearances} apps</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
