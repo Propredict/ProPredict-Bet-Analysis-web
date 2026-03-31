@@ -57,6 +57,7 @@ import type {
   ContentStatus,
   TipResult,
 } from "@/types/admin";
+import { normalizeTipCategory } from "@/types/admin";
 
 /* =====================
    Defaults
@@ -82,13 +83,6 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   result: "pending",
   tip_date: getTodayBelgradeDate(),
   category: "standard",
-};
-
-const normalizeTipCategory = (
-  category?: string | null,
-): NonNullable<TipInsert["category"]> => {
-  if (category === "risk") return "risk_of_day";
-  return category || "standard";
 };
 
 /* =====================

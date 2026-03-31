@@ -6,6 +6,24 @@ export type ContentStatus = "draft" | "published";
 export type TipCategory = "standard" | "risk_of_day" | "diamond_pick";
 export type TicketCategory = "standard" | "multi_risk";
 
+export const TIP_CATEGORIES = ["standard", "risk_of_day", "diamond_pick"] as const;
+export const TICKET_CATEGORIES = ["standard", "multi_risk"] as const;
+
+export function normalizeTipCategory(category?: string | null): TipCategory {
+  const normalized = category === "risk" ? "risk_of_day" : category;
+  return (TIP_CATEGORIES as readonly string[]).includes(normalized ?? "")
+    ? (normalized as TipCategory)
+    : "standard";
+}
+
+export function normalizeTicketCategory(category?: string | null): TicketCategory {
+  const normalized =
+    category === "risk" || category === "risk_of_day" ? "multi_risk" : category;
+  return (TICKET_CATEGORIES as readonly string[]).includes(normalized ?? "")
+    ? (normalized as TicketCategory)
+    : "standard";
+}
+
 export interface Tip {
   id: string;
   home_team: string;
