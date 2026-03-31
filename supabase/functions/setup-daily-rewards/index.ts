@@ -89,8 +89,9 @@ serve(async (req) => {
         v_points int;
         v_already_claimed boolean;
         v_season_id uuid;
+        v_total_points int;
         v_user_plan text;
-        v_bonus_reward text := 'none';
+        v_milestone_reward text := 'none';
       BEGIN
         IF v_user_id IS NULL THEN
           RETURN jsonb_build_object('success', false, 'error', 'not_authenticated');
@@ -132,54 +133,6 @@ serve(async (req) => {
           ELSE 2
         END;
 
-        -- Day 7 bonus: tiered by user plan
-        IF v_new_streak = 7 THEN
-          SELECT COALESCE(plan, 'free') INTO v_user_plan
-          FROM user_subscriptions
-          WHERE user_id = v_user_id
-            AND status = 'active'
-            AND (expires_at IS NULL OR expires_at > now())
-          ORDER BY
-            CASE plan WHEN 'premium' THEN 1 WHEN 'basic' THEN 2 ELSE 3 END
-          LIMIT 1;
-
-          v_user_plan := COALESCE(v_user_plan, 'free');
-
-          IF v_user_plan = 'free' THEN
-            -- Free users get 3 days Pro
-            INSERT INTO user_subscriptions (user_id, plan, status, expires_at, subscription_source)
-            VALUES (v_user_id, 'basic', 'active', now() + interval '3 days', 'streak_reward')
-            ON CONFLICT (user_id) DO NOTHING;
-            -- If user already has a subscription row, insert a new one
-            IF NOT FOUND THEN
-              UPDATE user_subscriptions
-              SET plan = 'basic', status = 'active',
-                  expires_at = now() + interval '3 days',
-                  subscription_source = 'streak_reward',
-                  updated_at = now()
-              WHERE user_id = v_user_id
-                AND (plan = 'free' OR status != 'active');
-            END IF;
-            v_bonus_reward := 'pro_3_days';
-
-          ELSIF v_user_plan = 'basic' THEN
-            -- Pro users get 1 day Premium
-            UPDATE user_subscriptions
-            SET plan = 'premium', status = 'active',
-                expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '1 day',
-                subscription_source = 'streak_reward',
-                updated_at = now()
-            WHERE user_id = v_user_id
-              AND status = 'active';
-            v_bonus_reward := 'premium_1_day';
-
-          ELSIF v_user_plan = 'premium' THEN
-            -- Premium users get +8 extra bonus points
-            v_points := v_points + 8;
-            v_bonus_reward := 'bonus_points';
-          END IF;
-        END IF;
-
         INSERT INTO daily_reward_claims (user_id, claim_date, streak_day, points_earned)
         VALUES (v_user_id, v_today, v_new_streak, v_points);
 
@@ -194,16 +147,68 @@ serve(async (req) => {
           DO UPDATE SET points = arena_user_stats.points + v_points, updated_at = now();
         END IF;
 
+        -- Check 1000 points milestone
+        SELECT COALESCE(SUM(points_earned), 0) INTO v_total_points
+        FROM daily_reward_claims
+        WHERE user_id = v_user_id;
+
+        IF v_total_points >= 1000 AND (v_total_points - v_points) < 1000 THEN
+          SELECT COALESCE(plan, 'free') INTO v_user_plan
+          FROM user_subscriptions
+          WHERE user_id = v_user_id
+            AND status = 'active'
+            AND (expires_at IS NULL OR expires_at > now())
+          ORDER BY
+            CASE plan WHEN 'premium' THEN 1 WHEN 'basic' THEN 2 ELSE 3 END
+          LIMIT 1;
+
+          v_user_plan := COALESCE(v_user_plan, 'free');
+
+          IF v_user_plan = 'free' THEN
+            INSERT INTO user_subscriptions (user_id, plan, status, expires_at, subscription_source)
+            VALUES (v_user_id, 'basic', 'active', now() + interval '30 days', 'milestone_reward')
+            ON CONFLICT (user_id) DO NOTHING;
+            IF NOT FOUND THEN
+              UPDATE user_subscriptions
+              SET plan = 'basic', status = 'active',
+                  expires_at = now() + interval '30 days',
+                  subscription_source = 'milestone_reward',
+                  updated_at = now()
+              WHERE user_id = v_user_id
+                AND (plan = 'free' OR status != 'active');
+            END IF;
+            v_milestone_reward := 'pro_1_month';
+
+          ELSIF v_user_plan = 'basic' THEN
+            UPDATE user_subscriptions
+            SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
+                subscription_source = 'milestone_reward',
+                updated_at = now()
+            WHERE user_id = v_user_id AND status = 'active' AND plan = 'basic';
+            v_milestone_reward := 'pro_extend_1_month';
+
+          ELSIF v_user_plan = 'premium' THEN
+            UPDATE user_subscriptions
+            SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
+                subscription_source = 'milestone_reward',
+                updated_at = now()
+            WHERE user_id = v_user_id AND status = 'active' AND plan = 'premium';
+            v_milestone_reward := 'premium_extend_1_month';
+          END IF;
+        END IF;
+
         RETURN jsonb_build_object(
           'success', true,
           'streak_day', v_new_streak,
           'points_earned', v_points,
-          'is_bonus_day', v_new_streak = 7,
-          'bonus_reward', v_bonus_reward
+          'total_points', v_total_points,
+          'milestone_reward', v_milestone_reward
         );
       END;
       $fn$
     `);
+
+
 
     // get_daily_reward_status RPC
     await client.queryArray(`

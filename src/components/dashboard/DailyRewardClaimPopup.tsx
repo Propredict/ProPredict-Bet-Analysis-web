@@ -1,33 +1,14 @@
-import { X, Gift, Trophy, Flame, Star, Crown, Zap } from "lucide-react";
+import { X, Gift, Trophy, Flame } from "lucide-react";
 
 interface Props {
   streakDay: number;
   pointsEarned: number;
-  isBonusDay: boolean;
-  bonusReward?: string;
+  totalPoints: number;
   onClose: () => void;
 }
 
-const BONUS_LABELS: Record<string, { icon: typeof Crown; title: string; desc: string }> = {
-  pro_3_days: {
-    icon: Crown,
-    title: "🎉 Pro Access Unlocked!",
-    desc: "You've earned 3 days of free Pro access! Enjoy Pro Tips, Combos & more.",
-  },
-  premium_1_day: {
-    icon: Star,
-    title: "👑 Premium Access Unlocked!",
-    desc: "You've earned 1 day of Premium access! All Premium content is now available.",
-  },
-  bonus_points: {
-    icon: Zap,
-    title: "💎 Bonus Points Earned!",
-    desc: "As a Premium member, you earned +8 extra bonus points on top!",
-  },
-};
-
-export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, bonusReward = "none", onClose }: Props) {
-  const bonus = BONUS_LABELS[bonusReward];
+export function DailyRewardClaimPopup({ streakDay, pointsEarned, totalPoints, onClose }: Props) {
+  const pointsTo1000 = Math.max(0, 1000 - totalPoints);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
@@ -42,11 +23,7 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, bon
         <div className="p-6 space-y-4 text-center">
           {/* Celebration icon */}
           <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-amber-400/30 to-primary/20 flex items-center justify-center border-2 border-amber-400/40 animate-bounce">
-            {isBonusDay ? (
-              <Star className="h-10 w-10 text-amber-400" />
-            ) : (
-              <Gift className="h-10 w-10 text-amber-400" />
-            )}
+            <Gift className="h-10 w-10 text-amber-400" />
           </div>
 
           <div className="space-y-1.5">
@@ -67,25 +44,24 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, bon
             <div className="w-px h-5 bg-border" />
             <div className="flex items-center gap-1.5">
               <Trophy className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">Streak Active</span>
+              <span className="text-sm font-semibold text-foreground">{totalPoints} Arena Pts</span>
             </div>
           </div>
 
-          {/* Day 7 tiered bonus reward */}
-          {isBonusDay && bonus && (
-            <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30 space-y-1.5">
-              <div className="flex items-center justify-center gap-2">
-                <bonus.icon className="h-5 w-5 text-amber-400" />
-                <p className="text-sm font-bold text-amber-400">{bonus.title}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">{bonus.desc}</p>
+          {/* 1000 points milestone info */}
+          {pointsTo1000 > 0 ? (
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
+              <p className="text-xs font-bold text-primary">
+                🎯 {pointsTo1000} points to unlock FREE subscription upgrade!
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Reach 1,000 Arena Points for a free month of Pro/Premium
+              </p>
             </div>
-          )}
-
-          {isBonusDay && !bonus && (
+          ) : (
             <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30">
               <p className="text-xs font-bold text-amber-400">
-                🎉 7-Day Streak Complete! Bonus reward unlocked!
+                🎉 You've reached 1,000+ points! Reward available!
               </p>
             </div>
           )}
