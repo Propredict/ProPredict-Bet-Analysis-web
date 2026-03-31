@@ -144,6 +144,7 @@ export default function ManageTips() {
       status: tip.status,
       result: tip.result ?? "pending",
       tip_date: tip.tip_date || getTodayBelgradeDate(),
+      category: (tip as any).category || "standard",
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
