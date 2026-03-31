@@ -49,7 +49,11 @@ import type {
   TicketResult,
   TicketCategory,
 } from "@/types/admin";
-import { createMatchName, parseMatchName } from "@/types/admin";
+import {
+  createMatchName,
+  normalizeTicketCategory,
+  parseMatchName,
+} from "@/types/admin";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -94,7 +98,7 @@ export default function ManageTickets() {
   const [title, setTitle] = useState("");
   const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NEW
   const [tier, setTier] = useState<ContentTier>("daily");
-  const [ticketCategory, setTicketCategory] = useState<TicketCategory | string>("standard");
+  const [ticketCategory, setTicketCategory] = useState<TicketCategory>("standard");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
@@ -122,13 +126,6 @@ export default function ManageTickets() {
     matches.length > 0
       ? matches.reduce((acc, m) => acc * m.odds, 1)
       : 0;
-
-  const normalizeTicketCategory = (
-    category?: string | null,
-  ): TicketCategory => {
-    if (category === "risk") return "multi_risk";
-    return category || "standard";
-  };
 
   const filteredFixtures = fixtures.filter((f) => {
     const s = matchSearch.toLowerCase();
@@ -420,7 +417,12 @@ export default function ManageTickets() {
                   </SelectContent>
                 </Select>
 
-                <Select value={normalizeTicketCategory(ticketCategory)} onValueChange={setTicketCategory}>
+                <Select
+                  value={normalizeTicketCategory(ticketCategory)}
+                  onValueChange={(value) =>
+                    setTicketCategory(normalizeTicketCategory(value))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
