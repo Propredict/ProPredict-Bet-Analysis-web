@@ -394,16 +394,25 @@ export default function ManageTickets() {
                 placeholder="e.g. Safe accumulator"
               />
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 <Select value={tier} onValueChange={(v) => setTier(v as any)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                   <SelectContent>
+                  <SelectContent>
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="exclusive">Pro</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="premium">🎯 Multi Risk Matches</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={ticketCategory} onValueChange={setTicketCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="multi_risk">🎯 Multi Risk</SelectItem>
                   </SelectContent>
                 </Select>
 
