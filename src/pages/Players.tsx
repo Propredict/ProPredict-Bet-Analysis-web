@@ -86,16 +86,18 @@ function FormBadge({ rating }: { rating: string | null }) {
   return <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px] gap-1">❄️ COLD</Badge>;
 }
 
-// Generate AI-style prediction from stats
-function AIPredictionCard({ profile }: { profile: PlayerProfile }) {
+// Generate AI prediction from real stats + opponent data
+function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; opponentData?: NextOpponentData | null }) {
   const isAndroid = getIsAndroidApp();
-  const prediction = useMemo(() => calculatePlayerPrediction(profile), [profile]);
+  const prediction = useMemo(() => calculatePlayerPrediction(profile, opponentData), [profile, opponentData]);
+  const opp = prediction.opponentAdjustment;
 
   const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
   const assistColor = prediction.assistProbability >= 40 ? "text-green-400" : prediction.assistProbability >= 20 ? "text-yellow-400" : "text-red-400";
   const formColor = prediction.formLabel === "HOT" ? "text-green-400" : prediction.formLabel === "GOOD" ? "text-yellow-400" : "text-red-400";
   const riskColor = prediction.riskLevel === "LOW" ? "text-green-400" : prediction.riskLevel === "MEDIUM" ? "text-yellow-400" : "text-red-400";
   const riskBg = prediction.riskLevel === "LOW" ? "bg-green-500/10 border-green-500/20" : prediction.riskLevel === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
+  const diffColor = opp?.matchDifficulty === "EASY" ? "text-green-400 bg-green-500/10" : opp?.matchDifficulty === "HARD" ? "text-red-400 bg-red-500/10" : "text-yellow-400 bg-yellow-500/10";
 
   return (
     <Card className="overflow-hidden border-primary/30 shadow-lg shadow-primary/10 animate-fade-in">
@@ -104,13 +106,69 @@ function AIPredictionCard({ profile }: { profile: PlayerProfile }) {
           <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
             <Zap className="h-4 w-4 text-primary" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold">🤖 AI Prediction – Next Match</h3>
             <p className="text-[10px] text-muted-foreground">
-              Based on {profile.stats.appearances} appearances this season
+              {profile.stats.appearances} apps this season
+              {opp ? " • opponent-adjusted" : ""}
             </p>
           </div>
         </div>
+
+        {/* Opponent Info Banner */}
+        {opponentData?.opponent && opponentData?.fixture && (
+          <div className="flex items-center gap-2.5 bg-background/60 rounded-lg px-3 py-2 mb-3 border border-border/30">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-[10px] text-muted-foreground">vs</span>
+              {opponentData.opponent.logo && (
+                <img src={opponentData.opponent.logo} alt="" className="w-5 h-5 object-contain" />
+              )}
+              <span className="text-xs font-semibold truncate">{opponentData.opponent.name}</span>
+              <Badge variant="secondary" className="text-[9px] border-0 bg-secondary/50 flex-shrink-0">
+                {opponentData.opponent.isHome ? "HOME" : "AWAY"}
+              </Badge>
+            </div>
+            {opp && (
+              <Badge className={`text-[9px] border-0 flex-shrink-0 ${diffColor}`}>
+                {opp.matchDifficulty}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Opponent Defense Stats */}
+        {opp && opponentData?.opponentStats && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+              <p className="text-[9px] text-muted-foreground">🛡️ Def Rating</p>
+              <p className={`text-xs font-bold ${opp.defenseRating >= 65 ? "text-red-400" : opp.defenseRating <= 40 ? "text-green-400" : "text-yellow-400"}`}>
+                {opp.defenseRating}/100
+              </p>
+            </div>
+            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+              <p className="text-[9px] text-muted-foreground">⚽ Concede/G</p>
+              <p className={`text-xs font-bold ${opponentData.opponentStats.goalsAgainstPerGame >= 1.5 ? "text-green-400" : "text-red-400"}`}>
+                {opponentData.opponentStats.goalsAgainstPerGame}
+              </p>
+            </div>
+            <div className="bg-background/40 rounded-lg px-2 py-1.5 text-center">
+              <p className="text-[9px] text-muted-foreground">🧤 CS Rate</p>
+              <p className="text-xs font-bold">{opponentData.opponentStats.cleanSheetRate}%</p>
+            </div>
+          </div>
+        )}
+
+        {/* Adjustment Badge */}
+        {opp && (
+          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 mb-3 text-[10px] font-medium border ${
+            opp.goalAdjust > 1 ? "bg-green-500/10 border-green-500/20 text-green-400" : 
+            opp.goalAdjust < 1 ? "bg-red-500/10 border-red-500/20 text-red-400" : 
+            "bg-secondary/30 border-border/30 text-muted-foreground"
+          }`}>
+            <Shield className="h-3 w-3" />
+            <span>Opponent Factor: {opp.label}</span>
+          </div>
+        )}
 
         {/* Main Stats Grid */}
         <div className="grid grid-cols-2 gap-2.5">
