@@ -1,110 +1,60 @@
--- Add category column to tips table
-ALTER TABLE public.tips
-ADD COLUMN IF NOT EXISTS category text DEFAULT 'standard';
+-- Fix tips_public view to include category AND proper content masking
+-- (the earlier migration 20260331120100 already added the column but broke masking)
 
--- Add category column to tickets table
-ALTER TABLE public.tickets
-ADD COLUMN IF NOT EXISTS category text DEFAULT 'standard';
-
--- Update the tips_public view to include category
-CREATE OR REPLACE VIEW public.tips_public AS
+DROP VIEW IF EXISTS public.tips_public;
+CREATE VIEW public.tips_public WITH (security_invoker=on) AS
 SELECT
-  id,
-  home_team,
-  away_team,
-  league,
-  odds,
-  tier,
-  status,
-  result,
-  tip_date,
-  created_at_ts,
-  updated_at,
-  created_by,
-  category,
+  id, home_team, away_team, league, odds, tier, status, result,
+  tip_date, created_at_ts, updated_at, created_by, category,
   CASE
-    WHEN tier = 'free' OR tier = 'daily' THEN prediction
+    WHEN tier IN ('free','daily') THEN prediction
     WHEN public.user_has_min_plan(
-      CASE
-        WHEN tier = 'exclusive' THEN 'basic'
-        WHEN tier = 'premium' THEN 'premium'
-        ELSE 'free'
-      END
+      CASE WHEN tier = 'exclusive' THEN 'basic' WHEN tier = 'premium' THEN 'premium' ELSE 'free' END
     ) THEN prediction
     WHEN EXISTS (
       SELECT 1 FROM public.user_unlocks u
-      WHERE u.user_id = auth.uid()
-        AND u.content_type = 'tip'
-        AND u.content_id = tips.id::text
+      WHERE u.user_id = auth.uid() AND u.content_type = 'tip' AND u.content_id = tips.id::text
     ) THEN prediction
     ELSE '🔒'
   END AS prediction,
   CASE
-    WHEN tier = 'free' OR tier = 'daily' THEN confidence
+    WHEN tier IN ('free','daily') THEN confidence
     WHEN public.user_has_min_plan(
-      CASE
-        WHEN tier = 'exclusive' THEN 'basic'
-        WHEN tier = 'premium' THEN 'premium'
-        ELSE 'free'
-      END
+      CASE WHEN tier = 'exclusive' THEN 'basic' WHEN tier = 'premium' THEN 'premium' ELSE 'free' END
     ) THEN confidence
     WHEN EXISTS (
       SELECT 1 FROM public.user_unlocks u
-      WHERE u.user_id = auth.uid()
-        AND u.content_type = 'tip'
-        AND u.content_id = tips.id::text
+      WHERE u.user_id = auth.uid() AND u.content_type = 'tip' AND u.content_id = tips.id::text
     ) THEN confidence
     ELSE NULL
   END AS confidence,
   CASE
-    WHEN tier = 'free' OR tier = 'daily' THEN ai_prediction
+    WHEN tier IN ('free','daily') THEN ai_prediction
     WHEN public.user_has_min_plan(
-      CASE
-        WHEN tier = 'exclusive' THEN 'basic'
-        WHEN tier = 'premium' THEN 'premium'
-        ELSE 'free'
-      END
+      CASE WHEN tier = 'exclusive' THEN 'basic' WHEN tier = 'premium' THEN 'premium' ELSE 'free' END
     ) THEN ai_prediction
     WHEN EXISTS (
       SELECT 1 FROM public.user_unlocks u
-      WHERE u.user_id = auth.uid()
-        AND u.content_type = 'tip'
-        AND u.content_id = tips.id::text
+      WHERE u.user_id = auth.uid() AND u.content_type = 'tip' AND u.content_id = tips.id::text
     ) THEN ai_prediction
     ELSE NULL
   END AS ai_prediction
 FROM public.tips
 WHERE status = 'published';
 
--- Update the tickets_public view to include category
-CREATE OR REPLACE VIEW public.tickets_public AS
+DROP VIEW IF EXISTS public.tickets_public;
+CREATE VIEW public.tickets_public WITH (security_invoker=on) AS
 SELECT
-  id,
-  title,
-  total_odds,
-  tier,
-  status,
-  result,
-  description,
-  ticket_date,
-  created_at_ts,
-  updated_at,
-  created_by,
-  category,
+  id, title, total_odds, tier, status, result, description,
+  ticket_date, created_at_ts, updated_at, created_by, category,
   CASE
-    WHEN tier = 'free' OR tier = 'daily' THEN ai_analysis
+    WHEN tier IN ('free','daily') THEN ai_analysis
     WHEN public.user_has_min_plan(
-      CASE
-        WHEN tier = 'exclusive' THEN 'basic'
-        WHEN tier = 'premium' THEN 'premium'
-        ELSE 'free'
-      END
+      CASE WHEN tier = 'exclusive' THEN 'basic' WHEN tier = 'premium' THEN 'premium' ELSE 'free' END
     ) THEN ai_analysis
     WHEN EXISTS (
       SELECT 1 FROM public.user_unlocks u
-      WHERE u.user_id = auth.uid()
-        AND u.content_type = 'ticket'
-        AND u.content_id = tickets.id::text
+      WHERE u.user_id = auth.uid() AND u.content_type = 'ticket' AND u.content_id = tickets.id::text
     ) THEN ai_analysis
     ELSE NULL
   END AS ai_analysis
