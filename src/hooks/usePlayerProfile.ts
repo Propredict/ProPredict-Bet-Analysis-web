@@ -68,6 +68,7 @@ export interface PlayerProfile {
     team: { id: number; name: string; logo: string };
     seasons: number[];
   }>;
+  availableSeasons: number[];
 }
 
 async function fetchPlayerProfile(playerId: number): Promise<PlayerProfile | null> {
