@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { X, Gift } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { X, Gift, Smartphone } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const DISMISS_KEY = "reward_bar_dismissed";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
 /**
- * Sticky bar at bottom — Android only.
- * Reminds users to claim daily reward.
+ * Sticky bar at bottom — Website only.
+ * Promotes daily rewards available in the app.
  */
 export function DailyRewardStickyBar() {
-  const { user } = useAuth();
   const isAndroid = getIsAndroidApp();
 
   const [dismissed, setDismissed] = useState(() => {
@@ -19,16 +18,11 @@ export function DailyRewardStickyBar() {
     return new Date(d).toDateString() === new Date().toDateString();
   });
 
-  // Only show on Android
-  if (!isAndroid || dismissed) return null;
+  if (isAndroid || dismissed) return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, new Date().toISOString());
     setDismissed(true);
-  };
-
-  const handleClick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -41,12 +35,15 @@ export function DailyRewardStickyBar() {
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleClick}
+          <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 border border-white/30 px-3 py-1.5 text-xs font-bold text-white transition-colors"
           >
-            Claim Now 🚀
-          </button>
+            <Smartphone className="h-3 w-3" />
+            Unlock in App 🚀
+          </a>
           <button onClick={dismiss} className="text-white/70 hover:text-white transition-colors p-1">
             <X className="h-3.5 w-3.5" />
           </button>
