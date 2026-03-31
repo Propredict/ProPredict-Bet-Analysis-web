@@ -27,8 +27,8 @@ const POPULAR_PLAYERS: RecentPlayer[] = [
   { id: 1100, name: "E. Haaland", photo: "https://media.api-sports.io/football/players/1100.png", team: "Man City" },
   { id: 306, name: "M. Salah", photo: "https://media.api-sports.io/football/players/306.png", team: "Liverpool" },
   { id: 276, name: "Neymar Jr", photo: "https://media.api-sports.io/football/players/276.png", team: "Santos" },
-  { id: 1460, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/1460.png", team: "Real Madrid" },
-  { id: 629, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/629.png", team: "Real Madrid" },
+  { id: 129718, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/129718.png", team: "Real Madrid" },
+  { id: 762, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/762.png", team: "Real Madrid" },
 ];
 
 function getRecentSearches(): RecentPlayer[] {
