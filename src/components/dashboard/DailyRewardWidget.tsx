@@ -63,25 +63,30 @@ function WebRewardWidget() {
         </div>
 
         {/* Streak preview (FOMO) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-amber-500/10 to-primary/10 rounded-lg p-3 border border-amber-400/20">
-          <div className="space-y-1 text-center sm:text-left">
-            <p className="text-xs font-semibold text-foreground flex items-center gap-1 justify-center sm:justify-start">
-              <Flame className="h-3.5 w-3.5 text-destructive" />
-              Build your 7-day streak &amp; unlock bonus rewards
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              🔥 1,200+ users already claiming daily rewards
-            </p>
+        <div className="bg-gradient-to-r from-amber-500/10 to-primary/10 rounded-lg p-3 border border-amber-400/20 space-y-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="space-y-1 text-center sm:text-left">
+              <p className="text-xs font-semibold text-foreground flex items-center gap-1 justify-center sm:justify-start">
+                <Flame className="h-3.5 w-3.5 text-destructive" />
+                Build your 7-day streak &amp; unlock bonus rewards
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                🔥 1,200+ users already claiming daily rewards
+              </p>
+            </div>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                <div
+                  key={day}
+                  className="w-6 h-6 rounded-full border border-border/50 bg-muted/40 flex items-center justify-center text-[8px] font-bold text-muted-foreground"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-1">
-            {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-              <div
-                key={day}
-                className="w-6 h-6 rounded-full border border-border/50 bg-muted/40 flex items-center justify-center text-[8px] font-bold text-muted-foreground"
-              >
-                {day}
-              </div>
-            ))}
+          <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
+            <p>🆓 Free → <span className="text-primary font-semibold">3 days Pro</span> · ⭐ Pro → <span className="text-primary font-semibold">1 day Premium</span> · 👑 Premium → <span className="text-amber-400 font-semibold">+8 bonus pts</span></p>
           </div>
         </div>
 
@@ -231,12 +236,17 @@ function AndroidRewardWidget() {
             <Progress value={progressPercent} className="h-2" />
           </div>
 
-          {/* Day 7 bonus info */}
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/20 rounded-lg p-2.5 text-xs">
-            <Star className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="text-muted-foreground">
-              <span className="text-amber-400 font-bold">Day 7 Bonus:</span> +15 points + Free AI Pick unlock!
-            </span>
+          {/* Day 7 bonus info - tiered */}
+          <div className="bg-amber-500/10 border border-amber-400/20 rounded-lg p-2.5 text-xs space-y-1">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-400 shrink-0" />
+              <span className="text-amber-400 font-bold">Day 7 Streak Bonus:</span>
+            </div>
+            <div className="pl-6 space-y-0.5 text-muted-foreground">
+              <p>🆓 Free users → <span className="text-primary font-semibold">3 days Pro access</span></p>
+              <p>⭐ Pro users → <span className="text-primary font-semibold">1 day Premium access</span></p>
+              <p>👑 Premium users → <span className="text-amber-400 font-semibold">+8 extra bonus points</span></p>
+            </div>
           </div>
 
           <p className="text-[10px] text-muted-foreground text-center">
@@ -273,6 +283,7 @@ function AndroidRewardWidget() {
           streakDay={lastClaimResult.streakDay}
           pointsEarned={lastClaimResult.pointsEarned}
           isBonusDay={lastClaimResult.isBonusDay}
+          bonusReward={lastClaimResult.bonusReward}
           onClose={dismissClaimResult}
         />
       )}

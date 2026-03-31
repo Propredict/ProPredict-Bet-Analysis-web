@@ -1,13 +1,34 @@
-import { X, Gift, Trophy, Flame, Star } from "lucide-react";
+import { X, Gift, Trophy, Flame, Star, Crown, Zap } from "lucide-react";
 
 interface Props {
   streakDay: number;
   pointsEarned: number;
   isBonusDay: boolean;
+  bonusReward?: string;
   onClose: () => void;
 }
 
-export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, onClose }: Props) {
+const BONUS_LABELS: Record<string, { icon: typeof Crown; title: string; desc: string }> = {
+  pro_3_days: {
+    icon: Crown,
+    title: "🎉 Pro Access Unlocked!",
+    desc: "You've earned 3 days of free Pro access! Enjoy Pro Tips, Combos & more.",
+  },
+  premium_1_day: {
+    icon: Star,
+    title: "👑 Premium Access Unlocked!",
+    desc: "You've earned 1 day of Premium access! All Premium content is now available.",
+  },
+  bonus_points: {
+    icon: Zap,
+    title: "💎 Bonus Points Earned!",
+    desc: "As a Premium member, you earned +8 extra bonus points on top!",
+  },
+};
+
+export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, bonusReward = "none", onClose }: Props) {
+  const bonus = BONUS_LABELS[bonusReward];
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
       <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/40 bg-card shadow-2xl shadow-amber-500/10 overflow-visible">
@@ -50,7 +71,18 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, isBonusDay, onC
             </div>
           </div>
 
-          {isBonusDay && (
+          {/* Day 7 tiered bonus reward */}
+          {isBonusDay && bonus && (
+            <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30 space-y-1.5">
+              <div className="flex items-center justify-center gap-2">
+                <bonus.icon className="h-5 w-5 text-amber-400" />
+                <p className="text-sm font-bold text-amber-400">{bonus.title}</p>
+              </div>
+              <p className="text-xs text-muted-foreground">{bonus.desc}</p>
+            </div>
+          )}
+
+          {isBonusDay && !bonus && (
             <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30">
               <p className="text-xs font-bold text-amber-400">
                 🎉 7-Day Streak Complete! Bonus reward unlocked!

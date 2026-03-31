@@ -10,7 +10,7 @@ export interface DailyRewardState {
   totalPoints: number;
   loading: boolean;
   claiming: boolean;
-  lastClaimResult: { streakDay: number; pointsEarned: number; isBonusDay: boolean } | null;
+  lastClaimResult: { streakDay: number; pointsEarned: number; isBonusDay: boolean; bonusReward: string } | null;
 }
 
 export function useDailyReward() {
@@ -71,6 +71,7 @@ export function useDailyReward() {
             streakDay: data.streak_day,
             pointsEarned: data.points_earned,
             isBonusDay: data.is_bonus_day,
+            bonusReward: data.bonus_reward ?? 'none',
           },
         }));
       } else {
