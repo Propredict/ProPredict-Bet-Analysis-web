@@ -10,6 +10,7 @@ import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 import { useNextOpponent, type NextOpponentData } from "@/hooks/useNextOpponent";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
@@ -99,27 +100,27 @@ function LockedValue() {
 // Generate AI prediction from real stats + opponent data
 function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; opponentData?: NextOpponentData | null }) {
   const isAndroid = getIsAndroidApp();
+  const { plan } = useUserPlan();
   const prediction = useMemo(() => calculatePlayerPrediction(profile, opponentData), [profile, opponentData]);
   const opp = prediction.opponentAdjustment;
-  const [unlocked, setUnlocked] = useState(false);
+  const [adUnlocked, setAdUnlocked] = useState(false);
 
-  // Check localStorage for unlock state (per player, per day)
+  // Check localStorage for ad-unlock state (per player, per day)
   useEffect(() => {
     try {
       const today = new Date().toISOString().slice(0, 10);
       const key = `propredict_player_ai_${profile.player.id}_${today}`;
-      if (localStorage.getItem(key) === "1") setUnlocked(true);
+      if (localStorage.getItem(key) === "1") setAdUnlocked(true);
     } catch {}
   }, [profile.player.id]);
 
   const handleAdUnlock = useCallback(() => {
     if (!(window as any).Android?.showRewardedAd) return;
-    // Set up callback
     (window as any).onRewardedAdComplete = () => {
       const today = new Date().toISOString().slice(0, 10);
       const key = `propredict_player_ai_${profile.player.id}_${today}`;
       try { localStorage.setItem(key, "1"); } catch {}
-      setUnlocked(true);
+      setAdUnlocked(true);
     };
     (window as any).Android.showRewardedAd("player_ai_prediction");
   }, [profile.player.id]);
@@ -131,8 +132,20 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const riskBg = prediction.riskLevel === "LOW" ? "bg-green-500/10 border-green-500/20" : prediction.riskLevel === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" : "bg-red-500/10 border-red-500/20";
   const diffColor = opp?.matchDifficulty === "EASY" ? "text-green-400 bg-green-500/10" : opp?.matchDifficulty === "HARD" ? "text-red-400 bg-red-500/10" : "text-yellow-400 bg-yellow-500/10";
 
-  // On web: always locked (drive app downloads). On Android: unlockable via ad.
-  const showLocked = isAndroid ? !unlocked : true;
+  // Access rules:
+  // Web: Free → locked (download CTA), Pro/Premium → unlocked
+  // Android: Free/Pro → locked (watch ad to unlock), Premium → unlocked
+  const isPremium = plan === "premium";
+  const isProOrAbove = plan === "basic" || plan === "premium";
+  
+  let showLocked: boolean;
+  if (isAndroid) {
+    // Android: only Premium sees everything free; Free/Pro must watch ad
+    showLocked = isPremium ? false : !adUnlocked;
+  } else {
+    // Web: Pro and Premium see everything; Free is locked
+    showLocked = isProOrAbove ? false : true;
+  }
 
   return (
     <Card className="overflow-hidden border-primary/30 shadow-lg shadow-primary/10 animate-fade-in">
@@ -287,27 +300,25 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
       {showLocked && (
         <div className="bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5">
           {isAndroid ? (
-            /* Android: Watch Ad to unlock */
+            /* Android: Free & Pro must watch ad */
             <button
               onClick={handleAdUnlock}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
             >
               <Play className="h-4 w-4" />
-              Watch ad to unlock AI prediction
+              Watch ad to unlock Full AI analysis
             </button>
           ) : (
-            /* Web: Download app CTA */
+            /* Web Free: upgrade CTA */
             <div className="text-center">
               <p className="text-xs font-bold mb-1">🔒 Full AI analysis for next match</p>
-              <p className="text-[10px] text-muted-foreground mb-2.5">Unlock Assist%, Form, Risk & AI Pick on the app</p>
+              <p className="text-[10px] text-muted-foreground mb-2.5">Upgrade to Pro or Premium to unlock Assist%, Form, Risk & AI Pick</p>
               <a
-                href="https://play.google.com/store/apps/details?id=com.propredict.app"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/get-premium"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <Download className="h-4 w-4" />
-                Download ProPredict App
+                <Star className="h-4 w-4" />
+                Get Pro / Premium
               </a>
             </div>
           )}
