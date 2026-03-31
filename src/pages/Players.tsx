@@ -27,8 +27,8 @@ const POPULAR_PLAYERS: RecentPlayer[] = [
   { id: 1100, name: "E. Haaland", photo: "https://media.api-sports.io/football/players/1100.png", team: "Man City" },
   { id: 306, name: "M. Salah", photo: "https://media.api-sports.io/football/players/306.png", team: "Liverpool" },
   { id: 276, name: "Neymar Jr", photo: "https://media.api-sports.io/football/players/276.png", team: "Santos" },
-  { id: 1460, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/1460.png", team: "Real Madrid" },
-  { id: 629, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/629.png", team: "Real Madrid" },
+  { id: 129718, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/129718.png", team: "Real Madrid" },
+  { id: 762, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/762.png", team: "Real Madrid" },
 ];
 
 function getRecentSearches(): RecentPlayer[] {
@@ -338,8 +338,10 @@ export default function Players() {
 
   const { data: results, isLoading } = useSearchPlayers(query);
 
-  // Filter out players with no useful data (no name or no photo)
-  const filteredResults = results?.filter(p => p.name && p.photo && p.id) || [];
+  // Filter out players with no useful data
+  const filteredResults = results?.filter(p => 
+    p.name && p.id && p.nationality
+  ) || [];
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());
@@ -509,8 +511,14 @@ export default function Players() {
 
           {/* Player Profile */}
           <div>
-            {selectedPlayerId ? (
-              <Card className="overflow-hidden">
+          {selectedPlayerId ? (
+              <Card className="overflow-hidden animate-fade-in relative">
+                <button
+                  onClick={() => setSelectedPlayerId(null)}
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-secondary transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
                 <PlayerProfileView playerId={selectedPlayerId} />
               </Card>
             ) : (
