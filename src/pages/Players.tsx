@@ -298,14 +298,24 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
       {showLocked && (
         <div className="bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5">
           {isAndroid ? (
-            /* Android: Free & Pro must watch ad */
-            <button
-              onClick={handleAdUnlock}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
-            >
-              <Play className="h-4 w-4" />
-              Watch ad to unlock Full AI analysis
-            </button>
+            /* Android: Free = watch ad only, Pro = watch ad + upgrade to Premium */
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={handleAdUnlock}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
+              >
+                <Play className="h-4 w-4" />
+                Watch ad to unlock Full AI analysis
+              </button>
+              {plan === "basic" && (
+                <a
+                  href="/get-premium"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  or upgrade to Premium to unlock all ✨
+                </a>
+              )}
+            </div>
           ) : (
             /* Web: Download app CTA */
             <div className="flex flex-col items-center gap-3 py-1">
