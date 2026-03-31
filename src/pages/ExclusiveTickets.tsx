@@ -70,7 +70,7 @@ export default function ExclusiveTickets() {
     timeZone: "Europe/Belgrade",
   });
   
-  const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive" && ticket.ticket_date === todayBelgrade);
+  const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive" && ticket.ticket_date === todayBelgrade && (!ticket.category || ticket.category === "standard"));
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
