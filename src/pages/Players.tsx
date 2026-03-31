@@ -1030,20 +1030,22 @@ export default function Players() {
     setRecentSearches(getRecentSearches());
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearch = useCallback(
-    debounce((val: string) => setQuery(val), 400),
-    []
-  );
+  // Debounce search using useEffect (more reliable on Android WebView)
+  useEffect(() => {
+    if (searchInput.length >= 2) {
+      const timer = setTimeout(() => {
+        console.log("[PlayerSearch] debounce firing, setting query:", searchInput);
+        setQuery(searchInput);
+      }, 400);
+      return () => clearTimeout(timer);
+    } else {
+      setQuery("");
+    }
+  }, [searchInput]);
 
   const handleInputChange = (val: string) => {
     setSearchInput(val);
     console.log("[PlayerSearch] input changed:", val, "length:", val.length);
-    if (val.length >= 2) {
-      debouncedSearch(val);
-    } else {
-      setQuery("");
-    }
   };
 
   const handleClear = () => {

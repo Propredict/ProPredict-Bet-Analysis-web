@@ -18,10 +18,17 @@ export interface PlayerSearchResult {
   assists: number;
 }
 
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 async function searchPlayers(query: string): Promise<PlayerSearchResult[]> {
   const res = await fetch(
     `${SUPABASE_URL}/functions/v1/search-players?search=${encodeURIComponent(query)}`,
-    { headers: { "Content-Type": "application/json" } }
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY || "",
+      },
+    }
   );
   if (!res.ok) return [];
   return res.json();
