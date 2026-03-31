@@ -938,29 +938,21 @@ export default function Players() {
 
   const filteredResults = useMemo(() => {
     if (!results) return [];
+    const q = query.trim().toLowerCase();
     return results
-      .filter(p => {
-        if (!p.name || !p.id) return false;
-        // Must have a real photo (not placeholder/blank/generic silhouette)
-        if (!p.photo || p.photo.includes('placeholder') || p.photo.includes('blank')) return false;
-        // Must have at least a team OR some stats — otherwise "Player data not available"
-        const hasTeam = p.team?.name && p.team.name.length > 0;
-        const hasStats = (p.appearances || 0) + (p.goals || 0) + (p.assists || 0) > 0;
-        const hasPosition = p.position && p.position.length > 0;
-        if (!hasTeam && !hasStats && !hasPosition) return false;
-        return true;
-      })
+      .filter(p => p?.id && p?.name && p?.photo && !/placeholder|blank|default|no-photo/i.test(p.photo))
       .sort((a, b) => {
-        // Prioritize players with real photos that aren't generic silhouettes
+        const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+        const aStarts = an.startsWith(q) ? 1 : 0;
+        const bStarts = bn.startsWith(q) ? 1 : 0;
+        if (bStarts !== aStarts) return bStarts - aStarts;
         const aHasData = (a.appearances || 0) + (a.goals || 0) + (a.assists || 0);
         const bHasData = (b.appearances || 0) + (b.goals || 0) + (b.assists || 0);
-        // Players with stats first
         if (aHasData > 0 && bHasData === 0) return -1;
         if (bHasData > 0 && aHasData === 0) return 1;
-        // Then by appearances
         return (b.appearances || 0) - (a.appearances || 0);
       });
-  }, [results]);
+  }, [results, query]);
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());
