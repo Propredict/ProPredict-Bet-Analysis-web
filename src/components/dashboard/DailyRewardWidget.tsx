@@ -135,8 +135,8 @@ function AndroidRewardWidget() {
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Trophy className="h-4 w-4 mx-auto mb-1 text-primary" />
-              <p className="text-lg font-bold text-foreground">{totalPoints}</p>
-              <p className="text-[9px] text-muted-foreground">Arena Points</p>
+              <p className="text-lg font-bold text-foreground">{combinedPoints}</p>
+              <p className="text-[9px] text-muted-foreground">Total Points</p>
             </div>
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Flame className="h-4 w-4 mx-auto mb-1 text-destructive" />
