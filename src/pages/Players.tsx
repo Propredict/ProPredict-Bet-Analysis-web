@@ -326,7 +326,7 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
               {profile.player.injured && <Badge variant="destructive" className="text-[10px]">🚑 Injured</Badge>}
               {profile.stats.captain && <Badge className="text-[10px] bg-yellow-500/20 text-yellow-400 border-0">©️ Captain</Badge>}
             </div>
-            <Last5Form goals={profile.stats.goals} appearances={profile.stats.appearances} />
+            <Last5Form profile={profile} />
           </div>
         </div>
       </div>
