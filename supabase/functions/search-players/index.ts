@@ -152,8 +152,12 @@ serve(async (req: Request) => {
       if (player.league?.name) score += 10;
       
       // Active-age bonus (17-40 = likely active footballer)
+      // Penalize obviously retired/non-player ages
       const age = player.age;
-      if (age && age >= 17 && age <= 40) score += 10;
+      if (age) {
+        if (age >= 17 && age <= 40) score += 15;
+        else if (age > 45) score -= 30; // Likely coach or retired
+      }
       
       return { player, score };
     });
