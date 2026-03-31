@@ -100,10 +100,8 @@ const Index = () => {
 
 
 
-        {/* Social Proof Section */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardSocialProof />
-        </Suspense>
+
+
 
         {/* Dashboard Stats Hero */}
         <Suspense fallback={<LazyFallback />}>
