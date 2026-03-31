@@ -313,13 +313,15 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
 
       {/* UNLOCK CTA */}
       {showLocked && (
-        <div className="bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5">
+        <div className="relative z-10 bg-gradient-to-r from-primary/15 to-primary/5 border-t border-primary/20 px-4 py-3.5 pointer-events-auto">
           {isAndroid ? (
             /* Android: Free = watch ad only, Pro = watch ad + upgrade to Premium */
-            <div className="flex flex-col items-center gap-2">
+            <div className="relative z-10 flex flex-col items-center gap-2 pointer-events-auto">
               <button
+                type="button"
                 onClick={handleAdUnlock}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
+                className="relative z-20 w-full cursor-pointer touch-manipulation pointer-events-auto select-none flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 active:scale-[0.99] transition-transform duration-150 animate-pulse"
+                aria-label="Watch ad to unlock Full AI analysis"
               >
                 <Play className="h-4 w-4" />
                 Watch ad to unlock Full AI analysis
