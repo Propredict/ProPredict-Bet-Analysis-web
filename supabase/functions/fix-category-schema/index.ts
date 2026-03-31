@@ -58,8 +58,9 @@ serve(async (req) => {
       "alter table public.tickets add column if not exists category text default null",
     );
 
+    await client.queryArray("drop view if exists public.tips_public");
     await client.queryArray(`
-      create or replace view public.tips_public
+      create view public.tips_public
       with (security_invoker=on) as
       select
         odds,
@@ -133,8 +134,9 @@ serve(async (req) => {
       where status = 'published'
     `);
 
+    await client.queryArray("drop view if exists public.tickets_public");
     await client.queryArray(`
-      create or replace view public.tickets_public
+      create view public.tickets_public
       with (security_invoker=on) as
       select
         updated_at,
