@@ -224,7 +224,8 @@ export default function ManageTickets() {
           result,
           total_odds: totalOdds,
           ticket_date: ticketDate,
-        },
+          category: ticketCategory,
+        } as any,
         matches: dbMatches,
       });
       toast.success("Ticket updated");
