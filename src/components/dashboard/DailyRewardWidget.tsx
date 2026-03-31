@@ -104,9 +104,8 @@ function AndroidRewardWidget() {
     );
   }
 
-  const arenaPoints = arenaStats.points || 0;
-  const dailyPoints = totalPoints || 0;
-  const combinedPoints = dailyPoints + arenaPoints;
+  // arena_user_stats.points is the single source of truth (daily + arena combined, resets at 1000)
+  const combinedPoints = arenaStats.points || 0;
   const displayStreak = currentStreak;
   const progressPercent = (displayStreak / 7) * 100;
   const pointsTo1000 = Math.max(0, 1000 - combinedPoints);

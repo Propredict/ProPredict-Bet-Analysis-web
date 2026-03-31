@@ -71,7 +71,82 @@ serve(async (req) => {
         WITH CHECK (auth.uid() = user_id)
     `);
 
-    // claim_daily_reward RPC
+    // Milestone trigger function (checks combined points, grants reward, resets to 0)
+    await client.queryArray(`
+      CREATE OR REPLACE FUNCTION public.check_points_milestone()
+      RETURNS trigger
+      LANGUAGE plpgsql
+      SECURITY DEFINER
+      SET search_path TO 'public'
+      AS $fn2$
+      DECLARE
+        v_total_points int;
+        v_user_plan text;
+      BEGIN
+        IF NEW.points <= COALESCE(OLD.points, 0) OR NEW.points = 0 THEN
+          RETURN NEW;
+        END IF;
+
+        SELECT COALESCE(SUM(points), 0) INTO v_total_points
+        FROM arena_user_stats WHERE user_id = NEW.user_id;
+
+        IF v_total_points < 1000 THEN
+          RETURN NEW;
+        END IF;
+
+        SELECT COALESCE(plan, 'free') INTO v_user_plan
+        FROM user_subscriptions
+        WHERE user_id = NEW.user_id AND status = 'active'
+          AND (expires_at IS NULL OR expires_at > now())
+        ORDER BY CASE plan WHEN 'premium' THEN 1 WHEN 'basic' THEN 2 ELSE 3 END
+        LIMIT 1;
+
+        v_user_plan := COALESCE(v_user_plan, 'free');
+
+        IF v_user_plan = 'free' THEN
+          INSERT INTO user_subscriptions (user_id, plan, status, expires_at, subscription_source)
+          VALUES (NEW.user_id, 'basic', 'active', now() + interval '30 days', 'milestone_reward')
+          ON CONFLICT (user_id) DO UPDATE SET
+            plan = 'basic', status = 'active',
+            expires_at = now() + interval '30 days',
+            subscription_source = 'milestone_reward',
+            updated_at = now();
+        ELSIF v_user_plan = 'basic' THEN
+          UPDATE user_subscriptions
+          SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
+              updated_at = now()
+          WHERE user_id = NEW.user_id AND status = 'active' AND plan = 'basic';
+        ELSIF v_user_plan = 'premium' THEN
+          UPDATE user_subscriptions
+          SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
+              updated_at = now()
+          WHERE user_id = NEW.user_id AND status = 'active' AND plan = 'premium';
+        END IF;
+
+        UPDATE arena_user_stats SET points = 0, updated_at = now()
+        WHERE user_id = NEW.user_id;
+
+        INSERT INTO arena_notifications (user_id, title, message, type)
+        VALUES (NEW.user_id,
+          '🎉 1000 Points Milestone Reached!',
+          'Congratulations! You earned a subscription reward. Your points have been reset to 0.',
+          'milestone');
+
+        RETURN NEW;
+      END;
+      $fn2$
+    `);
+
+    // Create trigger on arena_user_stats
+    await client.queryArray(`DROP TRIGGER IF EXISTS trg_check_points_milestone ON arena_user_stats`);
+    await client.queryArray(`
+      CREATE TRIGGER trg_check_points_milestone
+      AFTER UPDATE OF points ON arena_user_stats
+      FOR EACH ROW
+      EXECUTE FUNCTION check_points_milestone()
+    `);
+
+    // Simplified claim_daily_reward (milestone now handled by trigger)
     await client.queryArray(`
       CREATE OR REPLACE FUNCTION public.claim_daily_reward()
       RETURNS jsonb
@@ -90,8 +165,6 @@ serve(async (req) => {
         v_already_claimed boolean;
         v_season_id uuid;
         v_total_points int;
-        v_user_plan text;
-        v_milestone_reward text := 'none';
       BEGIN
         IF v_user_id IS NULL THEN
           RETURN jsonb_build_object('success', false, 'error', 'not_authenticated');
@@ -147,69 +220,19 @@ serve(async (req) => {
           DO UPDATE SET points = arena_user_stats.points + v_points, updated_at = now();
         END IF;
 
-        -- Check 1000 points milestone
-        SELECT COALESCE(SUM(points_earned), 0) INTO v_total_points
-        FROM daily_reward_claims
-        WHERE user_id = v_user_id;
-
-        IF v_total_points >= 1000 AND (v_total_points - v_points) < 1000 THEN
-          SELECT COALESCE(plan, 'free') INTO v_user_plan
-          FROM user_subscriptions
-          WHERE user_id = v_user_id
-            AND status = 'active'
-            AND (expires_at IS NULL OR expires_at > now())
-          ORDER BY
-            CASE plan WHEN 'premium' THEN 1 WHEN 'basic' THEN 2 ELSE 3 END
-          LIMIT 1;
-
-          v_user_plan := COALESCE(v_user_plan, 'free');
-
-          IF v_user_plan = 'free' THEN
-            INSERT INTO user_subscriptions (user_id, plan, status, expires_at, subscription_source)
-            VALUES (v_user_id, 'basic', 'active', now() + interval '30 days', 'milestone_reward')
-            ON CONFLICT (user_id) DO NOTHING;
-            IF NOT FOUND THEN
-              UPDATE user_subscriptions
-              SET plan = 'basic', status = 'active',
-                  expires_at = now() + interval '30 days',
-                  subscription_source = 'milestone_reward',
-                  updated_at = now()
-              WHERE user_id = v_user_id
-                AND (plan = 'free' OR status != 'active');
-            END IF;
-            v_milestone_reward := 'pro_1_month';
-
-          ELSIF v_user_plan = 'basic' THEN
-            UPDATE user_subscriptions
-            SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
-                subscription_source = 'milestone_reward',
-                updated_at = now()
-            WHERE user_id = v_user_id AND status = 'active' AND plan = 'basic';
-            v_milestone_reward := 'pro_extend_1_month';
-
-          ELSIF v_user_plan = 'premium' THEN
-            UPDATE user_subscriptions
-            SET expires_at = GREATEST(COALESCE(expires_at, now()), now()) + interval '30 days',
-                subscription_source = 'milestone_reward',
-                updated_at = now()
-            WHERE user_id = v_user_id AND status = 'active' AND plan = 'premium';
-            v_milestone_reward := 'premium_extend_1_month';
-          END IF;
-        END IF;
+        -- Return arena total (may have been reset by milestone trigger)
+        SELECT COALESCE(SUM(points), 0) INTO v_total_points
+        FROM arena_user_stats WHERE user_id = v_user_id;
 
         RETURN jsonb_build_object(
           'success', true,
           'streak_day', v_new_streak,
           'points_earned', v_points,
-          'total_points', v_total_points,
-          'milestone_reward', v_milestone_reward
+          'total_points', v_total_points
         );
       END;
       $fn$
     `);
-
-
-
     // get_daily_reward_status RPC
     await client.queryArray(`
       CREATE OR REPLACE FUNCTION public.get_daily_reward_status()
