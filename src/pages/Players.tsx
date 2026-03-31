@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
+import { useTopPlayers, TopPlayerEntry } from "@/hooks/useTopPlayers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useUserPlan } from "@/hooks/useUserPlan";
