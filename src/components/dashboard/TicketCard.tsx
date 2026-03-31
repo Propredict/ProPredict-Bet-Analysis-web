@@ -209,8 +209,8 @@ function TicketCard({
                     </span>
                     {parsed.league && <span className="text-[9px] text-muted-foreground">{parsed.league}</span>}
                   </div>
-                  <div className="flex items-center gap-1.5 blur-[5px] opacity-40 select-none">
-                    <Badge variant="secondary" className="text-[10px] px-1.5">{match.prediction || "???"}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 blur-[5px] opacity-40 select-none">{match.prediction || "???"}</Badge>
                     <span className="text-xs font-bold text-primary">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
