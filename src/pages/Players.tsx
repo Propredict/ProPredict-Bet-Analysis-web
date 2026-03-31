@@ -772,7 +772,79 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           )}
         </TabsContent>
 
-        <TabsContent value="transfers" className="p-4 mt-0">
+        <TabsContent value="squad" className="p-4 mt-0">
+          {squadLoading ? (
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+            </div>
+          ) : squadData?.players && squadData.players.length > 0 ? (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground mb-2">
+                👥 {squadData.players.length} players in {squadData.team?.name || "squad"}
+              </p>
+              {["Goalkeeper", "Defender", "Midfielder", "Attacker"].map(pos => {
+                const posPlayers = squadData.players.filter(p => p.position === pos);
+                if (posPlayers.length === 0) return null;
+                return (
+                  <div key={pos}>
+                    <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                      {pos === "Goalkeeper" ? "🧤" : pos === "Defender" ? "🛡️" : pos === "Midfielder" ? "⚡" : "⚽"} {pos}s ({posPlayers.length})
+                    </h4>
+                    <div className="space-y-1">
+                      {posPlayers.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => onClose()}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card hover:bg-secondary/40 border border-border/30 transition-all hover:border-primary/30 text-left"
+                        >
+                          <img src={p.photo} alt="" className="w-7 h-7 rounded-full object-cover border border-border/40" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold truncate">{p.name}</p>
+                          </div>
+                          {p.number && (
+                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50">
+                              #{p.number}
+                            </Badge>
+                          )}
+                          {p.age && (
+                            <span className="text-[10px] text-muted-foreground">{p.age}y</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">No squad data available</p>
+          )}
+          
+          {/* Available Seasons */}
+          {profile.availableSeasons && profile.availableSeasons.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border/30">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Available Seasons ({profile.availableSeasons.length})
+                </h4>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.availableSeasons.slice(0, 12).map(s => (
+                  <Badge key={s} variant="secondary" className="text-[9px] px-2 py-0.5 border-0 bg-secondary/50">
+                    {s}/{String(s + 1).slice(-2)}
+                  </Badge>
+                ))}
+                {profile.availableSeasons.length > 12 && (
+                  <Badge variant="secondary" className="text-[9px] px-2 py-0.5 border-0 bg-secondary/50">
+                    +{profile.availableSeasons.length - 12} more
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
           {profile.transfers && profile.transfers.length > 0 ? (
             <div className="space-y-1.5">
               {profile.transfers.map((t: any, i: number) => (
