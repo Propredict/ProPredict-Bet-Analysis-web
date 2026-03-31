@@ -158,6 +158,9 @@ serve(async (req: Request) => {
       if (player.team?.name) score += 15;
       if (player.league?.name) score += 10;
       
+      // Famous player boost
+      if (FAMOUS_IDS.has(player.id)) score += 200;
+      
       // Active-age bonus (17-40 = likely active footballer)
       // Penalize obviously retired/non-player ages
       const age = player.age;
