@@ -47,6 +47,7 @@ import type {
   ContentTier,
   ContentStatus,
   TicketResult,
+  TicketCategory,
 } from "@/types/admin";
 import { createMatchName, parseMatchName } from "@/types/admin";
 import type { TicketWithMatches } from "@/hooks/useTickets";
@@ -93,7 +94,7 @@ export default function ManageTickets() {
   const [title, setTitle] = useState("");
   const [ticketPrediction, setTicketPrediction] = useState(""); // ✅ NEW
   const [tier, setTier] = useState<ContentTier>("daily");
-  const [ticketCategory, setTicketCategory] = useState<string>("standard");
+  const [ticketCategory, setTicketCategory] = useState<TicketCategory | string>("standard");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [result, setResult] = useState<TicketResult>("pending");
   const [description, setDescription] = useState("");
@@ -121,6 +122,13 @@ export default function ManageTickets() {
     matches.length > 0
       ? matches.reduce((acc, m) => acc * m.odds, 1)
       : 0;
+
+  const normalizeTicketCategory = (
+    category?: string | null,
+  ): TicketCategory => {
+    if (category === "risk") return "multi_risk";
+    return category || "standard";
+  };
 
   const filteredFixtures = fixtures.filter((f) => {
     const s = matchSearch.toLowerCase();
@@ -176,7 +184,7 @@ export default function ManageTickets() {
     setTitle(ticket.title);
     setTicketPrediction(ticket.description ?? "");
     setTier(ticket.tier);
-    setTicketCategory((ticket as any).category || "standard");
+    setTicketCategory(normalizeTicketCategory((ticket as any).category));
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
     setTicketDate((ticket as any).ticket_date || getTodayBelgradeDate());
@@ -213,40 +221,46 @@ export default function ManageTickets() {
       odds: m.odds,
     }));
 
-    if (editingTicket) {
-      await updateTicket.mutateAsync({
-        id: editingTicket.id,
-        updates: {
-          title,
-          description: ticketPrediction,
-          tier,
-          status,
-          result,
-          total_odds: totalOdds,
-          ticket_date: ticketDate,
-          category: ticketCategory,
-        } as any,
-        matches: dbMatches,
-      });
-      toast.success("Ticket updated");
-    } else {
-      await createTicket.mutateAsync({
-        ticket: {
-          title,
-          description: ticketPrediction,
-          tier,
-          status,
-          result,
-          total_odds: totalOdds,
-          ticket_date: ticketDate,
-          category: ticketCategory,
-        } as any,
-        matches: dbMatches,
-      });
-      toast.success("Ticket created");
-    }
+    try {
+      const normalizedCategory = normalizeTicketCategory(ticketCategory);
 
-    setIsDialogOpen(false);
+      if (editingTicket) {
+        await updateTicket.mutateAsync({
+          id: editingTicket.id,
+          updates: {
+            title,
+            description: ticketPrediction,
+            tier,
+            status,
+            result,
+            total_odds: totalOdds,
+            ticket_date: ticketDate,
+            category: normalizedCategory,
+          } as any,
+          matches: dbMatches,
+        });
+        toast.success("Ticket updated");
+      } else {
+        await createTicket.mutateAsync({
+          ticket: {
+            title,
+            description: ticketPrediction,
+            tier,
+            status,
+            result,
+            total_odds: totalOdds,
+            ticket_date: ticketDate,
+            category: normalizedCategory,
+          } as any,
+          matches: dbMatches,
+        });
+        toast.success("Ticket created");
+      }
+
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
+    }
   };
 
   const handleDelete = async () => {
@@ -406,7 +420,7 @@ export default function ManageTickets() {
                   </SelectContent>
                 </Select>
 
-                <Select value={ticketCategory} onValueChange={setTicketCategory}>
+                <Select value={normalizeTicketCategory(ticketCategory)} onValueChange={setTicketCategory}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
