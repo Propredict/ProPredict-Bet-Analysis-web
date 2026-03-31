@@ -1172,7 +1172,7 @@ export default function Players() {
           <div>
             {selectedPlayerId ? (
               <Card className="overflow-hidden animate-fade-in relative">
-                <PlayerProfileView playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} />
+                <PlayerProfileView playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} onSelectPlayer={(id) => setSelectedPlayerId(id)} />
               </Card>
             ) : (
               <div className="hidden lg:flex items-center justify-center min-h-[400px]">
