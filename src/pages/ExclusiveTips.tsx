@@ -70,7 +70,7 @@ export default function ExclusiveTips() {
     timeZone: "Europe/Belgrade",
   });
   
-  const exclusiveTips = tips.filter(tip => tip.tier === "exclusive" && tip.tip_date === todayBelgrade);
+  const exclusiveTips = tips.filter(tip => tip.tier === "exclusive" && tip.tip_date === todayBelgrade && (!tip.category || tip.category === "standard"));
   const unlockedCount = exclusiveTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
