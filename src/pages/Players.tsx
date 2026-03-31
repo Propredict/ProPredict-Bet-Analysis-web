@@ -845,6 +845,7 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           )}
         </TabsContent>
 
+        <TabsContent value="transfers" className="p-4 mt-0">
           {profile.transfers && profile.transfers.length > 0 ? (
             <div className="space-y-1.5">
               {profile.transfers.map((t: any, i: number) => (
