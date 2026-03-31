@@ -10,6 +10,7 @@ import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 import { useNextOpponent, type NextOpponentData } from "@/hooks/useNextOpponent";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
