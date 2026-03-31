@@ -509,8 +509,14 @@ export default function Players() {
 
           {/* Player Profile */}
           <div>
-            {selectedPlayerId ? (
-              <Card className="overflow-hidden">
+          {selectedPlayerId ? (
+              <Card className="overflow-hidden animate-fade-in relative">
+                <button
+                  onClick={() => setSelectedPlayerId(null)}
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border/40 hover:bg-secondary transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
                 <PlayerProfileView playerId={selectedPlayerId} />
               </Card>
             ) : (
