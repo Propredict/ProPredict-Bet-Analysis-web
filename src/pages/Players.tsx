@@ -522,6 +522,11 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
         <AIPredictionCard profile={profile} opponentData={opponentData} />
       </div>
 
+      {/* 📈 FORM HISTORY CHART */}
+      <div className="px-4 pt-2">
+        <FormHistoryChart profile={profile} />
+      </div>
+
       {/* Stats Tabs */}
       <Tabs defaultValue="stats" className="w-full mt-2">
         <TabsList className="w-full justify-start rounded-none border-b border-border/30 bg-transparent h-auto p-0 overflow-x-auto">
