@@ -940,9 +940,14 @@ export default function Players() {
     if (!results) return [];
     return results
       .filter(p => {
-        if (!p.name || !p.id || !p.nationality) return false;
-        // Filter out players without a real photo (placeholder/generic avatars)
-        if (!p.photo || p.photo.includes('placeholder')) return false;
+        if (!p.name || !p.id) return false;
+        // Must have a real photo (not placeholder/blank/generic silhouette)
+        if (!p.photo || p.photo.includes('placeholder') || p.photo.includes('blank')) return false;
+        // Must have at least a team OR some stats — otherwise "Player data not available"
+        const hasTeam = p.team?.name && p.team.name.length > 0;
+        const hasStats = (p.appearances || 0) + (p.goals || 0) + (p.assists || 0) > 0;
+        const hasPosition = p.position && p.position.length > 0;
+        if (!hasTeam && !hasStats && !hasPosition) return false;
         return true;
       })
       .sort((a, b) => {
