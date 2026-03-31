@@ -1,4 +1,4 @@
-import { Gift, Flame, Lock, Trophy, Zap, Check, Loader2, Star, Smartphone } from "lucide-react";
+import { Gift, Flame, Lock, Trophy, Zap, Check, Loader2, Smartphone } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useDailyReward } from "@/hooks/useDailyReward";
@@ -10,16 +10,9 @@ import { useNavigate } from "react-router-dom";
 const STREAK_POINTS = [0, 2, 3, 4, 5, 6, 8, 15];
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
-/**
- * Website: info-only widget promoting the app feature
- * Android: full functional claim widget with streak tracking
- */
 export function DailyRewardWidget() {
   const isAndroid = getIsAndroidApp();
-
-  if (isAndroid) {
-    return <AndroidRewardWidget />;
-  }
+  if (isAndroid) return <AndroidRewardWidget />;
   return <WebRewardWidget />;
 }
 
@@ -30,7 +23,6 @@ function WebRewardWidget() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(45,100%,50%,0.08),transparent_60%)]" />
 
       <div className="relative p-5 sm:p-6 space-y-4">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -46,7 +38,6 @@ function WebRewardWidget() {
           </span>
         </div>
 
-        {/* Benefits */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
             <Trophy className="h-4 w-4 text-primary shrink-0" />
@@ -54,43 +45,32 @@ function WebRewardWidget() {
           </div>
           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
             <Zap className="h-4 w-4 text-amber-400 shrink-0" />
-            <span className="text-xs text-foreground">Unlock <span className="font-bold text-amber-400">premium picks</span> for free</span>
+            <span className="text-xs text-foreground">Reach <span className="font-bold text-amber-400">1,000 pts</span> for free upgrade</span>
           </div>
           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
             <Flame className="h-4 w-4 text-destructive shrink-0" />
-            <span className="text-xs text-foreground">Build streaks for <span className="font-bold text-destructive">bonus rewards</span></span>
+            <span className="text-xs text-foreground">Build streaks for <span className="font-bold text-destructive">more points</span></span>
           </div>
         </div>
 
-        {/* Streak preview (FOMO) */}
+        {/* 1000 pts milestone */}
         <div className="bg-gradient-to-r from-amber-500/10 to-primary/10 rounded-lg p-3 border border-amber-400/20 space-y-2">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="space-y-1 text-center sm:text-left">
               <p className="text-xs font-semibold text-foreground flex items-center gap-1 justify-center sm:justify-start">
-                <Flame className="h-3.5 w-3.5 text-destructive" />
-                Build your 7-day streak &amp; unlock bonus rewards
+                <Trophy className="h-3.5 w-3.5 text-primary" />
+                Reach 1,000 Arena Points &amp; unlock FREE subscription!
               </p>
               <p className="text-[10px] text-muted-foreground">
                 🔥 1,200+ users already claiming daily rewards
               </p>
             </div>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                <div
-                  key={day}
-                  className="w-6 h-6 rounded-full border border-border/50 bg-muted/40 flex items-center justify-center text-[8px] font-bold text-muted-foreground"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
           </div>
           <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
-            <p>🆓 Free → <span className="text-primary font-semibold">3 days Pro</span> · ⭐ Pro → <span className="text-primary font-semibold">1 day Premium</span> · 👑 Premium → <span className="text-amber-400 font-semibold">+8 bonus pts</span></p>
+            <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span> · ⭐ Pro → <span className="text-primary font-semibold">+1 month Pro free</span> · 👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium free</span></p>
           </div>
         </div>
 
-        {/* CTA → App */}
         <a
           href={PLAY_STORE_URL}
           target="_blank"
@@ -141,7 +121,7 @@ function AndroidRewardWidget() {
             </h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Sign in to start collecting daily points, build streaks, and unlock premium predictions!
+            Sign in to start collecting daily points and unlock free subscriptions at 1,000 points!
           </p>
           <button
             onClick={() => navigate("/login")}
@@ -156,6 +136,8 @@ function AndroidRewardWidget() {
 
   const displayStreak = currentStreak;
   const progressPercent = (displayStreak / 7) * 100;
+  const pointsTo1000 = Math.max(0, 1000 - totalPoints);
+  const milestoneProgress = Math.min(100, (totalPoints / 1000) * 100);
 
   return (
     <>
@@ -181,7 +163,7 @@ function AndroidRewardWidget() {
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Trophy className="h-4 w-4 mx-auto mb-1 text-primary" />
               <p className="text-lg font-bold text-foreground">{totalPoints}</p>
-              <p className="text-[9px] text-muted-foreground">Total Points</p>
+              <p className="text-[9px] text-muted-foreground">Arena Points</p>
             </div>
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Flame className="h-4 w-4 mx-auto mb-1 text-destructive" />
@@ -205,7 +187,6 @@ function AndroidRewardWidget() {
               {[1, 2, 3, 4, 5, 6, 7].map((day) => {
                 const isCompleted = day <= displayStreak;
                 const isCurrent = day === displayStreak + 1 && !claimedToday;
-                const isBonus = day === 7;
 
                 return (
                   <div key={day} className="flex flex-col items-center gap-1">
@@ -220,8 +201,6 @@ function AndroidRewardWidget() {
                     >
                       {isCompleted ? (
                         <Check className="h-3.5 w-3.5" />
-                      ) : isBonus ? (
-                        <Star className="h-3.5 w-3.5" />
                       ) : (
                         day
                       )}
@@ -236,17 +215,26 @@ function AndroidRewardWidget() {
             <Progress value={progressPercent} className="h-2" />
           </div>
 
-          {/* Day 7 bonus info - tiered */}
-          <div className="bg-amber-500/10 border border-amber-400/20 rounded-lg p-2.5 text-xs space-y-1">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-400 shrink-0" />
-              <span className="text-amber-400 font-bold">Day 7 Streak Bonus:</span>
+          {/* 1000 Points Milestone */}
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-xs font-bold text-foreground">🎯 1,000 Points Milestone</span>
+              </div>
+              <span className="text-[10px] font-semibold text-primary">{totalPoints}/1,000</span>
             </div>
-            <div className="pl-6 space-y-0.5 text-muted-foreground">
-              <p>🆓 Free users → <span className="text-primary font-semibold">3 days Pro access</span></p>
-              <p>⭐ Pro users → <span className="text-primary font-semibold">1 day Premium access</span></p>
-              <p>👑 Premium users → <span className="text-amber-400 font-semibold">+8 extra bonus points</span></p>
-            </div>
+            <Progress value={milestoneProgress} className="h-1.5" />
+            {pointsTo1000 > 0 ? (
+              <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
+                <p>{pointsTo1000} pts to go! Rewards:</p>
+                <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span></p>
+                <p>⭐ Pro → <span className="text-primary font-semibold">+1 month Pro extended</span></p>
+                <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
+              </div>
+            ) : (
+              <p className="text-[10px] text-amber-400 font-bold">🎉 Milestone reached! Reward applied!</p>
+            )}
           </div>
 
           <p className="text-[10px] text-muted-foreground text-center">
@@ -282,8 +270,7 @@ function AndroidRewardWidget() {
         <DailyRewardClaimPopup
           streakDay={lastClaimResult.streakDay}
           pointsEarned={lastClaimResult.pointsEarned}
-          isBonusDay={lastClaimResult.isBonusDay}
-          bonusReward={lastClaimResult.bonusReward}
+          totalPoints={totalPoints}
           onClose={dismissClaimResult}
         />
       )}
