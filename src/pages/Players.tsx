@@ -940,7 +940,14 @@ export default function Players() {
     if (!results) return [];
     const q = query.trim().toLowerCase();
     return results
-      .filter(p => p?.id && p?.name && p?.photo && !/placeholder|blank|default|no-photo/i.test(p.photo))
+      .filter(p => {
+        if (!p?.id || !p?.name) return false;
+        // Must have a real photo (not placeholder/blank)
+        if (!p.photo || /placeholder|blank|default|no-photo/i.test(p.photo)) return false;
+        // Must have nationality (indicates real player data exists)
+        if (!p.nationality) return false;
+        return true;
+      })
       .sort((a, b) => {
         const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
         const aStarts = an.startsWith(q) ? 1 : 0;
