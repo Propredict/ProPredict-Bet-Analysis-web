@@ -23,7 +23,7 @@ export default function RiskOfTheDay() {
   const [searchParams] = useSearchParams();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  const premiumTips = tips?.filter((t) => t.tier === "premium") || [];
+  const premiumTips = tips?.filter((t: any) => t.category === "risk_of_day") || [];
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
