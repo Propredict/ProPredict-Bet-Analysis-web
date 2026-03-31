@@ -307,14 +307,14 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
               Watch ad to unlock Full AI analysis
             </button>
           ) : (
-            /* Web: Download app CTA – matching screenshot design */
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🤖</span>
+            /* Web: Download app CTA */
+            <div className="flex flex-col items-center gap-3 py-1">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🤖</span>
                 <div>
-                  <p className="text-xs font-semibold">Want full AI analysis?</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Download className="h-2.5 w-2.5" /> Get ProPredict app
+                  <p className="text-sm font-bold">Want full AI analysis?</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Download className="h-3 w-3" /> Get ProPredict app
                   </p>
                 </div>
               </div>
@@ -322,10 +322,9 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
                 href="https://play.google.com/store/apps/details?id=com.propredict.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
               >
-                <Download className="h-3.5 w-3.5" />
-                Download
+                👉 Unlock AI Pick & Win More 🎯
               </a>
             </div>
           )}
