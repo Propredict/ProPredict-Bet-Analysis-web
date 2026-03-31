@@ -73,8 +73,7 @@ export function useTips(includeAll = false) {
         .insert({
           ...tip,
           created_by: session?.user?.id ?? null,
-          // tip_date se setuje u DB (Belgrade)
-        })
+        } as any)
         .select()
         .single();
 
@@ -95,7 +94,7 @@ export function useTips(includeAll = false) {
     mutationFn: async ({ id, updates }: { id: string; updates: TipUpdate }) => {
       const { data, error } = await supabase
         .from("tips")
-        .update(updates)
+        .update(updates as any)
         .eq("id", id)
         .select()
         .single();
