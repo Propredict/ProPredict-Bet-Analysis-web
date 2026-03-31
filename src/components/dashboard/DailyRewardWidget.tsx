@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useDailyReward } from "@/hooks/useDailyReward";
 import { useAuth } from "@/hooks/useAuth";
+import { useArenaStats } from "@/hooks/useArenaStats";
 import { DailyRewardClaimPopup } from "./DailyRewardClaimPopup";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
