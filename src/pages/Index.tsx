@@ -120,10 +120,10 @@ const Index = () => {
                   📱 More Tips, Combos &amp; Match Analysis on the App
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-lg">
-                  Get <span className="text-primary font-bold">instant push alerts</span> for new picks, 
-                  <span className="text-primary font-bold"> Diamond Picks</span>, 
-                  <span className="text-primary font-bold"> Risk of the Day</span> and full AI match analysis — 
-                  all faster and ad-free on the app.
+                  Unlock <span className="text-primary font-bold">Pro Tips &amp; Combos</span> without a subscription — 
+                  watch a short ad to access <span className="text-primary font-bold">Diamond Picks</span>, 
+                  <span className="text-primary font-bold">Risk of the Day</span> and full AI match analysis 
+                  directly on the app.
                 </p>
                 <div className="flex items-center gap-2 justify-center md:justify-start text-xs text-muted-foreground">
                   <span>⭐⭐⭐⭐⭐</span>
