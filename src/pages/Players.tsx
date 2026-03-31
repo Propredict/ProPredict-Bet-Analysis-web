@@ -333,6 +333,11 @@ function QuickPlayerChip({ player, onSelect }: { player: RecentPlayer; onSelect:
 
 function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: () => void }) {
   const { data: profile, isLoading } = usePlayerProfile(playerId);
+  
+  // Fetch opponent data once we have team + league info
+  const teamId = profile?.team?.id ?? null;
+  const leagueId = profile?.league?.id ?? null;
+  const { data: opponentData } = useNextOpponent(teamId, leagueId);
 
   if (isLoading) {
     return (
@@ -392,7 +397,7 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
 
       {/* 🤖 AI PREDICTION CARD – Between Header and Stats */}
       <div className="px-4 pt-3">
-        <AIPredictionCard profile={profile} />
+        <AIPredictionCard profile={profile} opponentData={opponentData} />
       </div>
 
       {/* Stats Tabs */}
