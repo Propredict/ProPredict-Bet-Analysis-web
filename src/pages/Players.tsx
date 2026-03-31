@@ -1,8 +1,10 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play, Briefcase, Users, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +16,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
-import { useRef } from "react";
 import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 import { useNextOpponent, type NextOpponentData } from "@/hooks/useNextOpponent";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
@@ -117,6 +118,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const opp = prediction.opponentAdjustment;
   const [adUnlocked, setAdUnlocked] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const unlockTapGuardRef = useRef(0);
 
   // Check localStorage for ad-unlock state (per player, per day)
   useEffect(() => {
@@ -169,6 +171,13 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
     setIsUnlocking(true);
     showRewardedAd();
   }, []);
+
+  const triggerAdUnlock = useCallback(() => {
+    const now = Date.now();
+    if (isUnlocking || now - unlockTapGuardRef.current < 750) return;
+    unlockTapGuardRef.current = now;
+    handleAdUnlock();
+  }, [handleAdUnlock, isUnlocking]);
 
   const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
   const assistColor = prediction.assistProbability >= 40 ? "text-green-400" : prediction.assistProbability >= 20 ? "text-yellow-400" : "text-red-400";
@@ -345,23 +354,33 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           {isAndroid ? (
             /* Android: Free = watch ad only, Pro = watch ad + upgrade to Premium */
             <div className="relative z-10 flex flex-col items-center gap-2 pointer-events-auto">
-              <button
+              <Button
                 type="button"
-                onClick={handleAdUnlock}
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  triggerAdUnlock();
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  triggerAdUnlock();
+                }}
                 disabled={isUnlocking}
-                className="relative z-20 w-full cursor-pointer touch-manipulation pointer-events-auto select-none flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 active:scale-[0.99] transition-transform duration-150 animate-pulse disabled:opacity-70 disabled:cursor-not-allowed"
+                className="relative z-20 h-9 w-full gap-1.5 rounded-xl border-0 text-xs font-medium pointer-events-auto touch-manipulation select-none animate-pulse active:scale-[0.99] transition-transform duration-150"
                 aria-label="Watch ad to unlock Full AI analysis"
               >
                 <Play className="h-4 w-4" />
                 {isUnlocking ? "Watching ad..." : "Watch ad to unlock Full AI analysis"}
-              </button>
+              </Button>
               {plan === "basic" && (
-                <a
-                  href="/get-premium"
+                <Link
+                  to="/get-premium"
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   or upgrade to Premium to unlock all ✨
-                </a>
+                </Link>
               )}
             </div>
           ) : (
