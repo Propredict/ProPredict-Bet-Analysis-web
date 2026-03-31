@@ -11,6 +11,8 @@ import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { useRef } from "react";
 import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
 import { useNextOpponent, type NextOpponentData } from "@/hooks/useNextOpponent";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
