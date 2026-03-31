@@ -24,11 +24,6 @@ const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/Dashboa
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
 
-// Charts – very heavy (recharts), lazy + only on web
-const ModelAccuracyTrendChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.ModelAccuracyTrendChart })));
-const AIAdoptionChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.AIAdoptionChart })));
-const PredictionOutcomeChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.PredictionOutcomeChart })));
-const ConfidenceDistributionChart = lazy(() => import("@/components/dashboard/ModelAnalyticsCharts").then(m => ({ default: m.ConfidenceDistributionChart })));
 
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
