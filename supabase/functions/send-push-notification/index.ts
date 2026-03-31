@@ -39,7 +39,38 @@ function getPublishHeadline(contentTier: string, userPlan: string): string {
   return "⚽ New Pick Available!";
 }
 
+/** Check if content has a special category */
+function getSpecialHeadline(category: string | null): string | null {
+  if (category === "diamond_pick") return "💎 Diamond Pick Just Dropped — AI Says This Is BIG. Tap Now 🚀";
+  if (category === "risk_of_the_day") return "🔥 Risk of the Day is LIVE — High Risk. High Reward. Are You In? 🎯";
+  if (category === "multi_risk") return "🎯 Multi Risk Matches Are LIVE — Multiple High-Risk Picks Ready!";
+  return null;
+}
+
 function getPublishBody(type: string, record: Record<string, unknown>): string {
+  const category = (record.category as string) ?? null;
+
+  // Special category bodies
+  if (category === "diamond_pick") {
+    const home = record.home_team ?? "";
+    const away = record.away_team ?? "";
+    return home && away
+      ? `${home} vs ${away} — Our highest-confidence premium pick is live!`
+      : "The AI's top premium pick just dropped — don't miss it!";
+  }
+  if (category === "risk_of_the_day") {
+    const home = record.home_team ?? "";
+    const away = record.away_team ?? "";
+    return home && away
+      ? `${home} vs ${away} — High odds, high reward. Check it out!`
+      : "Today's riskiest pick is ready — big odds await!";
+  }
+  if (category === "multi_risk") {
+    return type === "tip"
+      ? "Multiple high-risk picks are live — tap to see the full list!"
+      : "A high-risk combo is ready — open the app now!";
+  }
+
   if (type === "tip") {
     const home = record.home_team ?? "";
     const away = record.away_team ?? "";
