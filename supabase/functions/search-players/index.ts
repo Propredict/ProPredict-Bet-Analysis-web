@@ -36,7 +36,7 @@ serve(async (req: Request) => {
     const q = encodeURIComponent(search);
     const searchLower = search.toLowerCase();
     const currentYear = new Date().getFullYear();
-
+    const currentMonth = new Date().getMonth(); // 0-indexed
     // Fetch from BOTH endpoints in parallel:
     // 1. /players/profiles (basic profiles, no stats)
     // 2. /players?search=&season= (full player data with stats - better for famous players)
