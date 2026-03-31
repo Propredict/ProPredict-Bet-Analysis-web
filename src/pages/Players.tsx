@@ -133,18 +133,16 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const diffColor = opp?.matchDifficulty === "EASY" ? "text-green-400 bg-green-500/10" : opp?.matchDifficulty === "HARD" ? "text-red-400 bg-red-500/10" : "text-yellow-400 bg-yellow-500/10";
 
   // Access rules:
-  // Web: Free → locked (download CTA), Pro/Premium → unlocked
-  // Android: Free/Pro → locked (watch ad to unlock), Premium → unlocked
+  // Web: ALWAYS locked – AI prediction is app-exclusive (download CTA)
+  // Android: Free/Pro → watch ad to unlock, Premium → unlocked
   const isPremium = plan === "premium";
-  const isProOrAbove = plan === "basic" || plan === "premium";
   
   let showLocked: boolean;
   if (isAndroid) {
-    // Android: only Premium sees everything free; Free/Pro must watch ad
     showLocked = isPremium ? false : !adUnlocked;
   } else {
-    // Web: Pro and Premium see everything; Free is locked
-    showLocked = isProOrAbove ? false : true;
+    // Web: always locked regardless of plan
+    showLocked = true;
   }
 
   return (
