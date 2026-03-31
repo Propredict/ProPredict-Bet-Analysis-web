@@ -21,6 +21,8 @@ import {
   BookOpen,
   X,
   User,
+  Target,
+  Gem,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -45,13 +47,15 @@ const tipsItems = [
   { title: "Daily Predictions", url: "/daily-analysis", icon: Lightbulb },
   { title: "Pro Insights", url: "/pro-analysis", icon: Star },
   { title: "Premium Predictions", url: "/premium-analysis", icon: Crown },
+  { title: "Risk of the Day", url: "/risk-of-the-day", icon: Target },
+  { title: "Diamond Pick", url: "/diamond-pick", icon: Gem },
 ];
 
 const ticketsItems = [
   { title: "Daily Multi-Match", url: "/daily-predictions", icon: Calendar },
   { title: "Pro Multi-Match", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Multi-Match", url: "/premium-predictions", icon: Crown },
-  
+  { title: "Multi Risk Matches", url: "/multi-risk-matches", icon: Target },
 ];
 
 const packagesItems = [
