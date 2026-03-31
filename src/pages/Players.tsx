@@ -619,6 +619,9 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           <TabsTrigger value="stats" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
             <Activity className="h-3.5 w-3.5 mr-1" /> Stats
           </TabsTrigger>
+          <TabsTrigger value="career" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
+            <Briefcase className="h-3.5 w-3.5 mr-1" /> Career
+          </TabsTrigger>
           <TabsTrigger value="transfers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
             <ArrowRightLeft className="h-3.5 w-3.5 mr-1" /> Transfers
           </TabsTrigger>
