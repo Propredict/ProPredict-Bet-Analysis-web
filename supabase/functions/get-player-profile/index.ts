@@ -36,9 +36,12 @@ serve(async (req: Request) => {
 
     const headers = { "x-apisports-key": apiKey };
 
-    // Try current season first, fallback to previous seasons (up to 3 years back)
+    // Try multiple seasons (current year maps to season-1 in football API)
+    // e.g. in 2026, current season is 2025, previous is 2024, etc.
+    const yr = Number(season);
+    const seasonsToTry = [yr, yr - 1, yr - 2, yr - 3, yr - 4];
     let data: any = null;
-    for (const s of [season, String(Number(season) - 1), String(Number(season) - 2)]) {
+    for (const s of seasonsToTry) {
       const res = await fetch(
         `${API_FOOTBALL_URL}/players?id=${playerId}&season=${s}`,
         { headers }
@@ -48,6 +51,20 @@ serve(async (req: Request) => {
       if (json.response?.length > 0) {
         data = json.response[0];
         break;
+      }
+    }
+
+    if (!data) {
+      // Last resort: try profiles endpoint for basic bio
+      const profileRes = await fetch(
+        `${API_FOOTBALL_URL}/players/profiles?player=${playerId}`,
+        { headers }
+      );
+      if (profileRes.ok) {
+        const profileJson = await profileRes.json();
+        if (profileJson.response?.length > 0) {
+          data = profileJson.response[0];
+        }
       }
     }
 
