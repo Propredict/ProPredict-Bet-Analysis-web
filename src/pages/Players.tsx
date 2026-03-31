@@ -338,8 +338,10 @@ export default function Players() {
 
   const { data: results, isLoading } = useSearchPlayers(query);
 
-  // Filter out players with no useful data (no name or no photo)
-  const filteredResults = results?.filter(p => p.name && p.photo && p.id) || [];
+  // Filter out players with no useful data
+  const filteredResults = results?.filter(p => 
+    p.name && p.id && p.nationality
+  ) || [];
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());
