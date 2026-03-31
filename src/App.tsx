@@ -222,6 +222,9 @@ const App = () => {
                     <Route path="/match-previews" element={<MatchPreviews />} />
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
                     <Route path="/players" element={<Players />} />
+                    <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
+                    <Route path="/diamond-pick" element={<DiamondPick />} />
+                    <Route path="/multi-risk-matches" element={<MultiRiskMatches />} />
 
                     {/* Protected */}
                     <Route
