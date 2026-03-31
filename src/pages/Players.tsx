@@ -794,7 +794,7 @@ function PlayerProfileView({ playerId, onClose, onSelectPlayer }: { playerId: nu
                       {posPlayers.map(p => (
                         <button
                           key={p.id}
-                          onClick={() => onClose()}
+                          onClick={() => onSelectPlayer?.(p.id)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card hover:bg-secondary/40 border border-border/30 transition-all hover:border-primary/30 text-left"
                         >
                           <img src={p.photo} alt="" className="w-7 h-7 rounded-full object-cover border border-border/40" />
