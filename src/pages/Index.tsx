@@ -112,39 +112,35 @@ const Index = () => {
 
         {/* App Promo CTA – Web only */}
         {!isAndroid && (
-          <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-primary/10 p-5 sm:p-8">
+          <a
+            href="https://play.google.com/store/apps/details?id=me.propredict.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-primary/10 p-5 sm:p-8 hover:border-primary/50 transition-colors"
+          >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.15),transparent_70%)]" />
-            <div className="relative flex flex-col md:flex-row items-center gap-5">
-              <div className="flex-1 text-center md:text-left space-y-2">
-                <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">
-                  📱 More Tips, Combos &amp; Match Analysis on the App
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-lg">
-                  Unlock <span className="text-primary font-bold">Pro Tips &amp; Combos</span> without a subscription — 
-                  watch a short ad to access <span className="text-primary font-bold">Diamond Picks</span>, 
-                  <span className="text-primary font-bold">Risk of the Day</span> and full AI match analysis 
-                  directly on the app.
-                </p>
-                <div className="flex items-center gap-2 justify-center md:justify-start text-xs text-muted-foreground">
-                  <span>⭐⭐⭐⭐⭐</span>
-                  <span>Trusted by 1,000+ users</span>
-                </div>
+            <div className="relative flex flex-col items-center text-center space-y-3">
+              <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">
+                📱 More Tips, Combos &amp; Match Analysis on the App
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-lg">
+                Unlock <span className="text-primary font-bold">Pro Tips &amp; Combos</span> without a subscription — 
+                watch a short ad to access <span className="text-primary font-bold">Diamond Picks</span>, 
+                <span className="text-primary font-bold">Risk of the Day</span> and full AI match analysis 
+                directly on the app.
+              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>⭐⭐⭐⭐⭐</span>
+                <span>Trusted by 1,000+ users</span>
               </div>
-              <a
-                href="https://play.google.com/store/apps/details?id=me.propredict.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0"
-              >
-                <img
-                  src={googlePlayBanner}
-                  alt="Get it on Google Play"
-                  className="h-14 sm:h-16 rounded-lg shadow-lg hover:scale-105 transition-transform"
-                  loading="lazy"
-                />
-              </a>
+              <div className="inline-flex items-center gap-2 mt-1 bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20 transition-colors">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186a2.372 2.372 0 01-.61-1.6V3.414c0-.612.222-1.17.609-1.6zm.77-.674l11.15 6.423L12.56 10.5 4.38 1.14zM22 12c0 .695-.356 1.336-.947 1.7l-3.14 1.81-3.36-3.51 3.36-3.51 3.14 1.81c.591.364.947 1.005.947 1.7zM4.38 22.86l8.18-9.36 2.97 3.1-11.15 6.26z"/>
+                </svg>
+                Get it on Google Play
+              </div>
             </div>
-          </div>
+          </a>
         )}
 
         <Suspense fallback={<LazyFallback />}>
