@@ -1085,7 +1085,8 @@ export default function Players() {
     setRecentSearches([]);
   };
 
-  const showHomeState = !isLoading && query.length < 2 && !selectedPlayerId;
+  const liveSearchActive = searchInput.trim().length >= 2;
+  const showHomeState = !liveSearchActive && !selectedPlayerId;
 
   return (
     <>
@@ -1128,7 +1129,7 @@ export default function Players() {
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
           {/* Results List */}
           <div className="space-y-3">
-            {isLoading && (
+            {liveSearchActive && isLoading && (
               <div className="space-y-2">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-16 w-full rounded-xl" />
@@ -1136,15 +1137,15 @@ export default function Players() {
               </div>
             )}
 
-            {!isLoading && query.length >= 2 && filteredResults.length === 0 && (
+            {liveSearchActive && !isLoading && filteredResults.length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center">
-                  <p className="text-sm text-muted-foreground">No players found for "{query}"</p>
+                  <p className="text-sm text-muted-foreground">No players found for "{searchInput.trim()}"</p>
                 </CardContent>
               </Card>
             )}
 
-            {!isLoading && filteredResults.length > 0 && (
+            {liveSearchActive && !isLoading && filteredResults.length > 0 && (
               <ScrollArea className="max-h-[calc(100vh-220px)] lg:max-h-[calc(100vh-200px)]">
                 <div className="space-y-2 pr-2">
                   {filteredResults.map((player) => (
