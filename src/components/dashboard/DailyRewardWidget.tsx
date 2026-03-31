@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useDailyReward } from "@/hooks/useDailyReward";
 import { useAuth } from "@/hooks/useAuth";
+import { useArenaStats } from "@/hooks/useArenaStats";
 import { DailyRewardClaimPopup } from "./DailyRewardClaimPopup";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
@@ -57,6 +58,7 @@ function WebRewardWidget() {
 function AndroidRewardWidget() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const arenaStats = useArenaStats();
   const {
     claimedToday,
     currentStreak,
@@ -102,10 +104,13 @@ function AndroidRewardWidget() {
     );
   }
 
+  const arenaPoints = arenaStats.points || 0;
+  const dailyPoints = totalPoints || 0;
+  const combinedPoints = dailyPoints + arenaPoints;
   const displayStreak = currentStreak;
   const progressPercent = (displayStreak / 7) * 100;
-  const pointsTo1000 = Math.max(0, 1000 - totalPoints);
-  const milestoneProgress = Math.min(100, (totalPoints / 1000) * 100);
+  const pointsTo1000 = Math.max(0, 1000 - combinedPoints);
+  const milestoneProgress = Math.min(100, (combinedPoints / 1000) * 100);
 
   return (
     <>
@@ -130,8 +135,8 @@ function AndroidRewardWidget() {
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Trophy className="h-4 w-4 mx-auto mb-1 text-primary" />
-              <p className="text-lg font-bold text-foreground">{totalPoints}</p>
-              <p className="text-[9px] text-muted-foreground">Arena Points</p>
+              <p className="text-lg font-bold text-foreground">{combinedPoints}</p>
+              <p className="text-[9px] text-muted-foreground">Total Points</p>
             </div>
             <div className="text-center p-2.5 bg-muted/30 rounded-lg">
               <Flame className="h-4 w-4 mx-auto mb-1 text-destructive" />
@@ -190,9 +195,13 @@ function AndroidRewardWidget() {
                 <Trophy className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-xs font-bold text-foreground">🎯 1,000 Points Milestone</span>
               </div>
-              <span className="text-[10px] font-semibold text-primary">{totalPoints}/1,000</span>
+              <span className="text-[10px] font-semibold text-primary">{combinedPoints}/1,000</span>
             </div>
             <Progress value={milestoneProgress} className="h-1.5" />
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground pl-1">
+              <span>🎁 Daily: <span className="font-semibold text-foreground">{dailyPoints} pts</span></span>
+              <span>⚔️ AI vs Members: <span className="font-semibold text-foreground">{arenaPoints} pts</span></span>
+            </div>
             {pointsTo1000 > 0 ? (
               <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
                 <p>{pointsTo1000} pts to go! Rewards:</p>
@@ -247,7 +256,7 @@ function AndroidRewardWidget() {
         <DailyRewardClaimPopup
           streakDay={lastClaimResult.streakDay}
           pointsEarned={lastClaimResult.pointsEarned}
-          totalPoints={totalPoints}
+          totalPoints={combinedPoints}
           onClose={dismissClaimResult}
         />
       )}
