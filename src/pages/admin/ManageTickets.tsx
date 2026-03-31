@@ -139,6 +139,7 @@ export default function ManageTickets() {
     setTitle("");
     setTicketPrediction("");
     setTier("daily");
+    setTicketCategory("standard");
     setStatus("draft");
     setResult("pending");
     setDescription("");
