@@ -236,7 +236,9 @@ serve(async (req) => {
       const ids = planGroups[plan];
       if (ids.length === 0) continue;
 
-      const headline = getPublishHeadline(contentTier, plan);
+      // Special categories override the standard headline
+      const specialHeadline = getSpecialHeadline(record.category ?? null);
+      const headline = specialHeadline ?? getPublishHeadline(contentTier, plan);
 
       const payload = {
         app_id: ONESIGNAL_APP_ID,
