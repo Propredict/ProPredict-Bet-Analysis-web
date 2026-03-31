@@ -214,10 +214,15 @@ serve(async (req) => {
       $fn$
     `);
 
-    // Schedule daily push reminder at 18:00 UTC
-    await client.queryArray(`
-      SELECT cron.unschedule('daily-reward-push-reminder')
-    `).catch(() => {});
+    // Schedule daily push reminder at 18:00 UTC (separate transaction)
+    await client.queryArray("commit");
+    await client.queryArray("begin");
+    try {
+      await client.queryArray(`SELECT cron.unschedule('daily-reward-push-reminder')`);
+    } catch {
+      await client.queryArray("rollback");
+      await client.queryArray("begin");
+    }
 
     await client.queryArray(`
       SELECT cron.schedule(
