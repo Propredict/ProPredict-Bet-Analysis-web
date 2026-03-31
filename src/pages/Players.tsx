@@ -116,6 +116,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
   const prediction = useMemo(() => calculatePlayerPrediction(profile, opponentData), [profile, opponentData]);
   const opp = prediction.opponentAdjustment;
   const [adUnlocked, setAdUnlocked] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
 
   // Check localStorage for ad-unlock state (per player, per day)
   useEffect(() => {
@@ -126,21 +127,48 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
     } catch {}
   }, [profile.player.id]);
 
+  useEffect(() => {
+    if (!isAndroid) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      const data = typeof event.data === "string"
+        ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })()
+        : event.data;
+      const { type } = data || {};
+
+      if (type === "AD_UNLOCK_SUCCESS") {
+        const today = new Date().toISOString().slice(0, 10);
+        const key = `propredict_player_ai_${profile.player.id}_${today}`;
+        try { localStorage.setItem(key, "1"); } catch {}
+        setAdUnlocked(true);
+        setIsUnlocking(false);
+      }
+
+      if (type === "AD_UNLOCK_CANCELLED" || type === "AD_LOAD_FAILED" || type === "RESET_AD_BUTTON") {
+        setIsUnlocking(false);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isAndroid, profile.player.id]);
+
   const handleAdUnlock = useCallback(() => {
     const bridge = (window as any)?.Android;
-    if (typeof bridge?.showRewardedAd !== "function") {
+    const showRewardedAd = typeof bridge?.watchRewardedAd === "function"
+      ? () => bridge.watchRewardedAd()
+      : typeof bridge?.showRewardedAd === "function"
+        ? () => bridge.showRewardedAd()
+        : null;
+
+    if (!showRewardedAd) {
       // Not on Android – show feedback instead of silently failing
       import("sonner").then(({ toast }) => toast.error("Rewarded ads are only available in the Android app"));
       return;
     }
-    (window as any).onRewardedAdComplete = () => {
-      const today = new Date().toISOString().slice(0, 10);
-      const key = `propredict_player_ai_${profile.player.id}_${today}`;
-      try { localStorage.setItem(key, "1"); } catch {}
-      setAdUnlocked(true);
-    };
-    bridge.showRewardedAd("player_ai_prediction");
-  }, [profile.player.id]);
+    setIsUnlocking(true);
+    showRewardedAd();
+  }, []);
 
   const goalColor = prediction.goalProbability >= 55 ? "text-green-400" : prediction.goalProbability >= 35 ? "text-yellow-400" : "text-red-400";
   const assistColor = prediction.assistProbability >= 40 ? "text-green-400" : prediction.assistProbability >= 20 ? "text-yellow-400" : "text-red-400";
@@ -320,11 +348,12 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
               <button
                 type="button"
                 onClick={handleAdUnlock}
-                className="relative z-20 w-full cursor-pointer touch-manipulation pointer-events-auto select-none flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 active:scale-[0.99] transition-transform duration-150 animate-pulse"
+                disabled={isUnlocking}
+                className="relative z-20 w-full cursor-pointer touch-manipulation pointer-events-auto select-none flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 active:scale-[0.99] transition-transform duration-150 animate-pulse disabled:opacity-70 disabled:cursor-not-allowed"
                 aria-label="Watch ad to unlock Full AI analysis"
               >
                 <Play className="h-4 w-4" />
-                Watch ad to unlock Full AI analysis
+                {isUnlocking ? "Watching ad..." : "Watch ad to unlock Full AI analysis"}
               </button>
               {plan === "basic" && (
                 <a
