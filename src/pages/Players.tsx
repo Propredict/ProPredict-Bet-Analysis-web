@@ -881,8 +881,8 @@ export default function Players() {
   return (
     <>
       <Helmet>
-        <title>Player Search | ProPredict</title>
-        <meta name="description" content="Search any football player and view complete stats, transfers, trophies and injury history." />
+        <title>Smart Player Picks ⚡ | ProPredict</title>
+        <meta name="description" content="AI-powered smart player picks. Search any football player and get AI predictions, stats, transfers and more." />
       </Helmet>
 
       <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 pb-20 md:pb-4">
@@ -890,9 +890,9 @@ export default function Players() {
         <div className="mb-4">
           <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
             <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            Player Search
+            Smart Player Picks ⚡
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Search any player by name for complete profile & stats</p>
+          <p className="text-sm text-muted-foreground mt-1">AI-powered player analysis & predictions</p>
         </div>
 
         {/* Search Bar */}
