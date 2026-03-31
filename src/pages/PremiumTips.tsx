@@ -68,7 +68,7 @@ export default function PremiumTips() {
     timeZone: "Europe/Belgrade",
   });
   
-  const premiumTips = tips.filter(tip => tip.tier === "premium" && tip.tip_date === todayBelgrade);
+  const premiumTips = tips.filter(tip => tip.tier === "premium" && tip.tip_date === todayBelgrade && (!tip.category || tip.category === "standard"));
   const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
   const showUpgradeBanner = plan !== "premium";
 
