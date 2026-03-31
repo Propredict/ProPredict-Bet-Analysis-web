@@ -307,16 +307,25 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
               Watch ad to unlock Full AI analysis
             </button>
           ) : (
-            /* Web Free: upgrade CTA */
-            <div className="text-center">
-              <p className="text-xs font-bold mb-1">🔒 Full AI analysis for next match</p>
-              <p className="text-[10px] text-muted-foreground mb-2.5">Upgrade to Pro or Premium to unlock Assist%, Form, Risk & AI Pick</p>
+            /* Web: Download app CTA – matching screenshot design */
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🤖</span>
+                <div>
+                  <p className="text-xs font-semibold">Want full AI analysis?</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <Download className="h-2.5 w-2.5" /> Get ProPredict app
+                  </p>
+                </div>
+              </div>
               <a
-                href="/get-premium"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+                href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <Star className="h-4 w-4" />
-                Get Pro / Premium
+                <Download className="h-3.5 w-3.5" />
+                Download
               </a>
             </div>
           )}
