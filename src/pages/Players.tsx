@@ -1108,7 +1108,7 @@ export default function Players() {
                     </div>
                   ) : topPlayersData?.results?.length ? (
                     <div className="space-y-4">
-                      {topPlayersData.results.slice(0, 3).map((league) => (
+                      {topPlayersData.results.map((league) => (
                         <div key={league.league.id}>
                           <div className="flex items-center gap-2 mb-2">
                             {league.league.logo && <img src={league.league.logo} alt="" className="w-4 h-4 object-contain" />}
