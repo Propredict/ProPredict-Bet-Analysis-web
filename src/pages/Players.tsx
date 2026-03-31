@@ -509,7 +509,12 @@ function PlayerSearchCard({ player, onSelect, selected }: { player: PlayerSearch
         selected ? "bg-primary/15 border border-primary/30" : "bg-card hover:bg-secondary/40 border border-border/30"
       }`}
     >
-      <img src={player.photo} alt="" className="w-12 h-12 rounded-full object-cover border border-border/40" />
+      <img
+        src={player.photo}
+        alt=""
+        className="w-12 h-12 rounded-full object-cover border border-border/40 bg-secondary"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold truncate">{player.name}</p>
         <div className="flex items-center gap-2 mt-0.5">
