@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.send-password-changed-email]
 verify_jwt = false
+
+[functions.fix-category-schema]
+verify_jwt = true
