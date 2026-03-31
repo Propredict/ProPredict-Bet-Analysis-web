@@ -1037,6 +1037,7 @@ export default function Players() {
 
   const handleInputChange = (val: string) => {
     setSearchInput(val);
+    console.log("[PlayerSearch] input changed:", val, "length:", val.length);
     if (val.length >= 2) {
       debouncedSearch(val);
     } else {
