@@ -324,14 +324,6 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
           )}
         </div>
       )}
-              >
-                <Download className="h-4 w-4" />
-                Download ProPredict App
-              </a>
-            </div>
-          )}
-        </div>
-      )}
     </Card>
   );
 }
