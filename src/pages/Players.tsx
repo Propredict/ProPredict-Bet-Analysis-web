@@ -33,13 +33,21 @@ const POPULAR_PLAYERS: RecentPlayer[] = [
   { id: 278, name: "K. Mbappé", photo: "https://media.api-sports.io/football/players/278.png", team: "Real Madrid" },
   { id: 1100, name: "E. Haaland", photo: "https://media.api-sports.io/football/players/1100.png", team: "Man City" },
   { id: 306, name: "M. Salah", photo: "https://media.api-sports.io/football/players/306.png", team: "Liverpool" },
-  { id: 276, name: "Neymar Jr", photo: "https://media.api-sports.io/football/players/276.png", team: "Santos" },
   { id: 129718, name: "J. Bellingham", photo: "https://media.api-sports.io/football/players/129718.png", team: "Real Madrid" },
   { id: 762, name: "Vinícius Jr", photo: "https://media.api-sports.io/football/players/762.png", team: "Real Madrid" },
   { id: 18, name: "L. Yamal", photo: "https://media.api-sports.io/football/players/18.png", team: "Barcelona" },
-  { id: 1485, name: "B. Saka", photo: "https://media.api-sports.io/football/players/1485.png", team: "Arsenal" },
   { id: 521, name: "R. Lewandowski", photo: "https://media.api-sports.io/football/players/521.png", team: "Barcelona" },
   { id: 184, name: "H. Kane", photo: "https://media.api-sports.io/football/players/184.png", team: "Bayern Munich" },
+  { id: 1485, name: "B. Saka", photo: "https://media.api-sports.io/football/players/1485.png", team: "Arsenal" },
+  { id: 186, name: "A. Griezmann", photo: "https://media.api-sports.io/football/players/186.png", team: "Atletico Madrid" },
+  { id: 1467, name: "P. Foden", photo: "https://media.api-sports.io/football/players/1467.png", team: "Man City" },
+  { id: 182, name: "Son Heung-min", photo: "https://media.api-sports.io/football/players/182.png", team: "Tottenham" },
+  { id: 434, name: "O. Dembélé", photo: "https://media.api-sports.io/football/players/434.png", team: "PSG" },
+  { id: 24823, name: "R. Kolo Muani", photo: "https://media.api-sports.io/football/players/24823.png", team: "PSG" },
+  { id: 10007, name: "J. Musiala", photo: "https://media.api-sports.io/football/players/10007.png", team: "Bayern Munich" },
+  { id: 35845, name: "F. Wirtz", photo: "https://media.api-sports.io/football/players/35845.png", team: "B. Leverkusen" },
+  { id: 247, name: "R. De Bruyne", photo: "https://media.api-sports.io/football/players/247.png", team: "Man City" },
+  { id: 284, name: "W. Zaha", photo: "https://media.api-sports.io/football/players/284.png", team: "Galatasaray" },
 ];
 
 function getRecentSearches(): RecentPlayer[] {
