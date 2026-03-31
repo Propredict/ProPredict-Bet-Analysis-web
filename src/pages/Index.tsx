@@ -177,15 +177,6 @@ const Index = () => {
           <DashboardMatchPreviews />
         </Suspense>
 
-        {/* Model Analytics Charts – Desktop web only */}
-        {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ModelAccuracyTrendChart />
-              <AIAdoptionChart />
-            </div>
-          </Suspense>
-        )}
 
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />
