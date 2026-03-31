@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
+import { useTeamSquad } from "@/hooks/useTeamSquad";
 import { useTopPlayers, TopPlayerEntry } from "@/hooks/useTopPlayers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
