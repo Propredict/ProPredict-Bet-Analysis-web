@@ -256,7 +256,7 @@ function AndroidRewardWidget() {
         <DailyRewardClaimPopup
           streakDay={lastClaimResult.streakDay}
           pointsEarned={lastClaimResult.pointsEarned}
-          totalPoints={totalPoints}
+          totalPoints={combinedPoints}
           onClose={dismissClaimResult}
         />
       )}
