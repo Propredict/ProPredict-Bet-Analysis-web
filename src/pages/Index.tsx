@@ -11,6 +11,9 @@ import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
+import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
+import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
+import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 
 // Heavy components – lazy loaded for faster initial paint
 const FeaturedPredictions = lazy(() => import("@/components/dashboard/FeaturedPredictions").then(m => ({ default: m.FeaturedPredictions })));
@@ -143,6 +146,9 @@ const Index = () => {
           </a>
         )}
 
+        {/* Daily Reward Widget – Web only */}
+        {!isAndroid && <DailyRewardWidget />}
+
         <Suspense fallback={<LazyFallback />}>
           <MatchPredictions />
         </Suspense>
@@ -189,6 +195,8 @@ const Index = () => {
       <GuestSignInModal />
       <AppDownloadPopup />
       <ExitIntentPopup />
+      {!isAndroid && <DailyRewardPopup />}
+      {!isAndroid && <DailyRewardStickyBar />}
     </>
   );
 };
