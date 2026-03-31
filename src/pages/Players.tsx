@@ -11,6 +11,7 @@ import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { calculatePlayerPrediction, type PlayerAIPrediction } from "@/utils/playerAIPrediction";
+import { useNextOpponent, type NextOpponentData } from "@/hooks/useNextOpponent";
 
 const RECENT_SEARCHES_KEY = "propredict_recent_players";
 const MAX_RECENT = 8;
