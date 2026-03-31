@@ -155,7 +155,23 @@ serve(async (req: Request) => {
 
     scored.sort((a, b) => b.score - a.score);
 
-    const results = scored.slice(0, 20).map(({ player }) => ({
+    // Filter out players with no meaningful data (no team, no stats, no league)
+    // These are typically inactive/unknown players with generic placeholder photos
+    const meaningful = scored.filter(({ player }) => {
+      // Always keep players with stats
+      if (player.hasStats) return true;
+      // Keep if they have a team
+      if (player.team?.name) return true;
+      // Keep if they have a known position
+      if (player.position) return true;
+      // Drop players with zero data - they're noise
+      return false;
+    });
+
+    // If filtering removed too many results, fallback to all (but still sorted)
+    const finalList = meaningful.length >= 3 ? meaningful : scored;
+
+    const results = finalList.slice(0, 15).map(({ player }) => ({
       id: player.id,
       name: player.name,
       firstname: player.firstname,
