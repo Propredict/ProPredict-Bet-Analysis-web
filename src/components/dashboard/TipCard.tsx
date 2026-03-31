@@ -200,7 +200,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             <div className="h-px bg-border/30" />
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Value</span>
-              <span className="blur-[6px] opacity-40 font-bold text-lg text-primary select-none">{tip.odds.toFixed(2)}</span>
+              <span className="font-bold text-lg text-primary">{tip.odds.toFixed(2)}</span>
             </div>
           </div>
         </div>

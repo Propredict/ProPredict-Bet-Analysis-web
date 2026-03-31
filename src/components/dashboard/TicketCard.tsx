@@ -230,7 +230,7 @@ function TicketCard({
           <div className="rounded-lg bg-muted/20 border border-border/30 p-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-              <span className="font-bold text-lg text-primary blur-[5px] opacity-40 select-none">{ticket.totalOdds.toFixed(2)}</span>
+              <span className="font-bold text-lg text-primary">{ticket.totalOdds.toFixed(2)}</span>
             </div>
           </div>
         </div>
