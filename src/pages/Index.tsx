@@ -115,14 +115,41 @@ const Index = () => {
 
 
 
-        {/* Prediction Analytics Charts – Desktop web only */}
+        {/* App Promo CTA – Web only */}
         {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-4">
-              <PredictionOutcomeChart />
-              <ConfidenceDistributionChart />
+          <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-primary/10 p-5 sm:p-8">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.15),transparent_70%)]" />
+            <div className="relative flex flex-col md:flex-row items-center gap-5">
+              <div className="flex-1 text-center md:text-left space-y-2">
+                <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">
+                  📱 More Tips, Combos &amp; Match Analysis on the App
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-lg">
+                  Get <span className="text-primary font-bold">instant push alerts</span> for new picks, 
+                  <span className="text-primary font-bold"> Diamond Picks</span>, 
+                  <span className="text-primary font-bold"> Risk of the Day</span> and full AI match analysis — 
+                  all faster and ad-free on the app.
+                </p>
+                <div className="flex items-center gap-2 justify-center md:justify-start text-xs text-muted-foreground">
+                  <span>⭐⭐⭐⭐⭐</span>
+                  <span>Trusted by 1,000+ users</span>
+                </div>
+              </div>
+              <a
+                href="https://play.google.com/store/apps/details?id=me.propredict.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0"
+              >
+                <img
+                  src={googlePlayBanner}
+                  alt="Get it on Google Play"
+                  className="h-14 sm:h-16 rounded-lg shadow-lg hover:scale-105 transition-transform"
+                  loading="lazy"
+                />
+              </a>
             </div>
-          </Suspense>
+          </div>
         )}
 
         <Suspense fallback={<LazyFallback />}>
