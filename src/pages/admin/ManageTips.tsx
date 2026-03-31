@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Plus,
   Pencil,
@@ -83,6 +84,11 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   category: "standard",
 };
 
+const normalizeTipCategory = (category?: string | null) => {
+  if (category === "risk") return "risk_of_day";
+  return category || "standard";
+};
+
 /* =====================
    Prediction options
 ===================== */
@@ -144,28 +150,34 @@ export default function ManageTips() {
       status: tip.status,
       result: tip.result ?? "pending",
       tip_date: tip.tip_date || getTodayBelgradeDate(),
-      category: (tip as any).category || "standard",
+      category: normalizeTipCategory((tip as any).category),
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      ...formData,
-      prediction: customPrediction || formData.prediction,
-    };
+    try {
+      const payload = {
+        ...formData,
+        prediction: customPrediction || formData.prediction,
+        category: normalizeTipCategory(formData.category),
+      };
 
-    if (editingTip) {
-      await updateTip.mutateAsync({
-        id: editingTip.id,
-        updates: payload,
-      });
-    } else {
-      await createTip.mutateAsync(payload);
+      if (editingTip) {
+        await updateTip.mutateAsync({
+          id: editingTip.id,
+          updates: payload,
+        });
+      } else {
+        await createTip.mutateAsync(payload);
+      }
+
+      setIsDialogOpen(false);
+      toast.success(editingTip ? "Tip updated" : "Tip created");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed");
     }
-
-    setIsDialogOpen(false);
   };
 
   const handleDelete = async () => {
@@ -435,7 +447,7 @@ export default function ManageTips() {
               <div>
                 <Label>Category</Label>
                 <Select
-                  value={formData.category || "standard"}
+                  value={normalizeTipCategory(formData.category)}
                   onValueChange={(v) =>
                     setFormData({ ...formData, category: v as any })
                   }
