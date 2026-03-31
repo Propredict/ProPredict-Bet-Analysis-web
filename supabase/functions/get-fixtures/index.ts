@@ -55,13 +55,17 @@ serve(async (req) => {
 
     let apiUrl = "https://v3.football.api-sports.io/fixtures";
     const params = new URLSearchParams();
+    const teamId = url.searchParams.get("team");
 
-    if (mode === "live") {
+    if (teamId) {
+      // Fetch next fixture for a specific team
+      params.append("team", teamId);
+      params.append("next", "1");
+    } else if (mode === "live") {
       params.append("live", "all");
     } else if (date) {
       params.append("date", date);
     } else {
-      // Calculate date based on mode
       const today = new Date();
       let targetDate = new Date(today);
 
@@ -70,7 +74,6 @@ serve(async (req) => {
       } else if (mode === "tomorrow") {
         targetDate.setDate(today.getDate() + 1);
       }
-      // For "today", use current date
 
       const dateStr = targetDate.toISOString().split("T")[0];
       params.append("date", dateStr);
