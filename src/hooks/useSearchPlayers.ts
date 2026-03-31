@@ -31,7 +31,7 @@ export function useSearchPlayers(query: string) {
   return useQuery({
     queryKey: ["search-players", query],
     queryFn: () => searchPlayers(query),
-    enabled: query.length >= 3,
+    enabled: query.length >= 2,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
