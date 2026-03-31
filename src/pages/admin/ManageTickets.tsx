@@ -176,6 +176,7 @@ export default function ManageTickets() {
     setTitle(ticket.title);
     setTicketPrediction(ticket.description ?? "");
     setTier(ticket.tier);
+    setTicketCategory((ticket as any).category || "standard");
     setStatus(ticket.status);
     setResult(ticket.result ?? "pending");
     setTicketDate((ticket as any).ticket_date || getTodayBelgradeDate());
