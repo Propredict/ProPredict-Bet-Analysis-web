@@ -22,7 +22,16 @@ function getTierRoute(type: "tip" | "ticket", tier: string): string {
   return routes[type]?.[tier] ?? routes[type].daily;
 }
 
-function getTierLabel(type: "tip" | "ticket", tier: string): string {
+function getCategoryLabel(category: string | null): string | null {
+  if (category === "diamond_pick") return "💎 Diamond Pick Just Dropped!";
+  if (category === "risk_of_the_day") return "🔥 Risk of the Day is LIVE!";
+  if (category === "multi_risk") return "🎯 Multi Risk Matches are LIVE!";
+  return null;
+}
+
+function getTierLabel(type: "tip" | "ticket", tier: string, category?: string | null): string {
+  const special = getCategoryLabel(category ?? null);
+  if (special) return special;
   if (tier === "premium") return type === "tip" ? "👑 Premium AI Pick Available!" : "👑 Premium AI Combo Available!";
   if (tier === "exclusive") return type === "tip" ? "🔥 Pro AI Pick Available!" : "🔥 Pro AI Combo Available!";
   return type === "tip" ? "⚽ New AI Pick Available!" : "🎫 New AI Combo Available!";
