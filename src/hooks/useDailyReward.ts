@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const STREAK_POINTS = [0, 2, 3, 4, 5, 6, 8, 15]; // index = day
+const STREAK_POINTS = [0, 3, 6, 9, 12, 13, 14, 15]; // index = day
 
 export interface DailyRewardState {
   claimedToday: boolean;

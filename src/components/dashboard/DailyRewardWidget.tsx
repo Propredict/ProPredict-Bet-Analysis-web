@@ -7,7 +7,7 @@ import { DailyRewardClaimPopup } from "./DailyRewardClaimPopup";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 
-const STREAK_POINTS = [0, 2, 3, 4, 5, 6, 8, 15];
+const STREAK_POINTS = [0, 3, 6, 9, 12, 13, 14, 15];
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
 export function DailyRewardWidget() {
