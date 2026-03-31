@@ -106,6 +106,9 @@ serve(async (req: Request) => {
       seasons: t.seasons || [],
     }));
 
+    // Available seasons
+    const availableSeasons: number[] = (seasonsRes.response || []).sort((a: number, b: number) => b - a);
+
     const responseData = {
       player: {
         id: player.id,
@@ -196,6 +199,7 @@ serve(async (req: Request) => {
       trophies,
       sidelined,
       careerTeams,
+      availableSeasons,
     };
 
     return new Response(
