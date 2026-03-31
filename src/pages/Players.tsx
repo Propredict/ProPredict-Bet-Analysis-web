@@ -1021,13 +1021,17 @@ export default function Players() {
 
       <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 pb-20 md:pb-4">
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-            <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+        <div className="mb-5">
+          <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-2 tracking-tight">
+            <User className="h-6 w-6 md:h-7 md:w-7 text-primary" />
             Smart Player Picks ⚡
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Analyze player stats & current form</p>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">Find players. Check form. Predict the next move.</p>
+          <p className="text-base md:text-lg font-semibold text-foreground/80 mt-1.5">
+            📊 Analyze player stats & current form
+          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Find players. Check form. Predict the next move.
+          </p>
         </div>
 
         {/* Search Bar */}
