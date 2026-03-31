@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play } from "lucide-react";
+import { Search, User, Trophy, ArrowRightLeft, Activity, X, Clock, TrendingUp, Star, Zap, Target, Flame, BarChart3, AlertTriangle, ChevronRight, Download, Shield, Lock, Play, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchPlayers, PlayerSearchResult } from "@/hooks/useSearchPlayers";
 import { usePlayerProfile, PlayerProfile } from "@/hooks/usePlayerProfile";
+import { useTopPlayers, TopPlayerEntry } from "@/hooks/useTopPlayers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -618,6 +619,9 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           <TabsTrigger value="stats" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
             <Activity className="h-3.5 w-3.5 mr-1" /> Stats
           </TabsTrigger>
+          <TabsTrigger value="career" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
+            <Briefcase className="h-3.5 w-3.5 mr-1" /> Career
+          </TabsTrigger>
           <TabsTrigger value="transfers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs px-3 py-2">
             <ArrowRightLeft className="h-3.5 w-3.5 mr-1" /> Transfers
           </TabsTrigger>
@@ -731,6 +735,38 @@ function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: (
           )}
         </TabsContent>
 
+        <TabsContent value="career" className="p-4 mt-0">
+          {profile.careerTeams && profile.careerTeams.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground mb-2">
+                🏟️ {profile.careerTeams.length} clubs in career
+              </p>
+              {profile.careerTeams.map((ct: any, i: number) => (
+                <div key={i} className="flex items-center gap-3 py-2 border-b border-border/20 last:border-0">
+                  {ct.team.logo && <img src={ct.team.logo} alt="" className="w-8 h-8 object-contain flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate">{ct.team.name}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(ct.seasons || []).slice(-6).map((s: number) => (
+                        <Badge key={s} variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50">
+                          {s}/{String(s + 1).slice(-2)}
+                        </Badge>
+                      ))}
+                      {(ct.seasons || []).length > 6 && (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-0 bg-secondary/50">
+                          +{ct.seasons.length - 6}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">No career data available</p>
+          )}
+        </TabsContent>
+
         <TabsContent value="transfers" className="p-4 mt-0">
           {profile.transfers && profile.transfers.length > 0 ? (
             <div className="space-y-1.5">
@@ -803,6 +839,7 @@ export default function Players() {
   const [query, setQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [recentSearches, setRecentSearches] = useState<RecentPlayer[]>([]);
+  const [topCategory, setTopCategory] = useState<"topscorers" | "topassists">("topscorers");
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
 
@@ -814,6 +851,7 @@ export default function Players() {
   }, [maybeShowInterstitial]);
 
   const { data: results, isLoading } = useSearchPlayers(query);
+  const { data: topPlayersData, isLoading: topLoading } = useTopPlayers(topCategory);
 
   const filteredResults = results?.filter(p => 
     p.name && p.id && p.nationality
@@ -963,13 +1001,71 @@ export default function Players() {
                   </div>
                 </div>
 
-                {/* CTA for trending */}
-                <Card className="border-primary/20 bg-gradient-to-r from-primary/10 to-transparent">
-                  <CardContent className="py-3 px-4 text-center">
-                    <p className="text-xs font-bold">🔥 Check trending players</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">See AI-powered stats & predictions</p>
-                  </CardContent>
-                </Card>
+                {/* Top Players Section */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Target className="h-3.5 w-3.5 text-primary" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider">
+                      <span className="text-primary">⭐ Top</span>{" "}
+                      <span className="text-muted-foreground">Players</span>
+                    </h3>
+                  </div>
+                  <div className="flex gap-2 mb-3">
+                    <button
+                      onClick={() => setTopCategory("topscorers")}
+                      className={`text-[10px] px-3 py-1.5 rounded-full font-semibold transition-colors ${topCategory === "topscorers" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
+                    >
+                      ⚽ Top Scorers
+                    </button>
+                    <button
+                      onClick={() => setTopCategory("topassists")}
+                      className={`text-[10px] px-3 py-1.5 rounded-full font-semibold transition-colors ${topCategory === "topassists" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}
+                    >
+                      🎯 Top Assists
+                    </button>
+                  </div>
+                  {topLoading ? (
+                    <div className="space-y-2">
+                      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+                    </div>
+                  ) : topPlayersData?.results?.length ? (
+                    <div className="space-y-4">
+                      {topPlayersData.results.slice(0, 3).map((league) => (
+                        <div key={league.league.id}>
+                          <div className="flex items-center gap-2 mb-2">
+                            {league.league.logo && <img src={league.league.logo} alt="" className="w-4 h-4 object-contain" />}
+                            <span className="text-[10px] font-semibold text-muted-foreground">{league.league.name}</span>
+                          </div>
+                          <div className="space-y-1">
+                            {league.players.slice(0, 3).map((p, idx) => (
+                              <button
+                                key={p.id}
+                                onClick={() => handleQuickSelect(p.id)}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card hover:bg-secondary/40 border border-border/30 transition-all hover:border-primary/30 text-left"
+                              >
+                                <span className="text-[10px] font-bold text-muted-foreground w-4">{idx + 1}</span>
+                                <img src={p.photo} alt="" className="w-7 h-7 rounded-full object-cover border border-border/40" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-semibold truncate">{p.name}</p>
+                                  <div className="flex items-center gap-1">
+                                    {p.team.logo && <img src={p.team.logo} alt="" className="w-3 h-3 object-contain" />}
+                                    <span className="text-[10px] text-muted-foreground truncate">{p.team.name}</span>
+                                  </div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-xs font-bold text-primary">
+                                    {topCategory === "topscorers" ? `${p.stats.goals} ⚽` : `${p.stats.assists} 🎯`}
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground">{p.stats.appearances} apps</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (

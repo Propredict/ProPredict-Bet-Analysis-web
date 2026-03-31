@@ -62,11 +62,12 @@ serve(async (req: Request) => {
     const stats = data.statistics || [];
     const primary = stats[0] || {};
 
-    // Fetch transfers and trophies in parallel
-    const [transfersRes, trophiesRes, sidelinedRes] = await Promise.all([
+    // Fetch transfers, trophies, sidelined, and career teams in parallel
+    const [transfersRes, trophiesRes, sidelinedRes, teamsRes] = await Promise.all([
       fetch(`${API_FOOTBALL_URL}/transfers?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
       fetch(`${API_FOOTBALL_URL}/trophies?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
       fetch(`${API_FOOTBALL_URL}/sidelined?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
+      fetch(`${API_FOOTBALL_URL}/players/teams?player=${playerId}`, { headers }).then(r => r.json()).catch(() => ({ response: [] })),
     ]);
 
     // Normalize transfers
@@ -92,6 +93,16 @@ serve(async (req: Request) => {
       type: s.type,
       start: s.start,
       end: s.end,
+    }));
+
+    // Normalize career teams
+    const careerTeams = (teamsRes.response || []).map((t: any) => ({
+      team: {
+        id: t.team?.id,
+        name: t.team?.name,
+        logo: t.team?.logo,
+      },
+      seasons: t.seasons || [],
     }));
 
     const responseData = {
@@ -183,6 +194,7 @@ serve(async (req: Request) => {
       transfers,
       trophies,
       sidelined,
+      careerTeams,
     };
 
     return new Response(
