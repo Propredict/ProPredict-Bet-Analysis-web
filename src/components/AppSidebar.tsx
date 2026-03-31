@@ -64,7 +64,7 @@ const tools = [
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
-  { title: "Player Search", url: "/players", icon: User },
+  { title: "Smart Player Picks", url: "/players", icon: User },
 ];
 
 const adminItems = [
