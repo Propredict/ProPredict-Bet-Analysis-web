@@ -540,7 +540,7 @@ function QuickPlayerChip({ player, onSelect }: { player: RecentPlayer; onSelect:
   );
 }
 
-function PlayerProfileView({ playerId, onClose }: { playerId: number; onClose: () => void }) {
+function PlayerProfileView({ playerId, onClose, onSelectPlayer }: { playerId: number; onClose: () => void; onSelectPlayer?: (id: number) => void }) {
   const { data: profile, isLoading } = usePlayerProfile(playerId);
   
   // Fetch opponent data once we have team + league info
