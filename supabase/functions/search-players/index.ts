@@ -36,7 +36,7 @@ serve(async (req: Request) => {
     const q = encodeURIComponent(search);
     const searchLower = search.toLowerCase();
     const currentYear = new Date().getFullYear();
-
+    const currentMonth = new Date().getMonth(); // 0-indexed
     // Fetch from BOTH endpoints in parallel:
     // 1. /players/profiles (basic profiles, no stats)
     // 2. /players?search=&season= (full player data with stats - better for famous players)
@@ -49,9 +49,9 @@ serve(async (req: Request) => {
             .catch(() => [] as any[])
         )
       ),
-      // Players endpoint with season: try current then previous
+      // Players endpoint with season: try current, previous, and 2 years back
       Promise.all(
-        [currentYear, currentYear - 1].map(season =>
+        [currentYear, currentYear - 1, currentYear - 2].map(season =>
           fetch(`${API_FOOTBALL_URL}/players?search=${q}&season=${season}`, { headers })
             .then(async r => { if (!r.ok) { await r.text(); return []; } const j = await r.json(); return j.response || []; })
             .catch(() => [] as any[])
@@ -117,6 +117,13 @@ serve(async (req: Request) => {
     // Score and sort: prioritize exact/close name matches and completeness
     const searchWords = searchLower.split(/\s+/).filter(Boolean);
     
+    // Well-known player IDs get a big boost to always appear first
+    const FAMOUS_IDS = new Set([
+      154, 874, 278, 1100, 306, 129718, 762, 386828, 521, 184, 1460, 56, 631,
+      186, 21104, 181812, 348807, 629, 3247, 153, 10, 276, 47, 18, 2, 19, 46,
+      1, 35845, 162397, 909, 903, 174, 284, 304, 305, 521, 882, 25, 30, 37,
+    ]);
+
     const scored = allPlayers.map((player: any) => {
       const name = (player.name || "").toLowerCase();
       const firstname = (player.firstname || "").toLowerCase();
@@ -142,20 +149,48 @@ serve(async (req: Request) => {
       
       // Big bonus for having actual season stats (real active players)
       if (player.hasStats) score += 50;
-      if (player.appearances > 0) score += 20;
-      if (player.goals > 0) score += 10;
+      if (player.appearances > 0) score += 20 + Math.min(player.appearances, 40);
+      if (player.goals > 0) score += 10 + Math.min(player.goals, 30);
       
       // Bonus for complete profile
       if (player.nationality) score += 5;
       if (player.firstname && player.lastname) score += 5;
-      if (player.team?.name) score += 5;
+      if (player.team?.name) score += 15;
+      if (player.league?.name) score += 10;
+      
+      // Famous player boost
+      if (FAMOUS_IDS.has(player.id)) score += 200;
+      
+      // Active-age bonus (17-40 = likely active footballer)
+      // Penalize obviously retired/non-player ages
+      const age = player.age;
+      if (age) {
+        if (age >= 17 && age <= 40) score += 15;
+        else if (age > 45) score -= 30; // Likely coach or retired
+      }
       
       return { player, score };
     });
 
     scored.sort((a, b) => b.score - a.score);
 
-    const results = scored.slice(0, 20).map(({ player }) => ({
+    // Filter out players with no meaningful data (no team, no stats, no league)
+    // These are typically inactive/unknown players with generic placeholder photos
+    const meaningful = scored.filter(({ player }) => {
+      // Always keep players with stats
+      if (player.hasStats) return true;
+      // Keep if they have a team
+      if (player.team?.name) return true;
+      // Keep if they have a known position
+      if (player.position) return true;
+      // Drop players with zero data - they're noise
+      return false;
+    });
+
+    // If filtering removed too many results, fallback to all (but still sorted)
+    const finalList = meaningful.length >= 3 ? meaningful : scored;
+
+    const results = finalList.slice(0, 15).map(({ player }) => ({
       id: player.id,
       name: player.name,
       firstname: player.firstname,
