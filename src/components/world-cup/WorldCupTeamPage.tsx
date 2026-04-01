@@ -250,18 +250,62 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
                 ? " They'll need strong performances from key players to advance past the group stage."
                 : " As underdogs, every point will be crucial in their World Cup campaign."}
             </p>
-            <div className="bg-muted/30 rounded-lg p-3 mb-3">
-              <p className="text-[10px] text-muted-foreground mb-1">Tournament Prediction</p>
-              <div className="flex items-center gap-2">
-                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Full AI prediction available in app</span>
+
+            {isAndroidApp ? (
+              /* App: show full analysis inline */
+              <div className="space-y-3">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Tournament Prediction</p>
+                  <p className="text-xs text-foreground font-medium">
+                    {teamData.fifaRank <= 5
+                      ? "🏆 Strong contender — expected to reach Semi-Finals or beyond"
+                      : teamData.fifaRank <= 10
+                      ? "⭐ Top favorite — likely to advance deep into knockout rounds"
+                      : teamData.fifaRank <= 20
+                      ? "💪 Competitive — expected to qualify from group stage"
+                      : teamData.fifaRank <= 35
+                      ? "📊 Potential dark horse — can surprise in the right group"
+                      : teamData.fifaRank <= 60
+                      ? "🎯 Group stage battle — every match is a must-win"
+                      : "🌟 Underdog — aiming for a historic group stage result"}
+                  </p>
+                </div>
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Strengths</p>
+                  <p className="text-xs text-foreground">
+                    {teamData.keyPlayers.length >= 3
+                      ? `Star-studded squad led by ${teamData.keyPlayers[0]} and ${teamData.keyPlayers[1]}. ${teamData.confederation === "UEFA" ? "European pedigree adds tactical discipline." : teamData.confederation === "CONMEBOL" ? "South American flair and passion." : teamData.confederation === "CONCACAF" ? "Home advantage with matches in North America." : "Unique style and determination."}`
+                      : "Determined squad with key individuals who can make a difference."}
+                  </p>
+                </div>
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Key Factor</p>
+                  <p className="text-xs text-foreground">
+                    {teamData.debut
+                      ? "Making their World Cup debut — motivation and team spirit will be at an all-time high."
+                      : teamData.fifaRank <= 15
+                      ? "Experience at the highest level gives them a tactical edge in tight knockout games."
+                      : "Squad depth and tactical adaptability under coach " + teamData.coach + " will be crucial."}
+                  </p>
+                </div>
               </div>
-            </div>
-            <Button size="sm" className="w-full bg-primary text-primary-foreground" onClick={openPlayStore}>
-              <Lock className="h-3.5 w-3.5 mr-1.5" />
-              Unlock Full AI Insight
-              <ChevronRight className="h-3.5 w-3.5 ml-1" />
-            </Button>
+            ) : (
+              /* Web: show lock + CTA to download app */
+              <>
+                <div className="bg-muted/30 rounded-lg p-3 mb-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Tournament Prediction</p>
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Full AI prediction available in app</span>
+                  </div>
+                </div>
+                <Button size="sm" className="w-full bg-primary text-primary-foreground" onClick={openPlayStore}>
+                  <Lock className="h-3.5 w-3.5 mr-1.5" />
+                  Unlock Full AI Insight
+                  <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                </Button>
+              </>
+            )}
           </Card>
         </TabsContent>
       </Tabs>
