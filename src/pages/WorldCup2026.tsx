@@ -292,15 +292,7 @@ export default function WorldCup2026() {
                     <p className="text-[9px] text-muted-foreground">Away</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Lock className="h-3 w-3" />
-                    <span className="text-[10px]">Full analysis locked</span>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-primary text-[10px] h-6 px-2" onClick={openPlayStore}>
-                    Unlock <ChevronRight className="h-3 w-3 ml-0.5" />
-                  </Button>
-                </div>
+                <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />
               </Card>
             ))}
           </div>
