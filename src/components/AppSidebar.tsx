@@ -23,6 +23,7 @@ import {
   User,
   Target,
   Gem,
+  Trophy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -69,6 +70,7 @@ const tools = [
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
   { title: "Smart Player Picks", url: "/players", icon: User },
+  { title: "World Cup 2026", url: "/world-cup-2026", icon: Trophy },
 ];
 
 const adminItems = [
