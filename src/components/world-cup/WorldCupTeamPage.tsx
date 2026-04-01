@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TEAMS, GROUPS, GROUP_MATCHES, type WCTeam } from "@/data/worldCup2026";
+import TeamFlag from "@/components/world-cup/TeamFlag";
 
 interface TeamPageProps {
   team: string;
