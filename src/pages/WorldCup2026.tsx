@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Flag } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import NationalTeamForm from "@/components/world-cup/NationalTeamForm";
 import heroImage from "@/assets/world-cup-hero.jpg";
 
 // World Cup 2026 groups (48 teams, 12 groups)
@@ -23,7 +22,6 @@ const GROUPS: Record<string, string[]> = {
   L: ["Poland", "Sweden", "Turkey", "Bolivia"],
 };
 
-// Mock standings (placeholder until API data is available)
 const mockStandings = (teams: string[]) =>
   teams.map((t, i) => ({
     team: t,
@@ -36,7 +34,6 @@ const mockStandings = (teams: string[]) =>
     rank: i + 1,
   }));
 
-// Featured match mock
 const FEATURED_MATCH = {
   homeTeam: "USA",
   awayTeam: "England",
@@ -48,6 +45,13 @@ const FEATURED_MATCH = {
   over25: 62,
   league: "World Cup 2026 - Group Stage",
 };
+
+const KNOCKOUT_ROUNDS = [
+  { name: "Round of 16", emoji: "⚔️" },
+  { name: "Quarter-finals", emoji: "🏟️" },
+  { name: "Semi-finals", emoji: "🔥" },
+  { name: "Final", emoji: "🏆" },
+];
 
 export default function WorldCup2026() {
   const navigate = useNavigate();
@@ -76,12 +80,15 @@ export default function WorldCup2026() {
             The most watched event in the world is here. Join now and stay ahead
             with AI match analysis, predictions, and live scores.
           </p>
-          <div className="flex items-center gap-2 mt-3">
+          <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
             <Badge variant="outline" className="border-yellow-500/50 text-yellow-400 text-[10px]">
               <Globe className="h-3 w-3 mr-1" /> USA · Mexico · Canada
             </Badge>
             <Badge variant="outline" className="border-primary/50 text-primary text-[10px]">
               48 Teams
+            </Badge>
+            <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">
+              🔥 Live Updates + AI Predictions
             </Badge>
           </div>
         </div>
@@ -101,9 +108,7 @@ export default function WorldCup2026() {
               <Card
                 key={group}
                 className="bg-card border-border cursor-pointer hover:border-primary/40 transition-colors overflow-hidden"
-                onClick={() =>
-                  setExpandedGroup(isExpanded ? null : group)
-                }
+                onClick={() => setExpandedGroup(isExpanded ? null : group)}
               >
                 <div className="p-2.5">
                   <div className="flex items-center justify-between mb-1.5">
@@ -146,18 +151,12 @@ export default function WorldCup2026() {
                           key={s.team}
                           className="grid grid-cols-5 text-[10px] text-foreground px-1 py-0.5"
                         >
-                          <span className="col-span-2 truncate">
-                            {s.team}
-                          </span>
-                          <span className="text-center text-muted-foreground">
-                            {s.played}
-                          </span>
+                          <span className="col-span-2 truncate">{s.team}</span>
+                          <span className="text-center text-muted-foreground">{s.played}</span>
                           <span className="text-center text-muted-foreground">
                             {s.gd > 0 ? `+${s.gd}` : s.gd}
                           </span>
-                          <span className="text-center font-bold">
-                            {s.pts}
-                          </span>
+                          <span className="text-center font-bold">{s.pts}</span>
                         </div>
                       ))}
                     </div>
@@ -167,6 +166,40 @@ export default function WorldCup2026() {
             );
           })}
         </div>
+      </section>
+
+      {/* Tournament Progress */}
+      <section className="px-3 mt-6">
+        <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-primary" />
+          Tournament Progress
+        </h2>
+        <Card className="bg-card border-border overflow-hidden">
+          <div className="divide-y divide-border">
+            {KNOCKOUT_ROUNDS.map((round) => (
+              <div
+                key={round.name}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">{round.emoji}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {round.name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">Locked</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="px-4 py-3 bg-muted/30 border-t border-border">
+            <p className="text-[11px] text-muted-foreground text-center">
+              Follow the full tournament in the app
+            </p>
+          </div>
+        </Card>
       </section>
 
       {/* Featured Match */}
@@ -203,9 +236,14 @@ export default function WorldCup2026() {
 
             {/* AI Predictions */}
             <div className="bg-muted/50 rounded-lg p-3 mb-3">
-              <div className="text-[10px] font-semibold text-primary mb-2 text-center">
-                🤖 AI PREDICTION
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Badge className="bg-destructive/20 text-destructive text-[10px] border-destructive/30">
+                  🔥 AI Prediction
+                </Badge>
               </div>
+              <p className="text-[10px] text-muted-foreground text-center mb-2">
+                AI sees this before kickoff
+              </p>
               <div className="grid grid-cols-3 gap-2 text-center mb-2">
                 <div>
                   <span className="text-lg font-bold text-emerald-400">
@@ -245,15 +283,6 @@ export default function WorldCup2026() {
         </Card>
       </section>
 
-      {/* National Teams Form */}
-      <section className="px-3 mt-6">
-        <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-          <Flag className="h-5 w-5 text-primary" />
-          National Teams Form
-        </h2>
-        <NationalTeamForm />
-      </section>
-
       {/* CTA Section */}
       <section className="px-3 mt-8 mb-6">
         <Card className="bg-card border-border overflow-hidden">
@@ -263,10 +292,10 @@ export default function WorldCup2026() {
               World Cup AI Predictions
             </h3>
             <p className="text-xs text-foreground/80 mb-1">
-              Get AI insights for every World Cup match
+              Get AI insights before every match
             </p>
             <p className="text-[10px] text-muted-foreground mb-4">
-              Full analysis & live tracking available only in the app
+              Full predictions & live tracking only in the app
             </p>
             <Button
               onClick={() => {
@@ -278,8 +307,8 @@ export default function WorldCup2026() {
               }}
               className="bg-primary text-primary-foreground font-semibold"
             >
-              <Zap className="h-4 w-4 mr-2" />
-              Open App & Unlock
+              <Lock className="h-4 w-4 mr-2" />
+              Unlock in App
             </Button>
           </div>
         </Card>
