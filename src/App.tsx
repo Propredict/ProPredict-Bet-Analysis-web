@@ -226,6 +226,7 @@ const App = () => {
                     <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
                     <Route path="/diamond-pick" element={<DiamondPick />} />
                     <Route path="/multi-risk-matches" element={<MultiRiskMatches />} />
+                    <Route path="/world-cup-2026" element={<WorldCup2026 />} />
 
                     {/* Protected */}
                     <Route
