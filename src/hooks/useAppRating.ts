@@ -5,8 +5,11 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const OPEN_COUNT_KEY = "propredict:app_open_count";
 const FEATURE_USED_KEY = "propredict:feature_used_for_rating";
-const RATING_DISMISSED_KEY = "propredict:rating_dismissed";
+const RATING_DISMISSED_KEY = "propredict:rating_dismissed_at";
 const RATING_SHOWN_SESSION_KEY = "propredict:rating_shown_session";
+const FIRST_SEEN_KEY = "propredict:first_seen_at";
+const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MIN_DAYS_BEFORE_PROMPT = 3;
 
 export function useAppRating() {
   const { user } = useAuth();
