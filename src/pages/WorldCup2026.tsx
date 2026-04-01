@@ -263,7 +263,7 @@ export default function WorldCup2026() {
                   <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
                   </span>
-                  <Badge variant="outline" className="text-[9px]">{pred.confidence}%</Badge>
+                  <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
                   <div className="bg-muted/30 rounded p-1.5">
