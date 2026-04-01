@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Radio } from "lucide-react";
+import { useLiveScores } from "@/hooks/useLiveScores";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
