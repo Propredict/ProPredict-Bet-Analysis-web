@@ -24,6 +24,10 @@ export function useAppRating() {
     try {
       const count = parseInt(localStorage.getItem(OPEN_COUNT_KEY) || "0", 10);
       localStorage.setItem(OPEN_COUNT_KEY, String(count + 1));
+      // Track first ever app open
+      if (!localStorage.getItem(FIRST_SEEN_KEY)) {
+        localStorage.setItem(FIRST_SEEN_KEY, String(Date.now()));
+      }
     } catch {}
   }, [isAndroid]);
 
