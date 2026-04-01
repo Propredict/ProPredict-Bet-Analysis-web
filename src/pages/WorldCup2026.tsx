@@ -48,15 +48,66 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
 export default function WorldCup2026() {
   const navigate = useNavigate();
   const { plan, isAdmin } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
+  const [adUnlockedToday, setAdUnlockedToday] = useState(false);
+  const [adLoading, setAdLoading] = useState(false);
 
   // Tier access helpers
   const isPro = plan === "basic" || plan === "premium" || isAdmin;
   const isPremium = plan === "premium" || isAdmin;
+
+  // APP-specific access: on Android, free users can watch ad to unlock
+  // On web, keep existing website lock strategy
+  const isApp = isAndroidApp;
+
+  // For app: free users need to watch ad, pro gets basic, premium gets all
+  // For web: keep existing rules (isPro / isPremium)
+  const appCanSeeBasic = isApp ? (isPro || isPremium || adUnlockedToday) : isPro;
+  const appCanSeeAdvanced = isPremium;
+
+  // Watch ad handler for Android
+  const handleWatchAd = useCallback(() => {
+    if (adLoading) return;
+    setAdLoading(true);
+
+    setPendingAdUnlock({ contentType: "prediction" as any, contentId: "wc2026-today" });
+
+    const android = (window as any).Android;
+    if (android && typeof android.watchRewardedAd === "function") {
+      android.watchRewardedAd();
+    } else if (android && typeof android.showRewardedAd === "function") {
+      android.showRewardedAd();
+    }
+
+    // Listen for ad result
+    const handler = (event: MessageEvent) => {
+      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
+      if (data?.type === "AD_UNLOCK_SUCCESS") {
+        setAdUnlockedToday(true);
+        setAdLoading(false);
+        clearPendingAdUnlock();
+        window.removeEventListener("message", handler);
+      }
+      if (data?.type === "AD_UNLOCK_CANCELLED" || data?.type === "RESET_AD_BUTTON" || data?.type === "AD_LOAD_FAILED") {
+        setAdLoading(false);
+        clearPendingAdUnlock();
+        window.removeEventListener("message", handler);
+      }
+    };
+    window.addEventListener("message", handler);
+
+    // Safety timeout
+    setTimeout(() => {
+      setAdLoading(false);
+      clearPendingAdUnlock();
+      window.removeEventListener("message", handler);
+    }, 30_000);
+  }, [adLoading]);
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
