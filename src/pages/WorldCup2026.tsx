@@ -268,31 +268,46 @@ export default function WorldCup2026() {
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
             <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
-            {AI_PREDICTIONS.map((pred, i) => (
-              <Card key={i} className="bg-card border-border p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
-                  </span>
-                  <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Home</p>
+            {AI_PREDICTIONS.map((pred, i) => {
+              // Pro: 1 free AI pick daily (first one); Premium: all unlocked
+              const showData = isPremium || (isPro && i === 0);
+              return (
+                <Card key={i} className="bg-card border-border p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
+                    </span>
+                    {showData ? (
+                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                        {pred.confidence}% conf
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
+                    )}
                   </div>
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Draw</p>
+                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.homeWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Home</p>
+                    </div>
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.draw}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Draw</p>
+                    </div>
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.awayWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Away</p>
+                    </div>
                   </div>
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Away</p>
-                  </div>
-                </div>
-                <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />
-              </Card>
-            ))}
+                  {!showData && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
+                  {showData && !isPremium && (
+                    <div className="flex items-center justify-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                      <Smartphone className="h-3 w-3" /> Better live experience in app
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
 
