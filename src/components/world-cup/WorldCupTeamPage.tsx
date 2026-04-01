@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TEAMS, GROUPS, GROUP_MATCHES, type WCTeam } from "@/data/worldCup2026";
+import TeamFlag from "@/components/world-cup/TeamFlag";
 
 interface TeamPageProps {
   team: string;
@@ -53,7 +54,7 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <span className="text-xl">{teamData.flag}</span>
+              <TeamFlag code={teamData.code} size="md" />
               {teamData.name}
             </h1>
             <p className="text-[11px] text-muted-foreground">
@@ -123,8 +124,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
             </h3>
             {groupTeams.map((opp) => (
               <div key={opp.name} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-2">
-                  <span>{opp.flag}</span>
+                 <div className="flex items-center gap-2">
+                   <TeamFlag code={opp.code} size="sm" />
                   <span className="text-xs font-medium text-foreground">{opp.name}</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">#{opp.fifaRank}</span>
@@ -136,8 +137,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
         {/* Squad (Key Players) */}
         <TabsContent value="squad" className="px-3 mt-3 space-y-3">
           <Card className="bg-card border-border p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">{teamData.flag}</span>
+             <div className="flex items-center gap-2 mb-3">
+               <TeamFlag code={teamData.code} size="md" />
               <div>
                 <h3 className="text-sm font-bold text-foreground">{teamData.name} Squad</h3>
                 <p className="text-[10px] text-muted-foreground">Coach: {teamData.coach}</p>
@@ -173,12 +174,12 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-sm">{TEAMS[m.home]?.flag}</span>
+                   <div className="flex items-center gap-1.5 mb-0.5">
+                     <TeamFlag code={TEAMS[m.home]?.code || ""} size="sm" />
                     <span className={`text-xs font-semibold ${m.home === team ? "text-primary" : "text-foreground"}`}>{m.home}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm">{TEAMS[m.away]?.flag}</span>
+                   <div className="flex items-center gap-1.5">
+                     <TeamFlag code={TEAMS[m.away]?.code || ""} size="sm" />
                     <span className={`text-xs font-semibold ${m.away === team ? "text-primary" : "text-foreground"}`}>{m.away}</span>
                   </div>
                 </div>
@@ -214,8 +215,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
                     t === team ? "bg-primary/10 text-primary font-semibold" :
                     idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                   }`}>
-                    <span className="col-span-4 truncate flex items-center gap-1.5">
-                      <span className="text-sm">{td?.flag}</span> {t}
+                     <span className="col-span-4 truncate flex items-center gap-1.5">
+                       <TeamFlag code={td?.code || ""} size="sm" /> {t}
                     </span>
                     <span className="text-center">0</span>
                     <span className="text-center">0</span>
@@ -235,8 +236,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
               <Brain className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-bold text-foreground">AI Analysis</h3>
             </div>
-            <p className="text-xs text-foreground/80 leading-relaxed mb-3">
-              {teamData.name} ({teamData.flag}) enters the World Cup ranked #{teamData.fifaRank} by FIFA under coach {teamData.coach}.
+             <p className="text-xs text-foreground/80 leading-relaxed mb-3">
+               {teamData.name} enters the World Cup ranked #{teamData.fifaRank} by FIFA under coach {teamData.coach}.
               {teamData.debut ? ` This marks their historic World Cup debut.` : ""}
               {" "}Key players include {teamData.keyPlayers.slice(0, 3).join(", ")}.
               {teamData.fifaRank <= 10

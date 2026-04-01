@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
+import TeamFlag from "@/components/world-cup/TeamFlag";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -130,7 +131,7 @@ export default function WorldCup2026() {
                               idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === 3 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
                             }`}>
                               <span className="truncate flex items-center gap-1">
-                                <span className="text-xs">{td?.flag}</span> {t}
+                                {td && <TeamFlag code={td.code} size="sm" />} {t}
                               </span>
                               <span className="text-[9px] font-mono">#{td?.fifaRank}</span>
                             </div>
@@ -143,7 +144,7 @@ export default function WorldCup2026() {
                             const td = TEAMS[t];
                             return (
                               <div key={t} className="text-[10px] text-muted-foreground px-1">
-                                <span className="font-medium text-foreground">{td?.flag} {t}</span>
+                                <span className="font-medium text-foreground flex items-center gap-1">{td && <TeamFlag code={td.code} size="sm" />} {t}</span>
                                 <span className="ml-1">· {td?.coach}</span>
                               </div>
                             );
@@ -199,7 +200,7 @@ export default function WorldCup2026() {
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex-1 text-center">
-                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.homeTeam]?.flag}</p>
+                    <div className="mb-1">{TEAMS[FEATURED_MATCH.homeTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.homeTeam].code} size="lg" />}</div>
                     <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.homeTeam}</p>
                     <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.homeTeam]?.fifaRank}</p>
                   </div>
@@ -208,7 +209,7 @@ export default function WorldCup2026() {
                     <span className="text-lg font-bold text-primary">{FEATURED_MATCH.time}</span>
                   </div>
                   <div className="flex-1 text-center">
-                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.awayTeam]?.flag}</p>
+                    <div className="mb-1">{TEAMS[FEATURED_MATCH.awayTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.awayTeam].code} size="lg" />}</div>
                     <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.awayTeam}</p>
                     <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.awayTeam]?.fifaRank}</p>
                   </div>
@@ -264,8 +265,8 @@ export default function WorldCup2026() {
             {AI_PREDICTIONS.map((pred, i) => (
               <Card key={i} className="bg-card border-border p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    {TEAMS[pred.home]?.flag} {pred.home} vs {TEAMS[pred.away]?.flag} {pred.away}
+                  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
                   </span>
                   <Badge variant="outline" className="text-[9px]">{pred.confidence}%</Badge>
                 </div>
@@ -329,12 +330,12 @@ export default function WorldCup2026() {
                     <div className="flex items-center justify-between mt-1.5">
                       <div className="flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-sm">{TEAMS[m.home]?.flag}</span>
+                          {TEAMS[m.home] && <TeamFlag code={TEAMS[m.home].code} size="sm" />}
                           <span className="text-xs font-semibold text-foreground">{m.home}</span>
                           <span className="text-[9px] text-muted-foreground">#{TEAMS[m.home]?.fifaRank}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm">{TEAMS[m.away]?.flag}</span>
+                          {TEAMS[m.away] && <TeamFlag code={TEAMS[m.away].code} size="sm" />}
                           <span className="text-xs font-semibold text-foreground">{m.away}</span>
                           <span className="text-[9px] text-muted-foreground">#{TEAMS[m.away]?.fifaRank}</span>
                         </div>
@@ -382,7 +383,7 @@ export default function WorldCup2026() {
                         onClick={() => setSelectedTeam(t)}
                       >
                         <span className="col-span-4 truncate font-medium flex items-center gap-1">
-                          <span className="text-sm">{td?.flag}</span> {t}
+                          {td && <TeamFlag code={td.code} size="sm" />} {t}
                         </span>
                         <span className="text-center">0</span>
                         <span className="text-center">0</span>
@@ -415,7 +416,7 @@ export default function WorldCup2026() {
                     onClick={() => setSelectedTeam(team)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-lg">{td?.flag}</span>
+                        {td && <TeamFlag code={td.code} size="md" />}
                         <div>
                           <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             {team}
