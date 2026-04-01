@@ -131,7 +131,7 @@ export default function WorldCup2026() {
                               idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === 3 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
                             }`}>
                               <span className="truncate flex items-center gap-1">
-                                <span className="text-xs">{td?.flag}</span> {t}
+                                {td && <TeamFlag code={td.code} size="sm" />} {t}
                               </span>
                               <span className="text-[9px] font-mono">#{td?.fifaRank}</span>
                             </div>
