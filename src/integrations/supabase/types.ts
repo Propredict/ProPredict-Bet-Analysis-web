@@ -101,6 +101,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_ratings: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          rewarded: boolean
+          stars: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rewarded?: boolean
+          stars: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rewarded?: boolean
+          stars?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       arena_notifications: {
         Row: {
           created_at: string | null
@@ -1247,6 +1274,10 @@ export type Database = {
         Returns: undefined
       }
       resolve_arena_match: { Args: { p_match_id: string }; Returns: undefined }
+      submit_app_rating: {
+        Args: { p_feedback?: string; p_stars: number }
+        Returns: Json
+      }
       user_has_min_plan: { Args: { required_plan: string }; Returns: boolean }
     }
     Enums: {
