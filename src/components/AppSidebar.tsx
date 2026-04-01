@@ -70,7 +70,6 @@ const tools = [
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
   { title: "Smart Player Picks", url: "/players", icon: User },
-  { title: "World Cup 2026", url: "/world-cup-2026", icon: Trophy },
 ];
 
 const adminItems = [
@@ -138,6 +137,18 @@ export function AppSidebar() {
                 >
                   <Home className="h-4 w-4 text-primary" />
                   {!collapsed && <span>Dashboard</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/world-cup-2026" 
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary text-primary-foreground hover:bg-primary"
+                >
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  {!collapsed && <span>World Cup 2026</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
