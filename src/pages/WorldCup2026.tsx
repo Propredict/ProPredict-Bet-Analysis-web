@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Radio } from "lucide-react";
-import { useLiveScores } from "@/hooks/useLiveScores";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
+import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -47,20 +47,8 @@ export default function WorldCup2026() {
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
-  const { matches: liveMatches } = useLiveScores({ dateMode: "today", statusFilter: "live" });
-
-  // Filter for World Cup matches (league name contains "World Cup" or similar)
-  const wcLiveMatches = liveMatches.filter(m =>
-    m.league?.toLowerCase().includes("world cup") ||
-    m.league?.toLowerCase().includes("fifa")
-  );
-
-  if (selectedTeam) {
-    return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
-  }
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
@@ -231,18 +219,13 @@ export default function WorldCup2026() {
                     <Badge className="bg-destructive/20 text-destructive text-[10px] border-destructive/30">🔥 AI Prediction</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
-                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                <div className="grid grid-cols-3 gap-2 text-center mb-2">
                     <div><span className="text-lg font-bold text-emerald-400">{FEATURED_MATCH.homeWin}%</span><p className="text-[10px] text-muted-foreground">Home</p></div>
                     <div><span className="text-lg font-bold text-yellow-400">{FEATURED_MATCH.draw}%</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
                     <div><span className="text-lg font-bold text-blue-400">{FEATURED_MATCH.awayWin}%</span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
-                  <div className="text-center">
-                    <Badge className="bg-primary/20 text-primary text-[10px]">Over 2.5: {FEATURED_MATCH.over25}%</Badge>
-                  </div>
                 </div>
-                <Button onClick={openPlayStore} className="w-full bg-primary text-primary-foreground" size="sm">
-                  View Full Analysis <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+                <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />
               </div>
             </Card>
           </section>
@@ -296,15 +279,7 @@ export default function WorldCup2026() {
                     <p className="text-[9px] text-muted-foreground">Away</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Lock className="h-3 w-3" />
-                    <span className="text-[10px]">Full analysis locked</span>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-primary text-[10px] h-6 px-2" onClick={openPlayStore}>
-                    Unlock <ChevronRight className="h-3 w-3 ml-0.5" />
-                  </Button>
-                </div>
+                <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />
               </Card>
             ))}
           </div>
@@ -314,44 +289,7 @@ export default function WorldCup2026() {
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
           {/* Live Score Ticker */}
-          {wcLiveMatches.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Radio className="h-4 w-4 text-destructive animate-pulse" />
-                <span className="text-xs font-bold text-destructive uppercase tracking-wider">Live Now</span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {wcLiveMatches.map(m => (
-                  <Card key={m.id} className="bg-destructive/10 border-destructive/30 p-3 min-w-[200px] flex-shrink-0">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          {m.homeLogo && <img src={m.homeLogo} alt="" className="h-4 w-4" />}
-                          <span className="text-[11px] font-semibold text-foreground truncate">{m.homeTeam}</span>
-                          <span className="text-sm font-bold text-foreground ml-auto">{m.homeScore}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {m.awayLogo && <img src={m.awayLogo} alt="" className="h-4 w-4" />}
-                          <span className="text-[11px] font-semibold text-foreground truncate">{m.awayTeam}</span>
-                          <span className="text-sm font-bold text-foreground ml-auto">{m.awayScore}</span>
-                        </div>
-                      </div>
-                      <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[9px] px-1.5">
-                        {m.minute}'
-                      </Badge>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {wcLiveMatches.length === 0 && (
-            <div className="mb-4 flex items-center gap-2 bg-muted/20 border border-border rounded-lg px-3 py-2">
-              <Radio className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground">No live World Cup matches right now · Scores update automatically during the tournament</span>
-            </div>
-          )}
+          <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" /> Match Schedule
@@ -448,7 +386,7 @@ export default function WorldCup2026() {
                           className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
                             idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                           }`}
-                          onClick={() => setSelectedTeam(t)}
+                          onClick={openPlayStore}
                         >
                           <span className="col-span-4 truncate font-medium flex items-center gap-1">
                             {td && <TeamFlag code={td.code} size="sm" />} {t}
@@ -464,6 +402,9 @@ export default function WorldCup2026() {
                 </Card>
               );
             })}
+            <div className="mt-3">
+              <AppLockOverlay message="Team stats & details available in app" compact />
+            </div>
           </div>
         </TabsContent>
 
@@ -482,7 +423,7 @@ export default function WorldCup2026() {
                 const td = TEAMS[team];
                 return (
                   <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                    onClick={() => setSelectedTeam(team)}>
+                    onClick={openPlayStore}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         {td && <TeamFlag code={td.code} size="md" />}
@@ -491,14 +432,20 @@ export default function WorldCup2026() {
                             {team}
                             {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank} · {td?.coach}</p>
+                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank}</p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-1.5">
+                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     </div>
                   </Card>
                 );
               })}
+            </div>
+            <div className="mt-3">
+              <AppLockOverlay message="Full team data available in app" compact />
             </div>
           </div>
         </TabsContent>
