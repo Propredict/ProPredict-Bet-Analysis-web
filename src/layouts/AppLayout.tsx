@@ -291,6 +291,14 @@ export default function AppLayout() {
 
       {/* Android Battery Optimization Prompt */}
       <BatteryOptimizationPrompt />
+
+      {/* Rate App Popup (Android only) */}
+      <RateAppPopup
+        open={showRatePopup}
+        onClose={dismissRate}
+        onSubmit={submitRating}
+        submitting={rateSubmitting}
+      />
     </SidebarProvider>
   );
 }
