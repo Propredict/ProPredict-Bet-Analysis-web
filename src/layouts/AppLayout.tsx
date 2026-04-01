@@ -35,6 +35,8 @@ import { AndroidPushModal } from "@/components/AndroidPushModal";
 import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
 import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
 import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
+import { RateAppPopup } from "@/components/RateAppPopup";
+import { useAppRating } from "@/hooks/useAppRating";
 
 
 // Pages where footer should be hidden (header-only layout)
