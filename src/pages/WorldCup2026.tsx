@@ -302,44 +302,7 @@ export default function WorldCup2026() {
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
           {/* Live Score Ticker */}
-          {wcLiveMatches.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Radio className="h-4 w-4 text-destructive animate-pulse" />
-                <span className="text-xs font-bold text-destructive uppercase tracking-wider">Live Now</span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {wcLiveMatches.map(m => (
-                  <Card key={m.id} className="bg-destructive/10 border-destructive/30 p-3 min-w-[200px] flex-shrink-0">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          {m.homeLogo && <img src={m.homeLogo} alt="" className="h-4 w-4" />}
-                          <span className="text-[11px] font-semibold text-foreground truncate">{m.homeTeam}</span>
-                          <span className="text-sm font-bold text-foreground ml-auto">{m.homeScore}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {m.awayLogo && <img src={m.awayLogo} alt="" className="h-4 w-4" />}
-                          <span className="text-[11px] font-semibold text-foreground truncate">{m.awayTeam}</span>
-                          <span className="text-sm font-bold text-foreground ml-auto">{m.awayScore}</span>
-                        </div>
-                      </div>
-                      <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[9px] px-1.5">
-                        {m.minute}'
-                      </Badge>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {wcLiveMatches.length === 0 && (
-            <div className="mb-4 flex items-center gap-2 bg-muted/20 border border-border rounded-lg px-3 py-2">
-              <Radio className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground">No live World Cup matches right now · Scores update automatically during the tournament</span>
-            </div>
-          )}
+          <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" /> Match Schedule
