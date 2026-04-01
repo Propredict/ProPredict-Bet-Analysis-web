@@ -48,6 +48,7 @@ export default function WorldCup2026() {
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teamsSearch, setTeamsSearch] = useState("");
+  const { data: liveStandings } = useWCStandings();
 
   if (selectedTeam) {
     return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
