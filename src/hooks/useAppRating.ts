@@ -106,7 +106,7 @@ export function useAppRating() {
 
   const dismiss = useCallback(() => {
     setShowPopup(false);
-    try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
+    try { localStorage.setItem(RATING_DISMISSED_KEY, String(Date.now())); } catch {}
   }, []);
 
   return {
