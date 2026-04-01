@@ -181,14 +181,22 @@ export default function WorldCup2026() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">Locked</span>
+                      {isPremium ? (
+                        <span className="text-[10px] text-muted-foreground">Coming soon</span>
+                      ) : (
+                        <>
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Locked</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
               <div className="px-4 py-3 bg-muted/30 border-t border-border">
-                <p className="text-[11px] text-muted-foreground text-center">Follow the full tournament in the app</p>
+                <p className="text-[11px] text-muted-foreground text-center">
+                  {isPremium ? "Full bracket & predictions available when knockout stage begins" : "Follow the full tournament in the app"}
+                </p>
               </div>
             </Card>
           </section>
