@@ -364,40 +364,58 @@ export default function WorldCup2026() {
         {/* ==================== STANDINGS ==================== */}
         <TabsContent value="standings" className="mt-0 px-3">
           <div className="mt-4 space-y-3">
-            {Object.entries(GROUPS).map(([group, teams]) => (
-              <Card key={group} className="bg-card border-border overflow-hidden">
-                <div className="px-3 py-2 bg-muted/30 border-b border-border">
-                  <span className="text-xs font-bold text-primary">Group {group}</span>
-                </div>
-                <div className="p-2">
-                  <div className="grid grid-cols-8 text-[9px] text-muted-foreground font-medium mb-1 px-1">
-                    <span className="col-span-4">Team</span>
-                    <span className="text-center">P</span>
-                    <span className="text-center">W</span>
-                    <span className="text-center">GD</span>
-                    <span className="text-center">Pts</span>
+            {liveStandings?.hasData && (
+              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] mb-2">
+                ✅ Live data from API-Football
+              </Badge>
+            )}
+            {Object.entries(GROUPS).map(([group, teams]) => {
+              const liveGroup = liveStandings?.standings?.[group];
+              return (
+                <Card key={group} className="bg-card border-border overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/30 border-b border-border">
+                    <span className="text-xs font-bold text-primary">Group {group}</span>
                   </div>
-                  {teams.map((t, idx) => {
-                    const td = TEAMS[t];
-                    return (
-                      <div key={t}
-                        className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
-                          idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
-                        }`}
-                        onClick={() => setSelectedTeam(t)}
-                      >
-                        <span className="col-span-4 truncate font-medium flex items-center gap-1">
-                          {td && <TeamFlag code={td.code} size="sm" />} {t}
-                        </span>
-                        <span className="text-center">0</span>
-                        <span className="text-center">0</span>
-                        <span className="text-center">0</span>
-                        <span className="text-center font-bold">0</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
+                  <div className="p-2">
+                    <div className="grid grid-cols-8 text-[9px] text-muted-foreground font-medium mb-1 px-1">
+                      <span className="col-span-4">Team</span>
+                      <span className="text-center">P</span>
+                      <span className="text-center">W</span>
+                      <span className="text-center">GD</span>
+                      <span className="text-center">Pts</span>
+                    </div>
+                    {teams.map((t, idx) => {
+                      const td = TEAMS[t];
+                      // Try to find live data for this team
+                      const live = liveGroup?.find(lt => 
+                        lt.team.toLowerCase().includes(t.toLowerCase()) || 
+                        t.toLowerCase().includes(lt.team.toLowerCase())
+                      );
+                      const played = live?.played ?? 0;
+                      const win = live?.win ?? 0;
+                      const gd = live?.goalsDiff ?? 0;
+                      const pts = live?.points ?? 0;
+                      return (
+                        <div key={t}
+                          className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
+                            idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
+                          }`}
+                          onClick={() => setSelectedTeam(t)}
+                        >
+                          <span className="col-span-4 truncate font-medium flex items-center gap-1">
+                            {td && <TeamFlag code={td.code} size="sm" />} {t}
+                          </span>
+                          <span className="text-center">{played}</span>
+                          <span className="text-center">{win}</span>
+                          <span className="text-center">{gd}</span>
+                          <span className="text-center font-bold">{pts}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              );
+            })}
             ))}
           </div>
         </TabsContent>
