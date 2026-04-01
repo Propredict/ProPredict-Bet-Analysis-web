@@ -688,7 +688,7 @@ export default function WorldCup2026() {
                     const td = TEAMS[team];
                     return (
                       <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                        onClick={() => navigate(`/world-cup-2026/team/${encodeURIComponent(team)}`)}>
+                        onClick={() => setSelectedTeam(team)}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
                             {td && <TeamFlag code={td.code} size="md" />}
