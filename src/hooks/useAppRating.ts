@@ -54,13 +54,17 @@ export function useAppRating() {
     // Don't show if already dismissed or shown this session
     try {
       if (sessionStorage.getItem(RATING_SHOWN_SESSION_KEY)) return;
-      if (localStorage.getItem(RATING_DISMISSED_KEY)) return;
+      // Check dismiss cooldown (7 days)
+      const dismissedAt = localStorage.getItem(RATING_DISMISSED_KEY);
+      if (dismissedAt && (Date.now() - parseInt(dismissedAt, 10)) < DISMISS_COOLDOWN_MS) return;
     } catch {}
 
     const openCount = parseInt(localStorage.getItem(OPEN_COUNT_KEY) || "0", 10);
     const featureUsed = localStorage.getItem(FEATURE_USED_KEY) === "1";
+    const firstSeen = parseInt(localStorage.getItem(FIRST_SEEN_KEY) || "0", 10);
+    const daysSinceFirstUse = firstSeen ? (Date.now() - firstSeen) / (24 * 60 * 60 * 1000) : 0;
 
-    if (openCount >= 3 || featureUsed) {
+    if (openCount >= 3 || featureUsed || daysSinceFirstUse >= MIN_DAYS_BEFORE_PROMPT) {
       // Delay to not interfere with other popups
       setTimeout(() => {
         setShowPopup(true);
