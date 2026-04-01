@@ -287,13 +287,20 @@ export default function WorldCup2026() {
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
                 </div>
-                {!isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
-                {isPro && !isPremium && (
+                {/* App: Free user watch ad CTA */}
+                {isApp && !appCanSeeBasic && (
+                  <Button onClick={handleWatchAd} disabled={adLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs mt-2">
+                    <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading Ad…" : "Watch Ad to Unlock Predictions"}
+                  </Button>
+                )}
+                {/* Web: Free user lock overlay */}
+                {!isApp && !isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
+                {appCanSeeBasic && !isPremium && (
                   <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] text-muted-foreground">
                     <Smartphone className="h-3 w-3" /> Better live experience in app
                   </div>
