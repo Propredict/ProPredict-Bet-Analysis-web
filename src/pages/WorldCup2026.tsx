@@ -566,67 +566,81 @@ export default function WorldCup2026() {
         {/* ==================== STANDINGS ==================== */}
         <TabsContent value="standings" className="mt-0 px-3">
           <div className="mt-4 space-y-3">
-            {liveStandings?.hasData && (
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] mb-2">
-                ✅ Live data from API-Football
-              </Badge>
+            {/* App: Free users — locked; Pro/Premium — unlocked */}
+            {isApp && !isPro && (
+              <Card className="bg-card border-border p-5 text-center">
+                <Lock className="h-6 w-6 text-amber-500 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-foreground mb-1">Standings Locked</p>
+                <p className="text-[10px] text-muted-foreground mb-3">Upgrade to Pro or Premium to unlock World Cup standings</p>
+                <Button onClick={() => navigate("/get-premium")} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
+                  <Zap className="h-3.5 w-3.5 mr-1.5" /> Upgrade to Pro / Premium
+                </Button>
+              </Card>
             )}
-            {Object.entries(GROUPS).map(([group, teams]) => {
-              const liveGroup = liveStandings?.standings?.[group];
-              return (
-                <Card key={group} className="bg-card border-border overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/30 border-b border-border">
-                    <span className="text-xs font-bold text-primary">Group {group}</span>
-                  </div>
-                  <div className="p-2">
-                    <div className="grid grid-cols-8 text-[9px] text-muted-foreground font-medium mb-1 px-1">
-                      <span className="col-span-4">Team</span>
-                      <span className="text-center">P</span>
-                      <span className="text-center">W</span>
-                      <span className="text-center">GD</span>
-                      <span className="text-center">Pts</span>
-                    </div>
-                    {teams.map((t, idx) => {
-                      const td = TEAMS[t];
-                      // Try to find live data for this team
-                      const live = liveGroup?.find(lt => 
-                        lt.team.toLowerCase().includes(t.toLowerCase()) || 
-                        t.toLowerCase().includes(lt.team.toLowerCase())
-                      );
-                      const played = live?.played ?? 0;
-                      const win = live?.win ?? 0;
-                      const gd = live?.goalsDiff ?? 0;
-                      const pts = live?.points ?? 0;
-                      return (
-                        <div key={t}
-                          className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
-                            idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
-                          }`}
-                          onClick={isPremium ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(t)}`) : openPlayStore}
-                        >
-                          <span className="col-span-4 truncate font-medium flex items-center gap-1">
-                            {td && <TeamFlag code={td.code} size="sm" />} {t}
-                          </span>
-                          <span className="text-center">{played}</span>
-                          <span className="text-center">{win}</span>
-                          <span className="text-center">{gd}</span>
-                          <span className="text-center font-bold">{pts}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              );
-            })}
-            {!isPremium && (
-              <div className="mt-3">
+            {/* Web: Free users — locked */}
+            {!isApp && !isPro && (
+              <Card className="bg-card border-border p-5 text-center">
+                <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm font-semibold text-foreground mb-1">Standings Locked</p>
+                <p className="text-[10px] text-muted-foreground mb-3">Team stats & details available in app</p>
                 <AppLockOverlay message="Team stats & details available in app" compact />
-              </div>
+              </Card>
             )}
-            {isPremium && (
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
-                <Smartphone className="h-3 w-3" /> Click any team for full stats · Best experience in app
-              </div>
+            {/* Pro/Premium — show standings */}
+            {(isApp ? isPro : isPro) && (
+              <>
+                {liveStandings?.hasData && (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] mb-2">
+                    ✅ Live data from API-Football
+                  </Badge>
+                )}
+                {Object.entries(GROUPS).map(([group, teams]) => {
+                  const liveGroup = liveStandings?.standings?.[group];
+                  return (
+                    <Card key={group} className="bg-card border-border overflow-hidden">
+                      <div className="px-3 py-2 bg-muted/30 border-b border-border">
+                        <span className="text-xs font-bold text-primary">Group {group}</span>
+                      </div>
+                      <div className="p-2">
+                        <div className="grid grid-cols-8 text-[9px] text-muted-foreground font-medium mb-1 px-1">
+                          <span className="col-span-4">Team</span>
+                          <span className="text-center">P</span>
+                          <span className="text-center">W</span>
+                          <span className="text-center">GD</span>
+                          <span className="text-center">Pts</span>
+                        </div>
+                        {teams.map((t, idx) => {
+                          const td = TEAMS[t];
+                          const live = liveGroup?.find(lt => 
+                            lt.team.toLowerCase().includes(t.toLowerCase()) || 
+                            t.toLowerCase().includes(lt.team.toLowerCase())
+                          );
+                          const played = live?.played ?? 0;
+                          const win = live?.win ?? 0;
+                          const gd = live?.goalsDiff ?? 0;
+                          const pts = live?.points ?? 0;
+                          return (
+                            <div key={t}
+                              className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
+                                idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
+                              }`}
+                              onClick={isPro ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(t)}`) : undefined}
+                            >
+                              <span className="col-span-4 truncate font-medium flex items-center gap-1">
+                                {td && <TeamFlag code={td.code} size="sm" />} {t}
+                              </span>
+                              <span className="text-center">{played}</span>
+                              <span className="text-center">{win}</span>
+                              <span className="text-center">{gd}</span>
+                              <span className="text-center font-bold">{pts}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </>
             )}
           </div>
         </TabsContent>
@@ -634,48 +648,59 @@ export default function WorldCup2026() {
         {/* ==================== TEAMS ==================== */}
         <TabsContent value="teams" className="mt-0 px-3">
           <div className="mt-4">
-            <input
-              type="text"
-              placeholder="Search teams..."
-              value={teamsSearch}
-              onChange={e => setTeamsSearch(e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground mb-3 outline-none focus:border-primary/50"
-            />
-            <div className="space-y-1.5">
-              {filteredTeams.map(({ team, group }) => {
-                const td = TEAMS[team];
-                return (
-                  <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                    onClick={isPremium ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(team)}`) : openPlayStore}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        {td && <TeamFlag code={td.code} size="md" />}
-                        <div>
-                          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                            {team}
-                            {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {!isPremium && <Lock className="h-3 w-3 text-muted-foreground" />}
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-            {!isPremium && (
-              <div className="mt-3">
-                <AppLockOverlay message="Full team data available in app" compact />
-              </div>
+            {/* App: Free users — locked */}
+            {isApp && !isPro && (
+              <Card className="bg-card border-border p-5 text-center">
+                <Lock className="h-6 w-6 text-amber-500 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-foreground mb-1">Teams Locked</p>
+                <p className="text-[10px] text-muted-foreground mb-3">Upgrade to Pro or Premium to unlock full team data</p>
+                <Button onClick={() => navigate("/get-premium")} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
+                  <Zap className="h-3.5 w-3.5 mr-1.5" /> Upgrade to Pro / Premium
+                </Button>
+              </Card>
             )}
-            {isPremium && (
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
-                <Smartphone className="h-3 w-3" /> ProPredict app offers the best World Cup experience
-              </div>
+            {/* Web: Free users — locked */}
+            {!isApp && !isPro && (
+              <Card className="bg-card border-border p-5 text-center">
+                <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm font-semibold text-foreground mb-1">Teams Locked</p>
+                <AppLockOverlay message="Full team data available in app" compact />
+              </Card>
+            )}
+            {/* Pro/Premium — show teams */}
+            {isPro && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search teams..."
+                  value={teamsSearch}
+                  onChange={e => setTeamsSearch(e.target.value)}
+                  className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground mb-3 outline-none focus:border-primary/50"
+                />
+                <div className="space-y-1.5">
+                  {filteredTeams.map(({ team, group }) => {
+                    const td = TEAMS[team];
+                    return (
+                      <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
+                        onClick={() => navigate(`/world-cup-2026/team/${encodeURIComponent(team)}`)}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            {td && <TeamFlag code={td.code} size="md" />}
+                            <div>
+                              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                {team}
+                                {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         </TabsContent>
