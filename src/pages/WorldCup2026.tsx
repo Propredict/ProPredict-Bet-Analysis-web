@@ -245,13 +245,13 @@ export default function WorldCup2026() {
         </Card>
       </section>
 
-      {/* Today's Matches */}
+      {/* National Teams Form */}
       <section className="px-3 mt-6">
         <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          Today's Matches
+          <Flag className="h-5 w-5 text-primary" />
+          National Teams Form
         </h2>
-        <WCTodayMatches />
+        <NationalTeamForm />
       </section>
 
       {/* Bottom CTA */}
