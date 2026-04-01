@@ -415,6 +415,9 @@ export default function WorldCup2026() {
                 </Card>
               );
             })}
+            <div className="mt-3">
+              <AppLockOverlay message="Team stats & details available in app" compact />
+            </div>
           </div>
         </TabsContent>
 
@@ -433,7 +436,7 @@ export default function WorldCup2026() {
                 const td = TEAMS[team];
                 return (
                   <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                    onClick={() => setSelectedTeam(team)}>
+                    onClick={openPlayStore}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         {td && <TeamFlag code={td.code} size="md" />}
@@ -442,14 +445,20 @@ export default function WorldCup2026() {
                             {team}
                             {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank} · {td?.coach}</p>
+                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank}</p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-1.5">
+                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     </div>
                   </Card>
                 );
               })}
+            </div>
+            <div className="mt-3">
+              <AppLockOverlay message="Full team data available in app" compact />
             </div>
           </div>
         </TabsContent>
