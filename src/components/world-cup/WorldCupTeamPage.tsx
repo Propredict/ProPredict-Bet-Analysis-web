@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Trophy, Users, BarChart3, TrendingUp, Brain, Calendar, Shield, ChevronRight, Lock, MapPin } from "lucide-react";
+import { usePlatform } from "@/hooks/usePlatform";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
