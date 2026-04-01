@@ -416,7 +416,7 @@ export default function WorldCup2026() {
                     onClick={() => setSelectedTeam(team)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-lg">{td?.flag}</span>
+                        {td && <TeamFlag code={td.code} size="md" />}
                         <div>
                           <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             {team}
