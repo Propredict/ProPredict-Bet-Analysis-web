@@ -174,8 +174,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-sm">{TEAMS[m.home]?.flag}</span>
+                   <div className="flex items-center gap-1.5 mb-0.5">
+                     <TeamFlag code={TEAMS[m.home]?.code || ""} size="sm" />
                     <span className={`text-xs font-semibold ${m.home === team ? "text-primary" : "text-foreground"}`}>{m.home}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
