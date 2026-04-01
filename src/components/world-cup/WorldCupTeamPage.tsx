@@ -23,6 +23,7 @@ const openPlayStore = () => {
 
 export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const { isAndroidApp } = usePlatform();
   const teamData = TEAMS[team];
 
   // Find group
