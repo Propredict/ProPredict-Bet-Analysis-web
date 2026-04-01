@@ -220,9 +220,9 @@ export default function WorldCup2026() {
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div><span className="text-lg font-bold text-emerald-400">{FEATURED_MATCH.homeWin}%</span><p className="text-[10px] text-muted-foreground">Home</p></div>
-                    <div><span className="text-lg font-bold text-yellow-400">{FEATURED_MATCH.draw}%</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
-                    <div><span className="text-lg font-bold text-blue-400">{FEATURED_MATCH.awayWin}%</span><p className="text-[10px] text-muted-foreground">Away</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Home</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Draw</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
                 </div>
                 <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />
