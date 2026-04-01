@@ -399,7 +399,7 @@ export default function WorldCup2026() {
                           className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
                             idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                           }`}
-                          onClick={() => setSelectedTeam(t)}
+                          onClick={openPlayStore}
                         >
                           <span className="col-span-4 truncate font-medium flex items-center gap-1">
                             {td && <TeamFlag code={td.code} size="sm" />} {t}
