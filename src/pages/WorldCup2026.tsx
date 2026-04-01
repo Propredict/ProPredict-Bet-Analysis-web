@@ -78,6 +78,7 @@ export default function WorldCup2026() {
           <p className="text-sm text-white/80 max-w-md leading-relaxed">
             June 11 – July 19 · 48 Teams · 16 Cities
           </p>
+          <CountdownTimer />
           <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
             <Badge variant="outline" className="border-yellow-500/50 text-yellow-400 text-[10px]">
               <Globe className="h-3 w-3 mr-1" /> USA · Mexico · Canada
