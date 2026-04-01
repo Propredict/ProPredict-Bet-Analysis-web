@@ -254,24 +254,32 @@ export default function WorldCup2026() {
         <NationalTeamForm />
       </section>
 
-      {/* Bottom CTA */}
+      {/* CTA Section */}
       <section className="px-3 mt-8 mb-6">
-        <Card className="bg-gradient-to-br from-primary/20 via-card to-yellow-900/20 border-primary/30 overflow-hidden">
+        <Card className="bg-card border-border overflow-hidden">
           <div className="p-5 text-center">
-            <Lock className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+            <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
             <h3 className="text-base font-bold text-foreground mb-1">
-              Unlock Full AI Predictions
+              World Cup AI Predictions
             </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Get premium World Cup analysis, live predictions, and exclusive
-              match insights for every game.
+            <p className="text-xs text-foreground/80 mb-1">
+              Get AI insights for every World Cup match
+            </p>
+            <p className="text-[10px] text-muted-foreground mb-4">
+              Full analysis & live tracking available only in the app
             </p>
             <Button
-              onClick={() => navigate("/get-premium")}
-              className="bg-gradient-to-r from-yellow-500 to-primary text-white font-semibold"
+              onClick={() => {
+                if (typeof window !== "undefined" && (window as any).Android?.openExternal) {
+                  (window as any).Android.openExternal("https://play.google.com/store/apps/details?id=com.propredict.app");
+                } else {
+                  navigate("/ai-predictions");
+                }
+              }}
+              className="bg-primary text-primary-foreground font-semibold"
             >
-              <Trophy className="h-4 w-4 mr-2" />
-              Go Premium
+              <Zap className="h-4 w-4 mr-2" />
+              Open App & Unlock
             </Button>
           </div>
         </Card>
