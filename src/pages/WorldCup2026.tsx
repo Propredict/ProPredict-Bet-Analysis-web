@@ -1,79 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
-
-// World Cup 2026 groups (48 teams, 12 groups)
-const GROUPS: Record<string, string[]> = {
-  A: ["USA", "Morocco", "Peru", "Jamaica"],
-  B: ["Portugal", "Mexico", "Colombia", "Senegal"],
-  C: ["France", "Australia", "Saudi Arabia", "Ecuador"],
-  D: ["Brazil", "Cameroon", "Japan", "New Zealand"],
-  E: ["Argentina", "Canada", "Chile", "Uzbekistan"],
-  F: ["Spain", "Nigeria", "South Korea", "Paraguay"],
-  G: ["England", "Serbia", "Costa Rica", "Iran"],
-  H: ["Germany", "Uruguay", "Ghana", "Tunisia"],
-  I: ["Netherlands", "Egypt", "Denmark", "Indonesia"],
-  J: ["Italy", "Switzerland", "Ivory Coast", "Panama"],
-  K: ["Belgium", "Croatia", "Wales", "Algeria"],
-  L: ["Poland", "Sweden", "Turkey", "Bolivia"],
-};
+import {
+  GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
+} from "@/data/worldCup2026";
 
 const ALL_TEAMS = Object.entries(GROUPS).flatMap(([group, teams]) =>
   teams.map(team => ({ team, group }))
 );
-
-const mockStandings = (teams: string[]) =>
-  teams.map((t, i) => ({
-    team: t, played: 0, won: 0, drawn: 0, lost: 0, gd: 0, pts: 0, rank: i + 1,
-  }));
-
-const FEATURED_MATCH = {
-  homeTeam: "USA", awayTeam: "England", date: "June 11, 2026", time: "21:00",
-  homeWin: 38, draw: 27, awayWin: 35, over25: 62, league: "World Cup 2026 - Group Stage",
-};
-
-const KNOCKOUT_ROUNDS = [
-  { name: "Round of 16", emoji: "⚔️" },
-  { name: "Quarter-finals", emoji: "🏟️" },
-  { name: "Semi-finals", emoji: "🔥" },
-  { name: "Final", emoji: "🏆" },
-];
-
-const MOCK_MATCHES = {
-  today: [
-    { home: "USA", away: "Morocco", time: "18:00", status: "upcoming", score: "" },
-    { home: "Portugal", away: "Mexico", time: "21:00", status: "live", score: "1-0", minute: "34'" },
-  ],
-  upcoming: [
-    { home: "France", away: "Australia", time: "15:00", date: "Jun 12", score: "" },
-    { home: "Brazil", away: "Cameroon", time: "18:00", date: "Jun 12", score: "" },
-    { home: "Argentina", away: "Canada", time: "21:00", date: "Jun 12", score: "" },
-    { home: "Spain", away: "Nigeria", time: "15:00", date: "Jun 13", score: "" },
-    { home: "England", away: "Serbia", time: "18:00", date: "Jun 13", score: "" },
-    { home: "Germany", away: "Uruguay", time: "21:00", date: "Jun 13", score: "" },
-  ],
-  finished: [
-    { home: "Italy", away: "Switzerland", score: "2-1", date: "Jun 10" },
-    { home: "Netherlands", away: "Egypt", score: "3-0", date: "Jun 10" },
-  ],
-};
-
-const MOCK_AI_PREDICTIONS = [
-  { home: "USA", away: "Morocco", homeWin: 45, draw: 28, awayWin: 27, confidence: 72 },
-  { home: "Portugal", away: "Mexico", homeWin: 52, draw: 25, awayWin: 23, confidence: 78 },
-  { home: "France", away: "Australia", homeWin: 68, draw: 20, awayWin: 12, confidence: 85 },
-  { home: "Brazil", away: "Cameroon", homeWin: 60, draw: 22, awayWin: 18, confidence: 80 },
-  { home: "Argentina", away: "Canada", homeWin: 65, draw: 20, awayWin: 15, confidence: 82 },
-  { home: "England", away: "Serbia", homeWin: 55, draw: 25, awayWin: 20, confidence: 75 },
-  { home: "Germany", away: "Uruguay", homeWin: 48, draw: 27, awayWin: 25, confidence: 70 },
-  { home: "Spain", away: "Nigeria", homeWin: 62, draw: 22, awayWin: 16, confidence: 79 },
-];
 
 const openPlayStore = () => {
   if (typeof window !== "undefined" && (window as any).Android?.openExternal) {
@@ -83,23 +23,45 @@ const openPlayStore = () => {
   }
 };
 
+// Mock AI predictions based on real matchups
+const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
+  const homeRank = TEAMS[m.home]?.fifaRank || 50;
+  const awayRank = TEAMS[m.away]?.fifaRank || 50;
+  const total = homeRank + awayRank;
+  const homeWin = Math.round((1 - homeRank / total) * 80 + 10);
+  const awayWin = Math.round((1 - awayRank / total) * 80 + 10);
+  const draw = 100 - homeWin - awayWin;
+  return {
+    home: m.home, away: m.away, date: m.date,
+    homeWin: Math.max(homeWin, 8), draw: Math.max(draw, 15), awayWin: Math.max(awayWin, 8),
+    confidence: Math.min(85, Math.round(60 + Math.abs(homeRank - awayRank) * 0.3)),
+  };
+});
+
 export default function WorldCup2026() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
-  const [matchesFilter, setMatchesFilter] = useState<"today" | "upcoming" | "finished">("today");
-  const [selectedTeam, setSelectedTeam] = useState<{ team: string; group: string } | null>(null);
+  const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teamsSearch, setTeamsSearch] = useState("");
 
   if (selectedTeam) {
-    return <WorldCupTeamPage team={selectedTeam.team} group={selectedTeam.group} onBack={() => setSelectedTeam(null)} />;
+    return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
   }
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
+  // Split matches by matchday (8 matches each for 12 groups × 2 matches)
+  const matchesByDay = {
+    md1: GROUP_MATCHES.slice(0, 24),
+    md2: [] as typeof GROUP_MATCHES,  // Will be filled when schedule confirmed
+    md3: [] as typeof GROUP_MATCHES,
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative w-full overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroImage} alt="World Cup 2026" className="w-full h-full object-cover" />
@@ -111,13 +73,13 @@ export default function WorldCup2026() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">World Cup 2026</h1>
           </div>
           <p className="text-sm text-white/80 max-w-md leading-relaxed">
-            The most watched event in the world is here.
+            June 11 – July 19 · 48 Teams · 16 Cities
           </p>
           <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
             <Badge variant="outline" className="border-yellow-500/50 text-yellow-400 text-[10px]">
               <Globe className="h-3 w-3 mr-1" /> USA · Mexico · Canada
             </Badge>
-            <Badge variant="outline" className="border-primary/50 text-primary text-[10px]">48 Teams</Badge>
+            <Badge variant="outline" className="border-primary/50 text-primary text-[10px]">48 Teams · 12 Groups</Badge>
             <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">
               🔥 Live Updates + AI Predictions
             </Badge>
@@ -142,7 +104,7 @@ export default function WorldCup2026() {
           ))}
         </TabsList>
 
-        {/* ==================== OVERVIEW TAB ==================== */}
+        {/* ==================== OVERVIEW ==================== */}
         <TabsContent value="overview" className="mt-0">
           {/* Groups */}
           <section className="px-3 mt-4">
@@ -152,7 +114,6 @@ export default function WorldCup2026() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {Object.entries(GROUPS).map(([group, teams]) => {
                 const isExpanded = expandedGroup === group;
-                const standings = mockStandings(teams);
                 return (
                   <Card key={group} className="bg-card border-border cursor-pointer hover:border-primary/40 transition-colors overflow-hidden"
                     onClick={() => setExpandedGroup(isExpanded ? null : group)}>
@@ -162,28 +123,31 @@ export default function WorldCup2026() {
                         <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                       </div>
                       <div className="space-y-1">
-                        {standings.map((s, idx) => (
-                          <div key={s.team} className={`flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded ${
-                            idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === teams.length - 1 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
-                          }`}>
-                            <span className="truncate">{s.team}</span>
-                            <span className="font-mono font-semibold">{s.pts}</span>
-                          </div>
-                        ))}
+                        {teams.map((t, idx) => {
+                          const td = TEAMS[t];
+                          return (
+                            <div key={t} className={`flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded ${
+                              idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === 3 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
+                            }`}>
+                              <span className="truncate flex items-center gap-1">
+                                <span className="text-xs">{td?.flag}</span> {t}
+                              </span>
+                              <span className="text-[9px] font-mono">#{td?.fifaRank}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                       {isExpanded && (
-                        <div className="mt-2 pt-2 border-t border-border">
-                          <div className="grid grid-cols-5 text-[9px] text-muted-foreground font-medium mb-1 px-1">
-                            <span className="col-span-2">Team</span><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">Pts</span>
-                          </div>
-                          {standings.map(s => (
-                            <div key={s.team} className="grid grid-cols-5 text-[10px] text-foreground px-1 py-0.5">
-                              <span className="col-span-2 truncate">{s.team}</span>
-                              <span className="text-center text-muted-foreground">{s.played}</span>
-                              <span className="text-center text-muted-foreground">{s.gd > 0 ? `+${s.gd}` : s.gd}</span>
-                              <span className="text-center font-bold">{s.pts}</span>
-                            </div>
-                          ))}
+                        <div className="mt-2 pt-2 border-t border-border space-y-1">
+                          {teams.map(t => {
+                            const td = TEAMS[t];
+                            return (
+                              <div key={t} className="text-[10px] text-muted-foreground px-1">
+                                <span className="font-medium text-foreground">{td?.flag} {t}</span>
+                                <span className="ml-1">· {td?.coach}</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -204,7 +168,10 @@ export default function WorldCup2026() {
                   <div key={round.name} className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <span className="text-base">{round.emoji}</span>
-                      <span className="text-sm font-medium text-foreground">{round.name}</span>
+                      <div>
+                        <span className="text-sm font-medium text-foreground">{round.name}</span>
+                        <p className="text-[10px] text-muted-foreground">{round.date}</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Lock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -226,14 +193,25 @@ export default function WorldCup2026() {
             </h2>
             <Card className="bg-card border-border overflow-hidden">
               <div className="p-4">
-                <div className="text-[10px] text-muted-foreground mb-2 text-center">{FEATURED_MATCH.league}</div>
+                <div className="text-[10px] text-muted-foreground mb-1 text-center">{FEATURED_MATCH.league}</div>
+                <div className="text-[10px] text-muted-foreground mb-2 text-center flex items-center justify-center gap-1">
+                  <MapPin className="h-3 w-3" /> {FEATURED_MATCH.venue}
+                </div>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex-1 text-center"><p className="text-base font-bold text-foreground">{FEATURED_MATCH.homeTeam}</p></div>
+                  <div className="flex-1 text-center">
+                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.homeTeam]?.flag}</p>
+                    <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.homeTeam}</p>
+                    <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.homeTeam]?.fifaRank}</p>
+                  </div>
                   <div className="flex flex-col items-center px-4">
                     <span className="text-xs text-muted-foreground">{FEATURED_MATCH.date}</span>
                     <span className="text-lg font-bold text-primary">{FEATURED_MATCH.time}</span>
                   </div>
-                  <div className="flex-1 text-center"><p className="text-base font-bold text-foreground">{FEATURED_MATCH.awayTeam}</p></div>
+                  <div className="flex-1 text-center">
+                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.awayTeam]?.flag}</p>
+                    <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.awayTeam}</p>
+                    <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.awayTeam]?.fifaRank}</p>
+                  </div>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 mb-3">
                   <div className="flex items-center justify-center gap-1 mb-1">
@@ -276,17 +254,20 @@ export default function WorldCup2026() {
           </section>
         </TabsContent>
 
-        {/* ==================== AI PREDICTIONS TAB ==================== */}
+        {/* ==================== AI PREDICTIONS ==================== */}
         <TabsContent value="predictions" className="mt-0 px-3">
           <div className="mt-4 space-y-2">
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2 mb-1">
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
-            {MOCK_AI_PREDICTIONS.map((pred, i) => (
+            <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
+            {AI_PREDICTIONS.map((pred, i) => (
               <Card key={i} className="bg-card border-border p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground">{pred.home} vs {pred.away}</span>
-                  <Badge variant="outline" className="text-[9px]">{pred.confidence}% conf</Badge>
+                  <span className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    {TEAMS[pred.home]?.flag} {pred.home} vs {TEAMS[pred.away]?.flag} {pred.away}
+                  </span>
+                  <Badge variant="outline" className="text-[9px]">{pred.confidence}%</Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
                   <div className="bg-muted/30 rounded p-1.5">
@@ -316,117 +297,107 @@ export default function WorldCup2026() {
           </div>
         </TabsContent>
 
-        {/* ==================== MATCHES TAB ==================== */}
+        {/* ==================== MATCHES ==================== */}
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
+            <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-primary" /> Match Schedule
+            </h2>
             <div className="flex gap-2 mb-3">
-              {(["today", "upcoming", "finished"] as const).map(f => (
-                <Button key={f} size="sm" variant={matchesFilter === f ? "default" : "outline"}
-                  className="text-[11px] h-7 px-3 capitalize" onClick={() => setMatchesFilter(f)}>
-                  {f}
+              {([
+                { key: "md1", label: "Matchday 1" },
+                { key: "md2", label: "Matchday 2" },
+                { key: "md3", label: "Matchday 3" },
+              ] as const).map(f => (
+                <Button key={f.key} size="sm" variant={matchesFilter === f.key ? "default" : "outline"}
+                  className="text-[11px] h-7 px-3" onClick={() => setMatchesFilter(f.key)}>
+                  {f.label}
                 </Button>
               ))}
             </div>
 
-            {matchesFilter === "today" && (
-              <div className="space-y-2">
-                {MOCK_MATCHES.today.map((m, i) => (
+            <div className="space-y-2">
+              {(matchesByDay[matchesFilter] || []).length > 0 ? (
+                matchesByDay[matchesFilter].map((m, i) => (
                   <Card key={i} className="bg-card border-border p-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="outline" className="text-[9px]">Group {m.group}</Badge>
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {m.city}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5">
                       <div className="flex-1">
-                        <p className="text-xs font-semibold text-foreground">{m.home}</p>
-                        <p className="text-xs font-semibold text-foreground">{m.away}</p>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-sm">{TEAMS[m.home]?.flag}</span>
+                          <span className="text-xs font-semibold text-foreground">{m.home}</span>
+                          <span className="text-[9px] text-muted-foreground">#{TEAMS[m.home]?.fifaRank}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">{TEAMS[m.away]?.flag}</span>
+                          <span className="text-xs font-semibold text-foreground">{m.away}</span>
+                          <span className="text-[9px] text-muted-foreground">#{TEAMS[m.away]?.fifaRank}</span>
+                        </div>
                       </div>
                       <div className="text-right">
-                        {m.status === "live" ? (
-                          <>
-                            <Badge className="bg-destructive/20 text-destructive text-[9px] mb-0.5">● LIVE {m.minute}</Badge>
-                            <p className="text-sm font-bold text-foreground">{m.score}</p>
-                          </>
-                        ) : (
-                          <p className="text-sm font-semibold text-primary">{m.time}</p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {matchesFilter === "upcoming" && (
-              <div className="space-y-2">
-                {MOCK_MATCHES.upcoming.map((m, i) => (
-                  <Card key={i} className="bg-card border-border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-foreground">{m.home} vs {m.away}</p>
                         <p className="text-[10px] text-muted-foreground">{m.date}</p>
+                        <p className="text-sm font-bold text-primary">{m.time}</p>
                       </div>
-                      <span className="text-sm font-semibold text-primary">{m.time}</span>
                     </div>
                   </Card>
-                ))}
-              </div>
-            )}
-
-            {matchesFilter === "finished" && (
-              <div className="space-y-2">
-                {MOCK_MATCHES.finished.map((m, i) => (
-                  <Card key={i} className="bg-card border-border p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-foreground">{m.home} vs {m.away}</p>
-                        <p className="text-[10px] text-muted-foreground">{m.date}</p>
-                      </div>
-                      <span className="text-sm font-bold text-foreground">{m.score}</span>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">Schedule will be available soon</p>
+                </div>
+              )}
+            </div>
           </div>
         </TabsContent>
 
-        {/* ==================== STANDINGS TAB ==================== */}
+        {/* ==================== STANDINGS ==================== */}
         <TabsContent value="standings" className="mt-0 px-3">
           <div className="mt-4 space-y-3">
-            {Object.entries(GROUPS).map(([group, teams]) => {
-              const standings = mockStandings(teams);
-              return (
-                <Card key={group} className="bg-card border-border overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/30 border-b border-border">
-                    <span className="text-xs font-bold text-primary">Group {group}</span>
+            {Object.entries(GROUPS).map(([group, teams]) => (
+              <Card key={group} className="bg-card border-border overflow-hidden">
+                <div className="px-3 py-2 bg-muted/30 border-b border-border">
+                  <span className="text-xs font-bold text-primary">Group {group}</span>
+                </div>
+                <div className="p-2">
+                  <div className="grid grid-cols-8 text-[9px] text-muted-foreground font-medium mb-1 px-1">
+                    <span className="col-span-4">Team</span>
+                    <span className="text-center">P</span>
+                    <span className="text-center">W</span>
+                    <span className="text-center">GD</span>
+                    <span className="text-center">Pts</span>
                   </div>
-                  <div className="p-2">
-                    <div className="grid grid-cols-7 text-[9px] text-muted-foreground font-medium mb-1 px-1">
-                      <span className="col-span-3">Team</span>
-                      <span className="text-center">P</span>
-                      <span className="text-center">W</span>
-                      <span className="text-center">GD</span>
-                      <span className="text-center">Pts</span>
-                    </div>
-                    {standings.map((s, idx) => (
-                      <div key={s.team}
-                        className={`grid grid-cols-7 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
-                          idx < 2 ? "text-emerald-400" : idx === teams.length - 1 ? "text-destructive" : "text-foreground"
+                  {teams.map((t, idx) => {
+                    const td = TEAMS[t];
+                    return (
+                      <div key={t}
+                        className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
+                          idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                         }`}
-                        onClick={() => setSelectedTeam({ team: s.team, group })}
+                        onClick={() => setSelectedTeam(t)}
                       >
-                        <span className="col-span-3 truncate font-medium">{s.team}</span>
-                        <span className="text-center">{s.played}</span>
-                        <span className="text-center">{s.won}</span>
-                        <span className="text-center">{s.gd > 0 ? `+${s.gd}` : s.gd}</span>
-                        <span className="text-center font-bold">{s.pts}</span>
+                        <span className="col-span-4 truncate font-medium flex items-center gap-1">
+                          <span className="text-sm">{td?.flag}</span> {t}
+                        </span>
+                        <span className="text-center">0</span>
+                        <span className="text-center">0</span>
+                        <span className="text-center">0</span>
+                        <span className="text-center font-bold">0</span>
                       </div>
-                    ))}
-                  </div>
-                </Card>
-              );
-            })}
+                    );
+                  })}
+                </div>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
-        {/* ==================== TEAMS TAB ==================== */}
+        {/* ==================== TEAMS ==================== */}
         <TabsContent value="teams" className="mt-0 px-3">
           <div className="mt-4">
             <input
@@ -437,21 +408,27 @@ export default function WorldCup2026() {
               className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground mb-3 outline-none focus:border-primary/50"
             />
             <div className="space-y-1.5">
-              {filteredTeams.map(({ team, group }) => (
-                <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                  onClick={() => setSelectedTeam({ team, group })}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <Shield className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-xs font-semibold text-foreground">{team}</p>
-                        <p className="text-[10px] text-muted-foreground">Group {group}</p>
+              {filteredTeams.map(({ team, group }) => {
+                const td = TEAMS[team];
+                return (
+                  <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
+                    onClick={() => setSelectedTeam(team)}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-lg">{td?.flag}</span>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            {team}
+                            {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank} · {td?.coach}</p>
+                        </div>
                       </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </TabsContent>
