@@ -143,6 +143,18 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <NavLink 
+                  to="/world-cup-2026" 
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary text-primary-foreground hover:bg-primary"
+                >
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  {!collapsed && <span>World Cup 2026</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
                   to="/ai-vs-community" 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
                   activeClassName="bg-primary/20 text-primary"
