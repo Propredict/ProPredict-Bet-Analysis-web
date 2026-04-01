@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Lock, Zap, Globe } from "lucide-react";
+import { Trophy, ChevronRight, Lock, Zap, Globe, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLiveScores } from "@/hooks/useLiveScores";
+import NationalTeamForm from "@/components/world-cup/NationalTeamForm";
 import heroImage from "@/assets/world-cup-hero.jpg";
 
 // World Cup 2026 groups (48 teams, 12 groups)
@@ -246,13 +245,13 @@ export default function WorldCup2026() {
         </Card>
       </section>
 
-      {/* Today's Matches */}
+      {/* National Teams Form */}
       <section className="px-3 mt-6">
         <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          Today's Matches
+          <Flag className="h-5 w-5 text-primary" />
+          National Teams Form
         </h2>
-        <WCTodayMatches />
+        <NationalTeamForm />
       </section>
 
       {/* Bottom CTA */}
@@ -277,79 +276,6 @@ export default function WorldCup2026() {
           </div>
         </Card>
       </section>
-    </div>
-  );
-}
-
-/** Shows today's live/upcoming WC matches or a placeholder */
-function WCTodayMatches() {
-  const { matches, isLoading } = useLiveScores({ dateMode: "today" });
-  
-  // Filter for World Cup matches (league name contains "World Cup")
-  const wcMatches = matches.filter(
-    (m) => m.league?.toLowerCase().includes("world cup")
-  );
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-lg" />
-        ))}
-      </div>
-    );
-  }
-
-  if (wcMatches.length === 0) {
-    return (
-      <Card className="bg-card border-border p-6 text-center">
-        <Globe className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">
-          No World Cup matches today. Check back during the tournament!
-        </p>
-        <p className="text-[10px] text-muted-foreground mt-1">
-          June 11 – July 19, 2026
-        </p>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {wcMatches.map((m) => (
-        <Card key={m.id} className="bg-card border-border p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-foreground">
-                {m.homeTeam}
-              </p>
-              <p className="text-xs font-semibold text-foreground">
-                {m.awayTeam}
-              </p>
-            </div>
-            <div className="text-center px-3">
-              {m.status === "live" || m.status === "halftime" ? (
-                <div>
-                  <span className="text-sm font-bold text-foreground">
-                    {m.homeScore} - {m.awayScore}
-                  </span>
-                  <Badge className="bg-destructive/20 text-destructive text-[9px] ml-1">
-                    {m.status === "halftime" ? "HT" : `${m.minute}'`}
-                  </Badge>
-                </div>
-              ) : m.status === "finished" ? (
-                <span className="text-sm font-bold text-muted-foreground">
-                  {m.homeScore} - {m.awayScore}
-                </span>
-              ) : (
-                <span className="text-xs text-primary font-semibold">
-                  {m.startTime}
-                </span>
-              )}
-            </div>
-          </div>
-        </Card>
-      ))}
     </div>
   );
 }

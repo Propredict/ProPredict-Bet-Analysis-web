@@ -57,7 +57,13 @@ serve(async (req) => {
     const params = new URLSearchParams();
     const teamId = url.searchParams.get("team");
 
-    if (teamId) {
+    const lastN = url.searchParams.get("last");
+
+    if (teamId && lastN) {
+      // Fetch last N fixtures for a specific team
+      params.append("team", teamId);
+      params.append("last", lastN);
+    } else if (teamId) {
       // Fetch next fixture for a specific team
       params.append("team", teamId);
       params.append("next", "1");
