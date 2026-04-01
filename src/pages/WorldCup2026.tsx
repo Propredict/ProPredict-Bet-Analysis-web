@@ -267,15 +267,15 @@ export default function WorldCup2026() {
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
                   <div className="bg-muted/30 rounded p-1.5">
-                    <p className="text-sm font-bold text-emerald-400">{pred.homeWin}%</p>
+                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
                     <p className="text-[9px] text-muted-foreground">Home</p>
                   </div>
                   <div className="bg-muted/30 rounded p-1.5">
-                    <p className="text-sm font-bold text-yellow-400">{pred.draw}%</p>
+                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
                     <p className="text-[9px] text-muted-foreground">Draw</p>
                   </div>
                   <div className="bg-muted/30 rounded p-1.5">
-                    <p className="text-sm font-bold text-blue-400">{pred.awayWin}%</p>
+                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
                     <p className="text-[9px] text-muted-foreground">Away</p>
                   </div>
                 </div>
