@@ -49,6 +49,7 @@ export default function AppLayout() {
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+  const { showPopup: showRatePopup, dismiss: dismissRate, submitRating, submitting: rateSubmitting } = useAppRating();
 
   // Sync Android OneSignal Player ID to Supabase
   useOneSignalPlayerSync();
