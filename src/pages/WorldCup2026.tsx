@@ -416,7 +416,6 @@ export default function WorldCup2026() {
                 </Card>
               );
             })}
-            ))}
           </div>
         </TabsContent>
 
