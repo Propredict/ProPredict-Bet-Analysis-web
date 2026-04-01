@@ -418,7 +418,7 @@ export default function WorldCup2026() {
                           className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
                             idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                           }`}
-                          onClick={openPlayStore}
+                          onClick={isPremium ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(t)}`) : openPlayStore}
                         >
                           <span className="col-span-4 truncate font-medium flex items-center gap-1">
                             {td && <TeamFlag code={td.code} size="sm" />} {t}
@@ -434,9 +434,16 @@ export default function WorldCup2026() {
                 </Card>
               );
             })}
-            <div className="mt-3">
-              <AppLockOverlay message="Team stats & details available in app" compact />
-            </div>
+            {!isPremium && (
+              <div className="mt-3">
+                <AppLockOverlay message="Team stats & details available in app" compact />
+              </div>
+            )}
+            {isPremium && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
+                <Smartphone className="h-3 w-3" /> Click any team for full stats · Best experience in app
+              </div>
+            )}
           </div>
         </TabsContent>
 
