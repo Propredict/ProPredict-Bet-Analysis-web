@@ -124,8 +124,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
             </h3>
             {groupTeams.map((opp) => (
               <div key={opp.name} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-2">
-                  <span>{opp.flag}</span>
+                 <div className="flex items-center gap-2">
+                   <TeamFlag code={opp.code} size="sm" />
                   <span className="text-xs font-medium text-foreground">{opp.name}</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">#{opp.fifaRank}</span>
