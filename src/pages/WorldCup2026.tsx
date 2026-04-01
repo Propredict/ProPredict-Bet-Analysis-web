@@ -272,7 +272,13 @@ export default function WorldCup2026() {
             </div>
 
             <Button
-              onClick={() => navigate("/ai-predictions")}
+              onClick={() => {
+                if (typeof window !== "undefined" && (window as any).Android?.openExternal) {
+                  (window as any).Android.openExternal("https://play.google.com/store/apps/details?id=com.propredict.app");
+                } else {
+                  window.open("https://play.google.com/store/apps/details?id=com.propredict.app", "_blank");
+                }
+              }}
               className="w-full bg-primary text-primary-foreground"
               size="sm"
             >
