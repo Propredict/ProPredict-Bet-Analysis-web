@@ -54,7 +54,7 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <span className="text-xl">{teamData.flag}</span>
+              <TeamFlag code={teamData.code} size="md" />
               {teamData.name}
             </h1>
             <p className="text-[11px] text-muted-foreground">
