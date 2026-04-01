@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface TeamFlagProps {
   code: string;
   size?: "sm" | "md" | "lg";
@@ -20,6 +22,22 @@ const CODE_TO_ISO: Record<string, string> = {
   ENG: "gb-eng", CRO: "hr", GHA: "gh", PAN: "pa",
 };
 
+// Emoji fallback map
+const CODE_TO_EMOJI: Record<string, string> = {
+  MEX: "🇲🇽", RSA: "🇿🇦", KOR: "🇰🇷", CZE: "🇨🇿",
+  CAN: "🇨🇦", BIH: "🇧🇦", QAT: "🇶🇦", SUI: "🇨🇭",
+  BRA: "🇧🇷", MAR: "🇲🇦", HAI: "🇭🇹", SCO: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  USA: "🇺🇸", PAR: "🇵🇾", AUS: "🇦🇺", TUR: "🇹🇷",
+  GER: "🇩🇪", CUW: "🇨🇼", CIV: "🇨🇮", ECU: "🇪🇨",
+  NED: "🇳🇱", JPN: "🇯🇵", SWE: "🇸🇪", TUN: "🇹🇳",
+  BEL: "🇧🇪", EGY: "🇪🇬", IRN: "🇮🇷", NZL: "🇳🇿",
+  ESP: "🇪🇸", CPV: "🇨🇻", KSA: "🇸🇦", URU: "🇺🇾",
+  FRA: "🇫🇷", SEN: "🇸🇳", IRQ: "🇮🇶", NOR: "🇳🇴",
+  ARG: "🇦🇷", ALG: "🇩🇿", AUT: "🇦🇹", JOR: "🇯🇴",
+  POR: "🇵🇹", COD: "🇨🇩", UZB: "🇺🇿", COL: "🇨🇴",
+  ENG: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", CRO: "🇭🇷", GHA: "🇬🇭", PAN: "🇵🇦",
+};
+
 const SIZES = {
   sm: { w: 20, h: 15 },
   md: { w: 28, h: 21 },
@@ -27,20 +45,25 @@ const SIZES = {
 };
 
 export default function TeamFlag({ code, size = "md", className = "" }: TeamFlagProps) {
+  const [error, setError] = useState(false);
   const iso = CODE_TO_ISO[code];
   const { w, h } = SIZES[size];
 
-  if (!iso) return <span className={className}>🏳️</span>;
+  if (!iso || error) {
+    const emoji = CODE_TO_EMOJI[code] || "🏳️";
+    return <span className={`inline-block text-center ${className}`} style={{ width: w, fontSize: h * 0.8 }}>{emoji}</span>;
+  }
 
   return (
     <img
-      src={`https://flagcdn.com/w${w * 2}/${iso}.png`}
+      src={`https://flagcdn.com/${iso}.svg`}
       width={w}
       height={h}
       alt={code}
       className={`inline-block rounded-[2px] object-cover ${className}`}
       loading="lazy"
       style={{ width: w, height: h }}
+      onError={() => setError(true)}
     />
   );
 }
