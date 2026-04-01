@@ -45,11 +45,16 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
 
 export default function WorldCup2026() {
   const navigate = useNavigate();
+  const { plan, isAdmin } = useUserPlan();
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
+
+  // Tier access helpers
+  const isPro = plan === "basic" || plan === "premium" || isAdmin;
+  const isPremium = plan === "premium" || isAdmin;
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
