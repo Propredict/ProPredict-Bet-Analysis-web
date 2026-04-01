@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
+import TeamFlag from "@/components/world-cup/TeamFlag";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
