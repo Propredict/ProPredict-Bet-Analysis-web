@@ -265,8 +265,8 @@ export default function WorldCup2026() {
             {AI_PREDICTIONS.map((pred, i) => (
               <Card key={i} className="bg-card border-border p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    {TEAMS[pred.home]?.flag} {pred.home} vs {TEAMS[pred.away]?.flag} {pred.away}
+                  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
                   </span>
                   <Badge variant="outline" className="text-[9px]">{pred.confidence}%</Badge>
                 </div>
