@@ -137,8 +137,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
         {/* Squad (Key Players) */}
         <TabsContent value="squad" className="px-3 mt-3 space-y-3">
           <Card className="bg-card border-border p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">{teamData.flag}</span>
+             <div className="flex items-center gap-2 mb-3">
+               <TeamFlag code={teamData.code} size="md" />
               <div>
                 <h3 className="text-sm font-bold text-foreground">{teamData.name} Squad</h3>
                 <p className="text-[10px] text-muted-foreground">Coach: {teamData.coach}</p>
