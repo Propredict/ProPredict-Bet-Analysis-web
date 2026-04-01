@@ -232,18 +232,13 @@ export default function WorldCup2026() {
                     <Badge className="bg-destructive/20 text-destructive text-[10px] border-destructive/30">🔥 AI Prediction</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
-                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                <div className="grid grid-cols-3 gap-2 text-center mb-2">
                     <div><span className="text-lg font-bold text-emerald-400">{FEATURED_MATCH.homeWin}%</span><p className="text-[10px] text-muted-foreground">Home</p></div>
                     <div><span className="text-lg font-bold text-yellow-400">{FEATURED_MATCH.draw}%</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
                     <div><span className="text-lg font-bold text-blue-400">{FEATURED_MATCH.awayWin}%</span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
-                  <div className="text-center">
-                    <Badge className="bg-primary/20 text-primary text-[10px]">Over 2.5: {FEATURED_MATCH.over25}%</Badge>
-                  </div>
                 </div>
-                <Button onClick={openPlayStore} className="w-full bg-primary text-primary-foreground" size="sm">
-                  View Full Analysis <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+                <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />
               </div>
             </Card>
           </section>
