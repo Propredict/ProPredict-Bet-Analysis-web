@@ -144,7 +144,7 @@ export default function WorldCup2026() {
                             const td = TEAMS[t];
                             return (
                               <div key={t} className="text-[10px] text-muted-foreground px-1">
-                                <span className="font-medium text-foreground">{td?.flag} {t}</span>
+                                <span className="font-medium text-foreground flex items-center gap-1">{td && <TeamFlag code={td.code} size="sm" />} {t}</span>
                                 <span className="ml-1">· {td?.coach}</span>
                               </div>
                             );
