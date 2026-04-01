@@ -215,8 +215,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
                     t === team ? "bg-primary/10 text-primary font-semibold" :
                     idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                   }`}>
-                    <span className="col-span-4 truncate flex items-center gap-1.5">
-                      <span className="text-sm">{td?.flag}</span> {t}
+                     <span className="col-span-4 truncate flex items-center gap-1.5">
+                       <TeamFlag code={td?.code || ""} size="sm" /> {t}
                     </span>
                     <span className="text-center">0</span>
                     <span className="text-center">0</span>
