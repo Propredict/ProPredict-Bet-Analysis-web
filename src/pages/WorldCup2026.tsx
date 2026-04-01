@@ -200,7 +200,7 @@ export default function WorldCup2026() {
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex-1 text-center">
-                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.homeTeam]?.flag}</p>
+                    <div className="mb-1">{TEAMS[FEATURED_MATCH.homeTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.homeTeam].code} size="lg" />}</div>
                     <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.homeTeam}</p>
                     <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.homeTeam]?.fifaRank}</p>
                   </div>
