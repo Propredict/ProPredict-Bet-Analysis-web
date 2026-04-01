@@ -236,8 +236,8 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
               <Brain className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-bold text-foreground">AI Analysis</h3>
             </div>
-            <p className="text-xs text-foreground/80 leading-relaxed mb-3">
-              {teamData.name} ({teamData.flag}) enters the World Cup ranked #{teamData.fifaRank} by FIFA under coach {teamData.coach}.
+             <p className="text-xs text-foreground/80 leading-relaxed mb-3">
+               {teamData.name} enters the World Cup ranked #{teamData.fifaRank} by FIFA under coach {teamData.coach}.
               {teamData.debut ? ` This marks their historic World Cup debut.` : ""}
               {" "}Key players include {teamData.keyPlayers.slice(0, 3).join(", ")}.
               {teamData.fifaRank <= 10
