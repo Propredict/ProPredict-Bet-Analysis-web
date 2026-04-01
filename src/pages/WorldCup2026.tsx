@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Lock, Zap, Globe } from "lucide-react";
+import { Trophy, ChevronRight, Lock, Zap, Globe, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLiveScores } from "@/hooks/useLiveScores";
+import NationalTeamForm from "@/components/world-cup/NationalTeamForm";
 import heroImage from "@/assets/world-cup-hero.jpg";
 
 // World Cup 2026 groups (48 teams, 12 groups)
