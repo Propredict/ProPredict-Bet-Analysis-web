@@ -63,9 +63,9 @@ const Index = () => {
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-xl shadow-lg shadow-primary/10">
           <img src={heroStadium} alt="AI Football Stadium" className="w-full h-64 sm:h-80 md:h-96 object-cover" width={1920} height={864} />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/60" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-4">
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground drop-shadow-lg">Welcome to ProPredict</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Welcome to ProPredict</h1>
             <p className="text-sm sm:text-base md:text-lg font-semibold text-primary drop-shadow">AI-Powered Football Predictions & Match Analysis</p>
             <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
               Get smart AI predictions, live match tracking and advanced football insights — all in one place.
