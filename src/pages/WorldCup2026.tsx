@@ -330,12 +330,12 @@ export default function WorldCup2026() {
                     <div className="flex items-center justify-between mt-1.5">
                       <div className="flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-sm">{TEAMS[m.home]?.flag}</span>
+                          {TEAMS[m.home] && <TeamFlag code={TEAMS[m.home].code} size="sm" />}
                           <span className="text-xs font-semibold text-foreground">{m.home}</span>
                           <span className="text-[9px] text-muted-foreground">#{TEAMS[m.home]?.fifaRank}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm">{TEAMS[m.away]?.flag}</span>
+                          {TEAMS[m.away] && <TeamFlag code={TEAMS[m.away].code} size="sm" />}
                           <span className="text-xs font-semibold text-foreground">{m.away}</span>
                           <span className="text-[9px] text-muted-foreground">#{TEAMS[m.away]?.fifaRank}</span>
                         </div>
