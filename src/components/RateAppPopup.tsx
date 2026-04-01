@@ -67,8 +67,13 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   const displayStars = hoveredStars || selectedStars;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="max-w-[340px] p-0 gap-0 border-0 !bg-white overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden">
+    <Dialog open={open} onOpenChange={() => { /* prevent backdrop close */ }}>
+      <DialogContent
+        className="max-w-[340px] p-0 gap-0 border-0 !bg-white overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         {/* Close button */}
         <button
           onClick={handleClose}
