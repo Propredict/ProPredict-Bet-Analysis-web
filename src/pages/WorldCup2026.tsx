@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
+import { setPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -46,15 +48,66 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
 export default function WorldCup2026() {
   const navigate = useNavigate();
   const { plan, isAdmin } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
+  const [adUnlockedToday, setAdUnlockedToday] = useState(false);
+  const [adLoading, setAdLoading] = useState(false);
 
   // Tier access helpers
   const isPro = plan === "basic" || plan === "premium" || isAdmin;
   const isPremium = plan === "premium" || isAdmin;
+
+  // APP-specific access: on Android, free users can watch ad to unlock
+  // On web, keep existing website lock strategy
+  const isApp = isAndroidApp;
+
+  // For app: free users need to watch ad, pro gets basic, premium gets all
+  // For web: keep existing rules (isPro / isPremium)
+  const appCanSeeBasic = isApp ? (isPro || isPremium || adUnlockedToday) : isPro;
+  const appCanSeeAdvanced = isPremium;
+
+  // Watch ad handler for Android
+  const handleWatchAd = useCallback(() => {
+    if (adLoading) return;
+    setAdLoading(true);
+
+    setPendingAdUnlock({ contentType: "prediction" as any, contentId: "wc2026-today" });
+
+    const android = (window as any).Android;
+    if (android && typeof android.watchRewardedAd === "function") {
+      android.watchRewardedAd();
+    } else if (android && typeof android.showRewardedAd === "function") {
+      android.showRewardedAd();
+    }
+
+    // Listen for ad result
+    const handler = (event: MessageEvent) => {
+      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
+      if (data?.type === "AD_UNLOCK_SUCCESS") {
+        setAdUnlockedToday(true);
+        setAdLoading(false);
+        clearPendingAdUnlock();
+        window.removeEventListener("message", handler);
+      }
+      if (data?.type === "AD_UNLOCK_CANCELLED" || data?.type === "RESET_AD_BUTTON" || data?.type === "AD_LOAD_FAILED") {
+        setAdLoading(false);
+        clearPendingAdUnlock();
+        window.removeEventListener("message", handler);
+      }
+    };
+    window.addEventListener("message", handler);
+
+    // Safety timeout
+    setTimeout(() => {
+      setAdLoading(false);
+      clearPendingAdUnlock();
+      window.removeEventListener("message", handler);
+    }, 30_000);
+  }, [adLoading]);
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
@@ -234,13 +287,20 @@ export default function WorldCup2026() {
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
                 </div>
-                {!isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
-                {isPro && !isPremium && (
+                {/* App: Free user watch ad CTA */}
+                {isApp && !appCanSeeBasic && (
+                  <Button onClick={handleWatchAd} disabled={adLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs mt-2">
+                    <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading Ad…" : "Watch Ad to Unlock Predictions"}
+                  </Button>
+                )}
+                {/* Web: Free user lock overlay */}
+                {!isApp && !isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
+                {appCanSeeBasic && !isPremium && (
                   <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] text-muted-foreground">
                     <Smartphone className="h-3 w-3" /> Better live experience in app
                   </div>
@@ -325,43 +385,114 @@ export default function WorldCup2026() {
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
             <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
+
+            {/* App: Free user — Watch Ad CTA at top */}
+            {isApp && !appCanSeeBasic && (
+              <Card className="bg-amber-500/10 border-amber-500/30 p-3 mb-3">
+                <div className="text-center">
+                  <Lock className="h-5 w-5 text-amber-500 mx-auto mb-1.5" />
+                  <p className="text-xs font-semibold text-foreground mb-1">Predictions Locked</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">Watch a short ad to unlock all predictions for today</p>
+                  <Button onClick={handleWatchAd} disabled={adLoading} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs w-full">
+                    <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading Ad…" : "Watch Ad to Unlock All"}
+                  </Button>
+                </div>
+              </Card>
+            )}
+
             {AI_PREDICTIONS.map((pred, i) => {
-              // Pro: 1 free AI pick daily (first one); Premium: all unlocked
-              const showData = isPremium || (isPro && i === 0);
+              // APP: free+ad or pro sees basic; web: existing rules
+              const showBasic = isApp ? appCanSeeBasic : (isPremium || (isPro && i === 0));
               return (
                 <Card key={i} className="bg-card border-border p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
                     </span>
-                    {showData ? (
-                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
-                        {pred.confidence}% conf
-                      </Badge>
+                    {showBasic ? (
+                      appCanSeeAdvanced ? (
+                        <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                          {pred.confidence}% conf
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30">Basic</Badge>
+                      )
                     ) : (
                       <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
                     )}
                   </div>
+
+                  {/* === BASIC: Win probability === */}
                   <div className="grid grid-cols-3 gap-2 text-center mb-2">
                     <div className="bg-muted/30 rounded p-1.5">
-                      {showData ? <p className="text-sm font-bold text-foreground">{pred.homeWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      {showBasic ? <p className="text-sm font-bold text-foreground">{pred.homeWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
                       <p className="text-[9px] text-muted-foreground">Home</p>
                     </div>
                     <div className="bg-muted/30 rounded p-1.5">
-                      {showData ? <p className="text-sm font-bold text-foreground">{pred.draw}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      {showBasic ? <p className="text-sm font-bold text-foreground">{pred.draw}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
                       <p className="text-[9px] text-muted-foreground">Draw</p>
                     </div>
                     <div className="bg-muted/30 rounded p-1.5">
-                      {showData ? <p className="text-sm font-bold text-foreground">{pred.awayWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      {showBasic ? <p className="text-sm font-bold text-foreground">{pred.awayWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
                       <p className="text-[9px] text-muted-foreground">Away</p>
                     </div>
                   </div>
-                  {!showData && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
-                  {showData && !isPremium && (
-                    <div className="flex items-center justify-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                      <Smartphone className="h-3 w-3" /> Better live experience in app
+
+                  {/* === BASIC: Over/Under + BTTS (visible for pro/ad-unlocked) === */}
+                  {showBasic && (
+                    <div className="grid grid-cols-2 gap-2 text-center mb-2">
+                      <div className="bg-muted/20 rounded p-1.5">
+                        <p className="text-xs font-bold text-foreground">{pred.homeWin > 40 ? "Over" : "Under"} 2.5</p>
+                        <p className="text-[9px] text-muted-foreground">Goals</p>
+                      </div>
+                      <div className="bg-muted/20 rounded p-1.5">
+                        <p className="text-xs font-bold text-foreground">{pred.draw > 25 ? "Yes" : "No"}</p>
+                        <p className="text-[9px] text-muted-foreground">BTTS</p>
+                      </div>
                     </div>
                   )}
+
+                  {/* === ADVANCED: Premium section (blurred for non-premium) === */}
+                  {showBasic && (
+                    <div className="relative mt-1">
+                      <div className={`rounded-lg border p-3 space-y-2 ${appCanSeeAdvanced ? "border-primary/20 bg-primary/5" : "border-border/30 bg-muted/10 blur-[3px] select-none pointer-events-none"}`}>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Brain className="h-3 w-3 text-primary" />
+                          <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div>
+                            <span className="text-muted-foreground">Predicted Score</span>
+                            <p className="font-bold text-foreground">{pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1"}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Confidence</span>
+                            <p className="font-bold text-foreground">{pred.confidence}%</p>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          <span className="font-medium text-foreground">AI Insight:</span> Based on FIFA rankings, recent form, and historical data, {pred.homeWin > pred.awayWin ? pred.home : pred.away} has the edge in this matchup.
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          <span className="font-medium text-foreground">Key Factors:</span> Home advantage, squad depth, tactical approach
+                        </div>
+                      </div>
+                      {/* Lock overlay for non-premium */}
+                      {!appCanSeeAdvanced && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 rounded-lg">
+                          <Lock className="h-5 w-5 text-fuchsia-400 mb-1" />
+                          <p className="text-[11px] font-semibold text-foreground">Unlock Advanced AI Analysis</p>
+                          <p className="text-[9px] text-muted-foreground mb-2">Predicted score, insights & key factors</p>
+                          <Button size="sm" onClick={() => navigate("/get-premium")} className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white text-[10px] h-7 px-3">
+                            <Zap className="h-3 w-3 mr-1" /> Get Premium
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Web: Free user lock */}
+                  {!isApp && !showBasic && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
                 </Card>
               );
             })}
@@ -371,8 +502,18 @@ export default function WorldCup2026() {
         {/* ==================== MATCHES ==================== */}
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
-          {/* Live Score Ticker */}
-          {!isPro ? (
+          {/* Live Score Ticker — App: free users watch ad; Web: existing rules */}
+          {isApp && !appCanSeeBasic ? (
+            <Card className="bg-amber-500/10 border-amber-500/30 p-3 mb-3">
+              <div className="text-center">
+                <p className="text-xs font-semibold text-foreground mb-1">🔒 Live Scores Locked</p>
+                <p className="text-[10px] text-muted-foreground mb-2">Watch 1 ad to unlock all matches for today</p>
+                <Button onClick={handleWatchAd} disabled={adLoading} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs">
+                  <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading…" : "Watch Ad to Unlock"}
+                </Button>
+              </div>
+            </Card>
+          ) : !isApp && !isPro ? (
             <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
           ) : !isPremium ? (
             <div className="flex items-center justify-center gap-1.5 mb-3 text-[10px] text-muted-foreground bg-muted/30 rounded-lg py-2">
