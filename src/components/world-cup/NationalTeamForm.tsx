@@ -50,7 +50,8 @@ async function fetchTeamLastMatches(teamId: number): Promise<FixtureResult[]> {
     { headers: { "Content-Type": "application/json" } }
   );
   if (!res.ok) return [];
-  return res.json();
+  const data = await res.json();
+  return data.fixtures || data || [];
 }
 
 function useNationalTeamForm(teamId: number) {
