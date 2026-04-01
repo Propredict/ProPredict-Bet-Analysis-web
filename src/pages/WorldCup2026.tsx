@@ -249,23 +249,72 @@ export default function WorldCup2026() {
             </Card>
           </section>
 
-          {/* CTA */}
+          {/* Tier-aware CTA */}
           <section className="px-3 mt-6 mb-4">
-            <Card className="bg-card border-border overflow-hidden">
-              <div className="p-5 text-center">
-                <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-                <h3 className="text-base font-bold text-foreground mb-1">World Cup AI Predictions</h3>
-                <p className="text-xs text-foreground/80 mb-1">Get AI insights before every match</p>
-                <p className="text-[10px] text-muted-foreground mb-4">Full predictions & live tracking only in the app</p>
-                <Button onClick={() => {
-                  if (typeof window !== "undefined" && (window as any).Android?.openExternal) {
-                    (window as any).Android.openExternal("https://play.google.com/store/apps/details?id=com.propredict.app");
-                  } else { navigate("/ai-predictions"); }
-                }} className="bg-primary text-primary-foreground font-semibold">
-                  <Lock className="h-4 w-4 mr-2" /> Unlock in App
-                </Button>
+            {!isPro ? (
+              /* FREE user — Pro upsell */
+              <Card className="bg-card border-border overflow-hidden border-t-2 border-t-amber-500">
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-2 rounded-full bg-amber-500/10">
+                      <Brain className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">Unlock AI Predictions</h3>
+                      <p className="text-[10px] text-muted-foreground">Get Pro for World Cup insights</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 mb-4">
+                    {[
+                      "AI match predictions with win probabilities",
+                      "1 free AI pick daily on web",
+                      "Live match schedule access",
+                      "Priority access during World Cup",
+                    ].map((f, i) => (
+                      <div key={i} className="flex items-center gap-2 text-[11px] text-foreground/80">
+                        <span className="text-amber-500">✓</span> {f}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button onClick={() => navigate("/get-premium")} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs">
+                      <Zap className="h-3.5 w-3.5 mr-1.5" /> Get Pro — €3.99/mo
+                    </Button>
+                    <Button variant="outline" onClick={openPlayStore} className="flex-1 text-xs border-border">
+                      <Smartphone className="h-3.5 w-3.5 mr-1.5" /> More options in App
+                    </Button>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground text-center mt-2">
+                    📱 Watch ads to unlock predictions for free — only in the app
+                  </p>
+                </div>
+              </Card>
+            ) : !isPremium ? (
+              /* PRO user — app promo + Premium upsell */
+              <Card className="bg-card border-border overflow-hidden">
+                <div className="p-5 text-center">
+                  <Trophy className="h-7 w-7 text-amber-500 mx-auto mb-2" />
+                  <h3 className="text-sm font-bold text-foreground mb-1">Get the Full World Cup Experience</h3>
+                  <p className="text-[11px] text-muted-foreground mb-3">
+                    Upgrade to <span className="text-fuchsia-400 font-semibold">Premium</span> for advanced AI, all picks unlocked & priority access
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button onClick={() => navigate("/get-premium")} size="sm" className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white text-xs">
+                      <Zap className="h-3.5 w-3.5 mr-1.5" /> Upgrade to Premium
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={openPlayStore} className="text-xs border-border">
+                      <Smartphone className="h-3.5 w-3.5 mr-1.5" /> Better experience in App
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              /* PREMIUM user — subtle app promo */
+              <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-muted-foreground">
+                <Smartphone className="h-3.5 w-3.5" />
+                <span>ProPredict app offers the best World Cup experience with live tracking</span>
               </div>
-            </Card>
+            )}
           </section>
         </TabsContent>
 
