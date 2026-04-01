@@ -383,7 +383,7 @@ export default function WorldCup2026() {
                         onClick={() => setSelectedTeam(t)}
                       >
                         <span className="col-span-4 truncate font-medium flex items-center gap-1">
-                          <span className="text-sm">{td?.flag}</span> {t}
+                          {td && <TeamFlag code={td.code} size="sm" />} {t}
                         </span>
                         <span className="text-center">0</span>
                         <span className="text-center">0</span>
