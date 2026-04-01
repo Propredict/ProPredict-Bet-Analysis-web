@@ -53,6 +53,7 @@ export default function WorldCup2026() {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
   const [adUnlockedToday, setAdUnlockedToday] = useState(false);
   const [adLoading, setAdLoading] = useState(false);
@@ -117,6 +118,11 @@ export default function WorldCup2026() {
     md2: [] as typeof GROUP_MATCHES,  // Will be filled when schedule confirmed
     md3: [] as typeof GROUP_MATCHES,
   };
+
+  // If a team is selected, show the team page
+  if (selectedTeam) {
+    return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -624,7 +630,7 @@ export default function WorldCup2026() {
                               className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
                                 idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                               }`}
-                              onClick={isPro ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(t)}`) : undefined}
+                              onClick={isPro ? () => setSelectedTeam(t) : undefined}
                             >
                               <span className="col-span-4 truncate font-medium flex items-center gap-1">
                                 {td && <TeamFlag code={td.code} size="sm" />} {t}
@@ -682,7 +688,7 @@ export default function WorldCup2026() {
                     const td = TEAMS[team];
                     return (
                       <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                        onClick={() => navigate(`/world-cup-2026/team/${encodeURIComponent(team)}`)}>
+                        onClick={() => setSelectedTeam(team)}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
                             {td && <TeamFlag code={td.code} size="md" />}
