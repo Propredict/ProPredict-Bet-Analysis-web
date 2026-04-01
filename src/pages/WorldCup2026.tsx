@@ -315,7 +315,13 @@ export default function WorldCup2026() {
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
           {/* Live Score Ticker */}
-          <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
+          {!isPro ? (
+            <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
+          ) : !isPremium ? (
+            <div className="flex items-center justify-center gap-1.5 mb-3 text-[10px] text-muted-foreground bg-muted/30 rounded-lg py-2">
+              <Smartphone className="h-3 w-3" /> Live scores may have slight delay · Better live experience in app
+            </div>
+          ) : null}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" /> Match Schedule
