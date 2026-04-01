@@ -353,16 +353,16 @@ export const GROUP_MATCHES: WCMatch[] = [
 // FEATURED MATCH
 // ==========================================
 export const FEATURED_MATCH = {
-  homeTeam: "United States",
-  awayTeam: "Paraguay",
-  date: "June 12, 2026",
-  time: "21:00",
-  homeWin: 52,
-  draw: 24,
-  awayWin: 24,
-  over25: 58,
-  league: "World Cup 2026 · Group D · Matchday 1",
-  venue: "SoFi Stadium, Los Angeles",
+  homeTeam: "Mexico",
+  awayTeam: "South Africa",
+  date: "June 11, 2026",
+  time: "18:00",
+  homeWin: 62,
+  draw: 22,
+  awayWin: 16,
+  over25: 52,
+  league: "World Cup 2026 · Group A · Opening Match",
+  venue: "Estadio Azteca, Mexico City",
 };
 
 // ==========================================
