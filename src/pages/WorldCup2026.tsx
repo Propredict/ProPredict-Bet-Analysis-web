@@ -287,9 +287,9 @@ export default function WorldCup2026() {
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
+                    <div><span className="text-lg font-bold text-emerald-400">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline text-muted-foreground" />}</span><p className="text-[10px] font-semibold text-foreground">Home</p></div>
+                    <div><span className="text-lg font-bold text-amber-400">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline text-muted-foreground" />}</span><p className="text-[10px] font-semibold text-foreground">Draw</p></div>
+                    <div><span className="text-lg font-bold text-sky-400">{appCanSeeBasic ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline text-muted-foreground" />}</span><p className="text-[10px] font-semibold text-foreground">Away</p></div>
                   </div>
                 </div>
                 {/* App: Free user watch ad CTA */}
