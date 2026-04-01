@@ -35,6 +35,8 @@ import { AndroidPushModal } from "@/components/AndroidPushModal";
 import { BatteryOptimizationPrompt } from "@/components/BatteryOptimizationPrompt";
 import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
 import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
+import { RateAppPopup } from "@/components/RateAppPopup";
+import { useAppRating } from "@/hooks/useAppRating";
 
 
 // Pages where footer should be hidden (header-only layout)
@@ -47,6 +49,7 @@ export default function AppLayout() {
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
+  const { showPopup: showRatePopup, dismiss: dismissRate, submitRating, submitting: rateSubmitting } = useAppRating();
 
   // Sync Android OneSignal Player ID to Supabase
   useOneSignalPlayerSync();
@@ -288,6 +291,14 @@ export default function AppLayout() {
 
       {/* Android Battery Optimization Prompt */}
       <BatteryOptimizationPrompt />
+
+      {/* Rate App Popup (Android only) */}
+      <RateAppPopup
+        open={showRatePopup}
+        onClose={dismissRate}
+        onSubmit={submitRating}
+        submitting={rateSubmitting}
+      />
     </SidebarProvider>
   );
 }
