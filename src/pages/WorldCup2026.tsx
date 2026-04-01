@@ -119,6 +119,11 @@ export default function WorldCup2026() {
     md3: [] as typeof GROUP_MATCHES,
   };
 
+  // If a team is selected, show the team page
+  if (selectedTeam) {
+    return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Hero */}
