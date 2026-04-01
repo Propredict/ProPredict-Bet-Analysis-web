@@ -502,23 +502,9 @@ export default function WorldCup2026() {
         {/* ==================== MATCHES ==================== */}
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
-          {/* Live Score Ticker — App: free users watch ad; Web: existing rules */}
-          {isApp && !appCanSeeBasic ? (
-            <Card className="bg-amber-500/10 border-amber-500/30 p-3 mb-3">
-              <div className="text-center">
-                <p className="text-xs font-semibold text-foreground mb-1">🔒 Live Scores Locked</p>
-                <p className="text-[10px] text-muted-foreground mb-2">Watch 1 ad to unlock all matches for today</p>
-                <Button onClick={handleWatchAd} disabled={adLoading} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs">
-                  <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading…" : "Watch Ad to Unlock"}
-                </Button>
-              </div>
-            </Card>
-          ) : !isApp && !isPro ? (
+          {/* App: matches tab is free for all users; Web: existing lock rules */}
+          {!isApp && !isPro ? (
             <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
-          ) : !isPremium ? (
-            <div className="flex items-center justify-center gap-1.5 mb-3 text-[10px] text-muted-foreground bg-muted/30 rounded-lg py-2">
-              <Smartphone className="h-3 w-3" /> Live scores may have slight delay · Better live experience in app
-            </div>
           ) : null}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
