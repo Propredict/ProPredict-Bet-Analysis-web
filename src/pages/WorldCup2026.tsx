@@ -50,6 +50,13 @@ export default function WorldCup2026() {
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
+  const { matches: liveMatches } = useLiveScores({ dateMode: "today", statusFilter: "live" });
+
+  // Filter for World Cup matches (league name contains "World Cup" or similar)
+  const wcLiveMatches = liveMatches.filter(m =>
+    m.league?.toLowerCase().includes("world cup") ||
+    m.league?.toLowerCase().includes("fifa")
+  );
 
   if (selectedTeam) {
     return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
