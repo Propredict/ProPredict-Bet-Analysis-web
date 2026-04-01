@@ -1,5 +1,6 @@
 import { useEffect, useRef, lazy, Suspense, forwardRef } from "react";
 import googlePlayBanner from "@/assets/google-play-banner.jfif";
+import heroStadium from "@/assets/hero-stadium.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -86,15 +87,27 @@ const Index = () => {
 
         
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-6 md:p-8 text-center shadow-lg shadow-primary/10">
-          <h1 className="text-xl md:text-2xl font-bold text-foreground mb-2">Welcome to ProPredict</h1>
-          <p className="text-xs md:text-sm font-medium text-primary mb-3">AI-Powered Sports Analytics & Match Intelligence</p>
-          <p className="text-[11px] md:text-xs text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-2">
-            ProPredict is a data-driven sports analysis platform built for users who want deeper, structured insights into football matches. Using advanced statistical modeling and machine learning techniques, we transform raw match data into clear probability forecasts and analytical insights.
-          </p>
-          <p className="text-[11px] md:text-xs text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Explore AI-generated match previews, performance trends, and structured statistical breakdowns — all designed to help you better understand upcoming matches and historical outcomes.
-          </p>
+        <div className="relative overflow-hidden rounded-xl shadow-lg shadow-primary/10">
+          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-56 sm:h-72 object-cover" width={1920} height={864} />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-3">
+            <h1 className="text-xl md:text-3xl font-extrabold text-foreground drop-shadow-lg">Welcome to ProPredict</h1>
+            <p className="text-xs md:text-sm font-semibold text-primary drop-shadow">AI-Powered Football Predictions & Match Analysis</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground max-w-md leading-relaxed">
+              Get smart AI predictions, live match tracking and advanced football insights — all in one place.
+            </p>
+            <div className="flex items-center gap-3 pt-1">
+              <Link to="/ai-predictions" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors shadow-md">
+                Explore Predictions
+              </Link>
+              {!isAndroid && (
+                <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/10 transition-colors">
+                  Download App
+                </a>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
+          </div>
         </div>
 
         {/* Social Proof Section */}
