@@ -60,53 +60,27 @@ const Index = () => {
         <GuestBanner />
         <DashboardTipsPopup />
 
-        {/* Google Play Download Banner – Web only */}
-        {!isAndroid && (
-          <a
-            href="https://play.google.com/store/apps/details?id=com.propredict.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-5 rounded-lg border border-primary/30 bg-card shadow-md hover:border-primary/50 transition-all group cursor-pointer overflow-hidden px-2 py-1.5"
-          >
-            <img 
-              src={googlePlayBanner} 
-              alt="Google Play" 
-              className="h-20 sm:h-24 w-auto shrink-0 object-cover rounded-md"
-            />
-            <div className="flex flex-col items-center gap-2.5">
-              <div className="text-center">
-                <p className="text-base sm:text-xl font-bold text-foreground">📱 ProPredict is now on Google Play!</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">📲 Get FREE Daily and Pro tips on the app — completely free!</p>
-              </div>
-              <span className="rounded-lg bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] px-7 py-2 text-sm sm:text-base font-bold text-white animate-pulse whitespace-nowrap shadow-lg shadow-[hsl(30,100%,50%)]/20">
-                ⬇ Download App
-              </span>
-            </div>
-          </a>
-        )}
-
-        
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-xl shadow-lg shadow-primary/10">
-          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-56 sm:h-72 object-cover" width={1920} height={864} />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-3">
-            <h1 className="text-xl md:text-3xl font-extrabold text-foreground drop-shadow-lg">Welcome to ProPredict</h1>
-            <p className="text-xs md:text-sm font-semibold text-primary drop-shadow">AI-Powered Football Predictions & Match Analysis</p>
-            <p className="text-[11px] md:text-xs text-muted-foreground max-w-md leading-relaxed">
+          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-64 sm:h-80 md:h-96 object-cover" width={1920} height={864} />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-4">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground drop-shadow-lg">Welcome to ProPredict</h1>
+            <p className="text-sm sm:text-base md:text-lg font-semibold text-primary drop-shadow">AI-Powered Football Predictions & Match Analysis</p>
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
               Get smart AI predictions, live match tracking and advanced football insights — all in one place.
             </p>
-            <div className="flex items-center gap-3 pt-1">
-              <Link to="/ai-predictions" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors shadow-md">
+            <div className="flex items-center gap-3 pt-2">
+              <Link to="/ai-predictions" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
                 Explore Predictions
               </Link>
               {!isAndroid && (
-                <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/10 transition-colors">
+                <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
                   Download App
                 </a>
               )}
             </div>
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
           </div>
         </div>
 
