@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -44,11 +45,16 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
 
 export default function WorldCup2026() {
   const navigate = useNavigate();
+  const { plan, isAdmin } = useUserPlan();
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const { data: liveStandings } = useWCStandings();
+
+  // Tier access helpers
+  const isPro = plan === "basic" || plan === "premium" || isAdmin;
+  const isPremium = plan === "premium" || isAdmin;
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
@@ -175,14 +181,22 @@ export default function WorldCup2026() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">Locked</span>
+                      {isPremium ? (
+                        <span className="text-[10px] text-muted-foreground">Coming soon</span>
+                      ) : (
+                        <>
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Locked</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
               <div className="px-4 py-3 bg-muted/30 border-t border-border">
-                <p className="text-[11px] text-muted-foreground text-center">Follow the full tournament in the app</p>
+                <p className="text-[11px] text-muted-foreground text-center">
+                  {isPremium ? "Full bracket & predictions available when knockout stage begins" : "Follow the full tournament in the app"}
+                </p>
               </div>
             </Card>
           </section>
@@ -220,12 +234,17 @@ export default function WorldCup2026() {
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mb-2">AI sees this before kickoff</p>
                 <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Home</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Draw</p></div>
-                    <div><span className="text-lg font-bold text-muted-foreground/50"><Lock className="h-4 w-4 inline" /></span><p className="text-[10px] text-muted-foreground">Away</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.homeWin || 45}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Home</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.draw || 25}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Draw</p></div>
+                    <div><span className="text-lg font-bold text-muted-foreground/50">{isPro ? `${AI_PREDICTIONS[0]?.awayWin || 30}%` : <Lock className="h-4 w-4 inline" />}</span><p className="text-[10px] text-muted-foreground">Away</p></div>
                   </div>
                 </div>
-                <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />
+                {!isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
+                {isPro && !isPremium && (
+                  <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] text-muted-foreground">
+                    <Smartphone className="h-3 w-3" /> Better live experience in app
+                  </div>
+                )}
               </div>
             </Card>
           </section>
@@ -257,31 +276,46 @@ export default function WorldCup2026() {
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
             <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
-            {AI_PREDICTIONS.map((pred, i) => (
-              <Card key={i} className="bg-card border-border p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
-                  </span>
-                  <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Home</p>
+            {AI_PREDICTIONS.map((pred, i) => {
+              // Pro: 1 free AI pick daily (first one); Premium: all unlocked
+              const showData = isPremium || (isPro && i === 0);
+              return (
+                <Card key={i} className="bg-card border-border p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
+                    </span>
+                    {showData ? (
+                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                        {pred.confidence}% conf
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
+                    )}
                   </div>
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Draw</p>
+                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.homeWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Home</p>
+                    </div>
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.draw}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Draw</p>
+                    </div>
+                    <div className="bg-muted/30 rounded p-1.5">
+                      {showData ? <p className="text-sm font-bold text-foreground">{pred.awayWin}%</p> : <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />}
+                      <p className="text-[9px] text-muted-foreground">Away</p>
+                    </div>
                   </div>
-                  <div className="bg-muted/30 rounded p-1.5">
-                    <Lock className="h-4 w-4 text-muted-foreground/50 mx-auto" />
-                    <p className="text-[9px] text-muted-foreground">Away</p>
-                  </div>
-                </div>
-                <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />
-              </Card>
-            ))}
+                  {!showData && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
+                  {showData && !isPremium && (
+                    <div className="flex items-center justify-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                      <Smartphone className="h-3 w-3" /> Better live experience in app
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
 
@@ -289,7 +323,13 @@ export default function WorldCup2026() {
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
           {/* Live Score Ticker */}
-          <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
+          {!isPro ? (
+            <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
+          ) : !isPremium ? (
+            <div className="flex items-center justify-center gap-1.5 mb-3 text-[10px] text-muted-foreground bg-muted/30 rounded-lg py-2">
+              <Smartphone className="h-3 w-3" /> Live scores may have slight delay · Better live experience in app
+            </div>
+          ) : null}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" /> Match Schedule
@@ -386,7 +426,7 @@ export default function WorldCup2026() {
                           className={`grid grid-cols-8 text-[11px] px-1 py-1.5 rounded cursor-pointer hover:bg-muted/30 ${
                             idx < 2 ? "text-emerald-400" : idx === 3 ? "text-destructive" : "text-foreground"
                           }`}
-                          onClick={openPlayStore}
+                          onClick={isPremium ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(t)}`) : openPlayStore}
                         >
                           <span className="col-span-4 truncate font-medium flex items-center gap-1">
                             {td && <TeamFlag code={td.code} size="sm" />} {t}
@@ -402,9 +442,16 @@ export default function WorldCup2026() {
                 </Card>
               );
             })}
-            <div className="mt-3">
-              <AppLockOverlay message="Team stats & details available in app" compact />
-            </div>
+            {!isPremium && (
+              <div className="mt-3">
+                <AppLockOverlay message="Team stats & details available in app" compact />
+              </div>
+            )}
+            {isPremium && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
+                <Smartphone className="h-3 w-3" /> Click any team for full stats · Best experience in app
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -423,7 +470,7 @@ export default function WorldCup2026() {
                 const td = TEAMS[team];
                 return (
                   <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                    onClick={openPlayStore}>
+                    onClick={isPremium ? () => navigate(`/world-cup-2026/team/${encodeURIComponent(team)}`) : openPlayStore}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         {td && <TeamFlag code={td.code} size="md" />}
@@ -436,7 +483,7 @@ export default function WorldCup2026() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        {!isPremium && <Lock className="h-3 w-3 text-muted-foreground" />}
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>
@@ -444,9 +491,16 @@ export default function WorldCup2026() {
                 );
               })}
             </div>
-            <div className="mt-3">
-              <AppLockOverlay message="Full team data available in app" compact />
-            </div>
+            {!isPremium && (
+              <div className="mt-3">
+                <AppLockOverlay message="Full team data available in app" compact />
+              </div>
+            )}
+            {isPremium && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-muted-foreground">
+                <Smartphone className="h-3 w-3" /> ProPredict app offers the best World Cup experience
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
