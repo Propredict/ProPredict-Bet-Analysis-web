@@ -209,7 +209,7 @@ export default function WorldCup2026() {
                     <span className="text-lg font-bold text-primary">{FEATURED_MATCH.time}</span>
                   </div>
                   <div className="flex-1 text-center">
-                    <p className="text-xl mb-1">{TEAMS[FEATURED_MATCH.awayTeam]?.flag}</p>
+                    <div className="mb-1">{TEAMS[FEATURED_MATCH.awayTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.awayTeam].code} size="lg" />}</div>
                     <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.awayTeam}</p>
                     <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.awayTeam]?.fifaRank}</p>
                   </div>
