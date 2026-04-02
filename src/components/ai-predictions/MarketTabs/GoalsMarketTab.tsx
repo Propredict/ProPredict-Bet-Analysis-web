@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { calculateGoalMarketProbs } from "../utils/marketDerivation";
+import { calculateGoalMarketProbs, getDerivedPredictedScore } from "../utils/marketDerivation";
 import { Star, Target } from "lucide-react";
 
 interface Props {
