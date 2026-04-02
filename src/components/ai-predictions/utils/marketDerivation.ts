@@ -194,9 +194,13 @@ export function getRiskBadge(
  * Derive all prediction markets from AI analysis data
  */
 export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
-  const score = parseScore(prediction.predicted_score);
-  const totalGoals = score ? score.home + score.away : 0;
-  const bothScored = score ? score.home > 0 && score.away > 0 : false;
+  // Use Poisson-derived data for consistency with Goals/BTTS tabs
+  const goalProbs = calculateGoalMarketProbs(prediction);
+  const topScores = calculateTopCorrectScores(prediction);
+  const derivedScore = topScores.length > 0 ? topScores[0].score : null;
+  const parsedDerived = derivedScore ? parseScore(derivedScore) : null;
+  const totalGoals = parsedDerived ? parsedDerived.home + parsedDerived.away : 2;
+  const bothScored = parsedDerived ? parsedDerived.home > 0 && parsedDerived.away > 0 : goalProbs.bttsYes > 50;
   
   // Goals markets derived from predicted_score
   const goals = {
