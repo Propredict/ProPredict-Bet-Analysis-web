@@ -149,12 +149,44 @@ export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScor
 }
 
 /**
- * Get the Poisson-derived predicted score (most likely scoreline).
- * This ensures the displayed score is consistent with Goals/BTTS probabilities.
+ * Check if a scoreline is consistent with a given market type.
  */
-export function getDerivedPredictedScore(prediction: AIPrediction): string {
-  const topScores = calculateTopCorrectScores(prediction);
-  return topScores.length > 0 ? topScores[0].score : prediction.predicted_score ?? "1-0";
+function scoreMatchesMarket(home: number, away: number, market: MarketType): boolean {
+  switch (market) {
+    case "home_win": return home > away;
+    case "away_win": return away > home;
+    case "draw": return home === away;
+    case "over25": return (home + away) > 2;
+    case "under25": return (home + away) <= 2;
+    case "btts_yes": return home > 0 && away > 0;
+    case "btts_no": return home === 0 || away === 0;
+    default: return true;
+  }
+}
+
+/**
+ * Get the Poisson-derived predicted score (most likely scoreline).
+ * When a bestPickType is provided, only returns scores consistent with that market.
+ * This prevents contradictions like "BTTS Yes" + "0-1" or "Home Win" + "1-1".
+ */
+export function getDerivedPredictedScore(prediction: AIPrediction, bestPickType?: MarketType): string {
+  const { homeXg, awayXg } = getXgValues(prediction);
+
+  const scores: { score: string; probability: number; home: number; away: number }[] = [];
+  for (let h = 0; h <= 5; h++) {
+    for (let a = 0; a <= 5; a++) {
+      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
+      scores.push({ score: `${h}-${a}`, probability: p, home: h, away: a });
+    }
+  }
+  scores.sort((a, b) => b.probability - a.probability);
+
+  if (bestPickType) {
+    const filtered = scores.filter(s => scoreMatchesMarket(s.home, s.away, bestPickType));
+    if (filtered.length > 0) return filtered[0].score;
+  }
+
+  return scores.length > 0 ? scores[0].score : prediction.predicted_score ?? "1-0";
 }
 
 /**
