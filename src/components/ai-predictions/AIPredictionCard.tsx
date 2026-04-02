@@ -131,7 +131,7 @@ const AIPredictionCardInner = ({
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
               "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded",
-              displayTier === "free" ? "grid grid-cols-1" : displayTier === "pro" ? "grid grid-cols-3" : "grid grid-cols-5"
+              displayTier === "free" ? "grid grid-cols-1" : displayTier === "pro" ? "grid grid-cols-4" : "grid grid-cols-5"
             )}>
               <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Main
@@ -146,7 +146,7 @@ const AIPredictionCardInner = ({
                   BTTS
                 </TabsTrigger>
               )}
-              {displayTier === "premium" && (
+              {displayTier !== "free" && (
                 <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                   DC
                 </TabsTrigger>
@@ -174,7 +174,7 @@ const AIPredictionCardInner = ({
               </TabsContent>
             )}
 
-            {displayTier === "premium" && (
+            {displayTier !== "free" && (
               <TabsContent value="double" className="mt-2 md:mt-3">
                 <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
               </TabsContent>
@@ -240,19 +240,22 @@ const AIPredictionCardInner = ({
                   <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
                     {prediction.analysis}
                   </p>
-                  {prediction.key_factors && prediction.key_factors.length > 0 && (
-                    <div className="flex flex-wrap gap-0.5">
-                      {prediction.key_factors.slice(0, 3).map((factor, i) => (
-                        <Badge 
-                          key={i} 
-                          variant="secondary" 
-                          className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
-                        >
-                          {factor}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                   {prediction.key_factors && prediction.key_factors.length > 0 && (
+                     <div className="flex flex-wrap gap-0.5">
+                       {prediction.key_factors
+                         .filter((f) => !f.startsWith("[TAG]"))
+                         .slice(0, displayTier === "premium" ? 5 : 3)
+                         .map((factor, i) => (
+                         <Badge 
+                           key={i} 
+                           variant="secondary" 
+                           className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
+                         >
+                           {factor}
+                         </Badge>
+                       ))}
+                     </div>
+                   )}
                 </div>
               </CollapsibleContent>
             </Collapsible>

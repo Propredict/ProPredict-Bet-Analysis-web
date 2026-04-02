@@ -135,7 +135,11 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
-  const topScores = displayTier === "premium" ? calculateTopCorrectScores(prediction) : [];
+  const topScores = displayTier === "premium" 
+    ? calculateTopCorrectScores(prediction) 
+    : displayTier === "pro" 
+    ? calculateTopCorrectScores(prediction).slice(0, 2) 
+    : [];
 
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
 
@@ -192,8 +196,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             />
           </div>
 
-          {/* AI Tags — badges for tempo, value, market signal, safe combo */}
-          {(parsedTags.tags.length > 0) && (
+          {/* AI Tags — badges for tempo, value, market signal, safe combo — PREMIUM only */}
+          {displayTier === "premium" && parsedTags.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-0.5">
               {parsedTags.isUltra && (
                 <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
@@ -304,30 +308,37 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* ===== Top 3 Correct Scores — Premium only ===== */}
-      {hasAccess && displayTier === "premium" && topScores.length > 0 && (
+      {/* ===== Top Correct Scores — Pro (top 2) & Premium (top 3) ===== */}
+      {hasAccess && displayTier !== "free" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
-            <Crosshair className="w-3 h-3 text-fuchsia-400" />
-            <span className="text-[10px] md:text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">
+            <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
+            <span className={cn(
+              "text-[10px] md:text-xs font-semibold uppercase tracking-wider",
+              displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
+            )}>
               Top Correct Scores
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className={cn("grid gap-1.5", topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
             {topScores.map((s, i) => (
               <div
                 key={s.score}
                 className={cn(
                   "text-center py-2 rounded-md border",
                   i === 0
-                    ? "border-fuchsia-500/40 bg-fuchsia-500/10"
+                    ? displayTier === "premium" 
+                      ? "border-fuchsia-500/40 bg-fuchsia-500/10" 
+                      : "border-amber-500/40 bg-amber-500/10"
                     : "border-border/30 bg-card/20"
                 )}
               >
                 <div className="text-sm md:text-base font-bold text-foreground">{s.score}</div>
                 <div className={cn(
                   "text-[9px] md:text-[10px] font-medium",
-                  i === 0 ? "text-fuchsia-400" : "text-muted-foreground"
+                  i === 0 
+                    ? displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
+                    : "text-muted-foreground"
                 )}>
                   {s.probability}%
                 </div>
