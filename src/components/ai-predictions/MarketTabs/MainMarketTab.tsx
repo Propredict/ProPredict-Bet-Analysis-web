@@ -98,33 +98,15 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
 }
 
 /** 
- * Free tier: always show the best 1X2 pick (match favorite).
- * Uses RAW db probabilities. When all three are within 3% of each other,
- * prefer home_win (home advantage) to avoid every card showing "Draw".
+ * Free tier: pick the best market across ALL types (not just 1X2).
+ * This ensures diverse picks like Draw, BTTS, Under 2.5 instead of always Home/Away Win.
  */
 function getFreePick(prediction: AIPrediction): PickCandidate {
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
-
-  const max = Math.max(hw, aw, d);
-  const min = Math.min(hw, aw, d);
-  const spread = max - min;
-
-  let bestType: MarketType;
-  if (spread <= 3) {
-    // All very close — use home advantage tiebreaker
-    bestType = hw >= aw ? "home_win" : "away_win";
-  } else {
-    // Pick the actual highest raw probability
-    if (hw >= aw && hw >= d) bestType = "home_win";
-    else if (aw >= hw && aw >= d) bestType = "away_win";
-    else bestType = "draw";
-  }
-
+  const bestType = getBestPickType(prediction);
+  const rawProbs = getAllRawProbs(prediction);
   const meta = MARKET_META[bestType];
-  // Use confidence as display value — raw 1X2 probs are often ~33% and look identical
-  const displayConf = prediction.confidence ?? Math.max(hw, aw, d);
+  // Use the actual market probability for display
+  const displayConf = rawProbs[bestType] || prediction.confidence || 50;
   return { label: meta.getLabel(prediction), conf: displayConf, icon: meta.icon, type: bestType };
 }
 
