@@ -337,23 +337,28 @@ interface MarketCandidate {
  * against conservative Under markets that naturally dominate Poisson output.
  */
 function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
-  const probs = calculateGoalMarketProbs(prediction);
+  let hw = prediction.home_win ?? 33;
+  let aw = prediction.away_win ?? 33;
+  let d = prediction.draw ?? 34;
+  
+  // Normalize 1X2 to always sum to 100, with 5% floor
+  hw = Math.max(5, hw);
+  aw = Math.max(5, aw);
+  d = Math.max(5, d);
+  const total1x2 = hw + aw + d;
+  hw = Math.round((hw / total1x2) * 100);
+  aw = Math.round((aw / total1x2) * 100);
+  d = 100 - hw - aw;
 
-  // Normalize 1X2 probabilities (pairwise vs strongest rival)
-  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+  const probs = calculateGoalMarketProbs(prediction);
 
   // +5 bonus for 1X2 markets to prevent Under 2.5 from always dominating
   const PRIMARY_BOOST = 5;
 
   const candidates: MarketCandidate[] = [
-    { type: "home_win", prob: norm1 + PRIMARY_BOOST },
-    { type: "away_win", prob: norm2 + PRIMARY_BOOST },
-    { type: "draw", prob: normX + PRIMARY_BOOST },
+    { type: "home_win", prob: hw + PRIMARY_BOOST },
+    { type: "away_win", prob: aw + PRIMARY_BOOST },
+    { type: "draw", prob: d + PRIMARY_BOOST },
     { type: "over25", prob: probs.over25 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
