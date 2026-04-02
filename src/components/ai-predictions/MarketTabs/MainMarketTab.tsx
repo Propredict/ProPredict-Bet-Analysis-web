@@ -242,13 +242,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — aligned with Best Pick and SAFE COMBO when present */}
+          {/* Predicted Score — aligned with Best Pick + Goals + BTTS + SAFE COMBO */}
           {(() => {
-            const derivedScore = getDerivedPredictedScore(
-              prediction,
-              pick.type,
-              displayTier === "premium" ? parsedTags.safeCombo : null
-            );
+            const derivedScore = getDerivedPredictedScore(prediction, {
+              ...scoreConstraints,
+              marketType: pick.type,
+              safeCombo: displayTier === "premium" ? parsedTags.safeCombo : null,
+            });
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
                 Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>

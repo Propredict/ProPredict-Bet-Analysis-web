@@ -307,12 +307,7 @@ export function getRiskBadge(
 export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
   // Use Poisson-derived data for consistency with Goals/BTTS tabs
   const goalProbs = calculateGoalMarketProbs(prediction);
-  const topScores = calculateTopCorrectScores(prediction);
-  const derivedScore = topScores.length > 0 ? topScores[0].score : null;
-  const parsedDerived = derivedScore ? parseScore(derivedScore) : null;
-  const totalGoals = parsedDerived ? parsedDerived.home + parsedDerived.away : 2;
-  const bothScored = parsedDerived ? parsedDerived.home > 0 && parsedDerived.away > 0 : goalProbs.bttsYes > 50;
-  
+
   // Goals markets derived from Poisson probabilities (consistent with Goals tab)
   const goals = {
     over15: {
