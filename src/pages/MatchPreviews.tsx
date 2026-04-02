@@ -178,9 +178,9 @@ export default function MatchPreviews() {
               <Trophy className="h-5 w-5 text-violet-400" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Top 30 Matches of the Day</h1>
+              <h1 className="text-lg font-bold">Top Matches of the Day</h1>
               <p className="text-xs text-muted-foreground">
-                AI-ranked by confidence — the best picks today
+                Only the safest AI picks — 65%+ confidence
               </p>
             </div>
           </div>
