@@ -1355,7 +1355,8 @@ function calculatePrediction(
   }
 
   allMarkets.sort((a, b) => b.priorityProb - a.priorityProb);
-  const viableMarkets = allMarkets.filter(m => m.prob >= 60);
+  // NO hard filtering — always pick the best market by ranking, never hide markets
+  const viableMarkets = allMarkets;
   const bestMarket = viableMarkets.length > 0 ? viableMarkets[0] : allMarkets[0];
   const prediction = bestMarket.label;
   const bestProb = bestMarket.prob;
