@@ -1244,9 +1244,10 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === NEW CONFIDENCE FORMULA (v3) ===
-  // confidence = (form_diff * 0.30) + (xG_score * 0.30) + (odds_diff * 0.20) + (consistency * 0.20)
-
+  // === NEW CONFIDENCE FORMULA (v3.1) ===
+  // Base: best market probability (strongest signal of how predictable the match is)
+  // Modifiers: form diff, xG gap, odds alignment, consistency
+  
   // FORM component: normalize last 5 match points to 0-100, take absolute diff
   const homeFormPoints5 = homeForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
   const awayFormPoints5 = awayForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
@@ -1268,7 +1269,6 @@ function calculatePrediction(
   const oddsComponent = Math.min(oddsDiff, 100);
 
   // CONSISTENCY component: how stable is the team's form?
-  // Stable form (all W or all L) → high, random form → low
   const homeConsistency = homeForm.slice(0, 5).length > 0
     ? (() => {
         const results = homeForm.slice(0, 5).map(m => m.result);
@@ -1287,11 +1287,18 @@ function calculatePrediction(
     : 50;
   const consistencyScore = (homeConsistency + awayConsistency) / 2;
 
+  // BASE: start from the best market probability (the strongest indicator)
+  // This ensures matches with clear favorites get higher base confidence
+  const baseConfidence = bestProb;
+  
+  // MODIFIER: how much do the data signals support the pick? (scaled -15 to +15)
+  const formBonus = clamp((formDiff - 15) * 0.3, -5, 10);     // +10 if big form gap
+  const xgBonus = clamp((xgScore - 10) * 0.25, -3, 8);        // +8 if big xG gap
+  const oddsBonus = clamp((oddsComponent - 15) * 0.2, -3, 8);  // +8 if odds strongly agree
+  const consistencyBonus = clamp((consistencyScore - 50) * 0.2, -5, 6); // +6 if very consistent form
+
   let confidence = Math.round(
-    (formDiff * 0.30) +
-    (xgScore * 0.30) +
-    (oddsComponent * 0.20) +
-    (consistencyScore * 0.20)
+    baseConfidence + formBonus + xgBonus + oddsBonus + consistencyBonus
   );
 
   // === BOOST RULES ===
