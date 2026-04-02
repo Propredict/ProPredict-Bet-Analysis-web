@@ -2852,8 +2852,7 @@ async function handleBatchRegenerate(
           const f = fixtureById.get(id);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
 
-          // Generate varied placeholder probabilities using fixture ID hash
-          // so cards don't all show identical 33/34/33
+          // Generate varied placeholder probabilities and MARKET TYPES
           let hash = 0;
           for (let i = 0; i < id.length; i++) {
             hash = ((hash << 5) - hash) + id.charCodeAt(i);
@@ -2866,7 +2865,24 @@ async function handleBatchRegenerate(
           const hw = swapBias === 1 ? awayBase : homeBase;
           const dr = drawBase;
           const aw = swapBias === 1 ? homeBase : awayBase;
-          const pred = hw >= aw ? "1" : "2";
+          
+          // Diversify market types for placeholders
+          const placeholderMarkets = [
+            "1", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No",
+            "Over 1.5", "Under 3.5", "DC 1X", "DC X2"
+          ];
+          const mktIdx = Math.abs((hash >> 12)) % placeholderMarkets.length;
+          const pred = placeholderMarkets[mktIdx];
+          
+          // Score matching the market
+          const scoreMap: Record<string, string> = {
+            "1": "1-0", "2": "0-1", "X": "1-1",
+            "Over 2.5": hw > aw ? "2-1" : "1-2",
+            "Under 2.5": hw > aw ? "1-0" : "0-1",
+            "BTTS Yes": "1-1", "BTTS No": hw > aw ? "2-0" : "0-1",
+            "Over 1.5": "1-1", "Under 3.5": hw > aw ? "2-0" : "0-2",
+            "DC 1X": "1-0", "DC X2": "0-1",
+          };
 
           return {
             match_id: id,
@@ -2880,7 +2896,7 @@ async function handleBatchRegenerate(
             is_premium: false,
             is_locked: true,
             prediction: pred,
-            predicted_score: pred === "1" ? "1-0" : "0-1",
+            predicted_score: scoreMap[pred] || "1-0",
             confidence: 50,
             home_win: hw,
             draw: dr,
