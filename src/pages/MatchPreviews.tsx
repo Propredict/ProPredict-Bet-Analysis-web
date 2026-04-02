@@ -348,6 +348,15 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
+                    {/* Best Market Pick */}
+                    {match.bestPick && (
+                      <div className="flex justify-center">
+                        <Badge className="text-xs px-3 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                          {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
+                        </Badge>
+                      </div>
+                    )}
+
                     {/* Analysis preview */}
                     {snippets.length > 0 && (
                       <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
