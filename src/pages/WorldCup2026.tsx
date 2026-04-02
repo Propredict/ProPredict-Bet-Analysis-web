@@ -13,7 +13,6 @@ import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
-import { usePlatform } from "@/hooks/usePlatform";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
