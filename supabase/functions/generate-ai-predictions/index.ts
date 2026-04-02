@@ -887,14 +887,235 @@ function sigmoid(x: number) {
   return 1 / (1 + Math.exp(-x));
 }
 
-// calibrateConfidence removed — confidence is now the raw best market probability
+// calibrateConfidence removed — confidence is now multi-dimensional
+
+// ============ A) TEMPO & MATCH INTENSITY ============
+/**
+ * Calculate match tempo score from team stats & form.
+ * Uses goals averages as proxy for shots/possession.
+ * Higher tempo → more goals expected.
+ */
+function calculateTempoScore(
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[]
+): { score: number; label: "LOW" | "MEDIUM" | "HIGH" } {
+  const hGFAvg = homeStats?.goalsForAvg ?? calculateGoalRate(homeForm).scored;
+  const aGFAvg = awayStats?.goalsForAvg ?? calculateGoalRate(awayForm).scored;
+  const hGAAvg = homeStats?.goalsAgainstAvg ?? calculateGoalRate(homeForm).conceded;
+  const aGAAvg = awayStats?.goalsAgainstAvg ?? calculateGoalRate(awayForm).conceded;
+
+  // Total goals involvement per match (proxy for shots/intensity)
+  const homeInvolvement = hGFAvg + hGAAvg; // goals in matches where this team plays
+  const awayInvolvement = aGFAvg + aGAAvg;
+  const avgTotalGoals = (hGFAvg + aGFAvg + hGAAvg + aGAAvg) / 2;
+
+  // tempo_score formula (adapted from user spec, using goals as proxy for shots)
+  const tempoScore = clamp(
+    (homeInvolvement + awayInvolvement) * 15 + avgTotalGoals * 10,
+    0, 100
+  );
+
+  const label: "LOW" | "MEDIUM" | "HIGH" =
+    tempoScore >= 65 ? "HIGH" : tempoScore >= 40 ? "MEDIUM" : "LOW";
+
+  return { score: Math.round(tempoScore), label };
+}
+
+// ============ B) REAL FORM QUALITY (goals-based) ============
+/**
+ * Form quality based on goals scored/conceded, not just W/D/L points.
+ * form_quality = (goals_scored_last5 * 0.6) - (goals_conceded_last5 * 0.4)
+ * Normalized to 0-100.
+ */
+function calculateFormQuality(form: FormMatch[]): number {
+  const last5 = form.slice(0, 5);
+  if (last5.length === 0) return 50;
+
+  let goalsScored = 0, goalsConceded = 0;
+  for (const m of last5) {
+    goalsScored += m.goalsFor;
+    goalsConceded += m.goalsAgainst;
+  }
+
+  const raw = (goalsScored * 0.6) - (goalsConceded * 0.4);
+  // Normalize: raw typically ranges from -4 to +6
+  return clamp(Math.round(50 + raw * 8), 0, 100);
+}
+
+// ============ E) DRAW SUPPRESSION LOGIC ============
+/**
+ * Suppress draw probability when xG difference is significant.
+ */
+function suppressDraw(drawProb: number, homeXg: number, awayXg: number): number {
+  const xgDiff = Math.abs(homeXg - awayXg);
+  if (xgDiff > 0.8) {
+    return Math.round(drawProb * 0.7);
+  } else if (xgDiff > 0.5) {
+    return Math.round(drawProb * 0.85);
+  }
+  return drawProb;
+}
+
+// ============ F) LEAGUE PROFILE ============
+/**
+ * Calculate league-specific goal tendency from all teams' stats in standings.
+ * Returns league avg goals/match and BTTS likelihood.
+ */
+interface LeagueProfile {
+  avgGoalsPerMatch: number; // league average total goals
+  bttsRate: number;         // estimated BTTS % (0-100)
+  isOverLeague: boolean;    // avg > 2.7
+  isUnderLeague: boolean;   // avg < 2.2
+  overBoost: number;        // adjustment for Over markets
+  underBoost: number;       // adjustment for Under markets
+  bttsBoost: number;        // adjustment for BTTS markets
+  score: number;            // 0-100 normalized (50 = neutral, 70+ = high scoring)
+}
+
+const leagueProfileCache = new Map<number, LeagueProfile>();
+
+function calculateLeagueProfile(
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  leagueId?: number
+): LeagueProfile {
+  if (leagueId && leagueProfileCache.has(leagueId)) {
+    return leagueProfileCache.get(leagueId)!;
+  }
+
+  // Estimate from the two teams' stats
+  const hGF = homeStats?.goalsForAvg ?? 1.3;
+  const hGA = homeStats?.goalsAgainstAvg ?? 1.1;
+  const aGF = awayStats?.goalsForAvg ?? 1.1;
+  const aGA = awayStats?.goalsAgainstAvg ?? 1.2;
+
+  // Estimated league average from these two teams
+  const avgGoalsPerMatch = (hGF + hGA + aGF + aGA) / 2;
+
+  // BTTS estimate from failed-to-score rates
+  const hFTS = homeStats?.played ? homeStats.failedToScore.total / homeStats.played : 0.25;
+  const aFTS = awayStats?.played ? awayStats.failedToScore.total / awayStats.played : 0.30;
+  const bttsRate = Math.round((1 - hFTS) * (1 - aFTS) * 100);
+
+  const isOverLeague = avgGoalsPerMatch >= 2.7;
+  const isUnderLeague = avgGoalsPerMatch <= 2.2;
+
+  const overBoost = isOverLeague ? 5 : isUnderLeague ? -4 : 0;
+  const underBoost = isUnderLeague ? 5 : isOverLeague ? -4 : 0;
+  const bttsBoost = bttsRate >= 55 ? 4 : bttsRate <= 35 ? -4 : 0;
+
+  const score = clamp(Math.round((avgGoalsPerMatch - 1.5) * 40 + 50), 0, 100);
+
+  const profile: LeagueProfile = {
+    avgGoalsPerMatch,
+    bttsRate,
+    isOverLeague,
+    isUnderLeague,
+    overBoost,
+    underBoost,
+    bttsBoost,
+    score,
+  };
+
+  if (leagueId) leagueProfileCache.set(leagueId, profile);
+  return profile;
+}
+
+// ============ VALUE DETECTION ============
+interface ValueResult {
+  valuePercent: number;       // AI prob - bookmaker prob
+  isValueBet: boolean;        // value > 8%
+  isStrongValue: boolean;     // value > 12% and high confidence
+  label: "NO VALUE" | "VALUE" | "STRONG VALUE";
+}
+
+function detectValue(aiProb: number, bookmakerProb: number, confidence: number): ValueResult {
+  const valuePercent = aiProb - bookmakerProb;
+  const isValueBet = valuePercent >= 8;
+  const isStrongValue = valuePercent >= 12 && confidence >= 72;
+
+  return {
+    valuePercent,
+    isValueBet,
+    isStrongValue,
+    label: isStrongValue ? "STRONG VALUE" : isValueBet ? "VALUE" : "NO VALUE",
+  };
+}
+
+// ============ ULTRA BOOST (convergence detection) ============
+function checkUltraBoost(
+  formDiff: number,
+  xgDiff: number,
+  odds: OddsData | null
+): { boost: number; isUltra: boolean } {
+  const hasStrongForm = formDiff > 40;
+  const hasStrongXg = xgDiff > 1;
+  const hasShortOdds = odds ? Math.min(odds.homeOdds, odds.awayOdds) < 1.60 : false;
+
+  if (hasStrongForm && hasStrongXg && hasShortOdds) {
+    return { boost: 15, isUltra: true };
+  }
+  if (hasStrongForm && hasStrongXg) {
+    return { boost: 8, isUltra: false };
+  }
+  if ((hasStrongForm || hasStrongXg) && hasShortOdds) {
+    return { boost: 6, isUltra: false };
+  }
+  return { boost: 0, isUltra: false };
+}
+
+// ============ DATA QUALITY FILTER ============
+function calculateDataQuality(
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[],
+  odds: OddsData | null,
+  isQualityLeague: boolean
+): { score: number; penalty: number } {
+  let score = 50;
+
+  // Season stats quality
+  if (homeStats && homeStats.played >= 10) score += 15;
+  else if (homeStats && homeStats.played >= 5) score += 8;
+  if (awayStats && awayStats.played >= 10) score += 15;
+  else if (awayStats && awayStats.played >= 5) score += 8;
+
+  // Form data quality
+  if (homeForm.length >= 5) score += 5;
+  if (awayForm.length >= 5) score += 5;
+
+  // Odds availability
+  if (odds) score += 10;
+
+  // League quality
+  if (isQualityLeague) score += 10;
+  else score -= 10;
+
+  score = clamp(score, 0, 100);
+
+  // Penalty for low-quality data
+  let penalty = 0;
+  if (score < 40) penalty = -15;
+  else if (score < 55) penalty = -8;
+  else if (score < 65) penalty = -3;
+
+  return { score, penalty };
+}
 
 /**
- * Main prediction calculation using enhanced weights:
- * Form 25%, Quality 18%, Squad 10%, Home 8%, H2H 6%, Standings 10%, Odds 15%.
+ * Main prediction calculation v4 — multi-dimensional confidence model:
+ * 
+ * Weights: Form 20%, Quality 15%, Squad 8%, Home 7%, H2H 5%,
+ *          Standings 10%, Odds 15%, Tempo 10%, League Profile 10%
  *
- * Uses real last 10 matches, league position, and bookmaker odds for calibration.
- * Per-league home advantage, progressive dampening, and close-call penalty.
+ * Confidence formula (v4):
+ * confidence = (form_diff * 0.20) + (xG_score * 0.25) + (odds_diff * 0.15)
+ *            + (consistency * 0.15) + (tempo_score * 0.15) + (market_signal * 0.10)
+ *
+ * Plus: Draw suppression, Value detection, Ultra boost, Data quality filter
  */
 function calculatePrediction(
   homeForm: FormMatch[],
@@ -911,8 +1132,17 @@ function calculatePrediction(
   leagueName?: string,
   leagueId?: number
 ): PredictionResult {
-  // === FORM (30%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
-  // Use opponent-strength weighting when standings are available
+  // === A) TEMPO SCORE ===
+  const tempo = calculateTempoScore(homeStats, awayStats, homeForm, awayForm);
+
+  // === B) FORM QUALITY (goals-based, not just points) ===
+  const homeFormQuality = calculateFormQuality(homeForm);
+  const awayFormQuality = calculateFormQuality(awayForm);
+
+  // === F) LEAGUE PROFILE ===
+  const leagueProfile = calculateLeagueProfile(homeStats, awayStats, leagueId);
+
+  // === FORM (20%) — OPPONENT-STRENGTH WEIGHTED + VENUE SPLIT ===
   const hasStandings = standings && standings.length > 0;
   const homeFormAll = hasStandings
     ? calculateWeightedFormScore(homeForm, standings!)
@@ -920,17 +1150,19 @@ function calculatePrediction(
   const awayFormAll = hasStandings
     ? calculateWeightedFormScore(awayForm, standings!)
     : (awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm));
+  
+  // === C) HOME vs AWAY SPLIT ===
   const homeVenueForm = calculateVenueFormScore(homeForm, true);
   const awayVenueForm = calculateVenueFormScore(awayForm, false);
-  // Blend: 55% venue-specific + 45% opponent-weighted overall
-  const homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.45);
-  const awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.45);
+  // Blend: 50% venue-specific + 30% opponent-weighted overall + 20% goals-based quality
+  const homeFormScore = Math.round(homeVenueForm * 0.45 + homeFormAll * 0.30 + homeFormQuality * 0.25);
+  const awayFormScore = Math.round(awayVenueForm * 0.45 + awayFormAll * 0.30 + awayFormQuality * 0.25);
 
-  // === QUALITY (20%) ===
+  // === QUALITY (15%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
   const awayQualityScore = calculateQualityScore(awayStats);
 
-  // === SQUAD (10%) — venue-specific goal rates ===
+  // === SQUAD (8%) — venue-specific goal rates ===
   const homeGoalRate = calculateGoalRate(homeForm);
   const awayGoalRate = calculateGoalRate(awayForm);
   const homeEffScored = homeStats?.homeGoalsForAvg || homeGoalRate.scored;
@@ -940,21 +1172,13 @@ function calculatePrediction(
   const homeSquadScore = clamp(50 + (homeEffScored - homeEffConceded) * 18, 0, 100);
   const awaySquadScore = clamp(50 + (awayEffScored - awayEffConceded) * 18, 0, 100);
 
-  // === HOME ADVANTAGE (8%) — PER-LEAGUE DYNAMIC ===
-  // Use league-specific home advantage instead of fixed value
+  // === HOME ADVANTAGE (7%) — PER-LEAGUE DYNAMIC ===
   const leagueHomeAdv = (standings && leagueId) ? calculateLeagueHomeAdvantage(standings, leagueId) : 52;
-  const homeAdvBase = leagueHomeAdv / 100; // Convert to 0-1 range
+  const homeAdvBase = leagueHomeAdv / 100;
   let homeAdvantageScore = clamp(50 + (homeAdvBase - 0.45) * 20, 48, 58);
   let awayAdvantageScore = clamp(100 - homeAdvantageScore, 42, 52);
-  if (homeStats && homeStats.home.played > 2 && awayStats && awayStats.away.played > 2) {
-    const homeWinRateAtHome = homeStats.home.wins / homeStats.home.played;
-    const awayWinRateAway = awayStats.away.wins / awayStats.away.played;
-    // Blend team-specific with league-average (60% team, 40% league)
-    homeAdvantageScore = clamp(homeAdvantageScore * 0.4 + (50 + (homeWinRateAtHome - 0.4) * 12) * 0.6, 46, 60);
-    awayAdvantageScore = clamp(awayAdvantageScore * 0.4 + (50 + (awayWinRateAway - 0.3) * 10) * 0.6, 40, 55);
-  }
 
-  // === H2H (12%) ===
+  // === H2H (5%) ===
   const homeH2HScore = calculateH2HScore(h2h, homeTeamId, awayTeamId);
   const awayH2HScore = 100 - homeH2HScore;
 
@@ -962,39 +1186,29 @@ function calculatePrediction(
   const homeStandingsScore = standings ? getStandingsScore(standings, homeTeamId) : 50;
   const awayStandingsScore = standings ? getStandingsScore(standings, awayTeamId) : 50;
 
-  // === ODDS (10%) ===
-  let homeOddsScore = 50;
-  let awayOddsScore = 50;
+  // === ODDS (15%) ===
+  let homeOddsScore = 50, awayOddsScore = 50;
   if (odds) {
     homeOddsScore = clamp(odds.homeProb, 10, 90);
     awayOddsScore = clamp(odds.awayProb, 10, 90);
   }
 
-  // === SELF-LEARNING: adjust weights by league accuracy ===
-  let formWeight = WEIGHT_FORM;
-  let qualityWeight = WEIGHT_QUALITY;
-  let h2hWeight = WEIGHT_H2H;
-  let oddsWeight = WEIGHT_ODDS;
-  if (leagueName && leagueAccuracyCache.size > 0) {
-    const leagueAcc = leagueAccuracyCache.get(leagueName);
-    if (leagueAcc !== undefined) {
-      if (leagueAcc < 55) {
-        oddsWeight += 0.05; formWeight -= 0.03; qualityWeight -= 0.02;
-      } else if (leagueAcc > 75) {
-        formWeight += 0.03; qualityWeight += 0.02; oddsWeight -= 0.03;
-      }
-    }
-  }
+  // === TEMPO COMPONENT (10%) ===
+  // Both teams contribute to tempo; higher tempo → more goals
+  const tempoComponent = tempo.score;
 
-  // Normalize weights
-  const totalWeight = formWeight + qualityWeight + WEIGHT_SQUAD + WEIGHT_HOME + h2hWeight + WEIGHT_STANDINGS + oddsWeight;
-  const wF = formWeight / totalWeight;
-  const wQ = qualityWeight / totalWeight;
-  const wS = WEIGHT_SQUAD / totalWeight;
-  const wH = WEIGHT_HOME / totalWeight;
-  const wH2H = h2hWeight / totalWeight;
-  const wSt = WEIGHT_STANDINGS / totalWeight;
-  const wO = oddsWeight / totalWeight;
+  // === LEAGUE PROFILE COMPONENT (10%) ===
+  const leagueProfileComponent = leagueProfile.score;
+
+  // === WEIGHTED TOTAL ===
+  const wF = WEIGHT_FORM;
+  const wQ = WEIGHT_QUALITY;
+  const wS = WEIGHT_SQUAD;
+  const wH = WEIGHT_HOME;
+  const wH2H = WEIGHT_H2H;
+  const wSt = WEIGHT_STANDINGS;
+  const wO = WEIGHT_ODDS;
+  // Tempo and league profile affect goal markets more than 1X2
 
   const homeTotal =
     homeFormScore * wF + homeQualityScore * wQ + homeSquadScore * wS +
@@ -1007,18 +1221,9 @@ function calculatePrediction(
   const diff = homeTotal - awayTotal;
   const diffAbs = Math.abs(diff);
   const strength = clamp(diffAbs / 18, 0, 1);
-  let draw = 30 - strength * 14;
-  const homeShare = sigmoid(diff / 7);
-  let homeWin = (100 - draw) * homeShare;
-  let awayWin = 100 - draw - homeWin;
-  homeWin = Math.round(clamp(homeWin, 10, 75));
-  draw = Math.round(clamp(draw, 15, 30));
-  awayWin = 100 - homeWin - draw;
-  if (awayWin < 10) { const d = 10 - awayWin; awayWin = 10; const td = Math.min(d, Math.max(0, draw - 15)); draw -= td; homeWin = 100 - draw - awayWin; }
-  if (homeWin < 10) { const d = 10 - homeWin; homeWin = 10; const td = Math.min(d, Math.max(0, draw - 15)); draw -= td; awayWin = 100 - draw - homeWin; }
 
-  // === xG MODEL (Dixon-Coles cross-multiplication) ===
-  const leagueAvgGoals = 1.30;
+  // === xG MODEL ===
+  const leagueAvgGoals = leagueProfile.avgGoalsPerMatch > 0 ? leagueProfile.avgGoalsPerMatch / 2 : 1.30;
   let homeXg: number, awayXg: number;
   if (homeStats && awayStats && homeStats.homeGoalsForAvg > 0 && awayStats.awayGoalsAgainstAvg > 0) {
     homeXg = (homeStats.homeGoalsForAvg * awayStats.awayGoalsAgainstAvg) / leagueAvgGoals;
@@ -1030,51 +1235,59 @@ function calculatePrediction(
   homeXg = clamp(homeXg, 0.3, 3.5);
   awayXg = clamp(awayXg, 0.2, 3.0);
 
-  // === GOAL MARKETS (Poisson) + STYLE MATCHUP ===
+  // === E) DRAW SUPPRESSION ===
+  let rawDraw = 30 - strength * 14;
+  rawDraw = suppressDraw(Math.round(rawDraw), homeXg, awayXg);
+
+  const homeShare = sigmoid(diff / 7);
+  let homeWin = (100 - rawDraw) * homeShare;
+  let awayWin = 100 - rawDraw - homeWin;
+  let draw = rawDraw;
+  homeWin = Math.round(clamp(homeWin, 10, 75));
+  draw = Math.round(clamp(draw, 12, 28));
+  awayWin = 100 - homeWin - draw;
+  if (awayWin < 10) { const d = 10 - awayWin; awayWin = 10; const td = Math.min(d, Math.max(0, draw - 12)); draw -= td; homeWin = 100 - draw - awayWin; }
+  if (homeWin < 10) { const d = 10 - homeWin; homeWin = 10; const td = Math.min(d, Math.max(0, draw - 12)); draw -= td; awayWin = 100 - draw - homeWin; }
+
+  // === GOAL MARKETS (Poisson) + STYLE MATCHUP + LEAGUE PROFILE ===
   const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
   const style = detectStyleMatchup(homeStats, awayStats, homeForm, awayForm);
-  const adjustedOver25 = clamp(goalMarkets.over25 + style.overBoost, 5, 95);
+  const adjustedOver25 = clamp(goalMarkets.over25 + style.overBoost + leagueProfile.overBoost, 5, 95);
   const adjustedUnder25 = clamp(100 - adjustedOver25, 5, 95);
-  const adjustedBttsYes = clamp(goalMarkets.bttsYes + style.bttsBoost, 5, 95);
+  const adjustedBttsYes = clamp(goalMarkets.bttsYes + style.bttsBoost + leagueProfile.bttsBoost, 5, 95);
   const adjustedBttsNo = clamp(100 - adjustedBttsYes, 5, 95);
 
   // === MATCH CONTEXT ENGINE ===
   const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId) : { confidenceBoost: 0, factors: [] };
 
   // === SMART MARKET SELECTION ENGINE ===
-  // Extended markets: 1X2, Over/Under (1.5/2.5/3.5), BTTS, Double Chance
-  const dc1X = homeWin + draw; // Double Chance: Home or Draw
-  const dc12 = homeWin + awayWin; // Double Chance: Home or Away (no draw)
-  const dcX2 = awayWin + draw; // Double Chance: Away or Draw
+  const dc1X = homeWin + draw;
+  const dc12 = homeWin + awayWin;
+  const dcX2 = awayWin + draw;
 
-  // Market priority tiers — AUTO-CALIBRATED from ai_accuracy_by_market when available
-  // Fallback to hand-tuned defaults when no historical data exists
   const defaultPriority: Record<string, number> = {
-    "Under 3.5": 1.08,   // HIGH accuracy boost
+    "Under 3.5": 1.08,
     "Over 1.5": 1.06,
     "BTTS Yes": 1.05,
     "BTTS No": 1.05,
     "DC 1X": 1.04,
     "DC X2": 1.04,
     "DC 12": 1.02,
-    "Over 2.5": 1.00,    // MEDIUM - baseline
+    "Over 2.5": 1.00,
     "Under 2.5": 1.00,
-    "1": 0.97,            // 1X2 slightly penalized (harder to hit)
+    "1": 0.97,
     "2": 0.97,
     "Over 3.5": 0.95,
     "Under 1.5": 0.93,
-    "X": 0.85,            // Draw penalized (unpredictable)
+    "X": 0.82,  // Draw more suppressed
   };
 
-  // Override with real accuracy data if available
   const MARKET_PRIORITY: Record<string, number> = { ...defaultPriority };
   if (marketAccuracyCache.size > 0) {
-    // Normalize market accuracy to priority multipliers (50% acc → 1.0, 70% → 1.12, 30% → 0.88)
     for (const [market, acc] of marketAccuracyCache.entries()) {
-      const multiplier = 1.0 + (acc - 50) * 0.006; // ±0.6% per accuracy point
+      const multiplier = 1.0 + (acc - 50) * 0.006;
       MARKET_PRIORITY[market] = clamp(multiplier, 0.80, 1.15);
     }
-    console.log(`[SELF-LEARN] Market priorities auto-calibrated from ${marketAccuracyCache.size} markets`);
   }
 
   const allMarkets: { label: string; prob: number; priorityProb: number }[] = [
@@ -1094,7 +1307,7 @@ function calculatePrediction(
     { label: "DC 12", prob: dc12, priorityProb: Math.min(dc12, 92) * (MARKET_PRIORITY["DC 12"] || 1) },
   ];
 
-  // === SMART MARKET SWITCHING based on xG profile ===
+  // === SMART MARKET SWITCHING (tempo & league profile aware) ===
   const totalXg = homeXg + awayXg;
   const isLowGoals = totalXg < 2.3;
   const isHighGoals = totalXg > 2.8;
@@ -1102,163 +1315,100 @@ function calculatePrediction(
   const bothDefensive = homeXg < 1.0 && awayXg < 0.9;
   const dominantTeam = Math.abs(homeWin - awayWin) >= 25;
 
-  // Apply smart boosts based on match profile
   for (const m of allMarkets) {
+    // Tempo-based boosts
+    if (tempo.label === "HIGH") {
+      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 1.06;
+      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 0.94;
+    } else if (tempo.label === "LOW") {
+      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 1.06;
+      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 0.94;
+    }
+
+    // League profile boosts
+    if (leagueProfile.isOverLeague) {
+      if (m.label.startsWith("Over")) m.priorityProb *= 1.04;
+      if (m.label.startsWith("Under")) m.priorityProb *= 0.96;
+    }
+    if (leagueProfile.isUnderLeague) {
+      if (m.label.startsWith("Under")) m.priorityProb *= 1.04;
+      if (m.label.startsWith("Over")) m.priorityProb *= 0.96;
+    }
+
     if (isLowGoals && bothDefensive) {
-      // LOW GOALS: boost Under markets
       if (m.label === "Under 2.5") m.priorityProb *= 1.12;
       if (m.label === "Under 3.5") m.priorityProb *= 1.10;
       if (m.label === "BTTS No") m.priorityProb *= 1.08;
       if (m.label.startsWith("Over")) m.priorityProb *= 0.90;
     }
     if (isHighGoals && bothHighScoring) {
-      // HIGH GOALS: boost Over + BTTS
       if (m.label === "Over 2.5") m.priorityProb *= 1.12;
       if (m.label === "BTTS Yes") m.priorityProb *= 1.10;
       if (m.label === "Over 1.5") m.priorityProb *= 1.08;
       if (m.label.startsWith("Under")) m.priorityProb *= 0.90;
     }
     if (dominantTeam) {
-      // DOMINANT TEAM: boost winner + DC
       const strongerIsHome = homeWin > awayWin;
       if (strongerIsHome && (m.label === "1" || m.label === "DC 1X")) m.priorityProb *= 1.08;
       if (!strongerIsHome && (m.label === "2" || m.label === "DC X2")) m.priorityProb *= 1.08;
     }
   }
 
-  // === CONFLICT FILTER: skip match if top 2 opposing markets are too close ===
-  const overUnder25Diff = Math.abs(adjustedOver25 - adjustedUnder25);
-  const isConflicted = overUnder25Diff < 8 && Math.abs(homeWin - awayWin) < 10;
-
-  // Sort by priority-weighted probability
   allMarkets.sort((a, b) => b.priorityProb - a.priorityProb);
-
-  // Filter: only markets with raw probability >= 60%
   const viableMarkets = allMarkets.filter(m => m.prob >= 60);
-
-  // If no viable market OR conflicted → will get low confidence (filtered by MIN_DISPLAY_CONFIDENCE)
   const bestMarket = viableMarkets.length > 0 ? viableMarkets[0] : allMarkets[0];
   const prediction = bestMarket.label;
   const bestProb = bestMarket.prob;
 
-  // === SECONDARY/ALTERNATIVE PICK ===
-  const altMarket = viableMarkets.length > 1 ? viableMarkets[1] : null;
-
-  // === SCORE ===
+  // === SCORE PREDICTION ===
   const predictedScore = predictScoreV2({
     homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
     prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction :
                 (homeWin >= awayWin ? "1" : "2"),
   });
 
-  // === 1. PROPER VALUE FORMULA (ai_prob - bookmaker_prob) ===
-  let valuePercent = 0;
+  // === D) MARKET INTELLIGENCE (odds alignment) ===
   let bookmakerProb = 0;
   let aiProb = bestProb;
+  let oddsAlignmentAdjust = 0;
   if (odds) {
     if (prediction === "1") { bookmakerProb = odds.homeProb; aiProb = homeWin; }
     else if (prediction === "2") { bookmakerProb = odds.awayProb; aiProb = awayWin; }
     else if (prediction === "X") { bookmakerProb = odds.drawProb; aiProb = draw; }
     else { aiProb = bestProb; bookmakerProb = 50; }
-    valuePercent = aiProb - bookmakerProb;
-  }
 
-  // Value classification:
-  // < 5% → IGNORE (no value)
-  // 5-10% → NORMAL
-  // 10%+ → VALUE BET
-  // 10%+ AND confidence ≥ 75 → STRONG VALUE BET
-  const isValueBet = valuePercent >= 10;
-  const isStrongValueBet = valuePercent >= 10 && bestProb >= 72; // will check final confidence later
+    // Sharp money detection: if odds are very short (< 1.50), market is confident
+    const shortestOdds = Math.min(odds.homeOdds, odds.awayOdds);
+    if (shortestOdds < 1.50) {
+      oddsAlignmentAdjust += 5; // Market is very confident
+    }
 
-  // === 2. ODDS VS AI ALIGNMENT (prevent overconfidence) ===
-  // If AI and bookmaker agree → boost confidence
-  // If AI disagrees strongly with bookmaker → reduce confidence (model may be wrong)
-  let oddsAlignmentAdjust = 0;
-  if (odds) {
-    const aiProbForPick = aiProb;
-    const bookProbForPick = bookmakerProb;
-    const probDiff = Math.abs(aiProbForPick - bookProbForPick);
-    
-    if (probDiff <= 10) {
-      oddsAlignmentAdjust = clamp((10 - probDiff) / 2, 0, 5);
+    // Alignment check
+    const probDiff = Math.abs(aiProb - bookmakerProb);
+    if (probDiff <= 8) {
+      oddsAlignmentAdjust += clamp((8 - probDiff), 0, 5); // AI and market agree
     } else if (probDiff >= 25) {
-      oddsAlignmentAdjust = -clamp((probDiff - 20) / 5, 0, 4); // Was -8, now max -4
-    } else if (probDiff >= 15) {
-      oddsAlignmentAdjust = -clamp((probDiff - 10) / 5, 0, 2); // Was -3, now max -2
+      oddsAlignmentAdjust -= clamp((probDiff - 20) / 5, 0, 4); // Strong disagreement
     }
   }
 
-  // === 3. UNCERTAINTY ZONE (xG 2.2-2.6 = coin flip → NO BET) ===
-  const totalXgForUncertainty = homeXg + awayXg;
-  const isUncertaintyZone = totalXgForUncertainty >= 2.2 && totalXgForUncertainty <= 2.6;
-  // Only apply to Over/Under markets (these are the "coin flip" markets in this zone)
-  const isGoalMarketPick = prediction.includes("Over") || prediction.includes("Under");
-  const uncertaintyPenalty = (isUncertaintyZone && isGoalMarketPick) ? -3 : 0; // Was -8
+  // === VALUE DETECTION ===
+  const value = detectValue(aiProb, bookmakerProb, bestProb);
 
-  // === 4. LEAGUE-SPECIFIC CALIBRATION ===
-  // Different leagues = different styles
-  // Already have self-learning weights above, but add goal-style adjustments
-  let leagueStyleAdjust = 0;
-  if (leagueName) {
-    const ln = leagueName.toLowerCase();
-    // High-scoring leagues → boost Over, penalize Under
-    if (ln.includes("premier league") || ln.includes("bundesliga") || ln.includes("eredivisie")) {
-      if (prediction.includes("Over")) leagueStyleAdjust = 2;
-      else if (prediction.includes("Under")) leagueStyleAdjust = -2;
-    }
-    // Defensive leagues → boost Under, penalize Over
-    if (ln.includes("serie a") && !ln.includes("brazil") || ln.includes("ligue 1")) {
-      if (prediction.includes("Under")) leagueStyleAdjust = 2;
-      else if (prediction.includes("Over")) leagueStyleAdjust = -2;
-    }
-  }
+  // === 🧠 3. NEW CONFIDENCE MODEL (v4 multi-dimensional) ===
+  // 
+  // confidence = (form_diff * 0.20) + (xG_score * 0.25) + (odds_diff * 0.15)
+  //            + (consistency * 0.15) + (tempo_score * 0.15) + (market_signal * 0.10)
 
-  // === 6. MULTI-SIGNAL BOOST (form + xG + odds alignment) ===
-  const predicted = prediction === "1" ? "home" : prediction === "2" ? "away" : "neutral";
-  let signalStrength = 0.5;
-  let signalsAligned = 0;
-  let signalsTotal = 0;
-  if (predicted !== "neutral") {
-    const signals = [
-      { label: "form", dir: homeFormScore > awayFormScore ? "home" : "away" },
-      { label: "quality", dir: homeQualityScore > awayQualityScore ? "home" : "away" },
-      { label: "h2h", dir: homeH2HScore > 55 ? "home" : homeH2HScore < 45 ? "away" : "neutral" },
-      { label: "standings", dir: homeStandingsScore > awayStandingsScore ? "home" : "away" },
-      { label: "odds", dir: odds ? (odds.homeProb > odds.awayProb ? "home" : "away") : "neutral" },
-    ];
-    const nonNeutral = signals.filter(f => f.dir !== "neutral");
-    signalsAligned = nonNeutral.filter(f => f.dir === predicted).length;
-    signalsTotal = nonNeutral.length;
-    signalStrength = signalsTotal > 0 ? signalsAligned / signalsTotal : 0.5;
-  }
-
-  // Multi-signal boost: if form + xG + odds ALL agree → +10% confidence
-  // If they disagree → -10%
-  let multiSignalBoost = 0;
-  if (signalsTotal >= 3) {
-    if (signalStrength >= 0.8) multiSignalBoost = 8;
-    else if (signalStrength >= 0.6) multiSignalBoost = 4;
-    else if (signalStrength <= 0.3) multiSignalBoost = -5; // Was -10
-    else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
-  }
-
-  // === NEW CONFIDENCE FORMULA (v3.1) ===
-  // Base: best market probability (strongest signal of how predictable the match is)
-  // Modifiers: form diff, xG gap, odds alignment, consistency
-  
-  // FORM component: normalize last 5 match points to 0-100, take absolute diff
   const homeFormPoints5 = homeForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
   const awayFormPoints5 = awayForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
   const homeFormNorm = (homeFormPoints5 / 15) * 100;
   const awayFormNorm = (awayFormPoints5 / 15) * 100;
   const formDiff = Math.abs(homeFormNorm - awayFormNorm);
 
-  // xG component
   const xgDiff = Math.abs(homeXg - awayXg);
   const xgScore = Math.min(xgDiff * 40, 100);
 
-  // ODDS component
   let oddsDiff = 0;
   if (odds) {
     oddsDiff = Math.abs(odds.homeProb - odds.awayProb);
@@ -1267,48 +1417,54 @@ function calculatePrediction(
   }
   const oddsComponent = Math.min(oddsDiff, 100);
 
-  // CONSISTENCY component: how stable is the team's form?
-  const homeConsistency = homeForm.slice(0, 5).length > 0
-    ? (() => {
-        const results = homeForm.slice(0, 5).map(m => m.result);
-        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
-          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
-        return (results.filter(x => x === mostCommon).length / results.length) * 100;
-      })()
-    : 50;
-  const awayConsistency = awayForm.slice(0, 5).length > 0
-    ? (() => {
-        const results = awayForm.slice(0, 5).map(m => m.result);
-        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
-          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
-        return (results.filter(x => x === mostCommon).length / results.length) * 100;
-      })()
-    : 50;
-  const consistencyScore = (homeConsistency + awayConsistency) / 2;
+  // Consistency: how stable is each team's form?
+  const calcConsistency = (form: FormMatch[]) => {
+    const last5 = form.slice(0, 5);
+    if (last5.length === 0) return 50;
+    const results = last5.map(m => m.result);
+    const mostCommon = (["W", "D", "L"] as const).reduce((best, r) =>
+      results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W" as const);
+    return (results.filter(x => x === mostCommon).length / results.length) * 100;
+  };
+  const consistencyScore = (calcConsistency(homeForm) + calcConsistency(awayForm)) / 2;
 
-  // BASE: start from the best market probability (the strongest indicator)
-  // This ensures matches with clear favorites get higher base confidence
-  const baseConfidence = bestProb;
-  
-  // MODIFIER: how much do the data signals support the pick? (scaled -15 to +15)
-  const formBonus = clamp((formDiff - 15) * 0.3, -5, 10);     // +10 if big form gap
-  const xgBonus = clamp((xgScore - 10) * 0.25, -3, 8);        // +8 if big xG gap
-  const oddsBonus = clamp((oddsComponent - 15) * 0.2, -3, 8);  // +8 if odds strongly agree
-  const consistencyBonus = clamp((consistencyScore - 50) * 0.2, -5, 6); // +6 if very consistent form
+  // Market signal: how much does the market agree with our pick?
+  const marketSignal = odds ? clamp(100 - Math.abs(aiProb - bookmakerProb) * 3, 0, 100) : 50;
+
+  // NEW v4 formula
+  const confFormComponent = formDiff * 0.20;
+  const confXgComponent = xgScore * 0.25;
+  const confOddsComponent = oddsComponent * 0.15;
+  const confConsistencyComponent = consistencyScore * 0.15;
+  const confTempoComponent = tempo.score * 0.15;
+  const confMarketComponent = marketSignal * 0.10;
 
   let confidence = Math.round(
-    baseConfidence + formBonus + xgBonus + oddsBonus + consistencyBonus
+    confFormComponent + confXgComponent + confOddsComponent +
+    confConsistencyComponent + confTempoComponent + confMarketComponent
   );
 
-  // === BOOST RULES ===
-  if (xgDiff > 1) confidence += 10;
-  if (formDiff > 30) confidence += 10;
-  if (odds && Math.min(odds.homeOdds, odds.awayOdds) < 1.70) confidence += 10;
+  // === 7. ULTRA BOOST ===
+  const ultra = checkUltraBoost(formDiff, xgDiff, odds ?? null);
+  confidence += ultra.boost;
 
-  // === PENALTY RULES (softened) ===
-  if ((homeXg + awayXg) < 1.5) confidence -= 5; // Only penalize very low xG
-  
-  // === CLOSE-CALL PENALTY (softened) ===
+  // === BOOST RULES ===
+  confidence += oddsAlignmentAdjust;
+  confidence += context.confidenceBoost;
+
+  // Value bet boost: if AI sees value the market doesn't, small boost
+  if (value.isValueBet) confidence += 5;
+  if (value.isStrongValue) confidence += 3; // additional
+
+  // === 6. DATA QUALITY FILTER ===
+  const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId ?? 0);
+  const dataQuality = calculateDataQuality(homeStats, awayStats, homeForm, awayForm, odds ?? null, isQualityLeague);
+  confidence += dataQuality.penalty;
+
+  // === PENALTY RULES ===
+  if (totalXg < 1.5) confidence -= 5;
+
+  // Close-call penalty
   const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
   if (sortedForCloseCall.length >= 2) {
     const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
@@ -1318,20 +1474,21 @@ function calculatePrediction(
   // Data quality caps
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
   const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
-  
   if (!hasMinMatches) confidence = Math.min(confidence, 70);
   if (!hasSeasonStats) confidence = Math.min(confidence, 65);
 
-  // Clamp to realistic range
+  // Non-quality leagues capped
+  if (!isQualityLeague) confidence = Math.min(confidence, PREMIUM_MIN_CONFIDENCE - 1);
+
   confidence = Math.round(clamp(confidence, 30, 95));
 
-  // === RISK (aligned with new tiers) ===
+  // === RISK ===
   let riskLevel: "low" | "medium" | "high";
   if (confidence >= 76) riskLevel = "low";
   else if (confidence >= 60) riskLevel = "medium";
   else riskLevel = "high";
 
-  // === RICH ANALYSIS ===
+  // === 8. OUTPUT UPGRADE — RICH ANALYSIS ===
   const confidenceLabel = confidence >= 78 ? "HIGH" : confidence >= 65 ? "MEDIUM" : "LOW";
   const xgTotal = (homeXg + awayXg).toFixed(1);
   const analysisReasons: string[] = [];
@@ -1352,7 +1509,6 @@ function calculatePrediction(
   }
   if (style.label !== "Balanced matchup") analysisReasons.push(style.label);
   
-  // Recent form insight
   const homeRecentWins = homeForm.slice(0, 5).filter(m => m.result === "W").length;
   const awayRecentWins = awayForm.slice(0, 5).filter(m => m.result === "W").length;
   if (homeRecentWins >= 4) analysisReasons.push(`${homeTeamName}: ${homeRecentWins}/5 recent wins`);
@@ -1360,14 +1516,31 @@ function calculatePrediction(
 
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
+  // Ultra tag
+  if (ultra.isUltra) analysisReasons.push(`🔥 ULTRA STRONG: Form + xG + Odds all converge`);
+
+  // Value indicator
+  if (value.isStrongValue) analysisReasons.push(`💰 STRONG VALUE: AI sees +${Math.round(value.valuePercent)}% edge over market`);
+  else if (value.isValueBet) analysisReasons.push(`💰 VALUE BET: +${Math.round(value.valuePercent)}% above market`);
+
+  // Tempo indicator
+  analysisReasons.push(`📊 Match Tempo: ${tempo.label}`);
+
+  // League profile
+  if (leagueProfile.isOverLeague) analysisReasons.push(`📈 High-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
+  if (leagueProfile.isUnderLeague) analysisReasons.push(`📉 Low-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
+
   const analysis = generateAnalysisV2({
     homeTeamName, awayTeamName, prediction,
     homeWin, draw, awayWin,
     homeFormScore, awayFormScore,
     homeQualityScore, awayQualityScore,
-    confidenceLabel, valuePercent, xgTotal,
+    confidenceLabel, valuePercent: value.valuePercent, xgTotal,
     homeXg, awayXg, bestProb,
     analysisReasons, style,
+    tempoLabel: tempo.label,
+    valueLabel: value.label,
+    isUltra: ultra.isUltra,
   });
 
   return {
