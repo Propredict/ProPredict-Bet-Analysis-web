@@ -562,6 +562,11 @@ export default function MatchPreviewDetail() {
             ) : (
               /* Locked state */
               <div className="text-center space-y-3 py-2">
+                {heroPick && (
+                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs font-bold">
+                    {heroPick.emoji} {heroPick.label} — {heroPick.pct}%
+                  </Badge>
+                )}
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Sparkles className="h-4 w-4 text-emerald-400" />
                   <span className="text-sm text-white/60">Confidence</span>
