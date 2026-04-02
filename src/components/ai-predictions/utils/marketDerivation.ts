@@ -62,11 +62,32 @@ export interface GoalMarketProbs {
   bttsNo: number;
 }
 
+// Clamp helper: ensure minimum 5% floor on all probabilities
+function clampProb(n: number, min = 5, max = 95): number {
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
 export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
   const score = parseScore(prediction.predicted_score);
-  // Estimate xG from predicted score with slight regression to mean (1.3 goals)
-  const homeXg = score ? Math.max(0.4, score.home * 0.85 + 0.2) : 1.3;
-  const awayXg = score ? Math.max(0.3, score.away * 0.85 + 0.15) : 1.0;
+  
+  // Use last_home_goals / last_away_goals as xG if available (from backend engine)
+  const lastHomeGoals = (prediction as any).last_home_goals;
+  const lastAwayGoals = (prediction as any).last_away_goals;
+  
+  let homeXg: number, awayXg: number;
+  if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
+    homeXg = Math.max(0.4, lastHomeGoals);
+    awayXg = Math.max(0.3, lastAwayGoals);
+  } else if (score) {
+    homeXg = Math.max(0.4, score.home * 0.85 + 0.2);
+    awayXg = Math.max(0.3, score.away * 0.85 + 0.15);
+  } else {
+    // Fallback: derive from 1X2 probabilities instead of hard defaults
+    const hw = prediction.home_win ?? 40;
+    const aw = prediction.away_win ?? 30;
+    homeXg = Math.max(0.5, hw / 30);  // e.g. 45% → 1.5 xG
+    awayXg = Math.max(0.4, aw / 30);  // e.g. 35% → 1.17 xG
+  }
 
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
@@ -82,15 +103,21 @@ export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketPr
     }
   }
 
+  // Apply minimum 5% floor — NEVER return 0
+  const o15 = clampProb(over15 * 100);
+  const o25 = clampProb(over25 * 100);
+  const o35 = clampProb(over35 * 100);
+  const by = clampProb(bttsYes * 100);
+
   return {
-    over15: Math.round(over15 * 100),
-    over25: Math.round(over25 * 100),
-    over35: Math.round(over35 * 100),
-    under15: Math.round((1 - over15) * 100),
-    under25: Math.round((1 - over25) * 100),
-    under35: Math.round((1 - over35) * 100),
-    bttsYes: Math.round(bttsYes * 100),
-    bttsNo: Math.round((1 - bttsYes) * 100),
+    over15: o15,
+    over25: o25,
+    over35: o35,
+    under15: clampProb(100 - o15),
+    under25: clampProb(100 - o25),
+    under35: clampProb(100 - o35),
+    bttsYes: by,
+    bttsNo: clampProb(100 - by),
   };
 }
 
@@ -310,23 +337,28 @@ interface MarketCandidate {
  * against conservative Under markets that naturally dominate Poisson output.
  */
 function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
-  const probs = calculateGoalMarketProbs(prediction);
+  let hw = prediction.home_win ?? 33;
+  let aw = prediction.away_win ?? 33;
+  let d = prediction.draw ?? 34;
+  
+  // Normalize 1X2 to always sum to 100, with 5% floor
+  hw = Math.max(5, hw);
+  aw = Math.max(5, aw);
+  d = Math.max(5, d);
+  const total1x2 = hw + aw + d;
+  hw = Math.round((hw / total1x2) * 100);
+  aw = Math.round((aw / total1x2) * 100);
+  d = 100 - hw - aw;
 
-  // Normalize 1X2 probabilities (pairwise vs strongest rival)
-  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+  const probs = calculateGoalMarketProbs(prediction);
 
   // +5 bonus for 1X2 markets to prevent Under 2.5 from always dominating
   const PRIMARY_BOOST = 5;
 
   const candidates: MarketCandidate[] = [
-    { type: "home_win", prob: norm1 + PRIMARY_BOOST },
-    { type: "away_win", prob: norm2 + PRIMARY_BOOST },
-    { type: "draw", prob: normX + PRIMARY_BOOST },
+    { type: "home_win", prob: hw + PRIMARY_BOOST },
+    { type: "away_win", prob: aw + PRIMARY_BOOST },
+    { type: "draw", prob: d + PRIMARY_BOOST },
     { type: "over25", prob: probs.over25 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
@@ -350,17 +382,18 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
  */
 export function getBestMarketProbability(prediction: AIPrediction): number {
   const bestType = getBestPickType(prediction);
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
+  let hw = Math.max(5, prediction.home_win ?? 33);
+  let aw = Math.max(5, prediction.away_win ?? 33);
+  let d = Math.max(5, prediction.draw ?? 34);
+  const total1x2 = hw + aw + d;
+  hw = Math.round((hw / total1x2) * 100);
+  aw = Math.round((aw / total1x2) * 100);
+  d = 100 - hw - aw;
+  
   const probs = calculateGoalMarketProbs(prediction);
 
-  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
-
   const rawProbs: Record<MarketType, number> = {
-    home_win: norm1, away_win: norm2, draw: normX,
+    home_win: hw, away_win: aw, draw: d,
     over25: probs.over25, under25: probs.under25,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
