@@ -2134,6 +2134,7 @@ async function markPredictionLocked(
   let fallbackHomeWin = 33;
   let fallbackDraw = 34;
   let fallbackAwayWin = 33;
+  let fallbackPredictedScore = "1-1"; // ALWAYS provide a score so Poisson works
   let fallbackAnalysis = `Pending data from API-Football. ${reason}`;
 
   // If odds exist, use them as fallback so cards don't all show 33/34/33
@@ -2152,15 +2153,20 @@ async function markPredictionLocked(
 
       fallbackConfidence = Math.max(50, Math.max(odds.homeProb, odds.drawProb, odds.awayProb));
       fallbackAnalysis = `Limited team-form data. Fallback to bookmaker 1X2 odds (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). ${reason}`;
+
+      // Generate a predicted score from implied odds
+      const impliedHomeXg = clamp(odds.homeProb / 35, 0.4, 2.5);
+      const impliedAwayXg = clamp(odds.awayProb / 35, 0.3, 2.0);
+      fallbackPredictedScore = `${Math.round(impliedHomeXg)}-${Math.round(impliedAwayXg)}`;
     }
   }
 
   const { error } = await supabase
     .from("ai_predictions")
     .update({
-      is_locked: true,
+      is_locked: false, // Don't lock — still show data with fallback values
       prediction: fallbackPrediction,
-      predicted_score: null,
+      predicted_score: fallbackPredictedScore,
       confidence: fallbackConfidence,
       home_win: fallbackHomeWin,
       draw: fallbackDraw,
