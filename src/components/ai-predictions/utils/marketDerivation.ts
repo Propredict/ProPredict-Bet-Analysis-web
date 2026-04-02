@@ -67,27 +67,31 @@ function clampProb(n: number, min = 5, max = 95): number {
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
-  const score = parseScore(prediction.predicted_score);
-  
-  // Use last_home_goals / last_away_goals as xG if available (from backend engine)
+/**
+ * Get the xG values used for Poisson calculations, ensuring consistency
+ * across all market derivations (goals, BTTS, correct scores, predicted score).
+ */
+function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number } {
   const lastHomeGoals = (prediction as any).last_home_goals;
   const lastAwayGoals = (prediction as any).last_away_goals;
   
-  let homeXg: number, awayXg: number;
   if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
-    homeXg = Math.max(0.4, lastHomeGoals);
-    awayXg = Math.max(0.3, lastAwayGoals);
-  } else if (score) {
-    homeXg = Math.max(0.4, score.home * 0.85 + 0.2);
-    awayXg = Math.max(0.3, score.away * 0.85 + 0.15);
-  } else {
-    // Fallback: derive from 1X2 probabilities instead of hard defaults
-    const hw = prediction.home_win ?? 40;
-    const aw = prediction.away_win ?? 30;
-    homeXg = Math.max(0.5, hw / 30);  // e.g. 45% → 1.5 xG
-    awayXg = Math.max(0.4, aw / 30);  // e.g. 35% → 1.17 xG
+    return { homeXg: Math.max(0.4, lastHomeGoals), awayXg: Math.max(0.3, lastAwayGoals) };
   }
+  
+  const score = parseScore(prediction.predicted_score);
+  if (score) {
+    return { homeXg: Math.max(0.4, score.home * 0.85 + 0.2), awayXg: Math.max(0.3, score.away * 0.85 + 0.15) };
+  }
+  
+  // Fallback: derive from 1X2 probabilities
+  const hw = prediction.home_win ?? 40;
+  const aw = prediction.away_win ?? 30;
+  return { homeXg: Math.max(0.5, hw / 30), awayXg: Math.max(0.4, aw / 30) };
+}
+
+export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
+  const { homeXg, awayXg } = getXgValues(prediction);
 
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
