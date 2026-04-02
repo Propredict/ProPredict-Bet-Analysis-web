@@ -62,11 +62,32 @@ export interface GoalMarketProbs {
   bttsNo: number;
 }
 
+// Clamp helper: ensure minimum 5% floor on all probabilities
+function clampProb(n: number, min = 5, max = 95): number {
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
 export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
   const score = parseScore(prediction.predicted_score);
-  // Estimate xG from predicted score with slight regression to mean (1.3 goals)
-  const homeXg = score ? Math.max(0.4, score.home * 0.85 + 0.2) : 1.3;
-  const awayXg = score ? Math.max(0.3, score.away * 0.85 + 0.15) : 1.0;
+  
+  // Use last_home_goals / last_away_goals as xG if available (from backend engine)
+  const lastHomeGoals = (prediction as any).last_home_goals;
+  const lastAwayGoals = (prediction as any).last_away_goals;
+  
+  let homeXg: number, awayXg: number;
+  if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
+    homeXg = Math.max(0.4, lastHomeGoals);
+    awayXg = Math.max(0.3, lastAwayGoals);
+  } else if (score) {
+    homeXg = Math.max(0.4, score.home * 0.85 + 0.2);
+    awayXg = Math.max(0.3, score.away * 0.85 + 0.15);
+  } else {
+    // Fallback: derive from 1X2 probabilities instead of hard defaults
+    const hw = prediction.home_win ?? 40;
+    const aw = prediction.away_win ?? 30;
+    homeXg = Math.max(0.5, hw / 30);  // e.g. 45% → 1.5 xG
+    awayXg = Math.max(0.4, aw / 30);  // e.g. 35% → 1.17 xG
+  }
 
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
@@ -82,15 +103,21 @@ export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketPr
     }
   }
 
+  // Apply minimum 5% floor — NEVER return 0
+  const o15 = clampProb(over15 * 100);
+  const o25 = clampProb(over25 * 100);
+  const o35 = clampProb(over35 * 100);
+  const by = clampProb(bttsYes * 100);
+
   return {
-    over15: Math.round(over15 * 100),
-    over25: Math.round(over25 * 100),
-    over35: Math.round(over35 * 100),
-    under15: Math.round((1 - over15) * 100),
-    under25: Math.round((1 - over25) * 100),
-    under35: Math.round((1 - over35) * 100),
-    bttsYes: Math.round(bttsYes * 100),
-    bttsNo: Math.round((1 - bttsYes) * 100),
+    over15: o15,
+    over25: o25,
+    over35: o35,
+    under15: clampProb(100 - o15),
+    under25: clampProb(100 - o25),
+    under35: clampProb(100 - o35),
+    bttsYes: by,
+    bttsNo: clampProb(100 - by),
   };
 }
 

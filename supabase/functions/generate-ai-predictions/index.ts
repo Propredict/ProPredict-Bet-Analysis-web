@@ -2467,7 +2467,8 @@ async function processBatch(
         fetchOdds(fixtureIdStr, apiKey),
       ]);
 
-      if (!homeStats || !awayStats) {
+      if (!homeStats && !awayStats) {
+        // Both stats missing — use fallback but don't skip entirely
         await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`, {
           fixtureId: fixtureIdStr,
           apiKey,
