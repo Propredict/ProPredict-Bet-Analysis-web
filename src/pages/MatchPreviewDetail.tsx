@@ -12,6 +12,7 @@ import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAn
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 
 interface PredictionRouteState {
   unlocked?: boolean;
