@@ -70,17 +70,16 @@ const QUALITY_LEAGUE_IDS = new Set([
   62,   // Ligue 2 (France)
 ]);
 
-// ============ WEIGHTING CONSTANTS ============
-const WEIGHT_FORM = 0.25;         // 25% - Recent form (last 10 real matches)
-const WEIGHT_QUALITY = 0.18;      // 18% - Team quality (season stats)
-const WEIGHT_SQUAD = 0.10;        // 10% - Squad strength / goal diff
-const WEIGHT_HOME = 0.08;         // 8%  - Home advantage (per-league dynamic)
-const WEIGHT_H2H = 0.06;          // 6%  - Head-to-Head history (small sample)
+// ============ WEIGHTING CONSTANTS (v4 multi-dimensional) ============
+const WEIGHT_FORM = 0.20;         // 20% - Recent form (goals-based quality)
+const WEIGHT_QUALITY = 0.15;      // 15% - Team quality (season stats)
+const WEIGHT_SQUAD = 0.08;        // 8%  - Squad strength / goal diff
+const WEIGHT_HOME = 0.07;         // 7%  - Home advantage (per-league dynamic)
+const WEIGHT_H2H = 0.05;          // 5%  - Head-to-Head history
 const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
-const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal (strongest calibrator)
-// NOTE: Odds increased from 10→15% because bookmakers have large analyst teams.
-// H2H reduced from 12→6% because 3-5 matches is statistically insignificant.
-// Form reduced from 30→25% to give more weight to odds alignment.
+const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal
+const WEIGHT_TEMPO = 0.10;        // 10% - Match intensity/tempo score
+const WEIGHT_LEAGUE_PROFILE = 0.10; // 10% - League-specific goal/btts tendencies
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
