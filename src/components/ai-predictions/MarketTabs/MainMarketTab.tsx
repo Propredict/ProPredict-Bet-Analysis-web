@@ -74,17 +74,24 @@ const ONE_X_TWO: MarketType[] = ["home_win", "away_win", "draw"];
 
 /** Get raw (display) probabilities for all markets */
 function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
+  let hw = Math.max(0, prediction.home_win ?? 0);
+  let aw = Math.max(0, prediction.away_win ?? 0);
+  let d = Math.max(0, prediction.draw ?? 0);
   const probs = calculateGoalMarketProbs(prediction);
 
-  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+  const total = hw + aw + d;
+  if (total > 0) {
+    hw = Math.round((hw / total) * 100);
+    aw = Math.round((aw / total) * 100);
+    d = 100 - hw - aw;
+  } else {
+    hw = 33;
+    d = 34;
+    aw = 33;
+  }
 
   return {
-    home_win: norm1, away_win: norm2, draw: normX,
+    home_win: hw, away_win: aw, draw: d,
     over25: probs.over25, under25: probs.under25,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
