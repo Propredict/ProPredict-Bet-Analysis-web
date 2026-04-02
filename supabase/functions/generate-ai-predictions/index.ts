@@ -2819,6 +2819,22 @@ async function handleBatchRegenerate(
           const f = fixtureById.get(id);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
 
+          // Generate varied placeholder probabilities using fixture ID hash
+          // so cards don't all show identical 33/34/33
+          let hash = 0;
+          for (let i = 0; i < id.length; i++) {
+            hash = ((hash << 5) - hash) + id.charCodeAt(i);
+            hash |= 0;
+          }
+          const homeBase = 40 + Math.abs(hash % 16);      // 40-55
+          const drawBase = 18 + Math.abs((hash >> 4) % 11); // 18-28
+          const awayBase = 100 - homeBase - drawBase;
+          const swapBias = (hash >> 8) % 3;
+          const hw = swapBias === 1 ? awayBase : homeBase;
+          const dr = drawBase;
+          const aw = swapBias === 1 ? homeBase : awayBase;
+          const pred = hw >= aw ? "1" : "2";
+
           return {
             match_id: id,
             league: f?.league?.name ?? null,
@@ -2830,12 +2846,12 @@ async function handleBatchRegenerate(
             result_status: "pending",
             is_premium: false,
             is_locked: true,
-            prediction: "X",
-            predicted_score: "1-1",
+            prediction: pred,
+            predicted_score: pred === "1" ? "1-0" : "0-1",
             confidence: 50,
-            home_win: 33,
-            draw: 34,
-            away_win: 33,
+            home_win: hw,
+            draw: dr,
+            away_win: aw,
             risk_level: "high",
             analysis: "Pending regeneration...",
           };
