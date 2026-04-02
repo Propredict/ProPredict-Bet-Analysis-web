@@ -49,7 +49,8 @@ export default function MultiRiskMatches() {
     }
   }, [planRequired, plan]);
 
-  const multiRiskTickets = tickets?.filter((t: any) => t.category === "multi_risk") || [];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const multiRiskTickets = tickets?.filter((t: any) => t.category === "multi_risk" && t.ticket_date === today) || [];
   const unlockedCount = multiRiskTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 

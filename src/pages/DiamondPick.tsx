@@ -46,7 +46,8 @@ export default function DiamondPick() {
     }
   }, [planRequired, plan]);
 
-  const diamondTips = tips?.filter((t: any) => t.category === "diamond_pick") || [];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const diamondTips = tips?.filter((t: any) => t.category === "diamond_pick" && t.tip_date === today) || [];
   const unlockedCount = diamondTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
