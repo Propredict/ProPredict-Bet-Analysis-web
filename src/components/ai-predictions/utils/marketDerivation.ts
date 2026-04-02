@@ -194,30 +194,34 @@ export function getRiskBadge(
  * Derive all prediction markets from AI analysis data
  */
 export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
-  const score = parseScore(prediction.predicted_score);
-  const totalGoals = score ? score.home + score.away : 0;
-  const bothScored = score ? score.home > 0 && score.away > 0 : false;
+  // Use Poisson-derived data for consistency with Goals/BTTS tabs
+  const goalProbs = calculateGoalMarketProbs(prediction);
+  const topScores = calculateTopCorrectScores(prediction);
+  const derivedScore = topScores.length > 0 ? topScores[0].score : null;
+  const parsedDerived = derivedScore ? parseScore(derivedScore) : null;
+  const totalGoals = parsedDerived ? parsedDerived.home + parsedDerived.away : 2;
+  const bothScored = parsedDerived ? parsedDerived.home > 0 && parsedDerived.away > 0 : goalProbs.bttsYes > 50;
   
-  // Goals markets derived from predicted_score
+  // Goals markets derived from Poisson probabilities (consistent with Goals tab)
   const goals = {
     over15: {
-      recommended: totalGoals > 1.5,
-      value: totalGoals > 1.5 ? "Yes" : "No",
+      recommended: goalProbs.over15 > 55,
+      value: goalProbs.over15 > 55 ? "Yes" : "No",
     },
     over25: {
-      recommended: totalGoals > 2.5,
-      value: totalGoals > 2.5 ? "Yes" : "No",
+      recommended: goalProbs.over25 > 55,
+      value: goalProbs.over25 > 55 ? "Yes" : "No",
     },
     under35: {
-      recommended: totalGoals < 3.5,
-      value: totalGoals < 3.5 ? "Yes" : "No",
+      recommended: goalProbs.over35 < 45,
+      value: goalProbs.over35 < 45 ? "Yes" : "No",
     },
   };
 
-  // BTTS derived from score
+  // BTTS derived from Poisson probabilities (consistent with BTTS tab)
   const btts = {
-    gg: { recommended: bothScored },
-    ng: { recommended: !bothScored },
+    gg: { recommended: goalProbs.bttsYes > 50 },
+    ng: { recommended: goalProbs.bttsNo > 50 },
   };
 
   // Double Chance derived from main prediction (use 1X2 probabilities for goal market predictions)
@@ -240,34 +244,34 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     recommended: true,
   };
 
-  // Combos - max 2 options based on prediction
+  // Combos - max 2 options based on prediction + Poisson probabilities
   const combos: { label: string; recommended: boolean }[] = [];
   
   if (effectivePrediction === "1") {
-    // Home win combos
-    if (totalGoals > 1.5) {
+    if (goalProbs.over15 > 55) {
       combos.push({ label: "1 & Over 1.5", recommended: true });
     }
-    if (totalGoals > 2.5) {
+    if (goalProbs.over25 > 55) {
       combos.push({ label: "1 & Over 2.5", recommended: true });
     } else if (combos.length < 2) {
-      combos.push({ label: "1 & Over 1.5", recommended: totalGoals >= 2 });
+      combos.push({ label: "1 & Under 2.5", recommended: goalProbs.under25 > 50 });
     }
   } else if (effectivePrediction === "2") {
-    // Away win combos
-    if (totalGoals > 1.5) {
+    if (goalProbs.over15 > 55) {
       combos.push({ label: "2 & Over 1.5", recommended: true });
     }
-    if (totalGoals > 2.5) {
+    if (goalProbs.over25 > 55) {
       combos.push({ label: "2 & Over 2.5", recommended: true });
     } else if (combos.length < 2) {
-      combos.push({ label: "2 & Over 1.5", recommended: totalGoals >= 2 });
+      combos.push({ label: "2 & Under 2.5", recommended: goalProbs.under25 > 50 });
     }
   } else {
     // Draw combos
-    combos.push({ label: "X & Over 1.5", recommended: totalGoals >= 2 });
-    if (totalGoals >= 2) {
-      combos.push({ label: "X & Under 3.5", recommended: totalGoals < 4 });
+    combos.push({ label: "X & Over 1.5", recommended: goalProbs.over15 > 55 });
+    if (goalProbs.over35 < 45) {
+      combos.push({ label: "X & Under 3.5", recommended: true });
+    } else {
+      combos.push({ label: "X & Over 2.5", recommended: goalProbs.over25 > 55 });
     }
   }
 
