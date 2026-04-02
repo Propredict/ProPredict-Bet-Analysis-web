@@ -51,16 +51,15 @@ function getLeaguePriority(league: string | null): number {
   return entry ? entry[1] : 999;
 }
 
-function getRiskColor(confidence: number | null) {
-  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", dot: "bg-muted-foreground" };
-  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
-  if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
+function getRiskColor(bestPickPct: number) {
+  if (bestPickPct >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
+  if (bestPickPct >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
   return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
 }
 
-function getRiskRating(confidence: number): string {
-  if (confidence >= 80) return "low";
-  if (confidence >= 65) return "medium";
+function getRiskRating(bestPickPct: number): string {
+  if (bestPickPct >= 80) return "low";
+  if (bestPickPct >= 65) return "medium";
   return "high";
 }
 
@@ -169,7 +168,7 @@ export default function MatchPreviews() {
         match_date: p.match_date,
         match_time: p.match_time,
         confidence: p.confidence ?? 0,
-        risk_rating: getRiskRating(p.confidence ?? 0),
+        risk_rating: getRiskRating(bestPick.pct),
         home_win: p.home_win,
         away_win: p.away_win,
         draw: p.draw,
@@ -253,7 +252,7 @@ export default function MatchPreviews() {
           <div className="space-y-4">
             {topMatches.map((match) => {
               const rank = match.rank;
-              const risk = getRiskColor(match.confidence);
+              const risk = getRiskColor(match.bestPick?.pct ?? match.confidence);
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const rankStyle = getRankStyle(rank);
