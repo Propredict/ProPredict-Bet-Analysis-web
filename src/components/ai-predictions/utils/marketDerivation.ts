@@ -417,7 +417,7 @@ export function getTierFromConfidence(confidence: number): "free" | "pro" | "pre
  * Simple tier from market probability (fallback when confidence not available)
  */
 export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
-  if (bestProb >= 76) return "premium";
-  if (bestProb >= 60) return "pro";
+  if (bestProb >= 78) return "premium";
+  if (bestProb >= 65) return "pro";
   return "free";
 }
