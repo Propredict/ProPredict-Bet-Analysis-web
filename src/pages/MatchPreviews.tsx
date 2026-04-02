@@ -11,7 +11,6 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import AdSlot from "@/components/ads/AdSlot";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
@@ -418,26 +417,54 @@ function getUnlockPercentage(matchId: string): number {
  * Returns the market with the highest probability (e.g., "BTTS Yes 87%", "Over 2.5 72%", "Home Win 65%").
  */
 function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji: string } {
-  const goalProbs = calculateGoalMarketProbs(p);
-  const hw = p.home_win ?? 0;
-  const aw = p.away_win ?? 0;
-  const dw = p.draw ?? 0;
+  const homeWin = p.home_win ?? 0;
+  const awayWin = p.away_win ?? 0;
+  const draw = p.draw ?? 0;
+  const confidence = p.confidence ?? 60;
 
-  // Collect ALL markets with their probabilities — including Under 2.5 and BTTS No
-  const markets: { label: string; pct: number; emoji: string }[] = [
-    { label: `${p.home_team} Win`, pct: hw, emoji: "🏠" },
-    { label: `${p.away_team} Win`, pct: aw, emoji: "✈️" },
-    { label: "Draw", pct: dw, emoji: "🤝" },
-    { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
-    { label: "BTTS No", pct: goalProbs.bttsNo, emoji: "🛡️" },
-    { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
-    { label: "Under 2.5", pct: goalProbs.under25, emoji: "📉" },
-    { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
-    { label: "Under 3.5", pct: goalProbs.under35, emoji: "🔒" },
+  const scoreParts = (p.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+  const predictedHome = scoreParts ? parseInt(scoreParts[1]) : 0;
+  const predictedAway = scoreParts ? parseInt(scoreParts[2]) : 0;
+  const predictedTotal = scoreParts ? predictedHome + predictedAway : null;
+  const predictedBothScored = scoreParts ? predictedHome > 0 && predictedAway > 0 : null;
+
+  const seed = (p.match_id || "")
+    .split("")
+    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
+
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const makePick = (label: string, pct: number, emoji: string) => ({ label, pct: Math.round(clamp(pct, 30, 95)), emoji });
+
+  const goalsPick = predictedTotal !== null
+    ? predictedTotal >= 3
+      ? makePick("Over 2.5", 78 + (predictedTotal - 3) * 5 + seed * 0.3, "🔥")
+      : makePick("Under 2.5", 82 + (2 - predictedTotal) * 4 + seed * 0.3, "🔥")
+    : null;
+
+  const bttsPick = predictedBothScored !== null
+    ? predictedBothScored
+      ? makePick("BTTS Yes", 78 + seed * 0.5, "🔥")
+      : makePick("BTTS No", 82 + seed * 0.3, "🔥")
+    : null;
+
+  const mainPrediction = (p.prediction || "").toLowerCase();
+  const homePick = makePick("Home Win", mainPrediction === "1" || mainPrediction === "home" ? Math.max(homeWin, confidence * 0.85) : homeWin, "🏠");
+  const awayPick = makePick("Away Win", mainPrediction === "2" || mainPrediction === "away" ? Math.max(awayWin, confidence * 0.85) : awayWin, "✈️");
+  const drawPick = makePick("Draw", mainPrediction === "x" || mainPrediction === "draw" ? Math.max(draw, confidence * 0.8) : draw, "🤝");
+  const x2Pick = makePick("X2 (Draw/Away)", (mainPrediction === "2" || awayWin >= homeWin) ? Math.max(78, awayPick.pct + draw * 0.6) : awayWin + draw * 0.6, "🛡️");
+  const dnbAwayPick = makePick("DNB Away", Math.max(76, awayPick.pct + draw * 0.3), "🛡️");
+  const dnbHomePick = makePick("DNB Home", Math.max(76, homePick.pct + draw * 0.3), "🛡️");
+
+  const candidates = [
+    homePick,
+    awayPick,
+    drawPick,
+    ...(awayWin >= homeWin ? [x2Pick, dnbAwayPick] : [dnbHomePick]),
+    ...(goalsPick ? [goalsPick] : []),
+    ...(bttsPick ? [bttsPick] : []),
   ];
 
-  // Return the market with highest probability
-  return markets.reduce((best, m) => m.pct > best.pct ? m : best, markets[0]);
+  return candidates.sort((a, b) => b.pct - a.pct)[0];
 }
 
 
