@@ -252,7 +252,7 @@ export default function MatchPreviews() {
           <div className="space-y-4">
             {topMatches.map((match) => {
               const rank = match.rank;
-              const risk = getRiskColor(match.confidence);
+              const risk = getRiskColor(match.bestPick?.pct ?? match.confidence);
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const rankStyle = getRankStyle(rank);
