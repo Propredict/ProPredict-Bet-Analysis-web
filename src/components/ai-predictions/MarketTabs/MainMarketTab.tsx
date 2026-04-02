@@ -196,8 +196,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             />
           </div>
 
-          {/* AI Tags — badges for tempo, value, market signal, safe combo */}
-          {(parsedTags.tags.length > 0) && (
+          {/* AI Tags — badges for tempo, value, market signal, safe combo — PREMIUM only */}
+          {displayTier === "premium" && parsedTags.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-0.5">
               {parsedTags.isUltra && (
                 <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
