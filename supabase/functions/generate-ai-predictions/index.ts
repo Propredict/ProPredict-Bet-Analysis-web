@@ -2261,7 +2261,7 @@ async function processBatch(
       // Non-quality leagues get capped confidence (can't reach PREMIUM)
       const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId);
       if (!isQualityLeague && newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
-        newPrediction.confidence = PREMIUM_MIN_CONFIDENCE - 1; // Cap at 84%
+        newPrediction.confidence = PREMIUM_MIN_CONFIDENCE - 1; // Cap at 75%
         console.log(`[QUALITY GATE] ${pred.league} (ID: ${leagueId}) capped from PREMIUM to PRO`);
       }
 
