@@ -13,7 +13,8 @@ import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
-const MIN_CONFIDENCE = 65; // Only show Pro+ quality matches (65%+)
+const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
+const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
 const MAX_MATCHES = 30;
 
 const LEAGUE_PRIORITY: Record<string, number> = {
