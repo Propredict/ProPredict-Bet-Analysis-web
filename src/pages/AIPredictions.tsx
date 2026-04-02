@@ -194,9 +194,9 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    // Filter by market type
+    // Filter by market type — show any match that qualifies for this market (>50% probability)
     if (marketFilter !== "all") {
-      result = result.filter((p) => getBestPickType(p) === marketFilter);
+      result = result.filter((p) => predictionMatchesMarket(p, marketFilter));
     }
 
     // Filter by favorites if enabled
