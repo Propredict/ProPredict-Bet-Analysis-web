@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
+  calculateTopCorrectScores,
   getBestPickType,
   type MarketType,
 } from "../utils/marketDerivation";
