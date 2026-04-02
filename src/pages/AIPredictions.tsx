@@ -135,11 +135,12 @@ export default function AIPredictions() {
     const normD = 100 - normHw - normAw;
     const goalProbs = calculateGoalMarketProbs(p as any);
     
-    const THRESHOLD = 50; // Market must have >50% probability to qualify
+    const THRESHOLD = 50;
+    const DRAW_THRESHOLD = 28; // Draws rarely exceed 35%, so lower threshold
     switch (market) {
       case "home_win": return normHw > THRESHOLD;
       case "away_win": return normAw > THRESHOLD;
-      case "draw": return normD > THRESHOLD;
+      case "draw": return normD > DRAW_THRESHOLD;
       case "over25": return goalProbs.over25 > THRESHOLD;
       case "under25": return goalProbs.under25 > THRESHOLD;
       case "btts_yes": return goalProbs.bttsYes > THRESHOLD;
