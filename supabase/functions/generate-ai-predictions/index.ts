@@ -2877,13 +2877,11 @@ async function handleBatchRegenerate(
     }
   }
 
-  // Fetch batch of predictions for this date
-  // Use .or() to also catch NULL result_status (SQL IN doesn't match NULL)
+  // Fetch batch of predictions for this date — process ALL matches regardless of result_status
   const { data: predictions, error } = await supabase
     .from("ai_predictions")
     .select("*")
     .eq("match_date", matchDate)
-    .or("result_status.eq.pending,result_status.is.null")
     .order("id", { ascending: true })
     .range(offset, offset + BATCH_SIZE - 1);
 
