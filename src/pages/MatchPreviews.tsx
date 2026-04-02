@@ -129,18 +129,19 @@ export default function MatchPreviews() {
     // Start with all premium, sorted by confidence desc
     let pool = [...premium].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
 
-    // If fewer than MAX_MATCHES, fill with pro picks sorted by confidence desc
+    // Fill with pro picks sorted by confidence desc until we reach MAX_MATCHES
     if (pool.length < MAX_MATCHES) {
       const proSorted = [...pro].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-      pool = [...pool, ...proSorted];
+      pool = [...pool, ...proSorted.slice(0, MAX_MATCHES - pool.length)];
     }
 
-    // Fallback: if still fewer than 5, add 60%+ matches
-    if (pool.length < 5) {
+    // Still not enough? Add remaining matches (50%+) sorted by confidence
+    if (pool.length < MAX_MATCHES) {
+      const poolIds = new Set(pool.map(p => p.id));
       const fallback = valid
-        .filter(p => (p.confidence ?? 0) >= 60 && !pool.some(pp => pp.id === p.id))
+        .filter(p => (p.confidence ?? 0) >= 50 && !poolIds.has(p.id))
         .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-      pool = [...pool, ...fallback];
+      pool = [...pool, ...fallback.slice(0, MAX_MATCHES - pool.length)];
     }
 
     // Build a lookup from match_previews for enrichment
