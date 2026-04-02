@@ -1593,7 +1593,7 @@ function predictScoreV2(params: {
   } else if (prediction === "2" && awayGoals <= homeGoals) {
     awayGoals = Math.max(homeGoals + 1, 1);
   } else if (prediction === "X" && homeGoals !== awayGoals) {
-    const avg = Math.round((homeGoals + awayGoals) / 2);
+    const avg = clamp(Math.round((homeXg + awayXg) / 2), 0, 3);
     homeGoals = avg;
     awayGoals = avg;
   }
