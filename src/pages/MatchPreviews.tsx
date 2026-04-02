@@ -13,6 +13,7 @@ import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
+const MIN_CONFIDENCE = 65; // Only show Pro+ quality matches (65%+)
 const MAX_MATCHES = 30;
 
 const LEAGUE_PRIORITY: Record<string, number> = {
@@ -114,7 +115,8 @@ export default function MatchPreviews() {
   const topMatches = useMemo(() => {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
-    const pool = predictions.filter(p => !isPending(p));
+    // Only include matches with confidence >= 65% (Pro/Premium quality)
+    const pool = predictions.filter(p => !isPending(p) && (p.confidence ?? 0) >= MIN_CONFIDENCE);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
@@ -165,8 +167,8 @@ export default function MatchPreviews() {
   return (
     <>
       <Helmet>
-        <title>Top 30 Matches of the Day – AI Predictions | ProPredict</title>
-        <meta name="description" content="AI-ranked top 30 football matches of the day with confidence ratings and match analysis." />
+        <title>Top Safest Matches – AI Predictions | ProPredict</title>
+        <meta name="description" content="AI-curated safest football matches with 65%+ confidence. Only the best picks today." />
       </Helmet>
 
       <div className="page-content space-y-4">
@@ -176,9 +178,9 @@ export default function MatchPreviews() {
               <Trophy className="h-5 w-5 text-violet-400" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Top 30 Matches of the Day</h1>
+              <h1 className="text-lg font-bold">Top Matches of the Day</h1>
               <p className="text-xs text-muted-foreground">
-                AI-ranked by confidence — the best picks today
+                Only the safest AI picks — 65%+ confidence
               </p>
             </div>
           </div>
@@ -186,7 +188,7 @@ export default function MatchPreviews() {
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Our AI ranks the top 30 matches daily by confidence level and statistical edge.</li>
+            <li>Our AI selects only the safest matches (65%+ confidence) from today's fixtures.</li>
             <li>Click any match to unlock full AI-powered analysis, predictions, and key factors.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
