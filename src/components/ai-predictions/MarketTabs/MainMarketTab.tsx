@@ -5,6 +5,7 @@ import {
   calculateGoalMarketProbs,
   calculateTopCorrectScores,
   getBestPickType,
+  getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   type MarketType,
 } from "../utils/marketDerivation";
@@ -73,17 +74,24 @@ const ONE_X_TWO: MarketType[] = ["home_win", "away_win", "draw"];
 
 /** Get raw (display) probabilities for all markets */
 function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  const d = prediction.draw ?? 0;
+  let hw = Math.max(0, prediction.home_win ?? 0);
+  let aw = Math.max(0, prediction.away_win ?? 0);
+  let d = Math.max(0, prediction.draw ?? 0);
   const probs = calculateGoalMarketProbs(prediction);
 
-  const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-  const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-  const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
+  const total = hw + aw + d;
+  if (total > 0) {
+    hw = Math.round((hw / total) * 100);
+    aw = Math.round((aw / total) * 100);
+    d = 100 - hw - aw;
+  } else {
+    hw = 33;
+    d = 34;
+    aw = 33;
+  }
 
   return {
-    home_win: norm1, away_win: norm2, draw: normX,
+    home_win: hw, away_win: aw, draw: d,
     over25: probs.over25, under25: probs.under25,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
@@ -118,13 +126,12 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
-  const topScores = displayTier === "premium" 
-    ? calculateTopCorrectScores(prediction) 
-    : displayTier === "pro" 
-    ? calculateTopCorrectScores(prediction).slice(0, 2) 
-    : [];
-
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+  const topScores = displayTier === "premium"
+    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
+    : displayTier === "pro"
+    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type }, 2)
+    : [];
 
   return (
     <div className="space-y-3 md:space-y-4">
@@ -235,9 +242,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — derived from Poisson model, constrained to match Best Pick */}
+          {/* Predicted Score — aligned with Best Pick and SAFE COMBO when present */}
           {(() => {
-            const derivedScore = getDerivedPredictedScore(prediction, pick.type);
+            const derivedScore = getDerivedPredictedScore(
+              prediction,
+              pick.type,
+              displayTier === "premium" ? parsedTags.safeCombo : null
+            );
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
                 Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>

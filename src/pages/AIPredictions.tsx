@@ -72,21 +72,12 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier assignment: use the DISPLAYED probability (what users actually see on the card)
-  // The Main tab inflates 1X2 probs via normalization, so we must match that logic
+  // Tier assignment: use backend confidence first, then best market probability as fallback.
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
     for (const p of predictions) {
-      const hw = p.home_win ?? 0;
-      const aw = p.away_win ?? 0;
-      const d = p.draw ?? 0;
-      // Match the MainMarketTab normalization exactly
-      const norm1 = hw > 0 ? Math.round(hw * (100 / (hw + Math.max(aw, d)))) : 0;
-      const norm2 = aw > 0 ? Math.round(aw * (100 / (aw + Math.max(hw, d)))) : 0;
-      const normX = d > 0 ? Math.round(d * (100 / (d + Math.max(hw, aw)))) : 0;
-      const goalProbs = getBestMarketProbability(p as any);
-      const displayedProb = Math.max(norm1, norm2, normX, goalProbs, p.confidence ?? 0);
-      map.set(p.id!, getTierFromConfidence(displayedProb));
+      const displayedProb = getBestMarketProbability(p as any);
+      map.set(p.id!, getTierFromConfidence(p.confidence ?? displayedProb));
     }
     return map;
   }, [predictions]);
