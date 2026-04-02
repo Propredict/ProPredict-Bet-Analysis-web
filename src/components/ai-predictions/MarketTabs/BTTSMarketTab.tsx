@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { deriveMarkets } from "../utils/marketDerivation";
+import { calculateGoalMarketProbs } from "../utils/marketDerivation";
 import { Star, Users } from "lucide-react";
 
 interface Props {
@@ -10,11 +10,11 @@ interface Props {
 }
 
 export function BTTSMarketTab({ prediction, hasAccess }: Props) {
-  const markets = deriveMarkets(prediction);
+  const probs = calculateGoalMarketProbs(prediction);
 
   const options = [
-    { label: "GG (Both Teams Score)", recommended: markets.btts.gg.recommended },
-    { label: "NG (No Goal from One)", recommended: markets.btts.ng.recommended },
+    { label: "GG (Both Teams Score)", prob: probs.bttsYes, recommended: probs.bttsYes >= 50 },
+    { label: "NG (No Goal from One)", prob: probs.bttsNo, recommended: probs.bttsNo >= 50 },
   ];
 
   return (
@@ -52,12 +52,12 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
             </div>
             {hasAccess && (
               <span className={cn(
-                "text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-lg",
+                "text-xs md:text-sm font-bold tabular-nums",
                 option.recommended 
-                  ? "bg-green-500/20 text-green-400" 
-                  : "bg-gray-500/20 text-gray-400"
+                  ? "text-green-400" 
+                  : "text-muted-foreground"
               )}>
-                {option.recommended ? "Likely" : "Less Likely"}
+                {option.prob}%
               </span>
             )}
           </div>
@@ -67,7 +67,7 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
       {hasAccess && (
         <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
           AI expects: <span className="font-semibold text-foreground">
-            {markets.btts.gg.recommended ? "Both teams to score" : "Clean sheet likely"}
+            {probs.bttsYes >= 50 ? "Both teams to score" : "Clean sheet likely"}
           </span>
         </p>
       )}
