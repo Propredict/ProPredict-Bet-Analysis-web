@@ -515,18 +515,18 @@ export default function MatchPreviewDetail() {
             {/* HERO PREDICTION - dominates */}
             {unlocked ? (
               <div className="space-y-3">
-                {/* Main prediction */}
+                {/* Main prediction — uses best market pick for consistency with card list */}
                 <div className="text-center space-y-1">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-2xl">{getPredictionEmoji(prediction.prediction)}</span>
+                    <span className="text-2xl">{heroPick?.emoji ?? "📊"}</span>
                     <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                      {getPredictionLabel(prediction.prediction)}
+                      {heroPick?.label ?? getPredictionLabel(prediction.prediction)}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-xl sm:text-2xl font-black text-emerald-400">{prediction.confidence}%</span>
+                      <span className="text-xl sm:text-2xl font-black text-emerald-400">{heroPick?.pct ?? prediction.confidence}%</span>
                       <span className="text-[10px] text-white/50 uppercase">confidence</span>
                     </div>
                     <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", risk.bg, risk.color)}>
