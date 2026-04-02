@@ -188,7 +188,7 @@ export default function MatchPreviews() {
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Our AI ranks the top 30 matches daily by confidence level and statistical edge.</li>
+            <li>Our AI selects only the safest matches (65%+ confidence) from today's fixtures.</li>
             <li>Click any match to unlock full AI-powered analysis, predictions, and key factors.</li>
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
