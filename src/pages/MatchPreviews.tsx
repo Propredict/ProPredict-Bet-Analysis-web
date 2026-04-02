@@ -338,7 +338,7 @@ export default function MatchPreviews() {
                       <div className="flex items-center gap-1.5">
                         <Sparkles className="h-3.5 w-3.5 text-violet-500 dark:text-primary" />
                         <span className="text-xs text-muted-foreground">Confidence</span>
-                        <span className="text-sm font-extrabold text-foreground">{match.confidence ?? 0}%</span>
+                        <span className="text-sm font-extrabold text-foreground">{match.bestPick?.pct ?? match.confidence}%</span>
                       </div>
                       <span className="text-muted-foreground/30">·</span>
                       <div className="flex items-center gap-1.5">
