@@ -240,19 +240,22 @@ const AIPredictionCardInner = ({
                   <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
                     {prediction.analysis}
                   </p>
-                  {prediction.key_factors && prediction.key_factors.length > 0 && (
-                    <div className="flex flex-wrap gap-0.5">
-                      {prediction.key_factors.slice(0, 3).map((factor, i) => (
-                        <Badge 
-                          key={i} 
-                          variant="secondary" 
-                          className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
-                        >
-                          {factor}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                   {prediction.key_factors && prediction.key_factors.length > 0 && (
+                     <div className="flex flex-wrap gap-0.5">
+                       {prediction.key_factors
+                         .filter((f) => !f.startsWith("[TAG]"))
+                         .slice(0, displayTier === "premium" ? 5 : 3)
+                         .map((factor, i) => (
+                         <Badge 
+                           key={i} 
+                           variant="secondary" 
+                           className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
+                         >
+                           {factor}
+                         </Badge>
+                       ))}
+                     </div>
+                   )}
                 </div>
               </CollapsibleContent>
             </Collapsible>
