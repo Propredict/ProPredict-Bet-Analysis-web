@@ -73,9 +73,9 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
         ))}
       </div>
 
-      {hasAccess && prediction.predicted_score && (
+      {hasAccess && (
         <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
-          Predicted: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
+          Predicted: <span className="font-semibold text-foreground">{getDerivedPredictedScore(prediction)}</span>
         </p>
       )}
     </div>
