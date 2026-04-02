@@ -591,6 +591,40 @@ export default function AIPredictions() {
             })}
           </div>
 
+          {/* 🔒 SAFE PICKS OF THE DAY - Premium only, confidence >= 85 */}
+          {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="p-1 rounded bg-emerald-500/20">
+                  <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <h2 className="text-xs md:text-sm font-bold text-foreground">Safe Picks of the Day</h2>
+                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
+                  85%+ Confidence
+                </Badge>
+              </div>
+              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
+                {safePicks.map((prediction) => (
+                  <div key={`safe-${prediction.id}`} className="ring-1 ring-emerald-500/30 rounded-lg">
+                    <AIPredictionCard
+                      overrideTier="premium"
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === prediction.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
