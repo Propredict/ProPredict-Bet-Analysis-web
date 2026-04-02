@@ -239,7 +239,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[send-push] tier=${contentTier}, route=${route}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
+    console.log(`[send-push] tier=${contentTier}, category=${category}, navPath=${navPath}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
 
     /* ── Send one notification per plan group ── */
     const results: unknown[] = [];
@@ -248,7 +248,7 @@ serve(async (req) => {
       if (ids.length === 0) continue;
 
       // Special categories override the standard headline
-      const specialHeadline = getSpecialHeadline(record.category ?? null);
+      const specialHeadline = getSpecialHeadline(category);
       const headline = specialHeadline ?? getPublishHeadline(contentTier, plan);
 
       const payload = {
