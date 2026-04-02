@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
@@ -29,6 +29,24 @@ const openPlayStore = () => {
   }
 };
 
+function getTodayBelgrade() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+}
+
+function parseAdEventPayload(event: Event) {
+  const raw = (event as MessageEvent).data ?? (event as CustomEvent).detail ?? null;
+
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return { type: raw };
+    }
+  }
+
+  return raw && typeof raw === "object" ? raw : null;
+}
+
 // Mock AI predictions based on real matchups
 const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
   const homeRank = TEAMS[m.home]?.fifaRank || 50;
@@ -54,21 +72,19 @@ export default function WorldCup2026() {
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
-  const getWcUnlockKey = () => {
-    const today = new Date().toISOString().slice(0, 10);
-    return `propredict_wc2026_unlocked_${today}`;
-  };
+  const getWcUnlockKey = () => `propredict_wc2026_unlocked_${getTodayBelgrade()}`;
   const [adUnlockedToday, setAdUnlockedToday] = useState(() => {
-    try { return localStorage.getItem(getWcUnlockKey()) === "true"; } catch { return false; }
+    try {
+      return localStorage.getItem(getWcUnlockKey()) === "true";
+    } catch {
+      return false;
+    }
   });
   const [adLoading, setAdLoading] = useState(false);
 
   // Tier access helpers
   const isPro = plan === "basic" || plan === "premium" || isAdmin;
   const isPremium = plan === "premium" || isAdmin;
-
-  // APP-specific access: on Android, free users can watch ad to unlock
-  // On web, keep existing website lock strategy
   const isApp = isAndroidApp;
 
   // For app: free users need to watch ad, pro gets basic, premium gets all
@@ -76,41 +92,79 @@ export default function WorldCup2026() {
   const appCanSeeBasic = isApp ? (isPro || isPremium || adUnlockedToday) : isPro;
   const appCanSeeAdvanced = isPremium;
 
+  useEffect(() => {
+    if (!isApp) return;
+
+    const markUnlocked = () => {
+      setAdUnlockedToday(true);
+      setAdLoading(false);
+      try {
+        localStorage.setItem(getWcUnlockKey(), "true");
+      } catch {
+        // ignore storage errors in webview
+      }
+    };
+
+    const resetLoading = () => setAdLoading(false);
+
+    const handleAdEvent = (event: Event) => {
+      const data = parseAdEventPayload(event);
+      const type = data?.type;
+
+      if (type === "AD_UNLOCK_SUCCESS") {
+        markUnlocked();
+      }
+
+      if (type === "AD_UNLOCK_CANCELLED" || type === "RESET_AD_BUTTON" || type === "AD_LOAD_FAILED") {
+        resetLoading();
+      }
+    };
+
+    window.addEventListener("message", handleAdEvent as EventListener);
+    document.addEventListener("message", handleAdEvent as EventListener);
+    window.addEventListener("AD_UNLOCK_SUCCESS", handleAdEvent as EventListener);
+    window.addEventListener("AD_UNLOCK_CANCELLED", handleAdEvent as EventListener);
+    window.addEventListener("RESET_AD_BUTTON", handleAdEvent as EventListener);
+    window.addEventListener("AD_LOAD_FAILED", handleAdEvent as EventListener);
+
+    return () => {
+      window.removeEventListener("message", handleAdEvent as EventListener);
+      document.removeEventListener("message", handleAdEvent as EventListener);
+      window.removeEventListener("AD_UNLOCK_SUCCESS", handleAdEvent as EventListener);
+      window.removeEventListener("AD_UNLOCK_CANCELLED", handleAdEvent as EventListener);
+      window.removeEventListener("RESET_AD_BUTTON", handleAdEvent as EventListener);
+      window.removeEventListener("AD_LOAD_FAILED", handleAdEvent as EventListener);
+    };
+  }, [isApp]);
+
+  useEffect(() => {
+    if (!adLoading) return;
+
+    const timeout = window.setTimeout(() => {
+      setAdLoading(false);
+    }, 30_000);
+
+    return () => window.clearTimeout(timeout);
+  }, [adLoading]);
+
   // Watch ad handler for Android
   const handleWatchAd = useCallback(() => {
     if (adLoading) return;
-    setAdLoading(true);
 
-    // Don't set pendingAdUnlock — WC page handles its own unlock flow
-    // to avoid the global UserPlanProvider handler interfering
     const android = (window as any).Android;
-    if (android && typeof android.watchRewardedAd === "function") {
-      android.watchRewardedAd();
-    } else if (android && typeof android.showRewardedAd === "function") {
-      android.showRewardedAd();
+    const showRewardedAd = typeof android?.watchRewardedAd === "function"
+      ? () => android.watchRewardedAd()
+      : typeof android?.showRewardedAd === "function"
+        ? () => android.showRewardedAd()
+        : null;
+
+    if (!showRewardedAd) {
+      setAdLoading(false);
+      return;
     }
 
-    // Listen for ad result
-    const handler = (event: MessageEvent) => {
-      const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
-      if (data?.type === "AD_UNLOCK_SUCCESS") {
-        setAdUnlockedToday(true);
-        try { localStorage.setItem(getWcUnlockKey(), "true"); } catch {}
-        setAdLoading(false);
-        window.removeEventListener("message", handler);
-      }
-      if (data?.type === "AD_UNLOCK_CANCELLED" || data?.type === "RESET_AD_BUTTON" || data?.type === "AD_LOAD_FAILED") {
-        setAdLoading(false);
-        window.removeEventListener("message", handler);
-      }
-    };
-    window.addEventListener("message", handler);
-
-    // Safety timeout
-    setTimeout(() => {
-      setAdLoading(false);
-      window.removeEventListener("message", handler);
-    }, 30_000);
+    setAdLoading(true);
+    showRewardedAd();
   }, [adLoading]);
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
