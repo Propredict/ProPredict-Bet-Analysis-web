@@ -138,6 +138,14 @@ interface RankedCorrectScore extends CorrectScorePrediction {
   away: number;
 }
 
+export interface ScoreConstraintOptions {
+  marketType?: MarketType;
+  safeCombo?: string | null;
+  minTotalGoals?: number;
+  maxTotalGoals?: number;
+  requireBothTeamsToScore?: boolean | null;
+}
+
 function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
   const { homeXg, awayXg } = getXgValues(prediction);
 
@@ -159,6 +167,33 @@ export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScor
     .map(({ score, probability }) => ({ score, probability }));
 }
 
+export function getRecommendedScoreConstraints(
+  prediction: AIPrediction
+): Pick<ScoreConstraintOptions, "minTotalGoals" | "maxTotalGoals" | "requireBothTeamsToScore"> {
+  const goalProbs = calculateGoalMarketProbs(prediction);
+
+  let minTotalGoals: number | undefined;
+  let maxTotalGoals: number | undefined;
+  let requireBothTeamsToScore: boolean | null = null;
+
+  if (goalProbs.over15 >= 55) minTotalGoals = Math.max(minTotalGoals ?? 0, 2);
+  if (goalProbs.over25 >= 50) minTotalGoals = Math.max(minTotalGoals ?? 0, 3);
+  if (goalProbs.over35 >= 45) minTotalGoals = Math.max(minTotalGoals ?? 0, 4);
+  if (goalProbs.under25 >= 55) maxTotalGoals = Math.min(maxTotalGoals ?? Number.POSITIVE_INFINITY, 2);
+
+  if (goalProbs.bttsYes > goalProbs.bttsNo && goalProbs.bttsYes >= 50) {
+    requireBothTeamsToScore = true;
+  } else if (goalProbs.bttsNo > goalProbs.bttsYes && goalProbs.bttsNo >= 50) {
+    requireBothTeamsToScore = false;
+  }
+
+  return {
+    minTotalGoals,
+    maxTotalGoals: Number.isFinite(maxTotalGoals ?? Number.NaN) ? maxTotalGoals : undefined,
+    requireBothTeamsToScore,
+  };
+}
+
 /**
  * Check if a scoreline is consistent with a given market type.
  */
@@ -173,6 +208,17 @@ function scoreMatchesMarket(home: number, away: number, market: MarketType): boo
     case "btts_no": return home === 0 || away === 0;
     default: return true;
   }
+}
+
+function scoreMatchesConstraintOptions(home: number, away: number, options: ScoreConstraintOptions): boolean {
+  const total = home + away;
+
+  if (typeof options.minTotalGoals === "number" && total < options.minTotalGoals) return false;
+  if (typeof options.maxTotalGoals === "number" && total > options.maxTotalGoals) return false;
+  if (options.requireBothTeamsToScore === true && !(home > 0 && away > 0)) return false;
+  if (options.requireBothTeamsToScore === false && !(home === 0 || away === 0)) return false;
+
+  return true;
 }
 
 function scoreMatchesSafeCombo(home: number, away: number, safeCombo?: string | null): boolean {
@@ -199,14 +245,15 @@ function scoreMatchesSafeCombo(home: number, away: number, safeCombo?: string | 
 
 export function getConsistentTopCorrectScores(
   prediction: AIPrediction,
-  options: { marketType?: MarketType; safeCombo?: string | null } = {},
+  options: ScoreConstraintOptions = {},
   limit = 3
 ): CorrectScorePrediction[] {
   const rankedScores = calculateRankedCorrectScores(prediction);
   const filteredScores = rankedScores.filter((score) => {
     const matchesMarket = options.marketType ? scoreMatchesMarket(score.home, score.away, options.marketType) : true;
+    const matchesExtraConstraints = scoreMatchesConstraintOptions(score.home, score.away, options);
     const matchesSafeCombo = scoreMatchesSafeCombo(score.home, score.away, options.safeCombo);
-    return matchesMarket && matchesSafeCombo;
+    return matchesMarket && matchesExtraConstraints && matchesSafeCombo;
   });
 
   const source = filteredScores.length > 0 ? filteredScores : rankedScores;
@@ -214,10 +261,10 @@ export function getConsistentTopCorrectScores(
 }
 
 /**
- * Get the Poisson-derived predicted score aligned with the displayed market signals.
+ * Get the Poisson-derived predicted score aligned with displayed market signals.
  */
-export function getDerivedPredictedScore(prediction: AIPrediction, bestPickType?: MarketType, safeCombo?: string | null): string {
-  const topScores = getConsistentTopCorrectScores(prediction, { marketType: bestPickType, safeCombo }, 1);
+export function getDerivedPredictedScore(prediction: AIPrediction, options: ScoreConstraintOptions = {}): string {
+  const topScores = getConsistentTopCorrectScores(prediction, options, 1);
   return topScores.length > 0 ? topScores[0].score : prediction.predicted_score ?? "1-0";
 }
 

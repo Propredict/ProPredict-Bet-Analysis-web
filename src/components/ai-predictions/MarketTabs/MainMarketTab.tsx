@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
-  calculateTopCorrectScores,
   getBestPickType,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
+  getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
