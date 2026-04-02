@@ -2421,9 +2421,9 @@ async function processBatch(
     try {
       const fixtureIdStr = String(pred.match_id);
 
-      // Prefer fixture list lookup. Fallback to by-id fetch with retry if needed.
+      // Use the daily fixture list first. Only fallback to by-id fetch when the batch cache missed it.
       let fixture = fixtureById.get(fixtureIdStr);
-      if (!fixture) {
+      if (!fixture && fixtureById.size === 0) {
         const byId = await fetchJsonWithRetry(
           `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
           apiKey,
