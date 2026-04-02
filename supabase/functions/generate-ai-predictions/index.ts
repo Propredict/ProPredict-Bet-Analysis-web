@@ -1244,31 +1244,74 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === CONFIDENCE = BEST MARKET PROBABILITY + ADJUSTMENTS ===
-  let confidence = bestProb;
+  // === NEW CONFIDENCE FORMULA (v3) ===
+  // confidence = (form_diff * 0.30) + (xG_score * 0.30) + (odds_diff * 0.20) + (consistency * 0.20)
 
-  // === CLOSE-CALL PENALTY: top 2 markets within 5% = unreliable pick ===
+  // FORM component: normalize last 5 match points to 0-100, take absolute diff
+  const homeFormPoints5 = homeForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
+  const awayFormPoints5 = awayForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
+  const homeFormNorm = (homeFormPoints5 / 15) * 100;
+  const awayFormNorm = (awayFormPoints5 / 15) * 100;
+  const formDiff = Math.abs(homeFormNorm - awayFormNorm);
+
+  // xG component
+  const xgDiff = Math.abs(homeXg - awayXg);
+  const xgScore = Math.min(xgDiff * 40, 100);
+
+  // ODDS component
+  let oddsDiff = 0;
+  if (odds) {
+    oddsDiff = Math.abs(odds.homeProb - odds.awayProb);
+  } else {
+    oddsDiff = Math.abs(homeWin - awayWin);
+  }
+  const oddsComponent = Math.min(oddsDiff, 100);
+
+  // CONSISTENCY component: how stable is the team's form?
+  // Stable form (all W or all L) → high, random form → low
+  const homeConsistency = homeForm.slice(0, 5).length > 0
+    ? (() => {
+        const results = homeForm.slice(0, 5).map(m => m.result);
+        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
+          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
+        return (results.filter(x => x === mostCommon).length / results.length) * 100;
+      })()
+    : 50;
+  const awayConsistency = awayForm.slice(0, 5).length > 0
+    ? (() => {
+        const results = awayForm.slice(0, 5).map(m => m.result);
+        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
+          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
+        return (results.filter(x => x === mostCommon).length / results.length) * 100;
+      })()
+    : 50;
+  const consistencyScore = (homeConsistency + awayConsistency) / 2;
+
+  let confidence = Math.round(
+    (formDiff * 0.30) +
+    (xgScore * 0.30) +
+    (oddsComponent * 0.20) +
+    (consistencyScore * 0.20)
+  );
+
+  // === BOOST RULES ===
+  if (xgDiff > 1) confidence += 10;
+  if (formDiff > 30) confidence += 10;
+  if (odds && Math.min(odds.homeOdds, odds.awayOdds) < 1.70) confidence += 10;
+
+  // === PENALTY RULES ===
+  if (draw > 35) confidence -= 10;
+  if ((homeXg + awayXg) < 2) confidence -= 10;
+
+  // === CLOSE-CALL PENALTY ===
   const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
   if (sortedForCloseCall.length >= 2) {
     const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
-    if (top2diff <= 5) {
-      confidence -= 4; // Penalty for coin-flip picks
-    } else if (top2diff <= 10) {
-      confidence -= 2; // Small penalty for close calls
-    }
+    if (top2diff <= 5) confidence -= 4;
+    else if (top2diff <= 10) confidence -= 2;
   }
 
-  // === PROGRESSIVE DAMPENING (replaces fixed ×0.90) ===
-  // High-confidence predictions need less dampening, low-confidence need more
-  if (confidence >= 80) {
-    confidence = Math.round(confidence * 0.95); // Light touch for strong picks
-  } else if (confidence >= 65) {
-    confidence = Math.round(confidence * 0.90); // Standard dampening
-  } else {
-    confidence = Math.round(confidence * 0.85); // Heavy dampening for weak picks
-  }
-
-  // Only cap if data is very weak
+  // Data quality caps
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
   const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
   
@@ -1276,7 +1319,7 @@ function calculatePrediction(
   if (!hasSeasonStats) confidence = Math.min(confidence, 65);
 
   // Clamp to realistic range
-  confidence = Math.round(clamp(confidence, 45, 92));
+  confidence = Math.round(clamp(confidence, 30, 95));
 
   // === RISK (simple) ===
   let riskLevel: "low" | "medium" | "high";
