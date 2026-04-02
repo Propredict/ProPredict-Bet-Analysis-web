@@ -126,26 +126,37 @@ export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketPr
 }
 
 /**
- * Calculate top 3 most likely correct scores using Poisson model
+ * Calculate top correct scores using the same Poisson model as goals/BTTS derivation.
  */
 export interface CorrectScorePrediction {
   score: string;
   probability: number;
 }
 
-export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScorePrediction[] {
+interface RankedCorrectScore extends CorrectScorePrediction {
+  home: number;
+  away: number;
+}
+
+function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
   const { homeXg, awayXg } = getXgValues(prediction);
 
-  const scores: CorrectScorePrediction[] = [];
+  const scores: RankedCorrectScore[] = [];
   for (let h = 0; h <= 5; h++) {
     for (let a = 0; a <= 5; a++) {
       const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
-      scores.push({ score: `${h}-${a}`, probability: Math.round(p * 1000) / 10 });
+      scores.push({ score: `${h}-${a}`, probability: Math.round(p * 1000) / 10, home: h, away: a });
     }
   }
 
   scores.sort((a, b) => b.probability - a.probability);
-  return scores.slice(0, 3);
+  return scores;
+}
+
+export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScorePrediction[] {
+  return calculateRankedCorrectScores(prediction)
+    .slice(0, 3)
+    .map(({ score, probability }) => ({ score, probability }));
 }
 
 /**
@@ -164,29 +175,50 @@ function scoreMatchesMarket(home: number, away: number, market: MarketType): boo
   }
 }
 
+function scoreMatchesSafeCombo(home: number, away: number, safeCombo?: string | null): boolean {
+  if (!safeCombo) return true;
+
+  const total = home + away;
+  const combo = safeCombo.toUpperCase().replace(/\s+/g, " ").trim();
+
+  if (combo.includes("OVER 1.5") && total <= 1) return false;
+  if (combo.includes("OVER 2.5") && total <= 2) return false;
+  if (combo.includes("UNDER 3.5") && total >= 4) return false;
+  if (combo.includes("UNDER 2.5") && total >= 3) return false;
+  if (combo.includes("BTTS YES") && !(home > 0 && away > 0)) return false;
+  if (combo.includes("BTTS NO") && !(home === 0 || away === 0)) return false;
+  if (combo.includes("DC 1X") && home < away) return false;
+  if (combo.includes("DC X2") && away < home) return false;
+  if (combo.includes("DC 12") && home === away) return false;
+  if ((combo.startsWith("1 ") || combo.startsWith("1 +")) && home <= away) return false;
+  if ((combo.startsWith("2 ") || combo.startsWith("2 +")) && away <= home) return false;
+  if ((combo.startsWith("X ") || combo.startsWith("X +")) && home !== away) return false;
+
+  return true;
+}
+
+export function getConsistentTopCorrectScores(
+  prediction: AIPrediction,
+  options: { marketType?: MarketType; safeCombo?: string | null } = {},
+  limit = 3
+): CorrectScorePrediction[] {
+  const rankedScores = calculateRankedCorrectScores(prediction);
+  const filteredScores = rankedScores.filter((score) => {
+    const matchesMarket = options.marketType ? scoreMatchesMarket(score.home, score.away, options.marketType) : true;
+    const matchesSafeCombo = scoreMatchesSafeCombo(score.home, score.away, options.safeCombo);
+    return matchesMarket && matchesSafeCombo;
+  });
+
+  const source = filteredScores.length > 0 ? filteredScores : rankedScores;
+  return source.slice(0, limit).map(({ score, probability }) => ({ score, probability }));
+}
+
 /**
- * Get the Poisson-derived predicted score (most likely scoreline).
- * When a bestPickType is provided, only returns scores consistent with that market.
- * This prevents contradictions like "BTTS Yes" + "0-1" or "Home Win" + "1-1".
+ * Get the Poisson-derived predicted score aligned with the displayed market signals.
  */
-export function getDerivedPredictedScore(prediction: AIPrediction, bestPickType?: MarketType): string {
-  const { homeXg, awayXg } = getXgValues(prediction);
-
-  const scores: { score: string; probability: number; home: number; away: number }[] = [];
-  for (let h = 0; h <= 5; h++) {
-    for (let a = 0; a <= 5; a++) {
-      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
-      scores.push({ score: `${h}-${a}`, probability: p, home: h, away: a });
-    }
-  }
-  scores.sort((a, b) => b.probability - a.probability);
-
-  if (bestPickType) {
-    const filtered = scores.filter(s => scoreMatchesMarket(s.home, s.away, bestPickType));
-    if (filtered.length > 0) return filtered[0].score;
-  }
-
-  return scores.length > 0 ? scores[0].score : prediction.predicted_score ?? "1-0";
+export function getDerivedPredictedScore(prediction: AIPrediction, bestPickType?: MarketType, safeCombo?: string | null): string {
+  const topScores = getConsistentTopCorrectScores(prediction, { marketType: bestPickType, safeCombo }, 1);
+  return topScores.length > 0 ? topScores[0].score : prediction.predicted_score ?? "1-0";
 }
 
 /**
