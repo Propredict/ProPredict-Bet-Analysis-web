@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { getBestMarketProbability, getTierFromConfidence, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -123,6 +123,31 @@ export default function AIPredictions() {
     return counts;
   }, [predictions]);
 
+  // Check if a prediction qualifies for a given market filter (probability > 50%)
+  const predictionMatchesMarket = useCallback((p: typeof predictions[0], market: MarketFilter): boolean => {
+    if (market === "all") return true;
+    const hw = p.home_win ?? 0;
+    const aw = p.away_win ?? 0;
+    const d = p.draw ?? 0;
+    const total1x2 = hw + aw + d || 1;
+    const normHw = Math.round((Math.max(5, hw) / (Math.max(5, hw) + Math.max(5, aw) + Math.max(5, d))) * 100);
+    const normAw = Math.round((Math.max(5, aw) / (Math.max(5, hw) + Math.max(5, aw) + Math.max(5, d))) * 100);
+    const normD = 100 - normHw - normAw;
+    const goalProbs = calculateGoalMarketProbs(p as any);
+    
+    const THRESHOLD = 50; // Market must have >50% probability to qualify
+    switch (market) {
+      case "home_win": return normHw > THRESHOLD;
+      case "away_win": return normAw > THRESHOLD;
+      case "draw": return normD > THRESHOLD;
+      case "over25": return goalProbs.over25 > THRESHOLD;
+      case "under25": return goalProbs.under25 > THRESHOLD;
+      case "btts_yes": return goalProbs.bttsYes > THRESHOLD;
+      case "btts_no": return goalProbs.bttsNo > THRESHOLD;
+      default: return false;
+    }
+  }, []);
+
   // Count predictions per market type — scoped to current tier filter
   const marketCounts = useMemo(() => {
     const base = tierFilter === "all"
@@ -133,12 +158,14 @@ export default function AIPredictions() {
       home_win: 0, away_win: 0, draw: 0,
       over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
     };
+    const marketKeys: MarketFilter[] = ["home_win", "away_win", "draw", "over25", "under25", "btts_yes", "btts_no"];
     base.forEach((p) => {
-      const mt = getBestPickType(p);
-      counts[mt]++;
+      marketKeys.forEach((mk) => {
+        if (predictionMatchesMarket(p, mk)) counts[mk]++;
+      });
     });
     return counts;
-  }, [predictions, tierFilter]);
+  }, [predictions, tierFilter, predictionMatchesMarket]);
 
   // Sort function
   const sortPredictions = (preds: typeof predictions) => {
@@ -167,9 +194,9 @@ export default function AIPredictions() {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
     }
 
-    // Filter by market type
+    // Filter by market type — show any match that qualifies for this market (>50% probability)
     if (marketFilter !== "all") {
-      result = result.filter((p) => getBestPickType(p) === marketFilter);
+      result = result.filter((p) => predictionMatchesMarket(p, marketFilter));
     }
 
     // Filter by favorites if enabled
