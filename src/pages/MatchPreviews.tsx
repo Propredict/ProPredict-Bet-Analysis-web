@@ -109,11 +109,10 @@ export default function MatchPreviews() {
     return null;
   }
 
-  // Normalize data — previews already ranked, fallback uses AI predictions
+  // Normalize data — sort by confidence (highest first), then league quality
   const topMatches = useMemo(() => {
     if (usePreviewData) {
-      // Already sorted by rank from the database
-      return previews.map(p => ({
+      const mapped = previews.map(p => ({
         id: p.id,
         match_id: p.match_id,
         home_team: p.home_team,
@@ -132,8 +131,17 @@ export default function MatchPreviews() {
         home_form: p.home_form,
         away_form: p.away_form,
         h2h_summary: p.h2h_summary,
-        rank: p.rank ?? 0,
+        rank: 0,
       }));
+
+      // Re-sort: highest confidence first, then quality league priority
+      mapped.sort((a, b) => {
+        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+        if (confDiff !== 0) return confDiff;
+        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
+      });
+
+      return mapped.map((m, i) => ({ ...m, rank: i + 1 }));
     }
 
     // Fallback: use AI predictions
@@ -141,16 +149,8 @@ export default function MatchPreviews() {
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const pool = predictions.filter(p => !isPending(p));
 
-    function riskTier(conf: number | null): number {
-      if (!conf) return 3;
-      if (conf >= 80) return 1;
-      if (conf >= 65) return 2;
-      return 3;
-    }
-
+    // Sort by confidence descending, then league quality
     pool.sort((a, b) => {
-      const tierDiff = riskTier(a.confidence) - riskTier(b.confidence);
-      if (tierDiff !== 0) return tierDiff;
       const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
       if (confDiff !== 0) return confDiff;
       return getLeaguePriority(a.league) - getLeaguePriority(b.league);
