@@ -187,6 +187,13 @@ export default function AIPredictions() {
     return sortPredictions(result);
   }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
 
+  // Safe Picks: confidence >= 85, max 3, only in premium tier
+  const safePicks = useMemo(() => {
+    return filteredPredictions
+      .filter((p) => (p.confidence ?? 0) >= 85 && getPredictionTier(p) === "premium")
+      .slice(0, 3);
+  }, [filteredPredictions]);
+
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
     return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
