@@ -127,10 +127,11 @@ interface Props {
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+  const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const topScores = displayTier === "premium"
-    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type }, 2)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 2)
     : [];
 
   return (
