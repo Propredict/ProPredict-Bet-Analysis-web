@@ -82,8 +82,8 @@ export default function WorldCup2026() {
     if (adLoading) return;
     setAdLoading(true);
 
-    setPendingAdUnlock({ contentType: "prediction" as any, contentId: "wc2026-today" });
-
+    // Don't set pendingAdUnlock — WC page handles its own unlock flow
+    // to avoid the global UserPlanProvider handler interfering
     const android = (window as any).Android;
     if (android && typeof android.watchRewardedAd === "function") {
       android.watchRewardedAd();
@@ -96,13 +96,12 @@ export default function WorldCup2026() {
       const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
       if (data?.type === "AD_UNLOCK_SUCCESS") {
         setAdUnlockedToday(true);
+        try { localStorage.setItem(getWcUnlockKey(), "true"); } catch {}
         setAdLoading(false);
-        clearPendingAdUnlock();
         window.removeEventListener("message", handler);
       }
       if (data?.type === "AD_UNLOCK_CANCELLED" || data?.type === "RESET_AD_BUTTON" || data?.type === "AD_LOAD_FAILED") {
         setAdLoading(false);
-        clearPendingAdUnlock();
         window.removeEventListener("message", handler);
       }
     };
@@ -111,7 +110,6 @@ export default function WorldCup2026() {
     // Safety timeout
     setTimeout(() => {
       setAdLoading(false);
-      clearPendingAdUnlock();
       window.removeEventListener("message", handler);
     }, 30_000);
   }, [adLoading]);
