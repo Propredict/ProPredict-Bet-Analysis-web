@@ -1622,6 +1622,9 @@ function generateAnalysisV2(params: {
   bestProb?: number;
   analysisReasons?: string[];
   style?: { overBoost: number; underBoost: number; bttsBoost: number; label: string };
+  tempoLabel?: "LOW" | "MEDIUM" | "HIGH";
+  valueLabel?: string;
+  isUltra?: boolean;
 }): string {
   const {
     homeTeamName, awayTeamName, prediction,
@@ -1631,6 +1634,7 @@ function generateAnalysisV2(params: {
     confidenceLabel, valuePercent, xgTotal,
     homeXg, awayXg, bestProb,
     analysisReasons, style,
+    tempoLabel, valueLabel, isUltra,
   } = params;
 
   const sections: string[] = [];
