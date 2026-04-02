@@ -2,7 +2,7 @@
  * send-win-push
  *
  * Called by a database trigger when a tip/ticket result is set to 'won'.
- * Sends win notifications with headlines that vary by content tier × user plan.
+ * Sends win notifications with headlines that vary by content tier × category × user plan.
  *
  * Secrets required: ONESIGNAL_APP_ID, ONESIGNAL_API_KEY
  */
@@ -16,8 +16,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+/* ── Category-specific route map ── */
+const categoryRouteMap: Record<string, string> = {
+  diamond_pick: "/diamond-pick",
+  risk_of_day: "/risk-of-the-day",
+  multi_risk: "/multi-risk-matches",
+};
+
 /* ── Headline matrix ── */
-function getWinHeadline(contentTier: string, userPlan: string): string {
+function getWinHeadline(contentTier: string, userPlan: string, category?: string): string {
+  // Category-specific headlines take priority
+  if (category === "diamond_pick") {
+    if (userPlan === "premium") return "💎 Diamond Pick WON!";
+    if (userPlan === "pro") return "💎 Diamond Pick WON — Upgrade to Premium!";
+    return "💎 Diamond Pick WON — You're Missing Out!";
+  }
+  if (category === "risk_of_day") {
+    if (userPlan === "pro" || userPlan === "premium") return "🎯 Risk of the Day WON!";
+    return "🎯 Risk of the Day WON — You're Missing Out!";
+  }
+  if (category === "multi_risk") {
+    if (userPlan === "pro" || userPlan === "premium") return "🔥 Multi Risk WON!";
+    return "🔥 Multi Risk WON — You're Missing Out!";
+  }
+
+  // Fallback to tier-based headlines
   if (contentTier === "free" || contentTier === "daily") {
     return "⚽ Free Pick WON!";
   }
@@ -34,10 +57,17 @@ function getWinHeadline(contentTier: string, userPlan: string): string {
 }
 
 function getWinBody(type: string, record: Record<string, unknown>): string {
+  const category = record.category as string | undefined;
+
   if (type === "tip") {
     const home = record.home_team ?? "";
     const away = record.away_team ?? "";
     const matchLabel = home && away ? `${home} vs ${away}` : "Today's pick";
+
+    if (category === "diamond_pick") return `💎 ${matchLabel} — Diamond Pick cashed in!`;
+    if (category === "risk_of_day") return `🎯 ${matchLabel} — Risk of the Day hit!`;
+    if (category === "multi_risk") return `🔥 ${matchLabel} — Multi Risk cashed in!`;
+
     return `${matchLabel} cashed in. Don't miss the next one.`;
   }
   const tier = (record.tier as string) ?? "daily";
@@ -88,18 +118,24 @@ serve(async (req) => {
     }
 
     const contentTier = record.tier ?? "free";
+    const category = record.category as string | undefined;
     const winBody = getWinBody(type, record);
     const bigPicture = "https://propredict.me/push-win.jpg";
 
-    /* ── Build nav_path based on tier ── */
-    const tierRouteMap: Record<string, string> = {
-      premium: type === "tip" ? "premium-analysis" : "premium-predictions",
-      exclusive: type === "tip" ? "pro-analysis" : "pro-predictions",
-      daily: type === "tip" ? "daily-analysis" : "daily-predictions",
-      free: type === "tip" ? "daily-analysis" : "daily-predictions",
-    };
-    const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
-    const navPath = `/${route}?highlight=${record.id}&result=won`;
+    /* ── Build nav_path based on category first, then tier ── */
+    let navPath: string;
+    if (category && categoryRouteMap[category]) {
+      navPath = `${categoryRouteMap[category]}?highlight=${record.id}&result=won`;
+    } else {
+      const tierRouteMap: Record<string, string> = {
+        premium: type === "tip" ? "premium-analysis" : "premium-predictions",
+        exclusive: type === "tip" ? "pro-analysis" : "pro-predictions",
+        daily: type === "tip" ? "daily-analysis" : "daily-predictions",
+        free: type === "tip" ? "daily-analysis" : "daily-predictions",
+      };
+      const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
+      navPath = `/${route}?highlight=${record.id}&result=won`;
+    }
 
     /* ── Fetch tokens ── */
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -168,7 +204,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[send-win-push] tier=${contentTier}, route=${route}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
+    console.log(`[send-win-push] tier=${contentTier}, category=${category ?? "none"}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
 
     /* ── Send one notification per plan group ── */
     const results: unknown[] = [];
@@ -176,7 +212,7 @@ serve(async (req) => {
       const ids = planGroups[plan];
       if (ids.length === 0) continue;
 
-      const headline = getWinHeadline(contentTier, plan);
+      const headline = getWinHeadline(contentTier, plan, category);
 
       const payload = {
         app_id: ONESIGNAL_APP_ID,
@@ -193,6 +229,7 @@ serve(async (req) => {
           type: `${type}_won`,
           id: record.id,
           tier: contentTier,
+          category: category ?? null,
           result: record.result,
           nav_path: navPath,
         },
