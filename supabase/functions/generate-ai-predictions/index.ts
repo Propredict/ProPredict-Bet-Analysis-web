@@ -1266,17 +1266,17 @@ function calculatePrediction(
   const dcX2 = awayWin + draw;
 
   const defaultPriority: Record<string, number> = {
-    "Under 3.5": 1.08,
     "Over 1.5": 1.06,
-    "BTTS Yes": 1.05,
-    "BTTS No": 1.05,
+    "Under 3.5": 1.05,
     "DC 1X": 1.04,
     "DC X2": 1.04,
+    "BTTS Yes": 1.03,
+    "BTTS No": 1.03,
     "DC 12": 1.02,
-    "Over 2.5": 1.00,
-    "Under 2.5": 1.00,
-    "1": 0.97,
-    "2": 0.97,
+    "Over 2.5": 1.01,
+    "Under 2.5": 0.99,    // Reduced — was over-selected for low-data matches
+    "1": 1.00,
+    "2": 1.00,
     "Over 3.5": 0.95,
     "Under 1.5": 0.93,
     "X": 0.82,  // Draw more suppressed
