@@ -2505,14 +2505,78 @@ async function processBatch(
       const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
       const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
 
-      // Generate data-driven key_factors
+      // Generate SAFE COMBO suggestion
+      const safeCombo = generateSafeCombo(
+        homeXg, awayXg, goalMarkets,
+        newPrediction.home_win, newPrediction.away_win, newPrediction.draw
+      );
+
+      // Calculate tempo for tags
+      const matchTempo = calculateTempoScore(homeStats, awayStats, homeForm, awayForm);
+
+      // Value detection for tags
+      let tagAiProb = Math.max(newPrediction.home_win, newPrediction.away_win, newPrediction.draw);
+      let tagBookProb = 50;
+      if (odds) {
+        if (newPrediction.prediction === "1") { tagAiProb = newPrediction.home_win; tagBookProb = odds.homeProb; }
+        else if (newPrediction.prediction === "2") { tagAiProb = newPrediction.away_win; tagBookProb = odds.awayProb; }
+        else if (newPrediction.prediction === "X") { tagAiProb = newPrediction.draw; tagBookProb = odds.drawProb; }
+      }
+      const tagValue = detectValue(tagAiProb, tagBookProb, newPrediction.confidence);
+      const tagUltra = checkUltraBoost(
+        Math.abs(calculateFormQuality(homeForm) - calculateFormQuality(awayForm)),
+        Math.abs(homeXg - awayXg),
+        odds ?? null
+      );
+
+      // Generate structured tags
+      const structuredTags = generateStructuredTags(
+        newPrediction.confidence, matchTempo, tagValue, tagUltra,
+        safeCombo, odds ?? null, tagAiProb, tagBookProb
+      );
+
+      // === NO 33/33/33 ENFORCEMENT ===
+      // Always bias toward the stronger team
+      if (newPrediction.home_win === newPrediction.away_win && newPrediction.home_win === newPrediction.draw) {
+        // Use any available signal to break the tie
+        if (odds) {
+          newPrediction.home_win = odds.homeProb;
+          newPrediction.draw = odds.drawProb;
+          newPrediction.away_win = odds.awayProb;
+        } else {
+          // Bias toward home team slightly
+          newPrediction.home_win = 38;
+          newPrediction.draw = 30;
+          newPrediction.away_win = 32;
+        }
+      }
+      // Ensure no two probabilities are exactly equal
+      if (newPrediction.home_win === newPrediction.draw) newPrediction.draw -= 1;
+      if (newPrediction.home_win === newPrediction.away_win) newPrediction.away_win -= 1;
+      if (newPrediction.draw === newPrediction.away_win) newPrediction.draw -= 1;
+      // Re-normalize to 100
+      const probSum = newPrediction.home_win + newPrediction.draw + newPrediction.away_win;
+      if (probSum !== 100) {
+        const diff = 100 - probSum;
+        // Add remainder to the highest probability
+        if (newPrediction.home_win >= newPrediction.away_win && newPrediction.home_win >= newPrediction.draw) {
+          newPrediction.home_win += diff;
+        } else if (newPrediction.away_win >= newPrediction.home_win && newPrediction.away_win >= newPrediction.draw) {
+          newPrediction.away_win += diff;
+        } else {
+          newPrediction.draw += diff;
+        }
+      }
+
+      // Generate data-driven key_factors with structured tags
       const keyFactors = generateKeyFactors(
         homeTeamName, awayTeamName,
         homeForm, awayForm,
         homeStats, awayStats,
         h2h, homeTeamId,
         newPrediction.prediction,
-        goalMarkets
+        goalMarkets,
+        structuredTags
       );
 
       // === LEAGUE QUALITY GATE ===
