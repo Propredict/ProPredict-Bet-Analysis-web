@@ -404,22 +404,50 @@ function getUnlockPercentage(matchId: string): number {
 }
 
 
-function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null }) {
+/**
+ * Derive the single best market pick for a prediction using Poisson model.
+ * Returns the market with the highest probability (e.g., "BTTS Yes 87%", "Over 2.5 72%", "Home Win 65%").
+ */
+function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji: string } {
+  const goalProbs = calculateGoalMarketProbs(p);
+  const hw = p.home_win ?? 0;
+  const aw = p.away_win ?? 0;
+  const dw = p.draw ?? 0;
+
+  // Collect all markets with their probabilities
+  const markets: { label: string; pct: number; emoji: string }[] = [
+    { label: `${p.home_team} Win`, pct: hw, emoji: "🏠" },
+    { label: `${p.away_team} Win`, pct: aw, emoji: "✈️" },
+    { label: "Draw", pct: dw, emoji: "🤝" },
+    { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
+    { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
+    { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
+    { label: "Under 3.5", pct: goalProbs.under35, emoji: "📉" },
+  ];
+
+  // Return the market with highest probability
+  return markets.reduce((best, m) => m.pct > best.pct ? m : best, markets[0]);
+}
+
+
+function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null; bestPick?: { label: string; pct: number; emoji: string } }) {
   const snippets: { icon: string; text: string }[] = [];
+
+  // Best market pick first
+  if (match.bestPick) {
+    snippets.push({ icon: match.bestPick.emoji, text: `Best Pick: ${match.bestPick.label} — ${match.bestPick.pct}% probability` });
+  }
+
   const hw = match.home_win ?? 0;
   const aw = match.away_win ?? 0;
   const favored = hw >= aw ? match.home_team : match.away_team;
   const pct = Math.max(hw, aw);
 
-  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability — clear edge` });
+  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability` });
 
   if (match.key_factors && match.key_factors.length > 0) {
     snippets.push({ icon: "🔧", text: match.key_factors[0] });
-  } else {
-    snippets.push({ icon: "🔧", text: "Goal trends and defensive weaknesses support an open game" });
   }
-
-  snippets.push({ icon: "✨", text: `AI confidence is ${match.confidence ?? 0}% — strong conviction pick` });
 
   return snippets;
 }
