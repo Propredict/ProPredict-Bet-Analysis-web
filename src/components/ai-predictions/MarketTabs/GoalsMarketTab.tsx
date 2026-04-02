@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { calculateGoalMarketProbs, getDerivedPredictedScore, type MarketType } from "../utils/marketDerivation";
+import { calculateGoalMarketProbs, getDerivedPredictedScore, getRecommendedScoreConstraints } from "../utils/marketDerivation";
 import { Star, Target } from "lucide-react";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
 
 export function GoalsMarketTab({ prediction, hasAccess }: Props) {
   const probs = calculateGoalMarketProbs(prediction);
+  const scoreConstraints = getRecommendedScoreConstraints(prediction);
 
   const goals = [
     { label: "Over 1.5", prob: probs.over15, recommended: probs.over15 >= 55 },
@@ -73,15 +74,11 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
         ))}
       </div>
 
-      {hasAccess && (() => {
-        // Pick the dominant goal market to constrain the predicted score
-        const dominantGoalMarket: MarketType = probs.over25 >= 50 ? "over25" : "under25";
-        return (
-          <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
-            Predicted: <span className="font-semibold text-foreground">{getDerivedPredictedScore(prediction, dominantGoalMarket)}</span>
-          </p>
-        );
-      })()}
+      {hasAccess && (
+        <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
+          Predicted: <span className="font-semibold text-foreground">{getDerivedPredictedScore(prediction, scoreConstraints)}</span>
+        </p>
+      )}
     </div>
   );
 }

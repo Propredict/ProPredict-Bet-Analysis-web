@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
-  calculateTopCorrectScores,
   getBestPickType,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
+  getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
@@ -127,10 +127,11 @@ interface Props {
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+  const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const topScores = displayTier === "premium"
-    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type }, 2)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 2)
     : [];
 
   return (
@@ -242,13 +243,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — aligned with Best Pick and SAFE COMBO when present */}
+          {/* Predicted Score — aligned with Best Pick + Goals + BTTS + SAFE COMBO */}
           {(() => {
-            const derivedScore = getDerivedPredictedScore(
-              prediction,
-              pick.type,
-              displayTier === "premium" ? parsedTags.safeCombo : null
-            );
+            const derivedScore = getDerivedPredictedScore(prediction, {
+              ...scoreConstraints,
+              marketType: pick.type,
+              safeCombo: displayTier === "premium" ? parsedTags.safeCombo : null,
+            });
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
                 Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>
