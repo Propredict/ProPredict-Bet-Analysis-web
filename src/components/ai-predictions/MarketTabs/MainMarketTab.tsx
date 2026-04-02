@@ -88,6 +88,7 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
+  const topScores = displayTier === "premium" ? calculateTopCorrectScores(prediction) : [];
 
   return (
     <div className="space-y-3 md:space-y-4">
