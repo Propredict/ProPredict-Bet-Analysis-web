@@ -2387,10 +2387,13 @@ async function processBatch(
   // === SELF-LEARNING: Load historical accuracy by league AND by market ===
   if (leagueAccuracyCache.size === 0) {
     try {
-      const [leagueAccRes, marketAccRes] = await Promise.all([
-        supabase.from("ai_accuracy_by_league").select("league, accuracy, resolved_count"),
-        supabase.from("ai_accuracy_by_market").select("market, accuracy, resolved_count").catch(() => ({ data: null })),
-      ]);
+      const leagueAccRes = await supabase.from("ai_accuracy_by_league").select("league, accuracy, resolved_count");
+      let marketAccRes = { data: null };
+      try {
+        marketAccRes = await supabase.from("ai_accuracy_by_market").select("market, accuracy, resolved_count");
+      } catch (_e) {
+        console.warn("Market accuracy view not available, skipping");
+      }
       
       if (leagueAccRes.data) {
         for (const row of leagueAccRes.data) {
@@ -2877,13 +2880,11 @@ async function handleBatchRegenerate(
     }
   }
 
-  // Fetch batch of predictions for this date
-  // Use .or() to also catch NULL result_status (SQL IN doesn't match NULL)
+  // Fetch batch of predictions for this date — process ALL matches regardless of result_status
   const { data: predictions, error } = await supabase
     .from("ai_predictions")
     .select("*")
     .eq("match_date", matchDate)
-    .or("result_status.eq.pending,result_status.is.null")
     .order("id", { ascending: true })
     .range(offset, offset + BATCH_SIZE - 1);
 
