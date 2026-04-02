@@ -244,34 +244,34 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     recommended: true,
   };
 
-  // Combos - max 2 options based on prediction
+  // Combos - max 2 options based on prediction + Poisson probabilities
   const combos: { label: string; recommended: boolean }[] = [];
   
   if (effectivePrediction === "1") {
-    // Home win combos
-    if (totalGoals > 1.5) {
+    if (goalProbs.over15 > 55) {
       combos.push({ label: "1 & Over 1.5", recommended: true });
     }
-    if (totalGoals > 2.5) {
+    if (goalProbs.over25 > 55) {
       combos.push({ label: "1 & Over 2.5", recommended: true });
     } else if (combos.length < 2) {
-      combos.push({ label: "1 & Over 1.5", recommended: totalGoals >= 2 });
+      combos.push({ label: "1 & Under 2.5", recommended: goalProbs.under25 > 50 });
     }
   } else if (effectivePrediction === "2") {
-    // Away win combos
-    if (totalGoals > 1.5) {
+    if (goalProbs.over15 > 55) {
       combos.push({ label: "2 & Over 1.5", recommended: true });
     }
-    if (totalGoals > 2.5) {
+    if (goalProbs.over25 > 55) {
       combos.push({ label: "2 & Over 2.5", recommended: true });
     } else if (combos.length < 2) {
-      combos.push({ label: "2 & Over 1.5", recommended: totalGoals >= 2 });
+      combos.push({ label: "2 & Under 2.5", recommended: goalProbs.under25 > 50 });
     }
   } else {
     // Draw combos
-    combos.push({ label: "X & Over 1.5", recommended: totalGoals >= 2 });
-    if (totalGoals >= 2) {
-      combos.push({ label: "X & Under 3.5", recommended: totalGoals < 4 });
+    combos.push({ label: "X & Over 1.5", recommended: goalProbs.over15 > 55 });
+    if (goalProbs.over35 < 45) {
+      combos.push({ label: "X & Under 3.5", recommended: true });
+    } else {
+      combos.push({ label: "X & Over 2.5", recommended: goalProbs.over25 > 55 });
     }
   }
 
