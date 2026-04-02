@@ -413,6 +413,7 @@ export default function MatchPreviewDetail() {
   const homeLogo = liveMatch?.homeLogo || null;
   const awayLogo = liveMatch?.awayLogo || null;
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
+  const heroPick = prediction ? getHeroBestPick(prediction) : null;
   const aiPicks = prediction && unlocked ? deriveAIPicks(prediction) : [];
   const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction) : [];
 
