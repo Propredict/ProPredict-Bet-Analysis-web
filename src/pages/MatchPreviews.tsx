@@ -6,11 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
-import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import AdSlot from "@/components/ads/AdSlot";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
@@ -117,11 +118,31 @@ export default function MatchPreviews() {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
-    // Prefer 80%+ matches, fallback to 70%+ if fewer than 5 high-confidence ones
-    const highConf = valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_PRIMARY);
-    const pool = highConf.length >= 5
-      ? highConf
-      : valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_FALLBACK);
+
+    // Tier 1: Premium picks (≥78% confidence)
+    const premium = valid.filter(p => (p.confidence ?? 0) >= 78);
+    // Tier 2: Pro picks (65-77% confidence)
+    const pro = valid.filter(p => {
+      const c = p.confidence ?? 0;
+      return c >= 65 && c < 78;
+    });
+
+    // Start with all premium, sorted by confidence desc
+    let pool = [...premium].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+
+    // If fewer than MAX_MATCHES, fill with pro picks sorted by confidence desc
+    if (pool.length < MAX_MATCHES) {
+      const proSorted = [...pro].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+      pool = [...pool, ...proSorted];
+    }
+
+    // Fallback: if still fewer than 5, add 60%+ matches
+    if (pool.length < 5) {
+      const fallback = valid
+        .filter(p => (p.confidence ?? 0) >= 60 && !pool.some(pp => pp.id === p.id))
+        .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+      pool = [...pool, ...fallback];
+    }
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
@@ -129,7 +150,7 @@ export default function MatchPreviews() {
       previewMap.set(pv.match_id, pv);
     }
 
-    // Sort by confidence descending (safest first), then league quality
+    // Secondary sort by league quality within same confidence
     pool.sort((a, b) => {
       const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
       if (confDiff !== 0) return confDiff;
@@ -138,6 +159,7 @@ export default function MatchPreviews() {
 
     return pool.slice(0, MAX_MATCHES).map((p, i) => {
       const pv = previewMap.get(p.match_id);
+      const bestPick = getBestMarketPick(p);
       return {
         id: p.id,
         match_id: p.match_id,
@@ -153,11 +175,14 @@ export default function MatchPreviews() {
         draw: p.draw,
         key_factors: p.key_factors,
         analysis: p.analysis,
+        prediction: p.prediction,
+        predicted_score: p.predicted_score,
         tactical_notes: pv?.tactical_notes ?? null,
         home_form: pv?.home_form ?? null,
         away_form: pv?.away_form ?? null,
         h2h_summary: pv?.h2h_summary ?? null,
         rank: i + 1,
+        bestPick,
       };
     });
   }, [previews, predictions]);
@@ -323,6 +348,15 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
+                    {/* Best Market Pick */}
+                    {match.bestPick && (
+                      <div className="flex justify-center">
+                        <Badge className="text-xs px-3 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                          {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
+                        </Badge>
+                      </div>
+                    )}
+
                     {/* Analysis preview */}
                     {snippets.length > 0 && (
                       <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
@@ -379,22 +413,50 @@ function getUnlockPercentage(matchId: string): number {
 }
 
 
-function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null }) {
+/**
+ * Derive the single best market pick for a prediction using Poisson model.
+ * Returns the market with the highest probability (e.g., "BTTS Yes 87%", "Over 2.5 72%", "Home Win 65%").
+ */
+function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji: string } {
+  const goalProbs = calculateGoalMarketProbs(p);
+  const hw = p.home_win ?? 0;
+  const aw = p.away_win ?? 0;
+  const dw = p.draw ?? 0;
+
+  // Collect all markets with their probabilities
+  const markets: { label: string; pct: number; emoji: string }[] = [
+    { label: `${p.home_team} Win`, pct: hw, emoji: "🏠" },
+    { label: `${p.away_team} Win`, pct: aw, emoji: "✈️" },
+    { label: "Draw", pct: dw, emoji: "🤝" },
+    { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
+    { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
+    { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
+    { label: "Under 3.5", pct: goalProbs.under35, emoji: "📉" },
+  ];
+
+  // Return the market with highest probability
+  return markets.reduce((best, m) => m.pct > best.pct ? m : best, markets[0]);
+}
+
+
+function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null; bestPick?: { label: string; pct: number; emoji: string } }) {
   const snippets: { icon: string; text: string }[] = [];
+
+  // Best market pick first
+  if (match.bestPick) {
+    snippets.push({ icon: match.bestPick.emoji, text: `Best Pick: ${match.bestPick.label} — ${match.bestPick.pct}% probability` });
+  }
+
   const hw = match.home_win ?? 0;
   const aw = match.away_win ?? 0;
   const favored = hw >= aw ? match.home_team : match.away_team;
   const pct = Math.max(hw, aw);
 
-  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability — clear edge` });
+  snippets.push({ icon: "🟢", text: `${favored} dominates with ${pct}% win probability` });
 
   if (match.key_factors && match.key_factors.length > 0) {
     snippets.push({ icon: "🔧", text: match.key_factors[0] });
-  } else {
-    snippets.push({ icon: "🔧", text: "Goal trends and defensive weaknesses support an open game" });
   }
-
-  snippets.push({ icon: "✨", text: `AI confidence is ${match.confidence ?? 0}% — strong conviction pick` });
 
   return snippets;
 }
