@@ -11,6 +11,7 @@ interface Props {
 
 export function GoalsMarketTab({ prediction, hasAccess }: Props) {
   const probs = calculateGoalMarketProbs(prediction);
+  const scoreConstraints = getRecommendedScoreConstraints(prediction);
 
   const goals = [
     { label: "Over 1.5", prob: probs.over15, recommended: probs.over15 >= 55 },
