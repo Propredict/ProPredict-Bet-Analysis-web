@@ -2150,12 +2150,45 @@ async function markPredictionLocked(
   }
 
   const varied = hashToVaried(predictionId);
-  let fallbackPrediction: "1" | "X" | "2" = varied.pred;
+  
+  // Diversify market type based on hash — don't always use 1X2
+  const marketVariants = [
+    "1", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No", 
+    "Over 1.5", "Under 3.5", "DC 1X", "DC X2"
+  ];
+  let hash2 = 0;
+  for (let i = 0; i < predictionId.length; i++) {
+    hash2 = ((hash2 << 3) + hash2) + predictionId.charCodeAt(i);
+    hash2 |= 0;
+  }
+  const marketIdx = Math.abs(hash2) % marketVariants.length;
+  const variedMarket = marketVariants[marketIdx];
+  
+  let fallbackPrediction: string = variedMarket;
   let fallbackConfidence = 50;
   let fallbackHomeWin = varied.hw;
   let fallbackDraw = varied.dr;
   let fallbackAwayWin = varied.aw;
-  let fallbackPredictedScore = fallbackPrediction === "1" ? "1-0" : fallbackPrediction === "2" ? "0-1" : "1-1";
+  
+  // Generate score that matches the prediction type
+  function getScoreForMarket(market: string, hw: number, aw: number): string {
+    switch (market) {
+      case "Over 2.5": return hw > aw ? "2-1" : "1-2";
+      case "Over 1.5": return hw > aw ? "1-1" : "1-1";
+      case "Under 2.5": return hw > aw ? "1-0" : "0-1";
+      case "Under 3.5": return hw > aw ? "2-0" : "0-2";
+      case "BTTS Yes": return hw > aw ? "2-1" : "1-2";
+      case "BTTS No": return hw > aw ? "2-0" : "0-1";
+      case "DC 1X": return "1-1";
+      case "DC X2": return "1-1";
+      case "1": return "1-0";
+      case "2": return "0-1";
+      case "X": return "1-1";
+      default: return "1-0";
+    }
+  }
+  
+  let fallbackPredictedScore = getScoreForMarket(variedMarket, varied.hw, varied.aw);
   let fallbackAnalysis = `Pending data from API-Football. ${reason}`;
 
   // If odds exist, use them as fallback (more accurate than hash-based)
