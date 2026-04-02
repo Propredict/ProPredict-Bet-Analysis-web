@@ -126,13 +126,12 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
-  const topScores = displayTier === "premium" 
-    ? calculateTopCorrectScores(prediction) 
-    : displayTier === "pro" 
-    ? calculateTopCorrectScores(prediction).slice(0, 2) 
-    : [];
-
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+  const topScores = displayTier === "premium"
+    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
+    : displayTier === "pro"
+    ? getConsistentTopCorrectScores(prediction, { marketType: pick.type }, 2)
+    : [];
 
   return (
     <div className="space-y-3 md:space-y-4">
