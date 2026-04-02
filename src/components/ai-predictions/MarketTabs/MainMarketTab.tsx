@@ -3,10 +3,11 @@ import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
+  calculateTopCorrectScores,
   getBestPickType,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode; type: MarketType };
 
@@ -87,6 +88,7 @@ interface Props {
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
+  const topScores = displayTier === "premium" ? calculateTopCorrectScores(prediction) : [];
 
   return (
     <div className="space-y-3 md:space-y-4">
@@ -194,6 +196,39 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ===== Top 3 Correct Scores — Premium only ===== */}
+      {hasAccess && displayTier === "premium" && topScores.length > 0 && (
+        <div className="pt-1">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Crosshair className="w-3 h-3 text-fuchsia-400" />
+            <span className="text-[10px] md:text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">
+              Top Correct Scores
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            {topScores.map((s, i) => (
+              <div
+                key={s.score}
+                className={cn(
+                  "text-center py-2 rounded-md border",
+                  i === 0
+                    ? "border-fuchsia-500/40 bg-fuchsia-500/10"
+                    : "border-border/30 bg-card/20"
+                )}
+              >
+                <div className="text-sm md:text-base font-bold text-foreground">{s.score}</div>
+                <div className={cn(
+                  "text-[9px] md:text-[10px] font-medium",
+                  i === 0 ? "text-fuchsia-400" : "text-muted-foreground"
+                )}>
+                  {s.probability}%
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
