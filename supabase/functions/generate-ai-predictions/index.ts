@@ -1321,9 +1321,9 @@ function calculatePrediction(
   // Clamp to realistic range
   confidence = Math.round(clamp(confidence, 30, 95));
 
-  // === RISK (simple) ===
+  // === RISK (aligned with new tiers) ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 75) riskLevel = "low";
+  if (confidence >= 76) riskLevel = "low";
   else if (confidence >= 60) riskLevel = "medium";
   else riskLevel = "high";
 
