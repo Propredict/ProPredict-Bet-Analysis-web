@@ -2811,7 +2811,7 @@ async function handleBatchRegenerate(
             is_premium: false,
             is_locked: true,
             prediction: "X",
-            predicted_score: null,
+            predicted_score: "1-1",
             confidence: 50,
             home_win: 33,
             draw: 34,
