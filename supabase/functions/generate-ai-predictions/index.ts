@@ -2196,6 +2196,87 @@ const buildPseudoFormFromStats = (stats: TeamStats | null): FormMatch[] => {
 };
 
 /**
+ * Generate SAFE COMBO suggestions based on xG and market probabilities.
+ */
+function generateSafeCombo(
+  homeXg: number,
+  awayXg: number,
+  goalMarkets: { over25: number; bttsYes: number; over15: number; under35: number },
+  homeWin: number,
+  awayWin: number,
+  draw: number
+): string | null {
+  const totalXg = homeXg + awayXg;
+  const dc1X = homeWin + draw;
+  const dcX2 = awayWin + draw;
+
+  // BTTS + Over 2.5 — both attacks active and high total xG
+  if (totalXg > 2.5 && goalMarkets.bttsYes > 60 && goalMarkets.over25 > 60) {
+    return "BTTS Yes + Over 2.5";
+  }
+  // Strong favorite + Under 3.5
+  if (Math.max(homeWin, awayWin) > 55 && goalMarkets.under35 > 70 && totalXg < 3.0) {
+    const fav = homeWin > awayWin ? "1" : "2";
+    return `${fav} + Under 3.5`;
+  }
+  // DC 1X + Over 1.5
+  if (dc1X > 72 && goalMarkets.over15 > 75) {
+    return "DC 1X + Over 1.5";
+  }
+  // DC X2 + Over 1.5
+  if (dcX2 > 72 && goalMarkets.over15 > 75) {
+    return "DC X2 + Over 1.5";
+  }
+  // Over 1.5 + BTTS Yes
+  if (goalMarkets.over15 > 78 && goalMarkets.bttsYes > 55) {
+    return "Over 1.5 + BTTS Yes";
+  }
+  return null;
+}
+
+/**
+ * Generate structured tags for key_factors (displayed as badges on frontend).
+ * Tags: SAFE, ULTRA_STRONG, HIGH_TEMPO, MEDIUM_TEMPO, LOW_TEMPO,
+ *        VALUE, STRONG_VALUE, SAFE_COMBO:..., MARKET:STRONG, MARKET:UP, MARKET:DOWN
+ */
+function generateStructuredTags(
+  confidence: number,
+  tempo: { label: "LOW" | "MEDIUM" | "HIGH" },
+  value: { label: string; isValueBet: boolean; isStrongValue: boolean },
+  ultra: { isUltra: boolean },
+  safeCombo: string | null,
+  odds: OddsData | null,
+  aiProb: number,
+  bookmakerProb: number
+): string[] {
+  const tags: string[] = [];
+
+  // Confidence tier tags
+  if (confidence >= 85) tags.push("SAFE");
+  if (ultra.isUltra) tags.push("ULTRA_STRONG");
+
+  // Tempo
+  tags.push(`${tempo.label}_TEMPO`);
+
+  // Value
+  if (value.isStrongValue) tags.push("STRONG_VALUE");
+  else if (value.isValueBet) tags.push("VALUE");
+
+  // Safe combo
+  if (safeCombo) tags.push(`SAFE_COMBO:${safeCombo}`);
+
+  // Market signal
+  if (odds) {
+    const shortestOdds = Math.min(odds.homeOdds, odds.awayOdds);
+    if (shortestOdds < 1.50) tags.push("MARKET:STRONG");
+    const probDiff = Math.abs(aiProb - bookmakerProb);
+    if (probDiff <= 5) tags.push("MARKET:ALIGNED");
+  }
+
+  return tags;
+}
+
+/**
  * Generate specific key_factors from real match data instead of generic ones.
  */
 function generateKeyFactors(
@@ -2208,9 +2289,17 @@ function generateKeyFactors(
   h2h: H2HMatch[],
   homeTeamId: number,
   prediction: string,
-  goalMarkets: { over25: number; bttsYes: number; expectedTotalGoals: number }
+  goalMarkets: { over25: number; bttsYes: number; expectedTotalGoals: number },
+  structuredTags?: string[]
 ): string[] {
   const factors: string[] = [];
+
+  // 0. Add structured tags FIRST (frontend parses these)
+  if (structuredTags && structuredTags.length > 0) {
+    for (const tag of structuredTags) {
+      factors.push(`[TAG]${tag}`);
+    }
+  }
 
   // 1. Form streaks
   if (homeForm.length >= 3) {
@@ -2252,13 +2341,13 @@ function generateKeyFactors(
     else if (homeH2HWins === 0) factors.push(`H2H: ${awayTeamName} dominates`);
   }
 
-  // 4. Clean sheets / defensive
+  // 4. Clean sheets
   if (homeStats && homeStats.cleanSheets.total > 0) {
     const csRate = homeStats.cleanSheets.total / homeStats.played;
     if (csRate >= 0.4) factors.push(`${homeTeamName}: Strong defense (${homeStats.cleanSheets.total} clean sheets)`);
   }
 
-  // 5. Goal market insights (Poisson-derived)
+  // 5. Goal market insights
   if (goalMarkets.over25 >= 65) factors.push(`High-scoring trend (Over 2.5: ${goalMarkets.over25}%)`);
   else if (goalMarkets.over25 <= 35) factors.push(`Low-scoring trend (Under 2.5: ${100 - goalMarkets.over25}%)`);
   
@@ -2271,22 +2360,8 @@ function generateKeyFactors(
     if (totalAvg >= 3.5) factors.push(`High-scoring teams (avg ${totalAvg.toFixed(1)} goals combined)`);
   }
 
-  // 7. Last 10 matches form summary
-  if (homeForm.length >= 8) {
-    const wins = homeForm.filter(m => m.result === "W").length;
-    const ratio = wins / homeForm.length;
-    if (ratio >= 0.7) factors.push(`${homeTeamName}: ${wins}/${homeForm.length} wins in recent matches`);
-    else if (ratio <= 0.2) factors.push(`${homeTeamName}: Only ${wins}/${homeForm.length} recent wins`);
-  }
-  if (awayForm.length >= 8) {
-    const wins = awayForm.filter(m => m.result === "W").length;
-    const ratio = wins / awayForm.length;
-    if (ratio >= 0.7) factors.push(`${awayTeamName}: ${wins}/${awayForm.length} wins in recent matches`);
-    else if (ratio <= 0.2) factors.push(`${awayTeamName}: Only ${wins}/${awayForm.length} recent wins`);
-  }
-
-  // Limit to 6 most relevant factors
-  return factors.slice(0, 6);
+  // Limit to 8 factors (structured tags + data factors)
+  return factors.slice(0, 8);
 }
 
 /**
