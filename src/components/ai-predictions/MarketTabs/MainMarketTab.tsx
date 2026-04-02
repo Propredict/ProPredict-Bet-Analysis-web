@@ -192,6 +192,62 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             />
           </div>
 
+          {/* AI Tags — badges for tempo, value, market signal, safe combo */}
+          {(parsedTags.tags.length > 0) && (
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {parsedTags.isUltra && (
+                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                  <Flame className="w-2.5 h-2.5" />
+                  ULTRA STRONG
+                </Badge>
+              )}
+              {parsedTags.isSafe && !parsedTags.isUltra && (
+                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                  <Shield className="w-2.5 h-2.5" />
+                  SAFE
+                </Badge>
+              )}
+              {parsedTags.tempo && (
+                <Badge className={cn(
+                  "text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5",
+                  parsedTags.tempo === "HIGH" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+                  parsedTags.tempo === "LOW" ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
+                  "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                )}>
+                  <Activity className="w-2.5 h-2.5" />
+                  {parsedTags.tempo}
+                </Badge>
+              )}
+              {parsedTags.hasStrongValue && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                  <DollarSign className="w-2.5 h-2.5" />
+                  STRONG VALUE
+                </Badge>
+              )}
+              {parsedTags.hasValue && !parsedTags.hasStrongValue && (
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                  <DollarSign className="w-2.5 h-2.5" />
+                  VALUE
+                </Badge>
+              )}
+              {parsedTags.marketStrong && (
+                <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                  <TrendingUp className="w-2.5 h-2.5" />
+                  MARKET STRONG
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* SAFE COMBO — Premium only */}
+          {parsedTags.safeCombo && displayTier === "premium" && (
+            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
+              <Sparkles className="w-3 h-3 text-fuchsia-400" />
+              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400">SAFE COMBO:</span>
+              <span className="text-[9px] md:text-[10px] font-bold text-foreground">{parsedTags.safeCombo}</span>
+            </div>
+          )}
+
           {/* Predicted Score */}
           {prediction.predicted_score && (
             <p className="text-[10px] md:text-xs text-muted-foreground/80">
