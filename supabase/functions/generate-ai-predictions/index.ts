@@ -1266,17 +1266,17 @@ function calculatePrediction(
   const dcX2 = awayWin + draw;
 
   const defaultPriority: Record<string, number> = {
-    "Under 3.5": 1.08,
     "Over 1.5": 1.06,
-    "BTTS Yes": 1.05,
-    "BTTS No": 1.05,
+    "Under 3.5": 1.05,
     "DC 1X": 1.04,
     "DC X2": 1.04,
+    "BTTS Yes": 1.03,
+    "BTTS No": 1.03,
     "DC 12": 1.02,
-    "Over 2.5": 1.00,
-    "Under 2.5": 1.00,
-    "1": 0.97,
-    "2": 0.97,
+    "Over 2.5": 1.01,
+    "Under 2.5": 0.99,    // Reduced — was over-selected for low-data matches
+    "1": 1.00,
+    "2": 1.00,
     "Over 3.5": 0.95,
     "Under 1.5": 0.93,
     "X": 0.82,  // Draw more suppressed
@@ -1362,11 +1362,41 @@ function calculatePrediction(
   const bestProb = bestMarket.prob;
 
   // === SCORE PREDICTION ===
-  const predictedScore = predictScoreV2({
-    homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
-    prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction :
-                (homeWin >= awayWin ? "1" : "2"),
-  });
+  // For goal/BTTS markets, generate score that matches the market
+  let scorePrediction: string;
+  if (prediction === "Over 2.5" || prediction === "Over 3.5") {
+    const hg = Math.max(1, Math.round(homeXg));
+    const ag = Math.max(1, Math.round(awayXg));
+    const total = hg + ag;
+    if (total <= 2) scorePrediction = homeXg > awayXg ? "2-1" : "1-2";
+    else scorePrediction = `${hg}-${ag}`;
+  } else if (prediction === "BTTS Yes") {
+    const hg = Math.max(1, Math.round(homeXg));
+    const ag = Math.max(1, Math.round(awayXg));
+    scorePrediction = `${hg}-${ag}`;
+  } else if (prediction === "BTTS No") {
+    if (homeXg > awayXg) scorePrediction = `${Math.max(1, Math.round(homeXg))}-0`;
+    else scorePrediction = `0-${Math.max(1, Math.round(awayXg))}`;
+  } else if (prediction === "Under 2.5" || prediction === "Under 1.5") {
+    if (homeXg > awayXg) scorePrediction = "1-0";
+    else if (awayXg > homeXg) scorePrediction = "0-1";
+    else scorePrediction = "1-1";
+  } else if (prediction === "Under 3.5") {
+    if (homeXg > awayXg) scorePrediction = "2-0";
+    else scorePrediction = "1-1";
+  } else if (prediction.startsWith("DC")) {
+    scorePrediction = predictScoreV2({
+      homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
+      prediction: homeWin >= awayWin ? "1" : "2",
+    });
+  } else {
+    scorePrediction = predictScoreV2({
+      homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
+      prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction :
+                  (homeWin >= awayWin ? "1" : "2"),
+    });
+  }
+  const predictedScore = scorePrediction;
 
   // === D) MARKET INTELLIGENCE (odds alignment) ===
   let bookmakerProb = 0;
@@ -2150,12 +2180,45 @@ async function markPredictionLocked(
   }
 
   const varied = hashToVaried(predictionId);
-  let fallbackPrediction: "1" | "X" | "2" = varied.pred;
+  
+  // Diversify market type based on hash — don't always use 1X2
+  const marketVariants = [
+    "1", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No", 
+    "Over 1.5", "Under 3.5", "DC 1X", "DC X2"
+  ];
+  let hash2 = 0;
+  for (let i = 0; i < predictionId.length; i++) {
+    hash2 = ((hash2 << 3) + hash2) + predictionId.charCodeAt(i);
+    hash2 |= 0;
+  }
+  const marketIdx = Math.abs(hash2) % marketVariants.length;
+  const variedMarket = marketVariants[marketIdx];
+  
+  let fallbackPrediction: string = variedMarket;
   let fallbackConfidence = 50;
   let fallbackHomeWin = varied.hw;
   let fallbackDraw = varied.dr;
   let fallbackAwayWin = varied.aw;
-  let fallbackPredictedScore = fallbackPrediction === "1" ? "1-0" : fallbackPrediction === "2" ? "0-1" : "1-1";
+  
+  // Generate score that matches the prediction type
+  function getScoreForMarket(market: string, hw: number, aw: number): string {
+    switch (market) {
+      case "Over 2.5": return hw > aw ? "2-1" : "1-2";
+      case "Over 1.5": return hw > aw ? "1-1" : "1-1";
+      case "Under 2.5": return hw > aw ? "1-0" : "0-1";
+      case "Under 3.5": return hw > aw ? "2-0" : "0-2";
+      case "BTTS Yes": return hw > aw ? "2-1" : "1-2";
+      case "BTTS No": return hw > aw ? "2-0" : "0-1";
+      case "DC 1X": return "1-1";
+      case "DC X2": return "1-1";
+      case "1": return "1-0";
+      case "2": return "0-1";
+      case "X": return "1-1";
+      default: return "1-0";
+    }
+  }
+  
+  let fallbackPredictedScore = getScoreForMarket(variedMarket, varied.hw, varied.aw);
   let fallbackAnalysis = `Pending data from API-Football. ${reason}`;
 
   // If odds exist, use them as fallback (more accurate than hash-based)
@@ -2819,8 +2882,7 @@ async function handleBatchRegenerate(
           const f = fixtureById.get(id);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
 
-          // Generate varied placeholder probabilities using fixture ID hash
-          // so cards don't all show identical 33/34/33
+          // Generate varied placeholder probabilities and MARKET TYPES
           let hash = 0;
           for (let i = 0; i < id.length; i++) {
             hash = ((hash << 5) - hash) + id.charCodeAt(i);
@@ -2833,7 +2895,24 @@ async function handleBatchRegenerate(
           const hw = swapBias === 1 ? awayBase : homeBase;
           const dr = drawBase;
           const aw = swapBias === 1 ? homeBase : awayBase;
-          const pred = hw >= aw ? "1" : "2";
+          
+          // Diversify market types for placeholders
+          const placeholderMarkets = [
+            "1", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No",
+            "Over 1.5", "Under 3.5", "DC 1X", "DC X2"
+          ];
+          const mktIdx = Math.abs((hash >> 12)) % placeholderMarkets.length;
+          const pred = placeholderMarkets[mktIdx];
+          
+          // Score matching the market
+          const scoreMap: Record<string, string> = {
+            "1": "1-0", "2": "0-1", "X": "1-1",
+            "Over 2.5": hw > aw ? "2-1" : "1-2",
+            "Under 2.5": hw > aw ? "1-0" : "0-1",
+            "BTTS Yes": "1-1", "BTTS No": hw > aw ? "2-0" : "0-1",
+            "Over 1.5": "1-1", "Under 3.5": hw > aw ? "2-0" : "0-2",
+            "DC 1X": "1-0", "DC X2": "0-1",
+          };
 
           return {
             match_id: id,
@@ -2847,7 +2926,7 @@ async function handleBatchRegenerate(
             is_premium: false,
             is_locked: true,
             prediction: pred,
-            predicted_score: pred === "1" ? "1-0" : "0-1",
+            predicted_score: scoreMap[pred] || "1-0",
             confidence: 50,
             home_win: hw,
             draw: dr,
