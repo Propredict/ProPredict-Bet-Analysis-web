@@ -51,16 +51,15 @@ function getLeaguePriority(league: string | null): number {
   return entry ? entry[1] : 999;
 }
 
-function getRiskColor(confidence: number | null) {
-  if (!confidence) return { label: "Unknown", color: "text-muted-foreground", dot: "bg-muted-foreground" };
-  if (confidence >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
-  if (confidence >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
+function getRiskColor(bestPickPct: number) {
+  if (bestPickPct >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
+  if (bestPickPct >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
   return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
 }
 
-function getRiskRating(confidence: number): string {
-  if (confidence >= 80) return "low";
-  if (confidence >= 65) return "medium";
+function getRiskRating(bestPickPct: number): string {
+  if (bestPickPct >= 80) return "low";
+  if (bestPickPct >= 65) return "medium";
   return "high";
 }
 
