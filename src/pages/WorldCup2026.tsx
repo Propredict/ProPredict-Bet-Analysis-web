@@ -67,7 +67,16 @@ export default function WorldCup2026() {
   const navigate = useNavigate();
   const { plan, isAdmin } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("world_cup_2026");
+    }
+  }, [maybeShowInterstitial]);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
