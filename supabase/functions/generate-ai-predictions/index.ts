@@ -9,28 +9,20 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-// ============ TIER CRITERIA ============
-// Dynamic distribution: predictions sorted by confidence, then:
-//   Top 10% → PREMIUM
-//   Next 30% → PRO  
-//   Bottom 60% → FREE
-// Minimum confidence to display at all: 60%
-// Fallback fixed thresholds (used only when dynamic calc isn't available on frontend)
-const MIN_DISPLAY_CONFIDENCE = 50;
-const FREE_MAX_CONFIDENCE = 72;
-const PRO_MIN_CONFIDENCE = 73;
-const PRO_MAX_CONFIDENCE = 82;
-const PREMIUM_MIN_CONFIDENCE = 83;
+// ============ TIER CRITERIA (v3) ============
+// 0–59  → FREE
+// 60–75 → PRO
+// 75+   → PREMIUM
+// 85+   → SAFE PICK (subset of PREMIUM, shown first)
+const MIN_DISPLAY_CONFIDENCE = 45;
+const FREE_MAX_CONFIDENCE = 59;
+const PRO_MIN_CONFIDENCE = 60;
+const PRO_MAX_CONFIDENCE = 75;
+const PREMIUM_MIN_CONFIDENCE = 76;
+const SAFE_PICK_MIN_CONFIDENCE = 85;
 
-// Dynamic distribution percentages
-const PREMIUM_PERCENT = 0.10; // Top 10%
-const PRO_PERCENT = 0.30;     // Next 30%
-// Remaining 60% → FREE
-
-const PREMIUM_MAX_DRAWS = 1;
-const PREMIUM_MAX_COUNT = 10;
+const PREMIUM_MAX_COUNT = 15;
 const PREMIUM_MIN_COUNT = 5;
-const PREMIUM_ALLOWED_RISK = ["low", "medium"];
 
 // ============ MINIMUM DATA THRESHOLDS ============
 const MIN_SEASON_MATCHES = 5;
