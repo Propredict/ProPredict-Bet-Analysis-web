@@ -55,7 +55,13 @@ export default function WorldCup2026() {
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
-  const [adUnlockedToday, setAdUnlockedToday] = useState(false);
+  const getWcUnlockKey = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    return `propredict_wc2026_unlocked_${today}`;
+  };
+  const [adUnlockedToday, setAdUnlockedToday] = useState(() => {
+    try { return localStorage.getItem(getWcUnlockKey()) === "true"; } catch { return false; }
+  });
   const [adLoading, setAdLoading] = useState(false);
 
   // Tier access helpers
