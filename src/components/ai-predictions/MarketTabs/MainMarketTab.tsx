@@ -5,6 +5,7 @@ import {
   calculateGoalMarketProbs,
   calculateTopCorrectScores,
   getBestPickType,
+  getDerivedPredictedScore,
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
