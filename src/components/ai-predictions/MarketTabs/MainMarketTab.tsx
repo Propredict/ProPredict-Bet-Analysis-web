@@ -7,7 +7,7 @@ import {
   getBestPickType,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair } from "lucide-react";
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode; type: MarketType };
 

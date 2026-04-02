@@ -95,6 +95,31 @@ export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketPr
 }
 
 /**
+ * Calculate top 3 most likely correct scores using Poisson model
+ */
+export interface CorrectScorePrediction {
+  score: string;
+  probability: number;
+}
+
+export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScorePrediction[] {
+  const score = parseScore(prediction.predicted_score);
+  const homeXg = score ? Math.max(0.4, score.home * 0.85 + 0.2) : 1.3;
+  const awayXg = score ? Math.max(0.3, score.away * 0.85 + 0.15) : 1.0;
+
+  const scores: CorrectScorePrediction[] = [];
+  for (let h = 0; h <= 5; h++) {
+    for (let a = 0; a <= 5; a++) {
+      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
+      scores.push({ score: `${h}-${a}`, probability: Math.round(p * 1000) / 10 });
+    }
+  }
+
+  scores.sort((a, b) => b.probability - a.probability);
+  return scores.slice(0, 3);
+}
+
+/**
  * Get confidence explanation based on level
  */
 export function getConfidenceExplanation(confidence: number): string {
