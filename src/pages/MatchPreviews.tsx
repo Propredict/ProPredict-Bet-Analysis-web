@@ -118,11 +118,31 @@ export default function MatchPreviews() {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
-    // Prefer 80%+ matches, fallback to 70%+ if fewer than 5 high-confidence ones
-    const highConf = valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_PRIMARY);
-    const pool = highConf.length >= 5
-      ? highConf
-      : valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_FALLBACK);
+
+    // Tier 1: Premium picks (≥78% confidence)
+    const premium = valid.filter(p => (p.confidence ?? 0) >= 78);
+    // Tier 2: Pro picks (65-77% confidence)
+    const pro = valid.filter(p => {
+      const c = p.confidence ?? 0;
+      return c >= 65 && c < 78;
+    });
+
+    // Start with all premium, sorted by confidence desc
+    let pool = [...premium].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+
+    // If fewer than MAX_MATCHES, fill with pro picks sorted by confidence desc
+    if (pool.length < MAX_MATCHES) {
+      const proSorted = [...pro].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+      pool = [...pool, ...proSorted];
+    }
+
+    // Fallback: if still fewer than 5, add 60%+ matches
+    if (pool.length < 5) {
+      const fallback = valid
+        .filter(p => (p.confidence ?? 0) >= 60 && !pool.some(pp => pp.id === p.id))
+        .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+      pool = [...pool, ...fallback];
+    }
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
@@ -130,7 +150,7 @@ export default function MatchPreviews() {
       previewMap.set(pv.match_id, pv);
     }
 
-    // Sort by confidence descending (safest first), then league quality
+    // Secondary sort by league quality within same confidence
     pool.sort((a, b) => {
       const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
       if (confDiff !== 0) return confDiff;
@@ -139,6 +159,7 @@ export default function MatchPreviews() {
 
     return pool.slice(0, MAX_MATCHES).map((p, i) => {
       const pv = previewMap.get(p.match_id);
+      const bestPick = getBestMarketPick(p);
       return {
         id: p.id,
         match_id: p.match_id,
@@ -154,11 +175,14 @@ export default function MatchPreviews() {
         draw: p.draw,
         key_factors: p.key_factors,
         analysis: p.analysis,
+        prediction: p.prediction,
+        predicted_score: p.predicted_score,
         tactical_notes: pv?.tactical_notes ?? null,
         home_form: pv?.home_form ?? null,
         away_form: pv?.away_form ?? null,
         h2h_summary: pv?.h2h_summary ?? null,
         rank: i + 1,
+        bestPick,
       };
     });
   }, [previews, predictions]);
