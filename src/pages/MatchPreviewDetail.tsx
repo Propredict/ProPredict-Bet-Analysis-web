@@ -70,6 +70,31 @@ function getPredictionEmoji(prediction: string | null) {
   return "📊";
 }
 
+/**
+ * Get the single best market pick across ALL markets using Poisson probabilities.
+ * This is the same logic used on MatchPreviews list cards.
+ */
+function getHeroBestPick(pred: any): { label: string; pct: number; emoji: string } {
+  const goalProbs = calculateGoalMarketProbs(pred);
+  const hw = pred.home_win ?? 0;
+  const aw = pred.away_win ?? 0;
+  const dw = pred.draw ?? 0;
+
+  const markets: { label: string; pct: number; emoji: string }[] = [
+    { label: `${pred.home_team} Win`, pct: hw, emoji: "🏠" },
+    { label: `${pred.away_team} Win`, pct: aw, emoji: "✈️" },
+    { label: "Draw", pct: dw, emoji: "🤝" },
+    { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
+    { label: "BTTS No", pct: goalProbs.bttsNo, emoji: "🛡️" },
+    { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
+    { label: "Under 2.5", pct: goalProbs.under25, emoji: "📉" },
+    { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
+    { label: "Under 3.5", pct: goalProbs.under35, emoji: "🔒" },
+  ];
+
+  return markets.reduce((best, m) => m.pct > best.pct ? m : best, markets[0]);
+}
+
 function extractGoalsFromAnalysis(analysis: string | null): {
   homeGoals: number;
   awayGoals: number;
