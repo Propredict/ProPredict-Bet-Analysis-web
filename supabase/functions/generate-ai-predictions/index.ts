@@ -2712,7 +2712,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
       dates: { today: todayStr, tomorrow: tomorrowStr },
       todayBatchTriggered: todayOk,
       tomorrowBatchTriggered: tomorrowOk,
-      algorithm: "Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty, self-learning.",
+      algorithm: "v3: Confidence = (form_diff*0.30 + xG_score*0.30 + odds_diff*0.20 + consistency*0.20). Tiers: 0-59 FREE, 60-75 PRO, 76+ PREMIUM, 85+ SAFE PICKS.",
       batchSize: BATCH_SIZE,
     }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
