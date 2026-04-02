@@ -5,6 +5,7 @@ import {
   calculateGoalMarketProbs,
   calculateTopCorrectScores,
   getBestPickType,
+  getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   type MarketType,
 } from "../utils/marketDerivation";
