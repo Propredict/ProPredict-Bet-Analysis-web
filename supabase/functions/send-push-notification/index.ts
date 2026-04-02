@@ -149,15 +149,26 @@ serve(async (req) => {
     const contentTier = record.tier ?? "free";
     const body = getPublishBody(type, record);
 
-    /* ── Build nav_path based on tier ── */
+    /* ── Build nav_path based on category first, then tier ── */
+    const category = record.category ?? null;
+    const categoryRouteMap: Record<string, string> = {
+      diamond_pick: "/diamond-pick",
+      risk_of_the_day: "/risk-of-the-day",
+      multi_risk: type === "tip" ? "/risk-of-the-day" : "/multi-risk-matches",
+    };
     const tierRouteMap: Record<string, string> = {
       premium: type === "tip" ? "premium-analysis" : "premium-predictions",
       exclusive: type === "tip" ? "pro-analysis" : "pro-predictions",
       daily: type === "tip" ? "daily-analysis" : "daily-predictions",
       free: type === "tip" ? "daily-analysis" : "daily-predictions",
     };
-    const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
-    const navPath = `/${route}?highlight=${record.id}&plan_required=${contentTier}`;
+    let navPath: string;
+    if (category && categoryRouteMap[category]) {
+      navPath = `${categoryRouteMap[category]}?highlight=${record.id}`;
+    } else {
+      const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
+      navPath = `/${route}?highlight=${record.id}&plan_required=${contentTier}`;
+    }
 
     /* ── Fetch tokens ── */
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -228,7 +239,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[send-push] tier=${contentTier}, route=${route}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
+    console.log(`[send-push] tier=${contentTier}, category=${category}, navPath=${navPath}, eligible=${totalEligible}/${tokensByUser.size}, free=${planGroups.free.length}, pro=${planGroups.pro.length}, premium=${planGroups.premium.length}`);
 
     /* ── Send one notification per plan group ── */
     const results: unknown[] = [];
@@ -237,7 +248,7 @@ serve(async (req) => {
       if (ids.length === 0) continue;
 
       // Special categories override the standard headline
-      const specialHeadline = getSpecialHeadline(record.category ?? null);
+      const specialHeadline = getSpecialHeadline(category);
       const headline = specialHeadline ?? getPublishHeadline(contentTier, plan);
 
       const payload = {
