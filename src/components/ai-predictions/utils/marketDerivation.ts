@@ -202,26 +202,26 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
   const totalGoals = parsedDerived ? parsedDerived.home + parsedDerived.away : 2;
   const bothScored = parsedDerived ? parsedDerived.home > 0 && parsedDerived.away > 0 : goalProbs.bttsYes > 50;
   
-  // Goals markets derived from predicted_score
+  // Goals markets derived from Poisson probabilities (consistent with Goals tab)
   const goals = {
     over15: {
-      recommended: totalGoals > 1.5,
-      value: totalGoals > 1.5 ? "Yes" : "No",
+      recommended: goalProbs.over15 > 55,
+      value: goalProbs.over15 > 55 ? "Yes" : "No",
     },
     over25: {
-      recommended: totalGoals > 2.5,
-      value: totalGoals > 2.5 ? "Yes" : "No",
+      recommended: goalProbs.over25 > 55,
+      value: goalProbs.over25 > 55 ? "Yes" : "No",
     },
     under35: {
-      recommended: totalGoals < 3.5,
-      value: totalGoals < 3.5 ? "Yes" : "No",
+      recommended: goalProbs.over35 < 45,
+      value: goalProbs.over35 < 45 ? "Yes" : "No",
     },
   };
 
-  // BTTS derived from score
+  // BTTS derived from Poisson probabilities (consistent with BTTS tab)
   const btts = {
-    gg: { recommended: bothScored },
-    ng: { recommended: !bothScored },
+    gg: { recommended: goalProbs.bttsYes > 50 },
+    ng: { recommended: goalProbs.bttsNo > 50 },
   };
 
   // Double Chance derived from main prediction (use 1X2 probabilities for goal market predictions)
