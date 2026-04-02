@@ -13,7 +13,6 @@ import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
-import { setPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -55,7 +54,13 @@ export default function WorldCup2026() {
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
-  const [adUnlockedToday, setAdUnlockedToday] = useState(false);
+  const getWcUnlockKey = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    return `propredict_wc2026_unlocked_${today}`;
+  };
+  const [adUnlockedToday, setAdUnlockedToday] = useState(() => {
+    try { return localStorage.getItem(getWcUnlockKey()) === "true"; } catch { return false; }
+  });
   const [adLoading, setAdLoading] = useState(false);
 
   // Tier access helpers
@@ -76,8 +81,8 @@ export default function WorldCup2026() {
     if (adLoading) return;
     setAdLoading(true);
 
-    setPendingAdUnlock({ contentType: "prediction" as any, contentId: "wc2026-today" });
-
+    // Don't set pendingAdUnlock — WC page handles its own unlock flow
+    // to avoid the global UserPlanProvider handler interfering
     const android = (window as any).Android;
     if (android && typeof android.watchRewardedAd === "function") {
       android.watchRewardedAd();
@@ -90,13 +95,12 @@ export default function WorldCup2026() {
       const data = typeof event.data === "string" ? (() => { try { return JSON.parse(event.data); } catch { return {}; } })() : event.data;
       if (data?.type === "AD_UNLOCK_SUCCESS") {
         setAdUnlockedToday(true);
+        try { localStorage.setItem(getWcUnlockKey(), "true"); } catch {}
         setAdLoading(false);
-        clearPendingAdUnlock();
         window.removeEventListener("message", handler);
       }
       if (data?.type === "AD_UNLOCK_CANCELLED" || data?.type === "RESET_AD_BUTTON" || data?.type === "AD_LOAD_FAILED") {
         setAdLoading(false);
-        clearPendingAdUnlock();
         window.removeEventListener("message", handler);
       }
     };
@@ -105,7 +109,6 @@ export default function WorldCup2026() {
     // Safety timeout
     setTimeout(() => {
       setAdLoading(false);
-      clearPendingAdUnlock();
       window.removeEventListener("message", handler);
     }, 30_000);
   }, [adLoading]);
