@@ -7,7 +7,54 @@ import {
   getBestPickType,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
+
+/**
+ * Parse structured tags from key_factors.
+ * Tags are stored as "[TAG]TAG_NAME" in the key_factors array.
+ */
+function parseStructuredTags(keyFactors: string[] | null): {
+  tags: string[];
+  safeCombo: string | null;
+  tempo: "HIGH" | "MEDIUM" | "LOW" | null;
+  isUltra: boolean;
+  isSafe: boolean;
+  hasValue: boolean;
+  hasStrongValue: boolean;
+  marketStrong: boolean;
+  marketAligned: boolean;
+} {
+  const result = {
+    tags: [] as string[],
+    safeCombo: null as string | null,
+    tempo: null as "HIGH" | "MEDIUM" | "LOW" | null,
+    isUltra: false,
+    isSafe: false,
+    hasValue: false,
+    hasStrongValue: false,
+    marketStrong: false,
+    marketAligned: false,
+  };
+  if (!keyFactors) return result;
+
+  for (const f of keyFactors) {
+    if (!f.startsWith("[TAG]")) continue;
+    const tag = f.replace("[TAG]", "");
+    result.tags.push(tag);
+
+    if (tag === "ULTRA_STRONG") result.isUltra = true;
+    if (tag === "SAFE") result.isSafe = true;
+    if (tag === "VALUE") result.hasValue = true;
+    if (tag === "STRONG_VALUE") { result.hasStrongValue = true; result.hasValue = true; }
+    if (tag === "HIGH_TEMPO") result.tempo = "HIGH";
+    if (tag === "MEDIUM_TEMPO") result.tempo = "MEDIUM";
+    if (tag === "LOW_TEMPO") result.tempo = "LOW";
+    if (tag === "MARKET:STRONG") result.marketStrong = true;
+    if (tag === "MARKET:ALIGNED") result.marketAligned = true;
+    if (tag.startsWith("SAFE_COMBO:")) result.safeCombo = tag.replace("SAFE_COMBO:", "");
+  }
+  return result;
+}
 
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode; type: MarketType };
 
