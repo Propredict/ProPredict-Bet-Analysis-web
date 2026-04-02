@@ -9,28 +9,20 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-// ============ TIER CRITERIA ============
-// Dynamic distribution: predictions sorted by confidence, then:
-//   Top 10% → PREMIUM
-//   Next 30% → PRO  
-//   Bottom 60% → FREE
-// Minimum confidence to display at all: 60%
-// Fallback fixed thresholds (used only when dynamic calc isn't available on frontend)
-const MIN_DISPLAY_CONFIDENCE = 50;
-const FREE_MAX_CONFIDENCE = 72;
-const PRO_MIN_CONFIDENCE = 73;
-const PRO_MAX_CONFIDENCE = 82;
-const PREMIUM_MIN_CONFIDENCE = 83;
+// ============ TIER CRITERIA (v3) ============
+// 0–59  → FREE
+// 60–75 → PRO
+// 75+   → PREMIUM
+// 85+   → SAFE PICK (subset of PREMIUM, shown first)
+const MIN_DISPLAY_CONFIDENCE = 45;
+const FREE_MAX_CONFIDENCE = 59;
+const PRO_MIN_CONFIDENCE = 60;
+const PRO_MAX_CONFIDENCE = 75;
+const PREMIUM_MIN_CONFIDENCE = 76;
+const SAFE_PICK_MIN_CONFIDENCE = 85;
 
-// Dynamic distribution percentages
-const PREMIUM_PERCENT = 0.10; // Top 10%
-const PRO_PERCENT = 0.30;     // Next 30%
-// Remaining 60% → FREE
-
-const PREMIUM_MAX_DRAWS = 1;
-const PREMIUM_MAX_COUNT = 10;
+const PREMIUM_MAX_COUNT = 15;
 const PREMIUM_MIN_COUNT = 5;
-const PREMIUM_ALLOWED_RISK = ["low", "medium"];
 
 // ============ MINIMUM DATA THRESHOLDS ============
 const MIN_SEASON_MATCHES = 5;
@@ -1252,31 +1244,74 @@ function calculatePrediction(
     else if (signalStrength <= 0.4) multiSignalBoost = -3; // Was -5
   }
 
-  // === CONFIDENCE = BEST MARKET PROBABILITY + ADJUSTMENTS ===
-  let confidence = bestProb;
+  // === NEW CONFIDENCE FORMULA (v3) ===
+  // confidence = (form_diff * 0.30) + (xG_score * 0.30) + (odds_diff * 0.20) + (consistency * 0.20)
 
-  // === CLOSE-CALL PENALTY: top 2 markets within 5% = unreliable pick ===
+  // FORM component: normalize last 5 match points to 0-100, take absolute diff
+  const homeFormPoints5 = homeForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
+  const awayFormPoints5 = awayForm.slice(0, 5).reduce((s, m) => s + (m.result === "W" ? 3 : m.result === "D" ? 1 : 0), 0);
+  const homeFormNorm = (homeFormPoints5 / 15) * 100;
+  const awayFormNorm = (awayFormPoints5 / 15) * 100;
+  const formDiff = Math.abs(homeFormNorm - awayFormNorm);
+
+  // xG component
+  const xgDiff = Math.abs(homeXg - awayXg);
+  const xgScore = Math.min(xgDiff * 40, 100);
+
+  // ODDS component
+  let oddsDiff = 0;
+  if (odds) {
+    oddsDiff = Math.abs(odds.homeProb - odds.awayProb);
+  } else {
+    oddsDiff = Math.abs(homeWin - awayWin);
+  }
+  const oddsComponent = Math.min(oddsDiff, 100);
+
+  // CONSISTENCY component: how stable is the team's form?
+  // Stable form (all W or all L) → high, random form → low
+  const homeConsistency = homeForm.slice(0, 5).length > 0
+    ? (() => {
+        const results = homeForm.slice(0, 5).map(m => m.result);
+        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
+          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
+        return (results.filter(x => x === mostCommon).length / results.length) * 100;
+      })()
+    : 50;
+  const awayConsistency = awayForm.slice(0, 5).length > 0
+    ? (() => {
+        const results = awayForm.slice(0, 5).map(m => m.result);
+        const mostCommon = ["W", "D", "L"].reduce((best, r) => 
+          results.filter(x => x === r).length > results.filter(x => x === best).length ? r : best, "W");
+        return (results.filter(x => x === mostCommon).length / results.length) * 100;
+      })()
+    : 50;
+  const consistencyScore = (homeConsistency + awayConsistency) / 2;
+
+  let confidence = Math.round(
+    (formDiff * 0.30) +
+    (xgScore * 0.30) +
+    (oddsComponent * 0.20) +
+    (consistencyScore * 0.20)
+  );
+
+  // === BOOST RULES ===
+  if (xgDiff > 1) confidence += 10;
+  if (formDiff > 30) confidence += 10;
+  if (odds && Math.min(odds.homeOdds, odds.awayOdds) < 1.70) confidence += 10;
+
+  // === PENALTY RULES ===
+  if (draw > 35) confidence -= 10;
+  if ((homeXg + awayXg) < 2) confidence -= 10;
+
+  // === CLOSE-CALL PENALTY ===
   const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
   if (sortedForCloseCall.length >= 2) {
     const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
-    if (top2diff <= 5) {
-      confidence -= 4; // Penalty for coin-flip picks
-    } else if (top2diff <= 10) {
-      confidence -= 2; // Small penalty for close calls
-    }
+    if (top2diff <= 5) confidence -= 4;
+    else if (top2diff <= 10) confidence -= 2;
   }
 
-  // === PROGRESSIVE DAMPENING (replaces fixed ×0.90) ===
-  // High-confidence predictions need less dampening, low-confidence need more
-  if (confidence >= 80) {
-    confidence = Math.round(confidence * 0.95); // Light touch for strong picks
-  } else if (confidence >= 65) {
-    confidence = Math.round(confidence * 0.90); // Standard dampening
-  } else {
-    confidence = Math.round(confidence * 0.85); // Heavy dampening for weak picks
-  }
-
-  // Only cap if data is very weak
+  // Data quality caps
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
   const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
   
@@ -1284,11 +1319,11 @@ function calculatePrediction(
   if (!hasSeasonStats) confidence = Math.min(confidence, 65);
 
   // Clamp to realistic range
-  confidence = Math.round(clamp(confidence, 45, 92));
+  confidence = Math.round(clamp(confidence, 30, 95));
 
-  // === RISK (simple) ===
+  // === RISK (aligned with new tiers) ===
   let riskLevel: "low" | "medium" | "high";
-  if (confidence >= 75) riskLevel = "low";
+  if (confidence >= 76) riskLevel = "low";
   else if (confidence >= 60) riskLevel = "medium";
   else riskLevel = "high";
 
@@ -1843,9 +1878,8 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === SIMPLE TIER DISTRIBUTION ===
-  // Tier is now determined on frontend by best market probability (Poisson).
-  // Backend just marks is_premium for the top-confidence predictions as a hint.
+  // === TIER DISTRIBUTION (v3) ===
+  // Sort by confidence descending
   const sorted = allPredictions
     .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
     .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
@@ -1856,14 +1890,27 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // Mark top 10% as is_premium hint (frontend may override with market probability)
-  const premiumCount = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
-  const premiumPreds = sorted.slice(0, premiumCount);
+  // PREMIUM: confidence > 75, top 10-15 matches
+  const premiumPreds = sorted.filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE)
+    .slice(0, PREMIUM_MAX_COUNT);
   const premiumIds = premiumPreds.map((p: any) => p.id);
 
-  console.log(`\n=== TIER DISTRIBUTION (simple) ===`);
-  console.log(`Total: ${total}, Premium hint: ${premiumIds.length}`);
-  console.log(`Frontend uses best market probability: 85%+ Premium, 75-84% Pro, rest Free`);
+  // Safe picks: confidence > 85 (subset of premium, marked via is_premium flag)
+  const safePicks = premiumPreds.filter((p: any) => (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE)
+    .slice(0, 3);
+  const safePickIds = safePicks.map((p: any) => p.id);
+
+  // PRO: confidence 60-75, next 20-30
+  const proPreds = sorted.filter((p: any) => {
+    const conf = p.confidence ?? 0;
+    return conf >= PRO_MIN_CONFIDENCE && conf <= PRO_MAX_CONFIDENCE && !premiumIds.includes(p.id);
+  }).slice(0, 30);
+  
+  // FREE: all remaining
+  const freeCount = total - premiumIds.length - proPreds.length;
+
+  console.log(`\n=== TIER DISTRIBUTION (v3) ===`);
+  console.log(`Total: ${total}, Premium: ${premiumIds.length} (Safe: ${safePickIds.length}), Pro: ${proPreds.length}, Free: ${freeCount}`);
 
   // Reset all to not premium for the two dates
   const { error: resetError } = await supabase
@@ -1887,7 +1934,7 @@ async function assignTiers(
     }
   }
 
-  return { free: total - premiumIds.length, pro: 0, premium: premiumIds.length };
+  return { free: freeCount, pro: proPreds.length, premium: premiumIds.length };
 }
 
 async function markPredictionLocked(
@@ -2214,7 +2261,7 @@ async function processBatch(
       // Non-quality leagues get capped confidence (can't reach PREMIUM)
       const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId);
       if (!isQualityLeague && newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE) {
-        newPrediction.confidence = PREMIUM_MIN_CONFIDENCE - 1; // Cap at 84%
+        newPrediction.confidence = PREMIUM_MIN_CONFIDENCE - 1; // Cap at 75%
         console.log(`[QUALITY GATE] ${pred.league} (ID: ${leagueId}) capped from PREMIUM to PRO`);
       }
 
@@ -2604,7 +2651,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
   console.log(`Today: ${todayStr}`);
   console.log(`Tomorrow: ${tomorrowStr}`);
   console.log(`Run ID: ${runId}`);
-  console.log(`Using ENHANCED algorithm v2: Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty.`);
+  console.log(`Using v3 algorithm: Confidence = (form_diff*0.30 + xG_score*0.30 + odds_diff*0.20 + consistency*0.20) + boosts/penalties. Tiers: 0-59 FREE, 60-75 PRO, 76+ PREMIUM, 85+ SAFE PICKS.`);
 
   // Trigger today and tomorrow batch chains STAGGERED (not parallel!)
   // Both batches at offset 0 fetch fixture lists from API-Football.
@@ -2665,7 +2712,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
       dates: { today: todayStr, tomorrow: tomorrowStr },
       todayBatchTriggered: todayOk,
       tomorrowBatchTriggered: tomorrowOk,
-      algorithm: "Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty, self-learning.",
+      algorithm: "v3: Confidence = (form_diff*0.30 + xG_score*0.30 + odds_diff*0.20 + consistency*0.20). Tiers: 0-59 FREE, 60-75 PRO, 76+ PREMIUM, 85+ SAFE PICKS.",
       batchSize: BATCH_SIZE,
     }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { getBestMarketProbability, getTierFromMarketProbability, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -72,12 +72,11 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Simple tier assignment: highest market probability only
+  // Tier assignment: use confidence score directly (v3 formula)
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
     for (const p of predictions) {
-      const bestProb = getBestMarketProbability(p);
-      map.set(p.id!, getTierFromMarketProbability(bestProb));
+      map.set(p.id!, getTierFromConfidence(p.confidence ?? 0));
     }
     return map;
   }, [predictions]);
@@ -187,6 +186,13 @@ export default function AIPredictions() {
     // Apply sorting
     return sortPredictions(result);
   }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
+
+  // Safe Picks: confidence >= 85, max 3, only in premium tier
+  const safePicks = useMemo(() => {
+    return filteredPredictions
+      .filter((p) => (p.confidence ?? 0) >= 85 && getPredictionTier(p) === "premium")
+      .slice(0, 3);
+  }, [filteredPredictions]);
 
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
@@ -584,6 +590,40 @@ export default function AIPredictions() {
               );
             })}
           </div>
+
+          {/* 🔒 SAFE PICKS OF THE DAY - Premium only, confidence >= 85 */}
+          {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="p-1 rounded bg-emerald-500/20">
+                  <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <h2 className="text-xs md:text-sm font-bold text-foreground">Safe Picks of the Day</h2>
+                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
+                  85%+ Confidence
+                </Badge>
+              </div>
+              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
+                {safePicks.map((prediction) => (
+                  <div key={`safe-${prediction.id}`} className="ring-1 ring-emerald-500/30 rounded-lg">
+                    <AIPredictionCard
+                      overrideTier="premium"
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === prediction.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {featuredPredictions.length > 0 && (
             <div>
