@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
@@ -13,6 +13,7 @@ import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -66,7 +67,16 @@ export default function WorldCup2026() {
   const navigate = useNavigate();
   const { plan, isAdmin } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+  const interstitialFired = useRef(false);
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    if (!interstitialFired.current) {
+      interstitialFired.current = true;
+      maybeShowInterstitial("world_cup_2026");
+    }
+  }, [maybeShowInterstitial]);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
