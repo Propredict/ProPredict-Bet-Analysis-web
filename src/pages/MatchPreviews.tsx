@@ -386,7 +386,7 @@ export default function MatchPreviews() {
                       {isFreeUser ? (
                         <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
                       ) : (
-                        <><Zap className="h-3.5 w-3.5 mr-1.5" />Unlock Prediction & Match Analysis<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <><Eye className="h-3.5 w-3.5 mr-1.5" />View Full Analysis & More Predictions<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
                     </Button>
                   </div>
