@@ -84,9 +84,9 @@ export default function MatchPreviews() {
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
 
-  // Use match_previews if available, fallback to ai_predictions
-  const usePreviewData = previews.length > 0;
-  const loading = usePreviewData ? previewsLoading : predictionsLoading;
+  // Always use AI predictions as primary source (has proper confidence engine)
+  // Enrich with match_previews data when available
+  const loading = predictionsLoading;
 
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
@@ -109,10 +109,29 @@ export default function MatchPreviews() {
     return null;
   }
 
-  // Normalize data — sort by confidence (highest first), then league quality
+  // Always use AI predictions — sorted by confidence (highest/safest first)
+  // Enrich with match_previews extra data when available
   const topMatches = useMemo(() => {
-    if (usePreviewData) {
-      const mapped = previews.map(p => ({
+    const isPending = (p: typeof predictions[0]) =>
+      p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
+    const pool = predictions.filter(p => !isPending(p));
+
+    // Build a lookup from match_previews for enrichment
+    const previewMap = new Map<string, typeof previews[0]>();
+    for (const pv of previews) {
+      previewMap.set(pv.match_id, pv);
+    }
+
+    // Sort by confidence descending (safest first), then league quality
+    pool.sort((a, b) => {
+      const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+      if (confDiff !== 0) return confDiff;
+      return getLeaguePriority(a.league) - getLeaguePriority(b.league);
+    });
+
+    return pool.slice(0, MAX_MATCHES).map((p, i) => {
+      const pv = previewMap.get(p.match_id);
+      return {
         id: p.id,
         match_id: p.match_id,
         home_team: p.home_team,
@@ -120,64 +139,21 @@ export default function MatchPreviews() {
         league: p.league,
         match_date: p.match_date,
         match_time: p.match_time,
-        confidence: p.confidence_score,
-        risk_rating: p.risk_rating,
-        home_win: p.home_win_prob,
-        away_win: p.away_win_prob,
-        draw: p.draw_prob,
-        key_factors: p.key_stats?.key_factors || null,
-        analysis: p.preview_analysis,
-        tactical_notes: p.tactical_notes,
-        home_form: p.home_form,
-        away_form: p.away_form,
-        h2h_summary: p.h2h_summary,
-        rank: 0,
-      }));
-
-      // Re-sort: highest confidence first, then quality league priority
-      mapped.sort((a, b) => {
-        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
-        if (confDiff !== 0) return confDiff;
-        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
-      });
-
-      return mapped.map((m, i) => ({ ...m, rank: i + 1 }));
-    }
-
-    // Fallback: use AI predictions
-    const isPending = (p: typeof predictions[0]) =>
-      p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
-    const pool = predictions.filter(p => !isPending(p));
-
-    // Sort by confidence descending, then league quality
-    pool.sort((a, b) => {
-      const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
-      if (confDiff !== 0) return confDiff;
-      return getLeaguePriority(a.league) - getLeaguePriority(b.league);
+        confidence: p.confidence ?? 0,
+        risk_rating: getRiskRating(p.confidence ?? 0),
+        home_win: p.home_win,
+        away_win: p.away_win,
+        draw: p.draw,
+        key_factors: p.key_factors,
+        analysis: p.analysis,
+        tactical_notes: pv?.tactical_notes ?? null,
+        home_form: pv?.home_form ?? null,
+        away_form: pv?.away_form ?? null,
+        h2h_summary: pv?.h2h_summary ?? null,
+        rank: i + 1,
+      };
     });
-
-    return pool.slice(0, MAX_MATCHES).map((p, i) => ({
-      id: p.id,
-      match_id: p.match_id,
-      home_team: p.home_team,
-      away_team: p.away_team,
-      league: p.league,
-      match_date: p.match_date,
-      match_time: p.match_time,
-      confidence: p.confidence ?? 0,
-      risk_rating: getRiskRating(p.confidence ?? 0),
-      home_win: p.home_win,
-      away_win: p.away_win,
-      draw: p.draw,
-      key_factors: p.key_factors,
-      analysis: p.analysis,
-      tactical_notes: null as string | null,
-      home_form: null as string | null,
-      away_form: null as string | null,
-      h2h_summary: null as string | null,
-      rank: i + 1,
-    }));
-  }, [usePreviewData, previews, predictions]);
+  }, [previews, predictions]);
 
   const handleCardClick = (match: typeof topMatches[0]) => {
     if (isFreeUser) return;
