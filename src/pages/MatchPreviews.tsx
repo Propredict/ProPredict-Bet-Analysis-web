@@ -13,7 +13,8 @@ import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
-const MIN_CONFIDENCE = 65; // Only show Pro+ quality matches (65%+)
+const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
+const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
 const MAX_MATCHES = 30;
 
 const LEAGUE_PRIORITY: Record<string, number> = {
@@ -115,8 +116,12 @@ export default function MatchPreviews() {
   const topMatches = useMemo(() => {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
-    // Only include matches with confidence >= 65% (Pro/Premium quality)
-    const pool = predictions.filter(p => !isPending(p) && (p.confidence ?? 0) >= MIN_CONFIDENCE);
+    const valid = predictions.filter(p => !isPending(p));
+    // Prefer 80%+ matches, fallback to 70%+ if fewer than 5 high-confidence ones
+    const highConf = valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_PRIMARY);
+    const pool = highConf.length >= 5
+      ? highConf
+      : valid.filter(p => (p.confidence ?? 0) >= MIN_CONFIDENCE_FALLBACK);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
