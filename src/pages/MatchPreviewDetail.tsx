@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge } from "lucide-react";
@@ -12,6 +12,7 @@ import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAn
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 
 interface PredictionRouteState {
   unlocked?: boolean;
@@ -67,6 +68,31 @@ function getPredictionEmoji(prediction: string | null) {
   if (p.includes("under")) return "🛡️";
   if (p.includes("btts")) return "🎯";
   return "📊";
+}
+
+/**
+ * Get the single best market pick across ALL markets using Poisson probabilities.
+ * This is the same logic used on MatchPreviews list cards.
+ */
+function getHeroBestPick(pred: any): { label: string; pct: number; emoji: string } {
+  const goalProbs = calculateGoalMarketProbs(pred);
+  const hw = pred.home_win ?? 0;
+  const aw = pred.away_win ?? 0;
+  const dw = pred.draw ?? 0;
+
+  const markets: { label: string; pct: number; emoji: string }[] = [
+    { label: `${pred.home_team} Win`, pct: hw, emoji: "🏠" },
+    { label: `${pred.away_team} Win`, pct: aw, emoji: "✈️" },
+    { label: "Draw", pct: dw, emoji: "🤝" },
+    { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
+    { label: "BTTS No", pct: goalProbs.bttsNo, emoji: "🛡️" },
+    { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
+    { label: "Under 2.5", pct: goalProbs.under25, emoji: "📉" },
+    { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
+    { label: "Under 3.5", pct: goalProbs.under35, emoji: "🔒" },
+  ];
+
+  return markets.reduce((best, m) => m.pct > best.pct ? m : best, markets[0]);
 }
 
 function extractGoalsFromAnalysis(analysis: string | null): {
@@ -387,6 +413,7 @@ export default function MatchPreviewDetail() {
   const homeLogo = liveMatch?.homeLogo || null;
   const awayLogo = liveMatch?.awayLogo || null;
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
+  const heroPick = prediction ? getHeroBestPick(prediction) : null;
   const aiPicks = prediction && unlocked ? deriveAIPicks(prediction) : [];
   const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction) : [];
 
@@ -488,18 +515,18 @@ export default function MatchPreviewDetail() {
             {/* HERO PREDICTION - dominates */}
             {unlocked ? (
               <div className="space-y-3">
-                {/* Main prediction */}
+                {/* Main prediction — uses best market pick for consistency with card list */}
                 <div className="text-center space-y-1">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-2xl">{getPredictionEmoji(prediction.prediction)}</span>
+                    <span className="text-2xl">{heroPick?.emoji ?? "📊"}</span>
                     <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                      {getPredictionLabel(prediction.prediction)}
+                      {heroPick?.label ?? getPredictionLabel(prediction.prediction)}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-xl sm:text-2xl font-black text-emerald-400">{prediction.confidence}%</span>
+                      <span className="text-xl sm:text-2xl font-black text-emerald-400">{heroPick?.pct ?? prediction.confidence}%</span>
                       <span className="text-[10px] text-white/50 uppercase">confidence</span>
                     </div>
                     <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", risk.bg, risk.color)}>
@@ -535,6 +562,11 @@ export default function MatchPreviewDetail() {
             ) : (
               /* Locked state */
               <div className="text-center space-y-3 py-2">
+                {heroPick && (
+                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs font-bold">
+                    {heroPick.emoji} {heroPick.label} — {heroPick.pct}%
+                  </Badge>
+                )}
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Sparkles className="h-4 w-4 text-emerald-400" />
                   <span className="text-sm text-white/60">Confidence</span>

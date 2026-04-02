@@ -423,15 +423,17 @@ function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji
   const aw = p.away_win ?? 0;
   const dw = p.draw ?? 0;
 
-  // Collect all markets with their probabilities
+  // Collect ALL markets with their probabilities — including Under 2.5 and BTTS No
   const markets: { label: string; pct: number; emoji: string }[] = [
     { label: `${p.home_team} Win`, pct: hw, emoji: "🏠" },
     { label: `${p.away_team} Win`, pct: aw, emoji: "✈️" },
     { label: "Draw", pct: dw, emoji: "🤝" },
     { label: "BTTS Yes", pct: goalProbs.bttsYes, emoji: "⚽" },
+    { label: "BTTS No", pct: goalProbs.bttsNo, emoji: "🛡️" },
     { label: "Over 2.5", pct: goalProbs.over25, emoji: "📈" },
+    { label: "Under 2.5", pct: goalProbs.under25, emoji: "📉" },
     { label: "Over 1.5", pct: goalProbs.over15, emoji: "📊" },
-    { label: "Under 3.5", pct: goalProbs.under35, emoji: "📉" },
+    { label: "Under 3.5", pct: goalProbs.under35, emoji: "🔒" },
   ];
 
   // Return the market with highest probability
