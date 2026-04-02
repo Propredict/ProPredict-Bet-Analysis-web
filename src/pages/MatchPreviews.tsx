@@ -84,9 +84,9 @@ export default function MatchPreviews() {
   const isProUser = plan === "basic";
   const isFreeUser = plan === "free";
 
-  // Use match_previews if available, fallback to ai_predictions
-  const usePreviewData = previews.length > 0;
-  const loading = usePreviewData ? previewsLoading : predictionsLoading;
+  // Always use AI predictions as primary source (has proper confidence engine)
+  // Enrich with match_previews data when available
+  const loading = predictionsLoading;
 
   const logoMap = useMemo(() => {
     const map: Record<string, { home: string | null; away: string | null }> = {};
