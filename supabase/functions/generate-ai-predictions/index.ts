@@ -1643,9 +1643,11 @@ function generateAnalysisV2(params: {
   sections.push(`📌 Prediction: ${prediction}`);
   sections.push(`📊 Probability: ${bestProb ?? Math.max(homeWin, awayWin, draw)}%`);
   if (confidenceLabel) sections.push(`🎯 Confidence: ${confidenceLabel}`);
-  if (valuePercent !== undefined && Math.abs(valuePercent) >= 3) {
-    sections.push(`💰 Value: ${valuePercent > 0 ? "+" : ""}${Math.round(valuePercent)}%`);
+  if (isUltra) sections.push(`🔥 ULTRA STRONG PICK`);
+  if (valueLabel && valueLabel !== "NO VALUE") {
+    sections.push(`💰 ${valueLabel}: ${valuePercent !== undefined && valuePercent > 0 ? "+" : ""}${Math.round(valuePercent ?? 0)}%`);
   }
+  if (tempoLabel) sections.push(`⚡ Match Tempo: ${tempoLabel}`);
 
   // AI Reasoning
   if (analysisReasons && analysisReasons.length > 0) {
