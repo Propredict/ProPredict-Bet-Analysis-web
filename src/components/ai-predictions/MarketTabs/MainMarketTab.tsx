@@ -137,6 +137,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const topScores = displayTier === "premium" ? calculateTopCorrectScores(prediction) : [];
 
+  const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+
   return (
     <div className="space-y-3 md:space-y-4">
       {/* ===== BEST PICK — HERO SECTION ===== */}
