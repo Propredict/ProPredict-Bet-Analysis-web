@@ -235,9 +235,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — derived from Poisson model for consistency with Goals/BTTS */}
+          {/* Predicted Score — derived from Poisson model, constrained to match Best Pick */}
           {(() => {
-            const derivedScore = getDerivedPredictedScore(prediction);
+            const derivedScore = getDerivedPredictedScore(prediction, pick.type);
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
                 Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>
