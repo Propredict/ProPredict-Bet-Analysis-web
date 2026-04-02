@@ -115,7 +115,8 @@ export default function MatchPreviews() {
   const topMatches = useMemo(() => {
     const isPending = (p: typeof predictions[0]) =>
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
-    const pool = predictions.filter(p => !isPending(p));
+    // Only include matches with confidence >= 65% (Pro/Premium quality)
+    const pool = predictions.filter(p => !isPending(p) && (p.confidence ?? 0) >= MIN_CONFIDENCE);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
