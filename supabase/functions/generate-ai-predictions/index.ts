@@ -2719,50 +2719,44 @@ async function handleBatchRegenerate(
 
   console.log(`\n=== BATCH REGENERATION: ${matchDate} | Offset: ${offset} | RunID: ${runId} ===`);
 
-  // Fetch fixture list for this date (only on first batch, offset=0)
+  // Fetch fixture list for this date on EVERY batch to avoid per-fixture API calls
   let fixtureById = new Map<string, any>();
+  const fixtureUrl = `${API_FOOTBALL_URL}/fixtures?date=${matchDate}`;
+  console.log(`[DEBUG] Fetching fixtures from: ${fixtureUrl}`);
   
-  if (offset === 0) {
-    const fixtureUrl = `${API_FOOTBALL_URL}/fixtures?date=${matchDate}`;
-    console.log(`[DEBUG] Fetching fixtures from: ${fixtureUrl}`);
-    
-    // Try fetching fixtures with extra resilience — if first attempt fails,
-    // wait 5 seconds and retry (handles rate-limit from concurrent batch triggers)
-    let fixturesJson = await fetchJsonWithRetry(
+  let fixturesJson = await fetchJsonWithRetry(
+    fixtureUrl,
+    apiKey,
+    { retries: 4, baseDelayMs: offset === 0 ? 800 : 1200 }
+  );
+
+  if (!fixturesJson || !fixturesJson.response || fixturesJson.response.length === 0) {
+    console.warn(`[DEBUG] Fixture fetch returned empty for ${matchDate} batch ${offset}. Retrying after 5s delay...`);
+    await new Promise((r) => setTimeout(r, 5000));
+    fixturesJson = await fetchJsonWithRetry(
       fixtureUrl,
       apiKey,
-      { retries: 4, baseDelayMs: 800 }
+      { retries: 4, baseDelayMs: 1600 }
     );
+  }
 
-    // If the first attempt returned empty/null, wait and retry once more
-    if (!fixturesJson || !fixturesJson.response || fixturesJson.response.length === 0) {
-      console.warn(`[DEBUG] First fixture fetch returned empty for ${matchDate}. Retrying after 5s delay...`);
-      await new Promise((r) => setTimeout(r, 5000));
-      fixturesJson = await fetchJsonWithRetry(
-        fixtureUrl,
-        apiKey,
-        { retries: 4, baseDelayMs: 1200 }
-      );
-    }
+  if (!fixturesJson) {
+    console.error(`[DEBUG] fixturesJson is NULL after retry - API call failed completely for ${matchDate}`);
+  } else {
+    console.log(`[DEBUG] API errors: ${JSON.stringify(fixturesJson.errors ?? {})}`);
+    console.log(`[DEBUG] API results count: ${fixturesJson.results ?? 'N/A'}`);
+    console.log(`[DEBUG] API response array length: ${fixturesJson.response?.length ?? 'N/A (no response key)'}`);
+  }
 
-    // Debug: log raw API response structure
-    if (!fixturesJson) {
-      console.error(`[DEBUG] fixturesJson is NULL after retry - API call failed completely for ${matchDate}`);
-    } else {
-      console.log(`[DEBUG] API errors: ${JSON.stringify(fixturesJson.errors ?? {})}`);
-      console.log(`[DEBUG] API results count: ${fixturesJson.results ?? 'N/A'}`);
-      console.log(`[DEBUG] API response array length: ${fixturesJson.response?.length ?? 'N/A (no response key)'}`);
-    }
+  const fixtures = fixturesJson?.response ?? [];
+  for (const f of fixtures) {
+    const idStr = String(f?.fixture?.id ?? "");
+    if (idStr) fixtureById.set(idStr, f);
+  }
 
-    const fixtures = fixturesJson?.response ?? [];
-    for (const f of fixtures) {
-      const idStr = String(f?.fixture?.id ?? "");
-      if (idStr) fixtureById.set(idStr, f);
-    }
+  console.log(`Fetched ${fixtures.length} fixtures from API for ${matchDate}`);
 
-    console.log(`Fetched ${fixtures.length} fixtures from API for ${matchDate}`);
-
-    // Insert missing fixtures as locked placeholders
+  if (offset === 0) {
     const fixtureIds = Array.from(fixtureById.keys());
     if (fixtureIds.length > 0) {
       // Check existing predictions for this date AND globally by match_id
