@@ -6,11 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
-import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { cn } from "@/lib/utils";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import AdSlot from "@/components/ads/AdSlot";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
