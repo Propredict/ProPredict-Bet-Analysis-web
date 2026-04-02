@@ -408,8 +408,8 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
  *   0-59% → Free
  */
 export function getTierFromConfidence(confidence: number): "free" | "pro" | "premium" {
-  if (confidence >= 76) return "premium";
-  if (confidence >= 60) return "pro";
+  if (confidence >= 78) return "premium";
+  if (confidence >= 65) return "pro";
   return "free";
 }
 
