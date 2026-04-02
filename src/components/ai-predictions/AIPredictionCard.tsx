@@ -174,7 +174,7 @@ const AIPredictionCardInner = ({
               </TabsContent>
             )}
 
-            {displayTier === "premium" && (
+            {displayTier !== "free" && (
               <TabsContent value="double" className="mt-2 md:mt-3">
                 <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
               </TabsContent>
