@@ -168,7 +168,7 @@ export default function MatchPreviews() {
         match_date: p.match_date,
         match_time: p.match_time,
         confidence: p.confidence ?? 0,
-        risk_rating: getRiskRating(p.confidence ?? 0),
+        risk_rating: getRiskRating(bestPick.pct),
         home_win: p.home_win,
         away_win: p.away_win,
         draw: p.draw,
