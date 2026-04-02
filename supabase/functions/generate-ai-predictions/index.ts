@@ -2651,7 +2651,7 @@ async function handleRegenerate(apiKey: string): Promise<Response> {
   console.log(`Today: ${todayStr}`);
   console.log(`Tomorrow: ${tomorrowStr}`);
   console.log(`Run ID: ${runId}`);
-  console.log(`Using ENHANCED algorithm v2: Form 25%, Quality 18%, Squad 10%, Home 8%(dynamic), H2H 6%, Standings 10%, Odds 15%. Progressive dampening, league-only form, close-call penalty.`);
+  console.log(`Using v3 algorithm: Confidence = (form_diff*0.30 + xG_score*0.30 + odds_diff*0.20 + consistency*0.20) + boosts/penalties. Tiers: 0-59 FREE, 60-75 PRO, 76+ PREMIUM, 85+ SAFE PICKS.`);
 
   // Trigger today and tomorrow batch chains STAGGERED (not parallel!)
   // Both batches at offset 0 fetch fixture lists from API-Football.
