@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { getBestMarketProbability, getTierFromMarketProbability, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
