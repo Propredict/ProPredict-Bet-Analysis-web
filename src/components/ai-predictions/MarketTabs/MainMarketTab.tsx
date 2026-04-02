@@ -5,6 +5,7 @@ import {
   calculateGoalMarketProbs,
   calculateTopCorrectScores,
   getBestPickType,
+  getDerivedPredictedScore,
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
@@ -252,12 +253,15 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score */}
-          {prediction.predicted_score && (
-            <p className="text-[10px] md:text-xs text-muted-foreground/80">
-              Predicted Score: <span className="font-semibold text-foreground">{prediction.predicted_score}</span>
-            </p>
-          )}
+          {/* Predicted Score — derived from Poisson model for consistency with Goals/BTTS */}
+          {(() => {
+            const derivedScore = getDerivedPredictedScore(prediction);
+            return (
+              <p className="text-[10px] md:text-xs text-muted-foreground/80">
+                Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>
+              </p>
+            );
+          })()}
         </div>
       ) : (
         /* Locked state */
