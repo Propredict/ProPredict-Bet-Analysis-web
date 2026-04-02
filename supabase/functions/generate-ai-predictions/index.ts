@@ -1362,11 +1362,41 @@ function calculatePrediction(
   const bestProb = bestMarket.prob;
 
   // === SCORE PREDICTION ===
-  const predictedScore = predictScoreV2({
-    homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
-    prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction :
-                (homeWin >= awayWin ? "1" : "2"),
-  });
+  // For goal/BTTS markets, generate score that matches the market
+  let scorePrediction: string;
+  if (prediction === "Over 2.5" || prediction === "Over 3.5") {
+    const hg = Math.max(1, Math.round(homeXg));
+    const ag = Math.max(1, Math.round(awayXg));
+    const total = hg + ag;
+    if (total <= 2) scorePrediction = homeXg > awayXg ? "2-1" : "1-2";
+    else scorePrediction = `${hg}-${ag}`;
+  } else if (prediction === "BTTS Yes") {
+    const hg = Math.max(1, Math.round(homeXg));
+    const ag = Math.max(1, Math.round(awayXg));
+    scorePrediction = `${hg}-${ag}`;
+  } else if (prediction === "BTTS No") {
+    if (homeXg > awayXg) scorePrediction = `${Math.max(1, Math.round(homeXg))}-0`;
+    else scorePrediction = `0-${Math.max(1, Math.round(awayXg))}`;
+  } else if (prediction === "Under 2.5" || prediction === "Under 1.5") {
+    if (homeXg > awayXg) scorePrediction = "1-0";
+    else if (awayXg > homeXg) scorePrediction = "0-1";
+    else scorePrediction = "1-1";
+  } else if (prediction === "Under 3.5") {
+    if (homeXg > awayXg) scorePrediction = "2-0";
+    else scorePrediction = "1-1";
+  } else if (prediction.startsWith("DC")) {
+    scorePrediction = predictScoreV2({
+      homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
+      prediction: homeWin >= awayWin ? "1" : "2",
+    });
+  } else {
+    scorePrediction = predictScoreV2({
+      homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
+      prediction: prediction === "1" || prediction === "2" || prediction === "X" ? prediction :
+                  (homeWin >= awayWin ? "1" : "2"),
+    });
+  }
+  const predictedScore = scorePrediction;
 
   // === D) MARKET INTELLIGENCE (odds alignment) ===
   let bookmakerProb = 0;
