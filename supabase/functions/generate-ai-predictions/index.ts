@@ -1878,9 +1878,8 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === SIMPLE TIER DISTRIBUTION ===
-  // Tier is now determined on frontend by best market probability (Poisson).
-  // Backend just marks is_premium for the top-confidence predictions as a hint.
+  // === TIER DISTRIBUTION (v3) ===
+  // Sort by confidence descending
   const sorted = allPredictions
     .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
     .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
@@ -1891,14 +1890,27 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // Mark top 10% as is_premium hint (frontend may override with market probability)
-  const premiumCount = Math.min(10, Math.max(3, Math.ceil(total * 0.10)));
-  const premiumPreds = sorted.slice(0, premiumCount);
+  // PREMIUM: confidence > 75, top 10-15 matches
+  const premiumPreds = sorted.filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE)
+    .slice(0, PREMIUM_MAX_COUNT);
   const premiumIds = premiumPreds.map((p: any) => p.id);
 
-  console.log(`\n=== TIER DISTRIBUTION (simple) ===`);
-  console.log(`Total: ${total}, Premium hint: ${premiumIds.length}`);
-  console.log(`Frontend uses best market probability: 85%+ Premium, 75-84% Pro, rest Free`);
+  // Safe picks: confidence > 85 (subset of premium, marked via is_premium flag)
+  const safePicks = premiumPreds.filter((p: any) => (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE)
+    .slice(0, 3);
+  const safePickIds = safePicks.map((p: any) => p.id);
+
+  // PRO: confidence 60-75, next 20-30
+  const proPreds = sorted.filter((p: any) => {
+    const conf = p.confidence ?? 0;
+    return conf >= PRO_MIN_CONFIDENCE && conf <= PRO_MAX_CONFIDENCE && !premiumIds.includes(p.id);
+  }).slice(0, 30);
+  
+  // FREE: all remaining
+  const freeCount = total - premiumIds.length - proPreds.length;
+
+  console.log(`\n=== TIER DISTRIBUTION (v3) ===`);
+  console.log(`Total: ${total}, Premium: ${premiumIds.length} (Safe: ${safePickIds.length}), Pro: ${proPreds.length}, Free: ${freeCount}`);
 
   // Reset all to not premium for the two dates
   const { error: resetError } = await supabase
@@ -1922,7 +1934,7 @@ async function assignTiers(
     }
   }
 
-  return { free: total - premiumIds.length, pro: 0, premium: premiumIds.length };
+  return { free: freeCount, pro: proPreds.length, premium: premiumIds.length };
 }
 
 async function markPredictionLocked(
