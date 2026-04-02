@@ -1306,16 +1306,14 @@ function calculatePrediction(
   if (formDiff > 30) confidence += 10;
   if (odds && Math.min(odds.homeOdds, odds.awayOdds) < 1.70) confidence += 10;
 
-  // === PENALTY RULES ===
-  if (draw > 35) confidence -= 10;
-  if ((homeXg + awayXg) < 2) confidence -= 10;
-
-  // === CLOSE-CALL PENALTY ===
+  // === PENALTY RULES (softened) ===
+  if ((homeXg + awayXg) < 1.5) confidence -= 5; // Only penalize very low xG
+  
+  // === CLOSE-CALL PENALTY (softened) ===
   const sortedForCloseCall = [...allMarkets].sort((a, b) => b.priorityProb - a.priorityProb);
   if (sortedForCloseCall.length >= 2) {
     const top2diff = Math.abs(sortedForCloseCall[0].prob - sortedForCloseCall[1].prob);
-    if (top2diff <= 5) confidence -= 4;
-    else if (top2diff <= 10) confidence -= 2;
+    if (top2diff <= 3) confidence -= 3;
   }
 
   // Data quality caps
