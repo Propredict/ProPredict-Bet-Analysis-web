@@ -1,5 +1,10 @@
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 
+type AIPredictionExtended = AIPrediction & {
+  last_home_goals?: number | null;
+  last_away_goals?: number | null;
+};
+
 export interface MatchPreviewAIPick {
   emoji: string;
   label: string;
@@ -53,7 +58,7 @@ function extractGoalsFromAnalysis(analysis: string | null): {
   return { homeGoals, awayGoals };
 }
 
-function resolveGoalMetrics(pred: AIPrediction) {
+function resolveGoalMetrics(pred: AIPredictionExtended) {
   const extracted = extractGoalsFromAnalysis(pred.analysis);
   let homeGoals = pred.last_home_goals && pred.last_home_goals > 0 ? pred.last_home_goals : extracted.homeGoals;
   let awayGoals = pred.last_away_goals && pred.last_away_goals > 0 ? pred.last_away_goals : extracted.awayGoals;
@@ -82,12 +87,12 @@ function makePick(label: string, confidence: number, _seed: number): MatchPrevie
   return { emoji, label, confidence: conf, color, bg };
 }
 
-export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPick[] {
+export function deriveMatchPreviewAIPicks(pred: AIPrediction | AIPredictionExtended): MatchPreviewAIPick[] {
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
   const draw = pred.draw ?? 0;
   const confidence = pred.confidence ?? 60;
-  const { homeGoals, awayGoals, totalGoalsAvg } = resolveGoalMetrics(pred);
+  const { homeGoals, awayGoals, totalGoalsAvg } = resolveGoalMetrics(pred as AIPredictionExtended);
 
   const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
   const predictedTotal = scoreParts ? parseInt(scoreParts[1]) + parseInt(scoreParts[2]) : null;
@@ -153,7 +158,7 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
   return finalPicks.slice(0, 7);
 }
 
-export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
+export function getTopMatchPreviewPick(pred: AIPrediction | AIPredictionExtended): MatchPreviewAIPick {
   const picks = deriveMatchPreviewAIPicks(pred);
   return picks.reduce((best, pick) => (pick.confidence > best.confidence ? pick : best), picks[0]);
 }
