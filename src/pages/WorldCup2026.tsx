@@ -419,9 +419,11 @@ export default function WorldCup2026() {
                       </Button>
                     )}
                   </div>
-                  <p className="text-[9px] text-muted-foreground text-center mt-2">
-                    📱 Watch ads to unlock predictions for free — only in the app
-                  </p>
+                  {!isApp && (
+                    <p className="text-[9px] text-muted-foreground text-center mt-2">
+                      📱 Watch ads to unlock predictions for free — only in the app
+                    </p>
+                  )}
                 </div>
               </Card>
             ) : !isPremium ? (
