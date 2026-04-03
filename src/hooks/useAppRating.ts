@@ -69,7 +69,7 @@ export function useAppRating() {
       setTimeout(() => {
         setShowPopup(true);
         try { sessionStorage.setItem(RATING_SHOWN_SESSION_KEY, "1"); } catch {}
-      }, 5000);
+      }, 40000);
     }
   }, [isAndroid, user, hasRated]);
 
