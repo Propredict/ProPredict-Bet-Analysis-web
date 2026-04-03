@@ -3,7 +3,7 @@ import { X, Gift, Clock, Flame } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
-const POPUP_DELAY = 8000;
+const POPUP_DELAY = 25000;
 const DISMISS_KEY = "daily_reward_popup_dismissed";
 
 /**
