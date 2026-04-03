@@ -413,13 +413,17 @@ export default function WorldCup2026() {
                     <Button onClick={() => navigate("/get-premium")} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs">
                       <Zap className="h-3.5 w-3.5 mr-1.5" /> Get Pro — €3.99/mo
                     </Button>
-                    <Button variant="outline" onClick={openPlayStore} className="flex-1 text-xs border-border">
-                      <Smartphone className="h-3.5 w-3.5 mr-1.5" /> More options in App
-                    </Button>
+                    {!isApp && (
+                      <Button variant="outline" onClick={openPlayStore} className="flex-1 text-xs border-border">
+                        <Smartphone className="h-3.5 w-3.5 mr-1.5" /> More options in App
+                      </Button>
+                    )}
                   </div>
-                  <p className="text-[9px] text-muted-foreground text-center mt-2">
-                    📱 Watch ads to unlock predictions for free — only in the app
-                  </p>
+                  {!isApp && (
+                    <p className="text-[9px] text-muted-foreground text-center mt-2">
+                      📱 Watch ads to unlock predictions for free — only in the app
+                    </p>
+                  )}
                 </div>
               </Card>
             ) : !isPremium ? (
