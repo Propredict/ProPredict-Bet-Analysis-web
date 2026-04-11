@@ -1709,9 +1709,100 @@ function calculatePrediction(
                   (homeWin >= awayWin ? "1" : "2"),
     });
   }
-  const predictedScore = scorePrediction;
+  let predictedScore = scorePrediction;
 
-  // === D) MARKET INTELLIGENCE (odds alignment) ===
+  // ============================================================
+  // === CONSISTENCY ENGINE — Cross-market logical alignment ===
+  // ============================================================
+  // Parse predicted score
+  const scoreParts = predictedScore.split("-").map(Number);
+  const predHomeGoals = scoreParts[0] ?? 0;
+  const predAwayGoals = scoreParts[1] ?? 0;
+  const predTotalGoals = predHomeGoals + predAwayGoals;
+  const predBothScored = predHomeGoals > 0 && predAwayGoals > 0;
+
+  // Rule C1: Over 2.5 prediction → score must have 3+ goals
+  if ((prediction === "Over 2.5" || prediction === "Over 3.5") && predTotalGoals < 3) {
+    const hg = Math.max(1, Math.round(homeXg * 1.1));
+    const ag = Math.max(1, Math.round(awayXg * 1.1));
+    predictedScore = hg + ag >= 3 ? `${hg}-${ag}` : (homeXg > awayXg ? "2-1" : "1-2");
+  }
+
+  // Rule C2: Under 2.5 prediction → score must have ≤2 goals  
+  if ((prediction === "Under 2.5" || prediction === "Under 1.5") && predTotalGoals > 2) {
+    if (homeXg > awayXg) predictedScore = "1-0";
+    else if (awayXg > homeXg) predictedScore = "0-1";
+    else predictedScore = "1-1";
+  }
+
+  // Rule C3: BTTS Yes → both teams must score in predicted score
+  if (prediction === "BTTS Yes" && !predBothScored) {
+    const hg = Math.max(1, Math.round(homeXg));
+    const ag = Math.max(1, Math.round(awayXg));
+    predictedScore = `${hg}-${ag}`;
+  }
+
+  // Rule C4: BTTS No → at least one team must have 0 in predicted score
+  if (prediction === "BTTS No" && predBothScored) {
+    if (homeXg > awayXg) predictedScore = `${Math.max(1, Math.round(homeXg))}-0`;
+    else predictedScore = `0-${Math.max(1, Math.round(awayXg))}`;
+  }
+
+  // Rule C5: Strong favorite (homeWin ≥ 60 or awayWin ≥ 60) → score must reflect winner
+  if (prediction === "1" && homeWin >= 60 && predHomeGoals <= predAwayGoals) {
+    const hg = Math.max(predAwayGoals + 1, Math.round(homeXg));
+    predictedScore = `${hg}-${predAwayGoals}`;
+  }
+  if (prediction === "2" && awayWin >= 60 && predAwayGoals <= predHomeGoals) {
+    const ag = Math.max(predHomeGoals + 1, Math.round(awayXg));
+    predictedScore = `${predHomeGoals}-${ag}`;
+  }
+
+  // Rule C6: Over + BTTS alignment — if Over 2.5 is strong AND BTTS is strong, ensure score reflects both
+  if (adjustedOver25 >= 65 && adjustedBttsYes >= 60) {
+    const sp = predictedScore.split("-").map(Number);
+    if ((sp[0] ?? 0) === 0 || (sp[1] ?? 0) === 0 || (sp[0] + sp[1]) < 3) {
+      predictedScore = `${Math.max(1, Math.round(homeXg))}-${Math.max(1, Math.round(awayXg))}`;
+      // Ensure 3+ total
+      const newParts = predictedScore.split("-").map(Number);
+      if (newParts[0] + newParts[1] < 3) predictedScore = homeXg > awayXg ? "2-1" : "1-2";
+    }
+  }
+
+  // Rule C7: Under + BTTS No alignment — if Under is strong AND BTTS No is strong
+  if (adjustedOver25 <= 35 && adjustedBttsYes <= 35) {
+    const sp = predictedScore.split("-").map(Number);
+    if ((sp[0] ?? 0) > 0 && (sp[1] ?? 0) > 0) {
+      // Force one team to 0
+      predictedScore = homeXg > awayXg ? "1-0" : "0-1";
+    }
+  }
+
+  // Rule C8: Draw prediction → score must be equal
+  if (prediction === "X") {
+    const sp = predictedScore.split("-").map(Number);
+    if (sp[0] !== sp[1]) {
+      const avgGoals = Math.round((homeXg + awayXg) / 2);
+      const g = clamp(avgGoals, 0, 3);
+      predictedScore = `${g}-${g}`;
+    }
+  }
+
+  // Rule C9: DC 1X (home or draw) → home must not lose in score
+  if (prediction === "DC 1X") {
+    const sp = predictedScore.split("-").map(Number);
+    if ((sp[0] ?? 0) < (sp[1] ?? 0)) {
+      predictedScore = `${sp[1]}-${sp[0]}`; // Swap to home not losing
+    }
+  }
+  // Rule C10: DC X2 (away or draw) → away must not lose in score
+  if (prediction === "DC X2") {
+    const sp = predictedScore.split("-").map(Number);
+    if ((sp[1] ?? 0) < (sp[0] ?? 0)) {
+      predictedScore = `${sp[1]}-${sp[0]}`; // Swap
+    }
+  }
+
   let bookmakerProb = 0;
   let aiProb = bestProb;
   let oddsAlignmentAdjust = 0;
