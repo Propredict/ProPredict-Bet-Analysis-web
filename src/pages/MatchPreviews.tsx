@@ -10,7 +10,7 @@ import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getBestMarketPickWithLabel } from "@/components/ai-predictions/utils/marketDerivation";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
