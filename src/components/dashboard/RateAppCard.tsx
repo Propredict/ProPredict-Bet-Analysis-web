@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Star, Heart, ChevronRight } from "lucide-react";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,14 +10,15 @@ const MIN_DAYS = 0;
 
 /**
  * Inline rating card on the dashboard.
- * Shown for ALL users (free, pro, premium) on all platforms after 1+ day of usage.
+ * Shown only on Android for all user tiers (free, pro, premium).
  */
 export function RateAppCard({ onRate }: { onRate: () => void }) {
+  const isAndroid = getIsAndroidApp();
   const { user } = useAuth();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isAndroid) return;
 
     // Ensure first_seen is always set
     try {
