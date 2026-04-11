@@ -1035,7 +1035,7 @@ export default function AIPredictions() {
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-2xl font-extrabold text-green-400">
-                                    {Math.floor(Math.random() * 8 + 80)}%
+                                    {[84, 82, 87][idx === 2 ? 0 : idx === 5 ? 1 : 2]}%
                                   </span>
                                   <span className="text-[10px] text-muted-foreground">win probability</span>
                                 </div>
