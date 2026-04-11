@@ -11,6 +11,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
+import { useMatchPreviewUnlocks } from "@/hooks/useMatchPreviewUnlocks";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
