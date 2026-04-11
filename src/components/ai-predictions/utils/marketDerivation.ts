@@ -569,3 +569,24 @@ export function getTierFromMarketProbability(bestProb: number): "free" | "pro" |
   if (bestProb >= 65) return "pro";
   return "free";
 }
+
+const MARKET_LABELS: Record<MarketType, { label: string; emoji: string }> = {
+  home_win: { label: "Home Win", emoji: "🏠" },
+  away_win: { label: "Away Win", emoji: "✈️" },
+  draw: { label: "Draw", emoji: "🤝" },
+  over25: { label: "Over 2.5", emoji: "🔥" },
+  under25: { label: "Under 2.5", emoji: "🔥" },
+  btts_yes: { label: "BTTS Yes", emoji: "🔥" },
+  btts_no: { label: "BTTS No", emoji: "🔥" },
+};
+
+/**
+ * Get the best market pick with label and probability — single source of truth.
+ * Used by both AI Predictions and Match Previews for consistent data.
+ */
+export function getBestMarketPickWithLabel(prediction: AIPrediction): { label: string; pct: number; emoji: string } {
+  const bestType = getBestPickType(prediction);
+  const pct = getBestMarketProbability(prediction);
+  const meta = MARKET_LABELS[bestType];
+  return { label: meta.label, pct, emoji: meta.emoji };
+}
