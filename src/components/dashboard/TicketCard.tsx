@@ -191,8 +191,10 @@ function TicketCard({
                 {ticket.matchCount} Matches
               </span>
             </div>
-            {/* Always show status — even when locked */}
-            {getStatusBadge()}
+            {/* Status — blur when locked */}
+            <div className={isLocked ? "blur-[5px] select-none pointer-events-none" : ""}>
+              {getStatusBadge()}
+            </div>
           </div>
           <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
           {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
