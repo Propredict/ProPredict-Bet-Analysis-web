@@ -1249,6 +1249,102 @@ function checkUltraBoost(
   return { boost: 0, isUltra: false };
 }
 
+// ============ UPSET DETECTION ============
+interface UpsetSignal {
+  isUpset: boolean;
+  upsetTeam: "home" | "away" | null;
+  confidence: number;     // 0-100 how likely upset is
+  factors: string[];
+  scoreBoost: { home: number; away: number }; // xG adjustments for alternative scores
+}
+
+function detectUpset(
+  odds: OddsData | null,
+  homeFormScore: number,
+  awayFormScore: number,
+  homeXg: number,
+  awayXg: number,
+  homeQuality: number,
+  awayQuality: number,
+  standings?: StandingEntry[],
+  homeTeamId?: number,
+  awayTeamId?: number,
+  homeTeamName?: string,
+  awayTeamName?: string
+): UpsetSignal {
+  if (!odds) return { isUpset: false, upsetTeam: null, confidence: 0, factors: [], scoreBoost: { home: 0, away: 0 } };
+
+  const factors: string[] = [];
+  let upsetScore = 0;
+
+  // Identify the favorite and underdog
+  const favIsHome = odds.homeProb > odds.awayProb;
+  const favProb = favIsHome ? odds.homeProb : odds.awayProb;
+  const dogProb = favIsHome ? odds.awayProb : odds.homeProb;
+  const favForm = favIsHome ? homeFormScore : awayFormScore;
+  const dogForm = favIsHome ? awayFormScore : homeFormScore;
+  const favXg = favIsHome ? homeXg : awayXg;
+  const dogXg = favIsHome ? awayXg : homeXg;
+  const favQuality = favIsHome ? homeQuality : awayQuality;
+  const dogQuality = favIsHome ? awayQuality : homeQuality;
+  const favName = favIsHome ? (homeTeamName || "Home") : (awayTeamName || "Away");
+  const dogName = favIsHome ? (awayTeamName || "Away") : (homeTeamName || "Home");
+
+  // Only consider upsets when odds strongly favor one team (≥55%)
+  if (favProb < 55) return { isUpset: false, upsetTeam: null, confidence: 0, factors: [], scoreBoost: { home: 0, away: 0 } };
+
+  // Signal 1: Underdog has BETTER recent form than favorite
+  if (dogForm > favForm + 10) {
+    upsetScore += 25;
+    factors.push(`⚠️ ${dogName} in better form (${dogForm} vs ${favForm}) despite longer odds`);
+  }
+
+  // Signal 2: Underdog has higher xG
+  if (dogXg > favXg) {
+    upsetScore += 20;
+    factors.push(`⚠️ ${dogName} xG (${dogXg.toFixed(1)}) > ${favName} xG (${favXg.toFixed(1)})`);
+  }
+
+  // Signal 3: Quality scores are close despite big odds gap
+  if (favProb >= 60 && Math.abs(favQuality - dogQuality) < 15) {
+    upsetScore += 15;
+    factors.push(`⚠️ Quality gap small (${favQuality} vs ${dogQuality}) but odds gap large`);
+  }
+
+  // Signal 4: Standings disagree with odds (underdog ranked higher)
+  if (standings && standings.length > 0 && homeTeamId && awayTeamId) {
+    const favEntry = standings.find(s => s.teamId === (favIsHome ? homeTeamId : awayTeamId));
+    const dogEntry = standings.find(s => s.teamId === (favIsHome ? awayTeamId : homeTeamId));
+    if (favEntry && dogEntry && dogEntry.rank < favEntry.rank) {
+      upsetScore += 15;
+      factors.push(`⚠️ ${dogName} ranked higher (${dogEntry.rank}th) than ${favName} (${favEntry.rank}th)`);
+    }
+  }
+
+  // Signal 5: Very big odds gap (≥20pp) but signals disagree → classic upset territory
+  if (favProb - dogProb >= 20 && upsetScore >= 30) {
+    upsetScore += 10;
+    factors.push(`🔥 UPSET ALERT: Big odds gap (${favProb}% vs ${dogProb}%) but data contradicts`);
+  }
+
+  const isUpset = upsetScore >= 35;
+  const upsetTeam: "home" | "away" | null = isUpset ? (favIsHome ? "away" : "home") : null;
+
+  // Score adjustments: boost underdog xG, increase draw-like scores
+  const scoreBoost = isUpset ? {
+    home: favIsHome ? -0.15 : 0.20,
+    away: favIsHome ? 0.20 : -0.15,
+  } : { home: 0, away: 0 };
+
+  return {
+    isUpset,
+    upsetTeam,
+    confidence: clamp(upsetScore, 0, 100),
+    factors,
+    scoreBoost,
+  };
+}
+
 // ============ DATA QUALITY FILTER ============
 function calculateDataQuality(
   homeStats: TeamStats | null,
