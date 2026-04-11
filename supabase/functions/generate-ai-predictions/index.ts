@@ -1249,6 +1249,102 @@ function checkUltraBoost(
   return { boost: 0, isUltra: false };
 }
 
+// ============ UPSET DETECTION ============
+interface UpsetSignal {
+  isUpset: boolean;
+  upsetTeam: "home" | "away" | null;
+  confidence: number;     // 0-100 how likely upset is
+  factors: string[];
+  scoreBoost: { home: number; away: number }; // xG adjustments for alternative scores
+}
+
+function detectUpset(
+  odds: OddsData | null,
+  homeFormScore: number,
+  awayFormScore: number,
+  homeXg: number,
+  awayXg: number,
+  homeQuality: number,
+  awayQuality: number,
+  standings?: StandingEntry[],
+  homeTeamId?: number,
+  awayTeamId?: number,
+  homeTeamName?: string,
+  awayTeamName?: string
+): UpsetSignal {
+  if (!odds) return { isUpset: false, upsetTeam: null, confidence: 0, factors: [], scoreBoost: { home: 0, away: 0 } };
+
+  const factors: string[] = [];
+  let upsetScore = 0;
+
+  // Identify the favorite and underdog
+  const favIsHome = odds.homeProb > odds.awayProb;
+  const favProb = favIsHome ? odds.homeProb : odds.awayProb;
+  const dogProb = favIsHome ? odds.awayProb : odds.homeProb;
+  const favForm = favIsHome ? homeFormScore : awayFormScore;
+  const dogForm = favIsHome ? awayFormScore : homeFormScore;
+  const favXg = favIsHome ? homeXg : awayXg;
+  const dogXg = favIsHome ? awayXg : homeXg;
+  const favQuality = favIsHome ? homeQuality : awayQuality;
+  const dogQuality = favIsHome ? awayQuality : homeQuality;
+  const favName = favIsHome ? (homeTeamName || "Home") : (awayTeamName || "Away");
+  const dogName = favIsHome ? (awayTeamName || "Away") : (homeTeamName || "Home");
+
+  // Only consider upsets when odds strongly favor one team (≥55%)
+  if (favProb < 55) return { isUpset: false, upsetTeam: null, confidence: 0, factors: [], scoreBoost: { home: 0, away: 0 } };
+
+  // Signal 1: Underdog has BETTER recent form than favorite
+  if (dogForm > favForm + 10) {
+    upsetScore += 25;
+    factors.push(`⚠️ ${dogName} in better form (${dogForm} vs ${favForm}) despite longer odds`);
+  }
+
+  // Signal 2: Underdog has higher xG
+  if (dogXg > favXg) {
+    upsetScore += 20;
+    factors.push(`⚠️ ${dogName} xG (${dogXg.toFixed(1)}) > ${favName} xG (${favXg.toFixed(1)})`);
+  }
+
+  // Signal 3: Quality scores are close despite big odds gap
+  if (favProb >= 60 && Math.abs(favQuality - dogQuality) < 15) {
+    upsetScore += 15;
+    factors.push(`⚠️ Quality gap small (${favQuality} vs ${dogQuality}) but odds gap large`);
+  }
+
+  // Signal 4: Standings disagree with odds (underdog ranked higher)
+  if (standings && standings.length > 0 && homeTeamId && awayTeamId) {
+    const favEntry = standings.find(s => s.teamId === (favIsHome ? homeTeamId : awayTeamId));
+    const dogEntry = standings.find(s => s.teamId === (favIsHome ? awayTeamId : homeTeamId));
+    if (favEntry && dogEntry && dogEntry.rank < favEntry.rank) {
+      upsetScore += 15;
+      factors.push(`⚠️ ${dogName} ranked higher (${dogEntry.rank}th) than ${favName} (${favEntry.rank}th)`);
+    }
+  }
+
+  // Signal 5: Very big odds gap (≥20pp) but signals disagree → classic upset territory
+  if (favProb - dogProb >= 20 && upsetScore >= 30) {
+    upsetScore += 10;
+    factors.push(`🔥 UPSET ALERT: Big odds gap (${favProb}% vs ${dogProb}%) but data contradicts`);
+  }
+
+  const isUpset = upsetScore >= 35;
+  const upsetTeam: "home" | "away" | null = isUpset ? (favIsHome ? "away" : "home") : null;
+
+  // Score adjustments: boost underdog xG, increase draw-like scores
+  const scoreBoost = isUpset ? {
+    home: favIsHome ? -0.15 : 0.20,
+    away: favIsHome ? 0.20 : -0.15,
+  } : { home: 0, away: 0 };
+
+  return {
+    isUpset,
+    upsetTeam,
+    confidence: clamp(upsetScore, 0, 100),
+    factors,
+    scoreBoost,
+  };
+}
+
 // ============ DATA QUALITY FILTER ============
 function calculateDataQuality(
   homeStats: TeamStats | null,
@@ -1468,6 +1564,42 @@ function calculatePrediction(
       calibratedAwayXg *= 1.10;
       calibratedHomeXg *= 0.90;
     }
+  }
+  
+  // === LEAGUE GOAL PROFILE xG ADJUSTMENT ===
+  // High-scoring leagues → boost total xG by +10%, Low-scoring → reduce by -10%
+  if (leagueProfile.isOverLeague) {
+    calibratedHomeXg *= 1.10;
+    calibratedAwayXg *= 1.10;
+  } else if (leagueProfile.isUnderLeague) {
+    calibratedHomeXg *= 0.90;
+    calibratedAwayXg *= 0.90;
+  }
+  
+  // === TEMPO-BASED xG ADJUSTMENT ===
+  // High tempo → boost xG (more open game), Low tempo → reduce xG
+  if (tempo.label === "HIGH") {
+    calibratedHomeXg *= 1.08;
+    calibratedAwayXg *= 1.08;
+  } else if (tempo.label === "LOW") {
+    calibratedHomeXg *= 0.92;
+    calibratedAwayXg *= 0.92;
+  }
+  
+  // === GAME STATE SIMULATION ===
+  // Strong favorite → skew xG toward dominant scores (2-0, 3-0 pattern)
+  if (hasOdds && oddsHomeProb >= 60) {
+    const dominanceFactor = (oddsHomeProb - 60) / 40; // 0-1 scale
+    calibratedHomeXg *= 1.0 + dominanceFactor * 0.15;  // up to +15%
+    calibratedAwayXg *= 1.0 - dominanceFactor * 0.20;  // up to -20%
+  } else if (hasOdds && oddsAwayProb >= 60) {
+    const dominanceFactor = (oddsAwayProb - 60) / 40;
+    calibratedAwayXg *= 1.0 + dominanceFactor * 0.15;
+    calibratedHomeXg *= 1.0 - dominanceFactor * 0.20;
+  } else if (hasOdds && Math.abs(oddsHomeProb - oddsAwayProb) <= 10) {
+    // Balanced teams → both teams get a small scoring floor (1-1, 2-1 type)
+    calibratedHomeXg = Math.max(calibratedHomeXg, 0.9);
+    calibratedAwayXg = Math.max(calibratedAwayXg, 0.9);
   }
   
   // Re-clamp after calibration
@@ -1760,9 +1892,9 @@ function calculatePrediction(
   ];
 
   // === SMART MARKET SWITCHING (tempo & league profile aware) ===
-  const totalXg = homeXg + awayXg;
-  const isLowGoals = totalXg < 2.3;
-  const isHighGoals = totalXg > 2.8;
+  const totalXgMarket = homeXg + awayXg;
+  const isLowGoals = totalXgMarket < 2.3;
+  const isHighGoals = totalXgMarket > 2.8;
   const bothHighScoring = homeXg > 1.3 && awayXg > 1.0;
   const bothDefensive = homeXg < 1.0 && awayXg < 0.9;
   const dominantTeam = Math.abs(homeWin - awayWin) >= 25;
@@ -1996,6 +2128,24 @@ function calculatePrediction(
   // === VALUE DETECTION ===
   const value = detectValue(aiProb, bookmakerProb, bestProb);
 
+  // === UPSET DETECTION ===
+  const upset = detectUpset(
+    odds ?? null, homeFormScore, awayFormScore,
+    homeXg, awayXg, homeQualityScore, awayQualityScore,
+    standings, homeTeamId, awayTeamId, homeTeamName, awayTeamName
+  );
+  
+  // If upset detected, adjust score clusters toward underdog-friendly scores
+  if (upset.isUpset) {
+    // Boost alternative score clusters (1-1, 1-2 type) via draw probability
+    if (upset.upsetTeam === "away" && prediction === "1") {
+      // Odds say home wins but data disagrees — reduce confidence
+      // Don't change prediction, but lower confidence
+    } else if (upset.upsetTeam === "home" && prediction === "2") {
+      // Same for away favorite
+    }
+  }
+
   // === 🧠 3. NEW CONFIDENCE MODEL (v4 multi-dimensional) ===
   // 
   // confidence = (form_diff * 0.20) + (xG_score * 0.25) + (odds_diff * 0.15)
@@ -2067,6 +2217,16 @@ function calculatePrediction(
   // Combined over25 form >= 7 → extra confidence for Over picks
   if (homeOver25Count + awayOver25Count >= 7 && prediction.includes("Over")) {
     confidence += 5;
+  }
+
+  // === UPSET DETECTION CONFIDENCE PENALTY ===
+  if (upset.isUpset) {
+    // If we're picking the favorite but upset signals are strong, reduce confidence
+    const pickingFavorite = (prediction === "1" && odds && odds.homeProb > odds.awayProb) ||
+                            (prediction === "2" && odds && odds.awayProb > odds.homeProb);
+    if (pickingFavorite) {
+      confidence -= Math.round(upset.confidence * 0.15); // Up to -15 penalty
+    }
   }
 
   // === 6. DATA QUALITY FILTER ===
@@ -2185,6 +2345,11 @@ function calculatePrediction(
   // League profile
   if (leagueProfile.isOverLeague) analysisReasons.push(`📈 High-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
   if (leagueProfile.isUnderLeague) analysisReasons.push(`📉 Low-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
+
+  // Upset detection
+  if (upset.isUpset) {
+    for (const uf of upset.factors.slice(0, 3)) analysisReasons.push(uf);
+  }
 
   // === TOP CORRECT SCORES (Poisson + consistency filtered) ===
   const filteredTopScores = filterScoresByMarket(goalMarkets.topScores, prediction, adjustedOver25, adjustedBttsYes);
