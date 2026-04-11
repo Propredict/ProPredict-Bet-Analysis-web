@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CARD_DISMISSED_KEY = "propredict:rate_card_dismissed";
 const FIRST_SEEN_KEY = "propredict:first_seen_at";
-const MIN_DAYS = 1;
+const MIN_DAYS = 0;
 
 /**
  * Inline rating card on the dashboard.
