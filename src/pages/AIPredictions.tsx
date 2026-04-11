@@ -822,6 +822,11 @@ export default function AIPredictions() {
                         </Card>
                       ))}
                   </div>
+                  {tierCounts.pro > 3 && (
+                    <p className="text-center text-[10px] text-amber-400/70 mt-2">
+                      +{tierCounts.pro - 3} more Pro picks available
+                    </p>
+                  )}
                   {/* Pro → Premium hint */}
                   <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/10">
                     <Crown className="w-3 h-3 text-fuchsia-400" />
