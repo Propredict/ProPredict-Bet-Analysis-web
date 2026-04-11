@@ -9,7 +9,7 @@ import {
   getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock } from "lucide-react";
 
 /**
  * Parse structured tags from key_factors.
@@ -131,7 +131,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const topScores = displayTier === "premium"
     ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 2)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 1)
     : [];
 
   return (
@@ -164,6 +164,36 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               {pick.label}
             </span>
           </div>
+
+          {/* Confidence Label */}
+          <div className="flex items-center gap-2 mb-0.5">
+            {pick.conf >= 80 ? (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5 animate-pulse">
+                <Flame className="w-2.5 h-2.5" />
+                HIGH CONFIDENCE
+              </Badge>
+            ) : pick.conf >= 65 ? (
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+                <Target className="w-2.5 h-2.5" />
+                MEDIUM
+              </Badge>
+            ) : (
+              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+                <TrendingDown className="w-2.5 h-2.5" />
+                RISKY
+              </Badge>
+            )}
+          </div>
+
+          {/* Premium Edge Indicators */}
+          {displayTier === "premium" && pick.conf >= 75 && (
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Sparkles className="w-3 h-3 text-fuchsia-400" />
+              <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-400">
+                {pick.conf >= 85 ? "💎 AI EDGE DETECTED" : pick.conf >= 80 ? "🔥 Top Value Pick" : "📊 Market Mismatch Found"}
+              </span>
+            </div>
+          )}
 
           {/* Probability */}
           <div className="flex items-baseline gap-2">
@@ -258,17 +288,40 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           })()}
         </div>
       ) : (
-        /* Locked state */
-        <div className="rounded-lg border border-border/50 bg-card/30 p-3 md:p-4">
-          <div className="flex items-center gap-1.5 mb-2">
-            <CheckCircle className="w-3.5 h-3.5 text-muted-foreground/50" />
-            <span className="text-[10px] md:text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
-              Best Pick
-            </span>
-          </div>
-          <div className="flex items-end justify-between">
-            <div className="text-base md:text-lg font-bold text-white blur-sm select-none">? ? ?</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-white blur-sm select-none">??%</div>
+        /* Locked state — FOMO teaser */
+        <div className="rounded-lg border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-card/50 to-fuchsia-500/5 p-3 md:p-4 relative overflow-hidden">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
+          
+          <div className="relative space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
+              <span className="text-[10px] md:text-xs font-bold text-fuchsia-400 uppercase tracking-wider">
+                🔒 AI High Confidence Pick
+              </span>
+            </div>
+            
+            {/* Teaser — show confidence but NOT the team */}
+            <div className="flex items-center gap-2">
+              <span className="text-lg md:text-xl font-extrabold text-fuchsia-400">
+                Win probability: {Math.max(pick.conf, 75)}%
+              </span>
+            </div>
+            
+            {pick.conf >= 80 && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+                <Flame className="w-2.5 h-2.5" />
+                HIGH CONFIDENCE
+              </Badge>
+            )}
+            
+            <div className="flex items-end justify-between pt-1">
+              <div className="text-base md:text-lg font-bold text-white/20 blur-md select-none pointer-events-none">Hidden Team Win</div>
+            </div>
+            
+            <p className="text-[9px] md:text-[10px] text-muted-foreground/80">
+              Unlock full prediction to see team, score & analysis 👇
+            </p>
           </div>
         </div>
       )}
@@ -306,7 +359,19 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* ===== Top Correct Scores — Pro (top 2) & Premium (top 3) ===== */}
+      {/* ===== Locked Score Teaser — Free tier ===== */}
+      {hasAccess && displayTier === "free" && (
+        <div className="pt-1">
+          <div className="flex items-center gap-1.5 py-2 px-3 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
+            <Lock className="w-3 h-3 text-fuchsia-400" />
+            <span className="text-[9px] md:text-[10px] text-muted-foreground">
+              <span className="text-fuchsia-400 font-semibold">Score predictions</span> available in Pro & Premium
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Top Correct Scores — Pro (top 1) & Premium (top 3) ===== */}
       {hasAccess && displayTier !== "free" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
@@ -317,8 +382,11 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             )}>
               Top Correct Scores
             </span>
+            {displayTier === "pro" && (
+              <span className="text-[8px] text-fuchsia-400/70 ml-auto">+2 more in Premium</span>
+            )}
           </div>
-          <div className={cn("grid gap-1.5", topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+          <div className={cn("grid gap-1.5", topScores.length === 1 ? "grid-cols-1" : topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
             {topScores.map((s, i) => (
               <div
                 key={s.score}
