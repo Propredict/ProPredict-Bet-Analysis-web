@@ -571,7 +571,7 @@ export default function MatchPreviewDetail() {
             </div>
 
             {/* CTA — free users always go to upgrade */}
-            {isPremiumUser || isProUser ? (
+            {isPremiumUser || plan === "basic" ? (
               <Button
                 size="lg"
                 className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
