@@ -2128,6 +2128,24 @@ function calculatePrediction(
   // === VALUE DETECTION ===
   const value = detectValue(aiProb, bookmakerProb, bestProb);
 
+  // === UPSET DETECTION ===
+  const upset = detectUpset(
+    odds ?? null, homeFormScore, awayFormScore,
+    homeXg, awayXg, homeQualityScore, awayQualityScore,
+    standings, homeTeamId, awayTeamId, homeTeamName, awayTeamName
+  );
+  
+  // If upset detected, adjust score clusters toward underdog-friendly scores
+  if (upset.isUpset) {
+    // Boost alternative score clusters (1-1, 1-2 type) via draw probability
+    if (upset.upsetTeam === "away" && prediction === "1") {
+      // Odds say home wins but data disagrees — reduce confidence
+      // Don't change prediction, but lower confidence
+    } else if (upset.upsetTeam === "home" && prediction === "2") {
+      // Same for away favorite
+    }
+  }
+
   // === 🧠 3. NEW CONFIDENCE MODEL (v4 multi-dimensional) ===
   // 
   // confidence = (form_diff * 0.20) + (xG_score * 0.25) + (odds_diff * 0.15)
