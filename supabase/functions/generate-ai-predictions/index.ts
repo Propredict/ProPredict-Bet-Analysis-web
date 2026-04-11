@@ -1833,13 +1833,25 @@ function calculatePrediction(
     analysisReasons.push(`🔥 OPEN GAME: Both teams avg ${homeAvgTotal5.toFixed(1)} & ${awayAvgTotal5.toFixed(1)} goals/game involvement`);
   }
 
-  // Odds intelligence insights
-  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined) {
-    if (odds.over25Odds <= 1.65) analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (strong signal)`);
+  // Odds intelligence insights (implied probability)
+  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined && odds.over25Odds > 0) {
+    const impliedOver = (1.0 / odds.over25Odds * 100).toFixed(0);
+    if (odds.over25Odds <= 1.65) {
+      analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (implied ${impliedOver}% — strong signal)`);
+    } else if (odds.over25Odds <= 1.85) {
+      analysisReasons.push(`📊 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (implied ${impliedOver}%)`);
+    }
   }
-  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined) {
+  if (odds?.under25Odds !== null && odds?.under25Odds !== undefined && odds.under25Odds > 0) {
+    if (odds.under25Odds <= 1.70) {
+      const impliedUnder = (1.0 / odds.under25Odds * 100).toFixed(0);
+      analysisReasons.push(`📉 Bookmaker: Under 2.5 @ ${odds.under25Odds.toFixed(2)} (implied ${impliedUnder}% — strong signal)`);
+    }
+  }
+  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined && odds.bttsYesOdds > 0) {
     if (odds.bttsYesOdds <= 1.70 && (prediction === "BTTS Yes" || prediction.includes("Over"))) {
-      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (strong signal)`);
+      const impliedBtts = (1.0 / odds.bttsYesOdds * 100).toFixed(0);
+      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (implied ${impliedBtts}% — strong signal)`);
     }
   }
 
