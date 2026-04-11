@@ -194,7 +194,7 @@ function TicketCard({
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className={cn("font-bold text-[15px] text-foreground leading-tight tracking-tight", isLocked && !getIsAndroidApp() && (ticket.tier === "exclusive" || ticket.tier === "premium") && "blur-[5px] select-none")}>{ticket.title}</h3>
+          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
           {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
         </div>
       </div>
