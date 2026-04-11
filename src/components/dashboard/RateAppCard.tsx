@@ -19,7 +19,7 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!isAndroid || !user) return;
+    if (!user) return;
 
     // Check if already rated
     (supabase as any)
@@ -43,7 +43,7 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
           setVisible(true);
         }
       });
-  }, [isAndroid, user]);
+  }, [user]);
 
   if (!visible) return null;
 
@@ -65,10 +65,10 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
 
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold text-foreground leading-tight">
-            Uživaš u ProPredict-u? 
+            Enjoying ProPredict? 
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            Tvoja ocena nam mnogo znači! Osvoji <span className="font-bold text-amber-500">+50 poena</span> ⭐
+            Your rating means a lot to us! Earn <span className="font-bold text-amber-500">+50 points</span> ⭐
           </p>
 
           {/* Mini star preview */}
@@ -78,14 +78,14 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all active:scale-95"
             >
               <Star className="h-3.5 w-3.5 fill-white" />
-              Oceni nas
+              Rate us
               <ChevronRight className="h-3 w-3" />
             </button>
             <button
               onClick={dismiss}
               className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              Kasnije
+              Later
             </button>
           </div>
         </div>
