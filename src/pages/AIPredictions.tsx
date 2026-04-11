@@ -656,50 +656,152 @@ export default function AIPredictions() {
             </div>
           )}
 
-          {/* 🔒 LOCKED PREMIUM TEASER — show to non-premium users */}
-          {!isPremiumUser && !isAdmin && tierCounts.premium > 0 && (tierFilter === "all" || tierFilter === "premium") && (
-            <div className="rounded-xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-card to-fuchsia-500/5 p-4 md:p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-fuchsia-500/20">
-                    <Crown className="w-4 h-4 text-fuchsia-400" />
+          {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
+          {!isPremiumUser && !isProUser && !isAdmin && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "pro" || tierFilter === "premium") && (
+            <div className="space-y-3">
+              {/* Pro Locked Section */}
+              {tierCounts.pro > 0 && (tierFilter === "all" || tierFilter === "pro") && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    <h2 className="text-xs md:text-sm font-semibold text-foreground">Pro Picks</h2>
+                    <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
+                      🔒 {tierCounts.pro} locked
+                    </Badge>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-fuchsia-400">🔒 {tierCounts.premium} Premium AI Picks</h3>
-                    <p className="text-[9px] md:text-[10px] text-muted-foreground">High-confidence predictions locked</p>
+                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                    {featuredPredictions
+                      .filter(p => getPredictionTier(p) === "pro")
+                      .slice(0, 3)
+                      .map((prediction) => (
+                        <Card key={`teaser-pro-${prediction.id}`} className="bg-[#0a1628] border-amber-500/20 overflow-hidden rounded relative">
+                          <CardContent className="p-0">
+                            <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
+                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> PRO
+                              </Badge>
+                              <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
+                            </div>
+                            <div className="p-3 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-amber-400/60" />
+                                <span className="text-sm font-bold text-white/15 blur-md select-none pointer-events-none">Hidden Match</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={cn(
+                                  "text-xl font-extrabold",
+                                  (prediction.confidence ?? 0) >= 80 ? "text-green-400" : (prediction.confidence ?? 0) >= 70 ? "text-amber-400" : "text-orange-400"
+                                )}>
+                                  {prediction.confidence ?? 70}%
+                                </span>
+                                <Badge className={cn(
+                                  "text-[8px] px-1.5 py-0.5 rounded",
+                                  (prediction.confidence ?? 0) >= 80 
+                                    ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                    : (prediction.confidence ?? 0) >= 65
+                                    ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                                    : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                )}>
+                                  {(prediction.confidence ?? 0) >= 80 ? "🔥 HIGH" : (prediction.confidence ?? 0) >= 65 ? "⚖️ MEDIUM" : "⚠️ RISKY"}
+                                </Badge>
+                              </div>
+                              <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+                                <div
+                                  className={cn(
+                                    "h-full rounded-full",
+                                    (prediction.confidence ?? 0) >= 80 ? "bg-green-500" : (prediction.confidence ?? 0) >= 70 ? "bg-amber-500" : "bg-orange-500"
+                                  )}
+                                  style={{ width: `${Math.max(10, prediction.confidence ?? 60)}%` }}
+                                />
+                              </div>
+                              <Button
+                                onClick={() => navigate("/get-premium")}
+                                className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
+                              >
+                                <Star className="w-3 h-3 fill-current" />
+                                Unlock with Pro — €3.99/mo
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
                   </div>
                 </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    💎 AI Edge Detected
-                  </Badge>
-                  <Badge className="bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
-                    🔥 Top Value Picks
-                  </Badge>
-                  <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
-                    📊 Full Score Predictions
-                  </Badge>
+              )}
+
+              {/* Premium Locked Section */}
+              {tierCounts.premium > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
+                    <h2 className="text-xs md:text-sm font-semibold text-foreground">Premium Picks</h2>
+                    <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
+                      🔒 {tierCounts.premium} locked
+                    </Badge>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                    {featuredPredictions
+                      .filter(p => getPredictionTier(p) === "premium")
+                      .slice(0, 3)
+                      .map((prediction) => (
+                        <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
+                          <CardContent className="p-0 relative">
+                            <div className="px-3 py-2 flex items-center justify-between border-b border-fuchsia-500/10">
+                              <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] px-1.5 py-0.5 rounded">
+                                <Crown className="w-2.5 h-2.5 mr-0.5 fill-current" /> PREMIUM
+                              </Badge>
+                              <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
+                            </div>
+                            <div className="p-3 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-fuchsia-400/60" />
+                                <span className="text-sm font-bold text-white/15 blur-md select-none pointer-events-none">Hidden Match</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={cn(
+                                  "text-xl font-extrabold",
+                                  (prediction.confidence ?? 0) >= 80 ? "text-green-400" : "text-amber-400"
+                                )}>
+                                  {prediction.confidence ?? 80}%
+                                </span>
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                  🔥 HIGH CONFIDENCE
+                                </Badge>
+                              </div>
+                              {(prediction.confidence ?? 0) >= 80 && (
+                                <div className="flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-fuchsia-400" />
+                                  <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
+                                </div>
+                              )}
+                              <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
+                              </div>
+                              <Button
+                                onClick={() => navigate("/get-premium")}
+                                className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
+                              >
+                                <Crown className="w-3 h-3 fill-current" />
+                                Unlock Premium — €5.99/mo
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                  {tierCounts.premium > 3 && (
+                    <p className="text-center text-[10px] text-fuchsia-400/70 mt-2">
+                      +{tierCounts.premium - 3} more Premium picks available
+                    </p>
+                  )}
                 </div>
-                
-                <p className="text-[10px] md:text-xs text-muted-foreground">
-                  AI found <span className="text-fuchsia-400 font-bold">{tierCounts.premium} high-value picks</span> today. Unlock full predictions, top 3 scores & edge indicators.
-                </p>
-                
-                <Button
-                  onClick={() => navigate("/get-premium")}
-                  className="w-full h-9 text-xs font-semibold bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-full gap-1.5"
-                >
-                  <Crown className="w-3.5 h-3.5 fill-current" />
-                  Unlock Premium Predictions — €5.99/mo
-                </Button>
-              </div>
+              )}
             </div>
           )}
 
-          {featuredPredictions.length > 0 && (
+          {/* Featured — ONLY for paying users (Pro/Premium/Admin) */}
+          {(isPremiumUser || isProUser || isAdmin) && featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
                 <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
@@ -806,6 +908,24 @@ export default function AIPredictions() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Teaser after Free picks — for non-paying users */}
+            {!isPremiumUser && !isProUser && !isAdmin && isAuthenticated && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "free") && (
+              <div className="mt-3 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-gradient-to-r from-fuchsia-500/5 via-amber-500/5 to-fuchsia-500/5 border border-fuchsia-500/15">
+                <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-[10px] md:text-xs text-muted-foreground">
+                  <span className="text-fuchsia-400 font-bold">+{tierCounts.pro + tierCounts.premium} stronger picks</span> available in Pro & Premium
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[9px] text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10"
+                  onClick={() => setTierFilter("premium")}
+                >
+                  View →
+                </Button>
               </div>
             )}
           </div>
