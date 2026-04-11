@@ -413,51 +413,6 @@ function getUnlockPercentage(matchId: string): number {
 }
 
 
-/**
- * Derive the single best market pick for a prediction using Poisson model.
- * Returns the market with the highest probability (e.g., "BTTS Yes 87%", "Over 2.5 72%", "Home Win 65%").
- */
-function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji: string } {
-  const homeWin = p.home_win ?? 0;
-  const awayWin = p.away_win ?? 0;
-  const draw = p.draw ?? 0;
-  const confidence = p.confidence ?? 60;
-
-  // Use unified Poisson model — same as AI Predictions page
-  const goalProbs = calculateGoalMarketProbs(p);
-
-  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-  const makePick = (label: string, pct: number, emoji: string) => ({ label, pct: Math.round(clamp(pct, 30, 95)), emoji });
-
-  // Goals & BTTS from Poisson
-  const goalsPick = goalProbs.over25 >= 50
-    ? makePick("Over 2.5", goalProbs.over25, "🔥")
-    : makePick("Under 2.5", goalProbs.under25, "🔥");
-
-  const bttsPick = goalProbs.bttsYes >= 50
-    ? makePick("BTTS Yes", goalProbs.bttsYes, "🔥")
-    : makePick("BTTS No", goalProbs.bttsNo, "🔥");
-
-  // 1X2 picks
-  const mainPrediction = (p.prediction || "").toLowerCase();
-  const homePick = makePick("Home Win", mainPrediction === "1" || mainPrediction === "home" ? Math.max(homeWin, confidence * 0.85) : homeWin, "🏠");
-  const awayPick = makePick("Away Win", mainPrediction === "2" || mainPrediction === "away" ? Math.max(awayWin, confidence * 0.85) : awayWin, "✈️");
-  const drawPick = makePick("Draw", mainPrediction === "x" || mainPrediction === "draw" ? Math.max(draw, confidence * 0.8) : draw, "🤝");
-  const x2Pick = makePick("X2 (Draw/Away)", (mainPrediction === "2" || awayWin >= homeWin) ? Math.max(78, awayPick.pct + draw * 0.6) : awayWin + draw * 0.6, "🛡️");
-  const dnbAwayPick = makePick("DNB Away", Math.max(76, awayPick.pct + draw * 0.3), "🛡️");
-  const dnbHomePick = makePick("DNB Home", Math.max(76, homePick.pct + draw * 0.3), "🛡️");
-
-  const candidates = [
-    homePick,
-    awayPick,
-    drawPick,
-    ...(awayWin >= homeWin ? [x2Pick, dnbAwayPick] : [dnbHomePick]),
-    goalsPick,
-    bttsPick,
-  ];
-
-  return candidates.sort((a, b) => b.pct - a.pct)[0];
-}
 
 
 function getPreviewSnippets(match: { home_team: string; away_team: string; confidence: number | null; home_win: number; away_win: number; key_factors: string[] | null; analysis: string | null; bestPick?: { label: string; pct: number; emoji: string } }) {
