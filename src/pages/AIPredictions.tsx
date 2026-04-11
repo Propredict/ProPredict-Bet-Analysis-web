@@ -656,6 +656,49 @@ export default function AIPredictions() {
             </div>
           )}
 
+          {/* 🔒 LOCKED PREMIUM TEASER — show to non-premium users */}
+          {!isPremiumUser && !isAdmin && tierCounts.premium > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <div className="rounded-xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-card to-fuchsia-500/5 p-4 md:p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-fuchsia-500/20">
+                    <Crown className="w-4 h-4 text-fuchsia-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-fuchsia-400">🔒 {tierCounts.premium} Premium AI Picks</h3>
+                    <p className="text-[9px] md:text-[10px] text-muted-foreground">High-confidence predictions locked</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    💎 AI Edge Detected
+                  </Badge>
+                  <Badge className="bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
+                    🔥 Top Value Picks
+                  </Badge>
+                  <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-[9px] px-2 py-0.5 rounded gap-1">
+                    📊 Full Score Predictions
+                  </Badge>
+                </div>
+                
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  AI found <span className="text-fuchsia-400 font-bold">{tierCounts.premium} high-value picks</span> today. Unlock full predictions, top 3 scores & edge indicators.
+                </p>
+                
+                <Button
+                  onClick={() => navigate("/get-premium")}
+                  className="w-full h-9 text-xs font-semibold bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-full gap-1.5"
+                >
+                  <Crown className="w-3.5 h-3.5 fill-current" />
+                  Unlock Premium Predictions — €5.99/mo
+                </Button>
+              </div>
+            </div>
+          )}
+
           {featuredPredictions.length > 0 && (
             <div>
               <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
