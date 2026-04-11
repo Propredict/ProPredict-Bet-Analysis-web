@@ -1388,7 +1388,70 @@ function calculatePrediction(
   homeXg = clamp(homeXg, 0.3, 3.5);
   awayXg = clamp(awayXg, 0.2, 3.0);
 
-  // xG → 1X2 probability (scale to 0-100)
+  // === ODDS-CALIBRATED xG ADJUSTMENT ===
+  // Adjust xG using Over/Under implied probabilities before Poisson
+  let calibratedHomeXg = homeXg;
+  let calibratedAwayXg = awayXg;
+  
+  if (odds && odds.over25Odds !== null && odds.over25Odds > 0 && odds.under25Odds !== null && odds.under25Odds > 0) {
+    const rawOverProb = 1.0 / odds.over25Odds;
+    const rawUnderProb = 1.0 / odds.under25Odds;
+    const totalOU = rawOverProb + rawUnderProb;
+    const normOverProb = totalOU > 0 ? (rawOverProb / totalOU) * 100 : 50;
+    
+    // Over 2.5 probability ≥ 60% → increase total xG by 10-15%
+    if (normOverProb >= 60) {
+      const boost = 1.0 + 0.10 + (normOverProb - 60) * 0.00125; // 10% base + up to 5% extra
+      calibratedHomeXg *= boost;
+      calibratedAwayXg *= boost;
+    }
+    // Under 2.5 probability ≥ 60% → decrease total xG by 10-15%
+    else if (normOverProb <= 40) { // Under prob >= 60%
+      const reduction = 1.0 - 0.10 - (40 - normOverProb) * 0.00125;
+      calibratedHomeXg *= reduction;
+      calibratedAwayXg *= reduction;
+    }
+  }
+  
+  // BTTS implied probability adjustment
+  if (odds && odds.bttsYesOdds !== null && odds.bttsYesOdds > 0) {
+    const rawBttsProb = 1.0 / odds.bttsYesOdds;
+    const bttsNoOddsVal = odds.bttsNoOdds ?? 0;
+    const totalBtts = bttsNoOddsVal > 0 ? rawBttsProb + (1.0 / bttsNoOddsVal) : rawBttsProb * 2;
+    const normBttsYes = (rawBttsProb / totalBtts) * 100;
+    
+    // BTTS Yes ≥ 60% → ensure both teams have minimum xG floor
+    if (normBttsYes >= 60) {
+      calibratedHomeXg = Math.max(calibratedHomeXg, 0.8);
+      calibratedAwayXg = Math.max(calibratedAwayXg, 0.8);
+    }
+    // BTTS No ≥ 60% → reduce weaker team xG by 20-30%
+    else if (normBttsYes <= 40) {
+      const weakerReduction = 0.70 + (normBttsYes / 40) * 0.10; // 70-80% of original
+      if (calibratedHomeXg <= calibratedAwayXg) {
+        calibratedHomeXg *= weakerReduction;
+      } else {
+        calibratedAwayXg *= weakerReduction;
+      }
+    }
+  }
+  
+  // Favorite adjustment: strong favorite (≥65% win prob) → boost fav xG, reduce opponent
+  if (hasOdds) {
+    if (oddsHomeProb >= 65) {
+      calibratedHomeXg *= 1.10; // +10% for favorite
+      calibratedAwayXg *= 0.90; // -10% for underdog
+    } else if (oddsAwayProb >= 65) {
+      calibratedAwayXg *= 1.10;
+      calibratedHomeXg *= 0.90;
+    }
+  }
+  
+  // Re-clamp after calibration
+  calibratedHomeXg = clamp(calibratedHomeXg, 0.2, 4.0);
+  calibratedAwayXg = clamp(calibratedAwayXg, 0.15, 3.5);
+
+  // xG → 1X2 probability (scale to 0-100) — use ORIGINAL xG for 1X2, calibrated for scores
   const totalXg = homeXg + awayXg;
   const xgHomeScore = totalXg > 0 ? (homeXg / totalXg) * 100 : 50;
   const xgAwayScore = totalXg > 0 ? (awayXg / totalXg) * 100 : 50;
@@ -1407,13 +1470,11 @@ function calculatePrediction(
   rawDraw = suppressDraw(Math.round(rawDraw), homeXg, awayXg);
   
   // === ODDS-BASED DRAW BOOST ===
-  // If bookmaker odds are close (home & away within 0.3), boost draw probability
   if (hasOdds && oddsDrawProb >= 28) {
-    rawDraw = Math.max(rawDraw, Math.round(oddsDrawProb * 0.85)); // Align with bookmaker draw expectation
+    rawDraw = Math.max(rawDraw, Math.round(oddsDrawProb * 0.85));
   }
-  // Strong favorite detection: if one side has very low odds → suppress draw further
   if (hasOdds && (oddsHomeProb >= 65 || oddsAwayProb >= 65)) {
-    rawDraw = Math.min(rawDraw, 20); // Strong favorite → less draw probability
+    rawDraw = Math.min(rawDraw, 20);
   }
 
   const homeShare = sigmoid(diff / 7);
@@ -1422,16 +1483,13 @@ function calculatePrediction(
   let draw = rawDraw;
   
   // === ODDS CORRECTION LAYER ===
-  // Align final probabilities with bookmaker when there's significant divergence
   if (hasOdds) {
-    // Strong favorite boost: if odds say >60% but model says <50%, correct upward
     if (oddsHomeProb >= 60 && homeWin < 50) {
-      homeWin = Math.round(homeWin * 0.6 + oddsHomeProb * 0.4); // Blend toward odds
+      homeWin = Math.round(homeWin * 0.6 + oddsHomeProb * 0.4);
     }
     if (oddsAwayProb >= 60 && awayWin < 50) {
       awayWin = Math.round(awayWin * 0.6 + oddsAwayProb * 0.4);
     }
-    // Ensure total = 100
     const winTotal = homeWin + awayWin;
     draw = 100 - winTotal;
     if (draw < 12) { draw = 12; homeWin = Math.round((100 - draw) * (homeWin / winTotal)); awayWin = 100 - draw - homeWin; }
@@ -1443,8 +1501,8 @@ function calculatePrediction(
   if (awayWin < 10) { const d = 10 - awayWin; awayWin = 10; const td = Math.min(d, Math.max(0, draw - 12)); draw -= td; homeWin = 100 - draw - awayWin; }
   if (homeWin < 10) { const d = 10 - homeWin; homeWin = 10; const td = Math.min(d, Math.max(0, draw - 12)); draw -= td; awayWin = 100 - draw - homeWin; }
 
-  // === GOAL MARKETS (Poisson) + STYLE MATCHUP + LEAGUE PROFILE ===
-  const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
+  // === GOAL MARKETS (Poisson) — using CALIBRATED xG for accurate scores ===
+  const goalMarkets = poissonGoalMarkets(calibratedHomeXg, calibratedAwayXg);
   const style = detectStyleMatchup(homeStats, awayStats, homeForm, awayForm);
 
   // === FORM-BASED OVER/BTTS SCORING (last 5 matches) ===
