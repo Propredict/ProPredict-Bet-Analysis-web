@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn, Link2, Check, Share2, Home, ChevronRight } from "lucide-react";
