@@ -859,6 +859,8 @@ function poissonGoalMarkets(homeXg: number, awayXg: number): {
   bttsYes: number; bttsNo: number;
   mostLikelyScore: string;
   expectedTotalGoals: number;
+  topScores: { score: string; prob: number }[];
+  scoreConfidence: "high" | "medium" | "low";
 } {
   const maxGoals = 6;
   let scoreProbs: number[][] = [];
@@ -872,8 +874,7 @@ function poissonGoalMarkets(homeXg: number, awayXg: number): {
 
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
-  let bestProb = 0;
-  let bestScore = "1-0";
+  const allScores: { score: string; prob: number; h: number; a: number }[] = [];
 
   for (let h = 0; h <= maxGoals; h++) {
     for (let a = 0; a <= maxGoals; a++) {
@@ -885,11 +886,21 @@ function poissonGoalMarkets(homeXg: number, awayXg: number): {
       if (total > 3) over35 += p;
       if (h > 0 && a > 0) bttsYes += p;
       
-      if (p > bestProb) {
-        bestProb = p;
-        bestScore = `${h}-${a}`;
-      }
+      allScores.push({ score: `${h}-${a}`, prob: Math.round(p * 10000) / 100, h, a });
     }
+  }
+
+  // Sort by probability descending, take top 5
+  allScores.sort((a, b) => b.prob - a.prob);
+  const topScores = allScores.slice(0, 5).map(s => ({ score: s.score, prob: s.prob }));
+
+  // Score confidence based on probability gap between #1 and #2
+  let scoreConfidence: "high" | "medium" | "low" = "medium";
+  if (topScores.length >= 2) {
+    const gap = topScores[0].prob - topScores[1].prob;
+    if (gap >= 4.0) scoreConfidence = "high";      // Top score clearly dominant
+    else if (gap >= 2.0) scoreConfidence = "medium";
+    else scoreConfidence = "low";                    // Very close probabilities
   }
 
   return {
@@ -901,9 +912,83 @@ function poissonGoalMarkets(homeXg: number, awayXg: number): {
     under35: Math.round((1 - over35) * 100),
     bttsYes: Math.round(bttsYes * 100),
     bttsNo: Math.round((1 - bttsYes) * 100),
-    mostLikelyScore: bestScore,
+    mostLikelyScore: topScores[0]?.score ?? "1-0",
     expectedTotalGoals: homeXg + awayXg,
+    topScores,
+    scoreConfidence,
   };
+}
+
+/**
+ * Filter top scores by market consistency rules.
+ * Returns filtered + sorted top 3.
+ */
+function filterScoresByMarket(
+  topScores: { score: string; prob: number }[],
+  prediction: string,
+  adjustedOver25: number,
+  adjustedBttsYes: number,
+): { score: string; prob: number }[] {
+  let filtered = [...topScores];
+
+  // Over 2.5 → remove scores with ≤2 total goals
+  if (prediction === "Over 2.5" || prediction === "Over 3.5" || adjustedOver25 >= 65) {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h + a >= 3;
+    });
+  }
+
+  // Under 2.5 → remove scores with >2 total goals
+  if (prediction === "Under 2.5" || prediction === "Under 1.5" || adjustedOver25 <= 35) {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h + a <= 2;
+    });
+  }
+
+  // BTTS Yes → both teams must score
+  if (prediction === "BTTS Yes" || adjustedBttsYes >= 65) {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h > 0 && a > 0;
+    });
+  }
+
+  // BTTS No → at least one team must have 0
+  if (prediction === "BTTS No" || adjustedBttsYes <= 35) {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h === 0 || a === 0;
+    });
+  }
+
+  // 1 (home win) → home must be ahead
+  if (prediction === "1") {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h > a;
+    });
+  }
+  // 2 (away win) → away must be ahead
+  if (prediction === "2") {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return a > h;
+    });
+  }
+  // X (draw) → equal
+  if (prediction === "X") {
+    filtered = filtered.filter(s => {
+      const [h, a] = s.score.split("-").map(Number);
+      return h === a;
+    });
+  }
+
+  // If filtering removed everything, fall back to unfiltered
+  if (filtered.length === 0) filtered = [...topScores];
+
+  return filtered.slice(0, 3);
 }
 
 /**
