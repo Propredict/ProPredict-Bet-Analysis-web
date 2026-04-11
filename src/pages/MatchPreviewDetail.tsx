@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -66,7 +67,10 @@ function deriveStatsGrid(pred: any) {
   const totalGoalsAvg = homeGoals + awayGoals;
   const homeWin = pred.home_win ?? 0;
   const awayWin = pred.away_win ?? 0;
-  const bttsChance = Math.round(Math.min(90, Math.max(30, 32 + Math.min(homeGoals, awayGoals) * 22)));
+
+  // Use unified Poisson model for BTTS — same as AI Predictions page
+  const goalProbs = calculateGoalMarketProbs(pred as AIPrediction);
+  const bttsChance = goalProbs.bttsYes;
 
   const formMatch = pred.analysis?.match(/([WDL]{5,})/);
   const formStr = formMatch ? formMatch[1] : null;
