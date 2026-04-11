@@ -118,44 +118,20 @@ export default function MatchPreviews() {
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
 
-    // Tier 1: Premium picks (≥78% confidence)
-    const premium = valid.filter(p => (p.confidence ?? 0) >= 78);
-    // Tier 2: Pro picks (65-77% confidence)
-    const pro = valid.filter(p => {
-      const c = p.confidence ?? 0;
-      return c >= 65 && c < 78;
-    });
-
-    // Start with all premium, sorted by confidence desc
-    let pool = [...premium].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-
-    // Fill with pro picks sorted by confidence desc until we reach MAX_MATCHES
-    if (pool.length < MAX_MATCHES) {
-      const proSorted = [...pro].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-      pool = [...pool, ...proSorted.slice(0, MAX_MATCHES - pool.length)];
-    }
-
-    // Still not enough? Add remaining matches (50%+) sorted by confidence
-    if (pool.length < MAX_MATCHES) {
-      const poolIds = new Set(pool.map(p => p.id));
-      const fallback = valid
-        .filter(p => (p.confidence ?? 0) >= 50 && !poolIds.has(p.id))
-        .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-      pool = [...pool, ...fallback.slice(0, MAX_MATCHES - pool.length)];
-    }
+    // Sort all valid predictions by confidence descending, then league priority
+    const pool = [...valid]
+      .filter(p => (p.confidence ?? 0) >= 50)
+      .sort((a, b) => {
+        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+        if (confDiff !== 0) return confDiff;
+        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
+      });
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
     for (const pv of previews) {
       previewMap.set(pv.match_id, pv);
     }
-
-    // Secondary sort by league quality within same confidence
-    pool.sort((a, b) => {
-      const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
-      if (confDiff !== 0) return confDiff;
-      return getLeaguePriority(a.league) - getLeaguePriority(b.league);
-    });
 
     return pool.slice(0, MAX_MATCHES).map((p, i) => {
       const pv = previewMap.get(p.match_id);
