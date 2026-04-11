@@ -1340,55 +1340,88 @@ function calculatePrediction(
   const homeAvgConceded5 = homeFormLast5.length > 0 ? homeFormLast5.reduce((s, m) => s + m.goalsAgainst, 0) / homeFormLast5.length : 1.0;
   const awayAvgConceded5 = awayFormLast5.length > 0 ? awayFormLast5.reduce((s, m) => s + m.goalsAgainst, 0) / awayFormLast5.length : 1.0;
 
-  // Form-based Over 2.5 score (0-100): 30% homeFreq + 30% awayFreq + 20% goalsAvg + 20% odds
+  // === WEIGHTED SCORING: Form=60%, Odds=25%, xG=15% ===
   const homeOver25Freq = homeFormLast5.length > 0 ? homeOver25Count / homeFormLast5.length : 0.5;
   const awayOver25Freq = awayFormLast5.length > 0 ? awayOver25Count / awayFormLast5.length : 0.5;
   const avgGoalsAll = ((homeAvgScored5 + homeAvgConceded5) + (awayAvgScored5 + awayAvgConceded5)) / 2;
-  const goalsAvgNorm = clamp(avgGoalsAll / 4.0, 0, 1); // normalize to 0-1 (4 goals = max)
+  const goalsAvgNorm = clamp(avgGoalsAll / 4.0, 0, 1);
   
-  // === ODDS INTELLIGENCE for Over/BTTS ===
-  let oddsOverBoost = 0;
-  let oddsBttsBoost = 0;
-  if (odds) {
-    // Direct Over 2.5 odds intelligence
-    if (odds.over25Odds !== null && odds.over25Odds > 0) {
-      if (odds.over25Odds <= 1.55) { oddsOverBoost = 0.25; } // Bookmaker very confident
-      else if (odds.over25Odds <= 1.65) { oddsOverBoost = 0.20; }
-      else if (odds.over25Odds <= 1.80) { oddsOverBoost = 0.15; }
-      else if (odds.over25Odds >= 2.30) { oddsOverBoost = -0.10; } // Bookmaker expects Under
-    } else {
-      // Fallback: infer from 1X2 odds
-      const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
-      if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.12;
-      else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.06;
-    }
+  // FORM component (60%): frequency + goals average
+  const formOverRaw = homeOver25Freq * 0.50 + awayOver25Freq * 0.50; // 0-1 scale
+  const formOverComponent = formOverRaw * 0.75 + goalsAvgNorm * 0.25; // blend with goals avg
+  
+  // ODDS component (25%): implied probability from bookmaker Over/Under 2.5 odds
+  let oddsOverComponent = 0.5; // neutral default when odds unavailable
+  let oddsOverStrong = false; // strong signal flag
+  let oddsUnderStrong = false;
+  if (odds && odds.over25Odds !== null && odds.over25Odds > 0 && odds.under25Odds !== null && odds.under25Odds > 0) {
+    // Convert to implied probability and normalize (remove vig)
+    const rawProbOver = 1.0 / odds.over25Odds;
+    const rawProbUnder = 1.0 / odds.under25Odds;
+    const totalProb = rawProbOver + rawProbUnder;
+    oddsOverComponent = totalProb > 0 ? rawProbOver / totalProb : 0.5; // normalized 0-1
     
-    // Direct BTTS odds intelligence
-    if (odds.bttsYesOdds !== null && odds.bttsYesOdds > 0) {
-      if (odds.bttsYesOdds <= 1.55) { oddsBttsBoost = 0.25; }
-      else if (odds.bttsYesOdds <= 1.70) { oddsBttsBoost = 0.18; }
-      else if (odds.bttsYesOdds <= 1.85) { oddsBttsBoost = 0.10; }
-      else if (odds.bttsYesOdds >= 2.30) { oddsBttsBoost = -0.10; }
-    }
+    // Strong signal detection
+    if (odds.over25Odds <= 1.60) oddsOverStrong = true;
+    if (odds.under25Odds <= 1.70) oddsUnderStrong = true;
+  } else if (odds && odds.over25Odds !== null && odds.over25Odds > 0) {
+    // Only Over odds available — estimate implied probability
+    oddsOverComponent = clamp(1.0 / odds.over25Odds, 0.2, 0.85);
+    if (odds.over25Odds <= 1.60) oddsOverStrong = true;
+  } else if (odds) {
+    // Fallback from 1X2 odds
+    const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
+    if (shortestOdds1x2 < 1.80) oddsOverComponent = 0.58;
+    else if (shortestOdds1x2 < 2.20) oddsOverComponent = 0.53;
   }
   
-  const formOverScore = homeOver25Freq * 0.30 + awayOver25Freq * 0.30 + goalsAvgNorm * 0.20 + oddsOverBoost;
+  // xG component (15%)
+  const totalXgNorm = clamp((homeXg + awayXg) / 4.0, 0, 1); // 4 xG = max
   
-  // Form-based BTTS score (0-100): 35% homeBTTS + 35% awayBTTS + 10% homeScoring + 10% awayScoring + odds
+  // FINAL OVER SCORE: Form 60% + Odds 25% + xG 15%
+  const formOverScore = formOverComponent * 0.60 + oddsOverComponent * 0.25 + totalXgNorm * 0.15;
+  
+  // BTTS scoring: same weighted approach
   const homeBttsFreq = homeFormLast5.length > 0 ? homeBttsCount / homeFormLast5.length : 0.5;
   const awayBttsFreq = awayFormLast5.length > 0 ? awayBttsCount / awayFormLast5.length : 0.5;
   const homeScoringBonus = homeAvgScored5 >= 1.2 ? 0.1 : 0;
   const awayScoringBonus = awayAvgScored5 >= 1.2 ? 0.1 : 0;
   
-  const formBttsScore = homeBttsFreq * 0.35 + awayBttsFreq * 0.35 + homeScoringBonus + awayScoringBonus + oddsBttsBoost;
+  // BTTS odds implied probability
+  let oddsBttsComponent = 0.5;
+  if (odds && odds.bttsYesOdds !== null && odds.bttsYesOdds > 0) {
+    const rawBttsProb = 1.0 / odds.bttsYesOdds;
+    // If bttsNoOdds available, normalize
+    const bttsNoOdds = (odds as any).bttsNoOdds;
+    if (bttsNoOdds && bttsNoOdds > 0) {
+      const totalBttsProb = rawBttsProb + (1.0 / bttsNoOdds);
+      oddsBttsComponent = totalBttsProb > 0 ? rawBttsProb / totalBttsProb : rawBttsProb;
+    } else {
+      oddsBttsComponent = clamp(rawBttsProb, 0.2, 0.85);
+    }
+  }
   
-  // Convert form scores to probability adjustments (-15 to +15)
-  const formOverAdjust = Math.round((formOverScore - 0.5) * 30); // -15 to +15
-  const formBttsAdjust = Math.round((formBttsScore - 0.5) * 30); // -15 to +15
+  const bttsXgComponent = (homeXg >= 1.0 && awayXg >= 0.8) ? 0.7 : (homeXg >= 0.5 && awayXg >= 0.5) ? 0.55 : 0.4;
+  const formBttsRaw = homeBttsFreq * 0.40 + awayBttsFreq * 0.40 + homeScoringBonus + awayScoringBonus;
+  const formBttsScore = clamp(formBttsRaw, 0, 1) * 0.60 + oddsBttsComponent * 0.25 + bttsXgComponent * 0.15;
+  
+  // Convert weighted scores to probability adjustments (-18 to +18)
+  const formOverAdjust = Math.round((formOverScore - 0.5) * 36);
+  const formBttsAdjust = Math.round((formBttsScore - 0.5) * 36);
 
-  // Blend Poisson + Style + League + Form-based scoring
+  // Blend Poisson + Style + League + Weighted scoring
   let adjustedOver25 = clamp(goalMarkets.over25 + style.overBoost + leagueProfile.overBoost + formOverAdjust, 5, 95);
   let adjustedBttsYes = clamp(goalMarkets.bttsYes + style.bttsBoost + leagueProfile.bttsBoost + formBttsAdjust, 5, 95);
+  
+  // === ODDS STRONG SIGNAL OVERRIDES ===
+  // If bookmaker Over 2.5 odds ≤ 1.60 → strong Over correction
+  if (oddsOverStrong) {
+    adjustedOver25 = Math.max(adjustedOver25, 66);
+  }
+  // If bookmaker Under 2.5 odds ≤ 1.70 → strong Under correction
+  if (oddsUnderStrong) {
+    adjustedOver25 = Math.min(adjustedOver25, 40);
+  }
 
   // === ANTI-ERROR OVERRIDES ===
   // Rule 1: If either team has 4+ Over 2.5 in last 5 → FORCE Over direction
@@ -1800,13 +1833,25 @@ function calculatePrediction(
     analysisReasons.push(`🔥 OPEN GAME: Both teams avg ${homeAvgTotal5.toFixed(1)} & ${awayAvgTotal5.toFixed(1)} goals/game involvement`);
   }
 
-  // Odds intelligence insights
-  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined) {
-    if (odds.over25Odds <= 1.65) analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (strong signal)`);
+  // Odds intelligence insights (implied probability)
+  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined && odds.over25Odds > 0) {
+    const impliedOver = (1.0 / odds.over25Odds * 100).toFixed(0);
+    if (odds.over25Odds <= 1.65) {
+      analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (implied ${impliedOver}% — strong signal)`);
+    } else if (odds.over25Odds <= 1.85) {
+      analysisReasons.push(`📊 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (implied ${impliedOver}%)`);
+    }
   }
-  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined) {
+  if (odds?.under25Odds !== null && odds?.under25Odds !== undefined && odds.under25Odds > 0) {
+    if (odds.under25Odds <= 1.70) {
+      const impliedUnder = (1.0 / odds.under25Odds * 100).toFixed(0);
+      analysisReasons.push(`📉 Bookmaker: Under 2.5 @ ${odds.under25Odds.toFixed(2)} (implied ${impliedUnder}% — strong signal)`);
+    }
+  }
+  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined && odds.bttsYesOdds > 0) {
     if (odds.bttsYesOdds <= 1.70 && (prediction === "BTTS Yes" || prediction.includes("Over"))) {
-      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (strong signal)`);
+      const impliedBtts = (1.0 / odds.bttsYesOdds * 100).toFixed(0);
+      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (implied ${impliedBtts}% — strong signal)`);
     }
   }
 
