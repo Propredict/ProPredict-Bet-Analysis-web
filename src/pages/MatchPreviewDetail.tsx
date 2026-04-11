@@ -570,11 +570,11 @@ export default function MatchPreviewDetail() {
               </span>
             </div>
 
-            {/* CTA */}
-            {canGenerate ? (
+            {/* CTA — free users always go to upgrade */}
+            {isPremiumUser || isProUser ? (
               <Button
                 size="lg"
-                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 animate-pulse rounded-xl"
+                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
                 onClick={() => setUnlocked(true)}
               >
                 <Zap className="h-4 w-4 mr-2" />
@@ -588,6 +588,8 @@ export default function MatchPreviewDetail() {
               >
                 <Sparkles className="h-4 w-4 mr-2" />
                 💎 Get This Winning Pick
+              </Button>
+            )}
               </Button>
             )}
           </div>
