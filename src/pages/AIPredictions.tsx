@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
+import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { usePlatform } from "@/hooks/usePlatform";
 
@@ -50,6 +51,7 @@ export default function AIPredictions() {
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const [marketFilter, setMarketFilter] = useState<MarketFilter>("all");
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
 
@@ -842,6 +844,14 @@ export default function AIPredictions() {
                                   <Star className="w-3 h-3 fill-current" />
                                   ⭐ Unlock Pro Picks
                                 </Button>
+                                {!isAndroidApp && (
+                                  <button
+                                    className="w-full text-[10px] text-primary/80 hover:text-primary font-medium flex items-center justify-center gap-1 py-1 mt-1 transition-colors"
+                                    onClick={() => setFreeInAppOpen(true)}
+                                  >
+                                    🎥 or unlock FREE in app
+                                  </button>
+                                )}
                               </div>
                             </CardContent>
                           </Card>
@@ -1134,6 +1144,7 @@ export default function AIPredictions() {
           )}
         </div>
       </div>
+      <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
     </>
   );
 }
