@@ -1710,6 +1710,18 @@ function calculatePrediction(
   if (value.isValueBet) confidence += 5;
   if (value.isStrongValue) confidence += 3; // additional
 
+  // === OPEN GAME CONFIDENCE BOOST ===
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    // High scoring match → boost confidence for Over/BTTS picks
+    if (prediction.includes("Over") || prediction === "BTTS Yes") {
+      confidence += 10; // Strong form-backed signal
+    }
+  }
+  // Combined over25 form >= 7 → extra confidence for Over picks
+  if (homeOver25Count + awayOver25Count >= 7 && prediction.includes("Over")) {
+    confidence += 5;
+  }
+
   // === 6. DATA QUALITY FILTER ===
   const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId ?? 0);
   const dataQuality = calculateDataQuality(homeStats, awayStats, homeForm, awayForm, odds ?? null, isQualityLeague);
