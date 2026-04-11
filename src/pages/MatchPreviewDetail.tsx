@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge } from "lucide-react";
@@ -11,6 +11,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
+import { useMatchPreviewUnlocks } from "@/hooks/useMatchPreviewUnlocks";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/hooks/useLiveScores";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
@@ -110,13 +111,18 @@ export default function MatchPreviewDetail() {
   const { isAdmin } = useAdminAccess();
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { isGenerating, analysis, generatedMatch, generateFromPrediction } = useMatchPreviewGenerator();
+  const { remaining, hasReachedLimit, isMatchUnlocked, recordUnlock, limit } = useMatchPreviewUnlocks();
 
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(Boolean(routeState?.unlocked));
 
   const isPremiumUser = plan === "premium" || isAdmin;
-  const canGenerate = isPremiumUser || plan === "basic";
+  const isProUser = plan === "basic";
+  const isFreeUser = !isPremiumUser && !isProUser;
+
+  // Pro users: check if already unlocked this match or within limit
+  const canUnlock = isPremiumUser || (isProUser && (!hasReachedLimit || isMatchUnlocked(matchId || "")));
 
   useEffect(() => {
     if (!matchId && !predictionIdFromState) return;
@@ -155,7 +161,7 @@ export default function MatchPreviewDetail() {
   }, [matchId, predictionIdFromState]);
 
   useEffect(() => {
-    if (!prediction || !unlocked || analysis || isGenerating || !canGenerate) return;
+    if (!prediction || !unlocked || analysis || isGenerating || isFreeUser) return;
 
     const liveMatchForLogos = liveMatches.find(
       (match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team
@@ -180,7 +186,7 @@ export default function MatchPreviewDetail() {
     };
 
     generateFromPrediction(detailMatch, prediction);
-  }, [prediction, unlocked, analysis, isGenerating, canGenerate, liveMatches, generateFromPrediction]);
+  }, [prediction, unlocked, analysis, isGenerating, !isFreeUser, liveMatches, generateFromPrediction]);
 
   const liveMatch = prediction
     ? liveMatches.find((match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team)
@@ -570,16 +576,40 @@ export default function MatchPreviewDetail() {
               </span>
             </div>
 
-            {/* CTA — free users always go to upgrade */}
-            {isPremiumUser || plan === "basic" ? (
-              <Button
-                size="lg"
-                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
-                onClick={() => setUnlocked(true)}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                🔓 Unlock Full AI Analysis
-              </Button>
+            {/* CTA — tier-aware */}
+            {canUnlock ? (
+              <>
+                {isProUser && (
+                  <p className="text-center text-[10px] text-muted-foreground">
+                    📊 {remaining} of {limit} daily previews remaining
+                  </p>
+                )}
+                <Button
+                  size="lg"
+                  className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
+                  onClick={() => {
+                    if (isProUser && matchId) recordUnlock(matchId);
+                    setUnlocked(true);
+                  }}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  🔓 Unlock Full AI Analysis
+                </Button>
+              </>
+            ) : isProUser && hasReachedLimit ? (
+              <div className="space-y-2">
+                <p className="text-center text-xs text-amber-400 font-semibold">
+                  ⚡ You've used all {limit} daily previews
+                </p>
+                <Button
+                  size="lg"
+                  className="w-full text-sm font-bold h-12 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-900/30 animate-pulse rounded-xl"
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  💎 Upgrade to Premium — Unlimited Previews
+                </Button>
+              </div>
             ) : (
               <Button
                 size="lg"
