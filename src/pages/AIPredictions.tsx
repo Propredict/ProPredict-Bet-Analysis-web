@@ -31,6 +31,7 @@ type MarketFilter = "all" | MarketType;
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
+  const { isAndroidApp } = usePlatform();
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
 
