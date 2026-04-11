@@ -159,7 +159,7 @@ export default function MatchPreviews() {
 
     return pool.slice(0, MAX_MATCHES).map((p, i) => {
       const pv = previewMap.get(p.match_id);
-      const bestPick = getBestMarketPick(p);
+      const bestPick = getBestMarketPickWithLabel(p as any);
       return {
         id: p.id,
         match_id: p.match_id,
