@@ -18,7 +18,7 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isAndroid) return;
 
     // Ensure first_seen is always set
     try {
