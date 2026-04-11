@@ -1346,24 +1346,41 @@ function calculatePrediction(
   const avgGoalsAll = ((homeAvgScored5 + homeAvgConceded5) + (awayAvgScored5 + awayAvgConceded5)) / 2;
   const goalsAvgNorm = clamp(avgGoalsAll / 4.0, 0, 1); // normalize to 0-1 (4 goals = max)
   
-  // Odds boost: if bookmaker Over 2.5 odds are short (<1.80), boost
+  // === ODDS INTELLIGENCE for Over/BTTS ===
   let oddsOverBoost = 0;
+  let oddsBttsBoost = 0;
   if (odds) {
-    // We don't have Over 2.5 odds directly, but short 1X2 odds indicate predictability
-    const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
-    if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.2;
-    else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.1;
+    // Direct Over 2.5 odds intelligence
+    if (odds.over25Odds !== null && odds.over25Odds > 0) {
+      if (odds.over25Odds <= 1.55) { oddsOverBoost = 0.25; } // Bookmaker very confident
+      else if (odds.over25Odds <= 1.65) { oddsOverBoost = 0.20; }
+      else if (odds.over25Odds <= 1.80) { oddsOverBoost = 0.15; }
+      else if (odds.over25Odds >= 2.30) { oddsOverBoost = -0.10; } // Bookmaker expects Under
+    } else {
+      // Fallback: infer from 1X2 odds
+      const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
+      if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.12;
+      else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.06;
+    }
+    
+    // Direct BTTS odds intelligence
+    if (odds.bttsYesOdds !== null && odds.bttsYesOdds > 0) {
+      if (odds.bttsYesOdds <= 1.55) { oddsBttsBoost = 0.25; }
+      else if (odds.bttsYesOdds <= 1.70) { oddsBttsBoost = 0.18; }
+      else if (odds.bttsYesOdds <= 1.85) { oddsBttsBoost = 0.10; }
+      else if (odds.bttsYesOdds >= 2.30) { oddsBttsBoost = -0.10; }
+    }
   }
   
   const formOverScore = homeOver25Freq * 0.30 + awayOver25Freq * 0.30 + goalsAvgNorm * 0.20 + oddsOverBoost;
   
-  // Form-based BTTS score (0-100): 40% homeBTTS + 40% awayBTTS + 10% homeScoring + 10% awayScoring
+  // Form-based BTTS score (0-100): 35% homeBTTS + 35% awayBTTS + 10% homeScoring + 10% awayScoring + odds
   const homeBttsFreq = homeFormLast5.length > 0 ? homeBttsCount / homeFormLast5.length : 0.5;
   const awayBttsFreq = awayFormLast5.length > 0 ? awayBttsCount / awayFormLast5.length : 0.5;
   const homeScoringBonus = homeAvgScored5 >= 1.2 ? 0.1 : 0;
   const awayScoringBonus = awayAvgScored5 >= 1.2 ? 0.1 : 0;
   
-  const formBttsScore = homeBttsFreq * 0.40 + awayBttsFreq * 0.40 + homeScoringBonus + awayScoringBonus;
+  const formBttsScore = homeBttsFreq * 0.35 + awayBttsFreq * 0.35 + homeScoringBonus + awayScoringBonus + oddsBttsBoost;
   
   // Convert form scores to probability adjustments (-15 to +15)
   const formOverAdjust = Math.round((formOverScore - 0.5) * 30); // -15 to +15
@@ -1376,27 +1393,68 @@ function calculatePrediction(
   // === ANTI-ERROR OVERRIDES ===
   // Rule 1: If either team has 4+ Over 2.5 in last 5 → FORCE Over direction
   if (homeOver25Count >= 4 || awayOver25Count >= 4) {
-    adjustedOver25 = Math.max(adjustedOver25, 65); // Floor at 65%
+    adjustedOver25 = Math.max(adjustedOver25, 65);
   }
-  // Rule 2: If both teams scored in 4+ of last 5 → FORCE BTTS Yes
+  // Rule 2: Combined over25 count >= 7 → NEVER UNDER (both teams consistently high scoring)
+  if (homeOver25Count + awayOver25Count >= 7) {
+    adjustedOver25 = Math.max(adjustedOver25, 72); // Strong Over signal
+  }
+  // Rule 3: If both teams scored in 4+ of last 5 → FORCE BTTS Yes
   if (homeBttsCount >= 4 && awayBttsCount >= 4) {
-    adjustedBttsYes = Math.max(adjustedBttsYes, 62); // Floor at 62%
+    adjustedBttsYes = Math.max(adjustedBttsYes, 62);
   }
-  // Rule 3: Both teams low scoring → lock Under + BTTS No
+  // Rule 4: Both teams low scoring → lock Under + BTTS No
   if (homeAvgScored5 + homeAvgConceded5 < 1.8 && awayAvgScored5 + awayAvgConceded5 < 1.8) {
-    adjustedOver25 = Math.min(adjustedOver25, 35); // Cap Over at 35%
-    adjustedBttsYes = Math.min(adjustedBttsYes, 35); // Cap BTTS Yes at 35%
+    adjustedOver25 = Math.min(adjustedOver25, 35);
+    adjustedBttsYes = Math.min(adjustedBttsYes, 35);
   }
-  // Rule 4: Both teams high scoring (avg scored ≥ 1.5) → prevent BTTS No
+  // Rule 5: Both teams high scoring (avg scored ≥ 1.5) → prevent BTTS No
   if (homeAvgScored5 >= 1.5 && awayAvgScored5 >= 1.5) {
     adjustedBttsYes = Math.max(adjustedBttsYes, 58);
+  }
+  // Rule 6: xG FORCE — strong xG signal overrides
+  const totalXgForRules = homeXg + awayXg;
+  if (totalXgForRules >= 3.0) {
+    adjustedOver25 = Math.max(adjustedOver25, 68); // FORCE Over when xG is very high
+  }
+  if (homeXg >= 1.5 && awayXg >= 1.2) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, 60); // FORCE BTTS Yes when both teams have high xG
+  }
+  // Rule 7: OPEN GAME detection — both teams avg goals >= 2.5 per game involvement
+  const homeAvgTotal5 = homeAvgScored5 + homeAvgConceded5;
+  const awayAvgTotal5 = awayAvgScored5 + awayAvgConceded5;
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    adjustedOver25 = Math.max(adjustedOver25, 70); // HIGH SCORING MATCH
+    adjustedBttsYes = Math.max(adjustedBttsYes, 62);
+  }
+  // Rule 8: Strong home team scoring boost
+  if (homeStats && homeStats.homeGoalsForAvg >= 2.0) {
+    adjustedOver25 = clamp(adjustedOver25 + 3, 5, 95);
+  }
+  // Rule 9: Weak away attack → reduce BTTS
+  if (awayStats && awayStats.awayGoalsForAvg <= 0.6) {
+    adjustedBttsYes = Math.min(adjustedBttsYes, 40);
+  }
+  // Rule 10: Possession/defensive team vs attacking → reduce BTTS
+  if (homeStats && awayStats) {
+    const homeDefensive = homeStats.cleanSheets.total / Math.max(homeStats.played, 1) >= 0.4;
+    const awayDefensive = awayStats.cleanSheets.total / Math.max(awayStats.played, 1) >= 0.4;
+    if (homeDefensive || awayDefensive) {
+      adjustedBttsYes = clamp(adjustedBttsYes - 5, 5, 95);
+    }
   }
 
   const adjustedUnder25 = clamp(100 - adjustedOver25, 5, 95);
   const adjustedBttsNo = clamp(100 - adjustedBttsYes, 5, 95);
 
-  // === MATCH CONTEXT ENGINE ===
-  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId) : { confidenceBoost: 0, factors: [] };
+  // === MATCH CONTEXT ENGINE (with match importance) ===
+  const fixtureRound = ""; // Will be passed from fixture data in processBatch
+  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId, leagueId, leagueName, fixtureRound) : { confidenceBoost: 0, factors: [], goalAdjust: 0 };
+  
+  // Apply match context goal adjustments
+  if (context.goalAdjust !== 0) {
+    adjustedOver25 = clamp(adjustedOver25 + context.goalAdjust, 5, 95);
+  }
 
   // === SMART MARKET SELECTION ENGINE ===
   const dc1X = homeWin + draw;
