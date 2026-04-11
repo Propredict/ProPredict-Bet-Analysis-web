@@ -1252,9 +1252,76 @@ function calculatePrediction(
   // === GOAL MARKETS (Poisson) + STYLE MATCHUP + LEAGUE PROFILE ===
   const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
   const style = detectStyleMatchup(homeStats, awayStats, homeForm, awayForm);
-  const adjustedOver25 = clamp(goalMarkets.over25 + style.overBoost + leagueProfile.overBoost, 5, 95);
+
+  // === FORM-BASED OVER/BTTS SCORING (last 5 matches) ===
+  const homeFormLast5 = homeForm.slice(0, 5);
+  const awayFormLast5 = awayForm.slice(0, 5);
+
+  // Count Over 2.5 and BTTS occurrences in last 5 matches
+  const homeOver25Count = homeFormLast5.filter(m => (m.goalsFor + m.goalsAgainst) > 2).length;
+  const awayOver25Count = awayFormLast5.filter(m => (m.goalsFor + m.goalsAgainst) > 2).length;
+  const homeBttsCount = homeFormLast5.filter(m => m.goalsFor > 0 && m.goalsAgainst > 0).length;
+  const awayBttsCount = awayFormLast5.filter(m => m.goalsFor > 0 && m.goalsAgainst > 0).length;
+
+  // Goals averages from last 5
+  const homeAvgScored5 = homeFormLast5.length > 0 ? homeFormLast5.reduce((s, m) => s + m.goalsFor, 0) / homeFormLast5.length : 1.0;
+  const awayAvgScored5 = awayFormLast5.length > 0 ? awayFormLast5.reduce((s, m) => s + m.goalsFor, 0) / awayFormLast5.length : 1.0;
+  const homeAvgConceded5 = homeFormLast5.length > 0 ? homeFormLast5.reduce((s, m) => s + m.goalsAgainst, 0) / homeFormLast5.length : 1.0;
+  const awayAvgConceded5 = awayFormLast5.length > 0 ? awayFormLast5.reduce((s, m) => s + m.goalsAgainst, 0) / awayFormLast5.length : 1.0;
+
+  // Form-based Over 2.5 score (0-100): 30% homeFreq + 30% awayFreq + 20% goalsAvg + 20% odds
+  const homeOver25Freq = homeFormLast5.length > 0 ? homeOver25Count / homeFormLast5.length : 0.5;
+  const awayOver25Freq = awayFormLast5.length > 0 ? awayOver25Count / awayFormLast5.length : 0.5;
+  const avgGoalsAll = ((homeAvgScored5 + homeAvgConceded5) + (awayAvgScored5 + awayAvgConceded5)) / 2;
+  const goalsAvgNorm = clamp(avgGoalsAll / 4.0, 0, 1); // normalize to 0-1 (4 goals = max)
+  
+  // Odds boost: if bookmaker Over 2.5 odds are short (<1.80), boost
+  let oddsOverBoost = 0;
+  if (odds) {
+    // We don't have Over 2.5 odds directly, but short 1X2 odds indicate predictability
+    const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
+    if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.2;
+    else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.1;
+  }
+  
+  const formOverScore = homeOver25Freq * 0.30 + awayOver25Freq * 0.30 + goalsAvgNorm * 0.20 + oddsOverBoost;
+  
+  // Form-based BTTS score (0-100): 40% homeBTTS + 40% awayBTTS + 10% homeScoring + 10% awayScoring
+  const homeBttsFreq = homeFormLast5.length > 0 ? homeBttsCount / homeFormLast5.length : 0.5;
+  const awayBttsFreq = awayFormLast5.length > 0 ? awayBttsCount / awayFormLast5.length : 0.5;
+  const homeScoringBonus = homeAvgScored5 >= 1.2 ? 0.1 : 0;
+  const awayScoringBonus = awayAvgScored5 >= 1.2 ? 0.1 : 0;
+  
+  const formBttsScore = homeBttsFreq * 0.40 + awayBttsFreq * 0.40 + homeScoringBonus + awayScoringBonus;
+  
+  // Convert form scores to probability adjustments (-15 to +15)
+  const formOverAdjust = Math.round((formOverScore - 0.5) * 30); // -15 to +15
+  const formBttsAdjust = Math.round((formBttsScore - 0.5) * 30); // -15 to +15
+
+  // Blend Poisson + Style + League + Form-based scoring
+  let adjustedOver25 = clamp(goalMarkets.over25 + style.overBoost + leagueProfile.overBoost + formOverAdjust, 5, 95);
+  let adjustedBttsYes = clamp(goalMarkets.bttsYes + style.bttsBoost + leagueProfile.bttsBoost + formBttsAdjust, 5, 95);
+
+  // === ANTI-ERROR OVERRIDES ===
+  // Rule 1: If either team has 4+ Over 2.5 in last 5 → FORCE Over direction
+  if (homeOver25Count >= 4 || awayOver25Count >= 4) {
+    adjustedOver25 = Math.max(adjustedOver25, 65); // Floor at 65%
+  }
+  // Rule 2: If both teams scored in 4+ of last 5 → FORCE BTTS Yes
+  if (homeBttsCount >= 4 && awayBttsCount >= 4) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, 62); // Floor at 62%
+  }
+  // Rule 3: Both teams low scoring → lock Under + BTTS No
+  if (homeAvgScored5 + homeAvgConceded5 < 1.8 && awayAvgScored5 + awayAvgConceded5 < 1.8) {
+    adjustedOver25 = Math.min(adjustedOver25, 35); // Cap Over at 35%
+    adjustedBttsYes = Math.min(adjustedBttsYes, 35); // Cap BTTS Yes at 35%
+  }
+  // Rule 4: Both teams high scoring (avg scored ≥ 1.5) → prevent BTTS No
+  if (homeAvgScored5 >= 1.5 && awayAvgScored5 >= 1.5) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, 58);
+  }
+
   const adjustedUnder25 = clamp(100 - adjustedOver25, 5, 95);
-  const adjustedBttsYes = clamp(goalMarkets.bttsYes + style.bttsBoost + leagueProfile.bttsBoost, 5, 95);
   const adjustedBttsNo = clamp(100 - adjustedBttsYes, 5, 95);
 
   // === MATCH CONTEXT ENGINE ===
@@ -1546,6 +1613,17 @@ function calculatePrediction(
   if (awayRecentWins >= 4) analysisReasons.push(`${awayTeamName}: ${awayRecentWins}/5 recent wins`);
 
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
+
+  // Form-based Over/BTTS insights
+  if (prediction.includes("Over") || prediction === "BTTS Yes") {
+    if (homeOver25Count >= 4) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count >= 4) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
+    if (homeBttsCount >= 4 && awayBttsCount >= 4) analysisReasons.push(`🔄 BTTS in ${homeBttsCount}/5 (H) & ${awayBttsCount}/5 (A) recent matches`);
+  }
+  if (prediction.includes("Under") || prediction === "BTTS No") {
+    if (homeOver25Count <= 1) analysisReasons.push(`🛡️ ${homeTeamName}: Only ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count <= 1) analysisReasons.push(`🛡️ ${awayTeamName}: Only ${awayOver25Count}/5 matches Over 2.5`);
+  }
 
   // Ultra tag
   if (ultra.isUltra) analysisReasons.push(`🔥 ULTRA STRONG: Form + xG + Odds all converge`);
