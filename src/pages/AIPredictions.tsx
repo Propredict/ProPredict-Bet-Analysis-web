@@ -50,6 +50,39 @@ export default function AIPredictions() {
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
+
+  // Fetch yesterday's predictions for social proof
+  const yesterdayQuery = useQuery({
+    queryKey: ["ai-predictions-yesterday-stats"],
+    queryFn: async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dateStr = yesterday.toISOString().split("T")[0];
+      const { data } = await supabase
+        .from("ai_predictions")
+        .select("confidence, result_status, is_premium")
+        .eq("match_date", dateStr);
+      return data ?? [];
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  // Yesterday Premium stats for social proof
+  const yesterdayPremiumStats = useMemo(() => {
+    const rows = yesterdayQuery.data ?? [];
+    const premiumRows = rows.filter((r: any) => r.is_premium || (r.confidence ?? 0) >= 78);
+    const won = premiumRows.filter((r: any) => r.result_status === "won").length;
+    const lost = premiumRows.filter((r: any) => r.result_status === "lost").length;
+    const total = won + lost;
+    return { won, lost, total };
+  }, [yesterdayQuery.data]);
+
+  // High value picks count (confidence >= 75)
+  const highValueCount = useMemo(() => {
+    return predictions.filter((p) => (p.confidence ?? 0) >= 75).length;
+  }, [predictions]);
+
   // Calculate stats from current day's predictions (not global view)
   const dayStats = useMemo(() => {
     const won = predictions.filter((p) => p.result_status === "won").length;
