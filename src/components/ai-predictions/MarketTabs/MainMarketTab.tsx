@@ -359,7 +359,19 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* ===== Top Correct Scores — Pro (top 2) & Premium (top 3) ===== */}
+      {/* ===== Locked Score Teaser — Free tier ===== */}
+      {hasAccess && displayTier === "free" && (
+        <div className="pt-1">
+          <div className="flex items-center gap-1.5 py-2 px-3 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
+            <Lock className="w-3 h-3 text-fuchsia-400" />
+            <span className="text-[9px] md:text-[10px] text-muted-foreground">
+              <span className="text-fuchsia-400 font-semibold">Score predictions</span> available in Pro & Premium
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Top Correct Scores — Pro (top 1) & Premium (top 3) ===== */}
       {hasAccess && displayTier !== "free" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
@@ -370,8 +382,11 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             )}>
               Top Correct Scores
             </span>
+            {displayTier === "pro" && (
+              <span className="text-[8px] text-fuchsia-400/70 ml-auto">+2 more in Premium</span>
+            )}
           </div>
-          <div className={cn("grid gap-1.5", topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+          <div className={cn("grid gap-1.5", topScores.length === 1 ? "grid-cols-1" : topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
             {topScores.map((s, i) => (
               <div
                 key={s.score}
