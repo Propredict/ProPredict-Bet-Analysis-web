@@ -15,6 +15,8 @@ import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
+import { RateAppCard } from "@/components/dashboard/RateAppCard";
+import { useAppRating } from "@/hooks/useAppRating";
 
 // Heavy components – lazy loaded for faster initial paint
 const FeaturedPredictions = lazy(() => import("@/components/dashboard/FeaturedPredictions").then(m => ({ default: m.FeaturedPredictions })));
