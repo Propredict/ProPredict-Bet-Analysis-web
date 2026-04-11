@@ -813,7 +813,7 @@ export default function AIPredictions() {
                                 className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                               >
                                 <Star className="w-3 h-3 fill-current" />
-                                Unlock with Pro — €3.99/mo
+                                ⭐ Unlock Pro Picks
                               </Button>
                             </div>
                           </CardContent>
@@ -895,7 +895,7 @@ export default function AIPredictions() {
                                 className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                               >
                                 <Crown className="w-3 h-3 fill-current" />
-                                Unlock Premium — €5.99/mo
+                                💎 Unlock Premium Picks
                               </Button>
                             </div>
                           </CardContent>
