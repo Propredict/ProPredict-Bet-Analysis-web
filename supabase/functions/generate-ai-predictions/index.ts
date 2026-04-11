@@ -70,16 +70,20 @@ const QUALITY_LEAGUE_IDS = new Set([
   62,   // Ligue 2 (France)
 ]);
 
-// ============ WEIGHTING CONSTANTS (v4 multi-dimensional) ============
-const WEIGHT_FORM = 0.20;         // 20% - Recent form (goals-based quality)
-const WEIGHT_QUALITY = 0.15;      // 15% - Team quality (season stats)
-const WEIGHT_SQUAD = 0.08;        // 8%  - Squad strength / goal diff
-const WEIGHT_HOME = 0.07;         // 7%  - Home advantage (per-league dynamic)
-const WEIGHT_H2H = 0.05;          // 5%  - Head-to-Head history
-const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
-const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal
-const WEIGHT_TEMPO = 0.10;        // 10% - Match intensity/tempo score
-const WEIGHT_LEAGUE_PROFILE = 0.10; // 10% - League-specific goal/btts tendencies
+// ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
+// 1X2 Match Result weights:
+const WEIGHT_1X2_FORM = 0.60;      // 60% - Form composite (recent form + quality + squad + home + H2H + standings)
+const WEIGHT_1X2_ODDS = 0.25;      // 25% - Bookmaker implied probability
+const WEIGHT_1X2_XG = 0.15;        // 15% - xG model
+
+// Sub-weights within the FORM composite (sum to 1.0):
+const SUB_FORM = 0.30;       // Recent form (goals-based quality)
+const SUB_QUALITY = 0.20;    // Team quality (season stats)
+const SUB_SQUAD = 0.10;      // Squad strength / goal diff
+const SUB_HOME = 0.10;       // Home advantage
+const SUB_H2H = 0.08;        // Head-to-Head history
+const SUB_STANDINGS = 0.15;  // League table position
+const SUB_TEMPO = 0.07;      // Match intensity/tempo score
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
@@ -1257,43 +1261,36 @@ function calculatePrediction(
   const homeStandingsScore = standings ? getStandingsScore(standings, homeTeamId) : 50;
   const awayStandingsScore = standings ? getStandingsScore(standings, awayTeamId) : 50;
 
-  // === ODDS (15%) ===
-  let homeOddsScore = 50, awayOddsScore = 50;
-  if (odds) {
-    homeOddsScore = clamp(odds.homeProb, 10, 90);
-    awayOddsScore = clamp(odds.awayProb, 10, 90);
+  // === ODDS IMPLIED PROBABILITY (25% of final) ===
+  let oddsHomeProb = 50, oddsDrawProb = 25, oddsAwayProb = 25;
+  let hasOdds = false;
+  if (odds && odds.homeOdds > 0 && odds.drawOdds > 0 && odds.awayOdds > 0) {
+    hasOdds = true;
+    // Convert to implied probability and normalize (remove vig)
+    const rawH = 1.0 / odds.homeOdds;
+    const rawD = 1.0 / odds.drawOdds;
+    const rawA = 1.0 / odds.awayOdds;
+    const total = rawH + rawD + rawA;
+    oddsHomeProb = Math.round((rawH / total) * 100);
+    oddsDrawProb = Math.round((rawD / total) * 100);
+    oddsAwayProb = 100 - oddsHomeProb - oddsDrawProb;
   }
 
-  // === TEMPO COMPONENT (10%) ===
-  // Both teams contribute to tempo; higher tempo → more goals
+  // === TEMPO COMPONENT ===
   const tempoComponent = tempo.score;
 
-  // === LEAGUE PROFILE COMPONENT (10%) ===
-  const leagueProfileComponent = leagueProfile.score;
+  // === FORM COMPOSITE (60% of final) ===
+  // Combine all form-related sub-scores into a single composite
+  const homeFormComposite =
+    homeFormScore * SUB_FORM + homeQualityScore * SUB_QUALITY + homeSquadScore * SUB_SQUAD +
+    homeAdvantageScore * SUB_HOME + homeH2HScore * SUB_H2H + homeStandingsScore * SUB_STANDINGS +
+    tempoComponent * SUB_TEMPO;
+  const awayFormComposite =
+    awayFormScore * SUB_FORM + awayQualityScore * SUB_QUALITY + awaySquadScore * SUB_SQUAD +
+    awayAdvantageScore * SUB_HOME + awayH2HScore * SUB_H2H + awayStandingsScore * SUB_STANDINGS +
+    (100 - tempoComponent) * SUB_TEMPO;
 
-  // === WEIGHTED TOTAL ===
-  const wF = WEIGHT_FORM;
-  const wQ = WEIGHT_QUALITY;
-  const wS = WEIGHT_SQUAD;
-  const wH = WEIGHT_HOME;
-  const wH2H = WEIGHT_H2H;
-  const wSt = WEIGHT_STANDINGS;
-  const wO = WEIGHT_ODDS;
-  // Tempo and league profile affect goal markets more than 1X2
-
-  const homeTotal =
-    homeFormScore * wF + homeQualityScore * wQ + homeSquadScore * wS +
-    homeAdvantageScore * wH + homeH2HScore * wH2H + homeStandingsScore * wSt + homeOddsScore * wO;
-  const awayTotal =
-    awayFormScore * wF + awayQualityScore * wQ + awaySquadScore * wS +
-    awayAdvantageScore * wH + awayH2HScore * wH2H + awayStandingsScore * wSt + awayOddsScore * wO;
-
-  // === PROBABILITIES ===
-  const diff = homeTotal - awayTotal;
-  const diffAbs = Math.abs(diff);
-  const strength = clamp(diffAbs / 18, 0, 1);
-
-  // === xG MODEL ===
+  // === xG MODEL (15% of final) ===
   const leagueAvgGoals = leagueProfile.avgGoalsPerMatch > 0 ? leagueProfile.avgGoalsPerMatch / 2 : 1.30;
   let homeXg: number, awayXg: number;
   if (homeStats && awayStats && homeStats.homeGoalsForAvg > 0 && awayStats.awayGoalsAgainstAvg > 0) {
@@ -1306,14 +1303,55 @@ function calculatePrediction(
   homeXg = clamp(homeXg, 0.3, 3.5);
   awayXg = clamp(awayXg, 0.2, 3.0);
 
-  // === E) DRAW SUPPRESSION ===
+  // xG → 1X2 probability (scale to 0-100)
+  const totalXg = homeXg + awayXg;
+  const xgHomeScore = totalXg > 0 ? (homeXg / totalXg) * 100 : 50;
+  const xgAwayScore = totalXg > 0 ? (awayXg / totalXg) * 100 : 50;
+
+  // === FINAL WEIGHTED TOTAL: Form 60% + Odds 25% + xG 15% ===
+  const homeTotal = homeFormComposite * WEIGHT_1X2_FORM + oddsHomeProb * WEIGHT_1X2_ODDS + xgHomeScore * WEIGHT_1X2_XG;
+  const awayTotal = awayFormComposite * WEIGHT_1X2_FORM + oddsAwayProb * WEIGHT_1X2_ODDS + xgAwayScore * WEIGHT_1X2_XG;
+
+  // === PROBABILITIES ===
+  const diff = homeTotal - awayTotal;
+  const diffAbs = Math.abs(diff);
+  const strength = clamp(diffAbs / 18, 0, 1);
+
+  // === DRAW SUPPRESSION ===
   let rawDraw = 30 - strength * 14;
   rawDraw = suppressDraw(Math.round(rawDraw), homeXg, awayXg);
+  
+  // === ODDS-BASED DRAW BOOST ===
+  // If bookmaker odds are close (home & away within 0.3), boost draw probability
+  if (hasOdds && oddsDrawProb >= 28) {
+    rawDraw = Math.max(rawDraw, Math.round(oddsDrawProb * 0.85)); // Align with bookmaker draw expectation
+  }
+  // Strong favorite detection: if one side has very low odds → suppress draw further
+  if (hasOdds && (oddsHomeProb >= 65 || oddsAwayProb >= 65)) {
+    rawDraw = Math.min(rawDraw, 20); // Strong favorite → less draw probability
+  }
 
   const homeShare = sigmoid(diff / 7);
   let homeWin = (100 - rawDraw) * homeShare;
   let awayWin = 100 - rawDraw - homeWin;
   let draw = rawDraw;
+  
+  // === ODDS CORRECTION LAYER ===
+  // Align final probabilities with bookmaker when there's significant divergence
+  if (hasOdds) {
+    // Strong favorite boost: if odds say >60% but model says <50%, correct upward
+    if (oddsHomeProb >= 60 && homeWin < 50) {
+      homeWin = Math.round(homeWin * 0.6 + oddsHomeProb * 0.4); // Blend toward odds
+    }
+    if (oddsAwayProb >= 60 && awayWin < 50) {
+      awayWin = Math.round(awayWin * 0.6 + oddsAwayProb * 0.4);
+    }
+    // Ensure total = 100
+    const winTotal = homeWin + awayWin;
+    draw = 100 - winTotal;
+    if (draw < 12) { draw = 12; homeWin = Math.round((100 - draw) * (homeWin / winTotal)); awayWin = 100 - draw - homeWin; }
+  }
+  
   homeWin = Math.round(clamp(homeWin, 10, 75));
   draw = Math.round(clamp(draw, 12, 28));
   awayWin = 100 - homeWin - draw;
