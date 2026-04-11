@@ -992,6 +992,29 @@ function filterScoresByMarket(
 }
 
 /**
+ * Score Clustering — group scores into outcome clusters with aggregate probabilities.
+ */
+function getScoreClusters(topScores: { score: string; prob: number }[]): { cluster: string; scores: string[]; prob: number }[] {
+  const clusters: Record<string, { scores: string[]; prob: number }> = {
+    "Home Win": { scores: [], prob: 0 },
+    "Draw": { scores: [], prob: 0 },
+    "Away Win": { scores: [], prob: 0 },
+  };
+
+  for (const s of topScores) {
+    const [h, a] = s.score.split("-").map(Number);
+    if (h > a) { clusters["Home Win"].scores.push(s.score); clusters["Home Win"].prob += s.prob; }
+    else if (h === a) { clusters["Draw"].scores.push(s.score); clusters["Draw"].prob += s.prob; }
+    else { clusters["Away Win"].scores.push(s.score); clusters["Away Win"].prob += s.prob; }
+  }
+
+  return Object.entries(clusters)
+    .filter(([_, v]) => v.scores.length > 0)
+    .map(([k, v]) => ({ cluster: k, scores: v.scores, prob: Math.round(v.prob * 100) / 100 }))
+    .sort((a, b) => b.prob - a.prob);
+}
+
+/**
  * Calculate team quality score (0-100) from season stats.
  * Uses home/away splits, clean sheets, and defensive stability for a richer picture.
  */
