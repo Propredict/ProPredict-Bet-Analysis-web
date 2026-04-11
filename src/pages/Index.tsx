@@ -39,6 +39,7 @@ const Index = () => {
   const isAndroid = getIsAndroidApp();
   const navigate = useNavigate();
   const firedRef = useRef(false);
+  const { setShowPopup: showRatingPopup } = useAppRating();
 
   // Android only: show one interstitial on Home (max 1 per app session)
   useEffect(() => {
