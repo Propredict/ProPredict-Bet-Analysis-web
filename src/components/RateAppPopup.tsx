@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare } from "lucide-react";
+import { Star, X, Send, MessageSquare, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,9 +24,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
 
   const handleStarSelect = async (stars: number) => {
     setSelectedStars(stars);
-
     if (stars === 5) {
-      // Open Play Store first, then reward
       try {
         if (window.Android?.openExternal) {
           window.Android.openExternal(PLAY_STORE_URL);
@@ -34,7 +32,6 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           window.open(PLAY_STORE_URL, "_blank");
         }
       } catch {}
-
       const result = await onSubmit(5);
       if (result?.success && result?.rewarded) {
         setStep("thanks");
@@ -42,17 +39,13 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
         onClose();
       }
     } else {
-      // Show feedback form for 1-4 stars
       setStep("feedback");
     }
   };
 
   const handleFeedbackSubmit = async () => {
     await onSubmit(selectedStars, feedback || undefined);
-    toast({
-      title: "Thank you! 🙏",
-      description: "Your feedback helps us improve.",
-    });
+    toast({ title: "Hvala! 🙏", description: "Tvoj feedback nam pomaže da budemo bolji." });
     onClose();
   };
 
@@ -66,15 +59,17 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
 
   const displayStars = hoveredStars || selectedStars;
 
+  const starLabels = ["", "Loše 😕", "Može bolje 😐", "Okej 🙂", "Super! 😊", "Savršeno! 🤩"];
+
   return (
-    <Dialog open={open} onOpenChange={() => { /* prevent backdrop close */ }}>
+    <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-[340px] p-0 gap-0 border-0 !bg-white overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden"
+        className="max-w-[340px] p-0 gap-0 border-0 !bg-gradient-to-b !from-white !to-amber-50/50 overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* Close button */}
+        {/* Close */}
         <button
           onClick={handleClose}
           className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
@@ -83,22 +78,24 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
         </button>
 
         {step === "stars" && (
-          <div className="px-5 pt-6 pb-5 text-center space-y-4">
-            {/* Title */}
-            <div>
-              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-500/10 mb-3">
-                <Star className="h-7 w-7 text-amber-500 fill-amber-500" />
+          <div className="px-5 pt-7 pb-5 text-center space-y-4">
+            {/* Emotional header */}
+            <div className="space-y-2">
+              <div className="relative inline-block">
+                <span className="text-5xl animate-bounce inline-block" style={{ animationDuration: "1.5s" }}>💛</span>
+                <Sparkles className="absolute -top-1 -right-3 h-4 w-4 text-amber-400 animate-pulse" />
               </div>
-              <DialogTitle className="text-lg font-bold text-slate-900">
-                Enjoying ProPredict? ⭐
+              <DialogTitle className="text-lg font-extrabold text-slate-900 leading-snug">
+                Drago nam je što si tu!
               </DialogTitle>
-              <p className="text-xs text-slate-500 mt-1">
-                Rate the app and earn <span className="font-bold text-amber-600">+20 points</span> 🎁
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Tvoja ocena nam daje snagu da nastavimo 💪<br />
+                Osvoji <span className="font-extrabold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-md">+50 poena</span> za ocenu!
               </p>
             </div>
 
             {/* Star selector */}
-            <div className="flex justify-center gap-2 py-2">
+            <div className="flex justify-center gap-2.5 py-3">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -106,27 +103,30 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                   onMouseLeave={() => setHoveredStars(0)}
                   onClick={() => handleStarSelect(star)}
                   disabled={submitting}
-                  className="transition-transform hover:scale-125 active:scale-95 disabled:opacity-50"
+                  className="transition-all duration-200 hover:scale-125 active:scale-95 disabled:opacity-50"
                 >
                   <Star
-                    className={`h-10 w-10 transition-colors ${
+                    className={`h-11 w-11 transition-all duration-200 ${
                       star <= displayStars
-                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
-                        : "text-slate-200"
+                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                        : "text-slate-200 hover:text-slate-300"
                     }`}
                   />
                 </button>
               ))}
             </div>
 
-            <p className="text-[10px] text-slate-400">Tap a star to rate</p>
+            {/* Dynamic label */}
+            <p className="text-xs font-medium text-slate-500 h-4 transition-all">
+              {displayStars > 0 ? starLabels[displayStars] : "Klikni na zvezdicu ⭐"}
+            </p>
 
-            {/* Maybe Later */}
+            {/* Soft CTA */}
             <button
               className="w-full py-2 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
               onClick={handleClose}
             >
-              Maybe Later
+              Možda kasnije
             </button>
           </div>
         )}
@@ -138,10 +138,10 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                 <MessageSquare className="h-6 w-6 text-blue-500" />
               </div>
               <DialogTitle className="text-lg font-bold text-slate-900">
-                We appreciate your feedback 🙏
+                Hvala na iskrenosti! 🙏
               </DialogTitle>
               <p className="text-xs text-slate-500 mt-1">
-                Tell us what we can improve:
+                Pomozi nam da budemo bolji:
               </p>
             </div>
 
@@ -162,37 +162,40 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="What could we do better? (optional)"
-              className="min-h-[80px] text-sm border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400"
+              placeholder="Šta možemo poboljšati? (opciono)"
+              className="min-h-[80px] text-sm border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
               maxLength={500}
             />
 
             <Button
               onClick={handleFeedbackSubmit}
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-blue-500/20"
             >
               <Send className="h-4 w-4 mr-2" />
-              {submitting ? "Submitting..." : "Submit Feedback"}
+              {submitting ? "Šalje se..." : "Pošalji"}
             </Button>
 
             <button
               className="w-full py-1 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
               onClick={handleClose}
             >
-              Skip
+              Preskoči
             </button>
           </div>
         )}
 
         {step === "thanks" && (
           <div className="px-5 pt-8 pb-6 text-center space-y-3">
-            <div className="text-4xl animate-bounce">🎉</div>
-            <DialogTitle className="text-lg font-bold text-slate-900">
-              Thanks for your support!
+            <div className="relative inline-block">
+              <span className="text-5xl inline-block animate-bounce">🎉</span>
+              <Sparkles className="absolute -top-1 -right-2 h-5 w-5 text-amber-400 animate-pulse" />
+            </div>
+            <DialogTitle className="text-lg font-extrabold text-slate-900">
+              Hvala ti puno! 💛
             </DialogTitle>
-            <p className="text-sm text-amber-600 font-bold">
-              +20 points added 🎁
+            <p className="text-sm text-amber-600 font-extrabold bg-amber-50 rounded-lg py-2 px-3 border border-amber-200">
+              🎁 +50 poena dodato!
             </p>
             <div className="flex justify-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -204,9 +207,9 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             </div>
             <Button
               onClick={handleClose}
-              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold"
+              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold shadow-lg shadow-amber-500/20"
             >
-              Awesome! 🚀
+              Odlično! 🚀
             </Button>
           </div>
         )}
