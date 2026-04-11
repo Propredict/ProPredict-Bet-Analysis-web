@@ -939,8 +939,7 @@ export default function AIPredictions() {
                               </div>
                             </CardContent>
                           </Card>
-                        ))
-                    )}
+                    ))}
                   </div>
                   {!isAndroidApp && tierCounts.premium > 3 && (
                     <p className="text-center text-[10px] text-fuchsia-400/70 mt-2">
