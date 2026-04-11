@@ -131,7 +131,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const topScores = displayTier === "premium"
     ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 2)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 1)
     : [];
 
   return (
