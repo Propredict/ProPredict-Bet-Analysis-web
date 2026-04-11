@@ -576,16 +576,40 @@ export default function MatchPreviewDetail() {
               </span>
             </div>
 
-            {/* CTA — free users always go to upgrade */}
-            {isPremiumUser || plan === "basic" ? (
-              <Button
-                size="lg"
-                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
-                onClick={() => setUnlocked(true)}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                🔓 Unlock Full AI Analysis
-              </Button>
+            {/* CTA — tier-aware */}
+            {canUnlock ? (
+              <>
+                {isProUser && (
+                  <p className="text-center text-[10px] text-muted-foreground">
+                    📊 {remaining} of {limit} daily previews remaining
+                  </p>
+                )}
+                <Button
+                  size="lg"
+                  className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
+                  onClick={() => {
+                    if (isProUser && matchId) recordUnlock(matchId);
+                    setUnlocked(true);
+                  }}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  🔓 Unlock Full AI Analysis
+                </Button>
+              </>
+            ) : isProUser && hasReachedLimit ? (
+              <div className="space-y-2">
+                <p className="text-center text-xs text-amber-400 font-semibold">
+                  ⚡ You've used all {limit} daily previews
+                </p>
+                <Button
+                  size="lg"
+                  className="w-full text-sm font-bold h-12 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-900/30 animate-pulse rounded-xl"
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  💎 Upgrade to Premium — Unlimited Previews
+                </Button>
+              </div>
             ) : (
               <Button
                 size="lg"
