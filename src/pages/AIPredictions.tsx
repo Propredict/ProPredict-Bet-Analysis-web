@@ -910,6 +910,24 @@ export default function AIPredictions() {
                 })}
               </div>
             )}
+
+            {/* Teaser after Free picks — for non-paying users */}
+            {!isPremiumUser && !isProUser && !isAdmin && isAuthenticated && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "free") && (
+              <div className="mt-3 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-gradient-to-r from-fuchsia-500/5 via-amber-500/5 to-fuchsia-500/5 border border-fuchsia-500/15">
+                <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-[10px] md:text-xs text-muted-foreground">
+                  <span className="text-fuchsia-400 font-bold">+{tierCounts.pro + tierCounts.premium} stronger picks</span> available in Pro & Premium
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[9px] text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10"
+                  onClick={() => setTierFilter("premium")}
+                >
+                  View →
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Infinite scroll sentinel */}
