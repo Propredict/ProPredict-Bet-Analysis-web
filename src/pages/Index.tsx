@@ -137,6 +137,9 @@ const Index = () => {
           </a>
         )}
 
+        {/* Rate App Card – Android only, inline */}
+        <RateAppCard onRate={() => showRatingPopup(true)} />
+
         {/* Daily Reward Widget */}
         <DailyRewardWidget />
 
