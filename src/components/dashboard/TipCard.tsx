@@ -165,8 +165,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             </div>
           </div>
 
-          {/* Match name — always visible */}
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">
+          {/* Match name — blur for locked pro/premium on web */}
+          <h3 className={cn(
+            "font-bold text-[15px] text-foreground leading-tight tracking-tight",
+            isLocked && !getIsAndroidApp() && (tip.tier === "exclusive" || tip.tier === "premium") && "blur-[5px] select-none"
+          )}>
             {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
           </h3>
         </div>

@@ -196,7 +196,7 @@ function TicketCard({
               {getStatusBadge()}
             </div>
           </div>
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
+          <h3 className={cn("font-bold text-[15px] text-foreground leading-tight tracking-tight", isLocked && !getIsAndroidApp() && (ticket.tier === "exclusive" || ticket.tier === "premium") && "blur-[5px] select-none")}>{ticket.title}</h3>
           {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
         </div>
       </div>
@@ -218,7 +218,7 @@ function TicketCard({
               const parsed = parseMatchName(match.name);
               return (
                 <div key={idx} className="flex items-center justify-between gap-2 p-2.5">
-                  <div className="flex-1 min-w-0">
+                  <div className={cn("flex-1 min-w-0", !getIsAndroidApp() && (isPro || isPremium) && "blur-[5px] select-none")}>
                     <span className="text-xs text-foreground truncate block font-medium">
                       {parsed.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {parsed.awayTeam}
                     </span>
