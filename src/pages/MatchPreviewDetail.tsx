@@ -111,13 +111,18 @@ export default function MatchPreviewDetail() {
   const { isAdmin } = useAdminAccess();
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
   const { isGenerating, analysis, generatedMatch, generateFromPrediction } = useMatchPreviewGenerator();
+  const { remaining, hasReachedLimit, isMatchUnlocked, recordUnlock, limit } = useMatchPreviewUnlocks();
 
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(Boolean(routeState?.unlocked));
 
   const isPremiumUser = plan === "premium" || isAdmin;
-  const canGenerate = isPremiumUser || plan === "basic";
+  const isProUser = plan === "basic";
+  const isFreeUser = !isPremiumUser && !isProUser;
+
+  // Pro users: check if already unlocked this match or within limit
+  const canUnlock = isPremiumUser || (isProUser && (!hasReachedLimit || isMatchUnlocked(matchId || "")));
 
   useEffect(() => {
     if (!matchId && !predictionIdFromState) return;
