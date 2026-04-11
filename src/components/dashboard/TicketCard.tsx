@@ -277,9 +277,19 @@ function TicketCard({
                 </Button>
               </div>
             ) : (
-              <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
-              </Button>
+              <div className="flex flex-col gap-1.5">
+                <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
+                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
+                </Button>
+                {!getIsAndroidApp() && (unlockMethod.type === "upgrade_basic") && (
+                  <button
+                    className="w-full text-[10px] text-primary/80 hover:text-primary font-medium flex items-center justify-center gap-1 py-1 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); onSecondaryUnlock?.(); }}
+                  >
+                    🎥 or unlock FREE in app
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
