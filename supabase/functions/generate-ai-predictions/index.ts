@@ -747,20 +747,47 @@ function detectStyleMatchup(
 }
 
 /**
- * MATCH CONTEXT ENGINE: Table gap, motivation, must-win scenarios.
+ * MATCH CONTEXT ENGINE: Table gap, motivation, must-win scenarios, match importance.
  */
 function getMatchContext(
   standings: StandingEntry[],
   homeTeamId: number,
-  awayTeamId: number
-): { confidenceBoost: number; factors: string[] } {
-  if (standings.length === 0) return { confidenceBoost: 0, factors: [] };
-  const homeEntry = standings.find(s => s.teamId === homeTeamId);
-  const awayEntry = standings.find(s => s.teamId === awayTeamId);
-  if (!homeEntry || !awayEntry) return { confidenceBoost: 0, factors: [] };
-
+  awayTeamId: number,
+  leagueId?: number,
+  leagueName?: string,
+  fixtureRound?: string
+): { confidenceBoost: number; factors: string[]; goalAdjust: number } {
   const factors: string[] = [];
   let boost = 0;
+  let goalAdjust = 0; // negative = fewer goals expected, positive = more goals
+
+  // === MATCH IMPORTANCE (knockout/final detection) ===
+  const roundLower = (fixtureRound || "").toLowerCase();
+  const isKnockout = roundLower.includes("final") || roundLower.includes("semi") || 
+    roundLower.includes("quarter") || roundLower.includes("knockout") || 
+    roundLower.includes("playoff") || roundLower.includes("round of");
+  const isFinal = roundLower.includes("final") && !roundLower.includes("semi") && !roundLower.includes("quarter");
+  
+  // Cup competitions (Champions League, Europa League, etc.)
+  const isCupCompetition = [2, 3, 848, 1, 4].includes(leagueId ?? 0);
+  
+  if (isFinal) {
+    goalAdjust -= 4; // Finals tend to be tight, fewer goals
+    factors.push("🏆 Final match → expect cautious play, fewer goals");
+    boost += 2; // Higher confidence in the pick direction
+  } else if (isKnockout) {
+    goalAdjust -= 2; // Knockout rounds are tighter
+    factors.push("⚔️ Knockout stage → reduced goal expectation");
+  } else if (isCupCompetition && !isKnockout) {
+    // Group stage of cups — relatively normal
+    factors.push("🏟️ Cup group stage");
+  }
+
+  if (standings.length === 0) return { confidenceBoost: boost, factors, goalAdjust };
+  const homeEntry = standings.find(s => s.teamId === homeTeamId);
+  const awayEntry = standings.find(s => s.teamId === awayTeamId);
+  if (!homeEntry || !awayEntry) return { confidenceBoost: boost, factors, goalAdjust };
+
   const rankGap = Math.abs(homeEntry.rank - awayEntry.rank);
   const totalTeams = homeEntry.totalTeams || 20;
 
@@ -770,14 +797,23 @@ function getMatchContext(
     const stronger = homeEntry.rank < awayEntry.rank ? "Home" : "Away";
     factors.push(`Table gap: ${homeEntry.rank}th vs ${awayEntry.rank}th (${stronger} favored)`);
   }
-  // Relegation battle → upset risk
+  
+  // === MOTIVATION DETECTION ===
+  // Relegation battle → desperate = more goals from desperation
   if (homeEntry.rank >= totalTeams - 2 || awayEntry.rank >= totalTeams - 2) {
     factors.push("Relegation battle → desperate motivation");
+    goalAdjust += 2; // Must-win = more open play
     boost -= 1;
   }
   // Title race
   if (homeEntry.rank <= 2 || awayEntry.rank <= 2) {
     factors.push("Title contender → high stakes");
+  }
+  // One team must win (bottom vs top) → more open game
+  if ((homeEntry.rank >= totalTeams - 3 && awayEntry.rank <= 3) ||
+      (awayEntry.rank >= totalTeams - 3 && homeEntry.rank <= 3)) {
+    goalAdjust += 3; // Relegation team must attack
+    factors.push("Must-win scenario → expect open game, more goals");
   }
   // Mid-table vs top → potential complacency
   const midLow = Math.floor(totalTeams * 0.35);
@@ -786,7 +822,7 @@ function getMatchContext(
     factors.push("Mid-table home vs top team → complacency risk");
   }
 
-  return { confidenceBoost: boost, factors };
+  return { confidenceBoost: boost, factors, goalAdjust };
 }
 
 /**
