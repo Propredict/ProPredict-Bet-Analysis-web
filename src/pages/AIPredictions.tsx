@@ -451,8 +451,9 @@ export default function AIPredictions() {
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-amber-400" />
                   <span className="text-xs md:text-sm font-bold text-foreground">
-                    Today AI detected <span className="text-amber-400">{highValueCount}</span> HIGH VALUE picks
+                    🔥 Today: <span className="text-amber-400">{highValueCount} high confidence picks</span> found
                   </span>
+                  <span className="text-[9px] text-muted-foreground ml-auto">🔒 Most available in Premium</span>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-1.5">
@@ -757,7 +758,7 @@ export default function AIPredictions() {
                     <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                     <h2 className="text-xs md:text-sm font-semibold text-foreground">Pro Picks</h2>
                     <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      🔒 {tierCounts.pro} locked
+                      🔒 {tierCounts.pro} picks waiting to unlock
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
@@ -796,9 +797,10 @@ export default function AIPredictions() {
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
-                                <Lock className="w-3 h-3 text-amber-400/70" />
-                                <span className="text-[9px] text-muted-foreground">Locked prediction</span>
+                                <Lock className="w-3 h-3 text-amber-400" />
+                                <span className="text-[9px] font-medium text-amber-400/90">🔒 Unlock this prediction</span>
                               </div>
+                              <p className="text-[8px] text-amber-400/60 pl-0.5">📊 Solid value detected</p>
                               <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
                                 <div
                                   className={cn(
@@ -845,7 +847,7 @@ export default function AIPredictions() {
                     <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
                     <h2 className="text-xs md:text-sm font-semibold text-foreground">Premium Picks</h2>
                     <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      🔒 {tierCounts.premium} locked
+                      🔒 {tierCounts.premium} Premium picks locked
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
@@ -884,11 +886,15 @@ export default function AIPredictions() {
                                 </div>
                               )}
                               <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-fuchsia-500/5 border border-fuchsia-500/15">
-                                <Lock className="w-3 h-3 text-fuchsia-400/70" />
-                                <span className="text-[9px] text-muted-foreground">Locked prediction</span>
+                                <Lock className="w-3 h-3 text-fuchsia-400" />
+                                <span className="text-[9px] font-medium text-fuchsia-400/90">🔒 High confidence pick locked</span>
                               </div>
-                              <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
+                              <p className="text-[8px] text-fuchsia-400/60 pl-0.5">💎 Strong AI edge detected</p>
+                              <Badge className="bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20 text-[7px] px-1.5 py-0 rounded w-fit">
+                                🔥 Top pick today
+                              </Badge>
+                              <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(217,70,239,0.3)]">
+                                <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 shadow-[0_0_8px_rgba(217,70,239,0.5)]" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
                               </div>
                               <Button
                                 onClick={() => navigate("/get-premium")}
