@@ -40,6 +40,7 @@ export default function ExclusiveTickets() {
   const planRequired = searchParams.get("plan_required");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
+  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   // Highlight scroll from push notification
   useEffect(() => {
@@ -226,7 +227,7 @@ export default function ExclusiveTickets() {
                   isLocked={isLocked} 
                   unlockMethod={unlockMethod} 
                   onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
-                  onSecondaryUnlock={handleSecondaryUnlock}
+                  onSecondaryUnlock={() => setFreeInAppOpen(true)}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
                   isUnlocking={isUnlocking} 
                 />
@@ -246,5 +247,6 @@ export default function ExclusiveTickets() {
       </p>
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
+    <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
   </>;
 }
