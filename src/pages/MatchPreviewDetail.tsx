@@ -336,20 +336,21 @@ export default function MatchPreviewDetail() {
                 </div>
               </div>
             ) : (
-              /* Locked state */
+              /* Locked state — hide prediction, show confidence + risk */
               <div className="text-center space-y-3 py-2">
-                {heroPick && (
-                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs font-bold">
-                    {heroPick.emoji} {heroPick.label} — {heroPick.confidence}%
-                  </Badge>
-                )}
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <Sparkles className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm text-white/60">Confidence</span>
-                  <span className="text-lg font-black text-white">{prediction.confidence ?? 0}%</span>
+                <div className="flex items-center justify-center gap-2">
+                  <Lock className="h-5 w-5 text-amber-400" />
+                  <span className="text-xl sm:text-2xl font-black text-white tracking-tight">AI Top Pick Locked</span>
                 </div>
-                <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase", risk.bg, risk.color)}>
-                  {risk.label}
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-sm text-white/50">Confidence:</span>
+                    <span className="text-xl font-black text-emerald-400">{heroPick?.confidence ?? prediction.confidence ?? 0}%</span>
+                  </div>
+                  <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", risk.bg, risk.color)}>
+                    {risk.label}
+                  </div>
                 </div>
               </div>
             )}
@@ -501,9 +502,75 @@ export default function MatchPreviewDetail() {
           </div>
         )}
 
-        {/* ============ UNLOCK BUTTON ============ */}
+        {/* ============ LOCKED SECTIONS FOR FREE USERS ============ */}
         {!unlocked && (
-          <div className="pt-1">
+          <div className="space-y-3">
+            {/* Locked AI Picks */}
+            <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
+                <Target className="h-4 w-4 text-primary" />
+                <span className="font-bold text-sm text-foreground">🎯 AI Picks</span>
+                <Badge className="ml-auto bg-primary/10 text-primary border-primary/20 text-[9px] font-bold">Multi-Market</Badge>
+              </div>
+              <div className="p-5 text-center space-y-2">
+                <Lock className="h-6 w-6 text-amber-400 mx-auto" />
+                <p className="text-sm font-bold text-foreground">🔒 Multiple AI picks available</p>
+                <p className="text-xs text-muted-foreground">Unlock to see all markets</p>
+              </div>
+            </div>
+
+            {/* Locked Score Prediction */}
+            <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-cyan-600 to-blue-600">
+                  <Target className="h-3.5 w-3.5" />
+                </div>
+                <span className="font-bold text-sm text-foreground">⚽ Predicted Score</span>
+              </div>
+              <div className="p-5 text-center space-y-2">
+                <div className="flex items-center justify-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center">
+                    <span className="text-3xl font-black text-muted-foreground/30">?</span>
+                  </div>
+                  <span className="text-lg font-black text-muted-foreground/30">—</span>
+                  <div className="w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center">
+                    <span className="text-3xl font-black text-muted-foreground/30">?</span>
+                  </div>
+                </div>
+                <p className="text-sm font-bold text-foreground">🔒 Correct score predicted</p>
+                <p className="text-xs text-muted-foreground">Unlock to view</p>
+              </div>
+            </div>
+
+            {/* Locked AI Insight — partial */}
+            <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
+                <Sparkles className="h-4 w-4 text-violet-400" />
+                <span className="font-bold text-sm text-foreground">💡 AI Insight</span>
+              </div>
+              <div className="p-4 space-y-2">
+                {prediction.analysis ? (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {prediction.analysis.slice(0, 80)}...
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">AI analysis available for this match</p>
+                )}
+                <div className="flex items-center gap-1.5 text-amber-400">
+                  <Lock className="h-3 w-3" />
+                  <span className="text-xs font-bold">Unlock full analysis</span>
+                </div>
+              </div>
+            </div>
+
+            {/* FOMO social proof */}
+            <div className="text-center py-1">
+              <span className="text-xs text-muted-foreground">
+                🔥 {72 + (Math.abs([...prediction.match_id].reduce((h: number, c: string) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0)) % 23)}% of users unlocked this pick
+              </span>
+            </div>
+
+            {/* CTA */}
             {canGenerate ? (
               <Button
                 size="lg"
@@ -511,16 +578,16 @@ export default function MatchPreviewDetail() {
                 onClick={() => setUnlocked(true)}
               >
                 <Zap className="h-4 w-4 mr-2" />
-                Unlock Prediction & Full Analysis
+                🔓 Unlock Full AI Analysis
               </Button>
             ) : (
               <Button
                 size="lg"
-                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-900/30 rounded-xl"
+                className="w-full text-sm font-bold h-12 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-900/30 animate-pulse rounded-xl"
                 onClick={() => navigate("/get-premium")}
               >
-                <Lock className="h-4 w-4 mr-2" />
-                Upgrade Plan to Unlock
+                <Sparkles className="h-4 w-4 mr-2" />
+                💎 Get This Winning Pick
               </Button>
             )}
           </div>
