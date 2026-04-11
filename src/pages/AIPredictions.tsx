@@ -880,37 +880,14 @@ export default function AIPredictions() {
                     <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
                     <h2 className="text-xs md:text-sm font-semibold text-foreground">Premium Picks</h2>
                     <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      {isAndroidApp ? `${tierCounts.premium} picks` : `🔒 ${tierCounts.premium} Premium picks locked`}
+                      🔒 {tierCounts.premium} Premium picks locked
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                    {isAndroidApp ? (
-                      /* Android: show ALL premium predictions with ad-unlock */
-                      featuredPredictions
-                        .filter(p => getPredictionTier(p) === "premium")
-                        .map((prediction) => (
-                          <div key={prediction.id} id={`prediction-${prediction.id}`}>
-                            <AIPredictionCard
-                              overrideTier="premium"
-                              prediction={prediction}
-                              isAdmin={isAdmin}
-                              isPremiumUser={isPremiumUser}
-                              isProUser={isProUser}
-                              isFavorite={isFavorite(prediction.match_id)}
-                              isSavingFavorite={isSaving(prediction.match_id)}
-                              onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                              onGoPremium={() => navigate("/get-premium")}
-                              onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                              isUnlocking={unlockingId === prediction.id}
-                            />
-                          </div>
-                        ))
-                    ) : (
-                      /* Web: show 3 teaser cards */
-                      featuredPredictions
-                        .filter(p => getPredictionTier(p) === "premium")
-                        .slice(0, 3)
-                        .map((prediction) => (
+                    {(isAndroidApp
+                      ? featuredPredictions.filter(p => getPredictionTier(p) === "premium")
+                      : featuredPredictions.filter(p => getPredictionTier(p) === "premium").slice(0, 3)
+                    ).map((prediction) => (
                           <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">
                             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="p-0 relative">
