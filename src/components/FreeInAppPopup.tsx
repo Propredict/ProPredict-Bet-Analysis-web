@@ -24,15 +24,17 @@ export function FreeInAppPopup({ open, onClose, onContinueWithPro }: FreeInAppPo
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-[340px] p-0 gap-0 border-0 !bg-gradient-to-b !from-card !to-card overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden"
+        className="max-w-[340px] p-0 gap-0 border-0 !bg-gradient-to-b !from-card !to-card overflow-hidden rounded-2xl shadow-2xl [&>button[class*='absolute'][class*='right-4']]:hidden"
       >
         {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-        >
-          <X className="h-3.5 w-3.5 text-muted-foreground" />
-        </button>
+        <div className="absolute top-3 right-3 z-10">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+          >
+            <X className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
+        </div>
 
         <div className="px-5 pt-7 pb-5 text-center space-y-4">
           {/* Icon */}
