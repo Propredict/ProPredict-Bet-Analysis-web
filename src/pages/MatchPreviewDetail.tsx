@@ -161,7 +161,7 @@ export default function MatchPreviewDetail() {
   }, [matchId, predictionIdFromState]);
 
   useEffect(() => {
-    if (!prediction || !unlocked || analysis || isGenerating || !canGenerate) return;
+    if (!prediction || !unlocked || analysis || isGenerating || isFreeUser) return;
 
     const liveMatchForLogos = liveMatches.find(
       (match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team
@@ -186,7 +186,7 @@ export default function MatchPreviewDetail() {
     };
 
     generateFromPrediction(detailMatch, prediction);
-  }, [prediction, unlocked, analysis, isGenerating, canGenerate, liveMatches, generateFromPrediction]);
+  }, [prediction, unlocked, analysis, isGenerating, !isFreeUser, liveMatches, generateFromPrediction]);
 
   const liveMatch = prediction
     ? liveMatches.find((match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team)
