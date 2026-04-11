@@ -70,16 +70,20 @@ const QUALITY_LEAGUE_IDS = new Set([
   62,   // Ligue 2 (France)
 ]);
 
-// ============ WEIGHTING CONSTANTS (v4 multi-dimensional) ============
-const WEIGHT_FORM = 0.20;         // 20% - Recent form (goals-based quality)
-const WEIGHT_QUALITY = 0.15;      // 15% - Team quality (season stats)
-const WEIGHT_SQUAD = 0.08;        // 8%  - Squad strength / goal diff
-const WEIGHT_HOME = 0.07;         // 7%  - Home advantage (per-league dynamic)
-const WEIGHT_H2H = 0.05;          // 5%  - Head-to-Head history
-const WEIGHT_STANDINGS = 0.10;    // 10% - League table position
-const WEIGHT_ODDS = 0.15;         // 15% - Bookmaker odds signal
-const WEIGHT_TEMPO = 0.10;        // 10% - Match intensity/tempo score
-const WEIGHT_LEAGUE_PROFILE = 0.10; // 10% - League-specific goal/btts tendencies
+// ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
+// 1X2 Match Result weights:
+const WEIGHT_1X2_FORM = 0.60;      // 60% - Form composite (recent form + quality + squad + home + H2H + standings)
+const WEIGHT_1X2_ODDS = 0.25;      // 25% - Bookmaker implied probability
+const WEIGHT_1X2_XG = 0.15;        // 15% - xG model
+
+// Sub-weights within the FORM composite (sum to 1.0):
+const SUB_FORM = 0.30;       // Recent form (goals-based quality)
+const SUB_QUALITY = 0.20;    // Team quality (season stats)
+const SUB_SQUAD = 0.10;      // Squad strength / goal diff
+const SUB_HOME = 0.10;       // Home advantage
+const SUB_H2H = 0.08;        // Head-to-Head history
+const SUB_STANDINGS = 0.15;  // League table position
+const SUB_TEMPO = 0.07;      // Match intensity/tempo score
 
 // ============ BATCH PROCESSING ============
 const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
