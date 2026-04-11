@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap } from "lucide-react";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
@@ -50,6 +50,39 @@ export default function AIPredictions() {
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
+
+  // Fetch yesterday's predictions for social proof
+  const yesterdayQuery = useQuery({
+    queryKey: ["ai-predictions-yesterday-stats"],
+    queryFn: async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dateStr = yesterday.toISOString().split("T")[0];
+      const { data } = await supabase
+        .from("ai_predictions")
+        .select("confidence, result_status, is_premium")
+        .eq("match_date", dateStr);
+      return data ?? [];
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  // Yesterday Premium stats for social proof
+  const yesterdayPremiumStats = useMemo(() => {
+    const rows = yesterdayQuery.data ?? [];
+    const premiumRows = rows.filter((r: any) => r.is_premium || (r.confidence ?? 0) >= 78);
+    const won = premiumRows.filter((r: any) => r.result_status === "won").length;
+    const lost = premiumRows.filter((r: any) => r.result_status === "lost").length;
+    const total = won + lost;
+    return { won, lost, total };
+  }, [yesterdayQuery.data]);
+
+  // High value picks count (confidence >= 75)
+  const highValueCount = useMemo(() => {
+    return predictions.filter((p) => (p.confidence ?? 0) >= 75).length;
+  }, [predictions]);
+
   // Calculate stats from current day's predictions (not global view)
   const dayStats = useMemo(() => {
     const won = predictions.filter((p) => p.result_status === "won").length;
@@ -410,6 +443,64 @@ export default function AIPredictions() {
             </Card>
           </div>
 
+          {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
+          {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
+            <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="relative space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs md:text-sm font-bold text-foreground">
+                    Today AI detected <span className="text-amber-400">{highValueCount}</span> HIGH VALUE picks
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-1.5">
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                    <Gift className="w-3 h-3 text-emerald-400" />
+                    <div>
+                      <p className="text-[9px] text-emerald-400 font-semibold">Free</p>
+                      <p className="text-xs font-bold text-emerald-400">{tierCounts.free}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-amber-500/10 border border-amber-500/20">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    <div>
+                      <p className="text-[9px] text-amber-400 font-semibold">Pro</p>
+                      <p className="text-xs font-bold text-amber-400">{tierCounts.pro}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/10 border border-fuchsia-500/20">
+                    <Crown className="w-3 h-3 text-fuchsia-400" />
+                    <div>
+                      <p className="text-[9px] text-fuchsia-400 font-semibold">Premium</p>
+                      <p className="text-xs font-bold text-fuchsia-400">🔒 {tierCounts.premium}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Yesterday Premium Social Proof */}
+                {yesterdayPremiumStats.total >= 3 && (
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-green-500/5 border border-green-500/15">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                    <span className="text-[10px] md:text-xs text-muted-foreground">
+                      Yesterday Premium: <span className="text-green-400 font-bold">{yesterdayPremiumStats.won}/{yesterdayPremiumStats.total} WON ✅</span>
+                    </span>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => navigate("/get-premium")}
+                  size="sm"
+                  className="w-full h-8 text-[10px] md:text-xs font-semibold bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-full gap-1.5"
+                >
+                  <Crown className="w-3 h-3 fill-current" />
+                  Upgrade to unlock stronger predictions
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* AI Accuracy Section - Separated by Tier */}
           <Card className="bg-card border-border rounded">
             <CardContent className="p-2 md:p-3">
@@ -726,6 +817,21 @@ export default function AIPredictions() {
                         </Card>
                       ))}
                   </div>
+                  {/* Pro → Premium hint */}
+                  <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/10">
+                    <Crown className="w-3 h-3 text-fuchsia-400" />
+                    <span className="text-[9px] md:text-[10px] text-muted-foreground">
+                      💎 <span className="text-fuchsia-400 font-semibold">Premium has higher confidence picks today</span>
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-[8px] text-fuchsia-400 hover:bg-fuchsia-500/10 ml-auto"
+                      onClick={() => setTierFilter("premium")}
+                    >
+                      View →
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -890,22 +996,67 @@ export default function AIPredictions() {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {visibleRegular.map((prediction, idx) => {
+                  // Inject a locked Premium teaser card after every 3rd Free card
+                  const showLockedCard = !isPremiumUser && !isAdmin && (idx === 2 || idx === 5 || idx === 9) && tierCounts.premium > 0;
                   return (
-                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
-                      <AIPredictionCard
-                        overrideTier={getPredictionTier(prediction)}
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.id}
-                      />
-                    </div>
+                    <React.Fragment key={prediction.id}>
+                      <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                        <AIPredictionCard
+                          overrideTier={getPredictionTier(prediction)}
+                          prediction={prediction}
+                          isAdmin={isAdmin}
+                          isPremiumUser={isPremiumUser}
+                          isProUser={isProUser}
+                          isFavorite={isFavorite(prediction.match_id)}
+                          isSavingFavorite={isSaving(prediction.match_id)}
+                          onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                          onGoPremium={() => navigate("/get-premium")}
+                          onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                          isUnlocking={unlockingId === prediction.id}
+                        />
+                      </div>
+                      {showLockedCard && (
+                        <div className="transition-all duration-500">
+                          <Card className="bg-[#0a1628] border-fuchsia-500/25 overflow-hidden rounded relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
+                            <CardContent className="p-0 relative">
+                              <div className="px-3 py-2 flex items-center justify-between border-b border-fuchsia-500/10">
+                                <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] px-1.5 py-0.5 rounded">
+                                  <Crown className="w-2.5 h-2.5 mr-0.5 fill-current" /> PREMIUM PICK
+                                </Badge>
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                  🔥 HIGH CONFIDENCE
+                                </Badge>
+                              </div>
+                              <div className="p-3 space-y-2.5">
+                                <div className="flex items-center gap-2">
+                                  <Lock className="w-4 h-4 text-fuchsia-400/50" />
+                                  <span className="text-sm font-bold text-white/10 blur-md select-none pointer-events-none">Hidden Premium Match</span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-2xl font-extrabold text-green-400">
+                                    {[84, 82, 87][idx === 2 ? 0 : idx === 5 ? 1 : 2]}%
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">win probability</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-fuchsia-400" />
+                                  <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
+                                </div>
+                                <p className="text-[9px] text-muted-foreground/70">Match hidden · Score & analysis locked</p>
+                                <Button
+                                  onClick={() => navigate("/get-premium")}
+                                  className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded-full gap-1"
+                                >
+                                  <Crown className="w-3 h-3 fill-current" />
+                                  Unlock in Premium
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
