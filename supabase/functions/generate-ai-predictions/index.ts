@@ -1548,6 +1548,33 @@ function calculatePrediction(
       if (strongerIsHome && (m.label === "1" || m.label === "DC 1X")) m.priorityProb *= 1.08;
       if (!strongerIsHome && (m.label === "2" || m.label === "DC X2")) m.priorityProb *= 1.08;
     }
+    
+    // === OPEN GAME DETECTION ===
+    // Both teams avg goals involvement >= 2.5 per game → high scoring match
+    if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+      if (m.label === "Over 2.5") m.priorityProb *= 1.15;
+      if (m.label === "BTTS Yes") m.priorityProb *= 1.12;
+      if (m.label === "Over 1.5") m.priorityProb *= 1.10;
+      if (m.label.startsWith("Under")) m.priorityProb *= 0.85;
+      if (m.label === "BTTS No") m.priorityProb *= 0.85;
+    }
+    
+    // === ODDS INTELLIGENCE BOOST for Over/BTTS markets ===
+    if (odds?.over25Odds !== null && odds?.over25Odds !== undefined && odds.over25Odds <= 1.65) {
+      if (m.label === "Over 2.5") m.priorityProb *= 1.10;
+      if (m.label === "Under 2.5") m.priorityProb *= 0.88;
+    }
+    if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined && odds.bttsYesOdds <= 1.70) {
+      if (m.label === "BTTS Yes") m.priorityProb *= 1.10;
+      if (m.label === "BTTS No") m.priorityProb *= 0.88;
+    }
+    
+    // === "FALSE UNDER" PREVENTION ===
+    // Combined over25 count >= 7 → NEVER select Under
+    if (homeOver25Count + awayOver25Count >= 7) {
+      if (m.label === "Under 2.5") m.priorityProb *= 0.60; // Heavy penalty
+      if (m.label === "Under 1.5") m.priorityProb *= 0.50;
+    }
   }
 
   allMarkets.sort((a, b) => b.priorityProb - a.priorityProb);
