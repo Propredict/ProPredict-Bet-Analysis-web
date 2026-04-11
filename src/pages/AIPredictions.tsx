@@ -443,6 +443,64 @@ export default function AIPredictions() {
             </Card>
           </div>
 
+          {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
+          {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
+            <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="relative space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs md:text-sm font-bold text-foreground">
+                    Today AI detected <span className="text-amber-400">{highValueCount}</span> HIGH VALUE picks
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-1.5">
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                    <Gift className="w-3 h-3 text-emerald-400" />
+                    <div>
+                      <p className="text-[9px] text-emerald-400 font-semibold">Free</p>
+                      <p className="text-xs font-bold text-emerald-400">{tierCounts.free}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-amber-500/10 border border-amber-500/20">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    <div>
+                      <p className="text-[9px] text-amber-400 font-semibold">Pro</p>
+                      <p className="text-xs font-bold text-amber-400">{tierCounts.pro}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/10 border border-fuchsia-500/20">
+                    <Crown className="w-3 h-3 text-fuchsia-400" />
+                    <div>
+                      <p className="text-[9px] text-fuchsia-400 font-semibold">Premium</p>
+                      <p className="text-xs font-bold text-fuchsia-400">🔒 {tierCounts.premium}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Yesterday Premium Social Proof */}
+                {yesterdayPremiumStats.total >= 3 && (
+                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-green-500/5 border border-green-500/15">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                    <span className="text-[10px] md:text-xs text-muted-foreground">
+                      Yesterday Premium: <span className="text-green-400 font-bold">{yesterdayPremiumStats.won}/{yesterdayPremiumStats.total} WON ✅</span>
+                    </span>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => navigate("/get-premium")}
+                  size="sm"
+                  className="w-full h-8 text-[10px] md:text-xs font-semibold bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-full gap-1.5"
+                >
+                  <Crown className="w-3 h-3 fill-current" />
+                  Upgrade to unlock stronger predictions
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* AI Accuracy Section - Separated by Tier */}
           <Card className="bg-card border-border rounded">
             <CardContent className="p-2 md:p-3">
