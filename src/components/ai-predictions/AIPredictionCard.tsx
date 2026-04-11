@@ -195,7 +195,7 @@ const AIPredictionCardInner = ({
             <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
               <Crown className="w-3 h-3 text-fuchsia-400" />
               <span className="text-[9px] md:text-[10px] text-muted-foreground">
-                <span className="text-fuchsia-400 font-semibold">+{Math.floor(Math.random() * 3) + 2} stronger picks</span> available in Premium
+                <span className="text-fuchsia-400 font-semibold">+3 stronger picks</span> available in Premium
               </span>
             </div>
             
