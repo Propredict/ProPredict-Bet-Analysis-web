@@ -2192,6 +2192,11 @@ function calculatePrediction(
   const topScoresStr = filteredTopScores.map(s => `${s.score} (${s.prob}%)`).join(", ");
   analysisReasons.push(`🏆 Top Scores: ${topScoresStr} — Confidence: ${scoreConfLabel}`);
 
+  // === SCORE CLUSTERS ===
+  const clusters = getScoreClusters(goalMarkets.topScores);
+  const clusterStr = clusters.map(c => `${c.cluster}: ${c.prob}% (${c.scores.join(", ")})`).join(" | ");
+  analysisReasons.push(`📊 Score Clusters: ${clusterStr}`);
+
   const analysis = generateAnalysisV2({
     homeTeamName, awayTeamName, prediction,
     homeWin, draw, awayWin,
