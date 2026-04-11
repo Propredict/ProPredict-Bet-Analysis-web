@@ -229,6 +229,11 @@ interface OddsData {
   homeProb: number;
   drawProb: number;
   awayProb: number;
+  // Goal market odds (if available)
+  over25Odds: number | null;
+  under25Odds: number | null;
+  bttsYesOdds: number | null;
+  bttsNoOdds: number | null;
 }
 
 interface InjuryInfo {
