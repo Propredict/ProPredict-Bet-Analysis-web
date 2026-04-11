@@ -866,7 +866,6 @@ export default function AIPredictions() {
                               <h3 className="text-xs md:text-sm font-semibold text-foreground">
                                 {prediction.home_team} vs {prediction.away_team}
                               </h3>
-                              </div>
                               <div className="flex items-center gap-2">
                                 <span className={cn(
                                   "text-xl font-extrabold",
