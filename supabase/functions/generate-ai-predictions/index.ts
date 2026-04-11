@@ -1614,6 +1614,17 @@ function calculatePrediction(
 
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
+  // Form-based Over/BTTS insights
+  if (prediction.includes("Over") || prediction === "BTTS Yes") {
+    if (homeOver25Count >= 4) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count >= 4) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
+    if (homeBttsCount >= 4 && awayBttsCount >= 4) analysisReasons.push(`🔄 BTTS in ${homeBttsCount}/5 (H) & ${awayBttsCount}/5 (A) recent matches`);
+  }
+  if (prediction.includes("Under") || prediction === "BTTS No") {
+    if (homeOver25Count <= 1) analysisReasons.push(`🛡️ ${homeTeamName}: Only ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count <= 1) analysisReasons.push(`🛡️ ${awayTeamName}: Only ${awayOver25Count}/5 matches Over 2.5`);
+  }
+
   // Ultra tag
   if (ultra.isUltra) analysisReasons.push(`🔥 ULTRA STRONG: Form + xG + Odds all converge`);
 
