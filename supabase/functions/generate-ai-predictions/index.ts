@@ -229,6 +229,11 @@ interface OddsData {
   homeProb: number;
   drawProb: number;
   awayProb: number;
+  // Goal market odds (if available)
+  over25Odds: number | null;
+  under25Odds: number | null;
+  bttsYesOdds: number | null;
+  bttsNoOdds: number | null;
 }
 
 interface InjuryInfo {
@@ -543,11 +548,41 @@ function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
   const rawAwayProb = 1 / awayOdds;
   const overround = rawHomeProb + rawDrawProb + rawAwayProb;
 
+  // Extract Over/Under 2.5 odds (bet id=5 or name "Over/Under")
+  let over25Odds: number | null = null;
+  let under25Odds: number | null = null;
+  const overUnderBet = bookmaker.bets?.find((b: any) => 
+    b.id === 5 || b.name?.toLowerCase().includes("over/under")
+  );
+  if (overUnderBet?.values) {
+    const over25Val = overUnderBet.values.find((v: any) => v.value === "Over 2.5");
+    const under25Val = overUnderBet.values.find((v: any) => v.value === "Under 2.5");
+    if (over25Val?.odd) over25Odds = parseFloat(over25Val.odd);
+    if (under25Val?.odd) under25Odds = parseFloat(under25Val.odd);
+  }
+
+  // Extract BTTS odds (bet id=8 or name "Both Teams Score")
+  let bttsYesOdds: number | null = null;
+  let bttsNoOdds: number | null = null;
+  const bttsBet = bookmaker.bets?.find((b: any) => 
+    b.id === 8 || b.name?.toLowerCase().includes("both teams")
+  );
+  if (bttsBet?.values) {
+    const yesVal = bttsBet.values.find((v: any) => v.value === "Yes");
+    const noVal = bttsBet.values.find((v: any) => v.value === "No");
+    if (yesVal?.odd) bttsYesOdds = parseFloat(yesVal.odd);
+    if (noVal?.odd) bttsNoOdds = parseFloat(noVal.odd);
+  }
+
   const result: OddsData = {
     homeOdds, drawOdds, awayOdds,
     homeProb: Math.round((rawHomeProb / overround) * 100),
     drawProb: Math.round((rawDrawProb / overround) * 100),
     awayProb: Math.round((rawAwayProb / overround) * 100),
+    over25Odds,
+    under25Odds,
+    bttsYesOdds,
+    bttsNoOdds,
   };
 
   oddsCache.set(fixtureId, result);
@@ -712,20 +747,47 @@ function detectStyleMatchup(
 }
 
 /**
- * MATCH CONTEXT ENGINE: Table gap, motivation, must-win scenarios.
+ * MATCH CONTEXT ENGINE: Table gap, motivation, must-win scenarios, match importance.
  */
 function getMatchContext(
   standings: StandingEntry[],
   homeTeamId: number,
-  awayTeamId: number
-): { confidenceBoost: number; factors: string[] } {
-  if (standings.length === 0) return { confidenceBoost: 0, factors: [] };
-  const homeEntry = standings.find(s => s.teamId === homeTeamId);
-  const awayEntry = standings.find(s => s.teamId === awayTeamId);
-  if (!homeEntry || !awayEntry) return { confidenceBoost: 0, factors: [] };
-
+  awayTeamId: number,
+  leagueId?: number,
+  leagueName?: string,
+  fixtureRound?: string
+): { confidenceBoost: number; factors: string[]; goalAdjust: number } {
   const factors: string[] = [];
   let boost = 0;
+  let goalAdjust = 0; // negative = fewer goals expected, positive = more goals
+
+  // === MATCH IMPORTANCE (knockout/final detection) ===
+  const roundLower = (fixtureRound || "").toLowerCase();
+  const isKnockout = roundLower.includes("final") || roundLower.includes("semi") || 
+    roundLower.includes("quarter") || roundLower.includes("knockout") || 
+    roundLower.includes("playoff") || roundLower.includes("round of");
+  const isFinal = roundLower.includes("final") && !roundLower.includes("semi") && !roundLower.includes("quarter");
+  
+  // Cup competitions (Champions League, Europa League, etc.)
+  const isCupCompetition = [2, 3, 848, 1, 4].includes(leagueId ?? 0);
+  
+  if (isFinal) {
+    goalAdjust -= 4; // Finals tend to be tight, fewer goals
+    factors.push("🏆 Final match → expect cautious play, fewer goals");
+    boost += 2; // Higher confidence in the pick direction
+  } else if (isKnockout) {
+    goalAdjust -= 2; // Knockout rounds are tighter
+    factors.push("⚔️ Knockout stage → reduced goal expectation");
+  } else if (isCupCompetition && !isKnockout) {
+    // Group stage of cups — relatively normal
+    factors.push("🏟️ Cup group stage");
+  }
+
+  if (standings.length === 0) return { confidenceBoost: boost, factors, goalAdjust };
+  const homeEntry = standings.find(s => s.teamId === homeTeamId);
+  const awayEntry = standings.find(s => s.teamId === awayTeamId);
+  if (!homeEntry || !awayEntry) return { confidenceBoost: boost, factors, goalAdjust };
+
   const rankGap = Math.abs(homeEntry.rank - awayEntry.rank);
   const totalTeams = homeEntry.totalTeams || 20;
 
@@ -735,14 +797,23 @@ function getMatchContext(
     const stronger = homeEntry.rank < awayEntry.rank ? "Home" : "Away";
     factors.push(`Table gap: ${homeEntry.rank}th vs ${awayEntry.rank}th (${stronger} favored)`);
   }
-  // Relegation battle → upset risk
+  
+  // === MOTIVATION DETECTION ===
+  // Relegation battle → desperate = more goals from desperation
   if (homeEntry.rank >= totalTeams - 2 || awayEntry.rank >= totalTeams - 2) {
     factors.push("Relegation battle → desperate motivation");
+    goalAdjust += 2; // Must-win = more open play
     boost -= 1;
   }
   // Title race
   if (homeEntry.rank <= 2 || awayEntry.rank <= 2) {
     factors.push("Title contender → high stakes");
+  }
+  // One team must win (bottom vs top) → more open game
+  if ((homeEntry.rank >= totalTeams - 3 && awayEntry.rank <= 3) ||
+      (awayEntry.rank >= totalTeams - 3 && homeEntry.rank <= 3)) {
+    goalAdjust += 3; // Relegation team must attack
+    factors.push("Must-win scenario → expect open game, more goals");
   }
   // Mid-table vs top → potential complacency
   const midLow = Math.floor(totalTeams * 0.35);
@@ -751,7 +822,7 @@ function getMatchContext(
     factors.push("Mid-table home vs top team → complacency risk");
   }
 
-  return { confidenceBoost: boost, factors };
+  return { confidenceBoost: boost, factors, goalAdjust };
 }
 
 /**
@@ -1275,24 +1346,41 @@ function calculatePrediction(
   const avgGoalsAll = ((homeAvgScored5 + homeAvgConceded5) + (awayAvgScored5 + awayAvgConceded5)) / 2;
   const goalsAvgNorm = clamp(avgGoalsAll / 4.0, 0, 1); // normalize to 0-1 (4 goals = max)
   
-  // Odds boost: if bookmaker Over 2.5 odds are short (<1.80), boost
+  // === ODDS INTELLIGENCE for Over/BTTS ===
   let oddsOverBoost = 0;
+  let oddsBttsBoost = 0;
   if (odds) {
-    // We don't have Over 2.5 odds directly, but short 1X2 odds indicate predictability
-    const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
-    if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.2;
-    else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.1;
+    // Direct Over 2.5 odds intelligence
+    if (odds.over25Odds !== null && odds.over25Odds > 0) {
+      if (odds.over25Odds <= 1.55) { oddsOverBoost = 0.25; } // Bookmaker very confident
+      else if (odds.over25Odds <= 1.65) { oddsOverBoost = 0.20; }
+      else if (odds.over25Odds <= 1.80) { oddsOverBoost = 0.15; }
+      else if (odds.over25Odds >= 2.30) { oddsOverBoost = -0.10; } // Bookmaker expects Under
+    } else {
+      // Fallback: infer from 1X2 odds
+      const shortestOdds1x2 = Math.min(odds.homeOdds, odds.awayOdds);
+      if (shortestOdds1x2 < 1.80) oddsOverBoost = 0.12;
+      else if (shortestOdds1x2 < 2.20) oddsOverBoost = 0.06;
+    }
+    
+    // Direct BTTS odds intelligence
+    if (odds.bttsYesOdds !== null && odds.bttsYesOdds > 0) {
+      if (odds.bttsYesOdds <= 1.55) { oddsBttsBoost = 0.25; }
+      else if (odds.bttsYesOdds <= 1.70) { oddsBttsBoost = 0.18; }
+      else if (odds.bttsYesOdds <= 1.85) { oddsBttsBoost = 0.10; }
+      else if (odds.bttsYesOdds >= 2.30) { oddsBttsBoost = -0.10; }
+    }
   }
   
   const formOverScore = homeOver25Freq * 0.30 + awayOver25Freq * 0.30 + goalsAvgNorm * 0.20 + oddsOverBoost;
   
-  // Form-based BTTS score (0-100): 40% homeBTTS + 40% awayBTTS + 10% homeScoring + 10% awayScoring
+  // Form-based BTTS score (0-100): 35% homeBTTS + 35% awayBTTS + 10% homeScoring + 10% awayScoring + odds
   const homeBttsFreq = homeFormLast5.length > 0 ? homeBttsCount / homeFormLast5.length : 0.5;
   const awayBttsFreq = awayFormLast5.length > 0 ? awayBttsCount / awayFormLast5.length : 0.5;
   const homeScoringBonus = homeAvgScored5 >= 1.2 ? 0.1 : 0;
   const awayScoringBonus = awayAvgScored5 >= 1.2 ? 0.1 : 0;
   
-  const formBttsScore = homeBttsFreq * 0.40 + awayBttsFreq * 0.40 + homeScoringBonus + awayScoringBonus;
+  const formBttsScore = homeBttsFreq * 0.35 + awayBttsFreq * 0.35 + homeScoringBonus + awayScoringBonus + oddsBttsBoost;
   
   // Convert form scores to probability adjustments (-15 to +15)
   const formOverAdjust = Math.round((formOverScore - 0.5) * 30); // -15 to +15
@@ -1305,27 +1393,68 @@ function calculatePrediction(
   // === ANTI-ERROR OVERRIDES ===
   // Rule 1: If either team has 4+ Over 2.5 in last 5 → FORCE Over direction
   if (homeOver25Count >= 4 || awayOver25Count >= 4) {
-    adjustedOver25 = Math.max(adjustedOver25, 65); // Floor at 65%
+    adjustedOver25 = Math.max(adjustedOver25, 65);
   }
-  // Rule 2: If both teams scored in 4+ of last 5 → FORCE BTTS Yes
+  // Rule 2: Combined over25 count >= 7 → NEVER UNDER (both teams consistently high scoring)
+  if (homeOver25Count + awayOver25Count >= 7) {
+    adjustedOver25 = Math.max(adjustedOver25, 72); // Strong Over signal
+  }
+  // Rule 3: If both teams scored in 4+ of last 5 → FORCE BTTS Yes
   if (homeBttsCount >= 4 && awayBttsCount >= 4) {
-    adjustedBttsYes = Math.max(adjustedBttsYes, 62); // Floor at 62%
+    adjustedBttsYes = Math.max(adjustedBttsYes, 62);
   }
-  // Rule 3: Both teams low scoring → lock Under + BTTS No
+  // Rule 4: Both teams low scoring → lock Under + BTTS No
   if (homeAvgScored5 + homeAvgConceded5 < 1.8 && awayAvgScored5 + awayAvgConceded5 < 1.8) {
-    adjustedOver25 = Math.min(adjustedOver25, 35); // Cap Over at 35%
-    adjustedBttsYes = Math.min(adjustedBttsYes, 35); // Cap BTTS Yes at 35%
+    adjustedOver25 = Math.min(adjustedOver25, 35);
+    adjustedBttsYes = Math.min(adjustedBttsYes, 35);
   }
-  // Rule 4: Both teams high scoring (avg scored ≥ 1.5) → prevent BTTS No
+  // Rule 5: Both teams high scoring (avg scored ≥ 1.5) → prevent BTTS No
   if (homeAvgScored5 >= 1.5 && awayAvgScored5 >= 1.5) {
     adjustedBttsYes = Math.max(adjustedBttsYes, 58);
+  }
+  // Rule 6: xG FORCE — strong xG signal overrides
+  const totalXgForRules = homeXg + awayXg;
+  if (totalXgForRules >= 3.0) {
+    adjustedOver25 = Math.max(adjustedOver25, 68); // FORCE Over when xG is very high
+  }
+  if (homeXg >= 1.5 && awayXg >= 1.2) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, 60); // FORCE BTTS Yes when both teams have high xG
+  }
+  // Rule 7: OPEN GAME detection — both teams avg goals >= 2.5 per game involvement
+  const homeAvgTotal5 = homeAvgScored5 + homeAvgConceded5;
+  const awayAvgTotal5 = awayAvgScored5 + awayAvgConceded5;
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    adjustedOver25 = Math.max(adjustedOver25, 70); // HIGH SCORING MATCH
+    adjustedBttsYes = Math.max(adjustedBttsYes, 62);
+  }
+  // Rule 8: Strong home team scoring boost
+  if (homeStats && homeStats.homeGoalsForAvg >= 2.0) {
+    adjustedOver25 = clamp(adjustedOver25 + 3, 5, 95);
+  }
+  // Rule 9: Weak away attack → reduce BTTS
+  if (awayStats && awayStats.awayGoalsForAvg <= 0.6) {
+    adjustedBttsYes = Math.min(adjustedBttsYes, 40);
+  }
+  // Rule 10: Possession/defensive team vs attacking → reduce BTTS
+  if (homeStats && awayStats) {
+    const homeDefensive = homeStats.cleanSheets.total / Math.max(homeStats.played, 1) >= 0.4;
+    const awayDefensive = awayStats.cleanSheets.total / Math.max(awayStats.played, 1) >= 0.4;
+    if (homeDefensive || awayDefensive) {
+      adjustedBttsYes = clamp(adjustedBttsYes - 5, 5, 95);
+    }
   }
 
   const adjustedUnder25 = clamp(100 - adjustedOver25, 5, 95);
   const adjustedBttsNo = clamp(100 - adjustedBttsYes, 5, 95);
 
-  // === MATCH CONTEXT ENGINE ===
-  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId) : { confidenceBoost: 0, factors: [] };
+  // === MATCH CONTEXT ENGINE (with match importance) ===
+  const fixtureRound = ""; // Will be passed from fixture data in processBatch
+  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId, leagueId, leagueName, fixtureRound) : { confidenceBoost: 0, factors: [], goalAdjust: 0 };
+  
+  // Apply match context goal adjustments
+  if (context.goalAdjust !== 0) {
+    adjustedOver25 = clamp(adjustedOver25 + context.goalAdjust, 5, 95);
+  }
 
   // === SMART MARKET SELECTION ENGINE ===
   const dc1X = homeWin + draw;
@@ -1418,6 +1547,33 @@ function calculatePrediction(
       const strongerIsHome = homeWin > awayWin;
       if (strongerIsHome && (m.label === "1" || m.label === "DC 1X")) m.priorityProb *= 1.08;
       if (!strongerIsHome && (m.label === "2" || m.label === "DC X2")) m.priorityProb *= 1.08;
+    }
+    
+    // === OPEN GAME DETECTION ===
+    // Both teams avg goals involvement >= 2.5 per game → high scoring match
+    if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+      if (m.label === "Over 2.5") m.priorityProb *= 1.15;
+      if (m.label === "BTTS Yes") m.priorityProb *= 1.12;
+      if (m.label === "Over 1.5") m.priorityProb *= 1.10;
+      if (m.label.startsWith("Under")) m.priorityProb *= 0.85;
+      if (m.label === "BTTS No") m.priorityProb *= 0.85;
+    }
+    
+    // === ODDS INTELLIGENCE BOOST for Over/BTTS markets ===
+    if (odds?.over25Odds !== null && odds?.over25Odds !== undefined && odds.over25Odds <= 1.65) {
+      if (m.label === "Over 2.5") m.priorityProb *= 1.10;
+      if (m.label === "Under 2.5") m.priorityProb *= 0.88;
+    }
+    if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined && odds.bttsYesOdds <= 1.70) {
+      if (m.label === "BTTS Yes") m.priorityProb *= 1.10;
+      if (m.label === "BTTS No") m.priorityProb *= 0.88;
+    }
+    
+    // === "FALSE UNDER" PREVENTION ===
+    // Combined over25 count >= 7 → NEVER select Under
+    if (homeOver25Count + awayOver25Count >= 7) {
+      if (m.label === "Under 2.5") m.priorityProb *= 0.60; // Heavy penalty
+      if (m.label === "Under 1.5") m.priorityProb *= 0.50;
     }
   }
 
@@ -1554,6 +1710,18 @@ function calculatePrediction(
   if (value.isValueBet) confidence += 5;
   if (value.isStrongValue) confidence += 3; // additional
 
+  // === OPEN GAME CONFIDENCE BOOST ===
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    // High scoring match → boost confidence for Over/BTTS picks
+    if (prediction.includes("Over") || prediction === "BTTS Yes") {
+      confidence += 10; // Strong form-backed signal
+    }
+  }
+  // Combined over25 form >= 7 → extra confidence for Over picks
+  if (homeOver25Count + awayOver25Count >= 7 && prediction.includes("Over")) {
+    confidence += 5;
+  }
+
   // === 6. DATA QUALITY FILTER ===
   const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId ?? 0);
   const dataQuality = calculateDataQuality(homeStats, awayStats, homeForm, awayForm, odds ?? null, isQualityLeague);
@@ -1614,16 +1782,36 @@ function calculatePrediction(
 
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
-  // Form-based Over/BTTS insights
+  // Form-based Over/BTTS insights (WHY THIS PICK)
   if (prediction.includes("Over") || prediction === "BTTS Yes") {
-    if (homeOver25Count >= 4) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
-    if (awayOver25Count >= 4) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
-    if (homeBttsCount >= 4 && awayBttsCount >= 4) analysisReasons.push(`🔄 BTTS in ${homeBttsCount}/5 (H) & ${awayBttsCount}/5 (A) recent matches`);
+    if (homeOver25Count >= 3) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count >= 3) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
+    if (homeBttsCount >= 3) analysisReasons.push(`🔄 ${homeTeamName}: BTTS in ${homeBttsCount}/5 recent matches`);
+    if (awayBttsCount >= 3) analysisReasons.push(`🔄 ${awayTeamName}: BTTS in ${awayBttsCount}/5 recent matches`);
+    if (totalXgForRules >= 3.0) analysisReasons.push(`📊 xG: ${totalXgForRules.toFixed(1)} (high scoring expected)`);
   }
   if (prediction.includes("Under") || prediction === "BTTS No") {
     if (homeOver25Count <= 1) analysisReasons.push(`🛡️ ${homeTeamName}: Only ${homeOver25Count}/5 matches Over 2.5`);
     if (awayOver25Count <= 1) analysisReasons.push(`🛡️ ${awayTeamName}: Only ${awayOver25Count}/5 matches Over 2.5`);
   }
+  
+  // Open Game indicator
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    analysisReasons.push(`🔥 OPEN GAME: Both teams avg ${homeAvgTotal5.toFixed(1)} & ${awayAvgTotal5.toFixed(1)} goals/game involvement`);
+  }
+
+  // Odds intelligence insights
+  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined) {
+    if (odds.over25Odds <= 1.65) analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (strong signal)`);
+  }
+  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined) {
+    if (odds.bttsYesOdds <= 1.70 && (prediction === "BTTS Yes" || prediction.includes("Over"))) {
+      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (strong signal)`);
+    }
+  }
+
+  // Match context factors
+  for (const cf of context.factors.slice(0, 2)) analysisReasons.push(cf);
 
   // Ultra tag
   if (ultra.isUltra) analysisReasons.push(`🔥 ULTRA STRONG: Form + xG + Odds all converge`);
