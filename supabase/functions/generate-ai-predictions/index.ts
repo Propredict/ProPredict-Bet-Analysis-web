@@ -1782,16 +1782,36 @@ function calculatePrediction(
 
   for (const cf of context.factors.slice(0, 1)) analysisReasons.push(cf);
 
-  // Form-based Over/BTTS insights
+  // Form-based Over/BTTS insights (WHY THIS PICK)
   if (prediction.includes("Over") || prediction === "BTTS Yes") {
-    if (homeOver25Count >= 4) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
-    if (awayOver25Count >= 4) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
-    if (homeBttsCount >= 4 && awayBttsCount >= 4) analysisReasons.push(`🔄 BTTS in ${homeBttsCount}/5 (H) & ${awayBttsCount}/5 (A) recent matches`);
+    if (homeOver25Count >= 3) analysisReasons.push(`⚽ ${homeTeamName}: ${homeOver25Count}/5 matches Over 2.5`);
+    if (awayOver25Count >= 3) analysisReasons.push(`⚽ ${awayTeamName}: ${awayOver25Count}/5 matches Over 2.5`);
+    if (homeBttsCount >= 3) analysisReasons.push(`🔄 ${homeTeamName}: BTTS in ${homeBttsCount}/5 recent matches`);
+    if (awayBttsCount >= 3) analysisReasons.push(`🔄 ${awayTeamName}: BTTS in ${awayBttsCount}/5 recent matches`);
+    if (totalXgForRules >= 3.0) analysisReasons.push(`📊 xG: ${totalXgForRules.toFixed(1)} (high scoring expected)`);
   }
   if (prediction.includes("Under") || prediction === "BTTS No") {
     if (homeOver25Count <= 1) analysisReasons.push(`🛡️ ${homeTeamName}: Only ${homeOver25Count}/5 matches Over 2.5`);
     if (awayOver25Count <= 1) analysisReasons.push(`🛡️ ${awayTeamName}: Only ${awayOver25Count}/5 matches Over 2.5`);
   }
+  
+  // Open Game indicator
+  if (homeAvgTotal5 >= 2.5 && awayAvgTotal5 >= 2.5) {
+    analysisReasons.push(`🔥 OPEN GAME: Both teams avg ${homeAvgTotal5.toFixed(1)} & ${awayAvgTotal5.toFixed(1)} goals/game involvement`);
+  }
+
+  // Odds intelligence insights
+  if (odds?.over25Odds !== null && odds?.over25Odds !== undefined) {
+    if (odds.over25Odds <= 1.65) analysisReasons.push(`📉 Bookmaker: Over 2.5 @ ${odds.over25Odds.toFixed(2)} (strong signal)`);
+  }
+  if (odds?.bttsYesOdds !== null && odds?.bttsYesOdds !== undefined) {
+    if (odds.bttsYesOdds <= 1.70 && (prediction === "BTTS Yes" || prediction.includes("Over"))) {
+      analysisReasons.push(`📉 Bookmaker: BTTS Yes @ ${odds.bttsYesOdds.toFixed(2)} (strong signal)`);
+    }
+  }
+
+  // Match context factors
+  for (const cf of context.factors.slice(0, 2)) analysisReasons.push(cf);
 
   // Ultra tag
   if (ultra.isUltra) analysisReasons.push(`🔥 ULTRA STRONG: Form + xG + Odds all converge`);
