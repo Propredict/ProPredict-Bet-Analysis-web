@@ -590,8 +590,6 @@ export default function MatchPreviewDetail() {
                 💎 Get This Winning Pick
               </Button>
             )}
-              </Button>
-            )}
           </div>
         )}
 
