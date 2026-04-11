@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
@@ -30,6 +31,7 @@ type MarketFilter = "all" | MarketType;
 
 export default function AIPredictions() {
   const queryClient = useQueryClient();
+  const { isAndroidApp } = usePlatform();
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
 
@@ -758,90 +760,116 @@ export default function AIPredictions() {
                     <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                     <h2 className="text-xs md:text-sm font-semibold text-foreground">Pro Picks</h2>
                     <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      🔒 {tierCounts.pro} picks waiting to unlock
+                      {isAndroidApp ? `${tierCounts.pro} picks` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                    {featuredPredictions
-                      .filter(p => getPredictionTier(p) === "pro")
-                      .slice(0, 3)
-                      .map((prediction) => (
-                        <Card key={`teaser-pro-${prediction.id}`} className="bg-[#0a1628] border-amber-500/20 overflow-hidden rounded relative">
-                          <CardContent className="p-0">
-                            <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
-                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
-                                <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> PRO
-                              </Badge>
-                              <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
-                            </div>
-                            <div className="p-3 space-y-2">
-                              <h3 className="text-xs md:text-sm font-semibold text-foreground">
-                                {prediction.home_team} vs {prediction.away_team}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                <span className={cn(
-                                  "text-xl font-extrabold",
-                                  (prediction.confidence ?? 0) >= 80 ? "text-green-400" : (prediction.confidence ?? 0) >= 70 ? "text-amber-400" : "text-orange-400"
-                                )}>
-                                  {prediction.confidence ?? 70}%
-                                </span>
-                                <Badge className={cn(
-                                  "text-[8px] px-1.5 py-0.5 rounded",
-                                  (prediction.confidence ?? 0) >= 80 
-                                    ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                    : (prediction.confidence ?? 0) >= 65
-                                    ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                                    : "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                                )}>
-                                  {(prediction.confidence ?? 0) >= 80 ? "🔥 HIGH" : (prediction.confidence ?? 0) >= 65 ? "⚖️ MEDIUM" : "⚠️ RISKY"}
+                    {isAndroidApp ? (
+                      /* Android: show ALL pro predictions with ad-unlock */
+                      featuredPredictions
+                        .filter(p => getPredictionTier(p) === "pro")
+                        .map((prediction) => (
+                          <div key={prediction.id} id={`prediction-${prediction.id}`}>
+                            <AIPredictionCard
+                              overrideTier="pro"
+                              prediction={prediction}
+                              isAdmin={isAdmin}
+                              isPremiumUser={isPremiumUser}
+                              isProUser={isProUser}
+                              isFavorite={isFavorite(prediction.match_id)}
+                              isSavingFavorite={isSaving(prediction.match_id)}
+                              onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                              onGoPremium={() => navigate("/get-premium")}
+                              onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                              isUnlocking={unlockingId === prediction.id}
+                            />
+                          </div>
+                        ))
+                    ) : (
+                      /* Web: show 3 teaser cards */
+                      featuredPredictions
+                        .filter(p => getPredictionTier(p) === "pro")
+                        .slice(0, 3)
+                        .map((prediction) => (
+                          <Card key={`teaser-pro-${prediction.id}`} className="bg-[#0a1628] border-amber-500/20 overflow-hidden rounded relative">
+                            <CardContent className="p-0">
+                              <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
+                                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> PRO
                                 </Badge>
+                                <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
-                              <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
-                                <Lock className="w-3 h-3 text-amber-400" />
-                                <span className="text-[9px] font-medium text-amber-400/90">🔒 Unlock this prediction</span>
+                              <div className="p-3 space-y-2">
+                                <h3 className="text-xs md:text-sm font-semibold text-foreground">
+                                  {prediction.home_team} vs {prediction.away_team}
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                  <span className={cn(
+                                    "text-xl font-extrabold",
+                                    (prediction.confidence ?? 0) >= 80 ? "text-green-400" : (prediction.confidence ?? 0) >= 70 ? "text-amber-400" : "text-orange-400"
+                                  )}>
+                                    {prediction.confidence ?? 70}%
+                                  </span>
+                                  <Badge className={cn(
+                                    "text-[8px] px-1.5 py-0.5 rounded",
+                                    (prediction.confidence ?? 0) >= 80 
+                                      ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                      : (prediction.confidence ?? 0) >= 65
+                                      ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                                      : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                  )}>
+                                    {(prediction.confidence ?? 0) >= 80 ? "🔥 HIGH" : (prediction.confidence ?? 0) >= 65 ? "⚖️ MEDIUM" : "⚠️ RISKY"}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
+                                  <Lock className="w-3 h-3 text-amber-400" />
+                                  <span className="text-[9px] font-medium text-amber-400/90">🔒 Unlock this prediction</span>
+                                </div>
+                                <p className="text-[8px] text-amber-400/60 pl-0.5">📊 Solid value detected</p>
+                                <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+                                  <div
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      (prediction.confidence ?? 0) >= 80 ? "bg-green-500" : (prediction.confidence ?? 0) >= 70 ? "bg-amber-500" : "bg-orange-500"
+                                    )}
+                                    style={{ width: `${Math.max(10, prediction.confidence ?? 60)}%` }}
+                                  />
+                                </div>
+                                <Button
+                                  onClick={() => navigate("/get-premium")}
+                                  className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
+                                >
+                                  <Star className="w-3 h-3 fill-current" />
+                                  ⭐ Unlock Pro Picks
+                                </Button>
                               </div>
-                              <p className="text-[8px] text-amber-400/60 pl-0.5">📊 Solid value detected</p>
-                              <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-                                <div
-                                  className={cn(
-                                    "h-full rounded-full",
-                                    (prediction.confidence ?? 0) >= 80 ? "bg-green-500" : (prediction.confidence ?? 0) >= 70 ? "bg-amber-500" : "bg-orange-500"
-                                  )}
-                                  style={{ width: `${Math.max(10, prediction.confidence ?? 60)}%` }}
-                                />
-                              </div>
-                              <Button
-                                onClick={() => navigate("/get-premium")}
-                                className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
-                              >
-                                <Star className="w-3 h-3 fill-current" />
-                                ⭐ Unlock Pro Picks
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))
+                    )}
                   </div>
-                  {tierCounts.pro > 3 && (
+                  {/* Web only: show "+X more" and Premium hint */}
+                  {!isAndroidApp && tierCounts.pro > 3 && (
                     <p className="text-center text-[10px] text-amber-400/70 mt-2">
                       +{tierCounts.pro - 3} more Pro picks available
                     </p>
                   )}
-                  {/* Pro → Premium hint */}
-                  <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/10">
-                    <Crown className="w-3 h-3 text-fuchsia-400" />
-                    <span className="text-[9px] md:text-[10px] text-muted-foreground">
-                      💎 <span className="text-fuchsia-400 font-semibold">Premium has higher confidence picks today</span>
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 px-1.5 text-[8px] text-fuchsia-400 hover:bg-fuchsia-500/10 ml-auto"
-                      onClick={() => setTierFilter("premium")}
-                    >
-                      View →
-                    </Button>
-                  </div>
+                  {!isAndroidApp && (
+                    <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/10">
+                      <Crown className="w-3 h-3 text-fuchsia-400" />
+                      <span className="text-[9px] md:text-[10px] text-muted-foreground">
+                        💎 <span className="text-fuchsia-400 font-semibold">Premium has higher confidence picks today</span>
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 px-1.5 text-[8px] text-fuchsia-400 hover:bg-fuchsia-500/10 ml-auto"
+                        onClick={() => setTierFilter("premium")}
+                      >
+                        View →
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -852,68 +880,92 @@ export default function AIPredictions() {
                     <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
                     <h2 className="text-xs md:text-sm font-semibold text-foreground">Premium Picks</h2>
                     <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      🔒 {tierCounts.premium} Premium picks locked
+                      {isAndroidApp ? `${tierCounts.premium} picks` : `🔒 ${tierCounts.premium} Premium picks locked`}
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                    {featuredPredictions
-                      .filter(p => getPredictionTier(p) === "premium")
-                      .slice(0, 3)
-                      .map((prediction) => (
-                        <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">
-                          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
-                          <CardContent className="p-0 relative">
-                            <div className="px-3 py-2 flex items-center justify-between border-b border-fuchsia-500/10">
-                              <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] px-1.5 py-0.5 rounded">
-                                <Crown className="w-2.5 h-2.5 mr-0.5 fill-current" /> PREMIUM
-                              </Badge>
-                              <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
-                            </div>
-                            <div className="p-3 space-y-2">
-                              <h3 className="text-xs md:text-sm font-semibold text-foreground">
-                                {prediction.home_team} vs {prediction.away_team}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                <span className={cn(
-                                  "text-xl font-extrabold",
-                                  (prediction.confidence ?? 0) >= 80 ? "text-green-400" : "text-amber-400"
-                                )}>
-                                  {prediction.confidence ?? 80}%
-                                </span>
-                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
-                                  🔥 HIGH CONFIDENCE
+                    {isAndroidApp ? (
+                      /* Android: show ALL premium predictions with ad-unlock */
+                      featuredPredictions
+                        .filter(p => getPredictionTier(p) === "premium")
+                        .map((prediction) => (
+                          <div key={prediction.id} id={`prediction-${prediction.id}`}>
+                            <AIPredictionCard
+                              overrideTier="premium"
+                              prediction={prediction}
+                              isAdmin={isAdmin}
+                              isPremiumUser={isPremiumUser}
+                              isProUser={isProUser}
+                              isFavorite={isFavorite(prediction.match_id)}
+                              isSavingFavorite={isSaving(prediction.match_id)}
+                              onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                              onGoPremium={() => navigate("/get-premium")}
+                              onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                              isUnlocking={unlockingId === prediction.id}
+                            />
+                          </div>
+                        ))
+                    ) : (
+                      /* Web: show 3 teaser cards */
+                      featuredPredictions
+                        .filter(p => getPredictionTier(p) === "premium")
+                        .slice(0, 3)
+                        .map((prediction) => (
+                          <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
+                            <CardContent className="p-0 relative">
+                              <div className="px-3 py-2 flex items-center justify-between border-b border-fuchsia-500/10">
+                                <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] px-1.5 py-0.5 rounded">
+                                  <Crown className="w-2.5 h-2.5 mr-0.5 fill-current" /> PREMIUM
                                 </Badge>
+                                <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
-                              {(prediction.confidence ?? 0) >= 80 && (
-                                <div className="flex items-center gap-1">
-                                  <Sparkles className="w-3 h-3 text-fuchsia-400" />
-                                  <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
+                              <div className="p-3 space-y-2">
+                                <h3 className="text-xs md:text-sm font-semibold text-foreground">
+                                  {prediction.home_team} vs {prediction.away_team}
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                  <span className={cn(
+                                    "text-xl font-extrabold",
+                                    (prediction.confidence ?? 0) >= 80 ? "text-green-400" : "text-amber-400"
+                                  )}>
+                                    {prediction.confidence ?? 80}%
+                                  </span>
+                                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                    🔥 HIGH CONFIDENCE
+                                  </Badge>
                                 </div>
-                              )}
-                              <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-fuchsia-500/5 border border-fuchsia-500/15">
-                                <Lock className="w-3 h-3 text-fuchsia-400" />
-                                <span className="text-[9px] font-medium text-fuchsia-400/90">🔒 High confidence pick locked</span>
+                                {(prediction.confidence ?? 0) >= 80 && (
+                                  <div className="flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3 text-fuchsia-400" />
+                                    <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-fuchsia-500/5 border border-fuchsia-500/15">
+                                  <Lock className="w-3 h-3 text-fuchsia-400" />
+                                  <span className="text-[9px] font-medium text-fuchsia-400/90">🔒 High confidence pick locked</span>
+                                </div>
+                                <p className="text-[8px] text-fuchsia-400/60 pl-0.5">💎 Strong AI edge detected</p>
+                                <Badge className="bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20 text-[7px] px-1.5 py-0 rounded w-fit">
+                                  🔥 Top pick today
+                                </Badge>
+                                <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(217,70,239,0.3)]">
+                                  <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 shadow-[0_0_8px_rgba(217,70,239,0.5)]" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
+                                </div>
+                                <Button
+                                  onClick={() => navigate("/get-premium")}
+                                  className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
+                                >
+                                  <Crown className="w-3 h-3 fill-current" />
+                                  💎 Unlock Premium Picks
+                                </Button>
                               </div>
-                              <p className="text-[8px] text-fuchsia-400/60 pl-0.5">💎 Strong AI edge detected</p>
-                              <Badge className="bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20 text-[7px] px-1.5 py-0 rounded w-fit">
-                                🔥 Top pick today
-                              </Badge>
-                              <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(217,70,239,0.3)]">
-                                <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 shadow-[0_0_8px_rgba(217,70,239,0.5)]" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
-                              </div>
-                              <Button
-                                onClick={() => navigate("/get-premium")}
-                                className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
-                              >
-                                <Crown className="w-3 h-3 fill-current" />
-                                💎 Unlock Premium Picks
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))
+                    )}
                   </div>
-                  {tierCounts.premium > 3 && (
+                  {!isAndroidApp && tierCounts.premium > 3 && (
                     <p className="text-center text-[10px] text-fuchsia-400/70 mt-2">
                       +{tierCounts.premium - 3} more Premium picks available
                     </p>
