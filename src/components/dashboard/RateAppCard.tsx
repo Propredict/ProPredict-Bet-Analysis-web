@@ -1,25 +1,29 @@
 import { useState, useEffect } from "react";
 import { Star, Heart, ChevronRight } from "lucide-react";
-import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const CARD_DISMISSED_KEY = "propredict:rate_card_dismissed";
 const FIRST_SEEN_KEY = "propredict:first_seen_at";
-const MIN_DAYS = 2;
+const MIN_DAYS = 1;
 
 /**
- * Inline rating card on the Android dashboard.
- * Non-intrusive prompt to rate the app — shown after 2+ days of usage.
- * If user ignores this, the popup will appear later as fallback.
+ * Inline rating card on the dashboard.
+ * Shown for ALL users (free, pro, premium) on all platforms after 1+ day of usage.
  */
 export function RateAppCard({ onRate }: { onRate: () => void }) {
-  const isAndroid = getIsAndroidApp();
   const { user } = useAuth();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!user) return;
+
+    // Ensure first_seen is always set
+    try {
+      if (!localStorage.getItem(FIRST_SEEN_KEY)) {
+        localStorage.setItem(FIRST_SEEN_KEY, String(Date.now()));
+      }
+    } catch {}
 
     // Check if already rated
     (supabase as any)
