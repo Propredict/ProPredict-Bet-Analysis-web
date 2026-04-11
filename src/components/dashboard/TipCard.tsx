@@ -159,10 +159,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 {tip.league}
               </span>
             </div>
-            {/* Status — blur when locked */}
-            <div className={isLocked ? "blur-[5px] select-none pointer-events-none" : ""}>
-              {getStatusBadge()}
-            </div>
+            {/* Status — hide when locked */}
+            {!isLocked && getStatusBadge()}
           </div>
 
           {/* Match name — blur for locked pro/premium on web */}
