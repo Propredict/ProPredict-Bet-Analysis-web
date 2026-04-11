@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
