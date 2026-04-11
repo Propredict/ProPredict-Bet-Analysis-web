@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { Target, RefreshCw, BarChart3, TrendingUp, Loader2, Ticket, Crown, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export default function MultiRiskMatches() {
   const planRequired = searchParams.get("plan_required");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
+  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   useEffect(() => {
     if (!highlightId) return;
@@ -196,7 +198,7 @@ export default function MultiRiskMatches() {
                       isLocked={isLocked}
                       unlockMethod={unlockMethod}
                       onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
-                      onSecondaryUnlock={handleSecondaryUnlock}
+                      onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                       isUnlocking={isUnlocking}
                     />
@@ -215,6 +217,7 @@ export default function MultiRiskMatches() {
         </p>
       </div>
       <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
+      <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
     </>
   );
 }

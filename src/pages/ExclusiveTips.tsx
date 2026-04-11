@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { Star, RefreshCw, Target, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export default function ExclusiveTips() {
   const planRequired = searchParams.get("plan_required");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
+  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   // Highlight scroll from push notification
   useEffect(() => {
@@ -219,7 +221,7 @@ export default function ExclusiveTips() {
                   isLocked={isLocked} 
                   unlockMethod={unlockMethod} 
                   onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
-                  onSecondaryUnlock={handleSecondaryUnlock}
+                  onSecondaryUnlock={() => setFreeInAppOpen(true)}
                   isUnlocking={isUnlocking} 
                 />
                 </div>
@@ -238,5 +240,6 @@ export default function ExclusiveTips() {
       </p>
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
+    <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
   </>;
 }
