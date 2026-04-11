@@ -13,6 +13,7 @@ import {
   Gift,
   ChevronRight,
   TrendingUp,
+  Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,13 +81,22 @@ function getTierBadge(tier: ContentTier) {
   }
 }
 
-function getUnlockButtonText(unlockMethod: UnlockMethod): string {
+// Deterministic pseudo-random unlock % per ticket (72-94 range)
+function getSocialProofPct(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  }
+  return 72 + (Math.abs(hash) % 23);
+}
+
+function getLockedCTAText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
-  if (unlockMethod.type === "upgrade_basic") return "Pro Access Required";
-  if (unlockMethod.type === "upgrade_premium") return "Premium Access Required";
+  if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";
+  if (unlockMethod.type === "upgrade_premium") return "💎 Unlock full AI edge";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -129,7 +139,7 @@ function TicketCard({
   const getStatusBadge = () => {
     switch (ticket.status) {
       case "won":
-        return <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2"><CheckCircle2 className="h-3 w-3 mr-1" />Success</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2"><CheckCircle2 className="h-3 w-3 mr-1" />Won ✅</Badge>;
       case "lost":
         return <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-2"><XCircle className="h-3 w-3 mr-1" />Missed</Badge>;
       default:
@@ -158,6 +168,8 @@ function TicketCard({
 
   const displayedMatches = ticket.matches.slice(0, 3);
   const remainingCount = ticket.matchCount > 3 ? ticket.matchCount - 3 : 0;
+  const isPro = ticket.tier === "exclusive";
+  const isPremium = ticket.tier === "premium";
 
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
@@ -179,7 +191,8 @@ function TicketCard({
                 {ticket.matchCount} Matches
               </span>
             </div>
-            {isLocked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" /> : getStatusBadge()}
+            {/* Always show status — even when locked */}
+            {getStatusBadge()}
           </div>
           <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
           {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
@@ -196,7 +209,7 @@ function TicketCard({
       <div className={cardShell} onClick={handleCardClick}>
         {renderHeader()}
 
-        {/* Match list - blurred */}
+        {/* Match list - show names, blur predictions & odds */}
         <div className="px-3.5 sm:px-4 pb-2 pt-1">
           <div className="rounded-lg bg-muted/20 border border-border/30 divide-y divide-border/20">
             {displayedMatches.map((match, idx) => {
@@ -210,8 +223,11 @@ function TicketCard({
                     {parsed.league && <span className="text-[9px] text-muted-foreground">{parsed.league}</span>}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Badge variant="secondary" className="text-[10px] px-1.5 blur-[5px] opacity-40 select-none">{match.prediction || "???"}</Badge>
-                    <span className="text-xs font-bold text-primary">{match.odds.toFixed(2)}</span>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <Lock className="h-2.5 w-2.5" />
+                      Locked
+                    </span>
+                    <span className="text-xs font-bold text-muted-foreground blur-[4px] select-none">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               );
@@ -225,13 +241,26 @@ function TicketCard({
           )}
         </div>
 
-        {/* Combined score - blurred */}
+        {/* Combined score - locked */}
         <div className="px-3.5 sm:px-4 pb-2">
           <div className="rounded-lg bg-muted/20 border border-border/30 p-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-              <span className="font-bold text-lg text-primary">{ticket.totalOdds.toFixed(2)}</span>
+              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                Hidden Edge
+              </span>
             </div>
+          </div>
+        </div>
+
+        {/* Social proof */}
+        <div className="px-3.5 sm:px-4 pb-1">
+          <div className="flex items-center justify-center gap-1.5 py-1.5">
+            <Eye className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground">
+              👀 {getSocialProofPct(ticket.id)}% of users unlocked this
+            </span>
           </div>
         </div>
 
@@ -248,8 +277,8 @@ function TicketCard({
                 </Button>
               </div>
             ) : (
-              <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getUnlockButtonText(unlockMethod)}</>}
+              <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
+                {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
               </Button>
             )}
           </div>

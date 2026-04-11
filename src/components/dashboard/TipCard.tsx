@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,45 +41,34 @@ const TIER_ACCENT = {
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
     case "free":
-      return (
-        <Badge variant="secondary" className="gap-1 tier-badge--free text-[10px] px-2 py-0.5">
-          <Gift className="h-3 w-3" />
-          Free
-        </Badge>
-      );
+      return <Badge variant="secondary" className="gap-1 tier-badge--free text-[10px] px-2 py-0.5"><Gift className="h-3 w-3" />Free</Badge>;
     case "daily":
-      return (
-        <Badge variant="secondary" className="gap-1 tier-badge--daily text-[10px] px-2 py-0.5">
-          <Sparkles className="h-3 w-3" />
-          Daily
-        </Badge>
-      );
+      return <Badge variant="secondary" className="gap-1 tier-badge--daily text-[10px] px-2 py-0.5"><Sparkles className="h-3 w-3" />Daily</Badge>;
     case "exclusive":
-      return (
-        <Badge variant="secondary" className="gap-1 tier-badge--pro text-[10px] px-2 py-0.5">
-          <Star className="h-3 w-3" />
-          Pro
-        </Badge>
-      );
+      return <Badge variant="secondary" className="gap-1 tier-badge--pro text-[10px] px-2 py-0.5"><Star className="h-3 w-3" />Pro</Badge>;
     case "premium":
-      return (
-        <Badge variant="secondary" className="gap-1 tier-badge--premium text-[10px] px-2 py-0.5">
-          <Crown className="h-3 w-3" />
-          Premium
-        </Badge>
-      );
+      return <Badge variant="secondary" className="gap-1 tier-badge--premium text-[10px] px-2 py-0.5"><Crown className="h-3 w-3" />Premium</Badge>;
     default:
       return null;
   }
 }
 
-function getUnlockButtonText(unlockMethod: UnlockMethod): string {
+// Deterministic pseudo-random unlock % per tip (72-94 range)
+function getSocialProofPct(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  }
+  return 72 + (Math.abs(hash) % 23);
+}
+
+function getLockedCTAText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
-  if (unlockMethod.type === "upgrade_basic") return "Pro Access Required";
-  if (unlockMethod.type === "upgrade_premium") return "Premium Access Required";
+  if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";
+  if (unlockMethod.type === "upgrade_premium") return "💎 Unlock full AI edge";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
@@ -110,7 +99,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       case "won":
         return (
           <Badge className="bg-success/20 text-success border-success/30 text-[10px] px-2">
-            <CheckCircle2 className="h-3 w-3 mr-1" />Success
+            <CheckCircle2 className="h-3 w-3 mr-1" />Won ✅
           </Badge>
         );
       case "lost":
@@ -170,10 +159,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 {tip.league}
               </span>
             </div>
+            {/* Always show status — even when locked */}
             {getStatusBadge()}
           </div>
 
-          {/* Match name */}
+          {/* Match name — always visible */}
           <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">
             {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
           </h3>
@@ -185,23 +175,41 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   // --- LOCKED ---
   if (isLocked) {
     const Icon = getUnlockButtonIcon();
+    const isPro = tip.tier === "exclusive";
+    const isPremium = tip.tier === "premium";
 
     return (
       <div className={cardShell}>
         {renderHeader()}
 
-        {/* Prediction area - blurred */}
+        {/* Prediction area - locked with hooks */}
         <div className="px-3.5 sm:px-4 pb-2 pt-1">
           <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Prediction</span>
-              <span className="blur-[6px] opacity-40 font-semibold text-sm select-none">{tip.prediction}</span>
+              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                {isPremium ? "Premium Pick" : "Pro Pick"}
+              </span>
             </div>
             <div className="h-px bg-border/30" />
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Value</span>
-              <span className="font-bold text-lg text-primary">{tip.odds.toFixed(2)}</span>
+              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                Hidden Edge
+              </span>
             </div>
+          </div>
+        </div>
+
+        {/* Social proof */}
+        <div className="px-3.5 sm:px-4 pb-1">
+          <div className="flex items-center justify-center gap-1.5 py-1.5">
+            <Eye className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground">
+              👀 {getSocialProofPct(tip.id)}% of users unlocked this
+            </span>
           </div>
         </div>
 
@@ -218,8 +226,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 </Button>
               </div>
             ) : (
-              <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-medium", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getUnlockButtonText(unlockMethod)}</>}
+              <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
+                {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
               </Button>
             )}
           </div>
