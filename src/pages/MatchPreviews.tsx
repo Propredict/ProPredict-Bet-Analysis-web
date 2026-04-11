@@ -348,17 +348,34 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
-                    {/* Best Market Pick */}
+                    {/* Best Market Pick — locked for free */}
                     {match.bestPick && (
                       <div className="flex justify-center">
-                        <Badge className="text-xs px-3 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
-                          {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
-                        </Badge>
+                        {isFreeUser ? (
+                          <Badge className="text-xs px-3 py-1 bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold gap-1.5">
+                            <Lock className="h-3 w-3" /> AI Top Pick Locked
+                          </Badge>
+                        ) : (
+                          <Badge className="text-xs px-3 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                            {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
+                          </Badge>
+                        )}
                       </div>
                     )}
 
-                    {/* Analysis preview */}
-                    {snippets.length > 0 && (
+                    {/* Analysis preview — locked for free */}
+                    {isFreeUser ? (
+                      <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <span className="mt-0.5">🔒</span>
+                          <p className="text-xs text-muted-foreground">Multiple AI picks available</p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="mt-0.5">🔒</span>
+                          <p className="text-xs text-muted-foreground">Correct score predicted — unlock to view</p>
+                        </div>
+                      </div>
+                    ) : snippets.length > 0 ? (
                       <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
                         {snippets.map((snippet, i) => (
                           <div key={i} className="flex items-start gap-2">
@@ -369,23 +386,28 @@ export default function MatchPreviews() {
                           </div>
                         ))}
                       </div>
-                    )}
+                    ) : null}
 
                     {/* Social proof */}
                     <div className="flex justify-end">
                       <span className="text-[11px] text-muted-foreground">
-                        🔥 {getUnlockPercentage(match.match_id)}% of users unlocked this match
+                        🔥 {getUnlockPercentage(match.match_id)}% of users unlocked this pick
                       </span>
                     </div>
 
                     {/* CTA */}
                     <Button
                       size="sm"
-                      className="w-full text-xs font-bold h-10 bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 shadow-sm"
+                      className={cn(
+                        "w-full text-xs font-bold h-10 shadow-sm",
+                        isFreeUser
+                          ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 animate-pulse"
+                          : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600"
+                      )}
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
                       {isFreeUser ? (
-                        <><Lock className="h-3.5 w-3.5 mr-1.5" />Upgrade to Unlock</>
+                        <><Sparkles className="h-3.5 w-3.5 mr-1.5" />💎 Get This Winning Pick</>
                       ) : (
                         <><Eye className="h-3.5 w-3.5 mr-1.5" />View Full Analysis & More Predictions<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
                       )}
