@@ -2346,6 +2346,11 @@ function calculatePrediction(
   if (leagueProfile.isOverLeague) analysisReasons.push(`📈 High-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
   if (leagueProfile.isUnderLeague) analysisReasons.push(`📉 Low-scoring league (avg ${leagueProfile.avgGoalsPerMatch.toFixed(1)} goals/match)`);
 
+  // Upset detection
+  if (upset.isUpset) {
+    for (const uf of upset.factors.slice(0, 3)) analysisReasons.push(uf);
+  }
+
   // === TOP CORRECT SCORES (Poisson + consistency filtered) ===
   const filteredTopScores = filterScoresByMarket(goalMarkets.topScores, prediction, adjustedOver25, adjustedBttsYes);
   const scoreConfLabel = goalMarkets.scoreConfidence === "high" ? "🎯 High" : goalMarkets.scoreConfidence === "medium" ? "📊 Medium" : "⚠️ Low";
