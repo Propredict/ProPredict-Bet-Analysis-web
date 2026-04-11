@@ -1893,8 +1893,8 @@ function calculatePrediction(
 
   // === SMART MARKET SWITCHING (tempo & league profile aware) ===
   const totalXgMarket = homeXg + awayXg;
-  const isLowGoals = totalXg < 2.3;
-  const isHighGoals = totalXg > 2.8;
+  const isLowGoals = totalXgMarket < 2.3;
+  const isHighGoals = totalXgMarket > 2.8;
   const bothHighScoring = homeXg > 1.3 && awayXg > 1.0;
   const bothDefensive = homeXg < 1.0 && awayXg < 0.9;
   const dominantTeam = Math.abs(homeWin - awayWin) >= 25;
