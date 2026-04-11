@@ -548,11 +548,41 @@ function parseOddsResponse(fixtureId: string, data: any): OddsData | null {
   const rawAwayProb = 1 / awayOdds;
   const overround = rawHomeProb + rawDrawProb + rawAwayProb;
 
+  // Extract Over/Under 2.5 odds (bet id=5 or name "Over/Under")
+  let over25Odds: number | null = null;
+  let under25Odds: number | null = null;
+  const overUnderBet = bookmaker.bets?.find((b: any) => 
+    b.id === 5 || b.name?.toLowerCase().includes("over/under")
+  );
+  if (overUnderBet?.values) {
+    const over25Val = overUnderBet.values.find((v: any) => v.value === "Over 2.5");
+    const under25Val = overUnderBet.values.find((v: any) => v.value === "Under 2.5");
+    if (over25Val?.odd) over25Odds = parseFloat(over25Val.odd);
+    if (under25Val?.odd) under25Odds = parseFloat(under25Val.odd);
+  }
+
+  // Extract BTTS odds (bet id=8 or name "Both Teams Score")
+  let bttsYesOdds: number | null = null;
+  let bttsNoOdds: number | null = null;
+  const bttsBet = bookmaker.bets?.find((b: any) => 
+    b.id === 8 || b.name?.toLowerCase().includes("both teams")
+  );
+  if (bttsBet?.values) {
+    const yesVal = bttsBet.values.find((v: any) => v.value === "Yes");
+    const noVal = bttsBet.values.find((v: any) => v.value === "No");
+    if (yesVal?.odd) bttsYesOdds = parseFloat(yesVal.odd);
+    if (noVal?.odd) bttsNoOdds = parseFloat(noVal.odd);
+  }
+
   const result: OddsData = {
     homeOdds, drawOdds, awayOdds,
     homeProb: Math.round((rawHomeProb / overround) * 100),
     drawProb: Math.round((rawDrawProb / overround) * 100),
     awayProb: Math.round((rawAwayProb / overround) * 100),
+    over25Odds,
+    under25Odds,
+    bttsYesOdds,
+    bttsNoOdds,
   };
 
   oddsCache.set(fixtureId, result);
