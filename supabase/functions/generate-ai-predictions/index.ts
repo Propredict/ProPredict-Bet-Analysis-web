@@ -1422,8 +1422,27 @@ function calculatePrediction(
   if (oddsUnderStrong) {
     adjustedOver25 = Math.min(adjustedOver25, 40);
   }
+  
+  // === BTTS ODDS STRONG SIGNAL ===
+  // If bookmaker BTTS Yes odds ≤ 1.65 → strong BTTS YES override
+  if (odds && odds.bttsYesOdds !== null && odds.bttsYesOdds <= 1.65) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, 64);
+  }
+  // If bookmaker BTTS No odds ≤ 1.65 → strong BTTS NO signal
+  if (odds && odds.bttsNoOdds !== null && odds.bttsNoOdds <= 1.65) {
+    adjustedBttsYes = Math.min(adjustedBttsYes, 38);
+  }
+  
+  // === OVER/UNDER ↔ BTTS ALIGNMENT ===
+  // If Over 2.5 is strong (≥65%) → boost BTTS YES (high-scoring games usually have both teams scoring)
+  if (adjustedOver25 >= 65) {
+    adjustedBttsYes = Math.max(adjustedBttsYes, Math.round(adjustedBttsYes * 1.08)); // +8% boost
+  }
+  // If Under 2.5 is strong (≤35%) → reduce BTTS YES (low-scoring games = less likely both score)
+  if (adjustedOver25 <= 35) {
+    adjustedBttsYes = Math.min(adjustedBttsYes, Math.round(adjustedBttsYes * 0.88)); // -12% reduction
+  }
 
-  // === ANTI-ERROR OVERRIDES ===
   // Rule 1: If either team has 4+ Over 2.5 in last 5 → FORCE Over direction
   if (homeOver25Count >= 4 || awayOver25Count >= 4) {
     adjustedOver25 = Math.max(adjustedOver25, 65);
