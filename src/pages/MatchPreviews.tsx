@@ -10,6 +10,7 @@ import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 
@@ -422,31 +423,22 @@ function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji
   const draw = p.draw ?? 0;
   const confidence = p.confidence ?? 60;
 
-  const scoreParts = (p.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
-  const predictedHome = scoreParts ? parseInt(scoreParts[1]) : 0;
-  const predictedAway = scoreParts ? parseInt(scoreParts[2]) : 0;
-  const predictedTotal = scoreParts ? predictedHome + predictedAway : null;
-  const predictedBothScored = scoreParts ? predictedHome > 0 && predictedAway > 0 : null;
-
-  const seed = (p.match_id || "")
-    .split("")
-    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 10;
+  // Use unified Poisson model — same as AI Predictions page
+  const goalProbs = calculateGoalMarketProbs(p);
 
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
   const makePick = (label: string, pct: number, emoji: string) => ({ label, pct: Math.round(clamp(pct, 30, 95)), emoji });
 
-  const goalsPick = predictedTotal !== null
-    ? predictedTotal >= 3
-      ? makePick("Over 2.5", 78 + (predictedTotal - 3) * 5 + seed * 0.3, "🔥")
-      : makePick("Under 2.5", 82 + (2 - predictedTotal) * 4 + seed * 0.3, "🔥")
-    : null;
+  // Goals & BTTS from Poisson
+  const goalsPick = goalProbs.over25 >= 50
+    ? makePick("Over 2.5", goalProbs.over25, "🔥")
+    : makePick("Under 2.5", goalProbs.under25, "🔥");
 
-  const bttsPick = predictedBothScored !== null
-    ? predictedBothScored
-      ? makePick("BTTS Yes", 78 + seed * 0.5, "🔥")
-      : makePick("BTTS No", 82 + seed * 0.3, "🔥")
-    : null;
+  const bttsPick = goalProbs.bttsYes >= 50
+    ? makePick("BTTS Yes", goalProbs.bttsYes, "🔥")
+    : makePick("BTTS No", goalProbs.bttsNo, "🔥");
 
+  // 1X2 picks
   const mainPrediction = (p.prediction || "").toLowerCase();
   const homePick = makePick("Home Win", mainPrediction === "1" || mainPrediction === "home" ? Math.max(homeWin, confidence * 0.85) : homeWin, "🏠");
   const awayPick = makePick("Away Win", mainPrediction === "2" || mainPrediction === "away" ? Math.max(awayWin, confidence * 0.85) : awayWin, "✈️");
@@ -460,8 +452,8 @@ function getBestMarketPick(p: AIPrediction): { label: string; pct: number; emoji
     awayPick,
     drawPick,
     ...(awayWin >= homeWin ? [x2Pick, dnbAwayPick] : [dnbHomePick]),
-    ...(goalsPick ? [goalsPick] : []),
-    ...(bttsPick ? [bttsPick] : []),
+    goalsPick,
+    bttsPick,
   ];
 
   return candidates.sort((a, b) => b.pct - a.pct)[0];
