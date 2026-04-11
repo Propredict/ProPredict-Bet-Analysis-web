@@ -2227,7 +2227,7 @@ function calculatePrediction(
     if (pickingFavorite) {
       confidence -= Math.round(upset.confidence * 0.15); // Up to -15 penalty
     }
-  
+  }
 
   // === 6. DATA QUALITY FILTER ===
   const isQualityLeague = QUALITY_LEAGUE_IDS.has(leagueId ?? 0);
