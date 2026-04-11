@@ -1470,6 +1470,42 @@ function calculatePrediction(
     }
   }
   
+  // === LEAGUE GOAL PROFILE xG ADJUSTMENT ===
+  // High-scoring leagues → boost total xG by +10%, Low-scoring → reduce by -10%
+  if (leagueProfile.isOverLeague) {
+    calibratedHomeXg *= 1.10;
+    calibratedAwayXg *= 1.10;
+  } else if (leagueProfile.isUnderLeague) {
+    calibratedHomeXg *= 0.90;
+    calibratedAwayXg *= 0.90;
+  }
+  
+  // === TEMPO-BASED xG ADJUSTMENT ===
+  // High tempo → boost xG (more open game), Low tempo → reduce xG
+  if (tempo.label === "HIGH") {
+    calibratedHomeXg *= 1.08;
+    calibratedAwayXg *= 1.08;
+  } else if (tempo.label === "LOW") {
+    calibratedHomeXg *= 0.92;
+    calibratedAwayXg *= 0.92;
+  }
+  
+  // === GAME STATE SIMULATION ===
+  // Strong favorite → skew xG toward dominant scores (2-0, 3-0 pattern)
+  if (hasOdds && oddsHomeProb >= 60) {
+    const dominanceFactor = (oddsHomeProb - 60) / 40; // 0-1 scale
+    calibratedHomeXg *= 1.0 + dominanceFactor * 0.15;  // up to +15%
+    calibratedAwayXg *= 1.0 - dominanceFactor * 0.20;  // up to -20%
+  } else if (hasOdds && oddsAwayProb >= 60) {
+    const dominanceFactor = (oddsAwayProb - 60) / 40;
+    calibratedAwayXg *= 1.0 + dominanceFactor * 0.15;
+    calibratedHomeXg *= 1.0 - dominanceFactor * 0.20;
+  } else if (hasOdds && Math.abs(oddsHomeProb - oddsAwayProb) <= 10) {
+    // Balanced teams → both teams get a small scoring floor (1-1, 2-1 type)
+    calibratedHomeXg = Math.max(calibratedHomeXg, 0.9);
+    calibratedAwayXg = Math.max(calibratedAwayXg, 0.9);
+  }
+  
   // Re-clamp after calibration
   calibratedHomeXg = clamp(calibratedHomeXg, 0.2, 4.0);
   calibratedAwayXg = clamp(calibratedAwayXg, 0.15, 3.5);
