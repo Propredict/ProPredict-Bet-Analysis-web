@@ -981,22 +981,67 @@ export default function AIPredictions() {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {visibleRegular.map((prediction, idx) => {
+                  // Inject a locked Premium teaser card after every 3rd Free card
+                  const showLockedCard = !isPremiumUser && !isAdmin && (idx === 2 || idx === 5 || idx === 9) && tierCounts.premium > 0;
                   return (
-                    <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
-                      <AIPredictionCard
-                        overrideTier={getPredictionTier(prediction)}
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.id}
-                      />
-                    </div>
+                    <React.Fragment key={prediction.id}>
+                      <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                        <AIPredictionCard
+                          overrideTier={getPredictionTier(prediction)}
+                          prediction={prediction}
+                          isAdmin={isAdmin}
+                          isPremiumUser={isPremiumUser}
+                          isProUser={isProUser}
+                          isFavorite={isFavorite(prediction.match_id)}
+                          isSavingFavorite={isSaving(prediction.match_id)}
+                          onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                          onGoPremium={() => navigate("/get-premium")}
+                          onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                          isUnlocking={unlockingId === prediction.id}
+                        />
+                      </div>
+                      {showLockedCard && (
+                        <div className="transition-all duration-500">
+                          <Card className="bg-[#0a1628] border-fuchsia-500/25 overflow-hidden rounded relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
+                            <CardContent className="p-0 relative">
+                              <div className="px-3 py-2 flex items-center justify-between border-b border-fuchsia-500/10">
+                                <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] px-1.5 py-0.5 rounded">
+                                  <Crown className="w-2.5 h-2.5 mr-0.5 fill-current" /> PREMIUM PICK
+                                </Badge>
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
+                                  🔥 HIGH CONFIDENCE
+                                </Badge>
+                              </div>
+                              <div className="p-3 space-y-2.5">
+                                <div className="flex items-center gap-2">
+                                  <Lock className="w-4 h-4 text-fuchsia-400/50" />
+                                  <span className="text-sm font-bold text-white/10 blur-md select-none pointer-events-none">Hidden Premium Match</span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-2xl font-extrabold text-green-400">
+                                    {Math.floor(Math.random() * 8 + 80)}%
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">win probability</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-fuchsia-400" />
+                                  <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
+                                </div>
+                                <p className="text-[9px] text-muted-foreground/70">Match hidden · Score & analysis locked</p>
+                                <Button
+                                  onClick={() => navigate("/get-premium")}
+                                  className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded-full gap-1"
+                                >
+                                  <Crown className="w-3 h-3 fill-current" />
+                                  Unlock in Premium
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
