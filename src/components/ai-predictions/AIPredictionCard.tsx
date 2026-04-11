@@ -188,9 +188,17 @@ const AIPredictionCardInner = ({
           </Tabs>
         </div>
 
-        {/* FREE tier upsell */}
+        {/* FREE tier upsell + teaser */}
         {hasAccess && displayTier === "free" && !isPremiumUser && !isProUser && (
-          <div className="px-2 md:px-3 pb-2 md:pb-3">
+          <div className="px-2 md:px-3 pb-2 md:pb-3 space-y-2">
+            {/* Teaser text — FOMO */}
+            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
+              <Crown className="w-3 h-3 text-fuchsia-400" />
+              <span className="text-[9px] md:text-[10px] text-muted-foreground">
+                <span className="text-fuchsia-400 font-semibold">+{Math.floor(Math.random() * 3) + 2} stronger picks</span> available in Premium
+              </span>
+            </div>
+            
             <div
               onClick={() => navigate("/get-premium")}
               className="relative overflow-hidden rounded-lg border border-amber-500/20 bg-gradient-to-r from-amber-500/5 via-fuchsia-500/5 to-amber-500/5 p-2.5 cursor-pointer hover:border-amber-500/40 transition-colors group"
