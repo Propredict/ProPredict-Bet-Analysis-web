@@ -336,20 +336,21 @@ export default function MatchPreviewDetail() {
                 </div>
               </div>
             ) : (
-              /* Locked state */
+              /* Locked state — hide prediction, show confidence + risk */
               <div className="text-center space-y-3 py-2">
-                {heroPick && (
-                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs font-bold">
-                    {heroPick.emoji} {heroPick.label} — {heroPick.confidence}%
-                  </Badge>
-                )}
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <Sparkles className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm text-white/60">Confidence</span>
-                  <span className="text-lg font-black text-white">{prediction.confidence ?? 0}%</span>
+                <div className="flex items-center justify-center gap-2">
+                  <Lock className="h-5 w-5 text-amber-400" />
+                  <span className="text-xl sm:text-2xl font-black text-white tracking-tight">AI Top Pick Locked</span>
                 </div>
-                <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase", risk.bg, risk.color)}>
-                  {risk.label}
+                <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-sm text-white/50">Confidence:</span>
+                    <span className="text-xl font-black text-emerald-400">{heroPick?.confidence ?? prediction.confidence ?? 0}%</span>
+                  </div>
+                  <div className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", risk.bg, risk.color)}>
+                    {risk.label}
+                  </div>
                 </div>
               </div>
             )}
