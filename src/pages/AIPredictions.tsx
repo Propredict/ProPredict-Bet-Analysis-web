@@ -774,10 +774,9 @@ export default function AIPredictions() {
                               <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                             </div>
                             <div className="p-3 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-amber-400/60" />
-                                <span className="text-sm font-bold text-white/15 blur-md select-none pointer-events-none">Hidden Match</span>
-                              </div>
+                              <h3 className="text-xs md:text-sm font-semibold text-foreground">
+                                {prediction.home_team} vs {prediction.away_team}
+                              </h3>
                               <div className="flex items-center gap-2">
                                 <span className={cn(
                                   "text-xl font-extrabold",
@@ -795,6 +794,10 @@ export default function AIPredictions() {
                                 )}>
                                   {(prediction.confidence ?? 0) >= 80 ? "🔥 HIGH" : (prediction.confidence ?? 0) >= 65 ? "⚖️ MEDIUM" : "⚠️ RISKY"}
                                 </Badge>
+                              </div>
+                              <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
+                                <Lock className="w-3 h-3 text-amber-400/70" />
+                                <span className="text-[9px] text-muted-foreground">Locked prediction</span>
                               </div>
                               <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
                                 <div
@@ -860,10 +863,9 @@ export default function AIPredictions() {
                               <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                             </div>
                             <div className="p-3 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-fuchsia-400/60" />
-                                <span className="text-sm font-bold text-white/15 blur-md select-none pointer-events-none">Hidden Match</span>
-                              </div>
+                              <h3 className="text-xs md:text-sm font-semibold text-foreground">
+                                {prediction.home_team} vs {prediction.away_team}
+                              </h3>
                               <div className="flex items-center gap-2">
                                 <span className={cn(
                                   "text-xl font-extrabold",
@@ -881,6 +883,10 @@ export default function AIPredictions() {
                                   <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
                                 </div>
                               )}
+                              <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-fuchsia-500/5 border border-fuchsia-500/15">
+                                <Lock className="w-3 h-3 text-fuchsia-400/70" />
+                                <span className="text-[9px] text-muted-foreground">Locked prediction</span>
+                              </div>
                               <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
                                 <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
                               </div>
