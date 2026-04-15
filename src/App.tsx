@@ -22,6 +22,7 @@ import { PlayerProfileModal } from "@/components/PlayerProfileModal";
 // Lightweight pages - eager import
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import HomeGate from "./components/HomeGate";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
