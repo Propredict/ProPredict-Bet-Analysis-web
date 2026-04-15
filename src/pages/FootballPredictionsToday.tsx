@@ -92,9 +92,10 @@ export default function FootballPredictionsToday() {
   const checkedToday = useLiveCount(17420, 800);
   const joinedThisWeek = useLiveCount(2100, 300);
 
+  const { confirmAndEnter } = useWebGate();
+
   const handleContinueWeb = () => {
-    confirmWebUsage();
-    navigate("/");
+    confirmAndEnter();
   };
 
   useEffect(() => {
