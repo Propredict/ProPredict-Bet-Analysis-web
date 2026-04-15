@@ -82,7 +82,7 @@ export function AppDownloadPopup() {
 
           {/* CTA */}
           <a
-            href="https://play.google.com/store/apps/details?id=com.propredict.app"
+            href="https://play.google.com/store/apps/details?id=me.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}
