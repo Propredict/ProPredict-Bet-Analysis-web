@@ -198,7 +198,7 @@ const App = () => {
 
                   {/* Layout pages */}
                   <Route element={<AppLayout />}>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<HomeGate dashboard={<Index />} landing={<FootballPredictionsToday />} />} />
                     <Route path="/dashboard" element={<Navigate to="/" replace />} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="/how-ai-works" element={<HowAIWorks />} />
