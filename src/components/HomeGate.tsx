@@ -1,6 +1,18 @@
+import { createContext, useContext, useState, useCallback } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { hasWebConfirmation } from "@/hooks/useWebGate";
+import { hasWebConfirmation, confirmWebUsage } from "@/hooks/useWebGate";
 import { useAuth } from "@/hooks/useAuth";
+
+interface WebGateContextValue {
+  confirmAndEnter: () => void;
+}
+const WebGateContext = createContext<WebGateContextValue | undefined>(undefined);
+
+export function useWebGate() {
+  const ctx = useContext(WebGateContext);
+  if (!ctx) throw new Error("useWebGate must be used inside HomeGate");
+  return ctx;
+}
 
 /**
  * Gate component:
@@ -17,18 +29,26 @@ export default function HomeGate({
 }) {
   const isAndroid = getIsAndroidApp();
   const { user, loading } = useAuth();
+  const [webConfirmed, setWebConfirmed] = useState(() => hasWebConfirmation());
+
+  const confirmAndEnter = useCallback(() => {
+    confirmWebUsage();
+    setWebConfirmed(true);
+  }, []);
+
+  const value = { confirmAndEnter };
 
   // Android → always dashboard
-  if (isAndroid) return <>{dashboard}</>;
+  if (isAndroid) return <WebGateContext.Provider value={value}>{dashboard}</WebGateContext.Provider>;
 
   // While auth is loading, show nothing to avoid flash
   if (loading) return null;
 
   // Logged in → always dashboard
-  if (user) return <>{dashboard}</>;
+  if (user) return <WebGateContext.Provider value={value}>{dashboard}</WebGateContext.Provider>;
 
   // Not logged in → landing unless they clicked "Continue on Web"
-  if (hasWebConfirmation()) return <>{dashboard}</>;
+  if (webConfirmed) return <WebGateContext.Provider value={value}>{dashboard}</WebGateContext.Provider>;
 
-  return <>{landing}</>;
+  return <WebGateContext.Provider value={value}>{landing}</WebGateContext.Provider>;
 }
