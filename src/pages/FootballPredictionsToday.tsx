@@ -88,9 +88,9 @@ export default function FootballPredictionsToday() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<MatchPick[]>([]);
   const [popup, setPopup] = useState(false);
-  const viewingNow = useLiveCount(32, 12);
-  const checkedToday = useLiveCount(1284, 150);
-  const joinedThisWeek = useLiveCount(300, 60);
+  const viewingNow = useLiveCount(640, 80);
+  const checkedToday = useLiveCount(17420, 800);
+  const joinedThisWeek = useLiveCount(2100, 300);
 
   const handleContinueWeb = () => {
     confirmWebUsage();
@@ -143,9 +143,9 @@ export default function FootballPredictionsToday() {
               Check today's matches, probabilities and key insights.<br />
               Unlock full predictions inside the app.
             </p>
-            <div className="flex items-center justify-center gap-4 text-[11px] text-gray-500">
-              <span className="flex items-center gap-1">🔥 {checkedToday.toLocaleString()} users checked today</span>
-              <span className="flex items-center gap-1">👁 {viewingNow} viewing now</span>
+            <div className="flex items-center justify-center gap-5 text-xs sm:text-sm text-gray-400 font-medium">
+              <span className="flex items-center gap-1.5">🔥 {checkedToday.toLocaleString()} users checked today</span>
+              <span className="flex items-center gap-1.5">👁 {viewingNow} viewing now</span>
             </div>
             <div className="flex flex-col items-center gap-3 pt-2">
               <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="w-full max-w-xs px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5 hover:scale-[1.02] active:scale-95">
@@ -153,7 +153,7 @@ export default function FootballPredictionsToday() {
               </a>
               <button
                 onClick={handleContinueWeb}
-                className="px-5 py-2 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+                className="px-6 py-2.5 rounded-xl border border-gray-600 hover:border-emerald-500/50 text-gray-300 hover:text-white text-sm font-medium transition-colors"
               >
                 Continue on Web →
               </button>
