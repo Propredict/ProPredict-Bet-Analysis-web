@@ -116,7 +116,6 @@ export default function FootballPredictionsToday() {
     const iv = setInterval(fetchMatches, 5 * 60 * 1000);
     return () => clearInterval(iv);
   }, []);
-  }, []);
 
   return (
     <>
