@@ -117,16 +117,19 @@ export function DashboardSocialProof() {
       {/* Urgency + CTA */}
       <div className="flex flex-col items-center gap-2">
         <p className="text-[9px] sm:text-[10px] text-warning/80 font-medium">
-          🔥 Over 247 users upgraded to Premium this month.
+          🔥 Limited daily premium picks available
         </p>
         <Button
           size="sm"
-          className="h-7 text-[10px] sm:text-xs bg-gradient-to-r from-primary to-primary/80 hover:opacity-90"
+          className="h-8 text-xs sm:text-sm px-5 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 font-bold"
           onClick={() => navigate("/get-premium")}
         >
-          <Crown className="h-3 w-3 mr-1" />
-          Explore Premium
+          <Crown className="h-3.5 w-3.5 mr-1" />
+          Upgrade to Premium 🔥
         </Button>
+        <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+          Unlock highest confidence picks & VIP insights
+        </p>
       </div>
     </section>
   );
