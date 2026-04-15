@@ -192,6 +192,9 @@ const App = () => {
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
 
+                  {/* Standalone landing page – no AppLayout */}
+                  <Route path="/football-predictions-today" element={<FootballPredictionsToday />} />
+
                   {/* Layout pages */}
                   <Route element={<AppLayout />}>
                     <Route path="/" element={<Index />} />
