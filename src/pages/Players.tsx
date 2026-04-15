@@ -400,7 +400,7 @@ function AIPredictionCard({ profile, opponentData }: { profile: PlayerProfile; o
                 )}
               </div>
               <a
-                href="https://play.google.com/store/apps/details?id=me.propredict.app"
+                href="https://play.google.com/store/apps/details?id=com.propredict.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"

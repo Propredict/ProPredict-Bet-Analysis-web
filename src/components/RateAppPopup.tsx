@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
 interface RateAppPopupProps {
   open: boolean;

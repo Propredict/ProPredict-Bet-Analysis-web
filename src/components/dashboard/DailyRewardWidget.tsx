@@ -9,7 +9,7 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 
 const STREAK_POINTS = [0, 3, 6, 9, 12, 13, 14, 15];
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
 export function DailyRewardWidget() {
   const isAndroid = getIsAndroidApp();

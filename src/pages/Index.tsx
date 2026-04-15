@@ -78,7 +78,7 @@ const Index = () => {
                 Check Today's Matches
               </Link>
               {!isAndroid && (
-                <a href="https://play.google.com/store/apps/details?id=me.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
+                <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
                   Download App 🔓
                 </a>
               )}
@@ -108,7 +108,7 @@ const Index = () => {
         {/* App Promo CTA – Web only */}
         {!isAndroid && (
           <a
-            href="https://play.google.com/store/apps/details?id=me.propredict.app"
+            href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
             className="block relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-primary/10 p-5 sm:p-8 hover:border-primary/50 transition-colors"
