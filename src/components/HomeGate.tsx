@@ -1,9 +1,12 @@
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { hasWebConfirmation } from "@/hooks/useWebGate";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
- * Gate component: on web, show landing page unless user confirmed "Continue on Web" (24h).
- * Android app users always skip to dashboard.
+ * Gate component:
+ * - Android app → always dashboard
+ * - Authenticated web user → always dashboard
+ * - Unauthenticated web user → landing (unless confirmed "Continue on Web" within 24h)
  */
 export default function HomeGate({
   dashboard,
@@ -13,11 +16,18 @@ export default function HomeGate({
   landing: React.ReactNode;
 }) {
   const isAndroid = getIsAndroidApp();
+  const { user, loading } = useAuth();
 
-  // Android users → always dashboard
+  // Android → always dashboard
   if (isAndroid) return <>{dashboard}</>;
 
-  // Web users → landing unless confirmed
+  // While auth is loading, show nothing to avoid flash
+  if (loading) return null;
+
+  // Logged in → always dashboard
+  if (user) return <>{dashboard}</>;
+
+  // Not logged in → landing unless they clicked "Continue on Web"
   if (hasWebConfirmation()) return <>{dashboard}</>;
 
   return <>{landing}</>;
