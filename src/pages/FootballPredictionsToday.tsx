@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { confirmWebUsage } from "@/hooks/useWebGate";
+import { useWebGate } from "@/components/HomeGate";
 import { TrendingUp, Users, Eye, Clock, ChevronRight, Lock, CheckCircle, Download, X, Trophy, Zap, BarChart3, Globe } from "lucide-react";
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
@@ -92,9 +92,10 @@ export default function FootballPredictionsToday() {
   const checkedToday = useLiveCount(17420, 800);
   const joinedThisWeek = useLiveCount(2100, 300);
 
+  const { confirmAndEnter } = useWebGate();
+
   const handleContinueWeb = () => {
-    confirmWebUsage();
-    navigate("/");
+    confirmAndEnter();
   };
 
   useEffect(() => {
