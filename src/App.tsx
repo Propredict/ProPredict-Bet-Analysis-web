@@ -61,6 +61,7 @@ const RiskOfTheDay = lazy(() => import("./pages/RiskOfTheDay"));
 const DiamondPick = lazy(() => import("./pages/DiamondPick"));
 const MultiRiskMatches = lazy(() => import("./pages/MultiRiskMatches"));
 const WorldCup2026 = lazy(() => import("./pages/WorldCup2026"));
+const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
 
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
