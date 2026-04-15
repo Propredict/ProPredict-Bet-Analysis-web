@@ -56,15 +56,15 @@ function MatchCard({ match, onClick }: { match: MatchPick; onClick: () => void }
       </div>
       <div className="text-sm font-semibold text-white">{match.home_team} vs {match.away_team}</div>
       <div className="text-xs text-emerald-400 font-medium">{match.prediction} — {match.confidence}%</div>
-      <div className="relative rounded-lg overflow-hidden">
+      <div className="relative rounded-xl overflow-hidden mt-1">
         <div className="blur-[6px] select-none pointer-events-none space-y-1.5 py-2">
           <div className="h-3 w-3/4 rounded bg-gray-700" />
           <div className="h-3 w-1/2 rounded bg-gray-700" />
           <div className="h-3 w-2/3 rounded bg-gray-700" />
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="flex items-center gap-1.5 text-[11px] text-gray-400 bg-[#0d0d0d]/80 px-3 py-1.5 rounded-lg border border-gray-700">
-            <Lock className="h-3 w-3" />Unlock full prediction in app
+          <span className="flex items-center gap-2 text-xs font-semibold text-black bg-emerald-500 px-4 py-2 rounded-lg shadow-lg shadow-emerald-500/30 group-hover:bg-emerald-400 transition-colors">
+            <Lock className="h-3.5 w-3.5" />🔓 Unlock full prediction in app
           </span>
         </div>
       </div>
