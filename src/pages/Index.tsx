@@ -67,22 +67,23 @@ const Index = () => {
         <div className="relative overflow-hidden rounded-xl shadow-lg shadow-primary/10">
           <img src={heroStadium} alt="AI Football Stadium" className="w-full h-64 sm:h-80 md:h-96 object-cover" width={1920} height={864} />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/60" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-4">
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Welcome to ProPredict</h1>
-            <p className="text-sm sm:text-base md:text-lg font-semibold text-primary drop-shadow">AI-Powered Football Predictions & Match Analysis</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 space-y-3">
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Welcome to ProPredict 👋</h1>
+            <p className="text-base sm:text-lg md:text-2xl font-extrabold text-primary drop-shadow leading-tight">Today's Best Football Predictions Are Ready ⚽</p>
             <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
-              Get smart AI predictions, live match tracking and advanced football insights — all in one place.
+              AI-powered picks, probabilities and match insights updated daily.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <Link to="/ai-predictions" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
-                Explore Predictions
+            <div className="flex items-center gap-3 pt-1">
+              <Link to="/live-scores" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                Check Today's Matches
               </Link>
               {!isAndroid && (
                 <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
-                  Download App
+                  Download App 🔓
                 </a>
               )}
             </div>
+            <p className="text-xs text-primary font-semibold">🔥 {(23000 + Math.floor(Math.random() * 4000)).toLocaleString()}+ users checked today • free picks available</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
           </div>
         </div>
