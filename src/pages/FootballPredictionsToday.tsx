@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, TrendingUp, Users, Eye, Clock, ChevronRight, Lock, CheckCircle, Star, Download, X, Trophy, Zap, BarChart3, Globe } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { confirmWebUsage } from "@/hooks/useWebGate";
+import { TrendingUp, Users, Eye, Clock, ChevronRight, Lock, CheckCircle, Download, X, Trophy, Zap, BarChart3, Globe } from "lucide-react";
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app";
 
@@ -53,9 +55,7 @@ function MatchCard({ match, onClick }: { match: MatchPick; onClick: () => void }
         <span className="text-[10px] text-gray-500 flex items-center gap-1"><Clock className="h-3 w-3" />{match.match_time || "TBD"}</span>
       </div>
       <div className="text-sm font-semibold text-white">{match.home_team} vs {match.away_team}</div>
-      {/* Visible insight */}
       <div className="text-xs text-emerald-400 font-medium">{match.prediction} — {match.confidence}%</div>
-      {/* Blurred/locked content */}
       <div className="relative rounded-lg overflow-hidden">
         <div className="blur-[6px] select-none pointer-events-none space-y-1.5 py-2">
           <div className="h-3 w-3/4 rounded bg-gray-700" />
@@ -84,11 +84,18 @@ function useLiveCount(base: number, variance: number) {
 
 // ── Page ──
 export default function FootballPredictionsToday() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<MatchPick[]>([]);
   const [popup, setPopup] = useState(false);
   const viewingNow = useLiveCount(32, 12);
   const checkedToday = useLiveCount(1284, 150);
   const joinedThisWeek = useLiveCount(300, 60);
+
+  const handleContinueWeb = () => {
+    confirmWebUsage();
+    navigate("/");
+  };
 
   useEffect(() => {
     (async () => {
@@ -124,6 +131,10 @@ export default function FootballPredictionsToday() {
         <section className="relative overflow-hidden px-4 pt-14 pb-16 sm:pt-20 sm:pb-24">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.15),transparent_60%)]" />
           <div className="relative max-w-xl mx-auto text-center space-y-5">
+            {/* Personalized greeting for logged-in users */}
+            {user && (
+              <p className="text-sm text-emerald-400 font-medium animate-fade-in">Welcome back 👋</p>
+            )}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15]">
               Check Today's Football<br />Predictions ⚽
             </h1>
@@ -140,9 +151,12 @@ export default function FootballPredictionsToday() {
               <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="w-full max-w-xs px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5 hover:scale-[1.02] active:scale-95">
                 <Download className="h-5 w-5" />Download App
               </a>
-              <Link to="/live-scores" className="px-6 py-2.5 rounded-xl border border-gray-700 hover:border-emerald-500/50 text-gray-400 hover:text-white text-sm font-medium transition-colors">
-                View Today's Matches
-              </Link>
+              <button
+                onClick={handleContinueWeb}
+                className="px-5 py-2 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Continue on Web →
+              </button>
             </div>
             <p className="text-[10px] text-gray-600">Free access • No signup required</p>
           </div>
