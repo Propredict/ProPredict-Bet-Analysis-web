@@ -15,9 +15,9 @@ interface TeamPageProps {
 
 const openPlayStore = () => {
   if (typeof window !== "undefined" && (window as any).Android?.openExternal) {
-    (window as any).Android.openExternal("https://play.google.com/store/apps/details?id=com.propredict.app");
+    (window as any).Android.openExternal("https://play.google.com/store/apps/details?id=me.propredict.app");
   } else {
-    window.open("https://play.google.com/store/apps/details?id=com.propredict.app", "_blank");
+    window.open("https://play.google.com/store/apps/details?id=me.propredict.app", "_blank");
   }
 };
 

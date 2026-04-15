@@ -565,7 +565,7 @@ export default function GetPremium() {
             size="sm"
             className="w-full text-xs h-9"
             onClick={() => {
-              window.open("https://play.google.com/store/apps/details?id=com.propredict.app", "_blank");
+              window.open("https://play.google.com/store/apps/details?id=me.propredict.app", "_blank");
             }}
           >
             <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
@@ -816,7 +816,7 @@ export default function GetPremium() {
             </div>
 
             <a
-              href="https://play.google.com/store/apps/details?id=com.propredict.app"
+              href="https://play.google.com/store/apps/details?id=me.propredict.app"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm transition-opacity shadow-lg shadow-violet-500/20"

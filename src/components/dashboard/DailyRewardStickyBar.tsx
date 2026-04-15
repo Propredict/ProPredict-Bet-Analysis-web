@@ -3,7 +3,7 @@ import { X, Gift, Smartphone } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const DISMISS_KEY = "reward_bar_dismissed";
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app";
 
 /**
  * Sticky bar at bottom — Website only.

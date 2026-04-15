@@ -24,7 +24,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
           <div className="flex justify-end mb-2">
             <div className="flex flex-col items-center gap-1">
               <a
-                href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                href="https://play.google.com/store/apps/details?id=me.propredict.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Get it on Google Play"
