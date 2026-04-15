@@ -62,7 +62,7 @@ export function ExitIntentPopup() {
           </div>
 
           <a
-            href="https://play.google.com/store/apps/details?id=me.propredict.app"
+            href="https://play.google.com/store/apps/details?id=com.propredict.app"
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { confirmWebUsage } from "@/hooks/useWebGate";
 import { TrendingUp, Users, Eye, Clock, ChevronRight, Lock, CheckCircle, Download, X, Trophy, Zap, BarChart3, Globe } from "lucide-react";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
 
 interface MatchPick {
   id: string;

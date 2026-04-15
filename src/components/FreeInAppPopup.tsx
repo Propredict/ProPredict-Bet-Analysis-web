@@ -2,7 +2,7 @@ import { X, Download, Crown, Smartphone, Users, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=me.propredict.app&source=web_unlock_free";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app&source=web_unlock_free";
 
 interface FreeInAppPopupProps {
   open: boolean;
