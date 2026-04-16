@@ -291,9 +291,24 @@ export default function LiveScores() {
     });
 
     // Sort countries: prioritize countries that have priority leagues
+    const PRIORITY_COUNTRIES = ["Europe", "World"];
     const countryPriority = (country: string): number => {
+      // Check if this country has any priority leagues
       const leagues = Object.keys(result[country] || {});
-      let best = PRIORITY_LEAGUES.length;
+      let best = PRIORITY_LEAGUES.length + PRIORITY_COUNTRIES.length;
+      // First check if it's a priority country (for UEFA etc.)
+      const countryIdx = PRIORITY_COUNTRIES.findIndex(p => country.toLowerCase() === p.toLowerCase());
+      if (countryIdx >= 0) {
+        // Find best league priority within this country
+        for (const l of leagues) {
+          const idx = PRIORITY_LEAGUES.findIndex(p => l.toLowerCase().includes(p.toLowerCase()));
+          if (idx >= 0 && idx < best) best = idx;
+        }
+        // If has priority leagues, use that; otherwise use a value after priority leagues but before regular countries
+        if (best < PRIORITY_LEAGUES.length + PRIORITY_COUNTRIES.length) return best;
+        return PRIORITY_LEAGUES.length + countryIdx;
+      }
+      // Regular countries — check for priority leagues
       for (const l of leagues) {
         const idx = PRIORITY_LEAGUES.findIndex(p => l.toLowerCase().includes(p.toLowerCase()));
         if (idx >= 0 && idx < best) best = idx;
@@ -303,8 +318,8 @@ export default function LiveScores() {
 
     const sortedResult: Record<string, Record<string, Match[]>> = {};
     const sortedCountries = Object.keys(result).sort((a, b) => {
-      if (a === "World" || a === "Other") return 1;
-      if (b === "World" || b === "Other") return -1;
+      if (a === "Other") return 1;
+      if (b === "Other") return -1;
       const pa = countryPriority(a);
       const pb = countryPriority(b);
       if (pa !== pb) return pa - pb;
