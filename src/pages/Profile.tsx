@@ -471,6 +471,17 @@ const Profile = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Rewards breakdown */}
+                {arenaStats.points < 1000 && (
+                  <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1 pt-1 border-t border-border/50">
+                    <p className="font-medium text-foreground text-[9px] mb-1">Rewards at 1,000 points:</p>
+                    <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span></p>
+                    <p>⭐ Pro → <span className="text-primary font-semibold">+1 month Pro extended</span></p>
+                    <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
+                  </div>
+                )}
+
                 {arenaStats.points >= 1000 && !arenaStats.rewardGranted && (
                   <div className="p-2 rounded bg-amber-500/15 border border-amber-400/30 text-center">
                     <p className="text-[10px] font-semibold text-amber-400">🎉 1000 points reached! Reward coming soon.</p>
