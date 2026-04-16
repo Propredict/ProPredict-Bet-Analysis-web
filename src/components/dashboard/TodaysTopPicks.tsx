@@ -164,7 +164,7 @@ export function TodaysTopPicks() {
                       size="sm"
                       variant="outline"
                       className={cn("w-full text-xs border", border, accent)}
-                      onClick={() => navigate("/daily-analysis")}
+                      onClick={() => navigate(tier === "free" ? "/daily-analysis" : tier === "exclusive" ? "/pro-analysis" : "/premium-analysis")}
                     >
                       <Eye className="h-3.5 w-3.5 mr-1" /> View Pick
                     </Button>
