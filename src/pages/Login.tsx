@@ -274,15 +274,17 @@ const Login = () => {
             </button>
           </div>
           
-          <Button
-            variant="ghost"
-            className="w-full text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("/")}
-            disabled={isLoading}
-          >
-            Continue as guest
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          {!getIsAndroidApp() && (
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-foreground"
+              onClick={() => navigate("/")}
+              disabled={isLoading}
+            >
+              Continue as guest
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>
