@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, X, Ticket, Brain, Flame, Trophy, Zap, Clock, Lock } from "lucide-react";
+import { X, Lock, Flame, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,6 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUserPlan } from "@/hooks/useUserPlan";
+
+const SESSION_KEY = "propredict:upsell_shown_session";
+const LAST_SHOWN_KEY = "propredict:upsell_last_shown_date";
 
 export function FreeUserUpsellModal() {
   const { plan, isLoading } = useUserPlan();
@@ -18,13 +21,54 @@ export function FreeUserUpsellModal() {
     if (isLoading) return;
     if (plan !== "free") return;
 
-    const timer = setTimeout(() => setIsOpen(true), 800);
+    try {
+      // Max once per session
+      if (sessionStorage.getItem(SESSION_KEY)) return;
+      // Max once per 24h
+      const lastShown = localStorage.getItem(LAST_SHOWN_KEY);
+      if (lastShown === new Date().toDateString()) return;
+    } catch {}
+
+    // Delay 2-3 seconds
+    const delay = 2000 + Math.random() * 1000;
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+      try {
+        sessionStorage.setItem(SESSION_KEY, "1");
+        localStorage.setItem(LAST_SHOWN_KEY, new Date().toDateString());
+      } catch {}
+    }, delay);
+
     return () => clearTimeout(timer);
   }, [plan, isLoading]);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  // Also trigger on 30% scroll
+  useEffect(() => {
+    if (isLoading || plan !== "free" || isOpen) return;
+
+    try {
+      if (sessionStorage.getItem(SESSION_KEY)) return;
+      const lastShown = localStorage.getItem(LAST_SHOWN_KEY);
+      if (lastShown === new Date().toDateString()) return;
+    } catch { return; }
+
+    const handleScroll = () => {
+      const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      if (scrollPercent >= 0.3) {
+        setIsOpen(true);
+        try {
+          sessionStorage.setItem(SESSION_KEY, "1");
+          localStorage.setItem(LAST_SHOWN_KEY, new Date().toDateString());
+        } catch {}
+        window.removeEventListener("scroll", handleScroll);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [plan, isLoading, isOpen]);
+
+  const handleClose = () => setIsOpen(false);
 
   const handleUpgrade = () => {
     setIsOpen(false);
@@ -33,39 +77,49 @@ export function FreeUserUpsellModal() {
 
   if (isLoading || plan !== "free") return null;
 
+  // Random social proof number 18-35
+  const socialCount = 18 + Math.floor(Math.random() * 18);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="bg-card text-card-foreground border border-border rounded-2xl shadow-2xl p-0 max-w-[340px] sm:max-w-[380px]">
+      <DialogContent
+        className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden"
+        style={{
+          border: '1px solid rgba(20,184,166,0.3)',
+          boxShadow: '0 0 30px rgba(20,184,166,0.12), 0 25px 50px -12px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(180deg, #0f172a, #020617)',
+        }}
+      >
+        {/* Top glow */}
+        <div className="h-[1px] w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)' }} />
+
         {/* Close */}
         <button
           onClick={handleClose}
-          className="absolute right-3 top-3 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
+          className="absolute right-3 top-3 p-1.5 rounded-full bg-secondary/60 hover:bg-secondary transition-colors z-10"
           aria-label="Close"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
 
-        <div className="p-6 pt-7 flex flex-col items-center text-center gap-4">
+        <div className="p-5 pt-6 flex flex-col items-center text-center gap-3.5">
           {/* Icon */}
           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500/20 to-primary/20 flex items-center justify-center">
             <Lock className="h-7 w-7 text-amber-500" />
           </div>
 
-          <DialogTitle className="text-lg font-bold leading-snug flex items-center gap-1.5 justify-center">
-            <Flame className="h-5 w-5 text-orange-500" />
-            Premium Winning Tickets are Locked
+          <DialogTitle className="text-base font-extrabold text-foreground leading-snug">
+            🔥 Winning Tickets Locked
           </DialogTitle>
 
-          <p className="text-sm text-muted-foreground leading-relaxed flex items-center gap-1.5 justify-center">
-            <Trophy className="h-4 w-4 text-amber-500" />
-            Others are already winning
+          <p className="text-xs text-muted-foreground">
+            High-confidence picks waiting for you
           </p>
 
-          {/* Feature list */}
+          {/* Benefits */}
           <div className="w-full text-left space-y-2 px-2">
-            <p className="text-xs text-muted-foreground mb-1.5">Unlock now and get:</p>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <span>🎯 Top picks</span>
+              <span>🎯 Top value picks</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
               <span>⚡ Early access</span>
@@ -75,28 +129,32 @@ export function FreeUserUpsellModal() {
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center">
+          <p className="text-[11px] text-muted-foreground/70 flex items-center gap-1 justify-center">
             <Clock className="h-3 w-3" />
-            Updated just minutes ago
+            Limited picks available today
           </p>
 
-          <p className="text-xs text-amber-500 font-medium flex items-center gap-1 justify-center">
-            🔥 12 users unlocked winning tickets in the last hour
+          <p className="text-xs text-amber-400 font-semibold">
+            🔥 {socialCount} users unlocked in the last hour
           </p>
 
           {/* CTA */}
           <Button
             onClick={handleUpgrade}
-            className="w-full h-12 text-base bg-gradient-to-r from-amber-500 to-primary hover:opacity-90 text-white font-semibold rounded-xl animate-pulse"
+            className="w-full h-13 text-base font-bold rounded-xl text-white"
+            style={{
+              background: 'linear-gradient(135deg, #f59e0b, #0f9b8e)',
+              boxShadow: '0 0 20px rgba(245,158,11,0.3), 0 4px 15px rgba(15,155,142,0.2)',
+            }}
           >
-            👉 Unlock Winning Tickets
+            Unlock Now 🚀
           </Button>
 
           <button
             onClick={handleClose}
-            className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors pb-1"
+            className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors pb-1"
           >
-            Continue as Free
+            Continue Free
           </button>
         </div>
       </DialogContent>
