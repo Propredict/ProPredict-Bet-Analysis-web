@@ -11,11 +11,11 @@ import {
 const SESSION_KEY = "propredict:tips_popup_shown_v7";
 
 const categories = [
-  { label: "Daily Picks", sub: "Free", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
-  { label: "Pro Picks", sub: "🔒 Higher confidence", icon: Star, color: "text-amber-400", path: "/exclusive-tips" },
-  { label: "Premium Picks", sub: "🔒 Members only", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
-  { label: "💎 Diamond Pick", sub: "Most valuable today", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
-  { label: "🎯 Risk of the Day", sub: "High odds • Watch to unlock", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
+  { label: "🎯 Risk of the Day", sub: "🔥 High odds pick • Unlock instantly", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
+  { label: "Pro Picks", sub: "👀 Most unlocked today • Higher confidence", icon: Star, color: "text-amber-400", path: "/exclusive-tips" },
+  { label: "💎 Diamond Pick", sub: "💎 Best value pick today • Top confidence", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
+  { label: "Premium Picks", sub: "🔒 Exclusive picks • Members only", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
+  { label: "Daily Picks", sub: "✅ Free picks available today", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
 ];
 
 export function DashboardTipsPopup() {
