@@ -116,6 +116,13 @@ export function TodaysComboTicket() {
         )}
       </Card>
 
+      <button
+        onClick={() => navigate("/premium-tickets")}
+        className="block w-full text-center text-sm font-semibold text-[#a855f7] hover:text-purple-300 hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all"
+      >
+        Check All Today's Premium →
+      </button>
+
       <PricingModal open={showPricingModal} onOpenChange={setShowPricingModal} highlightPlan={highlightPlan} />
     </section>
   );
