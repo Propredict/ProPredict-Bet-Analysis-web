@@ -294,7 +294,7 @@ export function AppSidebar() {
                     activeClassName="bg-primary/20 text-primary"
                   >
                     <BookOpen className="h-4 w-4" />
-                    {!collapsed && <span>Predictions Glossary</span>}
+                    {!collapsed && <span>FAQ</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
