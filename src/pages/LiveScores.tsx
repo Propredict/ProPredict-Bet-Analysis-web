@@ -246,13 +246,37 @@ export default function LiveScores() {
       return okSearch && okLeague;
     });
   }, [matches, search, leagueFilter]);
+  // Priority leagues — shown first in this order
+  const PRIORITY_LEAGUES = [
+    "Premier League", "Bundesliga", "La Liga", "Ligue 1", "Serie A",
+    "Championship", "League One", "Scottish Championship",
+    "2. Bundesliga", "3. Liga", "Serie B",
+    "Austrian Bundesliga", "Jupiler Pro League", "Eredivisie",
+  ];
+
+  const sortLeagueKeys = (keys: string[]) => {
+    const getPriority = (league: string) => {
+      const idx = PRIORITY_LEAGUES.findIndex(p => league.toLowerCase().includes(p.toLowerCase()));
+      return idx >= 0 ? idx : PRIORITY_LEAGUES.length;
+    };
+    return [...keys].sort((a, b) => {
+      const pa = getPriority(a);
+      const pb = getPriority(b);
+      if (pa !== pb) return pa - pb;
+      return a.localeCompare(b);
+    });
+  };
+
   // Simple grouping by league only
   const grouped = useMemo(() => {
-    return filtered.reduce((acc, m) => {
+    const raw = filtered.reduce((acc, m) => {
       acc[m.league] ??= [];
       acc[m.league].push(m);
       return acc;
     }, {} as Record<string, Match[]>);
+    const sorted: Record<string, Match[]> = {};
+    sortLeagueKeys(Object.keys(raw)).forEach(k => { sorted[k] = raw[k]; });
+    return sorted;
   }, [filtered]);
 
   // Structured grouping: Country → League → Matches
@@ -264,15 +288,32 @@ export default function LiveScores() {
       result[country][m.league] ??= [];
       result[country][m.league].push(m);
     });
-    // Sort countries alphabetically, but put "World" and "Other" at the end
+
+    // Sort countries: prioritize countries that have priority leagues
+    const countryPriority = (country: string): number => {
+      const leagues = Object.keys(result[country] || {});
+      let best = PRIORITY_LEAGUES.length;
+      for (const l of leagues) {
+        const idx = PRIORITY_LEAGUES.findIndex(p => l.toLowerCase().includes(p.toLowerCase()));
+        if (idx >= 0 && idx < best) best = idx;
+      }
+      return best;
+    };
+
     const sortedResult: Record<string, Record<string, Match[]>> = {};
     const sortedCountries = Object.keys(result).sort((a, b) => {
       if (a === "World" || a === "Other") return 1;
       if (b === "World" || b === "Other") return -1;
+      const pa = countryPriority(a);
+      const pb = countryPriority(b);
+      if (pa !== pb) return pa - pb;
       return a.localeCompare(b);
     });
     sortedCountries.forEach(country => {
-      sortedResult[country] = result[country];
+      // Sort leagues within each country too
+      const sorted: Record<string, Match[]> = {};
+      sortLeagueKeys(Object.keys(result[country])).forEach(k => { sorted[k] = result[country][k]; });
+      sortedResult[country] = sorted;
     });
     return sortedResult;
   }, [filtered]);
