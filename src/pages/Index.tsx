@@ -82,10 +82,15 @@ const Index = () => {
               AI-powered picks, probabilities and match insights updated daily.
             </p>
             <div className="flex items-center gap-3 pt-1">
-              <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
-                Check Today's Matches
-              </Link>
-              {!isAndroid && (
+              {isAndroid ? (
+                <button onClick={() => setShowCategoryModal(true)} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </button>
+              ) : (
+                <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </Link>
+              )}
                 <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
                   Download App 🔓
                 </a>
