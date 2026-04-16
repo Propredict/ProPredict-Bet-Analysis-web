@@ -14,7 +14,7 @@ interface RateAppPopupProps {
   submitting: boolean;
 }
 
-type Step = "prefilter" | "stars" | "feedback" | "thanks";
+type Step = "prefilter" | "stars" | "redirect" | "feedback" | "thanks";
 
 export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPopupProps) {
   const [step, setStep] = useState<Step>("prefilter");
