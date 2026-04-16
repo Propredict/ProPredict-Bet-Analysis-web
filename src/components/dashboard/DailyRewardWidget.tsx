@@ -198,12 +198,9 @@ function AndroidRewardWidget() {
             </div>
             <Progress value={milestoneProgress} className="h-1.5" />
             {pointsTo1000 > 0 ? (
-              <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1">
-                <p>{pointsTo1000} pts to go! Rewards:</p>
-                <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span></p>
-                <p>⭐ Pro → <span className="text-primary font-semibold">+1 month Pro extended</span></p>
-                <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
-              </div>
+              <p className="text-[10px] text-muted-foreground pl-1">
+                {pointsTo1000} pts to go! Check rewards in Profile.
+              </p>
             ) : (
               <p className="text-[10px] text-amber-400 font-bold">🎉 Milestone reached! Reward applied!</p>
             )}
