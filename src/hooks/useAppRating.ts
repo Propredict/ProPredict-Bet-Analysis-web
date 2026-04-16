@@ -3,13 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
-const OPEN_COUNT_KEY = "propredict:app_open_count";
-const FEATURE_USED_KEY = "propredict:feature_used_for_rating";
 const RATING_DISMISSED_KEY = "propredict:rating_dismissed_at";
 const RATING_SHOWN_SESSION_KEY = "propredict:rating_shown_session";
+const RATING_SHOWN_TOTAL_KEY = "propredict:rating_shown_total";
+const RATING_LAST_SHOWN_KEY = "propredict:rating_last_shown_date";
 const FIRST_SEEN_KEY = "propredict:first_seen_at";
-const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-const MIN_DAYS_BEFORE_PROMPT = 3;
+const PICKS_VIEWED_KEY = "propredict:picks_viewed_session";
+const AD_UNLOCK_KEY = "propredict:ad_unlock_done";
+const RETURN_DAYS_KEY = "propredict:return_days";
+
+const MAX_TOTAL_SHOWS = 3;
+const DISMISS_COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48h after "Maybe later"
 
 export function useAppRating() {
   const { user } = useAuth();
@@ -18,15 +22,18 @@ export function useAppRating() {
   const [hasRated, setHasRated] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Track app opens
+  // Track return days
   useEffect(() => {
     if (!isAndroid) return;
     try {
-      const count = parseInt(localStorage.getItem(OPEN_COUNT_KEY) || "0", 10);
-      localStorage.setItem(OPEN_COUNT_KEY, String(count + 1));
-      // Track first ever app open
       if (!localStorage.getItem(FIRST_SEEN_KEY)) {
         localStorage.setItem(FIRST_SEEN_KEY, String(Date.now()));
+      }
+      const today = new Date().toDateString();
+      const stored = JSON.parse(localStorage.getItem(RETURN_DAYS_KEY) || "[]") as string[];
+      if (!stored.includes(today)) {
+        stored.push(today);
+        localStorage.setItem(RETURN_DAYS_KEY, JSON.stringify(stored.slice(-30)));
       }
     } catch {}
   }, [isAndroid]);
@@ -47,41 +54,71 @@ export function useAppRating() {
       });
   }, [user, isAndroid]);
 
-  // Determine if popup should show
+  // Check eligibility
   const checkTrigger = useCallback(() => {
     if (!isAndroid || !user || hasRated === null || hasRated) return;
 
-    // Don't show if already dismissed or shown this session
     try {
+      // Already shown this session
       if (sessionStorage.getItem(RATING_SHOWN_SESSION_KEY)) return;
-      // Check dismiss cooldown (7 days)
+
+      // Max total shows
+      const totalShown = parseInt(localStorage.getItem(RATING_SHOWN_TOTAL_KEY) || "0", 10);
+      if (totalShown >= MAX_TOTAL_SHOWS) return;
+
+      // Max once per day
+      const lastShownDate = localStorage.getItem(RATING_LAST_SHOWN_KEY);
+      const today = new Date().toDateString();
+      if (lastShownDate === today) return;
+
+      // Dismiss cooldown (48h)
       const dismissedAt = localStorage.getItem(RATING_DISMISSED_KEY);
       if (dismissedAt && (Date.now() - parseInt(dismissedAt, 10)) < DISMISS_COOLDOWN_MS) return;
-    } catch {}
 
-    const openCount = parseInt(localStorage.getItem(OPEN_COUNT_KEY) || "0", 10);
-    const featureUsed = localStorage.getItem(FEATURE_USED_KEY) === "1";
-    const firstSeen = parseInt(localStorage.getItem(FIRST_SEEN_KEY) || "0", 10);
-    const daysSinceFirstUse = firstSeen ? (Date.now() - firstSeen) / (24 * 60 * 60 * 1000) : 0;
+      // Check triggers: ad unlock OR 2+ picks viewed OR 2+ return days
+      const adUnlocked = localStorage.getItem(AD_UNLOCK_KEY) === "1";
+      const picksViewed = parseInt(sessionStorage.getItem(PICKS_VIEWED_KEY) || "0", 10);
+      const returnDays = JSON.parse(localStorage.getItem(RETURN_DAYS_KEY) || "[]") as string[];
 
-    if (openCount >= 3 || featureUsed || daysSinceFirstUse >= MIN_DAYS_BEFORE_PROMPT) {
-      // Delay to not interfere with other popups
+      const eligible = adUnlocked || picksViewed >= 2 || returnDays.length >= 2;
+      if (!eligible) return;
+
+      // Delay 3-5 seconds (random)
+      const delay = 3000 + Math.random() * 2000;
       setTimeout(() => {
         setShowPopup(true);
-        try { sessionStorage.setItem(RATING_SHOWN_SESSION_KEY, "1"); } catch {}
-      }, 40000);
-    }
+        try {
+          sessionStorage.setItem(RATING_SHOWN_SESSION_KEY, "1");
+          localStorage.setItem(RATING_SHOWN_TOTAL_KEY, String(totalShown + 1));
+          localStorage.setItem(RATING_LAST_SHOWN_KEY, today);
+        } catch {}
+      }, delay);
+    } catch {}
   }, [isAndroid, user, hasRated]);
 
   useEffect(() => {
     checkTrigger();
   }, [checkTrigger]);
 
-  // Mark a key feature as used (call from AI Picks, Daily Reward, etc.)
-  const markFeatureUsed = useCallback(() => {
+  // Call when user unlocks a pick via ad
+  const markAdUnlock = useCallback(() => {
     if (!isAndroid) return;
-    try { localStorage.setItem(FEATURE_USED_KEY, "1"); } catch {}
+    try { localStorage.setItem(AD_UNLOCK_KEY, "1"); } catch {}
   }, [isAndroid]);
+
+  // Call when user views a pick
+  const markPickViewed = useCallback(() => {
+    if (!isAndroid) return;
+    try {
+      const count = parseInt(sessionStorage.getItem(PICKS_VIEWED_KEY) || "0", 10);
+      sessionStorage.setItem(PICKS_VIEWED_KEY, String(count + 1));
+    } catch {}
+  }, [isAndroid]);
+
+  // Legacy alias
+  const markFeatureUsed = useCallback(() => {
+    markAdUnlock();
+  }, [markAdUnlock]);
 
   // Submit rating
   const submitRating = useCallback(async (stars: number, feedback?: string) => {
@@ -116,6 +153,8 @@ export function useAppRating() {
     submitRating,
     dismiss,
     markFeatureUsed,
+    markAdUnlock,
+    markPickViewed,
     setShowPopup,
   };
 }
