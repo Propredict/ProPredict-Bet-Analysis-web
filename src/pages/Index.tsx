@@ -219,6 +219,7 @@ const Index = () => {
       <ExitIntentPopup />
       <DailyRewardPopup />
       <DailyRewardStickyBar />
+      {isAndroid && <PicksCategoryModal open={showCategoryModal} onOpenChange={setShowCategoryModal} />}
     </>
   );
 };
