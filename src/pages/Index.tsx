@@ -90,7 +90,7 @@ const Index = () => {
                 <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
                   Check Today's Matches
                 </Link>
-              )}
+              {!isAndroid && (
                 <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
                   Download App 🔓
                 </a>
