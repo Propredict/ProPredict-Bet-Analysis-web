@@ -25,21 +25,25 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   const handleStarSelect = async (stars: number) => {
     setSelectedStars(stars);
     if (stars >= 4) {
-      try {
-        if (window.Android?.openExternal) {
-          window.Android.openExternal(PLAY_STORE_URL);
-        } else {
-          window.open(PLAY_STORE_URL, "_blank");
-        }
-      } catch {}
-      const result = await onSubmit(stars);
-      if (result?.success && result?.rewarded) {
-        setStep("thanks");
-      } else {
-        onClose();
-      }
+      setStep("redirect");
     } else {
       setStep("feedback");
+    }
+  };
+
+  const handleGoToPlayStore = async () => {
+    try {
+      if (window.Android?.openExternal) {
+        window.Android.openExternal(PLAY_STORE_URL);
+      } else {
+        window.open(PLAY_STORE_URL, "_blank");
+      }
+    } catch {}
+    const result = await onSubmit(selectedStars);
+    if (result?.success && result?.rewarded) {
+      setStep("thanks");
+    } else {
+      onClose();
     }
   };
 
