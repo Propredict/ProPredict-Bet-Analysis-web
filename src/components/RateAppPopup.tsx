@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare, Sparkles, Rocket } from "lucide-react";
+import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,17 +14,17 @@ interface RateAppPopupProps {
   submitting: boolean;
 }
 
-type Step = "stars" | "feedback" | "thanks";
+type Step = "prefilter" | "stars" | "feedback" | "thanks";
 
 export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPopupProps) {
-  const [step, setStep] = useState<Step>("stars");
+  const [step, setStep] = useState<Step>("prefilter");
   const [selectedStars, setSelectedStars] = useState(0);
   const [hoveredStars, setHoveredStars] = useState(0);
   const [feedback, setFeedback] = useState("");
 
   const handleStarSelect = async (stars: number) => {
     setSelectedStars(stars);
-    if (stars === 5) {
+    if (stars >= 4) {
       try {
         if (window.Android?.openExternal) {
           window.Android.openExternal(PLAY_STORE_URL);
@@ -32,7 +32,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           window.open(PLAY_STORE_URL, "_blank");
         }
       } catch {}
-      const result = await onSubmit(5);
+      const result = await onSubmit(stars);
       if (result?.success && result?.rewarded) {
         setStep("thanks");
       } else {
@@ -50,7 +50,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   };
 
   const handleClose = () => {
-    setStep("stars");
+    setStep("prefilter");
     setSelectedStars(0);
     setHoveredStars(0);
     setFeedback("");
@@ -58,23 +58,24 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   };
 
   const displayStars = hoveredStars || selectedStars;
-
   const starLabels = ["", "Poor 😕", "Could be better 😐", "Okay 🙂", "Great! 😊", "Perfect! 🤩"];
+
+  const popupStyle = {
+    border: '1px solid rgba(20,184,166,0.3)',
+    boxShadow: '0 0 30px rgba(20,184,166,0.12), 0 25px 50px -12px rgba(0,0,0,0.5)',
+    background: 'linear-gradient(180deg, #0f172a, #020617)',
+  };
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
         className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden"
-        style={{
-          border: '1px solid rgba(20,184,166,0.3)',
-          boxShadow: '0 0 30px rgba(20,184,166,0.12), 0 25px 50px -12px rgba(0,0,0,0.5)',
-          background: 'linear-gradient(180deg, #0f172a, #020617)',
-        }}
+        style={popupStyle}
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* Top glow line */}
+        {/* Top glow */}
         <div className="h-[1px] w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.5), transparent)' }} />
 
         {/* Close */}
@@ -85,29 +86,59 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           <X className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
 
-        {step === "stars" && (
-          <div className="px-5 pt-6 pb-5 text-center space-y-4">
-            {/* Header */}
-            <div className="space-y-2">
-              <span className="text-4xl inline-block">🚀</span>
-              <DialogTitle className="text-base font-extrabold text-foreground leading-snug">
-                🔥 Love the app so far?
-              </DialogTitle>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Support us with a quick rating and unlock rewards 🎁
-              </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-                <span className="text-xs font-extrabold text-amber-400">+50 points</span>
-                <span className="text-xs">🎁</span>
-              </div>
+        {/* Step 1: Pre-filter */}
+        {step === "prefilter" && (
+          <div className="px-5 pt-7 pb-5 text-center space-y-4">
+            <span className="text-4xl inline-block">⭐</span>
+            <DialogTitle className="text-base font-extrabold text-foreground">
+              Enjoying the predictions? ⭐
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Help us improve — it takes 5 seconds
+            </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+              <span className="text-xs font-extrabold text-amber-400">Get +50 points after rating</span>
             </div>
 
-            {/* Question */}
-            <p className="text-xs font-medium text-muted-foreground">
-              How would you rate your experience?
-            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setStep("stars")}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-teal-600 text-white text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
+              >
+                <ThumbsUp className="h-4 w-4" />
+                Yes 😍
+              </button>
+              <button
+                onClick={() => { setSelectedStars(2); setStep("feedback"); }}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/70 text-muted-foreground text-sm font-medium transition-all active:scale-95"
+              >
+                <ThumbsDown className="h-4 w-4" />
+                Not really 😐
+              </button>
+            </div>
 
-            {/* Star selector */}
+            <button
+              className="w-full py-1.5 text-xs font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              onClick={handleClose}
+            >
+              Maybe later
+            </button>
+          </div>
+        )}
+
+        {/* Step 2: Star rating (shown after "Yes") */}
+        {step === "stars" && (
+          <div className="px-5 pt-6 pb-5 text-center space-y-4">
+            <div className="space-y-2">
+              <span className="text-4xl inline-block">🚀</span>
+              <DialogTitle className="text-base font-extrabold text-foreground">
+                Awesome! Rate us ⭐
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground">
+                Earn <span className="font-extrabold text-amber-400">+50 points</span> for rating!
+              </p>
+            </div>
+
             <div className="flex justify-center gap-2.5 py-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -129,26 +160,12 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               ))}
             </div>
 
-            {/* Dynamic label */}
             <p className="text-xs font-medium text-muted-foreground h-4 transition-all">
               {displayStars > 0 ? starLabels[displayStars] : "Tap a star ⭐"}
             </p>
 
-            {/* Primary CTA */}
             <button
-              onClick={() => { if (displayStars > 0) handleStarSelect(displayStars); }}
-              className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-                displayStars > 0
-                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20"
-                  : "bg-secondary/40 text-muted-foreground cursor-default"
-              }`}
-            >
-              Rate Now ⭐
-            </button>
-
-            {/* Secondary CTA */}
-            <button
-              className="w-full py-1.5 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              className="w-full py-1.5 text-xs font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors"
               onClick={handleClose}
             >
               Maybe later
@@ -156,6 +173,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           </div>
         )}
 
+        {/* Step 3: Feedback (shown after "Not really" or low stars) */}
         {step === "feedback" && (
           <div className="px-5 pt-6 pb-5 space-y-4">
             <div className="text-center">
@@ -166,22 +184,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                 Thanks for your honesty! 🙏
               </DialogTitle>
               <p className="text-xs text-muted-foreground mt-1">
-                Help us improve:
+                Help us improve — your feedback matters
               </p>
-            </div>
-
-            {/* Stars display */}
-            <div className="flex justify-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`h-5 w-5 ${
-                    star <= selectedStars
-                      ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
-                      : "text-muted-foreground/20"
-                  }`}
-                />
-              ))}
             </div>
 
             <Textarea
@@ -198,7 +202,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               className="w-full bg-gradient-to-r from-primary to-teal-600 hover:from-primary/90 hover:to-teal-500 text-white font-semibold shadow-lg shadow-primary/20"
             >
               <Send className="h-4 w-4 mr-2" />
-              {submitting ? "Sending..." : "Submit"}
+              {submitting ? "Sending..." : "Submit Feedback"}
             </Button>
 
             <button
@@ -210,6 +214,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           </div>
         )}
 
+        {/* Step 4: Thanks */}
         {step === "thanks" && (
           <div className="px-5 pt-8 pb-6 text-center space-y-3">
             <span className="text-5xl inline-block animate-bounce">🎉</span>
