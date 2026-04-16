@@ -67,8 +67,10 @@ export default function DailyTips() {
     timeZone: "Europe/Belgrade",
   });
   
-  const dailyTips = tips.filter(tip => tip.tier === "daily" && tip.tip_date === todayBelgrade);
-  const unlockedCount = dailyTips.filter(tip => canAccess("daily", "tip", tip.id)).length;
+  const freeTips = tips.filter(tip => tip.tier === "free" && tip.tip_date === todayBelgrade);
+  const dailyOnlyTips = tips.filter(tip => tip.tier === "daily" && tip.tip_date === todayBelgrade);
+  const dailyTips = [...freeTips, ...dailyOnlyTips];
+  const unlockedCount = dailyTips.filter(tip => tip.tier === "free" || canAccess("daily", "tip", tip.id)).length;
 
   const handleRefresh = () => {
     refetch();
@@ -79,8 +81,9 @@ export default function DailyTips() {
   // Render tips without ads
   const renderTips = () => {
     return dailyTips.map((tip, idx) => {
-      const unlockMethod = getUnlockMethod("daily", "tip", tip.id);
-      const isLocked = unlockMethod?.type !== "unlocked";
+      const isFree = tip.tier === "free";
+      const unlockMethod = isFree ? { type: "unlocked" as const } : getUnlockMethod("daily", "tip", tip.id);
+      const isLocked = !isFree && unlockMethod?.type !== "unlocked";
       const isUnlocking = unlockingId === tip.id;
       
       return (
