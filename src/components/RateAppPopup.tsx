@@ -177,7 +177,37 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           </div>
         )}
 
-        {/* Step 3: Feedback (shown after "Not really" or low stars) */}
+        {/* Step 3: Redirect prompt (shown after 4-5 stars) */}
+        {step === "redirect" && (
+          <div className="px-5 pt-7 pb-5 text-center space-y-4">
+            <span className="text-4xl inline-block">🙌</span>
+            <DialogTitle className="text-base font-extrabold text-foreground">
+              One last step 🙌
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              ⭐ Leave a 5-star rating on Google Play and add a short comment to get your reward 🎁
+            </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+              <span className="text-xs font-extrabold text-amber-400">🎁 +50 points waiting for you!</span>
+            </div>
+            <button
+              onClick={handleGoToPlayStore}
+              disabled={submitting}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Star className="h-4 w-4 fill-white" />
+              {submitting ? "Opening..." : "Go to Google Play ⭐"}
+            </button>
+            <button
+              className="w-full py-1.5 text-xs font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              onClick={handleClose}
+            >
+              Maybe later
+            </button>
+          </div>
+        )}
+
+        {/* Step 4: Feedback (shown after "Not really" or low stars) */}
         {step === "feedback" && (
           <div className="px-5 pt-6 pb-5 space-y-4">
             <div className="text-center">
