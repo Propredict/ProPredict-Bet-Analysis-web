@@ -13,7 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
-import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
+
 
 export default function DailyTips() {
   const {
@@ -121,7 +121,7 @@ export default function DailyTips() {
   };
 
   return <>
-    <FreeUserUpsellModal />
+    
     <Helmet>
       <title>Daily AI Predictions – ProPredict</title>
       <meta name="description" content="Daily AI-powered sports predictions and match insights. Free analysis for informational and entertainment purposes." />

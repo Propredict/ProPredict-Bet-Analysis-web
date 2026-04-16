@@ -13,7 +13,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
-import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
+
 
 export default function DailyTickets() {
   const navigate = useNavigate();
@@ -121,7 +121,7 @@ export default function DailyTickets() {
   };
 
   return <>
-    <FreeUserUpsellModal />
+    
     <Helmet>
       <title>Daily Multi-Match Predictions – ProPredict</title>
       <meta name="description" content="Daily AI-powered match combinations and analysis. For informational and entertainment purposes only." />
