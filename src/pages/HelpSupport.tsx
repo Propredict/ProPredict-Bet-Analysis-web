@@ -22,8 +22,10 @@ import {
   Smartphone,
   Lock,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Gift
 } from "lucide-react";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
