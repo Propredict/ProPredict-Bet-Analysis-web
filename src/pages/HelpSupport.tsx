@@ -233,6 +233,33 @@ const HelpSupport = () => {
         },
       ],
     },
+    ...(getIsAndroidApp() ? [{
+      title: "Rewards & Points",
+      icon: Gift,
+      color: "text-amber-400",
+      questions: [
+        {
+          q: "What are Daily Rewards?",
+          a: "Daily Rewards let you earn AI points every day by opening the app and claiming your reward. Build a 7-day streak to earn bonus points — the longer your streak, the more you earn per day."
+        },
+        {
+          q: "How does the 7-day streak work?",
+          a: "Each consecutive day you claim your reward, your streak grows (Day 1: +3 pts, Day 2: +6 pts, Day 3: +9 pts, Day 4: +12 pts, Day 5: +13 pts, Day 6: +14 pts, Day 7: +15 pts). After Day 7 the cycle resets. If you miss a day, your streak resets to Day 1."
+        },
+        {
+          q: "What happens when I reach 1,000 points?",
+          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward! Free users get 1 month of Pro, Pro users get +1 month extension, and Premium users get +1 month Premium extension. Points reset after the reward is applied."
+        },
+        {
+          q: "Where can I see my points and rewards?",
+          a: "Your total points, streak progress, and milestone tracker are visible in your Profile page under the Rewards section. You can also track your progress from the Daily Reward widget on the dashboard."
+        },
+        {
+          q: "Do Arena points and Daily Reward points combine?",
+          a: "Yes! Points from the AI vs Members Arena (+1 per correct prediction) and Daily Reward claims all contribute to the same 1,000-point milestone. Both help you reach the free subscription reward faster."
+        },
+      ],
+    }] : []),
     {
       title: "Privacy & Security",
       icon: Lock,
