@@ -248,6 +248,7 @@ export default function LiveScores() {
   }, [matches, search, leagueFilter]);
   // Priority leagues — shown first in this order
   const PRIORITY_LEAGUES = [
+    "Champions League", "Europa League", "Europa Conference League",
     "Premier League", "Bundesliga", "La Liga", "Ligue 1", "Serie A",
     "Championship", "League One", "Scottish Championship",
     "2. Bundesliga", "3. Liga", "Serie B",
