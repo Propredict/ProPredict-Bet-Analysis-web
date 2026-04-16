@@ -60,6 +60,7 @@ export default function DiamondPick() {
 
   return (
     <>
+      <FreeUserUpsellModal />
       <Helmet>
         <title>Diamond Pick 💎 | ProPredict</title>
         <meta name="description" content="Hand-picked diamond football predictions. Our most confident, highest-quality selections. Premium only." />

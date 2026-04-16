@@ -87,6 +87,7 @@ export default function PremiumTips() {
   };
 
   return <>
+    <FreeUserUpsellModal />
     <Helmet>
       <title>Premium Predictions – ProPredict</title>
       <meta

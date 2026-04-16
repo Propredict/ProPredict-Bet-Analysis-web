@@ -87,6 +87,7 @@ export default function PremiumTickets() {
   };
 
   return <>
+    <FreeUserUpsellModal />
     <Helmet>
       <title>Premium Multi-Match Predictions – ProPredict</title>
       <meta
