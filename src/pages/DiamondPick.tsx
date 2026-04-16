@@ -13,6 +13,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 
 export default function DiamondPick() {
   const navigate = useNavigate();
@@ -59,6 +60,7 @@ export default function DiamondPick() {
 
   return (
     <>
+      <FreeUserUpsellModal />
       <Helmet>
         <title>Diamond Pick 💎 | ProPredict</title>
         <meta name="description" content="Hand-picked diamond football predictions. Our most confident, highest-quality selections. Premium only." />

@@ -12,6 +12,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AdSlot from "@/components/ads/AdSlot";
+import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ export default function PremiumTips() {
   };
 
   return <>
+    <FreeUserUpsellModal />
     <Helmet>
       <title>Premium Predictions – ProPredict</title>
       <meta
