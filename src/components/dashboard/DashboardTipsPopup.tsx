@@ -65,19 +65,23 @@ export function DashboardTipsPopup() {
 
         {/* Options */}
         <div className="px-4 pb-2 space-y-1.5">
-          {categories.map((cat) => (
-            <button
-              key={cat.path}
-              onClick={() => goTo(cat.path)}
-              className="flex items-center gap-3 w-full p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors group"
-            >
-              <cat.icon className={`h-5 w-5 shrink-0 ${cat.color}`} />
-              <div className="flex-1 text-left min-w-0">
-                <p className="text-sm font-semibold text-foreground leading-tight">{cat.label}</p>
-                <p className="text-[11px] text-muted-foreground leading-tight">{cat.sub}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors shrink-0" />
-            </button>
+          {categories.map((cat, i) => (
+            <div key={cat.path}>
+              <button
+                onClick={() => goTo(cat.path)}
+                className="flex items-center gap-3 w-full p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors group"
+              >
+                <cat.icon className={`h-5 w-5 shrink-0 ${cat.color}`} />
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-semibold text-foreground leading-tight">{cat.label}</p>
+                  <p className="text-[11px] text-muted-foreground leading-tight">{cat.sub}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors shrink-0" />
+              </button>
+              {i < categories.length - 1 && (
+                <div className="mx-3 mt-1.5 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(20,184,166,0.25), transparent)' }} />
+              )}
+            </div>
           ))}
         </div>
 
