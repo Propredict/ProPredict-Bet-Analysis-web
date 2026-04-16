@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare, Sparkles } from "lucide-react";
+import { Star, X, Send, MessageSquare, Sparkles, Rocket } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,38 +64,51 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-[340px] p-0 gap-0 border-0 !bg-gradient-to-b !from-white !to-amber-50/50 overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden"
+        className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden"
+        style={{
+          border: '1px solid rgba(20,184,166,0.3)',
+          boxShadow: '0 0 30px rgba(20,184,166,0.12), 0 25px 50px -12px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(180deg, #0f172a, #020617)',
+        }}
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        {/* Top glow line */}
+        <div className="h-[1px] w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.5), transparent)' }} />
+
         {/* Close */}
         <button
           onClick={handleClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-secondary/60 hover:bg-secondary transition-colors"
         >
-          <X className="h-3.5 w-3.5 text-slate-400" />
+          <X className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
 
         {step === "stars" && (
-          <div className="px-5 pt-7 pb-5 text-center space-y-4">
-            {/* Emotional header */}
+          <div className="px-5 pt-6 pb-5 text-center space-y-4">
+            {/* Header */}
             <div className="space-y-2">
-              <div className="relative inline-block">
-                <span className="text-5xl animate-bounce inline-block" style={{ animationDuration: "1.5s" }}>💛</span>
-                <Sparkles className="absolute -top-1 -right-3 h-4 w-4 text-amber-400 animate-pulse" />
-              </div>
-              <DialogTitle className="text-lg font-extrabold text-slate-900 leading-snug">
-                We're glad you're here!
+              <span className="text-4xl inline-block">🚀</span>
+              <DialogTitle className="text-base font-extrabold text-foreground leading-snug">
+                🔥 Love the app so far?
               </DialogTitle>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Your rating gives us strength to keep going 💪<br />
-                Earn <span className="font-extrabold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-md">+50 points</span> for rating!
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Support us with a quick rating and unlock rewards 🎁
               </p>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+                <span className="text-xs font-extrabold text-amber-400">+50 points</span>
+                <span className="text-xs">🎁</span>
+              </div>
             </div>
 
+            {/* Question */}
+            <p className="text-xs font-medium text-muted-foreground">
+              How would you rate your experience?
+            </p>
+
             {/* Star selector */}
-            <div className="flex justify-center gap-2.5 py-3">
+            <div className="flex justify-center gap-2.5 py-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -108,8 +121,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                   <Star
                     className={`h-11 w-11 transition-all duration-200 ${
                       star <= displayStars
-                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-                        : "text-slate-200 hover:text-slate-300"
+                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+                        : "text-muted-foreground/30 hover:text-muted-foreground/50"
                     }`}
                   />
                 </button>
@@ -117,13 +130,25 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             </div>
 
             {/* Dynamic label */}
-            <p className="text-xs font-medium text-slate-500 h-4 transition-all">
+            <p className="text-xs font-medium text-muted-foreground h-4 transition-all">
               {displayStars > 0 ? starLabels[displayStars] : "Tap a star ⭐"}
             </p>
 
-            {/* Soft CTA */}
+            {/* Primary CTA */}
             <button
-              className="w-full py-2 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
+              onClick={() => { if (displayStars > 0) handleStarSelect(displayStars); }}
+              className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
+                displayStars > 0
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20"
+                  : "bg-secondary/40 text-muted-foreground cursor-default"
+              }`}
+            >
+              Rate Now ⭐
+            </button>
+
+            {/* Secondary CTA */}
+            <button
+              className="w-full py-1.5 text-xs font-medium text-muted-foreground/60 hover:text-muted-foreground transition-colors"
               onClick={handleClose}
             >
               Maybe later
@@ -134,13 +159,13 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
         {step === "feedback" && (
           <div className="px-5 pt-6 pb-5 space-y-4">
             <div className="text-center">
-              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-blue-400/20 to-blue-500/10 mb-3">
-                <MessageSquare className="h-6 w-6 text-blue-500" />
+              <div className="inline-flex p-3 rounded-2xl bg-primary/10 border border-primary/20 mb-3">
+                <MessageSquare className="h-6 w-6 text-primary" />
               </div>
-              <DialogTitle className="text-lg font-bold text-slate-900">
+              <DialogTitle className="text-base font-bold text-foreground">
                 Thanks for your honesty! 🙏
               </DialogTitle>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Help us improve:
               </p>
             </div>
@@ -152,8 +177,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                   key={star}
                   className={`h-5 w-5 ${
                     star <= selectedStars
-                      ? "text-amber-400 fill-amber-400"
-                      : "text-slate-200"
+                      ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
+                      : "text-muted-foreground/20"
                   }`}
                 />
               ))}
@@ -163,21 +188,21 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="What can we improve? (optional)"
-              className="min-h-[80px] text-sm border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
+              className="min-h-[80px] text-sm border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-primary/20"
               maxLength={500}
             />
 
             <Button
               onClick={handleFeedbackSubmit}
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-blue-500/20"
+              className="w-full bg-gradient-to-r from-primary to-teal-600 hover:from-primary/90 hover:to-teal-500 text-white font-semibold shadow-lg shadow-primary/20"
             >
               <Send className="h-4 w-4 mr-2" />
               {submitting ? "Sending..." : "Submit"}
             </Button>
 
             <button
-              className="w-full py-1 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
+              className="w-full py-1 text-xs font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors"
               onClick={handleClose}
             >
               Skip
@@ -187,21 +212,18 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
 
         {step === "thanks" && (
           <div className="px-5 pt-8 pb-6 text-center space-y-3">
-            <div className="relative inline-block">
-              <span className="text-5xl inline-block animate-bounce">🎉</span>
-              <Sparkles className="absolute -top-1 -right-2 h-5 w-5 text-amber-400 animate-pulse" />
+            <span className="text-5xl inline-block animate-bounce">🎉</span>
+            <DialogTitle className="text-lg font-extrabold text-foreground">
+              Thank you so much! 🚀
+            </DialogTitle>
+            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+              <span className="text-sm font-extrabold text-amber-400">🎁 +50 points added!</span>
             </div>
-             <DialogTitle className="text-lg font-extrabold text-slate-900">
-               Thank you so much! 💛
-             </DialogTitle>
-             <p className="text-sm text-amber-600 font-extrabold bg-amber-50 rounded-lg py-2 px-3 border border-amber-200">
-               🎁 +50 points added!
-             </p>
             <div className="flex justify-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className="h-6 w-6 text-amber-400 fill-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.4)]"
+                  className="h-6 w-6 text-amber-400 fill-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
                 />
               ))}
             </div>
