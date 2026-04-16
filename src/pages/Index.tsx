@@ -1,4 +1,4 @@
-import { useEffect, useRef, lazy, Suspense, forwardRef } from "react";
+import { useEffect, useRef, lazy, Suspense, forwardRef, useState } from "react";
 import googlePlayBanner from "@/assets/google-play-banner.jfif";
 import heroStadium from "@/assets/hero-stadium.jpg";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,6 +35,8 @@ const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks"
 const RiskOfTheDaySection = lazy(() => import("@/components/dashboard/RiskOfTheDaySection").then(m => ({ default: m.RiskOfTheDaySection })));
 const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
 
+import { PicksCategoryModal } from "@/components/dashboard/PicksCategoryModal";
+
 
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
@@ -45,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const firedRef = useRef(false);
   const { setShowPopup: showRatingPopup } = useAppRating();
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   // Android only: show one interstitial on Home (max 1 per app session)
   useEffect(() => {
@@ -79,9 +82,15 @@ const Index = () => {
               AI-powered picks, probabilities and match insights updated daily.
             </p>
             <div className="flex items-center gap-3 pt-1">
-              <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
-                Check Today's Matches
-              </Link>
+              {isAndroid ? (
+                <button onClick={() => setShowCategoryModal(true)} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </button>
+              ) : (
+                <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </Link>
+              )}
               {!isAndroid && (
                 <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
                   Download App 🔓
@@ -210,6 +219,7 @@ const Index = () => {
       <ExitIntentPopup />
       <DailyRewardPopup />
       <DailyRewardStickyBar />
+      {isAndroid && <PicksCategoryModal open={showCategoryModal} onOpenChange={setShowCategoryModal} />}
     </>
   );
 };
