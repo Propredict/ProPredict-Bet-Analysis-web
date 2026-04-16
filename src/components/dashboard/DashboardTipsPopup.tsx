@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, X, ChevronRight, Star, Crown } from "lucide-react";
+import { Sparkles, Star, Crown, Diamond, Target, ChevronRight, X } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import {
   Dialog,
@@ -8,7 +8,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const SESSION_KEY = "propredict:tips_popup_shown_v6";
+const SESSION_KEY = "propredict:tips_popup_shown_v7";
+
+const categories = [
+  { label: "Daily Picks", sub: "Free", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
+  { label: "Pro Picks", sub: "🔒 Higher confidence", icon: Star, color: "text-amber-400", path: "/exclusive-tips" },
+  { label: "Premium Picks", sub: "🔒 Members only", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
+  { label: "💎 Diamond Pick", sub: "Most valuable today", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
+  { label: "🎯 Risk of the Day", sub: "High odds • Watch to unlock", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
+];
 
 export function DashboardTipsPopup() {
   const [open, setOpen] = useState(false);
@@ -36,81 +44,48 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[340px] p-0 gap-0 border-0 !bg-white overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-[340px] p-0 gap-0 border border-border/50 bg-card overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden">
         {/* Header */}
-        <div className="relative px-5 pt-6 pb-4 text-center">
+        <div className="relative px-5 pt-5 pb-3 text-center">
           <button
             onClick={() => setOpen(false)}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-secondary/60 hover:bg-secondary transition-colors"
           >
-            <X className="h-3.5 w-3.5 text-slate-400" />
+            <X className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
-          <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-3">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <DialogTitle className="text-lg font-bold text-slate-900">
-            Today's Predictions
+          <DialogTitle className="text-base font-bold text-foreground">
+            Choose Your Picks 🔥
           </DialogTitle>
-          <p className="text-xs text-primary mt-0.5">
-            Fresh AI analysis is ready for you
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Select what you want to unlock today
           </p>
         </div>
 
         {/* Options */}
-        <div className="px-4 pb-2 space-y-2.5">
-          {/* Daily */}
-          <button
-            onClick={() => goTo("/daily-analysis")}
-            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 shadow-md hover:shadow-lg transition-all group"
-          >
-            <div className="p-2 rounded-lg bg-white/15">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-[13px] font-bold text-white">Daily Tips</p>
-              <p className="text-[10px] text-white/70">Free predictions</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
-          </button>
-
-          {/* Exclusive */}
-          <button
-            onClick={() => goTo("/pro-analysis")}
-            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-md hover:shadow-lg transition-all group"
-          >
-            <div className="p-2 rounded-lg bg-white/15">
-              <Star className="h-4 w-4 text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-[13px] font-bold text-white">Exclusive Tips</p>
-              <p className="text-[10px] text-white/70">Higher confidence</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
-          </button>
-
-          {/* Premium */}
-          <button
-            onClick={() => goTo("/premium-analysis")}
-            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-700 hover:from-fuchsia-500 hover:to-purple-600 shadow-md hover:shadow-lg transition-all group"
-          >
-            <div className="p-2 rounded-lg bg-white/15">
-              <Crown className="h-4 w-4 text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-[13px] font-bold text-white">Premium Tips</p>
-              <p className="text-[10px] text-white/70">Members only</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/70 animate-[pulse_1.5s_ease-in-out_infinite] group-hover:translate-x-0.5 transition-transform" />
-          </button>
+        <div className="px-4 pb-2 space-y-1.5">
+          {categories.map((cat) => (
+            <button
+              key={cat.path}
+              onClick={() => goTo(cat.path)}
+              className="flex items-center gap-3 w-full p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors group"
+            >
+              <cat.icon className={`h-5 w-5 shrink-0 ${cat.color}`} />
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight">{cat.label}</p>
+                <p className="text-[11px] text-muted-foreground leading-tight">{cat.sub}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors shrink-0" />
+            </button>
+          ))}
         </div>
 
         {/* Dismiss */}
-        <div className="px-4 pb-4 pt-2">
+        <div className="px-4 pb-4 pt-1.5">
           <button
-            className="w-full py-2 text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
+            className="w-full py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setOpen(false)}
           >
-            Maybe Later
+            Continue → Dashboard
           </button>
         </div>
       </DialogContent>
