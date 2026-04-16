@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame, Lock, Eye, Loader2, Play } from "lucide-react";
+import { Flame, Lock, Eye, Loader2, Play, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,13 +30,14 @@ export function TodaysTopPicks() {
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayTips = dbTips.filter((t: any) => t.tip_date === todayDate);
 
-  const freePick = todayTips.find((t: any) => t.tier === "daily");
+  // Free pick uses tier "free", not "daily"
+  const freePick = todayTips.find((t: any) => t.tier === "free");
   const proPick = todayTips.find((t: any) => t.tier === "exclusive");
   const premiumPick = todayTips.find((t: any) => t.tier === "premium");
 
   const picks = [
     {
-      label: "FREE", tier: "daily" as const, pick: freePick,
+      label: "FREE", tier: "free" as const, pick: freePick,
       accent: "text-green-400", border: "border-green-500/40", glow: "shadow-[0_0_15px_rgba(34,197,94,0.2)]",
       bg: "bg-green-500/10", badgeBg: "bg-green-500/20 text-green-400",
       locked: false,
@@ -73,6 +74,14 @@ export function TodaysTopPicks() {
         <p className="text-xs text-muted-foreground">Hand-picked best value predictions for today</p>
       </div>
 
+      {/* Social proof */}
+      <div className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-primary/5 border border-primary/10">
+        <Users className="h-3 w-3 text-primary/70" />
+        <span className="text-[10px] text-muted-foreground">
+          🔥 <span className="text-primary font-semibold">{(24000 + Math.floor(Math.random() * 3000)).toLocaleString()}+</span> users checked picks today
+        </span>
+      </div>
+
       {/* Cards */}
       <div className="space-y-3">
         {picks.map(({ label, tier, pick, accent, border, glow, bg, badgeBg, locked }) => {
@@ -95,10 +104,21 @@ export function TodaysTopPicks() {
 
                 {isLocked ? (
                   <div className="space-y-2 pt-1">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Lock className="h-3.5 w-3.5" />
-                      <span className="text-xs blur-sm select-none">Over 2.5 Goals</span>
+                    {/* Partial preview: prediction locked, confidence visible */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Lock className="h-3.5 w-3.5" />
+                        <span className="text-xs blur-sm select-none">Over 2.5 Goals</span>
+                      </div>
+                      {pick.confidence && (
+                        <span className={cn("text-xs font-bold", accent)}>{pick.confidence}%</span>
+                      )}
                     </div>
+
+                    {/* FOMO for Pro */}
+                    {tier === "exclusive" && (
+                      <p className="text-[10px] text-amber-400/80">👀 78% of users unlocked this</p>
+                    )}
 
                     {tier === "exclusive" ? (
                       <div className="space-y-1.5">
@@ -130,6 +150,10 @@ export function TodaysTopPicks() {
                   </div>
                 ) : (
                   <div className="space-y-2 pt-1">
+                    {/* Free pick label */}
+                    {tier === "free" && (
+                      <p className="text-[10px] text-green-400 font-semibold">🔥 High confidence pick</p>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">{pick.prediction}</span>
                       {pick.confidence && (
@@ -152,13 +176,13 @@ export function TodaysTopPicks() {
         })}
       </div>
 
-      {/* View All CTA */}
+      {/* Explore All CTA */}
       {todayTips.length > 0 && (
         <button
           onClick={() => setShowCategoryModal(true)}
           className="block w-full text-center text-sm font-bold text-primary hover:text-primary/80 transition-colors py-2"
         >
-          View All Today's Picks →
+          Explore All Picks →
         </button>
       )}
 

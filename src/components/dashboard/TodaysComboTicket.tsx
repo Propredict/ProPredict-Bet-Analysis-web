@@ -58,11 +58,9 @@ export function TodaysComboTicket() {
           )}>
             {isPremium ? "PREMIUM COMBO" : combo.tier === "exclusive" ? "PRO COMBO" : "DAILY COMBO"}
           </Badge>
-          {combo.total_odds && (
-            <span className="text-xs font-bold text-orange-400">
-              Total Odds: {combo.total_odds}
-            </span>
-          )}
+          <span className="text-xs font-bold text-orange-400">
+            Total Odds: {combo.total_odds ?? "—"}
+          </span>
         </div>
 
         {/* Match previews */}
