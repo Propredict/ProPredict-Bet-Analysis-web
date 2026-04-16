@@ -44,7 +44,9 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[340px] p-0 gap-0 border border-border/50 bg-card overflow-hidden rounded-2xl shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden" style={{ border: '1px solid rgba(20,184,166,0.4)', boxShadow: '0 0 20px rgba(20,184,166,0.15), 0 25px 50px -12px rgba(0,0,0,0.5)', background: 'linear-gradient(180deg, #0f172a, #020617)' }}>
+        {/* Top glow line */}
+        <div className="h-[1px] w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(20,184,166,0.6), transparent)' }} />
         {/* Header */}
         <div className="relative px-5 pt-5 pb-3 text-center">
           <button
