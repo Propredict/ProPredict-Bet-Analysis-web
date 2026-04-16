@@ -141,12 +141,29 @@ const Index = () => {
         {/* Daily Reward Widget */}
         <DailyRewardWidget />
 
-        <Suspense fallback={<LazyFallback />}>
-          <MatchPredictions />
-        </Suspense>
-        <Suspense fallback={<LazyFallback />}>
-          <BettingTickets />
-        </Suspense>
+        {/* Android: new focused sections */}
+        {isAndroid ? (
+          <>
+            <Suspense fallback={<LazyFallback />}>
+              <TodaysTopPicks />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <RiskOfTheDaySection />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <TodaysComboTicket />
+            </Suspense>
+          </>
+        ) : (
+          <>
+            <Suspense fallback={<LazyFallback />}>
+              <MatchPredictions />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <BettingTickets />
+            </Suspense>
+          </>
+        )}
         
         {/* Two-column layout for Standings and Live Scores */}
         <Suspense fallback={<LazyFallback />}>
