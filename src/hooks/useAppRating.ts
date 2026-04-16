@@ -12,8 +12,8 @@ const PICKS_VIEWED_KEY = "propredict:picks_viewed_session";
 const AD_UNLOCK_KEY = "propredict:ad_unlock_done";
 const RETURN_DAYS_KEY = "propredict:return_days";
 
-const MAX_TOTAL_SHOWS = 3;
-const DISMISS_COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48h after "Maybe later"
+const MAX_TOTAL_SHOWS = 999; // No total limit — show daily until rated
+const DISMISS_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24h cooldown
 
 export function useAppRating() {
   const { user } = useAuth();
