@@ -146,20 +146,24 @@ const Index = () => {
         {/* Two-column layout for Standings and Live Scores */}
         <Suspense fallback={<LazyFallback />}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <LeagueStandings />
+            {!isAndroid && <LeagueStandings />}
             <TodaysMatches />
           </div>
         </Suspense>
         
-        {/* AI Predictions Section */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardAIPredictions />
-        </Suspense>
+        {/* AI Predictions Section – web only */}
+        {!isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <DashboardAIPredictions />
+          </Suspense>
+        )}
 
-        {/* Match Previews Section */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardMatchPreviews />
-        </Suspense>
+        {/* Match Previews Section – web only */}
+        {!isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <DashboardMatchPreviews />
+          </Suspense>
+        )}
 
 
         <Suspense fallback={<LazyFallback />}>
