@@ -56,9 +56,7 @@ export function RiskOfTheDaySection() {
                 <Lock className="h-3.5 w-3.5" />
                 <span className="text-xs blur-sm select-none">Correct Score 2-1</span>
               </div>
-              {riskPick.odds && (
-                <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds}</p>
-              )}
+              <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds ? `${riskPick.odds}` : "3.50+"}</p>
               <Button
                 size="sm"
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
