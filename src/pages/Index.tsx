@@ -47,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const firedRef = useRef(false);
   const { setShowPopup: showRatingPopup } = useAppRating();
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   // Android only: show one interstitial on Home (max 1 per app session)
   useEffect(() => {
