@@ -30,6 +30,11 @@ const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/Dashboa
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
 
+// Android-only dashboard sections
+const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
+const RiskOfTheDaySection = lazy(() => import("@/components/dashboard/RiskOfTheDaySection").then(m => ({ default: m.RiskOfTheDaySection })));
+const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
+
 
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
@@ -136,12 +141,29 @@ const Index = () => {
         {/* Daily Reward Widget */}
         <DailyRewardWidget />
 
-        <Suspense fallback={<LazyFallback />}>
-          <MatchPredictions />
-        </Suspense>
-        <Suspense fallback={<LazyFallback />}>
-          <BettingTickets />
-        </Suspense>
+        {/* Android: new focused sections */}
+        {isAndroid ? (
+          <>
+            <Suspense fallback={<LazyFallback />}>
+              <TodaysTopPicks />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <RiskOfTheDaySection />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <TodaysComboTicket />
+            </Suspense>
+          </>
+        ) : (
+          <>
+            <Suspense fallback={<LazyFallback />}>
+              <MatchPredictions />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <BettingTickets />
+            </Suspense>
+          </>
+        )}
         
         {/* Two-column layout for Standings and Live Scores */}
         <Suspense fallback={<LazyFallback />}>
