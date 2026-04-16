@@ -24,7 +24,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
 
   const handleStarSelect = async (stars: number) => {
     setSelectedStars(stars);
-    if (stars >= 4) {
+    if (stars >= 3) {
       setStep("redirect");
     } else {
       setStep("feedback");
