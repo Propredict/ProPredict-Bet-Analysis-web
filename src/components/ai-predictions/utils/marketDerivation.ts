@@ -474,6 +474,7 @@ export function getRiskLevelColor(riskLevel: string | null) {
 
 export type MarketType =
   | "home_win" | "away_win" | "draw"
+  | "dc_1x" | "dc_x2" | "dc_12"
   | "over15" | "over25" | "over35" | "under25" | "under35"
   | "btts_yes" | "btts_no";
 
@@ -489,6 +490,9 @@ interface MarketCandidate {
  *  - Over 1.5 / Under 3.5 require very high probability (>80%) to win Main —
  *    otherwise they'd dominate every card with the same boring pick
  *  - Under 2.5 is allowed but penalized so it doesn't blanket every match
+ *  - Double Chance (1X / X2 / 12) is selected as a SAFE FALLBACK when no
+ *    single 1X2 outcome exceeds 60% AND the combined DC probability ≥ 80%.
+ *    This gives users a reliable pick when matches are too tight for a clean call.
  */
 function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   let hw = prediction.home_win ?? 33;
@@ -509,10 +513,22 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const PRIMARY_BOOST = 8; // 1X2 headline boost
   const COMMON_PENALTY = 6; // suppress Over 1.5 / Under 3.5 unless they're really strong
 
+  // Double Chance probabilities
+  const dc1x = hw + d;
+  const dcx2 = d + aw;
+  const dc12 = hw + aw;
+  // DC is only attractive when no single outcome dominates AND combined ≥ 80%
+  const maxSingle = Math.max(hw, aw, d);
+  const dcEligible = maxSingle < 60;
+
   const candidates: MarketCandidate[] = [
     { type: "home_win", prob: hw + PRIMARY_BOOST },
     { type: "away_win", prob: aw + PRIMARY_BOOST },
     { type: "draw", prob: d + PRIMARY_BOOST },
+    // Double Chance — safe pick fallback for tight matches
+    { type: "dc_1x", prob: dcEligible && dc1x >= 80 ? dc1x - 4 : 0 },
+    { type: "dc_x2", prob: dcEligible && dcx2 >= 80 ? dcx2 - 4 : 0 },
+    { type: "dc_12", prob: dcEligible && dc12 >= 80 ? dc12 - 4 : 0 },
     // High-probability "lock" market — eligible only when very strong
     { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
     { type: "over25", prob: probs.over25 },
