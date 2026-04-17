@@ -4813,7 +4813,9 @@ serve(async (req: Request) => {
       standings,
       odds,
       fixture.league?.name,
-      leagueId
+      leagueId,
+      fixture.league?.round,
+      fixture.fixture?.date
     );
 
     console.log(`Prediction for ${homeTeamName} vs ${awayTeamName}: ${prediction.prediction} (${prediction.home_win}/${prediction.draw}/${prediction.away_win})`);
