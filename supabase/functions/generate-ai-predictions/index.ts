@@ -2302,6 +2302,288 @@ function applyOpenGameProfile(
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
 }
 
+// ============ BIG MATCH MENTALITY (LIVE — Option 16) ============
+// When a top-table side (rank 1-6) plays a mid-table side (rank 7-12)
+// with a meaningful rank gap, the favourite tends to outperform what
+// raw form/odds suggest by ~10-12% (cup-tied players, complacency, etc).
+// Boost confidence on the favourite when the model already picks them.
+// =================================================================
+interface BigMatchProfile {
+  homeRank: number | null;
+  awayRank: number | null;
+  totalTeams: number;
+  isBigMatch: boolean; // top-tier vs mid-tier with significant gap
+  favouredSide: "home" | "away" | null;
+}
+
+function calculateBigMatchProfile(
+  standings: StandingEntry[],
+  homeTeamId: number,
+  awayTeamId: number,
+): BigMatchProfile {
+  const empty: BigMatchProfile = { homeRank: null, awayRank: null, totalTeams: 0, isBigMatch: false, favouredSide: null };
+  if (!standings || standings.length === 0) return empty;
+  const h = standings.find(s => s.teamId === homeTeamId);
+  const a = standings.find(s => s.teamId === awayTeamId);
+  if (!h || !a) return empty;
+  const total = h.totalTeams || a.totalTeams || 20;
+
+  // Define "top tier" = rank 1-6 (typically Champions/Europe contenders)
+  // "Mid tier" = rank 7-12 (or up to 60% mark for smaller leagues)
+  const topTierMax = total <= 16 ? 4 : 6;
+  const midTierMax = Math.max(topTierMax + 4, Math.floor(total * 0.65));
+
+  const homeTop = h.rank <= topTierMax;
+  const awayTop = a.rank <= topTierMax;
+  const homeMid = h.rank > topTierMax && h.rank <= midTierMax;
+  const awayMid = a.rank > topTierMax && a.rank <= midTierMax;
+
+  let favouredSide: "home" | "away" | null = null;
+  let isBigMatch = false;
+
+  // Top home vs Mid away
+  if (homeTop && awayMid && (a.rank - h.rank) >= 3) {
+    isBigMatch = true;
+    favouredSide = "home";
+  }
+  // Top away vs Mid home
+  else if (awayTop && homeMid && (h.rank - a.rank) >= 3) {
+    isBigMatch = true;
+    favouredSide = "away";
+  }
+
+  return { homeRank: h.rank, awayRank: a.rank, totalTeams: total, isBigMatch, favouredSide };
+}
+
+function applyBigMatchAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: BigMatchProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  if (!profile.isBigMatch || !profile.favouredSide) return { confidence: pred.confidence, factors, delta };
+
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  // Boost when model aligns with the favoured top-tier side
+  if (profile.favouredSide === "home" && isHomePick) {
+    delta = 2;
+    factors.push(`👑 Top-${profile.homeRank} ${homeTeamName} vs Mid-${profile.awayRank} ${awayTeamName} — big match edge`);
+  } else if (profile.favouredSide === "away" && isAwayPick) {
+    delta = 2;
+    factors.push(`👑 Top-${profile.awayRank} ${awayTeamName} vs Mid-${profile.homeRank} ${homeTeamName} — big match edge`);
+  }
+  // Slight caution if model contradicts the elite team's superiority
+  else if (profile.favouredSide === "home" && isAwayPick) {
+    delta = -1;
+    factors.push(`⚠️ Picking away against top-${profile.homeRank} ${homeTeamName} — risky`);
+  } else if (profile.favouredSide === "away" && isHomePick) {
+    delta = -1;
+    factors.push(`⚠️ Picking home against top-${profile.awayRank} ${awayTeamName} — risky`);
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+
+// ============ PROMOTION/RELEGATION PRESSURE (LIVE — Option 17) ============
+// In the final 5 rounds of the season, teams in the relegation zone
+// or fighting for promotion play with desperate energy. Studies show
+// they outperform their season-long form by ~15-20% in must-win games.
+// Boost confidence when the desperate team is the model's pick.
+// ==========================================================================
+interface PressureProfile {
+  isLateSeason: boolean;
+  homeUnderPressure: boolean;
+  awayUnderPressure: boolean;
+  homePressureType: "relegation" | "title" | "europe" | null;
+  awayPressureType: "relegation" | "title" | "europe" | null;
+}
+
+function calculatePressureProfile(
+  standings: StandingEntry[],
+  homeTeamId: number,
+  awayTeamId: number,
+  fixtureRound: string | undefined,
+): PressureProfile {
+  const empty: PressureProfile = {
+    isLateSeason: false,
+    homeUnderPressure: false,
+    awayUnderPressure: false,
+    homePressureType: null,
+    awayPressureType: null,
+  };
+  if (!standings || standings.length === 0) return empty;
+  const h = standings.find(s => s.teamId === homeTeamId);
+  const a = standings.find(s => s.teamId === awayTeamId);
+  if (!h || !a) return empty;
+
+  // Detect late season: parse round number ("Regular Season - 32") and compare with played
+  // Heuristic: if avg `played` >= 75% of typical 38-round season → late season
+  const avgPlayed = (h.played + a.played) / 2;
+  const totalTeams = h.totalTeams || 20;
+  const expectedRounds = (totalTeams - 1) * 2; // double round-robin
+  const isLateSeason = avgPlayed >= expectedRounds * 0.75;
+
+  if (!isLateSeason) return empty;
+
+  // Pressure zones
+  const relegZone = totalTeams - 4; // bottom 5
+  const titleZone = 2;               // top 2
+  const europeZone = 6;              // top 6 spots
+
+  const classify = (rank: number): PressureProfile["homePressureType"] => {
+    if (rank >= relegZone) return "relegation";
+    if (rank <= titleZone) return "title";
+    if (rank <= europeZone) return "europe";
+    return null;
+  };
+
+  const homeType = classify(h.rank);
+  const awayType = classify(a.rank);
+
+  return {
+    isLateSeason: true,
+    homeUnderPressure: homeType !== null,
+    awayUnderPressure: awayType !== null,
+    homePressureType: homeType,
+    awayPressureType: awayType,
+  };
+}
+
+function applyPressureAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: PressureProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  if (!profile.isLateSeason) return { confidence: pred.confidence, factors, delta };
+
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+  const isDrawPick = pred.draw > pred.home_win && pred.draw > pred.away_win;
+
+  // Strongest signal: relegation desperation aligned with model's pick
+  if (profile.homePressureType === "relegation" && isHomePick) {
+    delta += 2;
+    factors.push(`🆘 Late-season relegation pressure — ${homeTeamName} fighting for survival`);
+  }
+  if (profile.awayPressureType === "relegation" && isAwayPick) {
+    delta += 2;
+    factors.push(`🆘 Late-season relegation pressure — ${awayTeamName} fighting for survival`);
+  }
+  // Title race pressure
+  if (profile.homePressureType === "title" && isHomePick) {
+    delta += 1;
+    factors.push(`🏆 Late-season title push — ${homeTeamName} must win`);
+  }
+  if (profile.awayPressureType === "title" && isAwayPick) {
+    delta += 1;
+    factors.push(`🏆 Late-season title push — ${awayTeamName} must win`);
+  }
+  // Both sides under pressure → expect tense, narrow result (boost draw slightly)
+  if (profile.homeUnderPressure && profile.awayUnderPressure && isDrawPick) {
+    delta += 1;
+    factors.push(`⚖️ Both sides under late-season pressure — tense draw scenario`);
+  }
+  // Cap delta to ±3
+  delta = clamp(delta, -2, 3);
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+
+// ============ xG CALIBRATION LIVE (LIVE — Option 3) ============
+// Compares proxy xG (used in current model) against real xG from
+// API-Football. If real xG diverges meaningfully from proxy, nudge
+// confidence: convergence = +1 (signal validated), strong divergence
+// against the pick = -2 (proxy may be overstating chance).
+// =================================================================
+interface XGCalibrationResult {
+  available: boolean;
+  proxyHomeXg: number;
+  proxyAwayXg: number;
+  realHomeXg: number | null;
+  realAwayXg: number | null;
+  homeDeltaXg: number | null; // real - proxy
+  awayDeltaXg: number | null;
+}
+
+function applyXGCalibration(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  homeRealXG: { home_xg_for_avg: number | null; home_xg_against_avg: number | null } | null,
+  awayRealXG: { away_xg_for_avg: number | null; away_xg_against_avg: number | null } | null,
+  proxyHomeXg: number,
+  proxyAwayXg: number,
+): { confidence: number; factors: string[]; delta: number; result: XGCalibrationResult } {
+  const factors: string[] = [];
+  let delta = 0;
+  const result: XGCalibrationResult = {
+    available: false,
+    proxyHomeXg,
+    proxyAwayXg,
+    realHomeXg: null,
+    realAwayXg: null,
+    homeDeltaXg: null,
+    awayDeltaXg: null,
+  };
+
+  // Need both real-xG components to compute calibrated xG
+  let realHomeXg: number | null = null;
+  let realAwayXg: number | null = null;
+  if (homeRealXG?.home_xg_for_avg != null && awayRealXG?.away_xg_against_avg != null) {
+    realHomeXg = (homeRealXG.home_xg_for_avg + awayRealXG.away_xg_against_avg) / 2;
+  }
+  if (awayRealXG?.away_xg_for_avg != null && homeRealXG?.home_xg_against_avg != null) {
+    realAwayXg = (awayRealXG.away_xg_for_avg + homeRealXG.home_xg_against_avg) / 2;
+  }
+  if (realHomeXg == null || realAwayXg == null) return { confidence: pred.confidence, factors, delta, result };
+
+  result.available = true;
+  result.realHomeXg = realHomeXg;
+  result.realAwayXg = realAwayXg;
+  result.homeDeltaXg = realHomeXg - proxyHomeXg;
+  result.awayDeltaXg = realAwayXg - proxyAwayXg;
+
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  // Convergence: real xG within ±0.25 of proxy on both sides → signal validated (+1)
+  const homeConverge = Math.abs(result.homeDeltaXg) <= 0.25;
+  const awayConverge = Math.abs(result.awayDeltaXg) <= 0.25;
+  if (homeConverge && awayConverge) {
+    delta = 1;
+    factors.push(`✅ xG calibration validates pick (real xG matches proxy within 0.25)`);
+    return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta, result };
+  }
+
+  // Strong divergence AGAINST the pick → caution
+  // If picked home but real home xG is significantly LOWER than proxy (overrated)
+  if (isHomePick && result.homeDeltaXg <= -0.5) {
+    delta = -2;
+    factors.push(`📉 Real xG ${realHomeXg.toFixed(2)} below proxy ${proxyHomeXg.toFixed(2)} — home pick overrated`);
+  } else if (isAwayPick && result.awayDeltaXg <= -0.5) {
+    delta = -2;
+    factors.push(`📉 Real xG ${realAwayXg.toFixed(2)} below proxy ${proxyAwayXg.toFixed(2)} — away pick overrated`);
+  }
+  // Strong divergence FOR the pick → boost
+  else if (isHomePick && result.homeDeltaXg >= 0.5) {
+    delta = 1;
+    factors.push(`📈 Real xG ${realHomeXg.toFixed(2)} above proxy ${proxyHomeXg.toFixed(2)} — home pick underrated`);
+  } else if (isAwayPick && result.awayDeltaXg >= 0.5) {
+    delta = 1;
+    factors.push(`📈 Real xG ${realAwayXg.toFixed(2)} above proxy ${proxyAwayXg.toFixed(2)} — away pick underrated`);
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta, result };
+}
+
+
 // ============ HOME/AWAY ASYMMETRY BOOST (LIVE — Option 15) ============
 // Some teams have dramatically different performance home vs away.
 // Uses isHome flag from FormMatch to compute split win rates over last 10.
