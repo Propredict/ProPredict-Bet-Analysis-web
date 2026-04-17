@@ -5497,6 +5497,94 @@ async function processBatch(
         console.warn(`[WEATHER] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // ===== DRAW SPECIALIST (LIVE — Option 12) =====
+      try {
+        const drawProfile = calculateDrawProfile(homeForm, awayForm);
+        const drawAdj = applyDrawProfile(newPrediction, drawProfile);
+        if (drawAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = drawAdj.confidence;
+          for (const f of drawAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[DRAW] ${homeTeamName} vs ${awayTeamName} | ` +
+            `Draw rates: ${drawProfile.homeDrawRate}%/${drawProfile.awayDrawRate}% | ` +
+            `Conf: ${beforeConf}% → ${drawAdj.confidence}% (Δ${drawAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[DRAW] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== OPEN-GAME / BTTS PROFILE (LIVE — Option 14) =====
+      try {
+        const openProfile = calculateOpenGameProfile(homeForm, awayForm);
+        const openAdj = applyOpenGameProfile(newPrediction, openProfile);
+        if (openAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = openAdj.confidence;
+          for (const f of openAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[OPENGAME] ${homeTeamName} vs ${awayTeamName} | ` +
+            `BTTS rates: ${openProfile.homeBttsRate}%/${openProfile.awayBttsRate}% | ` +
+            `Conf: ${beforeConf}% → ${openAdj.confidence}% (Δ${openAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[OPENGAME] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== HOME/AWAY ASYMMETRY BOOST (LIVE — Option 15) =====
+      try {
+        const asymProfile = calculateAsymmetryProfile(homeForm, awayForm);
+        const asymAdj = applyAsymmetryAdjustment(newPrediction, asymProfile, homeTeamName, awayTeamName);
+        if (asymAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = asymAdj.confidence;
+          for (const f of asymAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[ASYMMETRY] ${homeTeamName}(H:${asymProfile.homeHomeWinRate}%) vs ${awayTeamName}(A:${asymProfile.awayAwayWinRate}%) | ` +
+            `Conf: ${beforeConf}% → ${asymAdj.confidence}% (Δ${asymAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[ASYMMETRY] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== ROTATION RISK (LIVE — Option 11) =====
+      // Only fetched within ~24h of kickoff to avoid wasted API calls before lineups posted.
+      try {
+        const fixtureIsoForRot = fixture?.fixture?.date as string | undefined;
+        const kickoffMs = fixtureIsoForRot ? new Date(fixtureIsoForRot).getTime() : 0;
+        const hoursToKickoff = kickoffMs ? (kickoffMs - Date.now()) / 3600000 : 999;
+        if (fixtureIdStr && fixtureIsoForRot && hoursToKickoff <= 24 && hoursToKickoff >= -3 && homeTeamId && awayTeamId) {
+          const rotProfile = await calculateRotationProfile(
+            fixtureIdStr, fixtureIsoForRot, homeTeamId, awayTeamId, apiKey
+          );
+          if (rotProfile.homeChanges >= 0 || rotProfile.awayChanges >= 0) {
+            const rotAdj = applyRotationAdjustment(newPrediction, rotProfile, homeTeamName, awayTeamName);
+            if (rotAdj.delta !== 0) {
+              const beforeConf = newPrediction.confidence;
+              newPrediction.confidence = rotAdj.confidence;
+              for (const f of rotAdj.factors) {
+                if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+              }
+              console.log(
+                `[ROTATION] ${homeTeamName}(${rotProfile.homeChanges} chg) vs ${awayTeamName}(${rotProfile.awayChanges} chg) | ` +
+                `Conf: ${beforeConf}% → ${rotAdj.confidence}% (Δ${rotAdj.delta})`
+              );
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`[ROTATION] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
