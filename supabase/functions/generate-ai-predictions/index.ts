@@ -1566,7 +1566,166 @@ function calculateH2HScore(h2h: H2HMatch[], teamAId: number, teamBId: number): n
 
     if (teamAGoals > teamBGoals) points += 3;
     else if (teamAGoals === teamBGoals) points += 1;
+}
+
+// ============ H2H STYLE MATCHING (LIVE) ============
+/**
+ * Analyze H2H goal patterns instead of just outcomes.
+ * Returns metrics that signal Over/Under and BTTS bias.
+ */
+export interface H2HStyle {
+  avgGoals: number;          // avg total goals across H2H sample
+  over25Rate: number;        // 0-100, % of H2H matches with > 2.5 goals
+  bttsRate: number;          // 0-100, % of H2H matches with BTTS
+  cleanSheetRate: number;    // 0-100, % of H2H matches with at least one clean sheet
+  samples: number;
+  signal: "OVER" | "UNDER" | "BTTS_YES" | "BTTS_NO" | "NONE";
+}
+
+function calculateH2HStyle(h2h: H2HMatch[]): H2HStyle {
+  if (!h2h || h2h.length < 3) {
+    return { avgGoals: 0, over25Rate: 0, bttsRate: 0, cleanSheetRate: 0, samples: h2h?.length || 0, signal: "NONE" };
   }
+  const sample = h2h.slice(0, 5);
+  const totals = sample.map(m => m.homeGoals + m.awayGoals);
+  const over25 = totals.filter(t => t > 2.5).length;
+  const btts = sample.filter(m => m.homeGoals > 0 && m.awayGoals > 0).length;
+  const clean = sample.filter(m => m.homeGoals === 0 || m.awayGoals === 0).length;
+  const avg = totals.reduce((a, b) => a + b, 0) / sample.length;
+  const over25Rate = Math.round((over25 / sample.length) * 100);
+  const bttsRate = Math.round((btts / sample.length) * 100);
+  const cleanSheetRate = Math.round((clean / sample.length) * 100);
+
+  let signal: H2HStyle["signal"] = "NONE";
+  if (over25Rate >= 80 && avg >= 3.0) signal = "OVER";
+  else if (over25Rate <= 20 && avg <= 1.8) signal = "UNDER";
+  else if (bttsRate >= 80) signal = "BTTS_YES";
+  else if (bttsRate <= 20) signal = "BTTS_NO";
+
+  return { avgGoals: avg, over25Rate, bttsRate, cleanSheetRate, samples: sample.length, signal };
+}
+
+// ============ REFEREE BIAS (LIVE) ============
+/**
+ * Fetch a referee's last ~20 matches and compute their stylistic stats.
+ * Cached per function invocation (and per referee name).
+ *
+ * NOTE: API-Football supports `/fixtures?referee=NAME&season=Y` for past fixtures.
+ * We sample only this season's recent matches for the referee.
+ */
+async function fetchRefereeStats(
+  refereeName: string | undefined | null,
+  season: number,
+  apiKey: string,
+): Promise<RefereeStats | null> {
+  if (!refereeName) return null;
+  const cleanName = String(refereeName).split(",")[0].trim();
+  if (!cleanName || cleanName.length < 3) return null;
+
+  if (refereeStatsCache.has(cleanName)) return refereeStatsCache.get(cleanName) ?? null;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/fixtures?referee=${encodeURIComponent(cleanName)}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 600 });
+    const matches = (data?.response || []).filter((m: any) =>
+      m?.fixture?.status?.short === "FT" &&
+      typeof m?.goals?.home === "number" &&
+      typeof m?.goals?.away === "number"
+    ).slice(0, 20);
+
+    if (matches.length < 5) {
+      refereeStatsCache.set(cleanName, null);
+      return null;
+    }
+
+    let totalGoals = 0, bttsCount = 0;
+    for (const m of matches) {
+      const hg = m.goals.home as number;
+      const ag = m.goals.away as number;
+      totalGoals += hg + ag;
+      if (hg > 0 && ag > 0) bttsCount++;
+    }
+    const stats: RefereeStats = {
+      avgGoals: totalGoals / matches.length,
+      bttsRate: Math.round((bttsCount / matches.length) * 100),
+      cardsPerGame: 0,         // API doesn't include cards summary in /fixtures, leave 0 for now
+      penaltiesPerGame: 0,
+      samples: matches.length,
+    };
+    refereeStatsCache.set(cleanName, stats);
+    return stats;
+  } catch (e) {
+    console.warn(`[REF] failed to fetch stats for ${cleanName}:`, (e as any)?.message);
+    refereeStatsCache.set(cleanName, null);
+    return null;
+  }
+}
+
+/**
+ * Apply referee + H2H style adjustment to a prediction (small confidence delta).
+ * Returns adjusted confidence + descriptive factors for key_factors.
+ */
+function applyRefereeAndH2HStyle(
+  pred: { home_win: number; draw: number; away_win: number; confidence: number; prediction: string },
+  refStats: RefereeStats | null,
+  h2hStyle: H2HStyle,
+  modelOver25Pct: number,
+  modelBttsPct: number,
+): { confidence: number; factors: string[]; deltas: { ref: number; h2h: number } } {
+  const factors: string[] = [];
+  let confDelta = 0;
+  let refDelta = 0, h2hDelta = 0;
+
+  // === H2H Style alignment ===
+  if (h2hStyle.signal !== "NONE" && h2hStyle.samples >= 3) {
+    if (h2hStyle.signal === "OVER" && modelOver25Pct >= 55) {
+      h2hDelta += 2;
+      factors.push(`H2H high-scoring (${h2hStyle.over25Rate}% Over 2.5, avg ${h2hStyle.avgGoals.toFixed(1)})`);
+    } else if (h2hStyle.signal === "UNDER" && modelOver25Pct <= 45) {
+      h2hDelta += 2;
+      factors.push(`H2H low-scoring (${100 - h2hStyle.over25Rate}% Under 2.5, avg ${h2hStyle.avgGoals.toFixed(1)})`);
+    } else if (h2hStyle.signal === "BTTS_YES" && modelBttsPct >= 55) {
+      h2hDelta += 1;
+      factors.push(`H2H BTTS pattern (${h2hStyle.bttsRate}% both score)`);
+    } else if (h2hStyle.signal === "BTTS_NO" && modelBttsPct <= 45) {
+      h2hDelta += 1;
+      factors.push(`H2H clean-sheet pattern (${100 - h2hStyle.bttsRate}% no BTTS)`);
+    } else if (
+      (h2hStyle.signal === "OVER" && modelOver25Pct <= 35) ||
+      (h2hStyle.signal === "UNDER" && modelOver25Pct >= 65)
+    ) {
+      // H2H disagrees with model on totals → small confidence reduction
+      h2hDelta -= 2;
+      factors.push(`H2H disagrees with model totals (${h2hStyle.over25Rate}% Over)`);
+    }
+  }
+
+  // === Referee Style ===
+  if (refStats && refStats.samples >= 5) {
+    // High-scoring ref (avg > 2.9) aligned with high model Over → boost
+    if (refStats.avgGoals >= 2.9 && modelOver25Pct >= 55) {
+      refDelta += 1;
+      factors.push(`Referee favors goals (${refStats.avgGoals.toFixed(2)} avg / ${refStats.samples} games)`);
+    } else if (refStats.avgGoals <= 2.2 && modelOver25Pct <= 45) {
+      refDelta += 1;
+      factors.push(`Referee tight game (${refStats.avgGoals.toFixed(2)} avg / ${refStats.samples} games)`);
+    } else if (refStats.bttsRate >= 65 && modelBttsPct >= 55) {
+      refDelta += 1;
+      factors.push(`Referee profile: BTTS-friendly (${refStats.bttsRate}%)`);
+    } else if (
+      (refStats.avgGoals >= 2.9 && modelOver25Pct <= 35) ||
+      (refStats.avgGoals <= 2.2 && modelOver25Pct >= 65)
+    ) {
+      // Ref disagrees with model totals
+      refDelta -= 1;
+      factors.push(`Referee profile contradicts totals (avg ${refStats.avgGoals.toFixed(2)})`);
+    }
+  }
+
+  confDelta = clamp(refDelta + h2hDelta, -3, 3);
+  const newConfidence = clamp(pred.confidence + confDelta, 40, 100);
+  return { confidence: newConfidence, factors, deltas: { ref: refDelta, h2h: h2hDelta } };
+}
 
   return Math.round((points / 9) * 100);
 }
