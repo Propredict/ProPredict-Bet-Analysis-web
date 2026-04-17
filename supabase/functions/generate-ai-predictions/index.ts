@@ -6289,7 +6289,13 @@ async function processBatch(
           const starProfile = calculateStarAbsenceProfile(
             topPlayers, homeTeamId, awayTeamId, missingHome, missingAway
           );
-          const starAdj = applyStarAbsenceAdjustment(newPrediction, starProfile, homeTeamName, awayTeamName);
+          // Detect GK absence by name match against missing players
+          const normName = (n: string) => String(n || "").toLowerCase().trim();
+          const homeMissingNames = (missingHome || []).map((p: any) => normName(p?.name || p?.player_name));
+          const awayMissingNames = (missingAway || []).map((p: any) => normName(p?.name || p?.player_name));
+          const homeGKMissing = !!(homeGK?.name && homeMissingNames.some(n => n.includes(normName(homeGK.name)) || normName(homeGK.name).includes(n)));
+          const awayGKMissing = !!(awayGK?.name && awayMissingNames.some(n => n.includes(normName(awayGK.name)) || normName(awayGK.name).includes(n)));
+          const starAdj = applyStarAbsenceAdjustment(newPrediction, starProfile, homeTeamName, awayTeamName, { homeGKMissing, awayGKMissing });
           if (starAdj.delta !== 0) {
             const beforeConf = newPrediction.confidence;
             newPrediction.confidence = starAdj.confidence;
