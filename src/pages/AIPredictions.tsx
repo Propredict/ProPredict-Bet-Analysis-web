@@ -985,21 +985,6 @@ export default function AIPredictions() {
             </div>
           )}
 
-          {/* TOP AI PICKS — ranked highlight section above all predictions */}
-          <TopAIPicksSection
-            picks={topPicks}
-            isAdmin={isAdmin}
-            isPremiumUser={isPremiumUser}
-            isProUser={isProUser}
-            isAuthenticated={isAuthenticated}
-            isFavorite={isFavorite}
-            isSaving={isSaving}
-            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-            unlockingId={unlockingId}
-            getPredictionTier={getPredictionTier}
-          />
-
           {/* Featured — ONLY for paying users (Pro/Premium/Admin) */}
           {(isPremiumUser || isProUser || isAdmin) && featuredPredictions.length > 0 && (
             <div>
