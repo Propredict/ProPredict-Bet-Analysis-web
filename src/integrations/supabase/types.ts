@@ -22,6 +22,9 @@ export type Database = {
           bookmakers_count: number | null
           confidence: number
           confidence_adjustment: number | null
+          consensus_away: number | null
+          consensus_draw: number | null
+          consensus_home: number | null
           consensus_odds: number | null
           created_at: string | null
           draw: number
@@ -33,6 +36,7 @@ export type Database = {
           is_live: boolean | null
           is_locked: boolean | null
           is_premium: boolean | null
+          is_value_bet: boolean | null
           key_factors: string[] | null
           last_away_goals: number | null
           last_home_goals: number | null
@@ -53,6 +57,9 @@ export type Database = {
           result_status: string | null
           risk_level: string | null
           updated_at: string | null
+          value_away: number | null
+          value_draw: number | null
+          value_home: number | null
         }
         Insert: {
           analysis?: string | null
@@ -61,6 +68,9 @@ export type Database = {
           bookmakers_count?: number | null
           confidence: number
           confidence_adjustment?: number | null
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
           consensus_odds?: number | null
           created_at?: string | null
           draw: number
@@ -72,6 +82,7 @@ export type Database = {
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
+          is_value_bet?: boolean | null
           key_factors?: string[] | null
           last_away_goals?: number | null
           last_home_goals?: number | null
@@ -92,6 +103,9 @@ export type Database = {
           result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
+          value_away?: number | null
+          value_draw?: number | null
+          value_home?: number | null
         }
         Update: {
           analysis?: string | null
@@ -100,6 +114,9 @@ export type Database = {
           bookmakers_count?: number | null
           confidence?: number
           confidence_adjustment?: number | null
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
           consensus_odds?: number | null
           created_at?: string | null
           draw?: number
@@ -111,6 +128,7 @@ export type Database = {
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
+          is_value_bet?: boolean | null
           key_factors?: string[] | null
           last_away_goals?: number | null
           last_home_goals?: number | null
@@ -131,6 +149,9 @@ export type Database = {
           result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
+          value_away?: number | null
+          value_draw?: number | null
+          value_home?: number | null
         }
         Relationships: []
       }
@@ -653,6 +674,7 @@ export type Database = {
           implied_home: number | null
           match_date: string | null
           match_id: string
+          source: string | null
         }
         Insert: {
           bookmakers_count?: number
@@ -666,6 +688,7 @@ export type Database = {
           implied_home?: number | null
           match_date?: string | null
           match_id: string
+          source?: string | null
         }
         Update: {
           bookmakers_count?: number
@@ -679,6 +702,7 @@ export type Database = {
           implied_home?: number | null
           match_date?: string | null
           match_id?: string
+          source?: string | null
         }
         Relationships: []
       }
