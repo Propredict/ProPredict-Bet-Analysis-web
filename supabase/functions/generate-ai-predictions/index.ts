@@ -5175,6 +5175,70 @@ async function processBatch(
         console.warn(`[DEFENSE] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // ===== FIXTURE CONGESTION & TRAVEL/REST GAP (LIVE — Option 13) =====
+      // Penalize teams with 3+ matches in 8 days; reward fresher side when model aligns.
+      try {
+        const fixtureDateForCongestion = fixture?.fixture?.date as string | undefined;
+        const congestion = calculateCongestionProfile(fixtureDateForCongestion, homeForm, awayForm);
+        if (
+          congestion.homeMatchesIn8Days >= 2 ||
+          congestion.awayMatchesIn8Days >= 2 ||
+          congestion.congestionGap !== "balanced"
+        ) {
+          const before = { ...newPrediction };
+          const congAdj = applyCongestionAdjustment(newPrediction, congestion, homeTeamName, awayTeamName);
+          if (congAdj.delta !== 0 || congAdj.home_win !== before.home_win || congAdj.away_win !== before.away_win) {
+            newPrediction.home_win = congAdj.home_win;
+            newPrediction.draw = congAdj.draw;
+            newPrediction.away_win = congAdj.away_win;
+            newPrediction.confidence = congAdj.confidence;
+            for (const f of congAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[CONGESTION] ${homeTeamName}(8d:${congestion.homeMatchesIn8Days}, rest:${congestion.homeRestHours ? Math.round(congestion.homeRestHours) + "h" : "n/a"}) vs ` +
+              `${awayTeamName}(8d:${congestion.awayMatchesIn8Days}, rest:${congestion.awayRestHours ? Math.round(congestion.awayRestHours) + "h" : "n/a"}) | ` +
+              `Gap: ${congestion.congestionGap} | ` +
+              `Probs: ${before.home_win}/${before.draw}/${before.away_win} → ${congAdj.home_win}/${congAdj.draw}/${congAdj.away_win} | ` +
+              `Conf: ${before.confidence}% → ${congAdj.confidence}% (Δ${congAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[CONGESTION] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== WEATHER IMPACT (LIVE — Option 4) =====
+      // Open-Meteo (no API key). Severe wind/rain/snow penalizes Over/BTTS, supports Under.
+      try {
+        const venue = fixture?.fixture?.venue;
+        const venueCity: string | undefined = venue?.city;
+        const venueCountry: string | undefined = fixture?.league?.country;
+        const fixtureDateForWeather = fixture?.fixture?.date as string | undefined;
+        if (venueCity && fixtureDateForWeather) {
+          const weather = await fetchWeatherForKickoff(venueCity, venueCountry, fixtureDateForWeather);
+          if (weather) {
+            const modelOver25 = goalMarkets.over25 ?? 50;
+            const wxAdj = applyWeatherAdjustment(newPrediction, weather, modelOver25);
+            if (wxAdj.delta !== 0) {
+              const beforeConf = newPrediction.confidence;
+              newPrediction.confidence = wxAdj.confidence;
+              for (const f of wxAdj.factors) {
+                if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+              }
+              console.log(
+                `[WEATHER] ${homeTeamName} vs ${awayTeamName} @ ${venueCity} | ` +
+                `${weather.conditionLabel} ${weather.tempC ?? "?"}°C wind ${weather.windKmh ? Math.round(weather.windKmh) : "?"}km/h precip ${weather.precipMm ?? 0}mm | ` +
+                `Severity: ${wxAdj.severity} | ` +
+                `Conf: ${beforeConf}% → ${wxAdj.confidence}% (Δ${wxAdj.delta})`
+              );
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`[WEATHER] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
