@@ -189,7 +189,8 @@ export default function AIPredictions() {
     const counts: Record<MarketFilter, number> = {
       all: base.length,
       home_win: 0, away_win: 0, draw: 0,
-      over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
+      over15: 0, over25: 0, under25: 0, under35: 0,
+      btts_yes: 0, btts_no: 0,
     };
     const marketKeys: MarketFilter[] = ["home_win", "away_win", "draw", "over25", "under25", "btts_yes", "btts_no"];
     base.forEach((p) => {
