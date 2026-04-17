@@ -46,7 +46,10 @@ export function TopAIPicksSection({
   // - Pro: 3 unlocked, 2 locked (visible)
   // - Free: 1 unlocked, 4 locked (visible)
   const unlockedCount = isPremiumUser || isAdmin ? picks.length : isProUser ? 3 : 1;
-  const visiblePicks = picks;
+  // Free users: render only the unlocked pick(s); locked teasers are removed.
+  // Pro users still see locked teasers (unchanged).
+  const isFreeViewer = !isPremiumUser && !isProUser && !isAdmin;
+  const visiblePicks = isFreeViewer ? picks.slice(0, unlockedCount) : picks;
   const lockedCount = Math.max(0, picks.length - unlockedCount);
   const showUpsell = !isPremiumUser && !isAdmin && lockedCount > 0;
 
