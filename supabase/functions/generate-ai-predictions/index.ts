@@ -1566,6 +1566,9 @@ function calculateH2HScore(h2h: H2HMatch[], teamAId: number, teamBId: number): n
 
     if (teamAGoals > teamBGoals) points += 3;
     else if (teamAGoals === teamBGoals) points += 1;
+  }
+
+  return Math.round((points / 9) * 100);
 }
 
 // ============ H2H STYLE MATCHING (LIVE) ============
