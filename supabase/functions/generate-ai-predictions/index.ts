@@ -2142,24 +2142,54 @@ function calculateDrawProfile(homeForm: FormMatch[], awayForm: FormMatch[]): Dra
 function applyDrawProfile(
   pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
   profile: DrawProfile,
+  h2hDrawRate: number = 0, // % of H2H matches that ended draw
 ): { confidence: number; factors: string[]; delta: number } {
   const factors: string[] = [];
   let delta = 0;
   const predLower = (pred.prediction || "").toLowerCase();
   const isDrawPick = predLower === "x" || predLower.includes("draw");
 
-  if (profile.bothDrawProne && pred.draw >= 28) {
-    if (isDrawPick) {
+  // Signal 1: Both teams draw-prone (form-based)
+  const formDrawSignal = profile.bothDrawProne && pred.draw >= 28;
+  // Signal 2: H2H is draw-heavy (>= 40% draws across last 5)
+  const h2hDrawSignal = h2hDrawRate >= 40;
+  // Signal 3: Balanced 1X2 race (close home_win vs away_win)
+  const balancedRace = Math.abs(pred.home_win - pred.away_win) <= 10 && pred.draw >= 25;
+
+  // Count how many independent draw signals are firing
+  const signalCount = (formDrawSignal ? 1 : 0) + (h2hDrawSignal ? 1 : 0) + (balancedRace ? 1 : 0);
+
+  if (isDrawPick) {
+    // Reward Draw picks when signals align
+    if (signalCount >= 2) {
+      delta = 4;
+      factors.push(`🤝 Strong draw signal: form ${profile.homeDrawRate}%/${profile.awayDrawRate}%, H2H ${h2hDrawRate}% draws — supports Draw pick`);
+    } else if (signalCount === 1) {
       delta = 2;
-      factors.push(`🤝 Draw specialists: both teams ${profile.homeDrawRate}%/${profile.awayDrawRate}% draw rate — supports Draw pick`);
-    } else if (Math.abs(pred.home_win - pred.away_win) <= 12) {
-      // Close 1X2 race + both draw-prone = win pick is shakier
+      if (formDrawSignal) factors.push(`🤝 Draw specialists: both teams ${profile.homeDrawRate}%/${profile.awayDrawRate}% draw rate — supports Draw pick`);
+      else if (h2hDrawSignal) factors.push(`🤝 H2H draw-heavy: ${h2hDrawRate}% of last meetings ended even — supports Draw pick`);
+      else factors.push(`🤝 Balanced 1X2 race + Draw ${pred.draw}% — supports Draw pick`);
+    }
+  } else {
+    // Win pick is risky if multiple draw signals fire
+    if (signalCount >= 2) {
+      delta = -2;
+      factors.push(`⚠️ Multiple Draw signals (form ${profile.homeDrawRate}%/${profile.awayDrawRate}%, H2H ${h2hDrawRate}%) — win pick risky`);
+    } else if (signalCount === 1 && balancedRace) {
       delta = -1;
-      factors.push(`⚠️ Both teams draw-prone (${profile.homeDrawRate}%/${profile.awayDrawRate}%) — close 1X2 race adds Draw risk`);
+      factors.push(`⚠️ Tight 1X2 race + Draw ${pred.draw}% — win pick less safe`);
     }
   }
 
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+/** Calculate H2H draw rate (% of past meetings that ended in draw). */
+function calculateH2HDrawRate(h2h: H2HMatch[]): number {
+  if (!h2h || h2h.length < 3) return 0;
+  const sample = h2h.slice(0, 5);
+  const draws = sample.filter(m => m.homeGoals === m.awayGoals).length;
+  return Math.round((draws / sample.length) * 100);
 }
 
 // ============ ROTATION RISK ADJUSTER (LIVE — Option 11) ============
