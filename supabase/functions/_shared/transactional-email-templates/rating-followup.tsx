@@ -76,8 +76,8 @@ const RatingFollowupEmail = ({ name, stars, trackingUrl }: RatingFollowupProps) 
 
             <Text style={textSmall}>
               Or copy this link:{' '}
-              <Link href={ctaUrl} style={link}>
-                {ctaUrl}
+              <Link href={PLAY_STORE_URL} style={link}>
+                {PLAY_STORE_URL}
               </Link>
             </Text>
 
