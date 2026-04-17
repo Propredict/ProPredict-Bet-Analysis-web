@@ -218,6 +218,267 @@ const leagueAccuracyCache = new Map<string, number>();
 const marketAccuracyCache = new Map<string, number>();
 const leagueHomeAdvantageCache = new Map<number, number>(); // leagueId → home win % from standings
 
+// ============================================================
+// === SAFE MODE: Real xG Data Collection (NO prediction impact) ===
+// ============================================================
+// Fetches actual xG from API-Football and logs alongside proxy xG
+// for future analysis. Current prediction engine remains unchanged.
+// All operations are wrapped in try/catch — failures are silent.
+// ============================================================
+
+interface RealXGStats {
+  team_id: number;
+  league_id: number;
+  season: number;
+  xg_for_avg_last5: number | null;
+  xg_against_avg_last5: number | null;
+  home_xg_for_avg: number | null;
+  home_xg_against_avg: number | null;
+  away_xg_for_avg: number | null;
+  away_xg_against_avg: number | null;
+  xg_for_std: number | null;
+  matches_count: number;
+}
+
+const realXGMemoryCache = new Map<string, RealXGStats | null>();
+
+/**
+ * Fetches last N completed matches for a team and extracts xG from statistics.
+ * Returns null if API fails or no xG data available (lower leagues).
+ */
+async function fetchTeamRealXGFromAPI(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  apiKey: string
+): Promise<RealXGStats | null> {
+  try {
+    const url = `${API_FOOTBALL_URL}/fixtures?team=${teamId}&season=${season}&last=10`;
+    const res = await fetch(url, {
+      headers: {
+        "x-apisports-key": apiKey,
+        "x-rapidapi-host": "v3.football.api-sports.io",
+      },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const fixtures = json?.response || [];
+    if (fixtures.length === 0) return null;
+
+    const xgForAll: number[] = [];
+    const xgAgainstAll: number[] = [];
+    const xgForHome: number[] = [];
+    const xgAgainstHome: number[] = [];
+    const xgForAway: number[] = [];
+    const xgAgainstAway: number[] = [];
+
+    // For each fixture, fetch its statistics to extract xG
+    for (const fixture of fixtures.slice(0, 10)) {
+      try {
+        const fixtureId = fixture?.fixture?.id;
+        const isHome = fixture?.teams?.home?.id === teamId;
+        if (!fixtureId) continue;
+
+        const statsUrl = `${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`;
+        const statsRes = await fetch(statsUrl, {
+          headers: {
+            "x-apisports-key": apiKey,
+            "x-rapidapi-host": "v3.football.api-sports.io",
+          },
+        });
+        if (!statsRes.ok) continue;
+        const statsJson = await statsRes.json();
+        const teamsStats = statsJson?.response || [];
+
+        const myStats = teamsStats.find((t: any) => t?.team?.id === teamId);
+        const oppStats = teamsStats.find((t: any) => t?.team?.id !== teamId);
+        if (!myStats || !oppStats) continue;
+
+        const myXgRaw = myStats.statistics?.find((s: any) => s.type === "expected_goals")?.value;
+        const oppXgRaw = oppStats.statistics?.find((s: any) => s.type === "expected_goals")?.value;
+
+        const myXg = myXgRaw !== null && myXgRaw !== undefined ? parseFloat(String(myXgRaw)) : null;
+        const oppXg = oppXgRaw !== null && oppXgRaw !== undefined ? parseFloat(String(oppXgRaw)) : null;
+
+        if (myXg !== null && !isNaN(myXg) && myXg >= 0) {
+          xgForAll.push(myXg);
+          if (isHome) xgForHome.push(myXg);
+          else xgForAway.push(myXg);
+        }
+        if (oppXg !== null && !isNaN(oppXg) && oppXg >= 0) {
+          xgAgainstAll.push(oppXg);
+          if (isHome) xgAgainstHome.push(oppXg);
+          else xgAgainstAway.push(oppXg);
+        }
+
+        // Be nice to API-Football rate limits
+        await new Promise((r) => setTimeout(r, 150));
+      } catch (_) {
+        // skip individual fixture errors
+      }
+    }
+
+    if (xgForAll.length === 0) return null;
+
+    const avg = (arr: number[]) => (arr.length === 0 ? null : arr.reduce((s, x) => s + x, 0) / arr.length);
+    const std = (arr: number[]) => {
+      if (arr.length < 2) return null;
+      const m = arr.reduce((s, x) => s + x, 0) / arr.length;
+      const variance = arr.reduce((s, x) => s + (x - m) ** 2, 0) / arr.length;
+      return Math.sqrt(variance);
+    };
+
+    return {
+      team_id: teamId,
+      league_id: leagueId,
+      season,
+      xg_for_avg_last5: avg(xgForAll.slice(0, 5)),
+      xg_against_avg_last5: avg(xgAgainstAll.slice(0, 5)),
+      home_xg_for_avg: avg(xgForHome),
+      home_xg_against_avg: avg(xgAgainstHome),
+      away_xg_for_avg: avg(xgForAway),
+      away_xg_against_avg: avg(xgAgainstAway),
+      xg_for_std: std(xgForAll),
+      matches_count: xgForAll.length,
+    };
+  } catch (e) {
+    console.warn(`[xG-SAFE] fetchTeamRealXGFromAPI failed for team ${teamId}:`, (e as Error)?.message);
+    return null;
+  }
+}
+
+/**
+ * Cached lookup: checks team_xg_cache (6h TTL), else fetches + upserts.
+ * Always returns null on any failure — never throws.
+ */
+async function getCachedRealXG(
+  supabase: any,
+  teamId: number,
+  leagueId: number,
+  season: number,
+  apiKey: string
+): Promise<RealXGStats | null> {
+  const cacheKey = `${teamId}-${leagueId}-${season}`;
+  if (realXGMemoryCache.has(cacheKey)) return realXGMemoryCache.get(cacheKey) ?? null;
+
+  try {
+    // Check DB cache (6h TTL)
+    const { data: cached } = await supabase
+      .from("team_xg_cache")
+      .select("*")
+      .eq("team_id", String(teamId))
+      .eq("league_id", String(leagueId))
+      .eq("season", season)
+      .maybeSingle();
+
+    if (cached?.updated_at) {
+      const ageMs = Date.now() - new Date(cached.updated_at).getTime();
+      if (ageMs < 6 * 60 * 60 * 1000) {
+        const stats: RealXGStats = {
+          team_id: teamId,
+          league_id: leagueId,
+          season,
+          xg_for_avg_last5: cached.xg_for_avg_last5,
+          xg_against_avg_last5: cached.xg_against_avg_last5,
+          home_xg_for_avg: cached.home_xg_for_avg,
+          home_xg_against_avg: cached.home_xg_against_avg,
+          away_xg_for_avg: cached.away_xg_for_avg,
+          away_xg_against_avg: cached.away_xg_against_avg,
+          xg_for_std: cached.xg_for_std,
+          matches_count: cached.matches_count ?? 0,
+        };
+        realXGMemoryCache.set(cacheKey, stats);
+        return stats;
+      }
+    }
+
+    // Stale or missing → fetch fresh
+    const fresh = await fetchTeamRealXGFromAPI(teamId, leagueId, season, apiKey);
+    realXGMemoryCache.set(cacheKey, fresh);
+
+    if (fresh) {
+      try {
+        await supabase.from("team_xg_cache").upsert({
+          team_id: String(teamId),
+          league_id: String(leagueId),
+          season,
+          xg_for_avg_last5: fresh.xg_for_avg_last5,
+          xg_against_avg_last5: fresh.xg_against_avg_last5,
+          home_xg_for_avg: fresh.home_xg_for_avg,
+          home_xg_against_avg: fresh.home_xg_against_avg,
+          away_xg_for_avg: fresh.away_xg_for_avg,
+          away_xg_against_avg: fresh.away_xg_against_avg,
+          xg_for_std: fresh.xg_for_std,
+          matches_count: fresh.matches_count,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "team_id,league_id,season" });
+      } catch (e) {
+        console.warn(`[xG-SAFE] Upsert team_xg_cache failed:`, (e as Error)?.message);
+      }
+    }
+
+    return fresh;
+  } catch (e) {
+    console.warn(`[xG-SAFE] getCachedRealXG failed:`, (e as Error)?.message);
+    realXGMemoryCache.set(cacheKey, null);
+    return null;
+  }
+}
+
+/**
+ * Logs proxy xG vs real xG for one match — fire and forget.
+ */
+async function logXGComparison(
+  supabase: any,
+  matchId: string,
+  homeTeamId: number,
+  awayTeamId: number,
+  leagueId: number,
+  season: number,
+  apiKey: string,
+  proxyHomeXg: number,
+  proxyAwayXg: number,
+  currentPrediction: string,
+  currentConfidence: number
+): Promise<void> {
+  try {
+    const [homeRealXG, awayRealXG] = await Promise.all([
+      getCachedRealXG(supabase, homeTeamId, leagueId, season, apiKey),
+      getCachedRealXG(supabase, awayTeamId, leagueId, season, apiKey),
+    ]);
+
+    // What WOULD predicted xG be if we used real xG instead of proxy?
+    let realHomeXgPred: number | null = null;
+    let realAwayXgPred: number | null = null;
+    if (homeRealXG?.home_xg_for_avg && awayRealXG?.away_xg_against_avg) {
+      realHomeXgPred = (homeRealXG.home_xg_for_avg + awayRealXG.away_xg_against_avg) / 2;
+    }
+    if (awayRealXG?.away_xg_for_avg && homeRealXG?.home_xg_against_avg) {
+      realAwayXgPred = (awayRealXG.away_xg_for_avg + homeRealXG.home_xg_against_avg) / 2;
+    }
+
+    await supabase.from("match_xg_log").insert({
+      match_id: matchId,
+      home_team_id: String(homeTeamId),
+      away_team_id: String(awayTeamId),
+      league_id: String(leagueId),
+      season,
+      proxy_home_xg: proxyHomeXg,
+      proxy_away_xg: proxyAwayXg,
+      real_home_xg: realHomeXgPred,
+      real_away_xg: realAwayXgPred,
+      home_xg_matches_count: homeRealXG?.matches_count ?? 0,
+      away_xg_matches_count: awayRealXG?.matches_count ?? 0,
+      current_prediction: currentPrediction,
+      current_confidence: currentConfidence,
+    });
+  } catch (e) {
+    console.warn(`[xG-SAFE] logXGComparison failed for match ${matchId}:`, (e as Error)?.message);
+  }
+}
+// ============= END SAFE MODE xG block =============
+
+
 interface StandingEntry {
   teamId: number;
   rank: number;
