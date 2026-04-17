@@ -2116,6 +2116,313 @@ function applyDefensiveProfile(
 }
 
 
+// ============ TRAVEL DISTANCE & FIXTURE CONGESTION (LIVE — Option 13) ============
+/**
+ * Calculate fixture congestion: matches played in the last N days.
+ * High congestion (3+ matches in 8 days) = significant fatigue penalty.
+ */
+interface CongestionProfile {
+  homeMatchesIn8Days: number;
+  awayMatchesIn8Days: number;
+  homeMatchesIn14Days: number;
+  awayMatchesIn14Days: number;
+  homeRestHours: number | null;
+  awayRestHours: number | null;
+  congestionGap: "home_fresher" | "away_fresher" | "balanced";
+}
+
+function calculateCongestionProfile(
+  fixtureDateIso: string | undefined,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[],
+): CongestionProfile {
+  const empty: CongestionProfile = {
+    homeMatchesIn8Days: 0,
+    awayMatchesIn8Days: 0,
+    homeMatchesIn14Days: 0,
+    awayMatchesIn14Days: 0,
+    homeRestHours: null,
+    awayRestHours: null,
+    congestionGap: "balanced",
+  };
+  if (!fixtureDateIso) return empty;
+  const fixtureMs = new Date(fixtureDateIso).getTime();
+  if (!Number.isFinite(fixtureMs)) return empty;
+
+  const countWithin = (form: FormMatch[], days: number): number => {
+    const cutoff = fixtureMs - days * 24 * 3600 * 1000;
+    return form.filter(m => {
+      if (!m.matchDate) return false;
+      const t = new Date(m.matchDate).getTime();
+      return Number.isFinite(t) && t >= cutoff && t < fixtureMs;
+    }).length;
+  };
+
+  const lastRestHours = (form: FormMatch[]): number | null => {
+    const past = form
+      .filter(m => m.matchDate)
+      .map(m => new Date(m.matchDate!).getTime())
+      .filter(ts => Number.isFinite(ts) && ts < fixtureMs)
+      .sort((a, b) => b - a);
+    if (past.length === 0) return null;
+    return (fixtureMs - past[0]) / (1000 * 60 * 60);
+  };
+
+  const h8 = countWithin(homeForm, 8);
+  const a8 = countWithin(awayForm, 8);
+  const h14 = countWithin(homeForm, 14);
+  const a14 = countWithin(awayForm, 14);
+  const hRest = lastRestHours(homeForm);
+  const aRest = lastRestHours(awayForm);
+
+  let gap: CongestionProfile["congestionGap"] = "balanced";
+  if (hRest !== null && aRest !== null) {
+    if (hRest - aRest >= 24) gap = "home_fresher";
+    else if (aRest - hRest >= 24) gap = "away_fresher";
+  }
+
+  return {
+    homeMatchesIn8Days: h8,
+    awayMatchesIn8Days: a8,
+    homeMatchesIn14Days: h14,
+    awayMatchesIn14Days: a14,
+    homeRestHours: hRest,
+    awayRestHours: aRest,
+    congestionGap: gap,
+  };
+}
+
+/**
+ * Apply congestion-based adjustments. Penalizes the side with more recent matches.
+ * - 3+ matches in 8 days = -3% win prob, -2 confidence
+ * - Opposing team gets the inverse boost
+ */
+function applyCongestionAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: CongestionProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; home_win: number; draw: number; away_win: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  let homeAdj = 0;
+  let awayAdj = 0;
+
+  // Heavy congestion: 3+ matches in 8 days
+  if (profile.homeMatchesIn8Days >= 3) {
+    homeAdj -= 3;
+    awayAdj += 1;
+    delta -= 1;
+    factors.push(`🥵 Home congestion: ${profile.homeMatchesIn8Days} matches in 8 days`);
+  } else if (profile.homeMatchesIn8Days === 2 && (profile.homeRestHours ?? 999) < 96) {
+    homeAdj -= 1;
+    factors.push(`⏱️ Home: 2 recent matches, short rest`);
+  }
+
+  if (profile.awayMatchesIn8Days >= 3) {
+    awayAdj -= 3;
+    homeAdj += 1;
+    delta -= 1;
+    factors.push(`🥵 Away congestion: ${profile.awayMatchesIn8Days} matches in 8 days`);
+  } else if (profile.awayMatchesIn8Days === 2 && (profile.awayRestHours ?? 999) < 96) {
+    awayAdj -= 1;
+    factors.push(`⏱️ Away: 2 recent matches, short rest`);
+  }
+
+  // Big rest gap (>48h): fresher team gets +1 confidence boost if model picked them
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+  if (profile.congestionGap === "home_fresher" && isHomePick) {
+    delta += 1;
+    factors.push(`⚡ ${homeTeamName} significantly fresher (rest gap aligns with pick)`);
+  } else if (profile.congestionGap === "away_fresher" && isAwayPick) {
+    delta += 1;
+    factors.push(`⚡ ${awayTeamName} significantly fresher (rest gap aligns with pick)`);
+  }
+
+  // Apply probability adjustments and renormalize
+  let newHome = clamp(pred.home_win + homeAdj, 5, 90);
+  let newAway = clamp(pred.away_win + awayAdj, 5, 90);
+  let newDraw = clamp(100 - newHome - newAway, 5, 90);
+  const total = newHome + newDraw + newAway;
+  if (total > 0) {
+    newHome = Math.round((newHome / total) * 100);
+    newAway = Math.round((newAway / total) * 100);
+    newDraw = 100 - newHome - newAway;
+  }
+
+  return {
+    confidence: clamp(pred.confidence + delta, 40, 100),
+    home_win: newHome,
+    draw: newDraw,
+    away_win: newAway,
+    factors,
+    delta,
+  };
+}
+
+
+// ============ WEATHER IMPACT (LIVE — Option 4) ============
+/**
+ * Fetches weather forecast for venue at kickoff via Open-Meteo (no API key required).
+ * Returns null if venue/coords unavailable or API fails.
+ */
+interface WeatherData {
+  tempC: number | null;
+  windKmh: number | null;
+  precipMm: number | null;
+  conditionLabel: string;
+}
+
+const weatherCache = new Map<string, WeatherData | null>();
+const venueGeoCache = new Map<string, { lat: number; lon: number } | null>();
+
+async function geocodeVenue(city: string | null | undefined, country: string | null | undefined): Promise<{ lat: number; lon: number } | null> {
+  if (!city) return null;
+  const key = `${city}|${country || ""}`.toLowerCase();
+  if (venueGeoCache.has(key)) return venueGeoCache.get(key) || null;
+
+  try {
+    const params = new URLSearchParams({ name: city, count: "1", format: "json" });
+    if (country) params.append("country", country);
+    const url = `https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) {
+      venueGeoCache.set(key, null);
+      return null;
+    }
+    const data = await res.json();
+    const r = data?.results?.[0];
+    if (!r?.latitude || !r?.longitude) {
+      venueGeoCache.set(key, null);
+      return null;
+    }
+    const coords = { lat: r.latitude, lon: r.longitude };
+    venueGeoCache.set(key, coords);
+    return coords;
+  } catch {
+    venueGeoCache.set(key, null);
+    return null;
+  }
+}
+
+async function fetchWeatherForKickoff(
+  venueCity: string | null | undefined,
+  venueCountry: string | null | undefined,
+  fixtureDateIso: string | undefined,
+): Promise<WeatherData | null> {
+  if (!venueCity || !fixtureDateIso) return null;
+  const cacheKey = `${venueCity}|${venueCountry || ""}|${fixtureDateIso.slice(0, 13)}`;
+  if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey) || null;
+
+  const coords = await geocodeVenue(venueCity, venueCountry);
+  if (!coords) {
+    weatherCache.set(cacheKey, null);
+    return null;
+  }
+
+  try {
+    const dateStr = fixtureDateIso.slice(0, 10);
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}` +
+      `&hourly=temperature_2m,precipitation,wind_speed_10m,weather_code` +
+      `&start_date=${dateStr}&end_date=${dateStr}&timezone=UTC`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) {
+      weatherCache.set(cacheKey, null);
+      return null;
+    }
+    const data = await res.json();
+    const times: string[] = data?.hourly?.time ?? [];
+    if (times.length === 0) {
+      weatherCache.set(cacheKey, null);
+      return null;
+    }
+
+    // Find the hour closest to kickoff
+    const kickoffMs = new Date(fixtureDateIso).getTime();
+    let bestIdx = 0;
+    let bestDiff = Infinity;
+    for (let i = 0; i < times.length; i++) {
+      const diff = Math.abs(new Date(times[i] + "Z").getTime() - kickoffMs);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    }
+
+    const code = data.hourly.weather_code?.[bestIdx] ?? 0;
+    const conditionLabel = code >= 95 ? "Thunderstorm"
+      : code >= 71 ? "Snow"
+      : code >= 61 ? "Rain"
+      : code >= 51 ? "Drizzle"
+      : code >= 45 ? "Fog"
+      : code >= 3 ? "Overcast"
+      : "Clear";
+
+    const weather: WeatherData = {
+      tempC: data.hourly.temperature_2m?.[bestIdx] ?? null,
+      windKmh: data.hourly.wind_speed_10m?.[bestIdx] ?? null,
+      precipMm: data.hourly.precipitation?.[bestIdx] ?? null,
+      conditionLabel,
+    };
+    weatherCache.set(cacheKey, weather);
+    return weather;
+  } catch {
+    weatherCache.set(cacheKey, null);
+    return null;
+  }
+}
+
+/**
+ * Apply weather-based adjustments to over/under and BTTS picks.
+ * Heavy wind, rain, snow, or extreme cold reduce goal expectancy.
+ */
+function applyWeatherAdjustment(
+  pred: { prediction: string; confidence: number },
+  weather: WeatherData,
+  modelOver25: number,
+): { confidence: number; factors: string[]; delta: number; severity: "none" | "mild" | "severe" } {
+  const factors: string[] = [];
+  let delta = 0;
+  let severity: "none" | "mild" | "severe" = "none";
+  const predLower = (pred.prediction || "").toLowerCase();
+
+  const wind = weather.windKmh ?? 0;
+  const precip = weather.precipMm ?? 0;
+  const temp = weather.tempC ?? 15;
+  const cond = weather.conditionLabel;
+
+  const isHeavyWeather = wind >= 30 || precip >= 2 || cond === "Snow" || cond === "Thunderstorm" || temp <= -5;
+  const isMildWeather = (wind >= 22 && wind < 30) || (precip >= 0.5 && precip < 2) || temp <= 0;
+
+  if (isHeavyWeather) {
+    severity = "severe";
+    // Severe weather → favors Under, hurts Over/BTTS
+    if (predLower.includes("over") || predLower.includes("btts") || predLower.includes("both")) {
+      delta = -3;
+      factors.push(`⛈️ Severe weather (${cond}, wind ${Math.round(wind)}km/h) — Over/BTTS risky`);
+    } else if (predLower.includes("under")) {
+      delta = +2;
+      factors.push(`⛈️ Severe weather (${cond}, wind ${Math.round(wind)}km/h) — supports Under`);
+    } else {
+      // 1X2 picks: only nudge confidence if model also leans over-heavy
+      if (modelOver25 >= 60) {
+        delta = -1;
+        factors.push(`🌧️ Weather (${cond}) may suppress goals`);
+      }
+    }
+  } else if (isMildWeather) {
+    severity = "mild";
+    if (predLower.includes("over") && modelOver25 < 65) {
+      delta = -1;
+      factors.push(`🌬️ Wind ${Math.round(wind)}km/h — slight Over risk`);
+    } else if (predLower.includes("under")) {
+      delta = +1;
+      factors.push(`🌬️ Adverse weather supports Under`);
+    }
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta, severity };
+}
+
+
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
