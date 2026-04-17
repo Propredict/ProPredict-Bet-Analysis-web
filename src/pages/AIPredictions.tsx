@@ -204,8 +204,13 @@ export default function AIPredictions() {
   const sortPredictions = (preds: typeof predictions) => {
     return [...preds].sort((a, b) => {
       switch (sortBy) {
-        case "confidence":
-          return (b.confidence ?? 0) - (a.confidence ?? 0);
+        case "confidence": {
+          // Sort by displayed % (max of confidence and best market probability)
+          // so the highest-confidence card always appears at the top.
+          const aPct = Math.max(a.confidence ?? 0, getBestMarketProbability(a));
+          const bPct = Math.max(b.confidence ?? 0, getBestMarketProbability(b));
+          return bPct - aPct;
+        }
         case "kickoff": {
           const timeA = a.match_time || "99:99";
           const timeB = b.match_time || "99:99";
