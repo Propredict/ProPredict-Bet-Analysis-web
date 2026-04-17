@@ -195,15 +195,15 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Probability */}
+          {/* AI Confidence */}
           <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">🧠 AI Confidence</span>
             <span className={cn(
               "text-2xl md:text-3xl font-extrabold tabular-nums",
               pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-emerald-400" : pick.conf >= 60 ? "text-amber-400" : "text-orange-400"
             )}>
               {pick.conf}%
             </span>
-            <span className="text-xs text-muted-foreground">probability</span>
           </div>
 
           {/* Probability bar */}

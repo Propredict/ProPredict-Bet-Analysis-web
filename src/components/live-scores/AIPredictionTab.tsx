@@ -115,8 +115,8 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div className="bg-card/20 rounded-lg p-4 border border-border/20">
             <div className="flex items-center gap-2 text-xs text-muted-foreground/60 mb-2">
-              <Target className="h-3.5 w-3.5" />
-              Confidence
+              <Brain className="h-3.5 w-3.5" />
+              AI Confidence
             </div>
             <div className="text-2xl font-bold text-muted-foreground/30">—%</div>
             <div className="mt-2 h-1.5 bg-muted/20 rounded-full" />
@@ -202,11 +202,11 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Confidence */}
+        {/* AI Confidence */}
         <div className="bg-card/40 rounded-lg p-4 border border-border/30">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-            <TrendingUp className="h-3.5 w-3.5" />
-            Confidence
+            <Brain className="h-3.5 w-3.5" />
+            AI Confidence
           </div>
           <div className={cn("text-2xl font-bold", confidenceColor)}>
             {data.confidence}%
