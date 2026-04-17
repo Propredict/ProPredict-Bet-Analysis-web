@@ -19,7 +19,10 @@ export type Database = {
           analysis: string | null
           away_team: string
           away_win: number
+          bookmakers_count: number | null
           confidence: number
+          confidence_adjustment: number | null
+          consensus_odds: number | null
           created_at: string | null
           draw: number
           home_team: string
@@ -35,6 +38,8 @@ export type Database = {
           last_home_goals: number | null
           league: string | null
           lineup_confirmed: boolean | null
+          market_trend: string | null
+          market_trend_strength: string | null
           match_date: string | null
           match_day: string | null
           match_id: string
@@ -42,6 +47,7 @@ export type Database = {
           match_timestamp: string | null
           missing_away_players: Json | null
           missing_home_players: Json | null
+          odds_movement_pct: number | null
           predicted_score: string | null
           prediction: string
           result_status: string | null
@@ -52,7 +58,10 @@ export type Database = {
           analysis?: string | null
           away_team: string
           away_win: number
+          bookmakers_count?: number | null
           confidence: number
+          confidence_adjustment?: number | null
+          consensus_odds?: number | null
           created_at?: string | null
           draw: number
           home_team: string
@@ -68,6 +77,8 @@ export type Database = {
           last_home_goals?: number | null
           league?: string | null
           lineup_confirmed?: boolean | null
+          market_trend?: string | null
+          market_trend_strength?: string | null
           match_date?: string | null
           match_day?: string | null
           match_id: string
@@ -75,6 +86,7 @@ export type Database = {
           match_timestamp?: string | null
           missing_away_players?: Json | null
           missing_home_players?: Json | null
+          odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction: string
           result_status?: string | null
@@ -85,7 +97,10 @@ export type Database = {
           analysis?: string | null
           away_team?: string
           away_win?: number
+          bookmakers_count?: number | null
           confidence?: number
+          confidence_adjustment?: number | null
+          consensus_odds?: number | null
           created_at?: string | null
           draw?: number
           home_team?: string
@@ -101,6 +116,8 @@ export type Database = {
           last_home_goals?: number | null
           league?: string | null
           lineup_confirmed?: boolean | null
+          market_trend?: string | null
+          market_trend_strength?: string | null
           match_date?: string | null
           match_day?: string | null
           match_id?: string
@@ -108,6 +125,7 @@ export type Database = {
           match_timestamp?: string | null
           missing_away_players?: Json | null
           missing_home_players?: Json | null
+          odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction?: string
           result_status?: string | null
@@ -619,6 +637,48 @@ export type Database = {
           title?: string | null
           type?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      odds_snapshots: {
+        Row: {
+          bookmakers_count: number
+          captured_at: string
+          consensus_away: number | null
+          consensus_draw: number | null
+          consensus_home: number | null
+          id: string
+          implied_away: number | null
+          implied_draw: number | null
+          implied_home: number | null
+          match_date: string | null
+          match_id: string
+        }
+        Insert: {
+          bookmakers_count?: number
+          captured_at?: string
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
+          id?: string
+          implied_away?: number | null
+          implied_draw?: number | null
+          implied_home?: number | null
+          match_date?: string | null
+          match_id: string
+        }
+        Update: {
+          bookmakers_count?: number
+          captured_at?: string
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
+          id?: string
+          implied_away?: number | null
+          implied_draw?: number | null
+          implied_home?: number | null
+          match_date?: string | null
+          match_id?: string
         }
         Relationships: []
       }
