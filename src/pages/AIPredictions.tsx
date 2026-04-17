@@ -266,24 +266,23 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
-  // Top AI Picks: weighted ranking — always fill up to 5
-  const topPicks = useMemo(() => {
-    return selectTopPicks(filteredPredictions, 5);
-  }, [filteredPredictions]);
-
-  // IDs already shown in Top AI Picks — exclude from Safe Picks to avoid duplication
-  const topPickIds = useMemo(
-    () => new Set(topPicks.map((rp) => rp.prediction.id)),
-    [topPicks],
-  );
-
-  // Safe Pick of the Day: single highest-confidence prediction NOT already in Top Picks
+  // Safe Pick of the Day FIRST: single highest-confidence prediction
   const safePicks = useMemo(() => {
-    return filteredPredictions
-      .filter((p) => !topPickIds.has(p.id))
+    return [...filteredPredictions]
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
       .slice(0, 1);
-  }, [filteredPredictions, topPickIds]);
+  }, [filteredPredictions]);
+
+  const safePickIds = useMemo(
+    () => new Set(safePicks.map((p) => p.id)),
+    [safePicks],
+  );
+
+  // Top AI Picks: ranked from remaining (excludes Safe Pick), always fills up to 5
+  const topPicks = useMemo(() => {
+    const remaining = filteredPredictions.filter((p) => !safePickIds.has(p.id));
+    return selectTopPicks(remaining, 5);
+  }, [filteredPredictions, safePickIds]);
 
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
