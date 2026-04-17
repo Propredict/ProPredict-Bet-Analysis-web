@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { analyzeInjuryImpact, applyInjuryAdjustment } from "./injuryImpact.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -208,6 +209,8 @@ const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+const topAssistsCache = new Map<string, { name: string; team: string; goals: number; assists: number }[]>();
+const startingGKCache = new Map<string, { name: string; position: string } | null>();
 const injuriesCache = new Map<string, InjuryInfo[]>();
 const standingsCache = new Map<string, StandingEntry[]>();
 const oddsCache = new Map<string, OddsData | null>();
