@@ -172,19 +172,28 @@ Deno.serve(async (req) => {
       if (subjectOverride) templateData.subject = subjectOverride
       if (trackingUrl) templateData.trackingUrl = trackingUrl
 
-      const { error: invokeError } = await supabase.functions.invoke(
-        'send-transactional-email',
+      const sendRes = await fetch(
+        `${supabaseUrl}/functions/v1/send-transactional-email`,
         {
-          body: {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${serviceKey}`,
+            apikey: serviceKey,
+          },
+          body: JSON.stringify({
             templateName: TEMPLATE_NAME,
             recipientEmail,
             idempotencyKey,
             templateData,
-          },
+          }),
         }
       )
 
-      if (invokeError) throw invokeError
+      if (!sendRes.ok) {
+        const errText = await sendRes.text()
+        throw new Error(`send-transactional-email ${sendRes.status}: ${errText}`)
+      }
 
       sent++
       results.push({ id: row.id, status: 'sent', variant: variantId })
