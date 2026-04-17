@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       if (subjectOverride) templateData.subject = subjectOverride
       if (trackingUrl) templateData.trackingUrl = trackingUrl
 
-      const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      const anonKey = Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
       const sendRes = await fetch(
         `${supabaseUrl}/functions/v1/send-transactional-email`,
         {
