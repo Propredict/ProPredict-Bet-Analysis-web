@@ -67,12 +67,12 @@ export default function EmailABTests() {
     try {
       const [variantsRes, sendsRes] = await Promise.all([
         supabase
-          .from("email_ab_variants" as never)
+          .from("email_ab_variants" as any)
           .select("*")
           .eq("template_name", "rating-followup")
           .order("created_at", { ascending: true }),
         supabase
-          .from("email_ab_sends" as never)
+          .from("email_ab_sends" as any)
           .select("variant_id, clicked_at"),
       ]);
 
@@ -166,7 +166,6 @@ export default function EmailABTests() {
     try {
       window.localStorage.setItem(STORAGE_KEY, String(next));
     } catch {
-      // ignore storage failures
     }
     toast({ title: "Conversion rate saved", description: `${parsedPct.toFixed(0)}% of clicks → reviews` });
   };
@@ -178,8 +177,8 @@ export default function EmailABTests() {
     }
 
     const { error } = await supabase
-      .from("email_ab_variants" as never)
-      .update({ is_active: active })
+      .from("email_ab_variants" as any)
+      .update({ is_active: active } as any)
       .eq("id", id);
 
     if (error) {
@@ -203,12 +202,12 @@ export default function EmailABTests() {
     }
 
     setCreating(true);
-    const { error } = await supabase.from("email_ab_variants" as never).insert({
+    const { error } = await supabase.from("email_ab_variants" as any).insert({
       template_name: "rating-followup",
       variant_label: newLabel.trim(),
       subject: newSubject.trim(),
       is_active: true,
-    });
+    } as any);
     setCreating(false);
 
     if (error) {
