@@ -131,6 +131,7 @@ interface FormMatch {
   goalsAgainst: number;
   isHome: boolean;
   opponentId: number;
+  matchDate?: string; // ISO timestamp of the match (for fatigue/rest detection)
 }
 
 interface PredictionResult {
