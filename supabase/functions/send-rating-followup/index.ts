@@ -1,5 +1,7 @@
-// Dispatcher: finds eligible app_ratings (>=4 stars, 6-12h old, no email sent yet)
-// and triggers send-transactional-email for each. Called by pg_cron hourly.
+// Dispatcher: finds eligible app_ratings (>=4 stars, 6-12h old) and triggers
+// send-transactional-email for each. Uses email_send_log + idempotencyKey to
+// avoid duplicate sends — no schema migration needed.
+// Called by pg_cron every hour.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -23,17 +25,15 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceKey)
 
-  // Window: rating created between 12h and 6h ago, >=4 stars, no email yet, has email
+  // Window: rating created between 12h and 6h ago, >=4 stars
   const now = Date.now()
   const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
   const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
 
-  const { data: rows, error } = await supabase
+  const { data: ratings, error } = await supabase
     .from('app_ratings')
-    .select('id, user_id, stars, recipient_email, created_at')
+    .select('id, user_id, stars, created_at')
     .gte('stars', 4)
-    .is('followup_email_sent_at', null)
-    .not('recipient_email', 'is', null)
     .lte('created_at', sixHoursAgo)
     .gte('created_at', twelveHoursAgo)
     .limit(100)
@@ -47,30 +47,55 @@ Deno.serve(async (req) => {
   }
 
   let sent = 0
+  let skipped = 0
   let failed = 0
   const results: any[] = []
 
-  for (const row of rows ?? []) {
+  for (const row of ratings ?? []) {
     try {
-      // Optional: fetch profile for name
-      let name: string | undefined
-      if (row.user_id) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, username')
-          .eq('user_id', row.user_id)
-          .maybeSingle()
-        name = profile?.full_name || profile?.username || undefined
+      const idempotencyKey = `rating-followup-${row.id}`
+
+      // Skip if already sent (check email_send_log)
+      const { data: existing } = await supabase
+        .from('email_send_log')
+        .select('id, status')
+        .eq('message_id', idempotencyKey)
+        .limit(1)
+
+      if (existing && existing.length > 0) {
+        skipped++
+        results.push({ id: row.id, status: 'skipped_already_sent' })
+        continue
       }
 
-      const idempotencyKey = `rating-followup-${row.id}`
+      // Fetch profile for email + name
+      if (!row.user_id) {
+        skipped++
+        results.push({ id: row.id, status: 'skipped_no_user' })
+        continue
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email, full_name, username')
+        .eq('user_id', row.user_id)
+        .maybeSingle()
+
+      const recipientEmail = profile?.email
+      if (!recipientEmail) {
+        skipped++
+        results.push({ id: row.id, status: 'skipped_no_email' })
+        continue
+      }
+
+      const name = profile?.full_name || profile?.username || undefined
 
       const { error: invokeError } = await supabase.functions.invoke(
         'send-transactional-email',
         {
           body: {
             templateName: 'rating-followup',
-            recipientEmail: row.recipient_email,
+            recipientEmail,
             idempotencyKey,
             templateData: { name, stars: row.stars },
           },
@@ -78,12 +103,6 @@ Deno.serve(async (req) => {
       )
 
       if (invokeError) throw invokeError
-
-      // Mark as sent
-      await supabase
-        .from('app_ratings')
-        .update({ followup_email_sent_at: new Date().toISOString() })
-        .eq('id', row.id)
 
       sent++
       results.push({ id: row.id, status: 'sent' })
@@ -95,7 +114,7 @@ Deno.serve(async (req) => {
   }
 
   return new Response(
-    JSON.stringify({ checked: rows?.length ?? 0, sent, failed, results }),
+    JSON.stringify({ checked: ratings?.length ?? 0, sent, skipped, failed, results }),
     {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
