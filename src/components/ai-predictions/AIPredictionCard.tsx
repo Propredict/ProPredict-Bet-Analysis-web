@@ -17,6 +17,7 @@ import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
 import { MarketTrendBadge } from "./MarketTrendBadge";
+import { ValueBetBadge } from "./ValueBetBadge";
 
 interface Props {
   prediction: AIPrediction;
@@ -129,7 +130,23 @@ const AIPredictionCardInner = ({
           <h3 className="font-semibold text-xs md:text-sm text-white truncate">
             {prediction.home_team} vs {prediction.away_team}
           </h3>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+            {(() => {
+              const pred = (prediction.prediction || "").toLowerCase();
+              const sideValue =
+                pred.includes("home") || pred === "1" ? prediction.value_home
+                  : pred.includes("draw") || pred === "x" ? prediction.value_draw
+                  : pred.includes("away") || pred === "2" ? prediction.value_away
+                  : null;
+              return (
+                <ValueBetBadge
+                  value={sideValue}
+                  isValueBet={prediction.is_value_bet}
+                  bookmakersCount={prediction.bookmakers_count}
+                  compact
+                />
+              );
+            })()}
             <MarketTrendBadge
               trend={prediction.market_trend}
               strength={prediction.market_trend_strength}

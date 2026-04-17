@@ -36,6 +36,11 @@ export interface AIPrediction {
   consensus_odds?: number | null;
   bookmakers_count?: number | null;
   confidence_adjustment?: number | null;
+  // Value bet engine (EV vs bookmaker consensus)
+  value_home?: number | null;
+  value_draw?: number | null;
+  value_away?: number | null;
+  is_value_bet?: boolean | null;
 }
 
 export interface MissingPlayer {

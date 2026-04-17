@@ -175,7 +175,7 @@ serve(async (req: Request) => {
 
     const { data: predictions, error: predErr } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, match_date, prediction, confidence")
+      .select("id, match_id, match_date, prediction, confidence, home_win, draw, away_win")
       .in("match_date", dates)
       .eq("result_status", "pending")
       .limit(500);
@@ -227,6 +227,33 @@ serve(async (req: Request) => {
         const baseConfidence = Number(p.confidence ?? 0);
         const newConfidence = Math.max(1, Math.min(99, Math.round(baseConfidence + adjustment)));
 
+        // ─── Value Bet Engine ────────────────────────────────────────────────
+        // value = (AI_probability * consensus_odds) - 1
+        // Reliability gate: need at least 2 bookmakers in consensus.
+        const reliable = (snap.bookmakers_count ?? 0) >= 2;
+        const aiProbHome = Number(p.home_win ?? 0) / 100;
+        const aiProbDraw = Number(p.draw ?? 0) / 100;
+        const aiProbAway = Number(p.away_win ?? 0) / 100;
+
+        const valueHome = reliable && snap.consensus_home
+          ? +(aiProbHome * snap.consensus_home - 1).toFixed(4)
+          : null;
+        const valueDraw = reliable && snap.consensus_draw
+          ? +(aiProbDraw * snap.consensus_draw - 1).toFixed(4)
+          : null;
+        const valueAway = reliable && snap.consensus_away
+          ? +(aiProbAway * snap.consensus_away - 1).toFixed(4)
+          : null;
+
+        // is_value_bet = true ONLY when the AI's predicted side has value > 0.10
+        const pred = (p.prediction || "").toLowerCase();
+        let predictedSideValue: number | null = null;
+        if (pred.includes("home") || pred === "1") predictedSideValue = valueHome;
+        else if (pred.includes("draw") || pred === "x") predictedSideValue = valueDraw;
+        else if (pred.includes("away") || pred === "2") predictedSideValue = valueAway;
+
+        const isValueBet = predictedSideValue != null && predictedSideValue > 0.10;
+
         await supabase
           .from("ai_predictions")
           .update({
@@ -237,12 +264,19 @@ serve(async (req: Request) => {
             bookmakers_count: snap.bookmakers_count,
             confidence_adjustment: adjustment,
             confidence: newConfidence,
+            value_home: valueHome,
+            value_draw: valueDraw,
+            value_away: valueAway,
+            is_value_bet: isValueBet,
             updated_at: new Date().toISOString(),
           })
           .eq("id", p.id);
 
         updated++;
-        results.push({ match_id: p.match_id, trend, strength, movementPct, adjustment });
+        results.push({
+          match_id: p.match_id, trend, strength, movementPct, adjustment,
+          valueHome, valueDraw, valueAway, isValueBet, reliable,
+        });
       } catch (e) {
         console.error("Snapshot error for", p.match_id, e);
       }
