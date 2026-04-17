@@ -553,7 +553,7 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
   const rawProbs: Record<MarketType, number> = {
     home_win: hw, away_win: aw, draw: d,
-    over15: probs.over15, over25: probs.over25,
+    over15: probs.over15, over25: probs.over25, over35: probs.over35,
     under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
