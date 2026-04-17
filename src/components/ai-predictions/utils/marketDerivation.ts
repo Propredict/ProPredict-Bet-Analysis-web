@@ -513,13 +513,13 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "home_win", prob: hw + PRIMARY_BOOST },
     { type: "away_win", prob: aw + PRIMARY_BOOST },
     { type: "draw", prob: d + PRIMARY_BOOST },
-    // High-probability "lock" markets — eligible only when very strong
+    // High-probability "lock" market — eligible only when very strong
     { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
-    { type: "under35", prob: probs.under35 >= 80 ? probs.under35 - COMMON_PENALTY : 0 },
     { type: "over25", prob: probs.over25 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
     { type: "btts_no", prob: probs.bttsNo },
+    // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
   ];
 
   candidates.sort((a, b) => b.prob - a.prob);
