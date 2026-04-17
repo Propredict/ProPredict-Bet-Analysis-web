@@ -1152,10 +1152,13 @@ function getMatchContext(
   leagueId?: number,
   leagueName?: string,
   fixtureRound?: string
-): { confidenceBoost: number; factors: string[]; goalAdjust: number } {
+): { confidenceBoost: number; factors: string[]; goalAdjust: number; homeMotivation: number; awayMotivation: number } {
   const factors: string[] = [];
   let boost = 0;
   let goalAdjust = 0; // negative = fewer goals expected, positive = more goals
+  // Motivation deltas applied directly to form scores (range ~ -6..+6)
+  let homeMotivation = 0;
+  let awayMotivation = 0;
 
   // === MATCH IMPORTANCE (knockout/final detection) ===
   const roundLower = (fixtureRound || "").toLowerCase();
@@ -1179,10 +1182,10 @@ function getMatchContext(
     factors.push("🏟️ Cup group stage");
   }
 
-  if (standings.length === 0) return { confidenceBoost: boost, factors, goalAdjust };
+  if (standings.length === 0) return { confidenceBoost: boost, factors, goalAdjust, homeMotivation, awayMotivation };
   const homeEntry = standings.find(s => s.teamId === homeTeamId);
   const awayEntry = standings.find(s => s.teamId === awayTeamId);
-  if (!homeEntry || !awayEntry) return { confidenceBoost: boost, factors, goalAdjust };
+  if (!homeEntry || !awayEntry) return { confidenceBoost: boost, factors, goalAdjust, homeMotivation, awayMotivation };
 
   const rankGap = Math.abs(homeEntry.rank - awayEntry.rank);
   const totalTeams = homeEntry.totalTeams || 20;
@@ -1194,31 +1197,135 @@ function getMatchContext(
     factors.push(`Table gap: ${homeEntry.rank}th vs ${awayEntry.rank}th (${stronger} favored)`);
   }
   
-  // === MOTIVATION DETECTION ===
+  // === MOTIVATION DETECTION (enhanced — applies per-team motivation deltas) ===
+  // Define zones
+  const relegationZone = totalTeams - 2;     // bottom 3 teams
+  const relegationFightZone = totalTeams - 5; // bottom 6 (still in danger)
+  const titleZone = 2;                        // top 2 contenders
+  const europeZone = 6;                       // top 6 (UCL/UEL spots)
+  const safeMidLow = Math.floor(totalTeams * 0.40);
+  const safeMidHigh = Math.floor(totalTeams * 0.65);
+
+  // Helper: classify a team
+  const classify = (rank: number) => {
+    if (rank <= titleZone) return "title";
+    if (rank <= europeZone) return "europe";
+    if (rank >= relegationZone) return "relegation";
+    if (rank >= relegationFightZone) return "relegation_fight";
+    if (rank >= safeMidLow && rank <= safeMidHigh) return "midtable";
+    return "upper_mid";
+  };
+
+  const homeClass = classify(homeEntry.rank);
+  const awayClass = classify(awayEntry.rank);
+
+  // Motivation strength per zone (positive = motivated, push performance up)
+  const motivationFor = (cls: string): number => {
+    switch (cls) {
+      case "title": return +3;
+      case "europe": return +2;
+      case "relegation": return +4;       // desperate fight = strongest motivation
+      case "relegation_fight": return +2;
+      case "midtable": return -2;         // nothing to play for = complacency
+      case "upper_mid": return 0;
+      default: return 0;
+    }
+  };
+
+  homeMotivation = motivationFor(homeClass);
+  awayMotivation = motivationFor(awayClass);
+
   // Relegation battle → desperate = more goals from desperation
-  if (homeEntry.rank >= totalTeams - 2 || awayEntry.rank >= totalTeams - 2) {
-    factors.push("Relegation battle → desperate motivation");
-    goalAdjust += 2; // Must-win = more open play
+  if (homeClass === "relegation" || awayClass === "relegation") {
+    factors.push("🆘 Relegation battle → desperate motivation");
+    goalAdjust += 2;
     boost -= 1;
   }
   // Title race
-  if (homeEntry.rank <= 2 || awayEntry.rank <= 2) {
-    factors.push("Title contender → high stakes");
+  if (homeClass === "title" || awayClass === "title") {
+    factors.push("🏆 Title contender → high stakes");
+  }
+  // Europe race
+  if (homeClass === "europe" || awayClass === "europe") {
+    factors.push("⭐ Europe spot race → high motivation");
   }
   // One team must win (bottom vs top) → more open game
-  if ((homeEntry.rank >= totalTeams - 3 && awayEntry.rank <= 3) ||
-      (awayEntry.rank >= totalTeams - 3 && homeEntry.rank <= 3)) {
-    goalAdjust += 3; // Relegation team must attack
-    factors.push("Must-win scenario → expect open game, more goals");
+  if ((homeClass === "relegation" && awayClass === "title") ||
+      (awayClass === "relegation" && homeClass === "title")) {
+    goalAdjust += 3;
+    factors.push("⚡ Must-win scenario → expect open game, more goals");
   }
   // Mid-table vs top → potential complacency
-  const midLow = Math.floor(totalTeams * 0.35);
-  const midHigh = Math.floor(totalTeams * 0.65);
-  if (homeEntry.rank >= midLow && homeEntry.rank <= midHigh && awayEntry.rank <= 3) {
-    factors.push("Mid-table home vs top team → complacency risk");
+  if (homeClass === "midtable" && awayClass === "title") {
+    factors.push("😴 Mid-table home vs top team → complacency risk");
+  }
+  if (awayClass === "midtable" && homeClass === "title") {
+    factors.push("😴 Top home vs mid-table away → potential cruise");
   }
 
-  return { confidenceBoost: boost, factors, goalAdjust };
+  return { confidenceBoost: boost, factors, goalAdjust, homeMotivation, awayMotivation };
+}
+
+/**
+ * FATIGUE DETECTION — penalize teams with short rest and reward teams with extra recovery.
+ * Returns penalty/bonus deltas to apply to each team's form score (range ~ -8..+3).
+ *
+ * Logic:
+ *  - <72h rest → heavy fatigue penalty (-6)
+ *  - 72-96h    → mild fatigue (-3)
+ *  - 96-120h   → neutral
+ *  - 120-168h  → small fresh bonus (+1)
+ *  - >168h     → well rested bonus (+2) — but possible match-rust if too long
+ */
+function calculateFatigueAdjustment(
+  fixtureDateIso: string | undefined,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[]
+): { homeDelta: number; awayDelta: number; factors: string[] } {
+  const factors: string[] = [];
+  if (!fixtureDateIso) return { homeDelta: 0, awayDelta: 0, factors };
+
+  const fixtureMs = new Date(fixtureDateIso).getTime();
+  if (!Number.isFinite(fixtureMs)) return { homeDelta: 0, awayDelta: 0, factors };
+
+  const restDelta = (form: FormMatch[]): { delta: number; hours: number | null } => {
+    // Find the most recent past match
+    const past = form
+      .filter(m => m.matchDate)
+      .map(m => new Date(m.matchDate!).getTime())
+      .filter(ts => Number.isFinite(ts) && ts < fixtureMs)
+      .sort((a, b) => b - a);
+    if (past.length === 0) return { delta: 0, hours: null };
+
+    const hours = (fixtureMs - past[0]) / (1000 * 60 * 60);
+    let d = 0;
+    if (hours < 72) d = -6;
+    else if (hours < 96) d = -3;
+    else if (hours < 120) d = 0;
+    else if (hours < 168) d = +1;
+    else if (hours < 336) d = +2;       // up to 2 weeks rested
+    else d = -1;                         // >2 weeks → match rust
+    return { delta: d, hours };
+  };
+
+  const home = restDelta(homeForm);
+  const away = restDelta(awayForm);
+
+  if (home.hours !== null && home.hours < 72) {
+    factors.push(`🥱 Home short rest (${Math.round(home.hours)}h) → fatigue penalty`);
+  }
+  if (away.hours !== null && away.hours < 72) {
+    factors.push(`🥱 Away short rest (${Math.round(away.hours)}h) → fatigue penalty`);
+  }
+  if (home.hours !== null && away.hours !== null) {
+    const gap = Math.abs(home.hours - away.hours);
+    if (gap >= 48 && (home.hours < 96 || away.hours < 96)) {
+      const fresher = home.hours > away.hours ? "Home" : "Away";
+      factors.push(`⚡ Rest advantage: ${fresher} has +${Math.round(gap)}h more recovery`);
+    }
+  }
+
+  return { homeDelta: home.delta, awayDelta: away.delta, factors };
 }
 
 /**
