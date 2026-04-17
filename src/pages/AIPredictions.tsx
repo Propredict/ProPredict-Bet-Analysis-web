@@ -266,12 +266,31 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
-  // Safe Pick of the Day FIRST: single highest-confidence prediction
+  // Base for Top AI Picks & Safe Pick: ignores tier/market filters so the
+  // ranking is identical across All / Free / Pro / Premium tabs (mix of best
+  // picks regardless of tier). Still respects search, league, favorites.
+  const globalRankingBase = useMemo(() => {
+    let result = predictions.filter((p) => (p.confidence != null ? p.confidence >= 50 : true));
+    if (showFavoritesOnly) result = result.filter((p) => isFavorite(p.match_id));
+    if (selectedLeague) result = result.filter((p) => p.league === selectedLeague);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.home_team.toLowerCase().includes(q) ||
+          p.away_team.toLowerCase().includes(q) ||
+          (p.league && p.league.toLowerCase().includes(q)),
+      );
+    }
+    return result;
+  }, [predictions, showFavoritesOnly, isFavorite, selectedLeague, searchQuery]);
+
+  // Safe Pick of the Day FIRST: single highest-confidence prediction (global, all tiers)
   const safePicks = useMemo(() => {
-    return [...filteredPredictions]
+    return [...globalRankingBase]
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
       .slice(0, 1);
-  }, [filteredPredictions]);
+  }, [globalRankingBase]);
 
   const safePickIds = useMemo(
     () => new Set(safePicks.map((p) => p.id)),
@@ -279,10 +298,11 @@ export default function AIPredictions() {
   );
 
   // Top AI Picks: ranked from remaining (excludes Safe Pick), always fills up to 5
+  // Mix of Free/Pro/Premium — same across all tier tabs.
   const topPicks = useMemo(() => {
-    const remaining = filteredPredictions.filter((p) => !safePickIds.has(p.id));
+    const remaining = globalRankingBase.filter((p) => !safePickIds.has(p.id));
     return selectTopPicks(remaining, 5);
-  }, [filteredPredictions, safePickIds]);
+  }, [globalRankingBase, safePickIds]);
 
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
