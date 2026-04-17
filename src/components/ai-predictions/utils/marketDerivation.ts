@@ -472,7 +472,10 @@ export function getRiskLevelColor(riskLevel: string | null) {
   }
 }
 
-export type MarketType = "home_win" | "away_win" | "draw" | "over25" | "under25" | "btts_yes" | "btts_no";
+export type MarketType =
+  | "home_win" | "away_win" | "draw"
+  | "over15" | "over25" | "under25" | "under35"
+  | "btts_yes" | "btts_no";
 
 interface MarketCandidate {
   type: MarketType;
@@ -481,14 +484,17 @@ interface MarketCandidate {
 
 /**
  * Get all market candidates with their probabilities.
- * 1X2 markets get a +5 "primary market" bonus so they compete fairly
- * against conservative Under markets that naturally dominate Poisson output.
+ * Strategy for diversity:
+ *  - 1X2 gets +8 "primary market" bonus (it's the headline market punters care about)
+ *  - Over 1.5 / Under 3.5 require very high probability (>80%) to win Main —
+ *    otherwise they'd dominate every card with the same boring pick
+ *  - Under 2.5 is allowed but penalized so it doesn't blanket every match
  */
 function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   let hw = prediction.home_win ?? 33;
   let aw = prediction.away_win ?? 33;
   let d = prediction.draw ?? 34;
-  
+
   // Normalize 1X2 to always sum to 100, with 5% floor
   hw = Math.max(5, hw);
   aw = Math.max(5, aw);
@@ -500,13 +506,16 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
   const probs = calculateGoalMarketProbs(prediction);
 
-  // +5 bonus for 1X2 markets to prevent Under 2.5 from always dominating
-  const PRIMARY_BOOST = 5;
+  const PRIMARY_BOOST = 8; // 1X2 headline boost
+  const COMMON_PENALTY = 6; // suppress Over 1.5 / Under 3.5 unless they're really strong
 
   const candidates: MarketCandidate[] = [
     { type: "home_win", prob: hw + PRIMARY_BOOST },
     { type: "away_win", prob: aw + PRIMARY_BOOST },
     { type: "draw", prob: d + PRIMARY_BOOST },
+    // High-probability "lock" markets — eligible only when very strong
+    { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
+    { type: "under35", prob: probs.under35 >= 80 ? probs.under35 - COMMON_PENALTY : 0 },
     { type: "over25", prob: probs.over25 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
@@ -525,7 +534,7 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
 }
 
 /**
- * Get the RAW (display) probability for the best pick — without PRIMARY_BOOST.
+ * Get the RAW (display) probability for the best pick — without bonuses/penalties.
  * This is what users see AND what determines the tier.
  */
 export function getBestMarketProbability(prediction: AIPrediction): number {
@@ -537,12 +546,13 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
   hw = Math.round((hw / total1x2) * 100);
   aw = Math.round((aw / total1x2) * 100);
   d = 100 - hw - aw;
-  
+
   const probs = calculateGoalMarketProbs(prediction);
 
   const rawProbs: Record<MarketType, number> = {
     home_win: hw, away_win: aw, draw: d,
-    over25: probs.over25, under25: probs.under25,
+    over15: probs.over15, over25: probs.over25,
+    under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
 
@@ -551,9 +561,9 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
 /**
  * Tier assignment based on confidence score (v3):
- *   76%+ → Premium
- *   60-75% → Pro
- *   0-59% → Free
+ *   78%+ → Premium
+ *   65-77% → Pro
+ *   0-64% → Free
  */
 export function getTierFromConfidence(confidence: number): "free" | "pro" | "premium" {
   if (confidence >= 78) return "premium";
@@ -574,10 +584,12 @@ const MARKET_LABELS: Record<MarketType, { label: string; emoji: string }> = {
   home_win: { label: "Home Win", emoji: "🏠" },
   away_win: { label: "Away Win", emoji: "✈️" },
   draw: { label: "Draw", emoji: "🤝" },
+  over15: { label: "Over 1.5", emoji: "⚽" },
   over25: { label: "Over 2.5", emoji: "🔥" },
-  under25: { label: "Under 2.5", emoji: "🔥" },
-  btts_yes: { label: "BTTS Yes", emoji: "🔥" },
-  btts_no: { label: "BTTS No", emoji: "🔥" },
+  under25: { label: "Under 2.5", emoji: "🛡️" },
+  under35: { label: "Under 3.5", emoji: "🛡️" },
+  btts_yes: { label: "BTTS Yes", emoji: "🎯" },
+  btts_no: { label: "BTTS No", emoji: "🚫" },
 };
 
 /**
