@@ -3988,7 +3988,9 @@ async function processBatch(
         standings,
         odds,
         pred.league || undefined,
-        leagueId
+        leagueId,
+        fixture?.league?.round || undefined,
+        fixture?.fixture?.date || pred?.match_timestamp || undefined
       );
 
       // Calculate Poisson goal markets for key_factors and more accurate score
