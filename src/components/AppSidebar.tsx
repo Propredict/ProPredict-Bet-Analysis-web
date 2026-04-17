@@ -77,6 +77,7 @@ const adminItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Manage Tips", url: "/admin/tips", icon: Lightbulb },
   { title: "Manage Tickets", url: "/admin/tickets", icon: Ticket },
+  { title: "Dashboard A/B Testing", url: "/admin/email-ab-tests", icon: FlaskConical },
 ];
 
 export function AppSidebar() {
