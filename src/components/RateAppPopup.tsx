@@ -73,6 +73,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
+        data-rating-popup-open={open ? "true" : "false"}
         className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden"
         style={popupStyle}
         onPointerDownOutside={(e) => e.preventDefault()}
