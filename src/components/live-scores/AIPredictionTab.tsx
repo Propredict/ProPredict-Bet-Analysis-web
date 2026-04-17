@@ -11,36 +11,50 @@ interface AIPredictionTabProps {
   isActive?: boolean;
 }
 
-interface MarketTrendInfo {
+interface SignalsInfo {
   trend: string | null;
   strength: string | null;
   movementPct: number | null;
+  predictedSideValue: number | null;
+  isValueBet: boolean | null;
+  bookmakersCount: number | null;
 }
 
 export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabProps) {
   // Only fetch when tab is active
   const { data, loading, error } = useAIPrediction(fixtureId, { enabled: isActive });
 
-  // Pull market trend signal from stored ai_predictions row (set by snapshot-odds cron)
-  const [marketTrend, setMarketTrend] = useState<MarketTrendInfo | null>(null);
+  // Pull market-trend + value-bet signals from stored ai_predictions row (set by snapshot-odds cron)
+  const [signals, setSignals] = useState<SignalsInfo | null>(null);
   useEffect(() => {
     if (!fixtureId || !isActive) return;
     let cancelled = false;
     (async () => {
       const { data: row } = await supabase
         .from("ai_predictions")
-        .select("market_trend, market_trend_strength, odds_movement_pct")
+        .select("market_trend, market_trend_strength, odds_movement_pct, prediction, value_home, value_draw, value_away, is_value_bet, bookmakers_count")
         .eq("match_id", String(fixtureId))
         .maybeSingle();
       if (cancelled || !row) return;
-      setMarketTrend({
-        trend: (row as any).market_trend ?? null,
-        strength: (row as any).market_trend_strength ?? null,
-        movementPct: (row as any).odds_movement_pct ?? null,
+      const r = row as any;
+      const pred = String(r.prediction || "").toLowerCase();
+      const sideValue =
+        pred.includes("home") || pred === "1" ? r.value_home
+          : pred.includes("draw") || pred === "x" ? r.value_draw
+          : pred.includes("away") || pred === "2" ? r.value_away
+          : null;
+      setSignals({
+        trend: r.market_trend ?? null,
+        strength: r.market_trend_strength ?? null,
+        movementPct: r.odds_movement_pct ?? null,
+        predictedSideValue: sideValue ?? null,
+        isValueBet: r.is_value_bet ?? null,
+        bookmakersCount: r.bookmakers_count ?? null,
       });
     })();
     return () => { cancelled = true; };
   }, [fixtureId, isActive]);
+
 
 
   if (loading) {
