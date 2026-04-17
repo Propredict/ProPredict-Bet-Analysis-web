@@ -277,15 +277,11 @@ export default function AIPredictions() {
     [topPicks],
   );
 
-  // Safe Picks: confidence >= 85, max 3, premium tier, NOT already in Top Picks
+  // Safe Picks: top 3 highest-confidence predictions NOT already in Top Picks
   const safePicks = useMemo(() => {
     return filteredPredictions
-      .filter(
-        (p) =>
-          (p.confidence ?? 0) >= 85 &&
-          getPredictionTier(p) === "premium" &&
-          !topPickIds.has(p.id),
-      )
+      .filter((p) => !topPickIds.has(p.id))
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
       .slice(0, 3);
   }, [filteredPredictions, topPickIds]);
 
