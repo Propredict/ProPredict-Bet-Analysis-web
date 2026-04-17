@@ -1664,10 +1664,244 @@ async function fetchRefereeStats(
   }
 }
 
-/**
- * Apply referee + H2H style adjustment to a prediction (small confidence delta).
- * Returns adjusted confidence + descriptive factors for key_factors.
- */
+// ============================================================
+// === MANAGER CHANGE EFFECT (LIVE) ===
+// New manager bounce: teams with a manager hired <60 days ago tend to
+// over-perform for the first ~5 matches (well-documented "new manager bounce").
+// Returns a small probability nudge (1-3 pct) toward the team that recently
+// changed manager + a small confidence boost (+1).
+// ============================================================
+interface ManagerBounce {
+  daysSinceStart: number | null;
+  bounceActive: boolean; // true if hired <60 days ago AND has played 1-5 matches under new manager
+  matchesUnder: number;
+}
+
+const managerBounceCache = new Map<string, ManagerBounce | null>();
+
+async function fetchManagerBounce(
+  teamId: number,
+  apiKey: string,
+): Promise<ManagerBounce | null> {
+  const key = String(teamId);
+  if (managerBounceCache.has(key)) return managerBounceCache.get(key) ?? null;
+
+  try {
+    // API-Football: /coachs?team={id} returns coach career history
+    const url = `${API_FOOTBALL_URL}/coachs?team=${teamId}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 1, baseDelayMs: 600 });
+    const coaches = data?.response || [];
+    if (coaches.length === 0) {
+      managerBounceCache.set(key, null);
+      return null;
+    }
+
+    // Find the current coach for this team (career entry where end is null and team matches)
+    let currentStart: string | null = null;
+    for (const coach of coaches) {
+      const career = coach?.career || [];
+      for (const c of career) {
+        if (c?.team?.id === teamId && (c?.end === null || c?.end === undefined)) {
+          currentStart = c?.start || null;
+          break;
+        }
+      }
+      if (currentStart) break;
+    }
+
+    if (!currentStart) {
+      managerBounceCache.set(key, null);
+      return null;
+    }
+
+    const startMs = new Date(currentStart).getTime();
+    if (!Number.isFinite(startMs)) {
+      managerBounceCache.set(key, null);
+      return null;
+    }
+    const days = Math.floor((Date.now() - startMs) / (1000 * 60 * 60 * 24));
+
+    // Bounce window: hired in last 60 days
+    const bounceActive = days >= 0 && days <= 60;
+    const result: ManagerBounce = {
+      daysSinceStart: days,
+      bounceActive,
+      matchesUnder: 0, // we don't fetch separately to save quota; treat days as proxy
+    };
+    managerBounceCache.set(key, result);
+    return result;
+  } catch (e) {
+    console.warn(`[MANAGER] fetch failed for team ${teamId}:`, (e as any)?.message);
+    managerBounceCache.set(key, null);
+    return null;
+  }
+}
+
+function applyManagerBounce(
+  pred: { home_win: number; draw: number; away_win: number; confidence: number },
+  homeBounce: ManagerBounce | null,
+  awayBounce: ManagerBounce | null,
+): { home_win: number; draw: number; away_win: number; confidence: number; factors: string[]; deltaProb: number } {
+  const factors: string[] = [];
+  let homeBoost = 0, awayBoost = 0;
+
+  if (homeBounce?.bounceActive) {
+    // Stronger boost the more recent the hire
+    homeBoost = homeBounce.daysSinceStart! < 21 ? 3 : 2;
+    factors.push(`🆕 Home new manager (${homeBounce.daysSinceStart}d) — bounce effect +${homeBoost}%`);
+  }
+  if (awayBounce?.bounceActive) {
+    awayBoost = awayBounce.daysSinceStart! < 21 ? 3 : 2;
+    factors.push(`🆕 Away new manager (${awayBounce.daysSinceStart}d) — bounce effect +${awayBoost}%`);
+  }
+
+  if (homeBoost === 0 && awayBoost === 0) {
+    return { ...pred, factors, deltaProb: 0 };
+  }
+
+  // Apply nudge: take from draw mostly, redistribute
+  let h = pred.home_win + homeBoost;
+  let a = pred.away_win + awayBoost;
+  const totalBoost = homeBoost + awayBoost;
+  let d = Math.max(5, pred.draw - totalBoost);
+
+  // Renormalize to 100
+  const sum = h + d + a;
+  h = Math.round((h / sum) * 100);
+  a = Math.round((a / sum) * 100);
+  d = 100 - h - a;
+
+  // Confidence: small +1 only if one side has bounce and aligns with current pick
+  let confDelta = 0;
+  if (homeBoost > 0 && pred.home_win > pred.away_win) confDelta = 1;
+  else if (awayBoost > 0 && pred.away_win > pred.home_win) confDelta = 1;
+
+  return {
+    home_win: h, draw: d, away_win: a,
+    confidence: clamp(pred.confidence + confDelta, 40, 100),
+    factors,
+    deltaProb: totalBoost,
+  };
+}
+
+// ============================================================
+// === PUBLIC vs SHARP DISAGREEMENT (LIVE) ===
+// Detects when bookmaker odds have moved AGAINST public bias (sharp money).
+// If the model's pick aligns with the sharp side → boost confidence.
+// If the model's pick aligns with the public bias (opposite of sharp) → penalty.
+// Requires odds_snapshots history (oldest snapshot vs current odds).
+// ============================================================
+interface SharpSignal {
+  detected: boolean;
+  sharpSide: "home" | "away" | "draw" | null;
+  movementPct: number; // how much implied prob moved (absolute)
+  publicBias: "home" | "away" | "draw" | null; // current favorite by public
+}
+
+async function detectSharpSignal(
+  supabase: any,
+  matchId: string,
+  currentHomeProb: number,
+  currentDrawProb: number,
+  currentAwayProb: number,
+): Promise<SharpSignal> {
+  try {
+    // Get oldest snapshot in the last 7 days for this match
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from("odds_snapshots")
+      .select("implied_home, implied_draw, implied_away, captured_at")
+      .eq("match_id", matchId)
+      .gte("captured_at", sevenDaysAgo)
+      .order("captured_at", { ascending: true })
+      .limit(1);
+
+    if (error || !data || data.length === 0) {
+      return { detected: false, sharpSide: null, movementPct: 0, publicBias: null };
+    }
+
+    const oldest = data[0];
+    const oldHome = Number(oldest.implied_home) || 0;
+    const oldDraw = Number(oldest.implied_draw) || 0;
+    const oldAway = Number(oldest.implied_away) || 0;
+    if (oldHome <= 0 || oldAway <= 0) {
+      return { detected: false, sharpSide: null, movementPct: 0, publicBias: null };
+    }
+
+    // Movement: difference between current and oldest implied prob
+    const dHome = currentHomeProb - oldHome;
+    const dAway = currentAwayProb - oldAway;
+    const dDraw = currentDrawProb - oldDraw;
+
+    // Sharp side = the side that gained the most implied probability
+    // (odds shortened = bookmakers think it's more likely = sharp money)
+    const movements = [
+      { side: "home" as const, delta: dHome },
+      { side: "draw" as const, delta: dDraw },
+      { side: "away" as const, delta: dAway },
+    ];
+    movements.sort((a, b) => b.delta - a.delta);
+    const top = movements[0];
+
+    // Need meaningful movement (>= 4 percentage points)
+    if (top.delta < 4) {
+      return { detected: false, sharpSide: null, movementPct: top.delta, publicBias: null };
+    }
+
+    // Public bias = current favorite (highest current prob)
+    const currentProbs = [
+      { side: "home" as const, prob: currentHomeProb },
+      { side: "draw" as const, prob: currentDrawProb },
+      { side: "away" as const, prob: currentAwayProb },
+    ];
+    currentProbs.sort((a, b) => b.prob - a.prob);
+    const publicBias = currentProbs[0].side;
+
+    return {
+      detected: true,
+      sharpSide: top.side,
+      movementPct: Math.round(top.delta * 10) / 10,
+      publicBias,
+    };
+  } catch (e) {
+    console.warn(`[SHARP] failed for match ${matchId}:`, (e as any)?.message);
+    return { detected: false, sharpSide: null, movementPct: 0, publicBias: null };
+  }
+}
+
+function applySharpSignal(
+  pred: { home_win: number; draw: number; away_win: number; confidence: number; prediction: string },
+  signal: SharpSignal,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  if (!signal.detected || !signal.sharpSide) {
+    return { confidence: pred.confidence, factors, delta: 0 };
+  }
+
+  // Determine model pick side (1, X, 2)
+  const modelPickSide: "home" | "away" | "draw" =
+    pred.home_win >= pred.draw && pred.home_win >= pred.away_win ? "home" :
+    pred.away_win >= pred.draw ? "away" : "draw";
+
+  let delta = 0;
+  if (modelPickSide === signal.sharpSide) {
+    // Model aligned with sharp money — strongest signal
+    delta = signal.movementPct >= 8 ? 4 : signal.movementPct >= 5 ? 3 : 2;
+    factors.push(`💎 Sharp money agrees (${signal.sharpSide.toUpperCase()} +${signal.movementPct}%) — strong value signal`);
+  } else if (modelPickSide === signal.publicBias && signal.sharpSide !== signal.publicBias) {
+    // Model picks public favorite, but sharp money goes elsewhere — caution
+    delta = -2;
+    factors.push(`⚠️ Sharp money disagrees — moving toward ${signal.sharpSide.toUpperCase()} (+${signal.movementPct}%)`);
+  }
+
+  return {
+    confidence: clamp(pred.confidence + delta, 40, 100),
+    factors,
+    delta,
+  };
+}
+
+
 function applyRefereeAndH2HStyle(
   pred: { home_win: number; draw: number; away_win: number; confidence: number; prediction: string },
   refStats: RefereeStats | null,
