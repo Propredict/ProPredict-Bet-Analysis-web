@@ -1,15 +1,46 @@
+import { useEffect, useState } from "react";
 import { useAIPrediction } from "@/hooks/useAIPrediction";
 import { cn } from "@/lib/utils";
 import { Brain, Target, AlertTriangle, Sparkles, Trophy, TrendingUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { MarketTrendBadge } from "@/components/ai-predictions/MarketTrendBadge";
 
 interface AIPredictionTabProps {
   fixtureId: string | number | null;
   isActive?: boolean;
 }
 
+interface MarketTrendInfo {
+  trend: string | null;
+  strength: string | null;
+  movementPct: number | null;
+}
+
 export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabProps) {
   // Only fetch when tab is active
   const { data, loading, error } = useAIPrediction(fixtureId, { enabled: isActive });
+
+  // Pull market trend signal from stored ai_predictions row (set by snapshot-odds cron)
+  const [marketTrend, setMarketTrend] = useState<MarketTrendInfo | null>(null);
+  useEffect(() => {
+    if (!fixtureId || !isActive) return;
+    let cancelled = false;
+    (async () => {
+      const { data: row } = await supabase
+        .from("ai_predictions")
+        .select("market_trend, market_trend_strength, odds_movement_pct")
+        .eq("match_id", String(fixtureId))
+        .maybeSingle();
+      if (cancelled || !row) return;
+      setMarketTrend({
+        trend: (row as any).market_trend ?? null,
+        strength: (row as any).market_trend_strength ?? null,
+        movementPct: (row as any).odds_movement_pct ?? null,
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [fixtureId, isActive]);
+
 
   if (loading) {
     return (
@@ -128,6 +159,17 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
         <Brain className="h-4 w-4 text-primary" />
         AI-Powered Analysis
       </div>
+
+      {/* Market Trend (bookmaker consensus movement) */}
+      {marketTrend?.trend && marketTrend.trend !== "stable" && (
+        <div className="flex justify-center">
+          <MarketTrendBadge
+            trend={marketTrend.trend}
+            strength={marketTrend.strength}
+            movementPct={marketTrend.movementPct}
+          />
+        </div>
+      )}
 
       {/* Predicted Winner - Hero Card */}
       <div className="bg-gradient-to-br from-primary/15 to-accent/10 rounded-xl p-5 border border-primary/20 text-center">

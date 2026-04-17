@@ -29,6 +29,13 @@ export interface AIPrediction {
   injury_impact_home?: number | null;
   injury_impact_away?: number | null;
   lineup_confirmed?: boolean | null;
+  // Market trend (bookmaker consensus movement)
+  market_trend?: string | null;            // 'dropping' | 'rising' | 'stable'
+  market_trend_strength?: string | null;   // 'weak' | 'moderate' | 'strong'
+  odds_movement_pct?: number | null;
+  consensus_odds?: number | null;
+  bookmakers_count?: number | null;
+  confidence_adjustment?: number | null;
 }
 
 export interface MissingPlayer {
