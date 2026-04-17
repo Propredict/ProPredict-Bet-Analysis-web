@@ -111,12 +111,14 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier assignment: based purely on the displayed confidence value
-  // so users see consistent tiers (Pro ≥65%, Premium ≥78%) matching the % shown on the card
+  // Tier assignment: based on the MAX of confidence and the best market probability
+  // (the % actually shown on the card). This ensures a card displaying e.g. "78% BTTS No"
+  // lands in Premium, not Pro — matching what the user sees.
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
     for (const p of predictions) {
-      map.set(p.id!, getTierFromConfidence(p.confidence ?? 0));
+      const displayedPct = Math.max(p.confidence ?? 0, getBestMarketProbability(p));
+      map.set(p.id!, getTierFromConfidence(displayedPct));
     }
     return map;
   }, [predictions]);
