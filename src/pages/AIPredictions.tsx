@@ -277,12 +277,12 @@ export default function AIPredictions() {
     [topPicks],
   );
 
-  // Safe Picks: top 3 highest-confidence predictions NOT already in Top Picks
+  // Safe Pick of the Day: single highest-confidence prediction NOT already in Top Picks
   const safePicks = useMemo(() => {
     return filteredPredictions
       .filter((p) => !topPickIds.has(p.id))
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-      .slice(0, 3);
+      .slice(0, 1);
   }, [filteredPredictions, topPickIds]);
 
 
