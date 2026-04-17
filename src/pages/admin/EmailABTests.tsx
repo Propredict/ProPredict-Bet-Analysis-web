@@ -60,7 +60,7 @@ export default function EmailABTests() {
       if (variantsRes.error) throw variantsRes.error;
       if (sendsRes.error) throw sendsRes.error;
 
-      const v = (variantsRes.data ?? []) as Variant[];
+      const v = ((variantsRes.data ?? []) as unknown) as Variant[];
       setVariants(v);
 
       // Aggregate sends/clicks per variant
