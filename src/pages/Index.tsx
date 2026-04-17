@@ -16,7 +16,7 @@ import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
-import { useAppRating } from "@/hooks/useAppRating";
+
 
 // Heavy components – lazy loaded for faster initial paint
 const FeaturedPredictions = lazy(() => import("@/components/dashboard/FeaturedPredictions").then(m => ({ default: m.FeaturedPredictions })));
@@ -46,7 +46,7 @@ const Index = () => {
   const isAndroid = getIsAndroidApp();
   const navigate = useNavigate();
   const firedRef = useRef(false);
-  const { setShowPopup: showRatingPopup } = useAppRating();
+  
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   // Android only: show one interstitial on Home (max 1 per app session)
@@ -145,7 +145,7 @@ const Index = () => {
         )}
 
         {/* Rate App Card – all users, inline */}
-        <RateAppCard onRate={() => showRatingPopup(true)} />
+        <RateAppCard onRate={() => window.dispatchEvent(new Event("propredict:open-rate-popup"))} />
 
         {/* Daily Reward Widget */}
         <DailyRewardWidget />

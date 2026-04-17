@@ -49,7 +49,14 @@ export default function AppLayout() {
   const { plan } = useUserPlan();
   const { settings: alertSettings, toggleSetting: toggleAlertSetting } = useGlobalAlertSettings();
   const [showGlobalAlerts, setShowGlobalAlerts] = useState(false);
-  const { showPopup: showRatePopup, dismiss: dismissRate, submitRating, submitting: rateSubmitting } = useAppRating();
+  const { showPopup: showRatePopup, dismiss: dismissRate, submitRating, submitting: rateSubmitting, setShowPopup: setShowRatePopup } = useAppRating();
+
+  // Global bridge: any component can dispatch `propredict:open-rate-popup` to open the rating popup
+  useEffect(() => {
+    const handler = () => setShowRatePopup(true);
+    window.addEventListener("propredict:open-rate-popup", handler);
+    return () => window.removeEventListener("propredict:open-rate-popup", handler);
+  }, [setShowRatePopup]);
 
   // Sync Android OneSignal Player ID to Supabase
   useOneSignalPlayerSync();
