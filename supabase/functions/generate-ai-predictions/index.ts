@@ -2658,6 +2658,8 @@ async function fetchInjuries(leagueId: number, season: number, apiKey: string): 
     return injuries;
   } catch {
     injuriesCache.set(cacheKey, []);
+    return [];
+  }
 }
 
 /**
