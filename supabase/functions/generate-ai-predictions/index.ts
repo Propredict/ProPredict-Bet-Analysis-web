@@ -1730,8 +1730,6 @@ function applyRefereeAndH2HStyle(
   return { confidence: newConfidence, factors, deltas: { ref: refDelta, h2h: h2hDelta } };
 }
 
-  return Math.round((points / 9) * 100);
-}
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
