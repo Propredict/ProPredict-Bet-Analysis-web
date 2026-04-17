@@ -28,8 +28,20 @@ export function DashboardTipsPopup() {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch { /* ignore */ }
 
-    const delay = isAndroid ? 12000 : 800;
+    // Android: delay to 55s so it appears AFTER Rating popup (~40s) finishes,
+    // preventing the "Choose Your Picks" modal from overlapping the rating dialog.
+    const delay = isAndroid ? 55000 : 800;
     const timer = setTimeout(() => {
+      // Skip if rating popup is currently open (avoid double-modal collision)
+      const ratingOpen = document.querySelector('[data-rating-popup-open="true"]');
+      if (ratingOpen) {
+        // Retry in 20s
+        const retry = setTimeout(() => {
+          setOpen(true);
+          try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
+        }, 20000);
+        return () => clearTimeout(retry);
+      }
       setOpen(true);
       try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
     }, delay);
