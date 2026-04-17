@@ -41,10 +41,14 @@ export function TopAIPicksSection({
 
   if (picks.length === 0) return null;
 
-  const isPaidUser = isPremiumUser || isProUser || isAdmin;
-  // Show all picks to everyone — Free sees #1 unlocked + #2-#5 locked (visible cards)
+  // Unlocked count per tier:
+  // - Premium/Admin: all 5 unlocked
+  // - Pro: 3 unlocked, 2 locked (visible)
+  // - Free: 1 unlocked, 4 locked (visible)
+  const unlockedCount = isPremiumUser || isAdmin ? picks.length : isProUser ? 3 : 1;
   const visiblePicks = picks;
-  const lockedCount = isPaidUser ? 0 : Math.max(0, picks.length - 1);
+  const lockedCount = Math.max(0, picks.length - unlockedCount);
+  const showUpsell = !isPremiumUser && !isAdmin && lockedCount > 0;
 
   return (
     <Card
