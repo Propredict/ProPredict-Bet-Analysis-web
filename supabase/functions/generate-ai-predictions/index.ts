@@ -3414,8 +3414,8 @@ async function processBatch(
         continue;
       }
 
-      // Fetch ALL data in parallel: stats, H2H, LEAGUE-ONLY form (10 matches), standings, odds
-      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
+      // Fetch ALL data in parallel: stats, H2H, form, standings, odds, injuries, scorers, assists, GKs
+      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds, leagueInjuries, leagueTopScorers, leagueTopAssists, homeGK, awayGK] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -3423,6 +3423,11 @@ async function processBatch(
         fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
         fetchStandings(leagueId, season, apiKey),
         fetchOdds(fixtureIdStr, apiKey),
+        fetchInjuries(leagueId, season, apiKey),
+        fetchTopScorers(leagueId, season, apiKey),
+        fetchTopAssists(leagueId, season, apiKey),
+        fetchStartingGK(homeTeamId, leagueId, season, apiKey),
+        fetchStartingGK(awayTeamId, leagueId, season, apiKey),
       ]);
 
       if (!homeStats && !awayStats) {
