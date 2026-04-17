@@ -13,7 +13,11 @@ const corsHeaders = {
 }
 
 const TEMPLATE_NAME = 'rating-followup'
-const FROM_ADDRESS = 'ProPredict <noreply@notify.propredict.me>'
+// NOTE: notify.propredict.me is delegated to Lovable nameservers and is NOT
+// verified in Resend, so we use Resend's onboarding sender for now.
+// To send from your branded domain, either (a) add a separate subdomain to
+// Resend (not notify.*) or (b) finish the Lovable email infra setup.
+const FROM_ADDRESS = 'ProPredict <onboarding@resend.dev>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
