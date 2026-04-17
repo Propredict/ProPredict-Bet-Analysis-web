@@ -108,26 +108,35 @@ Deno.serve(async (req) => {
         continue
       }
 
-      if (!row.user_id) {
+      if (!row.user_id && !force) {
         skipped++
         results.push({ id: row.id, status: 'skipped_no_user' })
         continue
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, full_name, username')
-        .eq('user_id', row.user_id)
-        .maybeSingle()
+      let recipientEmail: string | undefined
+      let name: string | undefined
 
-      const recipientEmail = profile?.email
+      if (force && forceEmail) {
+        recipientEmail = forceEmail
+      }
+
+      if (row.user_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, full_name, username')
+          .eq('user_id', row.user_id)
+          .maybeSingle()
+
+        recipientEmail = recipientEmail || profile?.email || undefined
+        name = profile?.full_name || profile?.username || undefined
+      }
+
       if (!recipientEmail) {
         skipped++
         results.push({ id: row.id, status: 'skipped_no_email' })
         continue
       }
-
-      const name = profile?.full_name || profile?.username || undefined
 
       // ── A/B variant selection (50/50 random per user) ──
       let variantId: string | null = null
