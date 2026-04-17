@@ -6197,6 +6197,71 @@ async function processBatch(
         console.warn(`[XGCAL] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // ===== WIN STREAK MOMENTUM (LIVE — Option 5) =====
+      try {
+        const streakProfile = calculateStreakProfile(homeForm, awayForm);
+        const streakAdj = applyStreakAdjustment(newPrediction, streakProfile, homeTeamName, awayTeamName);
+        if (streakAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = streakAdj.confidence;
+          for (const f of streakAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[STREAK] ${homeTeamName}(W${streakProfile.homeWinStreak}/L${streakProfile.homeLossStreak}) vs ` +
+            `${awayTeamName}(W${streakProfile.awayWinStreak}/L${streakProfile.awayLossStreak}) | ` +
+            `Conf: ${beforeConf}% → ${streakAdj.confidence}% (Δ${streakAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[STREAK] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== DERBY DETECTION (LIVE — Option 6) =====
+      try {
+        const derbyProfile = detectDerby(homeTeamName, awayTeamName);
+        if (derbyProfile.isDerby) {
+          const derbyAdj = applyDerbyAdjustment(newPrediction, derbyProfile);
+          if (derbyAdj.delta !== 0) {
+            const beforeConf = newPrediction.confidence;
+            newPrediction.confidence = derbyAdj.confidence;
+            for (const f of derbyAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[DERBY] ${derbyProfile.derbyName} | ${homeTeamName} vs ${awayTeamName} | ` +
+              `Conf: ${beforeConf}% → ${derbyAdj.confidence}% (Δ${derbyAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[DERBY] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== STAR PLAYER ABSENCE DETECTOR (LIVE — Option 4) =====
+      try {
+        if (leagueId && homeTeamId && awayTeamId) {
+          const topPlayers = await getLeagueTopPlayers(leagueId, season, apiKey);
+          const starProfile = calculateStarAbsenceProfile(
+            topPlayers, homeTeamId, awayTeamId, missingHome, missingAway
+          );
+          const starAdj = applyStarAbsenceAdjustment(newPrediction, starProfile, homeTeamName, awayTeamName);
+          if (starAdj.delta !== 0) {
+            const beforeConf = newPrediction.confidence;
+            newPrediction.confidence = starAdj.confidence;
+            for (const f of starAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[STAR] H-miss[${starProfile.homeMissingTopScorers.length + starProfile.homeMissingTopAssists.length}] ` +
+              `A-miss[${starProfile.awayMissingTopScorers.length + starProfile.awayMissingTopAssists.length}] | ` +
+              `Conf: ${beforeConf}% → ${starAdj.confidence}% (Δ${starAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[STAR] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
 
       // Only fetched within ~24h of kickoff to avoid wasted API calls before lineups posted.
       try {
