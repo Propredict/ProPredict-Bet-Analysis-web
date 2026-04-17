@@ -27,18 +27,47 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey)
   const trackBaseUrl = `${supabaseUrl}/functions/v1/track-email-click`
 
-  // Window: rating created between 12h and 6h ago, >=4 stars
-  const now = Date.now()
-  const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
-  const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
+  // ── Force/test mode: ?force=true&email=foo@bar.com ──
+  const url = new URL(req.url)
+  const force = url.searchParams.get('force') === 'true'
+  const forceEmail = url.searchParams.get('email')
+  const forceStars = parseInt(url.searchParams.get('stars') || '5', 10)
 
-  const { data: ratings, error } = await supabase
-    .from('app_ratings')
-    .select('id, user_id, stars, created_at')
-    .gte('stars', 4)
-    .lte('created_at', sixHoursAgo)
-    .gte('created_at', twelveHoursAgo)
-    .limit(100)
+  let ratings: Array<{ id: string; user_id: string | null; stars: number; created_at: string }> | null = null
+  let error: any = null
+
+  if (force && forceEmail) {
+    // Look up user by email; fall back to a synthetic row if not found
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', forceEmail)
+      .maybeSingle()
+
+    ratings = [
+      {
+        id: crypto.randomUUID(),
+        user_id: profile?.user_id ?? null,
+        stars: forceStars,
+        created_at: new Date().toISOString(),
+      },
+    ]
+  } else {
+    // Window: rating created between 12h and 6h ago, >=4 stars
+    const now = Date.now()
+    const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
+    const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
+
+    const res = await supabase
+      .from('app_ratings')
+      .select('id, user_id, stars, created_at')
+      .gte('stars', 4)
+      .lte('created_at', sixHoursAgo)
+      .gte('created_at', twelveHoursAgo)
+      .limit(100)
+    ratings = res.data
+    error = res.error
+  }
 
   if (error) {
     console.error('Failed to query app_ratings', error)
