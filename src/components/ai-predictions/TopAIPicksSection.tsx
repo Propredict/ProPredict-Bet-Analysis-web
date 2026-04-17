@@ -42,8 +42,8 @@ export function TopAIPicksSection({
   if (picks.length === 0) return null;
 
   const isPaidUser = isPremiumUser || isProUser || isAdmin;
-  // Free: 1 pick. Pro/Premium: up to 5 (we already pass top 5).
-  const visiblePicks = isPaidUser ? picks : picks.slice(0, 1);
+  // Show all picks to everyone — Free sees #1 unlocked + #2-#5 locked (visible cards)
+  const visiblePicks = picks;
   const lockedCount = isPaidUser ? 0 : Math.max(0, picks.length - 1);
 
   return (
