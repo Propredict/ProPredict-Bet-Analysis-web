@@ -23,6 +23,19 @@ export interface AIPrediction {
   is_live: boolean | null;
   is_locked: boolean | null;
   result_status: string | null;
+  // Injury & lineup awareness
+  missing_home_players?: MissingPlayer[] | null;
+  missing_away_players?: MissingPlayer[] | null;
+  injury_impact_home?: number | null;
+  injury_impact_away?: number | null;
+  lineup_confirmed?: boolean | null;
+}
+
+export interface MissingPlayer {
+  name: string;
+  role: "scorer" | "assist" | "gk" | "key";
+  importance: number; // 0-100, used to weight penalty
+  reason?: string;
 }
 
 /**

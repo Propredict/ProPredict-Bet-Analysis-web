@@ -15,6 +15,7 @@ import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
+import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
 
 interface Props {
   prediction: AIPrediction;
@@ -120,10 +121,19 @@ const AIPredictionCardInner = ({
         </div>
 
         {/* Match Title */}
-        <div className="px-2 md:px-3 pb-1.5 md:pb-2">
-          <h3 className="font-semibold text-xs md:text-sm text-white">
+        <div className="px-2 md:px-3 pb-1.5 md:pb-2 flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-xs md:text-sm text-white truncate">
             {prediction.home_team} vs {prediction.away_team}
           </h3>
+          <KeyPlayerMissingBadge
+            homeMissing={prediction.missing_home_players}
+            awayMissing={prediction.missing_away_players}
+            homeImpact={prediction.injury_impact_home}
+            awayImpact={prediction.injury_impact_away}
+            homeTeam={prediction.home_team}
+            awayTeam={prediction.away_team}
+            lineupConfirmed={prediction.lineup_confirmed}
+          />
         </div>
 
         {/* Market Tabs */}

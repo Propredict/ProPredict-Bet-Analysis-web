@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { analyzeInjuryImpact, applyInjuryAdjustment } from "./injuryImpact.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -208,6 +209,8 @@ const teamFormCache = new Map<number, FormMatch[]>();
 const h2hCache = new Map<string, H2HMatch[]>();
 const teamStatsCache = new Map<string, TeamStats | null>();
 const topScorersCache = new Map<string, { name: string; team: string; goals: number }[]>();
+const topAssistsCache = new Map<string, { name: string; team: string; goals: number; assists: number }[]>();
+const startingGKCache = new Map<string, { name: string; position: string } | null>();
 const injuriesCache = new Map<string, InjuryInfo[]>();
 const standingsCache = new Map<string, StandingEntry[]>();
 const oddsCache = new Map<string, OddsData | null>();
@@ -2655,7 +2658,75 @@ async function fetchInjuries(leagueId: number, season: number, apiKey: string): 
     return injuries;
   } catch {
     injuriesCache.set(cacheKey, []);
+}
+
+/**
+ * Fetch top assist providers for a league (cached per invocation)
+ */
+async function fetchTopAssists(leagueId: number, season: number, apiKey: string): Promise<TopPlayer[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (topAssistsCache.has(cacheKey)) return topAssistsCache.get(cacheKey)! as any;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players/topassists?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      topAssistsCache.set(cacheKey, []);
+      return [];
+    }
+    const players: TopPlayer[] = (data.response || []).slice(0, 10).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.statistics?.[0]?.team?.name || "",
+      goals: item.statistics?.[0]?.goals?.total || 0,
+      assists: item.statistics?.[0]?.goals?.assists || 0,
+    }));
+    topAssistsCache.set(cacheKey, players as any);
+    return players;
+  } catch {
+    topAssistsCache.set(cacheKey, []);
     return [];
+  }
+}
+
+/**
+ * Fetch most-used starting GK for a team in current season.
+ * Uses /players?team=X&season=Y filtered by position=Goalkeeper, sorted by appearances.
+ */
+async function fetchStartingGK(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  apiKey: string,
+): Promise<{ name: string; position: string } | null> {
+  const cacheKey = `${teamId}:${leagueId}:${season}`;
+  if (startingGKCache.has(cacheKey)) return startingGKCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players?team=${teamId}&league=${leagueId}&season=${season}&position=Goalkeeper`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response || data.response.length === 0) {
+      startingGKCache.set(cacheKey, null);
+      return null;
+    }
+    // Sort by appearances (most-used = starter)
+    const goalkeepers = data.response
+      .map((item: any) => ({
+        name: item.player?.name || "",
+        appearances: item.statistics?.[0]?.games?.appearences || 0,
+      }))
+      .filter((p: any) => p.name)
+      .sort((a: any, b: any) => b.appearances - a.appearances);
+
+    if (goalkeepers.length === 0) {
+      startingGKCache.set(cacheKey, null);
+      return null;
+    }
+    const starter = { name: goalkeepers[0].name, position: "G" };
+    startingGKCache.set(cacheKey, starter);
+    return starter;
+  } catch {
+    startingGKCache.set(cacheKey, null);
+    return null;
   }
 }
 
@@ -3343,8 +3414,8 @@ async function processBatch(
         continue;
       }
 
-      // Fetch ALL data in parallel: stats, H2H, LEAGUE-ONLY form (10 matches), standings, odds
-      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds] = await Promise.all([
+      // Fetch ALL data in parallel: stats, H2H, form, standings, odds, injuries, scorers, assists, GKs
+      const [homeStats, awayStats, h2h, realHomeForm, realAwayForm, standings, odds, leagueInjuries, leagueTopScorers, leagueTopAssists, homeGK, awayGK] = await Promise.all([
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -3352,6 +3423,11 @@ async function processBatch(
         fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
         fetchStandings(leagueId, season, apiKey),
         fetchOdds(fixtureIdStr, apiKey),
+        fetchInjuries(leagueId, season, apiKey),
+        fetchTopScorers(leagueId, season, apiKey),
+        fetchTopAssists(leagueId, season, apiKey),
+        fetchStartingGK(homeTeamId, leagueId, season, apiKey),
+        fetchStartingGK(awayTeamId, leagueId, season, apiKey),
       ]);
 
       if (!homeStats && !awayStats) {
@@ -3505,6 +3581,42 @@ async function processBatch(
         }
       }
 
+      // ===== INJURY & KEY PLAYER IMPACT (NEW) =====
+      // Identify missing key players (top 3 scorers, top assist, starting GK)
+      // and adjust both probabilities and confidence accordingly.
+      const injuryAnalysis = analyzeInjuryImpact(
+        homeTeamName,
+        awayTeamName,
+        leagueTopScorers,
+        leagueTopAssists,
+        leagueInjuries,
+        homeGK,
+        awayGK,
+      );
+
+      const missingHome = injuryAnalysis.homeMissing;
+      const missingAway = injuryAnalysis.awayMissing;
+      const injuryImpactHome = injuryAnalysis.homeImpact;
+      const injuryImpactAway = injuryAnalysis.awayImpact;
+
+      // Apply adjustment only if there's meaningful impact (>= 15)
+      if (injuryImpactHome >= 15 || injuryImpactAway >= 15) {
+        const before = { ...newPrediction };
+        const adjusted = applyInjuryAdjustment(
+          newPrediction,
+          injuryImpactHome,
+          injuryImpactAway,
+        );
+        newPrediction.home_win = adjusted.home_win;
+        newPrediction.draw = adjusted.draw;
+        newPrediction.away_win = adjusted.away_win;
+        newPrediction.confidence = adjusted.confidence;
+        console.log(
+          `[INJURY] ${homeTeamName}(impact:${injuryImpactHome}, ${missingHome.length} out) vs ${awayTeamName}(impact:${injuryImpactAway}, ${missingAway.length} out) | ` +
+          `Conf: ${before.confidence}% → ${adjusted.confidence}% | Probs: ${before.home_win}/${before.draw}/${before.away_win} → ${adjusted.home_win}/${adjusted.draw}/${adjusted.away_win}`,
+        );
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
@@ -3520,6 +3632,10 @@ async function processBatch(
           key_factors: keyFactors.length > 0 ? keyFactors : null,
           last_home_goals: Math.round(homeXg * 10) / 10,
           last_away_goals: Math.round(awayXg * 10) / 10,
+          missing_home_players: missingHome,
+          missing_away_players: missingAway,
+          injury_impact_home: injuryImpactHome,
+          injury_impact_away: injuryImpactAway,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
@@ -3532,8 +3648,9 @@ async function processBatch(
 
       updated++;
       const tier = newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE ? "⭐PREMIUM" : "STD";
+      const injuryTag = (injuryImpactHome >= 15 || injuryImpactAway >= 15) ? " 🚑" : "";
       console.log(
-        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
+        `[${tier}${injuryTag}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
       );
     } catch (e) {
       await markPredictionLocked(
