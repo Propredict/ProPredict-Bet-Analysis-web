@@ -1,13 +1,14 @@
 // Dispatcher: finds eligible app_ratings (>=4 stars, 6-12h old) and triggers
 // send-transactional-email for each. Uses email_send_log + idempotencyKey to
-// avoid duplicate sends — no schema migration needed.
-// Called by pg_cron every hour.
+// avoid duplicate sends. Includes A/B testing on subject line + click tracking.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const TEMPLATE_NAME = 'rating-followup'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,6 +25,7 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, serviceKey)
+  const trackBaseUrl = `${supabaseUrl}/functions/v1/track-email-click`
 
   // Window: rating created between 12h and 6h ago, >=4 stars
   const now = Date.now()
@@ -46,6 +48,15 @@ Deno.serve(async (req) => {
     })
   }
 
+  // Load active variants for this template (A/B testing)
+  const { data: variants } = await supabase
+    .from('email_ab_variants')
+    .select('id, variant_label, subject')
+    .eq('template_name', TEMPLATE_NAME)
+    .eq('is_active', true)
+
+  const activeVariants = variants ?? []
+
   let sent = 0
   let skipped = 0
   let failed = 0
@@ -58,7 +69,7 @@ Deno.serve(async (req) => {
       // Skip if already sent (check email_send_log)
       const { data: existing } = await supabase
         .from('email_send_log')
-        .select('id, status')
+        .select('id')
         .eq('message_id', idempotencyKey)
         .limit(1)
 
@@ -68,7 +79,6 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Fetch profile for email + name
       if (!row.user_id) {
         skipped++
         results.push({ id: row.id, status: 'skipped_no_user' })
@@ -90,14 +100,48 @@ Deno.serve(async (req) => {
 
       const name = profile?.full_name || profile?.username || undefined
 
+      // ── A/B variant selection (50/50 random per user) ──
+      let variantId: string | null = null
+      let subjectOverride: string | null = null
+      let trackingUrl: string | undefined
+
+      if (activeVariants.length > 0) {
+        const picked =
+          activeVariants[Math.floor(Math.random() * activeVariants.length)]
+        variantId = picked.id
+        subjectOverride = picked.subject
+
+        // Pre-create the send row so we have an id for the tracking link
+        const { data: sendRow, error: sendInsertErr } = await supabase
+          .from('email_ab_sends')
+          .insert({
+            variant_id: variantId,
+            recipient_email: recipientEmail,
+            user_id: row.user_id,
+            rating_id: row.id,
+          })
+          .select('id')
+          .single()
+
+        if (sendInsertErr) {
+          console.error('Failed to insert email_ab_sends row', sendInsertErr)
+        } else if (sendRow?.id) {
+          trackingUrl = `${trackBaseUrl}?sid=${sendRow.id}`
+        }
+      }
+
+      const templateData: Record<string, any> = { name, stars: row.stars }
+      if (subjectOverride) templateData.subject = subjectOverride
+      if (trackingUrl) templateData.trackingUrl = trackingUrl
+
       const { error: invokeError } = await supabase.functions.invoke(
         'send-transactional-email',
         {
           body: {
-            templateName: 'rating-followup',
+            templateName: TEMPLATE_NAME,
             recipientEmail,
             idempotencyKey,
-            templateData: { name, stars: row.stars },
+            templateData,
           },
         }
       )
@@ -105,7 +149,7 @@ Deno.serve(async (req) => {
       if (invokeError) throw invokeError
 
       sent++
-      results.push({ id: row.id, status: 'sent' })
+      results.push({ id: row.id, status: 'sent', variant: variantId })
     } catch (err: any) {
       failed++
       console.error('Failed to send followup for rating', row.id, err)

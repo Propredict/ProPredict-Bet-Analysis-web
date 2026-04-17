@@ -20,9 +20,10 @@ const PLAY_STORE_URL =
 interface RatingFollowupProps {
   name?: string
   stars?: number
+  trackingUrl?: string
 }
 
-const RatingFollowupEmail = ({ name, stars }: RatingFollowupProps) => {
+const RatingFollowupEmail = ({ name, stars, trackingUrl }: RatingFollowupProps) => {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   const ratingText =
     stars === 5
@@ -30,6 +31,7 @@ const RatingFollowupEmail = ({ name, stars }: RatingFollowupProps) => {
       : stars
         ? `a ${stars}-star rating`
         : 'your support'
+  const ctaUrl = trackingUrl || PLAY_STORE_URL
 
   return (
     <Html lang="en" dir="ltr">
@@ -67,15 +69,15 @@ const RatingFollowupEmail = ({ name, stars }: RatingFollowupProps) => {
             </Text>
 
             <Section style={buttonContainer}>
-              <Button href={PLAY_STORE_URL} style={button}>
+              <Button href={ctaUrl} style={button}>
                 ⭐ Leave a review on Google Play
               </Button>
             </Section>
 
             <Text style={textSmall}>
               Or copy this link:{' '}
-              <Link href={PLAY_STORE_URL} style={link}>
-                {PLAY_STORE_URL}
+              <Link href={ctaUrl} style={link}>
+                {ctaUrl}
               </Link>
             </Text>
 
@@ -97,7 +99,8 @@ const RatingFollowupEmail = ({ name, stars }: RatingFollowupProps) => {
 
 export const template = {
   component: RatingFollowupEmail,
-  subject: 'Thank you for your support 🙌',
+  subject: (data: Record<string, any>) =>
+    (data?.subject as string) || 'Thank you for your support 🙌',
   displayName: 'Rating follow-up',
   previewData: { name: 'Marko', stars: 5 },
 } satisfies TemplateEntry
