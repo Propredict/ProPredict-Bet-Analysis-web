@@ -91,10 +91,11 @@ export function TopAIPicksSection({
         {/* Picks grid */}
         <div className="grid gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
           {visiblePicks.map((rp, idx) => {
-            // Cards within unlockedCount → force "free" tier (fully unlocked).
-            // Cards beyond unlockedCount → keep their original tier (locked teaser).
-            const effectiveTier =
-              idx < unlockedCount ? "free" : getPredictionTier(rp.prediction);
+            // Use the prediction's REAL tier so all market tabs (BTTS, Combo, etc.) show.
+            const realTier = getPredictionTier(rp.prediction);
+            // Cards within unlockedCount → bypass paywall (forceUnlocked).
+            // Cards beyond unlockedCount → respect paywall (locked teaser).
+            const isUnlockedSlot = idx < unlockedCount;
             return (
               <div key={rp.prediction.id} className="relative">
                 {/* Label badge floating top-right */}
@@ -113,7 +114,8 @@ export function TopAIPicksSection({
                 </div>
                 <div className="pt-2">
                   <AIPredictionCard
-                    overrideTier={effectiveTier}
+                    overrideTier={realTier}
+                    forceUnlocked={isUnlockedSlot}
                     prediction={rp.prediction}
                     isAdmin={isAdmin}
                     isPremiumUser={isPremiumUser}
