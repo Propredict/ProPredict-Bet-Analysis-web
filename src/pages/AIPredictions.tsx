@@ -273,6 +273,13 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
+  // Top AI Picks: weighted ranking — Free sees 1, Pro/Premium see up to 5
+  const topPicks = useMemo(() => {
+    const limit = (isPremiumUser || isProUser || isAdmin) ? 5 : 5;
+    // Always compute top 5 internally; component slices for free users
+    return selectTopPicks(filteredPredictions, limit);
+  }, [filteredPredictions, isPremiumUser, isProUser, isAdmin]);
+
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
