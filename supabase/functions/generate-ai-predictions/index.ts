@@ -2658,7 +2658,75 @@ async function fetchInjuries(leagueId: number, season: number, apiKey: string): 
     return injuries;
   } catch {
     injuriesCache.set(cacheKey, []);
+}
+
+/**
+ * Fetch top assist providers for a league (cached per invocation)
+ */
+async function fetchTopAssists(leagueId: number, season: number, apiKey: string): Promise<TopPlayer[]> {
+  const cacheKey = `${leagueId}:${season}`;
+  if (topAssistsCache.has(cacheKey)) return topAssistsCache.get(cacheKey)! as any;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players/topassists?league=${leagueId}&season=${season}`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response) {
+      topAssistsCache.set(cacheKey, []);
+      return [];
+    }
+    const players: TopPlayer[] = (data.response || []).slice(0, 10).map((item: any) => ({
+      name: item.player?.name || "Unknown",
+      team: item.statistics?.[0]?.team?.name || "",
+      goals: item.statistics?.[0]?.goals?.total || 0,
+      assists: item.statistics?.[0]?.goals?.assists || 0,
+    }));
+    topAssistsCache.set(cacheKey, players as any);
+    return players;
+  } catch {
+    topAssistsCache.set(cacheKey, []);
     return [];
+  }
+}
+
+/**
+ * Fetch most-used starting GK for a team in current season.
+ * Uses /players?team=X&season=Y filtered by position=Goalkeeper, sorted by appearances.
+ */
+async function fetchStartingGK(
+  teamId: number,
+  leagueId: number,
+  season: number,
+  apiKey: string,
+): Promise<{ name: string; position: string } | null> {
+  const cacheKey = `${teamId}:${leagueId}:${season}`;
+  if (startingGKCache.has(cacheKey)) return startingGKCache.get(cacheKey)!;
+
+  try {
+    const url = `${API_FOOTBALL_URL}/players?team=${teamId}&league=${leagueId}&season=${season}&position=Goalkeeper`;
+    const data = await fetchJsonWithRetry(url, apiKey, { retries: 2, baseDelayMs: 700 });
+    if (!data?.response || data.response.length === 0) {
+      startingGKCache.set(cacheKey, null);
+      return null;
+    }
+    // Sort by appearances (most-used = starter)
+    const goalkeepers = data.response
+      .map((item: any) => ({
+        name: item.player?.name || "",
+        appearances: item.statistics?.[0]?.games?.appearences || 0,
+      }))
+      .filter((p: any) => p.name)
+      .sort((a: any, b: any) => b.appearances - a.appearances);
+
+    if (goalkeepers.length === 0) {
+      startingGKCache.set(cacheKey, null);
+      return null;
+    }
+    const starter = { name: goalkeepers[0].name, position: "G" };
+    startingGKCache.set(cacheKey, starter);
+    return starter;
+  } catch {
+    startingGKCache.set(cacheKey, null);
+    return null;
   }
 }
 
