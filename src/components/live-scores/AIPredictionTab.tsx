@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Brain, Target, AlertTriangle, Sparkles, Trophy, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MarketTrendBadge } from "@/components/ai-predictions/MarketTrendBadge";
+import { ValueBetBadge } from "@/components/ai-predictions/ValueBetBadge";
 
 interface AIPredictionTabProps {
   fixtureId: string | number | null;
