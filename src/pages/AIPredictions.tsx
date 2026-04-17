@@ -8,6 +8,8 @@ import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
+import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
+import { selectTopPicks } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
