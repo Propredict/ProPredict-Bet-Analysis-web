@@ -29,6 +29,8 @@ interface Props {
   overrideTier?: "free" | "pro" | "premium";
   onUnlockClick?: (contentType: "tip", contentId: string, tier: ContentTier) => void;
   isUnlocking?: boolean;
+  /** When true, bypass paywall and show full content with all tabs (used by Top AI Picks for promo cards) */
+  forceUnlocked?: boolean;
 }
 
 const AIPredictionCardInner = ({ 
@@ -43,6 +45,7 @@ const AIPredictionCardInner = ({
   overrideTier,
   onUnlockClick,
   isUnlocking = false,
+  forceUnlocked = false,
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
@@ -55,7 +58,7 @@ const AIPredictionCardInner = ({
   const isDailyTier = displayTier === "free";
 
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
-  const hasAccess = canAccess(contentTier, "tip", prediction.id!);
+  const hasAccess = forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
   const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
 
   const formatTime = (time: string | null) => {
