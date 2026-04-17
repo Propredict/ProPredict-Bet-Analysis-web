@@ -588,6 +588,7 @@ const MARKET_LABELS: Record<MarketType, { label: string; emoji: string }> = {
   draw: { label: "Draw", emoji: "🤝" },
   over15: { label: "Over 1.5", emoji: "⚽" },
   over25: { label: "Over 2.5", emoji: "🔥" },
+  over35: { label: "Over 3.5", emoji: "💥" },
   under25: { label: "Under 2.5", emoji: "🛡️" },
   under35: { label: "Under 3.5", emoji: "🛡️" },
   btts_yes: { label: "BTTS Yes", emoji: "🎯" },
