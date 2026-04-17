@@ -88,14 +88,21 @@ export function calcTopPickScore(p: AIPrediction): RankedPick {
 
 /**
  * Pick top N predictions ranked by composite score.
- * Filters out matches that are already finished (won/lost) to keep focus on upcoming.
+ * Strategy: prioritize Premium tier (confidence >= 78%) first.
+ * If fewer than `limit` Premium picks exist, fill remaining slots with Pro tier (65-77%).
+ * Filters out finished matches.
  */
 export function selectTopPicks(predictions: AIPrediction[], limit: number): RankedPick[] {
   const upcoming = predictions.filter(
     (p) => !p.result_status || p.result_status === "pending",
   );
-  return upcoming
-    .map(calcTopPickScore)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+  const ranked = upcoming.map(calcTopPickScore).sort((a, b) => b.score - a.score);
+
+  const premium = ranked.filter((r) => (r.prediction.confidence ?? 0) >= 78);
+  const pro = ranked.filter(
+    (r) => (r.prediction.confidence ?? 0) >= 65 && (r.prediction.confidence ?? 0) < 78,
+  );
+
+  // Premium first, then Pro fallback
+  return [...premium, ...pro].slice(0, limit);
 }
