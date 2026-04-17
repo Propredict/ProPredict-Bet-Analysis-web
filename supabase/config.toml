@@ -56,3 +56,18 @@ verify_jwt = false
 
 [functions.fix-category-schema]
 verify_jwt = true
+
+[functions.send-transactional-email]
+verify_jwt = true
+
+[functions.preview-transactional-email]
+verify_jwt = false
+
+[functions.handle-email-unsubscribe]
+verify_jwt = false
+
+[functions.handle-email-suppression]
+verify_jwt = false
+
+[functions.send-rating-followup]
+verify_jwt = false
