@@ -5838,7 +5838,82 @@ async function processBatch(
         console.warn(`[ASYMMETRY] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
-      // ===== ROTATION RISK (LIVE — Option 11) =====
+      // ===== BIG MATCH MENTALITY (LIVE — Option 16) =====
+      try {
+        const bigMatchProfile = calculateBigMatchProfile(standings, homeTeamId, awayTeamId);
+        const bigMatchAdj = applyBigMatchAdjustment(newPrediction, bigMatchProfile, homeTeamName, awayTeamName);
+        if (bigMatchAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = bigMatchAdj.confidence;
+          for (const f of bigMatchAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[BIGMATCH] ${homeTeamName}(R${bigMatchProfile.homeRank}) vs ${awayTeamName}(R${bigMatchProfile.awayRank}) | ` +
+            `fav=${bigMatchProfile.favouredSide} | Conf: ${beforeConf}% → ${bigMatchAdj.confidence}% (Δ${bigMatchAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[BIGMATCH] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== PROMOTION/RELEGATION PRESSURE (LIVE — Option 17) =====
+      try {
+        const pressureProfile = calculatePressureProfile(
+          standings, homeTeamId, awayTeamId, fixture?.league?.round
+        );
+        const pressureAdj = applyPressureAdjustment(newPrediction, pressureProfile, homeTeamName, awayTeamName);
+        if (pressureAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = pressureAdj.confidence;
+          for (const f of pressureAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[PRESSURE] late-season=${pressureProfile.isLateSeason} | ` +
+            `home=${pressureProfile.homePressureType} away=${pressureProfile.awayPressureType} | ` +
+            `Conf: ${beforeConf}% → ${pressureAdj.confidence}% (Δ${pressureAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[PRESSURE] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== xG CALIBRATION LIVE (LIVE — Option 3) =====
+      // Reads cached real-xG (already collected by SAFE MODE) and nudges
+      // confidence based on convergence/divergence with proxy xG.
+      try {
+        if (leagueId && homeTeamId && awayTeamId) {
+          const [homeRealXG, awayRealXG] = await Promise.all([
+            getCachedRealXG(supabase, homeTeamId, leagueId, season, apiKey),
+            getCachedRealXG(supabase, awayTeamId, leagueId, season, apiKey),
+          ]);
+          // Require minimum sample of 4 matches before trusting real xG
+          const homeOK = (homeRealXG?.matches_count ?? 0) >= 4;
+          const awayOK = (awayRealXG?.matches_count ?? 0) >= 4;
+          if (homeOK && awayOK) {
+            const xgCalAdj = applyXGCalibration(
+              newPrediction, homeRealXG, awayRealXG, homeXg, awayXg
+            );
+            if (xgCalAdj.delta !== 0) {
+              const beforeConf = newPrediction.confidence;
+              newPrediction.confidence = xgCalAdj.confidence;
+              for (const f of xgCalAdj.factors) {
+                if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+              }
+              console.log(
+                `[XGCAL] proxy(${homeXg.toFixed(2)}/${awayXg.toFixed(2)}) → ` +
+                `real(${xgCalAdj.result.realHomeXg?.toFixed(2)}/${xgCalAdj.result.realAwayXg?.toFixed(2)}) | ` +
+                `Conf: ${beforeConf}% → ${xgCalAdj.confidence}% (Δ${xgCalAdj.delta})`
+              );
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`[XGCAL] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+
       // Only fetched within ~24h of kickoff to avoid wasted API calls before lineups posted.
       try {
         const fixtureIsoForRot = fixture?.fixture?.date as string | undefined;
