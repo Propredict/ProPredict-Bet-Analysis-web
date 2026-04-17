@@ -90,7 +90,7 @@ export default function EmailABTests() {
       setVariants(loadedVariants);
 
       const aggregate = new Map<string, { sends: number; clicks: number }>();
-      for (const row of (sendsRes.data ?? []) as Array<{ variant_id: string | null; clicked_at: string | null }>) {
+      for (const row of ((sendsRes.data ?? []) as unknown as Array<{ variant_id: string | null; clicked_at: string | null }>)) {
         if (!row.variant_id) continue;
         const current = aggregate.get(row.variant_id) ?? { sends: 0, clicks: 0 };
         current.sends += 1;
