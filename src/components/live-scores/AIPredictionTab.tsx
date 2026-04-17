@@ -175,16 +175,21 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
         AI-Powered Analysis
       </div>
 
-      {/* Market Trend (bookmaker consensus movement) */}
-      {marketTrend?.trend && marketTrend.trend !== "stable" && (
-        <div className="flex justify-center">
+      {/* Market Trend + Value Bet signals */}
+      {(signals?.trend && signals.trend !== "stable") || signals?.predictedSideValue != null ? (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <ValueBetBadge
+            value={signals?.predictedSideValue}
+            isValueBet={signals?.isValueBet}
+            bookmakersCount={signals?.bookmakersCount}
+          />
           <MarketTrendBadge
-            trend={marketTrend.trend}
-            strength={marketTrend.strength}
-            movementPct={marketTrend.movementPct}
+            trend={signals?.trend}
+            strength={signals?.strength}
+            movementPct={signals?.movementPct}
           />
         </div>
-      )}
+      ) : null}
 
       {/* Predicted Winner - Hero Card */}
       <div className="bg-gradient-to-br from-primary/15 to-accent/10 rounded-xl p-5 border border-primary/20 text-center">
