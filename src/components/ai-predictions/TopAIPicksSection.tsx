@@ -41,10 +41,14 @@ export function TopAIPicksSection({
 
   if (picks.length === 0) return null;
 
-  const isPaidUser = isPremiumUser || isProUser || isAdmin;
-  // Show all picks to everyone — Free sees #1 unlocked + #2-#5 locked (visible cards)
+  // Unlocked count per tier:
+  // - Premium/Admin: all 5 unlocked
+  // - Pro: 3 unlocked, 2 locked (visible)
+  // - Free: 1 unlocked, 4 locked (visible)
+  const unlockedCount = isPremiumUser || isAdmin ? picks.length : isProUser ? 3 : 1;
   const visiblePicks = picks;
-  const lockedCount = isPaidUser ? 0 : Math.max(0, picks.length - 1);
+  const lockedCount = Math.max(0, picks.length - unlockedCount);
+  const showUpsell = !isPremiumUser && !isAdmin && lockedCount > 0;
 
   return (
     <Card
@@ -87,9 +91,10 @@ export function TopAIPicksSection({
         {/* Picks grid */}
         <div className="grid gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
           {visiblePicks.map((rp, idx) => {
-            // Free user: prvu karticu uvek prikaži kao "free" (potpuno otključanu)
+            // Cards within unlockedCount → force "free" tier (fully unlocked).
+            // Cards beyond unlockedCount → keep their original tier (locked teaser).
             const effectiveTier =
-              !isPaidUser && idx === 0 ? "free" : getPredictionTier(rp.prediction);
+              idx < unlockedCount ? "free" : getPredictionTier(rp.prediction);
             return (
               <div key={rp.prediction.id} className="relative">
                 {/* Label badge floating top-right */}
@@ -127,7 +132,7 @@ export function TopAIPicksSection({
         </div>
 
         {/* Free user upsell */}
-        {!isPaidUser && lockedCount > 0 && (
+        {showUpsell && (
           <div className="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-violet-600/15 to-fuchsia-600/15 border border-fuchsia-500/30">
             <div className="flex items-center gap-2 text-center sm:text-left">
               <Lock className="w-4 h-4 text-fuchsia-400 shrink-0" />
