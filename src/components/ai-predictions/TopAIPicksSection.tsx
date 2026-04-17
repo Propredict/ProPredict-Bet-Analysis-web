@@ -86,39 +86,44 @@ export function TopAIPicksSection({
 
         {/* Picks grid */}
         <div className="grid gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {visiblePicks.map((rp) => (
-            <div key={rp.prediction.id} className="relative">
-              {/* Label badge floating top-right */}
-              <div className="absolute -top-2 left-2 z-10">
-                {rp.label === "elite" ? (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
-                    <Crown className="w-2.5 h-2.5 mr-1 fill-current" />
-                    Elite Pick
-                  </Badge>
-                ) : (
-                  <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
-                    <Zap className="w-2.5 h-2.5 mr-1" />
-                    Strong AI Signal
-                  </Badge>
-                )}
+          {visiblePicks.map((rp, idx) => {
+            // Free user: prvu karticu uvek prikaži kao "free" (potpuno otključanu)
+            const effectiveTier =
+              !isPaidUser && idx === 0 ? "free" : getPredictionTier(rp.prediction);
+            return (
+              <div key={rp.prediction.id} className="relative">
+                {/* Label badge floating top-right */}
+                <div className="absolute -top-2 left-2 z-10">
+                  {rp.label === "elite" ? (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
+                      <Crown className="w-2.5 h-2.5 mr-1 fill-current" />
+                      Elite Pick
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
+                      <Zap className="w-2.5 h-2.5 mr-1" />
+                      Strong AI Signal
+                    </Badge>
+                  )}
+                </div>
+                <div className="pt-2">
+                  <AIPredictionCard
+                    overrideTier={effectiveTier}
+                    prediction={rp.prediction}
+                    isAdmin={isAdmin}
+                    isPremiumUser={isPremiumUser}
+                    isProUser={isProUser}
+                    isFavorite={isFavorite(rp.prediction.match_id)}
+                    isSavingFavorite={isSaving(rp.prediction.match_id)}
+                    onToggleFavorite={onToggleFavorite}
+                    onGoPremium={() => navigate("/get-premium")}
+                    onUnlockClick={onUnlock}
+                    isUnlocking={unlockingId === rp.prediction.id}
+                  />
+                </div>
               </div>
-              <div className="pt-2">
-                <AIPredictionCard
-                  overrideTier={getPredictionTier(rp.prediction)}
-                  prediction={rp.prediction}
-                  isAdmin={isAdmin}
-                  isPremiumUser={isPremiumUser}
-                  isProUser={isProUser}
-                  isFavorite={isFavorite(rp.prediction.match_id)}
-                  isSavingFavorite={isSaving(rp.prediction.match_id)}
-                  onToggleFavorite={onToggleFavorite}
-                  onGoPremium={() => navigate("/get-premium")}
-                  onUnlockClick={onUnlock}
-                  isUnlocking={unlockingId === rp.prediction.id}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Free user upsell */}
