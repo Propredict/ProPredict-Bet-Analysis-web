@@ -3581,6 +3581,42 @@ async function processBatch(
         }
       }
 
+      // ===== INJURY & KEY PLAYER IMPACT (NEW) =====
+      // Identify missing key players (top 3 scorers, top assist, starting GK)
+      // and adjust both probabilities and confidence accordingly.
+      const injuryAnalysis = analyzeInjuryImpact(
+        homeTeamName,
+        awayTeamName,
+        leagueTopScorers,
+        leagueTopAssists,
+        leagueInjuries,
+        homeGK,
+        awayGK,
+      );
+
+      const missingHome = injuryAnalysis.homeMissing;
+      const missingAway = injuryAnalysis.awayMissing;
+      const injuryImpactHome = injuryAnalysis.homeImpact;
+      const injuryImpactAway = injuryAnalysis.awayImpact;
+
+      // Apply adjustment only if there's meaningful impact (>= 15)
+      if (injuryImpactHome >= 15 || injuryImpactAway >= 15) {
+        const before = { ...newPrediction };
+        const adjusted = applyInjuryAdjustment(
+          newPrediction,
+          injuryImpactHome,
+          injuryImpactAway,
+        );
+        newPrediction.home_win = adjusted.home_win;
+        newPrediction.draw = adjusted.draw;
+        newPrediction.away_win = adjusted.away_win;
+        newPrediction.confidence = adjusted.confidence;
+        console.log(
+          `[INJURY] ${homeTeamName}(impact:${injuryImpactHome}, ${missingHome.length} out) vs ${awayTeamName}(impact:${injuryImpactAway}, ${missingAway.length} out) | ` +
+          `Conf: ${before.confidence}% → ${adjusted.confidence}% | Probs: ${before.home_win}/${before.draw}/${before.away_win} → ${adjusted.home_win}/${adjusted.draw}/${adjusted.away_win}`,
+        );
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
@@ -3596,6 +3632,10 @@ async function processBatch(
           key_factors: keyFactors.length > 0 ? keyFactors : null,
           last_home_goals: Math.round(homeXg * 10) / 10,
           last_away_goals: Math.round(awayXg * 10) / 10,
+          missing_home_players: missingHome,
+          missing_away_players: missingAway,
+          injury_impact_home: injuryImpactHome,
+          injury_impact_away: injuryImpactAway,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
@@ -3608,8 +3648,9 @@ async function processBatch(
 
       updated++;
       const tier = newPrediction.confidence >= PREMIUM_MIN_CONFIDENCE ? "⭐PREMIUM" : "STD";
+      const injuryTag = (injuryImpactHome >= 15 || injuryImpactAway >= 15) ? " 🚑" : "";
       console.log(
-        `[${tier}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
+        `[${tier}${injuryTag}] Updated ${homeTeamName} vs ${awayTeamName}: ${newPrediction.prediction} (${newPrediction.home_win}/${newPrediction.draw}/${newPrediction.away_win}) conf=${newPrediction.confidence}% factors=[${keyFactors.join(", ")}]`
       );
     } catch (e) {
       await markPredictionLocked(
