@@ -145,7 +145,7 @@ const Index = () => {
         )}
 
         {/* Rate App Card – all users, inline */}
-        <RateAppCard onRate={() => showRatingPopup(true)} />
+        <RateAppCard onRate={() => window.dispatchEvent(new Event("propredict:open-rate-popup"))} />
 
         {/* Daily Reward Widget */}
         <DailyRewardWidget />
