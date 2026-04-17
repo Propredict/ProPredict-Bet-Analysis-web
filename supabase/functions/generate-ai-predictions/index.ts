@@ -2656,6 +2656,290 @@ function applyAsymmetryAdjustment(
 }
 
 
+// ============ WIN STREAK MOMENTUM (LIVE — Option 5) ============
+// Streak of 4+ wins (or losses) in a row signals strong psychological momentum.
+// 5+ win streak = +2 conf when model picks streak team.
+// 4 win streak  = +1 conf.
+// 4+ loss streak on the OPPONENT side adds +1 to favored picks.
+// =================================================================
+interface StreakProfile {
+  homeWinStreak: number;
+  awayWinStreak: number;
+  homeLossStreak: number;
+  awayLossStreak: number;
+}
+
+function calculateStreakProfile(homeForm: FormMatch[], awayForm: FormMatch[]): StreakProfile {
+  // form is sorted most-recent first
+  const winStreak = (form: FormMatch[]) => {
+    let n = 0;
+    for (const m of form) { if (m.result === "W") n++; else break; }
+    return n;
+  };
+  const lossStreak = (form: FormMatch[]) => {
+    let n = 0;
+    for (const m of form) { if (m.result === "L") n++; else break; }
+    return n;
+  };
+  return {
+    homeWinStreak: winStreak(homeForm),
+    awayWinStreak: winStreak(awayForm),
+    homeLossStreak: lossStreak(homeForm),
+    awayLossStreak: lossStreak(awayForm),
+  };
+}
+
+function applyStreakAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: StreakProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  if (isHomePick) {
+    if (profile.homeWinStreak >= 5) { delta += 2; factors.push(`🔥 ${homeTeamName} on ${profile.homeWinStreak}-game win streak — strong momentum`); }
+    else if (profile.homeWinStreak === 4) { delta += 1; factors.push(`🔥 ${homeTeamName} on 4-game win streak`); }
+    if (profile.awayLossStreak >= 4) { delta += 1; factors.push(`📉 ${awayTeamName} on ${profile.awayLossStreak}-game losing streak`); }
+  } else if (isAwayPick) {
+    if (profile.awayWinStreak >= 5) { delta += 2; factors.push(`🔥 ${awayTeamName} on ${profile.awayWinStreak}-game win streak — strong momentum`); }
+    else if (profile.awayWinStreak === 4) { delta += 1; factors.push(`🔥 ${awayTeamName} on 4-game win streak`); }
+    if (profile.homeLossStreak >= 4) { delta += 1; factors.push(`📉 ${homeTeamName} on ${profile.homeLossStreak}-game losing streak`); }
+  }
+
+  // Cap to ±3 to avoid double-stacking
+  delta = Math.max(-3, Math.min(3, delta));
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+
+// ============ DERBY DETECTION (LIVE — Option 6) ============
+// Local/famous derbies historically end in draws ~32-35% (vs ~25% league avg).
+// When a known derby is detected → boost Draw confidence if model already leans draw,
+// or soften over-confident win picks (-1) since derbies are unpredictable.
+// =================================================================
+const DERBY_KEYWORDS: Array<{ a: string; b: string; name: string }> = [
+  // England
+  { a: "manchester united", b: "manchester city", name: "Manchester Derby" },
+  { a: "liverpool", b: "everton", name: "Merseyside Derby" },
+  { a: "arsenal", b: "tottenham", name: "North London Derby" },
+  { a: "chelsea", b: "tottenham", name: "London Derby" },
+  { a: "chelsea", b: "arsenal", name: "London Derby" },
+  // Spain
+  { a: "real madrid", b: "barcelona", name: "El Clásico" },
+  { a: "real madrid", b: "atletico madrid", name: "Madrid Derby" },
+  { a: "barcelona", b: "espanyol", name: "Barcelona Derby" },
+  { a: "sevilla", b: "real betis", name: "Seville Derby" },
+  // Italy
+  { a: "inter", b: "milan", name: "Derby della Madonnina" },
+  { a: "ac milan", b: "inter", name: "Derby della Madonnina" },
+  { a: "juventus", b: "torino", name: "Derby della Mole" },
+  { a: "roma", b: "lazio", name: "Derby della Capitale" },
+  { a: "napoli", b: "roma", name: "Derby del Sole" },
+  // Germany
+  { a: "bayern munich", b: "borussia dortmund", name: "Der Klassiker" },
+  { a: "schalke", b: "borussia dortmund", name: "Revierderby" },
+  { a: "hamburg", b: "werder bremen", name: "Nordderby" },
+  // France
+  { a: "psg", b: "marseille", name: "Le Classique" },
+  { a: "paris saint germain", b: "marseille", name: "Le Classique" },
+  // Portugal
+  { a: "porto", b: "benfica", name: "O Clássico" },
+  { a: "sporting", b: "benfica", name: "Derby de Lisboa" },
+  // Scotland
+  { a: "celtic", b: "rangers", name: "Old Firm" },
+  // Netherlands
+  { a: "ajax", b: "feyenoord", name: "De Klassieker" },
+  // Turkey
+  { a: "fenerbahce", b: "galatasaray", name: "Intercontinental Derby" },
+  // Argentina
+  { a: "boca juniors", b: "river plate", name: "Superclásico" },
+  // Serbia
+  { a: "crvena zvezda", b: "partizan", name: "Eternal Derby" },
+  { a: "red star belgrade", b: "partizan", name: "Eternal Derby" },
+];
+
+interface DerbyProfile {
+  isDerby: boolean;
+  derbyName: string | null;
+}
+
+function detectDerby(homeTeamName: string, awayTeamName: string): DerbyProfile {
+  const h = (homeTeamName || "").toLowerCase();
+  const a = (awayTeamName || "").toLowerCase();
+  for (const d of DERBY_KEYWORDS) {
+    const matchA = (h.includes(d.a) && a.includes(d.b)) || (h.includes(d.b) && a.includes(d.a));
+    if (matchA) return { isDerby: true, derbyName: d.name };
+  }
+  return { isDerby: false, derbyName: null };
+}
+
+function applyDerbyAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: DerbyProfile,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  if (!profile.isDerby) return { confidence: pred.confidence, factors, delta };
+  const predLower = (pred.prediction || "").toLowerCase();
+  const isDrawPick = predLower.includes("draw") || pred.draw >= pred.home_win && pred.draw >= pred.away_win;
+  const isHighConfWin = pred.confidence >= 75 && (pred.home_win >= 60 || pred.away_win >= 60);
+
+  if (isDrawPick) {
+    delta = 2;
+    factors.push(`⚔️ ${profile.derbyName} — derbies favor draws (~33%), supports pick`);
+  } else if (isHighConfWin) {
+    delta = -2;
+    factors.push(`⚔️ ${profile.derbyName} — derbies are unpredictable, soften high-conf win pick`);
+  } else {
+    delta = -1;
+    factors.push(`⚔️ ${profile.derbyName} — high derby variance`);
+  }
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+
+// ============ STAR PLAYER ABSENCE DETECTOR (LIVE — Option 4) ============
+// When a top scorer (10+ goals season) or top assister (8+ assists) is missing,
+// apply -3 conf to picks that favor that player's team.
+// Uses cached top-scorers/top-assists per league+season.
+// =================================================================
+interface StarAbsenceProfile {
+  homeMissingTopScorers: string[];
+  awayMissingTopScorers: string[];
+  homeMissingTopAssists: string[];
+  awayMissingTopAssists: string[];
+}
+
+// In-memory cache per (leagueId, season) — lives for one function invocation
+const TOP_PLAYERS_CACHE = new Map<string, { scorers: Map<number, { name: string; goals: number }[]>; assists: Map<number, { name: string; assists: number }[]> }>();
+
+async function getLeagueTopPlayers(
+  leagueId: number,
+  season: number,
+  apiKey: string,
+): Promise<{ scorers: Map<number, { name: string; goals: number }[]>; assists: Map<number, { name: string; assists: number }[]> }> {
+  const key = `${leagueId}-${season}`;
+  const cached = TOP_PLAYERS_CACHE.get(key);
+  if (cached) return cached;
+
+  const empty = { scorers: new Map(), assists: new Map() };
+  try {
+    const headers = { "x-apisports-key": apiKey };
+    const [scRes, asRes] = await Promise.all([
+      fetch(`https://v3.football.api-sports.io/players/topscorers?league=${leagueId}&season=${season}`, { headers }),
+      fetch(`https://v3.football.api-sports.io/players/topassists?league=${leagueId}&season=${season}`, { headers }),
+    ]);
+    if (!scRes.ok && !asRes.ok) { TOP_PLAYERS_CACHE.set(key, empty); return empty; }
+    const scJson = scRes.ok ? await scRes.json() : { response: [] };
+    const asJson = asRes.ok ? await asRes.json() : { response: [] };
+
+    const scorers = new Map<number, { name: string; goals: number }[]>();
+    for (const p of (scJson.response || [])) {
+      const teamId = p.statistics?.[0]?.team?.id;
+      const goals = p.statistics?.[0]?.goals?.total ?? 0;
+      const name = p.player?.name || "Unknown";
+      if (!teamId || goals < 8) continue; // only 8+ goal scorers
+      if (!scorers.has(teamId)) scorers.set(teamId, []);
+      scorers.get(teamId)!.push({ name, goals });
+    }
+    const assists = new Map<number, { name: string; assists: number }[]>();
+    for (const p of (asJson.response || [])) {
+      const teamId = p.statistics?.[0]?.team?.id;
+      const a = p.statistics?.[0]?.goals?.assists ?? 0;
+      const name = p.player?.name || "Unknown";
+      if (!teamId || a < 6) continue; // only 6+ assist players
+      if (!assists.has(teamId)) assists.set(teamId, []);
+      assists.get(teamId)!.push({ name, assists: a });
+    }
+    const result = { scorers, assists };
+    TOP_PLAYERS_CACHE.set(key, result);
+    return result;
+  } catch (e) {
+    console.warn(`[STAR] getLeagueTopPlayers failed:`, (e as Error)?.message);
+    TOP_PLAYERS_CACHE.set(key, empty);
+    return empty;
+  }
+}
+
+function calculateStarAbsenceProfile(
+  topPlayers: { scorers: Map<number, { name: string; goals: number }[]>; assists: Map<number, { name: string; assists: number }[]> },
+  homeTeamId: number,
+  awayTeamId: number,
+  missingHome: any[],
+  missingAway: any[],
+): StarAbsenceProfile {
+  const profile: StarAbsenceProfile = {
+    homeMissingTopScorers: [],
+    awayMissingTopScorers: [],
+    homeMissingTopAssists: [],
+    awayMissingTopAssists: [],
+  };
+  const normalize = (n: any) => String(n || "").toLowerCase().trim();
+  const missingNamesHome = (missingHome || []).map((p: any) => normalize(p?.name || p?.player_name));
+  const missingNamesAway = (missingAway || []).map((p: any) => normalize(p?.name || p?.player_name));
+
+  for (const s of (topPlayers.scorers.get(homeTeamId) || [])) {
+    if (missingNamesHome.some(n => n.includes(normalize(s.name)) || normalize(s.name).includes(n))) {
+      profile.homeMissingTopScorers.push(`${s.name} (${s.goals}g)`);
+    }
+  }
+  for (const s of (topPlayers.scorers.get(awayTeamId) || [])) {
+    if (missingNamesAway.some(n => n.includes(normalize(s.name)) || normalize(s.name).includes(n))) {
+      profile.awayMissingTopScorers.push(`${s.name} (${s.goals}g)`);
+    }
+  }
+  for (const a of (topPlayers.assists.get(homeTeamId) || [])) {
+    if (missingNamesHome.some(n => n.includes(normalize(a.name)) || normalize(a.name).includes(n))) {
+      profile.homeMissingTopAssists.push(`${a.name} (${a.assists}a)`);
+    }
+  }
+  for (const a of (topPlayers.assists.get(awayTeamId) || [])) {
+    if (missingNamesAway.some(n => n.includes(normalize(a.name)) || normalize(a.name).includes(n))) {
+      profile.awayMissingTopAssists.push(`${a.name} (${a.assists}a)`);
+    }
+  }
+  return profile;
+}
+
+function applyStarAbsenceAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: StarAbsenceProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  const homeMissing = [...profile.homeMissingTopScorers, ...profile.homeMissingTopAssists];
+  const awayMissing = [...profile.awayMissingTopScorers, ...profile.awayMissingTopAssists];
+
+  if (isHomePick && homeMissing.length > 0) {
+    delta -= homeMissing.length >= 2 ? 4 : 3;
+    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")}`);
+  } else if (isAwayPick && awayMissing.length > 0) {
+    delta -= awayMissing.length >= 2 ? 4 : 3;
+    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")}`);
+  }
+  // Opponent missing star → small boost
+  if (isHomePick && awayMissing.length > 0) {
+    delta += 1;
+    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")} — supports ${homeTeamName}`);
+  } else if (isAwayPick && homeMissing.length > 0) {
+    delta += 1;
+    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")} — supports ${awayTeamName}`);
+  }
+
+  delta = Math.max(-5, Math.min(3, delta));
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+
 // ============ TRAVEL DISTANCE & FIXTURE CONGESTION (LIVE — Option 13) ============
 /**
  * Calculate fixture congestion: matches played in the last N days.
