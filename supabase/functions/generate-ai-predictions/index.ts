@@ -1964,6 +1964,157 @@ function applyRefereeAndH2HStyle(
   return { confidence: newConfidence, factors, deltas: { ref: refDelta, h2h: h2hDelta } };
 }
 
+// ============ HIGH-SCORING / SET-PIECE DOMINANCE (LIVE — Option 9) ============
+// Detects teams with consistently high goal output (proxy for set-piece dominance,
+// attacking volume, and high-tempo style). Uses last 8-10 form matches.
+// If both teams average >= 1.4 GF/match AND >= 60% of recent matches had Over 2.5,
+// boost Over 2.5 / BTTS confidence by +1-2.
+// Inversely, if both teams have low scoring patterns, boost Under 2.5 confidence.
+// =============================================================================
+interface ScoringProfile {
+  homeGFAvg: number;
+  awayGFAvg: number;
+  homeOver25Rate: number; // % of recent matches with 3+ goals
+  awayOver25Rate: number;
+  bothHighScoring: boolean;
+  bothLowScoring: boolean;
+}
+
+function calculateScoringProfile(homeForm: FormMatch[], awayForm: FormMatch[]): ScoringProfile {
+  const calcStats = (form: FormMatch[]) => {
+    if (form.length === 0) return { gfAvg: 0, over25Rate: 0 };
+    const slice = form.slice(0, 10);
+    const gfTotal = slice.reduce((s, m) => s + (m.goalsFor || 0), 0);
+    const over25Count = slice.filter(m => (m.goalsFor + m.goalsAgainst) >= 3).length;
+    return {
+      gfAvg: gfTotal / slice.length,
+      over25Rate: (over25Count / slice.length) * 100,
+    };
+  };
+  const h = calcStats(homeForm);
+  const a = calcStats(awayForm);
+  return {
+    homeGFAvg: Math.round(h.gfAvg * 100) / 100,
+    awayGFAvg: Math.round(a.gfAvg * 100) / 100,
+    homeOver25Rate: Math.round(h.over25Rate),
+    awayOver25Rate: Math.round(a.over25Rate),
+    bothHighScoring: h.gfAvg >= 1.4 && a.gfAvg >= 1.4 && h.over25Rate >= 60 && a.over25Rate >= 60,
+    bothLowScoring: h.gfAvg <= 1.0 && a.gfAvg <= 1.0 && h.over25Rate <= 35 && a.over25Rate <= 35,
+  };
+}
+
+function applyScoringProfile(
+  pred: { prediction: string; confidence: number },
+  profile: ScoringProfile,
+  modelOver25Pct: number,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const predLower = (pred.prediction || "").toLowerCase();
+  const isOverPick = predLower.includes("over 2.5") || predLower.includes("btts: yes") || predLower.includes("over 2,5");
+  const isUnderPick = predLower.includes("under 2.5") || predLower.includes("btts: no") || predLower.includes("under 2,5");
+
+  if (profile.bothHighScoring) {
+    if (isOverPick && modelOver25Pct >= 55) {
+      delta = profile.homeOver25Rate >= 70 && profile.awayOver25Rate >= 70 ? 2 : 1;
+      factors.push(`⚽ High-scoring profile both sides (Over 2.5: ${profile.homeOver25Rate}%/${profile.awayOver25Rate}%) — supports pick`);
+    } else if (isUnderPick) {
+      delta = -1;
+      factors.push(`⚠️ Under pick contradicts high-scoring trend (both teams ${profile.homeOver25Rate}%/${profile.awayOver25Rate}% Over 2.5)`);
+    }
+  } else if (profile.bothLowScoring) {
+    if (isUnderPick && modelOver25Pct <= 45) {
+      delta = 1;
+      factors.push(`🛡️ Low-scoring profile both sides (avg GF: ${profile.homeGFAvg}/${profile.awayGFAvg}) — supports Under`);
+    } else if (isOverPick) {
+      delta = -1;
+      factors.push(`⚠️ Over pick contradicts low-scoring trend`);
+    }
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+// ============ DEFENSIVE SOLIDITY / CLEAN SHEETS (LIVE — Option 10) ============
+// Detects teams with strong defensive form. If favorite team has high clean-sheet
+// rate AND opponent has low scoring volume, boost the home/away win pick.
+// Also gives small boost when defensive contrast supports a "to win to nil" style call.
+// =============================================================================
+interface DefensiveProfile {
+  homeCleanSheetRate: number; // % of recent matches with 0 conceded
+  awayCleanSheetRate: number;
+  homeGAAvg: number;
+  awayGAAvg: number;
+  homeFailedToScoreRate: number; // % of recent matches where team scored 0
+  awayFailedToScoreRate: number;
+}
+
+function calculateDefensiveProfile(homeForm: FormMatch[], awayForm: FormMatch[]): DefensiveProfile {
+  const calc = (form: FormMatch[]) => {
+    if (form.length === 0) return { csRate: 0, gaAvg: 0, ftsRate: 0 };
+    const slice = form.slice(0, 10);
+    const csCount = slice.filter(m => m.goalsAgainst === 0).length;
+    const ftsCount = slice.filter(m => m.goalsFor === 0).length;
+    const gaTotal = slice.reduce((s, m) => s + (m.goalsAgainst || 0), 0);
+    return {
+      csRate: (csCount / slice.length) * 100,
+      gaAvg: gaTotal / slice.length,
+      ftsRate: (ftsCount / slice.length) * 100,
+    };
+  };
+  const h = calc(homeForm);
+  const a = calc(awayForm);
+  return {
+    homeCleanSheetRate: Math.round(h.csRate),
+    awayCleanSheetRate: Math.round(a.csRate),
+    homeGAAvg: Math.round(h.gaAvg * 100) / 100,
+    awayGAAvg: Math.round(a.gaAvg * 100) / 100,
+    homeFailedToScoreRate: Math.round(h.ftsRate),
+    awayFailedToScoreRate: Math.round(a.ftsRate),
+  };
+}
+
+function applyDefensiveProfile(
+  pred: { prediction: string; confidence: number; home_win: number; away_win: number; draw: number },
+  profile: DefensiveProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const predLower = (pred.prediction || "").toLowerCase();
+
+  // Determine model pick side
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+  const isHomeWinPred = predLower.includes("home win") || predLower === "1" || predLower.includes(homeTeamName.toLowerCase() + " win");
+  const isAwayWinPred = predLower.includes("away win") || predLower === "2" || predLower.includes(awayTeamName.toLowerCase() + " win");
+
+  // SCENARIO A: Home pick + home strong defense + away poor scoring
+  if ((isHomePick || isHomeWinPred) &&
+      profile.homeCleanSheetRate >= 40 &&
+      profile.awayFailedToScoreRate >= 30) {
+    delta = profile.homeCleanSheetRate >= 50 ? 2 : 1;
+    factors.push(`🛡️ Home defensive edge: ${profile.homeCleanSheetRate}% CS vs ${awayTeamName} ${profile.awayFailedToScoreRate}% FTS`);
+  }
+  // SCENARIO B: Away pick + away strong defense + home poor scoring
+  else if ((isAwayPick || isAwayWinPred) &&
+           profile.awayCleanSheetRate >= 40 &&
+           profile.homeFailedToScoreRate >= 30) {
+    delta = profile.awayCleanSheetRate >= 50 ? 2 : 1;
+    factors.push(`🛡️ Away defensive edge: ${profile.awayCleanSheetRate}% CS vs ${homeTeamName} ${profile.homeFailedToScoreRate}% FTS`);
+  }
+  // SCENARIO C: Both teams leaky → contradicts low-confidence picks
+  else if (profile.homeGAAvg >= 1.7 && profile.awayGAAvg >= 1.7) {
+    if (predLower.includes("under 2.5")) {
+      delta = -1;
+      factors.push(`⚠️ Both defenses leaky (GA: ${profile.homeGAAvg}/${profile.awayGAAvg}) — Under risky`);
+    }
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
@@ -4668,6 +4819,53 @@ async function processBatch(
         }
       } catch (e) {
         console.warn(`[SHARP] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== HIGH-SCORING / SET-PIECE DOMINANCE (LIVE — Option 9) =====
+      // Boost Over/BTTS picks when both teams have high-scoring profile (≥1.4 GF avg + ≥60% Over 2.5)
+      try {
+        const scoringProfile = calculateScoringProfile(homeForm, awayForm);
+        if (scoringProfile.bothHighScoring || scoringProfile.bothLowScoring) {
+          const modelOver25 = goalMarkets.over25 ?? 50;
+          const scoreAdj = applyScoringProfile(newPrediction, scoringProfile, modelOver25);
+          if (scoreAdj.delta !== 0) {
+            const beforeConf = newPrediction.confidence;
+            newPrediction.confidence = scoreAdj.confidence;
+            for (const f of scoreAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[SCORING] ${homeTeamName} vs ${awayTeamName} | ` +
+              `Profile: ${scoringProfile.bothHighScoring ? "HIGH" : "LOW"} ` +
+              `(O2.5: ${scoringProfile.homeOver25Rate}%/${scoringProfile.awayOver25Rate}%) | ` +
+              `Conf: ${beforeConf}% → ${scoreAdj.confidence}% (Δ${scoreAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[SCORING] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== DEFENSIVE SOLIDITY / CLEAN SHEETS (LIVE — Option 10) =====
+      // Boost home/away win picks when defensive form contrasts with opponent scoring weakness
+      try {
+        const defProfile = calculateDefensiveProfile(homeForm, awayForm);
+        const defAdj = applyDefensiveProfile(newPrediction, defProfile, homeTeamName, awayTeamName);
+        if (defAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = defAdj.confidence;
+          for (const f of defAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[DEFENSE] ${homeTeamName} vs ${awayTeamName} | ` +
+            `CS: ${defProfile.homeCleanSheetRate}%/${defProfile.awayCleanSheetRate}% | ` +
+            `FTS: ${defProfile.homeFailedToScoreRate}%/${defProfile.awayFailedToScoreRate}% | ` +
+            `Conf: ${beforeConf}% → ${defAdj.confidence}% (Δ${defAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[DEFENSE] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
