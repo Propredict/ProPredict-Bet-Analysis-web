@@ -3417,7 +3417,9 @@ async function premiumEnhance(
       standings,
       odds,
       pred.league || undefined,
-      leagueId
+      leagueId,
+      pred?.round || undefined,
+      pred?.match_timestamp || pred?.match_date || undefined
     );
 
   // Keep the higher confidence (deep analysis should confirm or raise)
