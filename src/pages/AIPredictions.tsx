@@ -8,6 +8,8 @@ import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
+import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
+import { selectTopPicks } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -270,6 +272,13 @@ export default function AIPredictions() {
   const regularPredictions = useMemo(() => {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
+
+  // Top AI Picks: weighted ranking — Free sees 1, Pro/Premium see up to 5
+  const topPicks = useMemo(() => {
+    const limit = (isPremiumUser || isProUser || isAdmin) ? 5 : 5;
+    // Always compute top 5 internally; component slices for free users
+    return selectTopPicks(filteredPredictions, limit);
+  }, [filteredPredictions, isPremiumUser, isProUser, isAdmin]);
 
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
@@ -960,6 +969,21 @@ export default function AIPredictions() {
               )}
             </div>
           )}
+
+          {/* TOP AI PICKS — ranked highlight section above all predictions */}
+          <TopAIPicksSection
+            picks={topPicks}
+            isAdmin={isAdmin}
+            isPremiumUser={isPremiumUser}
+            isProUser={isProUser}
+            isAuthenticated={isAuthenticated}
+            isFavorite={isFavorite}
+            isSaving={isSaving}
+            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+            unlockingId={unlockingId}
+            getPredictionTier={getPredictionTier}
+          />
 
           {/* Featured — ONLY for paying users (Pro/Premium/Admin) */}
           {(isPremiumUser || isProUser || isAdmin) && featuredPredictions.length > 0 && (

@@ -74,7 +74,7 @@ async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
       break;
     }
 
-    const rows = data ?? [];
+    const rows = (data ?? []) as unknown as AIPrediction[];
     allData = allData.concat(rows);
     hasMore = rows.length === PAGE_SIZE;
     from += PAGE_SIZE;
