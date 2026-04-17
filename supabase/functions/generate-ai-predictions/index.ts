@@ -3877,7 +3877,21 @@ async function processBatch(
           newPrediction.confidence
         ).catch((e) => console.warn(`[xG-SAFE] log failed:`, e?.message));
       }
+
+      // ============= SAFE MODE: Squad Rotation + Weather (fire & forget) =============
+      const fixtureIso = fixture?.fixture?.date || new Date().toISOString();
+      logSquadRotation(
+        supabase, fixtureIdStr, fixtureIso, homeTeamId, awayTeamId, apiKey,
+        newPrediction.prediction, newPrediction.confidence
+      ).catch((e) => console.warn(`[rotation-SAFE] failed:`, e?.message));
+
+      logWeatherImpact(
+        supabase, fixtureIdStr, fixture,
+        newPrediction.prediction, newPrediction.confidence
+      ).catch((e) => console.warn(`[weather-SAFE] failed:`, e?.message));
+      // ============= END SAFE MODE Rotation + Weather log =============
       // ============= END SAFE MODE log =============
+
 
 
       // Generate SAFE COMBO suggestion
