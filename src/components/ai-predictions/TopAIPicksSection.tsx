@@ -132,7 +132,7 @@ export function TopAIPicksSection({
         </div>
 
         {/* Free user upsell */}
-        {!isPaidUser && lockedCount > 0 && (
+        {showUpsell && (
           <div className="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-violet-600/15 to-fuchsia-600/15 border border-fuchsia-500/30">
             <div className="flex items-center gap-2 text-center sm:text-left">
               <Lock className="w-4 h-4 text-fuchsia-400 shrink-0" />
