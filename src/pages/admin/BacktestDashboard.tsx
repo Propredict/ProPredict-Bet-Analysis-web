@@ -247,7 +247,7 @@ export default function BacktestDashboard() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1"><AlertTriangle className="h-4 w-4 text-amber-500" /><span className="text-xs text-muted-foreground">Pending / Total</span></div>
+            <div className="flex items-center gap-2 mb-1"><AlertTriangle className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground">Pending / Total</span></div>
             <div className="text-2xl font-bold">{summary.pending}<span className="text-sm text-muted-foreground"> / {summary.total}</span></div>
           </CardContent>
         </Card>
