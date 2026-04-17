@@ -122,7 +122,7 @@ export default function AIPredictions() {
   }, [predictions]);
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
-    if (prediction.is_premium) return "premium";
+    // Tier is determined purely by displayed confidence (Premium ≥78%, Pro ≥65%, Free <65%)
     return tierAssignment.get(prediction.id!) ?? "free";
   };
 
