@@ -1908,7 +1908,9 @@ function calculatePrediction(
   standings?: StandingEntry[],
   odds?: OddsData | null,
   leagueName?: string,
-  leagueId?: number
+  leagueId?: number,
+  fixtureRound?: string,
+  fixtureDate?: string
 ): PredictionResult {
   // === A) TEMPO SCORE ===
   const tempo = calculateTempoScore(homeStats, awayStats, homeForm, awayForm);
