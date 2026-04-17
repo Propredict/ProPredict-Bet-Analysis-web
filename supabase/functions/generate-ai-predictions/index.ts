@@ -3739,6 +3739,26 @@ async function processBatch(
       const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
       const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
 
+      // ============= SAFE MODE: log real xG vs proxy xG (fire & forget) =============
+      // This call does NOT affect prediction output. Failures are silent.
+      if (leagueId && fixtureIdStr) {
+        logXGComparison(
+          supabase,
+          fixtureIdStr,
+          homeTeamId,
+          awayTeamId,
+          leagueId,
+          season,
+          apiKey,
+          homeXg,
+          awayXg,
+          newPrediction.prediction,
+          newPrediction.confidence
+        ).catch((e) => console.warn(`[xG-SAFE] log failed:`, e?.message));
+      }
+      // ============= END SAFE MODE log =============
+
+
       // Generate SAFE COMBO suggestion
       const safeCombo = generateSafeCombo(
         homeXg, awayXg, goalMarkets,
