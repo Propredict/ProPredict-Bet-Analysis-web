@@ -111,14 +111,12 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier assignment: use the HIGHER of confidence and best market probability
-  // so matches with high market prob (e.g. Under 2.5 at 80%) land in Premium/Pro correctly
+  // Tier assignment: based purely on the displayed confidence value
+  // so users see consistent tiers (Pro ≥65%, Premium ≥78%) matching the % shown on the card
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
     for (const p of predictions) {
-      const marketProb = getBestMarketProbability(p as any);
-      const effectiveProb = Math.max(p.confidence ?? 0, marketProb);
-      map.set(p.id!, getTierFromConfidence(effectiveProb));
+      map.set(p.id!, getTierFromConfidence(p.confidence ?? 0));
     }
     return map;
   }, [predictions]);
