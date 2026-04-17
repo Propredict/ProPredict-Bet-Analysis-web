@@ -516,6 +516,8 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     // High-probability "lock" market — eligible only when very strong
     { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
     { type: "over25", prob: probs.over25 },
+    // Over 3.5 — high-scoring matches only (≥60%)
+    { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
     { type: "btts_no", prob: probs.bttsNo },
