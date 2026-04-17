@@ -91,9 +91,10 @@ export function TopAIPicksSection({
         {/* Picks grid */}
         <div className="grid gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
           {visiblePicks.map((rp, idx) => {
-            // Free user: prvu karticu uvek prikaži kao "free" (potpuno otključanu)
+            // Cards within unlockedCount → force "free" tier (fully unlocked).
+            // Cards beyond unlockedCount → keep their original tier (locked teaser).
             const effectiveTier =
-              !isPaidUser && idx === 0 ? "free" : getPredictionTier(rp.prediction);
+              idx < unlockedCount ? "free" : getPredictionTier(rp.prediction);
             return (
               <div key={rp.prediction.id} className="relative">
                 {/* Label badge floating top-right */}
