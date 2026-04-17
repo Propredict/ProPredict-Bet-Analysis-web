@@ -4821,6 +4821,53 @@ async function processBatch(
         console.warn(`[SHARP] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // ===== HIGH-SCORING / SET-PIECE DOMINANCE (LIVE — Option 9) =====
+      // Boost Over/BTTS picks when both teams have high-scoring profile (≥1.4 GF avg + ≥60% Over 2.5)
+      try {
+        const scoringProfile = calculateScoringProfile(homeForm, awayForm);
+        if (scoringProfile.bothHighScoring || scoringProfile.bothLowScoring) {
+          const modelOver25 = goalMarkets.over25 ?? 50;
+          const scoreAdj = applyScoringProfile(newPrediction, scoringProfile, modelOver25);
+          if (scoreAdj.delta !== 0) {
+            const beforeConf = newPrediction.confidence;
+            newPrediction.confidence = scoreAdj.confidence;
+            for (const f of scoreAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[SCORING] ${homeTeamName} vs ${awayTeamName} | ` +
+              `Profile: ${scoringProfile.bothHighScoring ? "HIGH" : "LOW"} ` +
+              `(O2.5: ${scoringProfile.homeOver25Rate}%/${scoringProfile.awayOver25Rate}%) | ` +
+              `Conf: ${beforeConf}% → ${scoreAdj.confidence}% (Δ${scoreAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[SCORING] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== DEFENSIVE SOLIDITY / CLEAN SHEETS (LIVE — Option 10) =====
+      // Boost home/away win picks when defensive form contrasts with opponent scoring weakness
+      try {
+        const defProfile = calculateDefensiveProfile(homeForm, awayForm);
+        const defAdj = applyDefensiveProfile(newPrediction, defProfile, homeTeamName, awayTeamName);
+        if (defAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = defAdj.confidence;
+          for (const f of defAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[DEFENSE] ${homeTeamName} vs ${awayTeamName} | ` +
+            `CS: ${defProfile.homeCleanSheetRate}%/${defProfile.awayCleanSheetRate}% | ` +
+            `FTS: ${defProfile.homeFailedToScoreRate}%/${defProfile.awayFailedToScoreRate}% | ` +
+            `Conf: ${beforeConf}% → ${defAdj.confidence}% (Δ${defAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[DEFENSE] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
