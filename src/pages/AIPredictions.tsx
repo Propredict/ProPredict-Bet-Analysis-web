@@ -668,13 +668,20 @@ export default function AIPredictions() {
           {/* 🔒 SAFE PICKS OF THE DAY - Premium only, confidence >= 85 */}
           {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
             <div>
-              <div className="flex items-center gap-1.5 mb-2">
-                <div className="p-1 rounded bg-emerald-500/20">
-                  <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+              {/* Centered section divider title */}
+              <div className="flex flex-col items-center text-center my-5 md:my-7">
+                <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-emerald-500/60" />
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
+                    <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
+                    <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
+                      Safe Picks of the Day
+                    </h2>
+                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
                 </div>
-                <h2 className="text-xs md:text-sm font-bold text-foreground">Safe Picks of the Day</h2>
-                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                  85%+ Confidence
+                <Badge className="mt-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
+                  85%+ Confidence • Lowest Risk Selections
                 </Badge>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
