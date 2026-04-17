@@ -474,7 +474,7 @@ export function getRiskLevelColor(riskLevel: string | null) {
 
 export type MarketType =
   | "home_win" | "away_win" | "draw"
-  | "over15" | "over25" | "under25" | "under35"
+  | "over15" | "over25" | "over35" | "under25" | "under35"
   | "btts_yes" | "btts_no";
 
 interface MarketCandidate {
