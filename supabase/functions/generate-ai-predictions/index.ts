@@ -479,6 +479,127 @@ async function logXGComparison(
 // ============= END SAFE MODE xG block =============
 
 
+// ============= SAFE MODE: Squad Rotation + Weather Logging =============
+// All fire-and-forget. Never block predictions.
+
+async function fetchStartingXI(fixtureId: string, apiKey: string): Promise<{ home: string[]; away: string[] }> {
+  try {
+    const data = await fetchJsonWithRetry(
+      `${API_FOOTBALL_URL}/fixtures/lineups?fixture=${fixtureId}`,
+      apiKey,
+      { retries: 1, baseDelayMs: 500 }
+    );
+    const lineups = data?.response;
+    if (!lineups || lineups.length < 2) return { home: [], away: [] };
+    const extract = (lu: any): string[] =>
+      (lu?.startXI || []).map((it: any) => String(it?.player?.id ?? "")).filter(Boolean);
+    return { home: extract(lineups[0]), away: extract(lineups[1]) };
+  } catch {
+    return { home: [], away: [] };
+  }
+}
+
+async function fetchPrevStartingXI(teamId: number, beforeIso: string, apiKey: string): Promise<string[]> {
+  try {
+    const data = await fetchJsonWithRetry(
+      `${API_FOOTBALL_URL}/fixtures?team=${teamId}&last=3&status=FT-AET-PEN`,
+      apiKey,
+      { retries: 1, baseDelayMs: 500 }
+    );
+    const fixtures = data?.response || [];
+    const before = new Date(beforeIso).getTime();
+    const prev = fixtures
+      .filter((f: any) => new Date(f?.fixture?.date).getTime() < before)
+      .sort((a: any, b: any) => new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime())[0];
+    if (!prev?.fixture?.id) return [];
+    const lu = await fetchJsonWithRetry(
+      `${API_FOOTBALL_URL}/fixtures/lineups?fixture=${prev.fixture.id}`,
+      apiKey,
+      { retries: 1, baseDelayMs: 500 }
+    );
+    const teamLineup = (lu?.response || []).find((x: any) => x?.team?.id === teamId);
+    return (teamLineup?.startXI || []).map((it: any) => String(it?.player?.id ?? "")).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function logSquadRotation(
+  supabase: any,
+  matchId: string,
+  fixtureIso: string,
+  homeTeamId: number,
+  awayTeamId: number,
+  apiKey: string,
+  currentPrediction: string,
+  currentConfidence: number
+): Promise<void> {
+  try {
+    const currentXI = await fetchStartingXI(matchId, apiKey);
+    if (currentXI.home.length === 0 && currentXI.away.length === 0) return;
+
+    const [prevHome, prevAway] = await Promise.all([
+      currentXI.home.length ? fetchPrevStartingXI(homeTeamId, fixtureIso, apiKey) : Promise.resolve([]),
+      currentXI.away.length ? fetchPrevStartingXI(awayTeamId, fixtureIso, apiKey) : Promise.resolve([]),
+    ]);
+
+    const diffCount = (curr: string[], prev: string[]): number => {
+      if (!curr.length || !prev.length) return -1;
+      const prevSet = new Set(prev);
+      return curr.filter((p) => !prevSet.has(p)).length;
+    };
+
+    const homeChanges = diffCount(currentXI.home, prevHome);
+    const awayChanges = diffCount(currentXI.away, prevAway);
+    if (homeChanges < 0 && awayChanges < 0) return;
+
+    await supabase.from("squad_rotation_log").insert({
+      match_id: matchId,
+      home_team_id: String(homeTeamId),
+      away_team_id: String(awayTeamId),
+      home_changes: homeChanges < 0 ? null : homeChanges,
+      away_changes: awayChanges < 0 ? null : awayChanges,
+      home_xi_size: currentXI.home.length,
+      away_xi_size: currentXI.away.length,
+      current_prediction: currentPrediction,
+      current_confidence: currentConfidence,
+    });
+  } catch (e) {
+    console.warn(`[rotation-SAFE] log failed for ${matchId}:`, (e as Error)?.message);
+  }
+}
+
+async function logWeatherImpact(
+  supabase: any,
+  matchId: string,
+  fixture: any,
+  currentPrediction: string,
+  currentConfidence: number
+): Promise<void> {
+  try {
+    const weather = fixture?.fixture?.weather || fixture?.weather;
+    const venue = fixture?.fixture?.venue;
+    if (!weather && !venue) return;
+
+    await supabase.from("weather_impact_log").insert({
+      match_id: matchId,
+      venue_name: venue?.name ?? null,
+      venue_city: venue?.city ?? null,
+      weather_code: weather?.code ?? null,
+      weather_description: weather?.description ?? null,
+      temperature_c: weather?.temperature?.celsius != null ? Number(weather.temperature.celsius) : null,
+      humidity_pct: weather?.humidity?.percentage != null ? Number(weather.humidity.percentage) : null,
+      wind_kmh: weather?.wind?.speed != null ? Number(weather.wind.speed) : null,
+      current_prediction: currentPrediction,
+      current_confidence: currentConfidence,
+    });
+  } catch (e) {
+    console.warn(`[weather-SAFE] log failed for ${matchId}:`, (e as Error)?.message);
+  }
+}
+// ============= END SAFE MODE Rotation + Weather =============
+
+
 interface StandingEntry {
   teamId: number;
   rank: number;
@@ -3756,7 +3877,21 @@ async function processBatch(
           newPrediction.confidence
         ).catch((e) => console.warn(`[xG-SAFE] log failed:`, e?.message));
       }
+
+      // ============= SAFE MODE: Squad Rotation + Weather (fire & forget) =============
+      const fixtureIso = fixture?.fixture?.date || new Date().toISOString();
+      logSquadRotation(
+        supabase, fixtureIdStr, fixtureIso, homeTeamId, awayTeamId, apiKey,
+        newPrediction.prediction, newPrediction.confidence
+      ).catch((e) => console.warn(`[rotation-SAFE] failed:`, e?.message));
+
+      logWeatherImpact(
+        supabase, fixtureIdStr, fixture,
+        newPrediction.prediction, newPrediction.confidence
+      ).catch((e) => console.warn(`[weather-SAFE] failed:`, e?.message));
+      // ============= END SAFE MODE Rotation + Weather log =============
       // ============= END SAFE MODE log =============
+
 
 
       // Generate SAFE COMBO suggestion

@@ -227,6 +227,32 @@ serve(async (req: Request) => {
         const baseConfidence = Number(p.confidence ?? 0);
         const newConfidence = Math.max(1, Math.min(99, Math.round(baseConfidence + adjustment)));
 
+        // ─── SAFE MODE: Sharp Money Signal Log (fire & forget) ────────────────
+        // Logs every line-movement decision so we can later evaluate whether
+        // sharp-money adjustments actually improve accuracy. Never blocks.
+        supabase.from("sharp_money_signals_log").insert({
+          prediction_id: p.id,
+          match_id: p.match_id,
+          match_date: p.match_date,
+          prediction: p.prediction,
+          base_confidence: baseConfidence,
+          new_confidence: newConfidence,
+          adjustment,
+          trend,
+          strength,
+          movement_pct: Number(movementPct.toFixed(2)),
+          prev_consensus_odds: prev?.[
+            p.prediction?.toLowerCase().includes("home") || p.prediction === "1" ? "consensus_home" :
+            p.prediction?.toLowerCase().includes("draw") || p.prediction === "X" ? "consensus_draw" :
+            "consensus_away"
+          ] ?? null,
+          curr_consensus_odds: consensusOdds,
+          bookmakers_count: snap.bookmakers_count,
+        }).then(({ error }: any) => {
+          if (error) console.warn(`[sharp-log] insert failed for ${p.match_id}:`, error.message);
+        });
+        // ─── END Sharp Money Log ──────────────────────────────────────────────
+
         // ─── Value Bet Engine ────────────────────────────────────────────────
         // value = (AI_probability * consensus_odds) - 1
         // Reliability gate: need at least 2 bookmakers in consensus.
