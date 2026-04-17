@@ -4347,6 +4347,39 @@ async function processBatch(
         );
       }
 
+      // ===== REFEREE BIAS + H2H STYLE MATCHING (LIVE) =====
+      // Small confidence delta (-3..+3) when referee profile or H2H goal patterns
+      // align (or disagree) with the model's totals/BTTS expectations.
+      try {
+        const refereeName: string | undefined = fixture?.fixture?.referee || undefined;
+        const refStats = await fetchRefereeStats(refereeName, season, apiKey);
+        const h2hStyle = calculateH2HStyle(h2h);
+        const modelOver25 = goalMarkets.over25 ?? 50;
+        const modelBtts = goalMarkets.bttsYes ?? 50;
+        const styleAdj = applyRefereeAndH2HStyle(
+          newPrediction,
+          refStats,
+          h2hStyle,
+          modelOver25,
+          modelBtts,
+        );
+        if (styleAdj.deltas.ref !== 0 || styleAdj.deltas.h2h !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = styleAdj.confidence;
+          for (const f of styleAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[STYLE] ${homeTeamName} vs ${awayTeamName} | ` +
+            `Ref: ${refereeName || "n/a"} (Δ${styleAdj.deltas.ref}) | ` +
+            `H2H sig: ${h2hStyle.signal} (Δ${styleAdj.deltas.h2h}) | ` +
+            `Conf: ${beforeConf}% → ${newPrediction.confidence}%`
+          );
+        }
+      } catch (e) {
+        console.warn(`[STYLE] adjustment failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
