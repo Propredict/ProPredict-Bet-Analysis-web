@@ -4612,6 +4612,64 @@ async function processBatch(
         console.warn(`[STYLE] adjustment failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // ===== MANAGER CHANGE BOUNCE (LIVE) =====
+      // New manager hired in last 60 days → small probability nudge + conf +1.
+      try {
+        const [homeBounce, awayBounce] = await Promise.all([
+          fetchManagerBounce(homeTeamId, apiKey),
+          fetchManagerBounce(awayTeamId, apiKey),
+        ]);
+        if (homeBounce?.bounceActive || awayBounce?.bounceActive) {
+          const before = { ...newPrediction };
+          const adj = applyManagerBounce(newPrediction, homeBounce, awayBounce);
+          newPrediction.home_win = adj.home_win;
+          newPrediction.draw = adj.draw;
+          newPrediction.away_win = adj.away_win;
+          newPrediction.confidence = adj.confidence;
+          for (const f of adj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[MANAGER] ${homeTeamName}(${homeBounce?.daysSinceStart ?? "—"}d) vs ${awayTeamName}(${awayBounce?.daysSinceStart ?? "—"}d) | ` +
+            `Probs: ${before.home_win}/${before.draw}/${before.away_win} → ${adj.home_win}/${adj.draw}/${adj.away_win} | ` +
+            `Conf: ${before.confidence}% → ${adj.confidence}%`
+          );
+        }
+      } catch (e) {
+        console.warn(`[MANAGER] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== PUBLIC vs SHARP DISAGREEMENT (LIVE) =====
+      // Detect odds movement against public bias. Boost if model aligns with sharp,
+      // penalty if model picks public favorite while sharps move elsewhere.
+      try {
+        const sharpSignal = await detectSharpSignal(
+          supabase,
+          fixtureIdStr,
+          newPrediction.home_win,
+          newPrediction.draw,
+          newPrediction.away_win,
+        );
+        if (sharpSignal.detected) {
+          const sharpAdj = applySharpSignal(newPrediction, sharpSignal);
+          if (sharpAdj.delta !== 0) {
+            const beforeConf = newPrediction.confidence;
+            newPrediction.confidence = sharpAdj.confidence;
+            for (const f of sharpAdj.factors) {
+              if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+            }
+            console.log(
+              `[SHARP] ${homeTeamName} vs ${awayTeamName} | ` +
+              `Sharp side: ${sharpSignal.sharpSide} (+${sharpSignal.movementPct}%) | ` +
+              `Public bias: ${sharpSignal.publicBias} | ` +
+              `Conf: ${beforeConf}% → ${sharpAdj.confidence}% (Δ${sharpAdj.delta})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[SHARP] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
