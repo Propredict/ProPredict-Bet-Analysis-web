@@ -173,8 +173,10 @@ export default function AIPredictions() {
       case "home_win": return normHw > THRESHOLD;
       case "away_win": return normAw > THRESHOLD;
       case "draw": return normD > DRAW_THRESHOLD;
+      case "over15": return goalProbs.over15 > 70;
       case "over25": return goalProbs.over25 > THRESHOLD;
       case "under25": return goalProbs.under25 > THRESHOLD;
+      case "under35": return goalProbs.under35 > 70;
       case "btts_yes": return goalProbs.bttsYes > THRESHOLD;
       case "btts_no": return goalProbs.bttsNo > THRESHOLD;
       default: return false;
@@ -189,7 +191,8 @@ export default function AIPredictions() {
     const counts: Record<MarketFilter, number> = {
       all: base.length,
       home_win: 0, away_win: 0, draw: 0,
-      over25: 0, under25: 0, btts_yes: 0, btts_no: 0,
+      over15: 0, over25: 0, under25: 0, under35: 0,
+      btts_yes: 0, btts_no: 0,
     };
     const marketKeys: MarketFilter[] = ["home_win", "away_win", "draw", "over25", "under25", "btts_yes", "btts_no"];
     base.forEach((p) => {
