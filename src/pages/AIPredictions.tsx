@@ -1000,7 +1000,8 @@ export default function AIPredictions() {
             </div>
           )}
 
-          {/* Free Predictions Section - gated behind login for guests */}
+          {/* Free Predictions Section - hidden on Pro/Premium tabs */}
+          {(tierFilter === "all" || tierFilter === "free") && (
           <div>
             {/* Centered section divider title */}
             <div className="flex flex-col items-center text-center my-5 md:my-7">
