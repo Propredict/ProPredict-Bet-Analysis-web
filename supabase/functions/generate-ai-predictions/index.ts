@@ -218,6 +218,16 @@ const oddsCache = new Map<string, OddsData | null>();
 const leagueAccuracyCache = new Map<string, number>();
 const marketAccuracyCache = new Map<string, number>();
 const leagueHomeAdvantageCache = new Map<number, number>(); // leagueId → home win % from standings
+// Referee bias cache — refName → { avgGoals, btts%, cardsPerGame, samples }
+const refereeStatsCache = new Map<string, RefereeStats | null>();
+
+interface RefereeStats {
+  avgGoals: number;       // avg total goals per match
+  bttsRate: number;       // 0-100, % matches with both teams scoring
+  cardsPerGame: number;   // yellow + red avg
+  penaltiesPerGame: number;
+  samples: number;        // matches sampled
+}
 
 // ============================================================
 // === SAFE MODE: Real xG Data Collection (NO prediction impact) ===
