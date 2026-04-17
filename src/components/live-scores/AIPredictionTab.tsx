@@ -129,6 +129,17 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
         AI-Powered Analysis
       </div>
 
+      {/* Market Trend (bookmaker consensus movement) */}
+      {marketTrend?.trend && marketTrend.trend !== "stable" && (
+        <div className="flex justify-center">
+          <MarketTrendBadge
+            trend={marketTrend.trend}
+            strength={marketTrend.strength}
+            movementPct={marketTrend.movementPct}
+          />
+        </div>
+      )}
+
       {/* Predicted Winner - Hero Card */}
       <div className="bg-gradient-to-br from-primary/15 to-accent/10 rounded-xl p-5 border border-primary/20 text-center">
         <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
