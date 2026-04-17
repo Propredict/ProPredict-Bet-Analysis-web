@@ -2115,6 +2115,264 @@ function applyDefensiveProfile(
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
 }
 
+// ============ DRAW SPECIALIST DETECTOR (LIVE — Option 12) ============
+// Detects teams that draw a disproportionate share of matches. When BOTH sides
+// have a high draw rate (>= 35%) and the model already shows draw probability
+// above ~28%, boost confidence on a Draw pick by +2. If model picks home/away
+// but both teams are draw-prone, slight downgrade (-1) to win pick confidence.
+// =====================================================================
+interface DrawProfile {
+  homeDrawRate: number;
+  awayDrawRate: number;
+  bothDrawProne: boolean;
+}
+
+function calculateDrawProfile(homeForm: FormMatch[], awayForm: FormMatch[]): DrawProfile {
+  const drawRate = (form: FormMatch[]): number => {
+    if (form.length === 0) return 0;
+    const slice = form.slice(0, 10);
+    const draws = slice.filter(m => m.result === "D").length;
+    return Math.round((draws / slice.length) * 100);
+  };
+  const h = drawRate(homeForm);
+  const a = drawRate(awayForm);
+  return { homeDrawRate: h, awayDrawRate: a, bothDrawProne: h >= 35 && a >= 35 };
+}
+
+function applyDrawProfile(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: DrawProfile,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const predLower = (pred.prediction || "").toLowerCase();
+  const isDrawPick = predLower === "x" || predLower.includes("draw");
+
+  if (profile.bothDrawProne && pred.draw >= 28) {
+    if (isDrawPick) {
+      delta = 2;
+      factors.push(`🤝 Draw specialists: both teams ${profile.homeDrawRate}%/${profile.awayDrawRate}% draw rate — supports Draw pick`);
+    } else if (Math.abs(pred.home_win - pred.away_win) <= 12) {
+      // Close 1X2 race + both draw-prone = win pick is shakier
+      delta = -1;
+      factors.push(`⚠️ Both teams draw-prone (${profile.homeDrawRate}%/${profile.awayDrawRate}%) — close 1X2 race adds Draw risk`);
+    }
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+// ============ ROTATION RISK ADJUSTER (LIVE — Option 11) ============
+// Detects squad rotation by comparing current XI vs previous match XI.
+// 5+ changes from last XI = significant rotation → confidence penalty (-2 to -3).
+// 3-4 changes = moderate (-1). Only applies when the rotated team is the
+// model's pick (we lose conviction on fatigued/rotated favorites).
+// ==================================================================
+interface RotationProfile {
+  homeChanges: number; // -1 if unknown
+  awayChanges: number;
+  homeXISize: number;
+  awayXISize: number;
+}
+
+async function calculateRotationProfile(
+  fixtureId: string,
+  fixtureIso: string,
+  homeTeamId: number,
+  awayTeamId: number,
+  apiKey: string,
+): Promise<RotationProfile> {
+  const empty: RotationProfile = { homeChanges: -1, awayChanges: -1, homeXISize: 0, awayXISize: 0 };
+  try {
+    const currentXI = await fetchStartingXI(fixtureId, apiKey);
+    if (currentXI.home.length === 0 && currentXI.away.length === 0) return empty;
+    const [prevHome, prevAway] = await Promise.all([
+      currentXI.home.length ? fetchPrevStartingXI(homeTeamId, fixtureIso, apiKey) : Promise.resolve([]),
+      currentXI.away.length ? fetchPrevStartingXI(awayTeamId, fixtureIso, apiKey) : Promise.resolve([]),
+    ]);
+    const diff = (curr: string[], prev: string[]): number => {
+      if (!curr.length || !prev.length) return -1;
+      const prevSet = new Set(prev);
+      return curr.filter(p => !prevSet.has(p)).length;
+    };
+    return {
+      homeChanges: diff(currentXI.home, prevHome),
+      awayChanges: diff(currentXI.away, prevAway),
+      homeXISize: currentXI.home.length,
+      awayXISize: currentXI.away.length,
+    };
+  } catch {
+    return empty;
+  }
+}
+
+function applyRotationAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: RotationProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  // Penalize if MODEL'S PICK is rotated team
+  if (isHomePick && profile.homeChanges >= 5) {
+    delta = -3;
+    factors.push(`🔄 ${homeTeamName} rotated heavily (${profile.homeChanges} XI changes) — favorite less trustworthy`);
+  } else if (isHomePick && profile.homeChanges >= 3) {
+    delta = -1;
+    factors.push(`🔄 ${homeTeamName} XI changes: ${profile.homeChanges} — mild rotation risk`);
+  } else if (isAwayPick && profile.awayChanges >= 5) {
+    delta = -3;
+    factors.push(`🔄 ${awayTeamName} rotated heavily (${profile.awayChanges} XI changes) — favorite less trustworthy`);
+  } else if (isAwayPick && profile.awayChanges >= 3) {
+    delta = -1;
+    factors.push(`🔄 ${awayTeamName} XI changes: ${profile.awayChanges} — mild rotation risk`);
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+// ============ OPEN-GAME / BTTS PROFILE (LIVE — Option 14) ============
+// Detects teams playing open, attacking matches where both sides score regularly.
+// Uses BTTS rate from last 10 matches (matches where both team & opponent scored).
+// If both teams have BTTS rate >= 60% → boost BTTS Yes / Over picks.
+// If both teams have BTTS rate <= 30% → boost BTTS No / Under picks.
+// Acts as a complement to ScoringProfile (which uses goal counts).
+// =====================================================================
+interface OpenGameProfile {
+  homeBttsRate: number;
+  awayBttsRate: number;
+  bothOpen: boolean;
+  bothClosed: boolean;
+}
+
+function calculateOpenGameProfile(homeForm: FormMatch[], awayForm: FormMatch[]): OpenGameProfile {
+  const bttsRate = (form: FormMatch[]): number => {
+    if (form.length === 0) return 0;
+    const slice = form.slice(0, 10);
+    const btts = slice.filter(m => m.goalsFor > 0 && m.goalsAgainst > 0).length;
+    return Math.round((btts / slice.length) * 100);
+  };
+  const h = bttsRate(homeForm);
+  const a = bttsRate(awayForm);
+  return {
+    homeBttsRate: h,
+    awayBttsRate: a,
+    bothOpen: h >= 60 && a >= 60,
+    bothClosed: h <= 30 && a <= 30,
+  };
+}
+
+function applyOpenGameProfile(
+  pred: { prediction: string; confidence: number },
+  profile: OpenGameProfile,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const predLower = (pred.prediction || "").toLowerCase();
+  const isBttsYes = predLower.includes("btts: yes") || predLower.includes("btts yes");
+  const isBttsNo = predLower.includes("btts: no") || predLower.includes("btts no");
+  const isOver = predLower.includes("over 2.5") || predLower.includes("over 2,5");
+  const isUnder = predLower.includes("under 2.5") || predLower.includes("under 2,5");
+
+  if (profile.bothOpen) {
+    if (isBttsYes) {
+      delta = profile.homeBttsRate >= 70 && profile.awayBttsRate >= 70 ? 2 : 1;
+      factors.push(`🎯 Open-game profile both sides (BTTS: ${profile.homeBttsRate}%/${profile.awayBttsRate}%) — supports BTTS Yes`);
+    } else if (isOver) {
+      delta = 1;
+      factors.push(`🎯 Open-game profile (BTTS ${profile.homeBttsRate}%/${profile.awayBttsRate}%) — supports Over`);
+    } else if (isBttsNo || isUnder) {
+      delta = -1;
+      factors.push(`⚠️ Open-game trend (BTTS ${profile.homeBttsRate}%/${profile.awayBttsRate}%) contradicts pick`);
+    }
+  } else if (profile.bothClosed) {
+    if (isBttsNo || isUnder) {
+      delta = profile.homeBttsRate <= 20 && profile.awayBttsRate <= 20 ? 2 : 1;
+      factors.push(`🛡️ Closed-game profile (BTTS ${profile.homeBttsRate}%/${profile.awayBttsRate}%) — supports ${isBttsNo ? "BTTS No" : "Under"}`);
+    } else if (isBttsYes || isOver) {
+      delta = -1;
+      factors.push(`⚠️ Closed-game trend contradicts pick`);
+    }
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+// ============ HOME/AWAY ASYMMETRY BOOST (LIVE — Option 15) ============
+// Some teams have dramatically different performance home vs away.
+// Uses isHome flag from FormMatch to compute split win rates over last 10.
+// If home team's HOME win rate is >= 60% AND away team's AWAY win rate <= 25%,
+// boost the Home Win pick confidence by +2 (strong asymmetry advantage).
+// Symmetric for away dominators.
+// =======================================================================
+interface AsymmetryProfile {
+  homeHomeWinRate: number; // % wins at home
+  homeAwayWinRate: number; // % wins away
+  awayHomeWinRate: number;
+  awayAwayWinRate: number;
+  homeStrongAtHome: boolean;
+  awayWeakOnRoad: boolean;
+  awayStrongOnRoad: boolean;
+  homeWeakAtHome: boolean;
+}
+
+function calculateAsymmetryProfile(homeForm: FormMatch[], awayForm: FormMatch[]): AsymmetryProfile {
+  const splitWinRate = (form: FormMatch[], wantHome: boolean): number => {
+    const filtered = form.slice(0, 10).filter(m => m.isHome === wantHome);
+    if (filtered.length < 3) return -1; // not enough sample
+    const wins = filtered.filter(m => m.result === "W").length;
+    return Math.round((wins / filtered.length) * 100);
+  };
+  const hH = splitWinRate(homeForm, true);
+  const hA = splitWinRate(homeForm, false);
+  const aH = splitWinRate(awayForm, true);
+  const aA = splitWinRate(awayForm, false);
+  return {
+    homeHomeWinRate: hH,
+    homeAwayWinRate: hA,
+    awayHomeWinRate: aH,
+    awayAwayWinRate: aA,
+    homeStrongAtHome: hH >= 60,
+    awayWeakOnRoad: aA >= 0 && aA <= 25,
+    awayStrongOnRoad: aA >= 60,
+    homeWeakAtHome: hH >= 0 && hH <= 25,
+  };
+}
+
+function applyAsymmetryAdjustment(
+  pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
+  profile: AsymmetryProfile,
+  homeTeamName: string,
+  awayTeamName: string,
+): { confidence: number; factors: string[]; delta: number } {
+  const factors: string[] = [];
+  let delta = 0;
+  const isHomePick = pred.home_win >= pred.draw && pred.home_win >= pred.away_win;
+  const isAwayPick = pred.away_win > pred.draw && pred.away_win > pred.home_win;
+
+  // Home dominator vs road weakling
+  if (isHomePick && profile.homeStrongAtHome && profile.awayWeakOnRoad) {
+    delta = profile.homeHomeWinRate >= 75 && profile.awayAwayWinRate <= 15 ? 2 : 1;
+    factors.push(`🏠 ${homeTeamName} ${profile.homeHomeWinRate}% home win rate vs ${awayTeamName} ${profile.awayAwayWinRate}% away — strong asymmetry`);
+  }
+  // Away dominator vs home weakling
+  else if (isAwayPick && profile.awayStrongOnRoad && profile.homeWeakAtHome) {
+    delta = profile.awayAwayWinRate >= 75 && profile.homeHomeWinRate <= 15 ? 2 : 1;
+    factors.push(`✈️ ${awayTeamName} ${profile.awayAwayWinRate}% away win rate vs ${homeTeamName} ${profile.homeHomeWinRate}% home — strong asymmetry`);
+  }
+  // Contradictory pick: model picks home but home is weak at home
+  else if (isHomePick && profile.homeWeakAtHome && profile.awayStrongOnRoad) {
+    delta = -2;
+    factors.push(`⚠️ ${homeTeamName} only ${profile.homeHomeWinRate}% at home vs ${awayTeamName} ${profile.awayAwayWinRate}% away — weak home pick`);
+  }
+
+  return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
 
 // ============ TRAVEL DISTANCE & FIXTURE CONGESTION (LIVE — Option 13) ============
 /**
@@ -5237,6 +5495,94 @@ async function processBatch(
         }
       } catch (e) {
         console.warn(`[WEATHER] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== DRAW SPECIALIST (LIVE — Option 12) =====
+      try {
+        const drawProfile = calculateDrawProfile(homeForm, awayForm);
+        const drawAdj = applyDrawProfile(newPrediction, drawProfile);
+        if (drawAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = drawAdj.confidence;
+          for (const f of drawAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[DRAW] ${homeTeamName} vs ${awayTeamName} | ` +
+            `Draw rates: ${drawProfile.homeDrawRate}%/${drawProfile.awayDrawRate}% | ` +
+            `Conf: ${beforeConf}% → ${drawAdj.confidence}% (Δ${drawAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[DRAW] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== OPEN-GAME / BTTS PROFILE (LIVE — Option 14) =====
+      try {
+        const openProfile = calculateOpenGameProfile(homeForm, awayForm);
+        const openAdj = applyOpenGameProfile(newPrediction, openProfile);
+        if (openAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = openAdj.confidence;
+          for (const f of openAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[OPENGAME] ${homeTeamName} vs ${awayTeamName} | ` +
+            `BTTS rates: ${openProfile.homeBttsRate}%/${openProfile.awayBttsRate}% | ` +
+            `Conf: ${beforeConf}% → ${openAdj.confidence}% (Δ${openAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[OPENGAME] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== HOME/AWAY ASYMMETRY BOOST (LIVE — Option 15) =====
+      try {
+        const asymProfile = calculateAsymmetryProfile(homeForm, awayForm);
+        const asymAdj = applyAsymmetryAdjustment(newPrediction, asymProfile, homeTeamName, awayTeamName);
+        if (asymAdj.delta !== 0) {
+          const beforeConf = newPrediction.confidence;
+          newPrediction.confidence = asymAdj.confidence;
+          for (const f of asymAdj.factors) {
+            if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+          }
+          console.log(
+            `[ASYMMETRY] ${homeTeamName}(H:${asymProfile.homeHomeWinRate}%) vs ${awayTeamName}(A:${asymProfile.awayAwayWinRate}%) | ` +
+            `Conf: ${beforeConf}% → ${asymAdj.confidence}% (Δ${asymAdj.delta})`
+          );
+        }
+      } catch (e) {
+        console.warn(`[ASYMMETRY] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // ===== ROTATION RISK (LIVE — Option 11) =====
+      // Only fetched within ~24h of kickoff to avoid wasted API calls before lineups posted.
+      try {
+        const fixtureIsoForRot = fixture?.fixture?.date as string | undefined;
+        const kickoffMs = fixtureIsoForRot ? new Date(fixtureIsoForRot).getTime() : 0;
+        const hoursToKickoff = kickoffMs ? (kickoffMs - Date.now()) / 3600000 : 999;
+        if (fixtureIdStr && fixtureIsoForRot && hoursToKickoff <= 24 && hoursToKickoff >= -3 && homeTeamId && awayTeamId) {
+          const rotProfile = await calculateRotationProfile(
+            fixtureIdStr, fixtureIsoForRot, homeTeamId, awayTeamId, apiKey
+          );
+          if (rotProfile.homeChanges >= 0 || rotProfile.awayChanges >= 0) {
+            const rotAdj = applyRotationAdjustment(newPrediction, rotProfile, homeTeamName, awayTeamName);
+            if (rotAdj.delta !== 0) {
+              const beforeConf = newPrediction.confidence;
+              newPrediction.confidence = rotAdj.confidence;
+              for (const f of rotAdj.factors) {
+                if (keyFactors.length < 10 && !keyFactors.includes(f)) keyFactors.push(f);
+              }
+              console.log(
+                `[ROTATION] ${homeTeamName}(${rotProfile.homeChanges} chg) vs ${awayTeamName}(${rotProfile.awayChanges} chg) | ` +
+                `Conf: ${beforeConf}% → ${rotAdj.confidence}% (Δ${rotAdj.delta})`
+              );
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`[ROTATION] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
