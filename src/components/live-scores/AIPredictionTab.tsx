@@ -175,7 +175,7 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
         AI-Powered Analysis
       </div>
 
-      {/* Market Trend + Value Bet signals */}
+      {/* Market Trend + High Value Insight signals */}
       {(signals?.trend && signals.trend !== "stable") || signals?.predictedSideValue != null ? (
         <div className="flex flex-wrap items-center justify-center gap-2">
           <ValueBetBadge

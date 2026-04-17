@@ -10,12 +10,12 @@ interface Props {
 }
 
 /**
- * Market Trend badge — communicates bookmaker consensus movement
- * WITHOUT betting language. Shown alongside AI confidence.
+ * Market Trend badge — communicates aggregated market consensus movement
+ * across multiple data sources. Pure analytics signal, not betting advice.
  *
- *   📉 Odds Dropping  → smart money on our pick (positive signal)
- *   📈 Market Cooling → market fading our pick
- *   📊 Market Stable  → no meaningful movement
+ *   📊 Market Trend ↓ → consensus shifting toward our pick (positive signal)
+ *   📈 Market Trend ↑ → consensus shifting against our pick
+ *   (hidden)          → no meaningful movement
  */
 export function MarketTrendBadge({ trend, strength, movementPct, className, compact = false }: Props) {
   if (!trend || trend === "stable") {
@@ -27,9 +27,9 @@ export function MarketTrendBadge({ trend, strength, movementPct, className, comp
 
   const Icon = isDropping ? TrendingDown : isRising ? TrendingUp : Activity;
   const label = isDropping
-    ? "Odds Dropping"
+    ? "Market Trend ↓"
     : isRising
-    ? "Market Cooling"
+    ? "Market Trend ↑"
     : "Market Trend";
 
   const tone = isDropping
@@ -50,7 +50,7 @@ export function MarketTrendBadge({ trend, strength, movementPct, className, comp
       )}
       title={
         movementPct != null
-          ? `Consensus odds movement: ${movementPct > 0 ? "+" : ""}${movementPct.toFixed(1)}% vs previous snapshot`
+          ? `Market consensus shift: ${movementPct > 0 ? "+" : ""}${movementPct.toFixed(1)}% vs previous data point`
           : undefined
       }
     >
