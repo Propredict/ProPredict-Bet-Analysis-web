@@ -1,7 +1,11 @@
-// Dispatcher: finds eligible app_ratings (>=4 stars, 6-12h old) and triggers
-// send-transactional-email for each. Uses email_send_log + idempotencyKey to
-// avoid duplicate sends. Includes A/B testing on subject line + click tracking.
+// Dispatcher: finds eligible app_ratings (>=4 stars, 6-12h old) and sends
+// follow-up emails directly via Resend (bypasses send-transactional-email
+// queue infrastructure which is not yet provisioned). Uses email_ab_sends
+// for idempotency + A/B variant tracking.
+import * as React from 'npm:react@18.3.1'
+import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { template as ratingFollowupTemplate } from '../_shared/transactional-email-templates/rating-followup.tsx'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +13,7 @@ const corsHeaders = {
 }
 
 const TEMPLATE_NAME = 'rating-followup'
+const FROM_ADDRESS = 'ProPredict <noreply@notify.propredict.me>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,8 +22,9 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!supabaseUrl || !serviceKey) {
-    return new Response(JSON.stringify({ error: 'Server config error' }), {
+  const resendKey = Deno.env.get('RESEND_API_KEY')
+  if (!supabaseUrl || !serviceKey || !resendKey) {
+    return new Response(JSON.stringify({ error: 'Server config error (missing SUPABASE_URL / SERVICE_ROLE_KEY / RESEND_API_KEY)' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -37,7 +43,6 @@ Deno.serve(async (req) => {
   let error: any = null
 
   if (force && forceEmail) {
-    // Look up user by email; fall back to a synthetic row if not found
     const { data: profile } = await supabase
       .from('profiles')
       .select('user_id')
@@ -53,7 +58,6 @@ Deno.serve(async (req) => {
       },
     ]
   } else {
-    // Window: rating created between 12h and 6h ago, >=4 stars
     const now = Date.now()
     const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
     const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
@@ -93,19 +97,19 @@ Deno.serve(async (req) => {
 
   for (const row of ratings ?? []) {
     try {
-      const idempotencyKey = `rating-followup-${row.id}`
+      // Idempotency: skip if we already have an email_ab_sends row for this rating
+      if (!force) {
+        const { data: existing } = await supabase
+          .from('email_ab_sends')
+          .select('id')
+          .eq('rating_id', row.id)
+          .limit(1)
 
-      // Skip if already sent (check email_send_log)
-      const { data: existing } = await supabase
-        .from('email_send_log')
-        .select('id')
-        .eq('message_id', idempotencyKey)
-        .limit(1)
-
-      if (existing && existing.length > 0) {
-        skipped++
-        results.push({ id: row.id, status: 'skipped_already_sent' })
-        continue
+        if (existing && existing.length > 0) {
+          skipped++
+          results.push({ id: row.id, status: 'skipped_already_sent' })
+          continue
+        }
       }
 
       if (!row.user_id && !force) {
@@ -117,9 +121,7 @@ Deno.serve(async (req) => {
       let recipientEmail: string | undefined
       let name: string | undefined
 
-      if (force && forceEmail) {
-        recipientEmail = forceEmail
-      }
+      if (force && forceEmail) recipientEmail = forceEmail
 
       if (row.user_id) {
         const { data: profile } = await supabase
@@ -138,18 +140,16 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // ── A/B variant selection (50/50 random per user) ──
+      // ── A/B variant selection (random pick) ──
       let variantId: string | null = null
       let subjectOverride: string | null = null
       let trackingUrl: string | undefined
 
       if (activeVariants.length > 0) {
-        const picked =
-          activeVariants[Math.floor(Math.random() * activeVariants.length)]
+        const picked = activeVariants[Math.floor(Math.random() * activeVariants.length)]
         variantId = picked.id
         subjectOverride = picked.subject
 
-        // Pre-create the send row so we have an id for the tracking link
         const { data: sendRow, error: sendInsertErr } = await supabase
           .from('email_ab_sends')
           .insert({
@@ -168,36 +168,50 @@ Deno.serve(async (req) => {
         }
       }
 
-      const templateData: Record<string, any> = { name, stars: row.stars }
-      if (subjectOverride) templateData.subject = subjectOverride
-      if (trackingUrl) templateData.trackingUrl = trackingUrl
-
-      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA'
-      const sendRes = await fetch(
-        `${supabaseUrl}/functions/v1/send-transactional-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${anonKey}`,
-            apikey: anonKey,
-          },
-          body: JSON.stringify({
-            templateName: TEMPLATE_NAME,
-            recipientEmail,
-            idempotencyKey,
-            templateData,
-          }),
-        }
+      // Render React Email template to HTML
+      const html = await renderAsync(
+        React.createElement(ratingFollowupTemplate.component, {
+          name,
+          stars: row.stars,
+          trackingUrl,
+        }),
       )
+
+      const subject =
+        subjectOverride ||
+        (typeof ratingFollowupTemplate.subject === 'function'
+          ? ratingFollowupTemplate.subject({ name, stars: row.stars })
+          : ratingFollowupTemplate.subject)
+
+      // Send via Resend directly
+      const sendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${resendKey}`,
+        },
+        body: JSON.stringify({
+          from: FROM_ADDRESS,
+          to: [recipientEmail],
+          subject,
+          html,
+        }),
+      })
 
       if (!sendRes.ok) {
         const errText = await sendRes.text()
-        throw new Error(`send-transactional-email ${sendRes.status}: ${errText}`)
+        throw new Error(`Resend ${sendRes.status}: ${errText}`)
       }
 
+      const resendData = await sendRes.json()
       sent++
-      results.push({ id: row.id, status: 'sent', variant: variantId })
+      results.push({
+        id: row.id,
+        status: 'sent',
+        variant: variantId,
+        recipient: recipientEmail,
+        resend_id: resendData?.id ?? null,
+      })
     } catch (err: any) {
       failed++
       console.error('Failed to send followup for rating', row.id, err)
@@ -210,6 +224,6 @@ Deno.serve(async (req) => {
     {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    }
+    },
   )
 })
