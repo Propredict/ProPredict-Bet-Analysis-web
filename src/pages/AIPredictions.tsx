@@ -257,13 +257,6 @@ export default function AIPredictions() {
     return sortPredictions(result);
   }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
 
-  // Safe Picks: confidence >= 85, max 3, only in premium tier
-  const safePicks = useMemo(() => {
-    return filteredPredictions
-      .filter((p) => (p.confidence ?? 0) >= 85 && getPredictionTier(p) === "premium")
-      .slice(0, 3);
-  }, [filteredPredictions]);
-
   // Separate featured (premium/pro) from regular (free) predictions
   const featuredPredictions = useMemo(() => {
     return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
@@ -273,12 +266,28 @@ export default function AIPredictions() {
     return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
   }, [filteredPredictions]);
 
-  // Top AI Picks: weighted ranking — Free sees 1, Pro/Premium see up to 5
+  // Top AI Picks: weighted ranking — always fill up to 5
   const topPicks = useMemo(() => {
-    const limit = (isPremiumUser || isProUser || isAdmin) ? 5 : 5;
-    // Always compute top 5 internally; component slices for free users
-    return selectTopPicks(filteredPredictions, limit);
-  }, [filteredPredictions, isPremiumUser, isProUser, isAdmin]);
+    return selectTopPicks(filteredPredictions, 5);
+  }, [filteredPredictions]);
+
+  // IDs already shown in Top AI Picks — exclude from Safe Picks to avoid duplication
+  const topPickIds = useMemo(
+    () => new Set(topPicks.map((rp) => rp.prediction.id)),
+    [topPicks],
+  );
+
+  // Safe Picks: confidence >= 85, max 3, premium tier, NOT already in Top Picks
+  const safePicks = useMemo(() => {
+    return filteredPredictions
+      .filter(
+        (p) =>
+          (p.confidence ?? 0) >= 85 &&
+          getPredictionTier(p) === "premium" &&
+          !topPickIds.has(p.id),
+      )
+      .slice(0, 3);
+  }, [filteredPredictions, topPickIds]);
 
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
