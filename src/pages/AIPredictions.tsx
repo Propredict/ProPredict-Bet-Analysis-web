@@ -609,7 +609,7 @@ export default function AIPredictions() {
                   Free ({tierCounts.free})
                 </span>
                 <span className="text-[9px] md:text-[10px] font-bold text-emerald-300/90 leading-none">
-                  {Math.max(tierStats.free.accuracy, 50)}% accuracy
+                  {Math.max(tierStats.free.accuracy, 50)}%
                 </span>
               </Button>
               <Button
@@ -628,7 +628,7 @@ export default function AIPredictions() {
                   Pro ({tierCounts.pro})
                 </span>
                 <span className="text-[9px] md:text-[10px] font-bold text-amber-300/90 leading-none">
-                  {Math.max(tierStats.pro.accuracy, 75)}% accuracy
+                  {Math.max(tierStats.pro.accuracy, 75)}%
                 </span>
               </Button>
               <Button
@@ -647,7 +647,7 @@ export default function AIPredictions() {
                   Premium ({tierCounts.premium})
                 </span>
                 <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-300/90 leading-none">
-                  {Math.max(tierStats.premium.accuracy, 87)}% accuracy
+                  {Math.max(tierStats.premium.accuracy, 87)}%
                 </span>
               </Button>
             </div>
