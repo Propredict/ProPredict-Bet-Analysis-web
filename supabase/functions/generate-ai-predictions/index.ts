@@ -6096,7 +6096,8 @@ async function processBatch(
       // ===== DRAW SPECIALIST (LIVE — Option 12) =====
       try {
         const drawProfile = calculateDrawProfile(homeForm, awayForm);
-        const drawAdj = applyDrawProfile(newPrediction, drawProfile);
+        const h2hDrawRate = calculateH2HDrawRate(h2h);
+        const drawAdj = applyDrawProfile(newPrediction, drawProfile, h2hDrawRate);
         if (drawAdj.delta !== 0) {
           const beforeConf = newPrediction.confidence;
           newPrediction.confidence = drawAdj.confidence;
