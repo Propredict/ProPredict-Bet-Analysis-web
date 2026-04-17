@@ -25,6 +25,8 @@ export type Database = {
           home_team: string
           home_win: number
           id: string
+          injury_impact_away: number | null
+          injury_impact_home: number | null
           is_live: boolean | null
           is_locked: boolean | null
           is_premium: boolean | null
@@ -32,11 +34,14 @@ export type Database = {
           last_away_goals: number | null
           last_home_goals: number | null
           league: string | null
+          lineup_confirmed: boolean | null
           match_date: string | null
           match_day: string | null
           match_id: string
           match_time: string | null
           match_timestamp: string | null
+          missing_away_players: Json | null
+          missing_home_players: Json | null
           predicted_score: string | null
           prediction: string
           result_status: string | null
@@ -53,6 +58,8 @@ export type Database = {
           home_team: string
           home_win: number
           id?: string
+          injury_impact_away?: number | null
+          injury_impact_home?: number | null
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
@@ -60,11 +67,14 @@ export type Database = {
           last_away_goals?: number | null
           last_home_goals?: number | null
           league?: string | null
+          lineup_confirmed?: boolean | null
           match_date?: string | null
           match_day?: string | null
           match_id: string
           match_time?: string | null
           match_timestamp?: string | null
+          missing_away_players?: Json | null
+          missing_home_players?: Json | null
           predicted_score?: string | null
           prediction: string
           result_status?: string | null
@@ -81,6 +91,8 @@ export type Database = {
           home_team?: string
           home_win?: number
           id?: string
+          injury_impact_away?: number | null
+          injury_impact_home?: number | null
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
@@ -88,11 +100,14 @@ export type Database = {
           last_away_goals?: number | null
           last_home_goals?: number | null
           league?: string | null
+          lineup_confirmed?: boolean | null
           match_date?: string | null
           match_day?: string | null
           match_id?: string
           match_time?: string | null
           match_timestamp?: string | null
+          missing_away_players?: Json | null
+          missing_home_players?: Json | null
           predicted_score?: string | null
           prediction?: string
           result_status?: string | null
