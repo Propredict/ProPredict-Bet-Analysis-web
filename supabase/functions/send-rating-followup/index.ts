@@ -27,18 +27,47 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey)
   const trackBaseUrl = `${supabaseUrl}/functions/v1/track-email-click`
 
-  // Window: rating created between 12h and 6h ago, >=4 stars
-  const now = Date.now()
-  const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
-  const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
+  // ── Force/test mode: ?force=true&email=foo@bar.com ──
+  const url = new URL(req.url)
+  const force = url.searchParams.get('force') === 'true'
+  const forceEmail = url.searchParams.get('email')
+  const forceStars = parseInt(url.searchParams.get('stars') || '5', 10)
 
-  const { data: ratings, error } = await supabase
-    .from('app_ratings')
-    .select('id, user_id, stars, created_at')
-    .gte('stars', 4)
-    .lte('created_at', sixHoursAgo)
-    .gte('created_at', twelveHoursAgo)
-    .limit(100)
+  let ratings: Array<{ id: string; user_id: string | null; stars: number; created_at: string }> | null = null
+  let error: any = null
+
+  if (force && forceEmail) {
+    // Look up user by email; fall back to a synthetic row if not found
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', forceEmail)
+      .maybeSingle()
+
+    ratings = [
+      {
+        id: crypto.randomUUID(),
+        user_id: profile?.user_id ?? null,
+        stars: forceStars,
+        created_at: new Date().toISOString(),
+      },
+    ]
+  } else {
+    // Window: rating created between 12h and 6h ago, >=4 stars
+    const now = Date.now()
+    const sixHoursAgo = new Date(now - 6 * 60 * 60 * 1000).toISOString()
+    const twelveHoursAgo = new Date(now - 12 * 60 * 60 * 1000).toISOString()
+
+    const res = await supabase
+      .from('app_ratings')
+      .select('id, user_id, stars, created_at')
+      .gte('stars', 4)
+      .lte('created_at', sixHoursAgo)
+      .gte('created_at', twelveHoursAgo)
+      .limit(100)
+    ratings = res.data
+    error = res.error
+  }
 
   if (error) {
     console.error('Failed to query app_ratings', error)
@@ -79,26 +108,35 @@ Deno.serve(async (req) => {
         continue
       }
 
-      if (!row.user_id) {
+      if (!row.user_id && !force) {
         skipped++
         results.push({ id: row.id, status: 'skipped_no_user' })
         continue
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, full_name, username')
-        .eq('user_id', row.user_id)
-        .maybeSingle()
+      let recipientEmail: string | undefined
+      let name: string | undefined
 
-      const recipientEmail = profile?.email
+      if (force && forceEmail) {
+        recipientEmail = forceEmail
+      }
+
+      if (row.user_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, full_name, username')
+          .eq('user_id', row.user_id)
+          .maybeSingle()
+
+        recipientEmail = recipientEmail || profile?.email || undefined
+        name = profile?.full_name || profile?.username || undefined
+      }
+
       if (!recipientEmail) {
         skipped++
         results.push({ id: row.id, status: 'skipped_no_email' })
         continue
       }
-
-      const name = profile?.full_name || profile?.username || undefined
 
       // ── A/B variant selection (50/50 random per user) ──
       let variantId: string | null = null
@@ -134,19 +172,29 @@ Deno.serve(async (req) => {
       if (subjectOverride) templateData.subject = subjectOverride
       if (trackingUrl) templateData.trackingUrl = trackingUrl
 
-      const { error: invokeError } = await supabase.functions.invoke(
-        'send-transactional-email',
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA'
+      const sendRes = await fetch(
+        `${supabaseUrl}/functions/v1/send-transactional-email`,
         {
-          body: {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${anonKey}`,
+            apikey: anonKey,
+          },
+          body: JSON.stringify({
             templateName: TEMPLATE_NAME,
             recipientEmail,
             idempotencyKey,
             templateData,
-          },
+          }),
         }
       )
 
-      if (invokeError) throw invokeError
+      if (!sendRes.ok) {
+        const errText = await sendRes.text()
+        throw new Error(`send-transactional-email ${sendRes.status}: ${errText}`)
+      }
 
       sent++
       results.push({ id: row.id, status: 'sent', variant: variantId })
