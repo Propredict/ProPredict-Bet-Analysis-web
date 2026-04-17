@@ -64,24 +64,24 @@ export function TopAIPicksSection({
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
 
       <div className="relative p-3 md:p-5">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2 mb-3 md:mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-amber-500 to-fuchsia-600 shadow-lg shadow-amber-500/30">
-              <Trophy className="w-4 h-4 md:w-5 md:h-5 text-white" />
+        {/* Centered premium section header */}
+        <div className="flex flex-col items-center text-center mb-4 md:mb-5">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-amber-500/60" />
+            <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-fuchsia-600 shadow-lg shadow-amber-500/40 ring-1 ring-amber-300/30">
+              <Trophy className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow" />
             </div>
-            <div>
-              <h2 className="text-sm md:text-base font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-fuchsia-400 bg-clip-text text-transparent">
-                Top AI Picks Today
-              </h2>
-              <p className="text-[9px] md:text-[10px] text-muted-foreground">
-                Highest-scoring predictions, ranked by AI confidence + value
-              </p>
-            </div>
+            <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-fuchsia-500/60" />
           </div>
+          <h2 className="text-base md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-orange-400 to-fuchsia-400 bg-clip-text text-transparent">
+            Top AI Picks Today
+          </h2>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 max-w-md">
+            Highest-scoring predictions, ranked by AI confidence + value
+          </p>
           <Badge
             variant="outline"
-            className="hidden sm:inline-flex border-amber-500/40 bg-amber-500/10 text-amber-300 text-[9px] md:text-[10px]"
+            className="mt-2 inline-flex border-amber-500/40 bg-amber-500/10 text-amber-300 text-[9px] md:text-[10px]"
           >
             <Sparkles className="w-3 h-3 mr-1" />
             Elite Selection
