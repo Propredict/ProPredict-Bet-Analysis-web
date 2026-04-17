@@ -2940,6 +2940,7 @@ function applyStarAbsenceAdjustment(
   profile: StarAbsenceProfile,
   homeTeamName: string,
   awayTeamName: string,
+  gkAbsence?: { homeGKMissing: boolean; awayGKMissing: boolean },
 ): { confidence: number; factors: string[]; delta: number } {
   const factors: string[] = [];
   let delta = 0;
@@ -2949,23 +2950,35 @@ function applyStarAbsenceAdjustment(
   const homeMissing = [...profile.homeMissingTopScorers, ...profile.homeMissingTopAssists];
   const awayMissing = [...profile.awayMissingTopScorers, ...profile.awayMissingTopAssists];
 
+  // Pick team missing star → larger penalty (2+ stars = severe)
   if (isHomePick && homeMissing.length > 0) {
-    delta -= homeMissing.length >= 2 ? 4 : 3;
-    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")}`);
+    delta -= homeMissing.length >= 2 ? 5 : 3;
+    factors.push(`⚠️ ${homeTeamName} missing key player(s): ${homeMissing.slice(0, 2).join(", ")}`);
   } else if (isAwayPick && awayMissing.length > 0) {
-    delta -= awayMissing.length >= 2 ? 4 : 3;
-    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")}`);
+    delta -= awayMissing.length >= 2 ? 5 : 3;
+    factors.push(`⚠️ ${awayTeamName} missing key player(s): ${awayMissing.slice(0, 2).join(", ")}`);
   }
   // Opponent missing star → small boost
   if (isHomePick && awayMissing.length > 0) {
-    delta += 1;
-    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")} — supports ${homeTeamName}`);
+    delta += awayMissing.length >= 2 ? 2 : 1;
+    factors.push(`✅ ${awayTeamName} missing key player(s): ${awayMissing.slice(0, 2).join(", ")} — supports ${homeTeamName}`);
   } else if (isAwayPick && homeMissing.length > 0) {
-    delta += 1;
-    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")} — supports ${awayTeamName}`);
+    delta += homeMissing.length >= 2 ? 2 : 1;
+    factors.push(`✅ ${homeTeamName} missing key player(s): ${homeMissing.slice(0, 2).join(", ")} — supports ${awayTeamName}`);
   }
 
-  delta = Math.max(-5, Math.min(3, delta));
+  // Goalkeeper absence — major impact (boost Over 2.5 implicitly via penalty)
+  if (gkAbsence) {
+    if (isHomePick && gkAbsence.homeGKMissing) {
+      delta -= 2;
+      factors.push(`🧤 ${homeTeamName} starting GK missing — defensive risk`);
+    } else if (isAwayPick && gkAbsence.awayGKMissing) {
+      delta -= 2;
+      factors.push(`🧤 ${awayTeamName} starting GK missing — defensive risk`);
+    }
+  }
+
+  delta = Math.max(-7, Math.min(4, delta));
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
 }
 
