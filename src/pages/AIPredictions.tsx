@@ -1150,6 +1150,7 @@ export default function AIPredictions() {
               </div>
             )}
           </div>
+          )}
 
           {/* Infinite scroll sentinel */}
           {(visibleFeaturedCount < featuredPredictions.length || visibleRegularCount < regularPredictions.length) && (
