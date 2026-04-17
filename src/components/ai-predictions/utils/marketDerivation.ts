@@ -569,6 +569,7 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
   const rawProbs: Record<MarketType, number> = {
     home_win: hw, away_win: aw, draw: d,
+    dc_1x: hw + d, dc_x2: d + aw, dc_12: hw + aw,
     over15: probs.over15, over25: probs.over25, over35: probs.over35,
     under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
@@ -602,6 +603,9 @@ const MARKET_LABELS: Record<MarketType, { label: string; emoji: string }> = {
   home_win: { label: "Home Win", emoji: "🏠" },
   away_win: { label: "Away Win", emoji: "✈️" },
   draw: { label: "Draw", emoji: "🤝" },
+  dc_1x: { label: "1X (Home or Draw)", emoji: "🛡️" },
+  dc_x2: { label: "X2 (Draw or Away)", emoji: "🛡️" },
+  dc_12: { label: "12 (Home or Away)", emoji: "⚡" },
   over15: { label: "Over 1.5", emoji: "⚽" },
   over25: { label: "Over 2.5", emoji: "🔥" },
   over35: { label: "Over 3.5", emoji: "💥" },

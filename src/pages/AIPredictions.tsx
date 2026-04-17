@@ -169,18 +169,21 @@ export default function AIPredictions() {
     
     const THRESHOLD = 50;
     const DRAW_THRESHOLD = 28; // Draws rarely exceed 35%, so lower threshold
-    switch (market) {
-      case "home_win": return normHw > THRESHOLD;
-      case "away_win": return normAw > THRESHOLD;
-      case "draw": return normD > DRAW_THRESHOLD;
-      case "over15": return goalProbs.over15 > 70;
-      case "over25": return goalProbs.over25 > THRESHOLD;
-      case "under25": return goalProbs.under25 > THRESHOLD;
-      case "under35": return goalProbs.under35 > 70;
-      case "btts_yes": return goalProbs.bttsYes > THRESHOLD;
-      case "btts_no": return goalProbs.bttsNo > THRESHOLD;
-      default: return false;
-    }
+     switch (market) {
+       case "home_win": return normHw > THRESHOLD;
+       case "away_win": return normAw > THRESHOLD;
+       case "draw": return normD > DRAW_THRESHOLD;
+       case "dc_1x": return (normHw + normD) > 75;
+       case "dc_x2": return (normD + normAw) > 75;
+       case "dc_12": return (normHw + normAw) > 75;
+       case "over15": return goalProbs.over15 > 70;
+       case "over25": return goalProbs.over25 > THRESHOLD;
+       case "under25": return goalProbs.under25 > THRESHOLD;
+       case "under35": return goalProbs.under35 > 70;
+       case "btts_yes": return goalProbs.bttsYes > THRESHOLD;
+       case "btts_no": return goalProbs.bttsNo > THRESHOLD;
+       default: return false;
+     }
   }, []);
 
   // Count predictions per market type — scoped to current tier filter
@@ -191,6 +194,7 @@ export default function AIPredictions() {
     const counts: Record<MarketFilter, number> = {
       all: base.length,
       home_win: 0, away_win: 0, draw: 0,
+      dc_1x: 0, dc_x2: 0, dc_12: 0,
       over15: 0, over25: 0, over35: 0, under25: 0, under35: 0,
       btts_yes: 0, btts_no: 0,
     };
