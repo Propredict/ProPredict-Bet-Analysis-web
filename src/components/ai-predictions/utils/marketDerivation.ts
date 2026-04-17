@@ -474,7 +474,7 @@ export function getRiskLevelColor(riskLevel: string | null) {
 
 export type MarketType =
   | "home_win" | "away_win" | "draw"
-  | "over15" | "over25" | "under25" | "under35"
+  | "over15" | "over25" | "over35" | "under25" | "under35"
   | "btts_yes" | "btts_no";
 
 interface MarketCandidate {
@@ -516,6 +516,8 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     // High-probability "lock" market — eligible only when very strong
     { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
     { type: "over25", prob: probs.over25 },
+    // Over 3.5 — high-scoring matches only (≥60%)
+    { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
     { type: "under25", prob: probs.under25 },
     { type: "btts_yes", prob: probs.bttsYes },
     { type: "btts_no", prob: probs.bttsNo },
@@ -551,7 +553,7 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
   const rawProbs: Record<MarketType, number> = {
     home_win: hw, away_win: aw, draw: d,
-    over15: probs.over15, over25: probs.over25,
+    over15: probs.over15, over25: probs.over25, over35: probs.over35,
     under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
@@ -586,6 +588,7 @@ const MARKET_LABELS: Record<MarketType, { label: string; emoji: string }> = {
   draw: { label: "Draw", emoji: "🤝" },
   over15: { label: "Over 1.5", emoji: "⚽" },
   over25: { label: "Over 2.5", emoji: "🔥" },
+  over35: { label: "Over 3.5", emoji: "💥" },
   under25: { label: "Under 2.5", emoji: "🛡️" },
   under35: { label: "Under 3.5", emoji: "🛡️" },
   btts_yes: { label: "BTTS Yes", emoji: "🎯" },

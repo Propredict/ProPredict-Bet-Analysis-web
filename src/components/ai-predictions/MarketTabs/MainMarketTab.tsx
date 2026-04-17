@@ -66,6 +66,7 @@ const MARKET_META: Record<MarketType, { getLabel: (p: AIPrediction) => string; i
   draw: { getLabel: () => "Draw", icon: <Target className="w-4 h-4 text-blue-400" /> },
   over15: { getLabel: () => "Over 1.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
   over25: { getLabel: () => "Over 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
+  over35: { getLabel: () => "Over 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-emerald-400" /> },
   under25: { getLabel: () => "Under 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
   under35: { getLabel: () => "Under 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
   btts_yes: { getLabel: () => "BTTS Yes", icon: <Zap className="w-4 h-4 text-yellow-400" /> },
@@ -94,7 +95,7 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
 
   return {
     home_win: hw, away_win: aw, draw: d,
-    over15: probs.over15, over25: probs.over25,
+    over15: probs.over15, over25: probs.over25, over35: probs.over35,
     under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
