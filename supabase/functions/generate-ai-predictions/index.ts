@@ -2353,9 +2353,13 @@ function calculatePrediction(
   const adjustedBttsNo = clamp(100 - adjustedBttsYes, 5, 95);
 
   // === MATCH CONTEXT ENGINE (with match importance) ===
-  const fixtureRound = ""; // Will be passed from fixture data in processBatch
-  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId, leagueId, leagueName, fixtureRound) : { confidenceBoost: 0, factors: [], goalAdjust: 0 };
-  
+  // Note: motivation deltas already applied to homeFormScore/awayFormScore above.
+  // Here we re-fetch context only for goal adjustments and analysis factors.
+  const context = standings ? getMatchContext(standings, homeTeamId, awayTeamId, leagueId, leagueName, fixtureRound) : { confidenceBoost: 0, factors: [], goalAdjust: 0, homeMotivation: 0, awayMotivation: 0 };
+  // Merge fatigue factors into context.factors so analysis text shows them
+  if (fatigue.factors.length > 0) {
+    context.factors = [...context.factors, ...fatigue.factors];
+  }
   // Apply match context goal adjustments
   if (context.goalAdjust !== 0) {
     adjustedOver25 = clamp(adjustedOver25 + context.goalAdjust, 5, 95);
