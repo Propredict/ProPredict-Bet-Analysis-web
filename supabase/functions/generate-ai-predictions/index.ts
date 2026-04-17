@@ -1024,52 +1024,58 @@ function calculateWeightedFormScore(form: FormMatch[], standings: StandingEntry[
 }
 
 /**
- * Calculate form score (0-100) from last 5 matches with recency weighting.
- * Weights: Match -1 → 1.0, -2 → 0.9, -3 → 0.8, -4 → 0.7, -5 → 0.6
+ * Calculate form score (0-100) from last 5 matches with EXPONENTIAL recency weighting.
+ * Weights: Match -1 → 1.0, -2 → 0.85, -3 → 0.72, -4 → 0.61, -5 → 0.52
+ * (Exponential decay 0.85^i — more responsive to current form than linear.)
  */
 function calculateFormScore(form: FormMatch[]): number {
   if (form.length === 0) return 50;
   const matches = form.slice(0, 5);
   let weightedPoints = 0;
   let weightSum = 0;
-  let gf = 0, ga = 0;
+  let weightedGf = 0, weightedGa = 0;
   for (let i = 0; i < matches.length; i++) {
-    const weight = 1.0 - (i * 0.1); // 1.0, 0.9, 0.8, 0.7, 0.6
+    const weight = Math.pow(0.85, i); // 1.0, 0.85, 0.72, 0.61, 0.52
     const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
     weightedPoints += pts * weight;
     weightSum += 3 * weight;
-    gf += matches[i].goalsFor;
-    ga += matches[i].goalsAgainst;
+    weightedGf += matches[i].goalsFor * weight;
+    weightedGa += matches[i].goalsAgainst * weight;
   }
   const pointsScore = (weightedPoints / weightSum) * 100;
-  const goalDiff = gf - ga;
+  // Weighted goal diff (recency-adjusted)
+  const totalWeight = matches.reduce((s, _m, i) => s + Math.pow(0.85, i), 0);
+  const goalDiff = (weightedGf - weightedGa) / totalWeight;
   const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 6));
   return Math.round(pointsScore * 0.75 + gdScore * 0.25);
 }
 
 /**
- * DEEP form score using last 10 matches with steep recency decay.
- * Weights: Match -1 → 1.0, -2 → 0.93, ..., -10 → 0.4
+ * DEEP form score using last 10 matches with EXPONENTIAL recency decay.
+ * Weights: 1.0, 0.88, 0.77, 0.68, 0.60, 0.53, 0.46, 0.41, 0.36, 0.32 (decay 0.88^i)
+ * More aggressive than previous linear decay — last 3 matches dominate signal.
  */
 function calculateFormScoreDeep(form: FormMatch[]): number {
   if (form.length === 0) return 50;
   const matches = form.slice(0, 10);
   let weightedPoints = 0;
   let weightSum = 0;
-  let gf = 0, ga = 0;
+  let weightedGf = 0, weightedGa = 0;
   for (let i = 0; i < matches.length; i++) {
-    const weight = Math.max(0.4, 1.0 - (i * 0.067)); // 1.0 → ~0.4 over 10 matches
+    const weight = Math.pow(0.88, i); // 1.0 → 0.32 over 10 matches
     const pts = matches[i].result === "W" ? 3 : matches[i].result === "D" ? 1 : 0;
     weightedPoints += pts * weight;
     weightSum += 3 * weight;
-    gf += matches[i].goalsFor;
-    ga += matches[i].goalsAgainst;
+    weightedGf += matches[i].goalsFor * weight;
+    weightedGa += matches[i].goalsAgainst * weight;
   }
   const pointsScore = (weightedPoints / weightSum) * 100;
-  const goalDiff = gf - ga;
+  const totalWeight = matches.reduce((s, _m, i) => s + Math.pow(0.88, i), 0);
+  const goalDiff = (weightedGf - weightedGa) / totalWeight;
   const gdScore = Math.max(0, Math.min(100, 50 + goalDiff * 4));
   return Math.round(pointsScore * 0.70 + gdScore * 0.30);
 }
+
 
 /**
  * Filter form matches by venue (home-only or away-only).
@@ -1815,12 +1821,13 @@ function calculatePrediction(
     ? calculateWeightedFormScore(awayForm, standings!)
     : (awayForm.length > 5 ? calculateFormScoreDeep(awayForm) : calculateFormScore(awayForm));
   
-  // === C) HOME vs AWAY SPLIT ===
+  // === C) HOME vs AWAY SPLIT (upgraded weights — venue-form is most predictive) ===
   const homeVenueForm = calculateVenueFormScore(homeForm, true);
   const awayVenueForm = calculateVenueFormScore(awayForm, false);
-  // Blend: 50% venue-specific + 30% opponent-weighted overall + 20% goals-based quality
-  const homeFormScore = Math.round(homeVenueForm * 0.45 + homeFormAll * 0.30 + homeFormQuality * 0.25);
-  const awayFormScore = Math.round(awayVenueForm * 0.45 + awayFormAll * 0.30 + awayFormQuality * 0.25);
+  // Blend: 55% venue-specific (was 45%) + 25% opponent-weighted overall (was 30%) + 20% goals quality (was 25%)
+  const homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.25 + homeFormQuality * 0.20);
+  const awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.25 + awayFormQuality * 0.20);
+
 
   // === QUALITY (15%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
