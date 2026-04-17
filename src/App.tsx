@@ -26,6 +26,7 @@ import HomeGate from "./components/HomeGate";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Unsubscribe from "./pages/Unsubscribe";
 
 // Heavy pages - lazy loaded for faster navigation
 const Profile = lazy(() => import("./pages/Profile"));
@@ -192,6 +193,7 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/unsubscribe" element={<Unsubscribe />} />
 
                   {/* Standalone landing page – no AppLayout */}
                   <Route path="/football-predictions-today" element={<FootballPredictionsToday />} />
