@@ -577,43 +577,58 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 md:h-9 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center",
+                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
                   tierFilter === "free"
                     ? "bg-emerald-500/30 text-emerald-400 border border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                     : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/25 hover:border-emerald-500"
                 )}
                 onClick={() => setTierFilter("free")}
               >
-                <Gift className="w-3.5 h-3.5" />
-                Free ({tierCounts.free})
+                <span className="flex items-center gap-1.5">
+                  <Gift className="w-3.5 h-3.5" />
+                  Free ({tierCounts.free})
+                </span>
+                <span className="text-[9px] md:text-[10px] font-bold text-emerald-300/90 leading-none">
+                  {Math.max(tierStats.free.accuracy, 50)}% accuracy
+                </span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 md:h-9 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center",
+                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
                   tierFilter === "pro"
                     ? "bg-amber-500/30 text-amber-400 border border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
                     : "bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25 hover:border-amber-500"
                 )}
                 onClick={() => setTierFilter("pro")}
               >
-                <Star className="w-3.5 h-3.5" />
-                Pro ({tierCounts.pro})
+                <span className="flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5" />
+                  Pro ({tierCounts.pro})
+                </span>
+                <span className="text-[9px] md:text-[10px] font-bold text-amber-300/90 leading-none">
+                  {Math.max(tierStats.pro.accuracy, 75)}% accuracy
+                </span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 md:h-9 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center",
+                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
                   tierFilter === "premium"
                     ? "bg-fuchsia-500/30 text-fuchsia-400 border border-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.4)]"
                     : "bg-fuchsia-500/15 text-fuchsia-400 border border-fuchsia-500/40 hover:bg-fuchsia-500/25 hover:border-fuchsia-500"
                 )}
                 onClick={() => setTierFilter("premium")}
               >
-                <Crown className="w-3.5 h-3.5" />
-                Premium ({tierCounts.premium})
+                <span className="flex items-center gap-1.5">
+                  <Crown className="w-3.5 h-3.5" />
+                  Premium ({tierCounts.premium})
+                </span>
+                <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-300/90 leading-none">
+                  {Math.max(tierStats.premium.accuracy, 87)}% accuracy
+                </span>
               </Button>
             </div>
           </Card>
@@ -712,11 +727,20 @@ export default function AIPredictions() {
               {/* Pro Locked Section */}
               {tierCounts.pro > 0 && (tierFilter === "all" || tierFilter === "pro") && (
                 <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <h2 className="text-xs md:text-sm font-semibold text-foreground">Pro Picks</h2>
-                    <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
-                      {isAndroidApp ? `${tierCounts.pro} picks` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
+                  {/* Centered section divider title */}
+                  <div className="flex flex-col items-center text-center my-5 md:my-7">
+                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
+                        <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
+                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                          Pro Picks
+                        </h2>
+                      </div>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
+                    </div>
+                    <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
+                      {isAndroidApp ? `${tierCounts.pro} picks available` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
                     </Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
@@ -840,10 +864,19 @@ export default function AIPredictions() {
               {/* Premium Locked Section */}
               {tierCounts.premium > 0 && (tierFilter === "all" || tierFilter === "premium") && (
                 <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Crown className="w-3.5 h-3.5 text-fuchsia-400" />
-                    <h2 className="text-xs md:text-sm font-semibold text-foreground">Premium Picks</h2>
-                    <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[8px] px-1.5 py-0.5 rounded ml-1">
+                  {/* Centered section divider title */}
+                  <div className="flex flex-col items-center text-center my-5 md:my-7">
+                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-fuchsia-500/40 to-fuchsia-500/60" />
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-fuchsia-500/15 to-violet-500/15 border border-fuchsia-500/30 shadow-sm shadow-fuchsia-500/10">
+                        <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-fuchsia-400" />
+                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent whitespace-nowrap">
+                          Premium Picks
+                        </h2>
+                      </div>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-fuchsia-500/40 to-fuchsia-500/60" />
+                    </div>
+                    <Badge className="mt-2 bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
                       🔒 {tierCounts.premium} Premium picks locked
                     </Badge>
                   </div>
@@ -952,7 +985,7 @@ export default function AIPredictions() {
             <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
               <Brain className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary" />
               <h2 className="text-xs md:text-sm font-semibold text-foreground">
-                {day === "today" ? "Daily" : "Tomorrow"} ({regularPredictions.length})
+                {day === "today" ? "Free Daily" : "Tomorrow"} ({regularPredictions.length})
               </h2>
             </div>
 
