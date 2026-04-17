@@ -667,7 +667,7 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5, 
       if (won === true) result = "W";
       else if (won === false) result = "L";
 
-      return { result, goalsFor, goalsAgainst, isHome, opponentId };
+      return { result, goalsFor, goalsAgainst, isHome, opponentId, matchDate: m.fixture?.date };
     });
 
     teamFormCache.set(cacheKey as number, normalized);
