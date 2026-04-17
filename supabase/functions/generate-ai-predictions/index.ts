@@ -2142,24 +2142,54 @@ function calculateDrawProfile(homeForm: FormMatch[], awayForm: FormMatch[]): Dra
 function applyDrawProfile(
   pred: { prediction: string; confidence: number; home_win: number; draw: number; away_win: number },
   profile: DrawProfile,
+  h2hDrawRate: number = 0, // % of H2H matches that ended draw
 ): { confidence: number; factors: string[]; delta: number } {
   const factors: string[] = [];
   let delta = 0;
   const predLower = (pred.prediction || "").toLowerCase();
   const isDrawPick = predLower === "x" || predLower.includes("draw");
 
-  if (profile.bothDrawProne && pred.draw >= 28) {
-    if (isDrawPick) {
+  // Signal 1: Both teams draw-prone (form-based)
+  const formDrawSignal = profile.bothDrawProne && pred.draw >= 28;
+  // Signal 2: H2H is draw-heavy (>= 40% draws across last 5)
+  const h2hDrawSignal = h2hDrawRate >= 40;
+  // Signal 3: Balanced 1X2 race (close home_win vs away_win)
+  const balancedRace = Math.abs(pred.home_win - pred.away_win) <= 10 && pred.draw >= 25;
+
+  // Count how many independent draw signals are firing
+  const signalCount = (formDrawSignal ? 1 : 0) + (h2hDrawSignal ? 1 : 0) + (balancedRace ? 1 : 0);
+
+  if (isDrawPick) {
+    // Reward Draw picks when signals align
+    if (signalCount >= 2) {
+      delta = 4;
+      factors.push(`🤝 Strong draw signal: form ${profile.homeDrawRate}%/${profile.awayDrawRate}%, H2H ${h2hDrawRate}% draws — supports Draw pick`);
+    } else if (signalCount === 1) {
       delta = 2;
-      factors.push(`🤝 Draw specialists: both teams ${profile.homeDrawRate}%/${profile.awayDrawRate}% draw rate — supports Draw pick`);
-    } else if (Math.abs(pred.home_win - pred.away_win) <= 12) {
-      // Close 1X2 race + both draw-prone = win pick is shakier
+      if (formDrawSignal) factors.push(`🤝 Draw specialists: both teams ${profile.homeDrawRate}%/${profile.awayDrawRate}% draw rate — supports Draw pick`);
+      else if (h2hDrawSignal) factors.push(`🤝 H2H draw-heavy: ${h2hDrawRate}% of last meetings ended even — supports Draw pick`);
+      else factors.push(`🤝 Balanced 1X2 race + Draw ${pred.draw}% — supports Draw pick`);
+    }
+  } else {
+    // Win pick is risky if multiple draw signals fire
+    if (signalCount >= 2) {
+      delta = -2;
+      factors.push(`⚠️ Multiple Draw signals (form ${profile.homeDrawRate}%/${profile.awayDrawRate}%, H2H ${h2hDrawRate}%) — win pick risky`);
+    } else if (signalCount === 1 && balancedRace) {
       delta = -1;
-      factors.push(`⚠️ Both teams draw-prone (${profile.homeDrawRate}%/${profile.awayDrawRate}%) — close 1X2 race adds Draw risk`);
+      factors.push(`⚠️ Tight 1X2 race + Draw ${pred.draw}% — win pick less safe`);
     }
   }
 
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
+}
+
+/** Calculate H2H draw rate (% of past meetings that ended in draw). */
+function calculateH2HDrawRate(h2h: H2HMatch[]): number {
+  if (!h2h || h2h.length < 3) return 0;
+  const sample = h2h.slice(0, 5);
+  const draws = sample.filter(m => m.homeGoals === m.awayGoals).length;
+  return Math.round((draws / sample.length) * 100);
 }
 
 // ============ ROTATION RISK ADJUSTER (LIVE — Option 11) ============
@@ -2910,6 +2940,7 @@ function applyStarAbsenceAdjustment(
   profile: StarAbsenceProfile,
   homeTeamName: string,
   awayTeamName: string,
+  gkAbsence?: { homeGKMissing: boolean; awayGKMissing: boolean },
 ): { confidence: number; factors: string[]; delta: number } {
   const factors: string[] = [];
   let delta = 0;
@@ -2919,23 +2950,35 @@ function applyStarAbsenceAdjustment(
   const homeMissing = [...profile.homeMissingTopScorers, ...profile.homeMissingTopAssists];
   const awayMissing = [...profile.awayMissingTopScorers, ...profile.awayMissingTopAssists];
 
+  // Pick team missing star → larger penalty (2+ stars = severe)
   if (isHomePick && homeMissing.length > 0) {
-    delta -= homeMissing.length >= 2 ? 4 : 3;
-    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")}`);
+    delta -= homeMissing.length >= 2 ? 5 : 3;
+    factors.push(`⚠️ ${homeTeamName} missing key player(s): ${homeMissing.slice(0, 2).join(", ")}`);
   } else if (isAwayPick && awayMissing.length > 0) {
-    delta -= awayMissing.length >= 2 ? 4 : 3;
-    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")}`);
+    delta -= awayMissing.length >= 2 ? 5 : 3;
+    factors.push(`⚠️ ${awayTeamName} missing key player(s): ${awayMissing.slice(0, 2).join(", ")}`);
   }
   // Opponent missing star → small boost
   if (isHomePick && awayMissing.length > 0) {
-    delta += 1;
-    factors.push(`⭐ ${awayTeamName} missing star: ${awayMissing.slice(0, 2).join(", ")} — supports ${homeTeamName}`);
+    delta += awayMissing.length >= 2 ? 2 : 1;
+    factors.push(`✅ ${awayTeamName} missing key player(s): ${awayMissing.slice(0, 2).join(", ")} — supports ${homeTeamName}`);
   } else if (isAwayPick && homeMissing.length > 0) {
-    delta += 1;
-    factors.push(`⭐ ${homeTeamName} missing star: ${homeMissing.slice(0, 2).join(", ")} — supports ${awayTeamName}`);
+    delta += homeMissing.length >= 2 ? 2 : 1;
+    factors.push(`✅ ${homeTeamName} missing key player(s): ${homeMissing.slice(0, 2).join(", ")} — supports ${awayTeamName}`);
   }
 
-  delta = Math.max(-5, Math.min(3, delta));
+  // Goalkeeper absence — major impact (boost Over 2.5 implicitly via penalty)
+  if (gkAbsence) {
+    if (isHomePick && gkAbsence.homeGKMissing) {
+      delta -= 2;
+      factors.push(`🧤 ${homeTeamName} starting GK missing — defensive risk`);
+    } else if (isAwayPick && gkAbsence.awayGKMissing) {
+      delta -= 2;
+      factors.push(`🧤 ${awayTeamName} starting GK missing — defensive risk`);
+    }
+  }
+
+  delta = Math.max(-7, Math.min(4, delta));
   return { confidence: clamp(pred.confidence + delta, 40, 100), factors, delta };
 }
 
@@ -6066,7 +6109,8 @@ async function processBatch(
       // ===== DRAW SPECIALIST (LIVE — Option 12) =====
       try {
         const drawProfile = calculateDrawProfile(homeForm, awayForm);
-        const drawAdj = applyDrawProfile(newPrediction, drawProfile);
+        const h2hDrawRate = calculateH2HDrawRate(h2h);
+        const drawAdj = applyDrawProfile(newPrediction, drawProfile, h2hDrawRate);
         if (drawAdj.delta !== 0) {
           const beforeConf = newPrediction.confidence;
           newPrediction.confidence = drawAdj.confidence;
@@ -6245,7 +6289,13 @@ async function processBatch(
           const starProfile = calculateStarAbsenceProfile(
             topPlayers, homeTeamId, awayTeamId, missingHome, missingAway
           );
-          const starAdj = applyStarAbsenceAdjustment(newPrediction, starProfile, homeTeamName, awayTeamName);
+          // Detect GK absence by name match against missing players
+          const normName = (n: string) => String(n || "").toLowerCase().trim();
+          const homeMissingNames = (missingHome || []).map((p: any) => normName(p?.name || p?.player_name));
+          const awayMissingNames = (missingAway || []).map((p: any) => normName(p?.name || p?.player_name));
+          const homeGKMissing = !!(homeGK?.name && homeMissingNames.some(n => n.includes(normName(homeGK.name)) || normName(homeGK.name).includes(n)));
+          const awayGKMissing = !!(awayGK?.name && awayMissingNames.some(n => n.includes(normName(awayGK.name)) || normName(awayGK.name).includes(n)));
+          const starAdj = applyStarAbsenceAdjustment(newPrediction, starProfile, homeTeamName, awayTeamName, { homeGKMissing, awayGKMissing });
           if (starAdj.delta !== 0) {
             const beforeConf = newPrediction.confidence;
             newPrediction.confidence = starAdj.confidence;
