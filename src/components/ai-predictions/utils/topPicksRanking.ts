@@ -102,7 +102,18 @@ export function selectTopPicks(predictions: AIPrediction[], limit: number): Rank
   const pro = ranked.filter(
     (r) => (r.prediction.confidence ?? 0) >= 65 && (r.prediction.confidence ?? 0) < 78,
   );
+  const rest = ranked.filter((r) => (r.prediction.confidence ?? 0) < 65);
 
-  // Premium first, then Pro fallback
-  return [...premium, ...pro].slice(0, limit);
+  // Premium first, then Pro, then best of the rest — always fill up to `limit` if possible
+  const ordered = [...premium, ...pro, ...rest];
+  // Deduplicate by id (safety) and slice
+  const seen = new Set<string>();
+  const unique: RankedPick[] = [];
+  for (const r of ordered) {
+    if (seen.has(r.prediction.id)) continue;
+    seen.add(r.prediction.id);
+    unique.push(r);
+    if (unique.length >= limit) break;
+  }
+  return unique;
 }
