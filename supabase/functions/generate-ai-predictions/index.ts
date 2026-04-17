@@ -1935,9 +1935,24 @@ function calculatePrediction(
   const homeVenueForm = calculateVenueFormScore(homeForm, true);
   const awayVenueForm = calculateVenueFormScore(awayForm, false);
   // Blend: 55% venue-specific (was 45%) + 25% opponent-weighted overall (was 30%) + 20% goals quality (was 25%)
-  const homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.25 + homeFormQuality * 0.20);
-  const awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.25 + awayFormQuality * 0.20);
+  let homeFormScore = Math.round(homeVenueForm * 0.55 + homeFormAll * 0.25 + homeFormQuality * 0.20);
+  let awayFormScore = Math.round(awayVenueForm * 0.55 + awayFormAll * 0.25 + awayFormQuality * 0.20);
 
+  // === MOTIVATION ADJUSTMENT (LIVE) — apply per-team motivation deltas to form score ===
+  let motivationFactors: string[] = [];
+  if (standings && standings.length > 0) {
+    const motCtx = getMatchContext(standings, homeTeamId, awayTeamId, leagueId, leagueName, fixtureRound);
+    if (motCtx.homeMotivation !== 0 || motCtx.awayMotivation !== 0) {
+      homeFormScore = clamp(homeFormScore + motCtx.homeMotivation, 0, 100);
+      awayFormScore = clamp(awayFormScore + motCtx.awayMotivation, 0, 100);
+    }
+    motivationFactors = motCtx.factors;
+  }
+
+  // === FATIGUE ADJUSTMENT (LIVE) — penalize short rest, reward fresh teams ===
+  const fatigue = calculateFatigueAdjustment(fixtureDate, homeForm, awayForm);
+  if (fatigue.homeDelta !== 0) homeFormScore = clamp(homeFormScore + fatigue.homeDelta, 0, 100);
+  if (fatigue.awayDelta !== 0) awayFormScore = clamp(awayFormScore + fatigue.awayDelta, 0, 100);
 
   // === QUALITY (15%) ===
   const homeQualityScore = calculateQualityScore(homeStats);
