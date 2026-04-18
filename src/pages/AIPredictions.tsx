@@ -114,12 +114,16 @@ export default function AIPredictions() {
   // Tier assignment: based on the MAX of confidence and the best market probability
   // (the % actually shown on the card). This ensures a card displaying e.g. "78% BTTS No"
   // lands in Premium, not Pro — matching what the user sees.
-  // Tier is determined SOLELY by AI confidence:
+  // Tier is determined by the STRONGEST market (Best Pick probability),
+  // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
+  // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
   //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
     for (const p of predictions) {
-      map.set(p.id!, getTierFromConfidence(p.confidence ?? 0));
+      const bestPickProb = getBestMarketProbability(p);
+      const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb);
+      map.set(p.id!, getTierFromConfidence(effectiveStrength));
     }
     return map;
   }, [predictions]);
