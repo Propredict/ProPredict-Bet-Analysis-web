@@ -770,7 +770,10 @@ export default function AIPredictions() {
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
                         .slice(0, 3)
-                        .map((prediction) => (
+                        .map((prediction) => {
+                          // Use the same probability used for tier assignment (not raw confidence)
+                          const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
+                          return (
                           <Card key={`teaser-pro-${prediction.id}`} className="bg-[#0a1628] border-amber-500/20 overflow-hidden rounded relative">
                             <CardContent className="p-0">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
@@ -786,19 +789,17 @@ export default function AIPredictions() {
                                 <div className="flex items-center gap-2">
                                   <span className={cn(
                                     "text-xl font-extrabold",
-                                    (prediction.confidence ?? 0) >= 80 ? "text-green-400" : (prediction.confidence ?? 0) >= 70 ? "text-amber-400" : "text-orange-400"
+                                    displayedPct >= 80 ? "text-green-400" : displayedPct >= 70 ? "text-amber-400" : "text-orange-400"
                                   )}>
-                                    {prediction.confidence ?? 70}%
+                                    {displayedPct}%
                                   </span>
                                   <Badge className={cn(
                                     "text-[8px] px-1.5 py-0.5 rounded",
-                                    (prediction.confidence ?? 0) >= 80 
+                                    displayedPct >= 80 
                                       ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                      : (prediction.confidence ?? 0) >= 65
-                                      ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                                      : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                      : "bg-amber-500/20 text-amber-400 border-amber-500/30"
                                   )}>
-                                    {(prediction.confidence ?? 0) >= 80 ? "🔥 HIGH" : (prediction.confidence ?? 0) >= 65 ? "⚖️ MEDIUM" : "⚠️ RISKY"}
+                                    {displayedPct >= 80 ? "🔥 HIGH" : "⚖️ MEDIUM"}
                                   </Badge>
                                 </div>
                                 <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
@@ -810,9 +811,9 @@ export default function AIPredictions() {
                                   <div
                                     className={cn(
                                       "h-full rounded-full",
-                                      (prediction.confidence ?? 0) >= 80 ? "bg-green-500" : (prediction.confidence ?? 0) >= 70 ? "bg-amber-500" : "bg-orange-500"
+                                      displayedPct >= 80 ? "bg-green-500" : "bg-amber-500"
                                     )}
-                                    style={{ width: `${Math.max(10, prediction.confidence ?? 60)}%` }}
+                                    style={{ width: `${Math.max(10, displayedPct)}%` }}
                                   />
                                 </div>
                                 <Button
