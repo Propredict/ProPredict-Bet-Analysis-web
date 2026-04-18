@@ -1013,7 +1013,7 @@ export default function AIPredictions() {
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
                           <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
-                            Pro Picks ({visiblePro.length})
+                            Pro Picks ({tierCounts.pro})
                           </h2>
                         </div>
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
