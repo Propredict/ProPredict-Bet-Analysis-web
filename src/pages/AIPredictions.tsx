@@ -992,7 +992,7 @@ export default function AIPredictions() {
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-fuchsia-500/15 to-violet-500/15 border border-fuchsia-500/30 shadow-sm shadow-fuchsia-500/10">
                           <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-fuchsia-400" />
                           <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent whitespace-nowrap">
-                            Premium Picks ({visiblePremium.length})
+                            Premium Picks ({tierCounts.premium})
                           </h2>
                         </div>
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-fuchsia-500/40 to-fuchsia-500/60" />
