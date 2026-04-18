@@ -885,7 +885,10 @@ export default function AIPredictions() {
                     {(isAndroidApp
                       ? featuredPredictions.filter(p => getPredictionTier(p) === "premium")
                       : featuredPredictions.filter(p => getPredictionTier(p) === "premium").slice(0, 3)
-                    ).map((prediction) => (
+                    ).map((prediction) => {
+                      // Use the same probability used for tier assignment (≥78% for Premium)
+                      const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
+                      return (
                           <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">
                             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="p-0 relative">
@@ -902,15 +905,15 @@ export default function AIPredictions() {
                                 <div className="flex items-center gap-2">
                                   <span className={cn(
                                     "text-xl font-extrabold",
-                                    (prediction.confidence ?? 0) >= 80 ? "text-green-400" : "text-amber-400"
+                                    displayedPct >= 85 ? "text-green-400" : "text-amber-400"
                                   )}>
-                                    {prediction.confidence ?? 80}%
+                                    {displayedPct}%
                                   </span>
                                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0.5 rounded">
                                     🔥 HIGH CONFIDENCE
                                   </Badge>
                                 </div>
-                                {(prediction.confidence ?? 0) >= 80 && (
+                                {displayedPct >= 85 && (
                                   <div className="flex items-center gap-1">
                                     <Sparkles className="w-3 h-3 text-fuchsia-400" />
                                     <span className="text-[9px] font-bold text-fuchsia-400">💎 AI Edge Detected</span>
@@ -925,7 +928,7 @@ export default function AIPredictions() {
                                   🔥 Top pick today
                                 </Badge>
                                 <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(217,70,239,0.3)]">
-                                  <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 shadow-[0_0_8px_rgba(217,70,239,0.5)]" style={{ width: `${Math.max(10, prediction.confidence ?? 80)}%` }} />
+                                  <div className="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 shadow-[0_0_8px_rgba(217,70,239,0.5)]" style={{ width: `${Math.max(10, displayedPct)}%` }} />
                                 </div>
                                 <Button
                                   onClick={() => navigate("/get-premium")}
@@ -937,7 +940,8 @@ export default function AIPredictions() {
                               </div>
                             </CardContent>
                           </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                   {!isAndroidApp && tierCounts.premium > 3 && (
                     <p className="text-center text-[10px] text-fuchsia-400/70 mt-2">
