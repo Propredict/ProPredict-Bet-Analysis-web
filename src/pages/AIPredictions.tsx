@@ -834,7 +834,7 @@ export default function AIPredictions() {
                               </div>
                             </CardContent>
                           </Card>
-                        ))
+                        );})
                     )}
                   </div>
                   {/* Web only: show "+X more" and Premium hint */}
