@@ -958,37 +958,75 @@ export default function AIPredictions() {
             </div>
           )}
 
-          {/* Featured — ONLY for paying users (Pro/Premium/Admin) */}
-          {(isPremiumUser || isProUser || isAdmin) && featuredPredictions.length > 0 && (
-            <div>
-              <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2">
-                <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-warning fill-warning" />
-                <h2 className="text-xs md:text-sm font-semibold text-foreground">Featured</h2>
-                <span className="text-[9px] md:text-[10px] text-muted-foreground ml-auto">Updated now</span>
+          {/* Featured — ONLY for paying users (Pro/Premium/Admin) — split into Premium & Pro sections with branded headers */}
+          {(isPremiumUser || isProUser || isAdmin) && featuredPredictions.length > 0 && (() => {
+            const visiblePremium = visibleFeatured.filter((p) => getPredictionTier(p) === "premium");
+            const visiblePro = visibleFeatured.filter((p) => getPredictionTier(p) === "pro");
+
+            const renderCard = (prediction: typeof predictions[0]) => (
+              <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                <AIPredictionCard
+                  overrideTier={getPredictionTier(prediction)}
+                  prediction={prediction}
+                  isAdmin={isAdmin}
+                  isPremiumUser={isPremiumUser}
+                  isProUser={isProUser}
+                  isFavorite={isFavorite(prediction.match_id)}
+                  isSavingFavorite={isSaving(prediction.match_id)}
+                  onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                  onGoPremium={() => navigate("/get-premium")}
+                  onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                  isUnlocking={unlockingId === prediction.id}
+                />
               </div>
-              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                {visibleFeatured.map((prediction, idx) => {
-                  return (
-                    <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
-                      <AIPredictionCard
-                        overrideTier={getPredictionTier(prediction)}
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.id}
-                      />
+            );
+
+            return (
+              <div className="space-y-2">
+                {/* PREMIUM PICKS — fuchsia hero header */}
+                {visiblePremium.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+                  <div>
+                    <div className="flex flex-col items-center text-center my-5 md:my-7">
+                      <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-fuchsia-500/40 to-fuchsia-500/60" />
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-fuchsia-500/15 to-violet-500/15 border border-fuchsia-500/30 shadow-sm shadow-fuchsia-500/10">
+                          <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-fuchsia-400" />
+                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent whitespace-nowrap">
+                            Premium Picks ({visiblePremium.length})
+                          </h2>
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-fuchsia-500/40 to-fuchsia-500/60" />
+                      </div>
                     </div>
-                  );
-                })}
+                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                      {visiblePremium.map(renderCard)}
+                    </div>
+                  </div>
+                )}
+
+                {/* PRO PICKS — amber hero header */}
+                {visiblePro.length > 0 && (tierFilter === "all" || tierFilter === "pro") && (
+                  <div>
+                    <div className="flex flex-col items-center text-center my-5 md:my-7">
+                      <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
+                          <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
+                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                            Pro Picks ({visiblePro.length})
+                          </h2>
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                      {visiblePro.map(renderCard)}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Free Predictions Section - hidden on Pro/Premium tabs */}
           {(tierFilter === "all" || tierFilter === "free") && (
