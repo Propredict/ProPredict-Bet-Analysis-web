@@ -199,8 +199,48 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* ===== BEST PICK — HERO SECTION ===== */}
-      {hasAccess ? (
+      {/* ===== AI INSIGHT — for Big Match low-confidence (replaces Best Pick) ===== */}
+      {hasAccess && aiInsight ? (
+        <div className="rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 md:p-4 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Brain className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[10px] md:text-xs font-semibold text-amber-400 uppercase tracking-wider">
+              AI Insight
+            </span>
+            <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+              <Flame className="w-2.5 h-2.5 fill-current" />
+              BIG MATCH
+            </Badge>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="text-sm md:text-base font-bold text-foreground">{aiInsight.headline}</h4>
+              <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                {aiInsight.body}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 pt-1">
+            {[
+              { label: prediction.home_team, pct: allProbs.home_win },
+              { label: "Draw", pct: allProbs.draw },
+              { label: prediction.away_team, pct: allProbs.away_win },
+            ].map((item, i) => (
+              <div key={i} className="text-center py-1.5 rounded-md border border-border/30 bg-card/20">
+                <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
+                <div className="text-xs md:text-sm font-bold text-foreground/80">{item.pct}%</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-[9px] md:text-[10px] text-muted-foreground/70 italic pt-0.5">
+            ⚠ AI confidence below threshold for a precise pick — analysis provided instead.
+          </p>
+        </div>
+      ) : hasAccess ? (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center gap-1.5">
