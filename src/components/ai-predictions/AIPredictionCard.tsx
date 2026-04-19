@@ -165,6 +165,15 @@ const AIPredictionCardInner = ({
                 PRO
               </Badge>
             )}
+            {isDailyTier && isBigMatch(prediction.league, prediction.home_team, prediction.away_team) && (
+              <Badge
+                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                title="Top league fixture — high-profile matchup"
+              >
+                <Flame className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
+                BIG MATCH
+              </Badge>
+            )}
           </div>
         </div>
 
