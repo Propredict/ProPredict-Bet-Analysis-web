@@ -5,7 +5,50 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2 } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame } from "lucide-react";
+
+// Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
+const BIG_MATCH_LEAGUES = [
+  "Premier League",
+  "La Liga",
+  "Primera Division",
+  "Serie A",
+  "Bundesliga",
+  "Ligue 1",
+  "UEFA Champions League",
+  "Champions League",
+  "UEFA Europa League",
+  "Europa League",
+  "UEFA Europa Conference League",
+  "Conference League",
+  "FIFA World Cup",
+  "European Championship",
+  "Euro Championship",
+  "Copa America",
+  "Copa Libertadores",
+];
+
+const BIG_MATCH_TEAMS_HINT = [
+  "arsenal", "manchester", "liverpool", "chelsea", "tottenham", "newcastle",
+  "real madrid", "barcelona", "atletico madrid",
+  "juventus", "inter", "milan", "napoli", "roma",
+  "bayern", "dortmund", "leverkusen",
+  "psg", "paris saint",
+];
+
+function isBigMatch(league: string | null, home: string, away: string): boolean {
+  if (!league) return false;
+  const leagueLower = league.toLowerCase();
+  const inTopLeague = BIG_MATCH_LEAGUES.some((l) => leagueLower.includes(l.toLowerCase()));
+  if (!inTopLeague) return false;
+  // For "Premier League" name collisions (many countries have one), require a known elite team
+  if (leagueLower === "premier league") {
+    const h = home.toLowerCase();
+    const a = away.toLowerCase();
+    return BIG_MATCH_TEAMS_HINT.some((t) => h.includes(t) || a.includes(t));
+  }
+  return true;
+}
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
@@ -120,6 +163,15 @@ const AIPredictionCardInner = ({
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PRO
+              </Badge>
+            )}
+            {isDailyTier && isBigMatch(prediction.league, prediction.home_team, prediction.away_team) && (
+              <Badge
+                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                title="Top league fixture — high-profile matchup"
+              >
+                <Flame className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
+                BIG MATCH
               </Badge>
             )}
           </div>
