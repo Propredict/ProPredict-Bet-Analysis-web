@@ -188,6 +188,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
+  const allProbs = getAllRawProbs(prediction);
+  const isLowConfBigMatch = pick.conf < 55 && isBigMatchInsight(prediction.league, prediction.home_team, prediction.away_team);
+  const aiInsight = isLowConfBigMatch ? buildAIInsight(prediction, allProbs) : null;
   const topScores = displayTier === "premium"
     ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
