@@ -5349,6 +5349,31 @@ async function markPredictionLocked(
     const odds = await fetchOdds(opts.fixtureId, opts.apiKey);
 
     if (odds) {
+      // Detect TOP LEAGUE big match for confidence boost via market reliability
+      const { data: predRow } = await supabase
+        .from("ai_predictions")
+        .select("league, home_team, away_team")
+        .eq("id", predictionId)
+        .single();
+
+      const leagueLower = (predRow?.league || "").toLowerCase();
+      const TOP_LEAGUES = [
+        "uefa champions league", "champions league", "uefa europa league", "europa league",
+        "uefa europa conference league", "conference league",
+        "la liga", "primera division", "serie a", "bundesliga", "ligue 1",
+      ];
+      const TOP_TEAMS = [
+        "arsenal", "manchester", "liverpool", "chelsea", "tottenham",
+        "real madrid", "barcelona", "atletico madrid",
+        "juventus", "inter", "milan", "napoli", "roma",
+        "bayern", "dortmund", "leverkusen", "psg", "paris saint",
+      ];
+      const homeL = (predRow?.home_team || "").toLowerCase();
+      const awayL = (predRow?.away_team || "").toLowerCase();
+      const isTopLeague = TOP_LEAGUES.some(l => leagueLower.includes(l));
+      const isTopTeamMatch = TOP_TEAMS.some(t => homeL.includes(t) || awayL.includes(t));
+      const isBigMatch = isTopLeague || (leagueLower === "premier league" && isTopTeamMatch);
+
       fallbackHomeWin = odds.homeProb;
       fallbackDraw = odds.drawProb;
       fallbackAwayWin = odds.awayProb;
@@ -5358,8 +5383,14 @@ async function markPredictionLocked(
       else if (odds.awayProb >= odds.homeProb && odds.awayProb >= odds.drawProb) fallbackPrediction = "2";
       else fallbackPrediction = "X";
 
-      fallbackConfidence = Math.max(50, Math.max(odds.homeProb, odds.drawProb, odds.awayProb));
-      fallbackAnalysis = `Limited team-form data. Fallback to bookmaker 1X2 odds (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). ${reason}`;
+      const baseConfidence = Math.max(odds.homeProb, odds.drawProb, odds.awayProb);
+      // Big match: market data for top leagues is highly reliable, +7% confidence boost
+      const leagueBoost = isBigMatch ? 7 : 0;
+      fallbackConfidence = Math.max(50, Math.min(85, baseConfidence + leagueBoost));
+
+      fallbackAnalysis = isBigMatch
+        ? `Top-tier matchup. Bookmaker consensus implies ${odds.homeProb}/${odds.drawProb}/${odds.awayProb}% (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). Sharp money leans ${fallbackPrediction === "1" ? "home" : fallbackPrediction === "2" ? "away" : "draw"}. Form data limited — relying on market intelligence.`
+        : `Limited team-form data. Fallback to bookmaker 1X2 odds (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). ${reason}`;
 
       // Generate a predicted score from implied odds
       const impliedHomeXg = clamp(odds.homeProb / 35, 0.4, 2.5);
