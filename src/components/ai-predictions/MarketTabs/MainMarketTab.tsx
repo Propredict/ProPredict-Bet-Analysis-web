@@ -9,7 +9,59 @@ import {
   getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck, Brain, Info } from "lucide-react";
+
+// Big Match leagues — when AI confidence is too low for a precise pick, show AI Insight instead
+const BIG_MATCH_LEAGUES_INSIGHT = [
+  "premier league", "la liga", "primera division", "serie a", "bundesliga", "ligue 1",
+  "uefa champions league", "champions league", "uefa europa league", "europa league",
+  "uefa europa conference league", "conference league",
+];
+const BIG_MATCH_TEAMS_INSIGHT = [
+  "arsenal", "manchester", "liverpool", "chelsea", "tottenham", "newcastle",
+  "real madrid", "barcelona", "atletico madrid",
+  "juventus", "inter", "milan", "napoli", "roma",
+  "bayern", "dortmund", "leverkusen", "psg", "paris saint",
+];
+
+function isBigMatchInsight(league: string | null, home: string, away: string): boolean {
+  if (!league) return false;
+  const l = league.toLowerCase();
+  const inTop = BIG_MATCH_LEAGUES_INSIGHT.some(x => l.includes(x));
+  if (!inTop) return false;
+  if (l === "premier league") {
+    const h = home.toLowerCase(), a = away.toLowerCase();
+    return BIG_MATCH_TEAMS_INSIGHT.some(t => h.includes(t) || a.includes(t));
+  }
+  return true;
+}
+
+/** Build a smart AI Insight when confidence is low for a Big Match. */
+function buildAIInsight(prediction: AIPrediction, probs: Record<string, number>): {
+  headline: string;
+  body: string;
+} {
+  const hw = probs.home_win, aw = probs.away_win, d = probs.draw;
+  const goalLean = probs.over25 >= 55 ? "high-scoring" : probs.under25 >= 55 ? "low-scoring" : "balanced-tempo";
+  const bttsLean = probs.btts_yes >= 55 ? "both teams likely to score" : probs.btts_no >= 55 ? "a clean sheet is plausible" : "BTTS is uncertain";
+
+  let headline = "Balanced Matchup";
+  let body = "";
+
+  const diff = Math.abs(hw - aw);
+  if (diff <= 8) {
+    headline = "Tactical Battle Expected";
+    body = `${prediction.home_team} (${hw}%) and ${prediction.away_team} (${aw}%) are evenly matched with a ${d}% draw probability. Model expects a ${goalLean} game where ${bttsLean}. Too close for a confident 1X2 pick — consider Double Chance or goals markets.`;
+  } else if (hw > aw) {
+    headline = `${prediction.home_team} Slight Edge`;
+    body = `${prediction.home_team} holds a marginal advantage (${hw}% vs ${aw}%), but the gap isn't decisive enough for high confidence. Draw probability is ${d}%. Expect a ${goalLean} encounter where ${bttsLean}.`;
+  } else {
+    headline = `${prediction.away_team} Slight Edge`;
+    body = `${prediction.away_team} carries a marginal edge (${aw}% vs ${hw}%), with a ${d}% draw chance. Expect a ${goalLean} encounter where ${bttsLean}. Markets remain too tight for a confident main pick.`;
+  }
+
+  return { headline, body };
+}
 
 /**
  * Parse structured tags from key_factors.
