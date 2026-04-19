@@ -9,7 +9,59 @@ import {
   getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck, Brain, Info } from "lucide-react";
+
+// Big Match leagues — when AI confidence is too low for a precise pick, show AI Insight instead
+const BIG_MATCH_LEAGUES_INSIGHT = [
+  "premier league", "la liga", "primera division", "serie a", "bundesliga", "ligue 1",
+  "uefa champions league", "champions league", "uefa europa league", "europa league",
+  "uefa europa conference league", "conference league",
+];
+const BIG_MATCH_TEAMS_INSIGHT = [
+  "arsenal", "manchester", "liverpool", "chelsea", "tottenham", "newcastle",
+  "real madrid", "barcelona", "atletico madrid",
+  "juventus", "inter", "milan", "napoli", "roma",
+  "bayern", "dortmund", "leverkusen", "psg", "paris saint",
+];
+
+function isBigMatchInsight(league: string | null, home: string, away: string): boolean {
+  if (!league) return false;
+  const l = league.toLowerCase();
+  const inTop = BIG_MATCH_LEAGUES_INSIGHT.some(x => l.includes(x));
+  if (!inTop) return false;
+  if (l === "premier league") {
+    const h = home.toLowerCase(), a = away.toLowerCase();
+    return BIG_MATCH_TEAMS_INSIGHT.some(t => h.includes(t) || a.includes(t));
+  }
+  return true;
+}
+
+/** Build a smart AI Insight when confidence is low for a Big Match. */
+function buildAIInsight(prediction: AIPrediction, probs: Record<string, number>): {
+  headline: string;
+  body: string;
+} {
+  const hw = probs.home_win, aw = probs.away_win, d = probs.draw;
+  const goalLean = probs.over25 >= 55 ? "high-scoring" : probs.under25 >= 55 ? "low-scoring" : "balanced-tempo";
+  const bttsLean = probs.btts_yes >= 55 ? "both teams likely to score" : probs.btts_no >= 55 ? "a clean sheet is plausible" : "BTTS is uncertain";
+
+  let headline = "Balanced Matchup";
+  let body = "";
+
+  const diff = Math.abs(hw - aw);
+  if (diff <= 8) {
+    headline = "Tactical Battle Expected";
+    body = `${prediction.home_team} (${hw}%) and ${prediction.away_team} (${aw}%) are evenly matched with a ${d}% draw probability. Model expects a ${goalLean} game where ${bttsLean}. Too close for a confident 1X2 pick — consider Double Chance or goals markets.`;
+  } else if (hw > aw) {
+    headline = `${prediction.home_team} Slight Edge`;
+    body = `${prediction.home_team} holds a marginal advantage (${hw}% vs ${aw}%), but the gap isn't decisive enough for high confidence. Draw probability is ${d}%. Expect a ${goalLean} encounter where ${bttsLean}.`;
+  } else {
+    headline = `${prediction.away_team} Slight Edge`;
+    body = `${prediction.away_team} carries a marginal edge (${aw}% vs ${hw}%), with a ${d}% draw chance. Expect a ${goalLean} encounter where ${bttsLean}. Markets remain too tight for a confident main pick.`;
+  }
+
+  return { headline, body };
+}
 
 /**
  * Parse structured tags from key_factors.
@@ -136,6 +188,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
+  const allProbs = getAllRawProbs(prediction);
+  const isLowConfBigMatch = pick.conf < 55 && isBigMatchInsight(prediction.league, prediction.home_team, prediction.away_team);
+  const aiInsight = isLowConfBigMatch ? buildAIInsight(prediction, allProbs) : null;
   const topScores = displayTier === "premium"
     ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
@@ -144,8 +199,48 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* ===== BEST PICK — HERO SECTION ===== */}
-      {hasAccess ? (
+      {/* ===== AI INSIGHT — for Big Match low-confidence (replaces Best Pick) ===== */}
+      {hasAccess && aiInsight ? (
+        <div className="rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 md:p-4 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Brain className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[10px] md:text-xs font-semibold text-amber-400 uppercase tracking-wider">
+              AI Insight
+            </span>
+            <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+              <Flame className="w-2.5 h-2.5 fill-current" />
+              BIG MATCH
+            </Badge>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="text-sm md:text-base font-bold text-foreground">{aiInsight.headline}</h4>
+              <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                {aiInsight.body}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 pt-1">
+            {[
+              { label: prediction.home_team, pct: allProbs.home_win },
+              { label: "Draw", pct: allProbs.draw },
+              { label: prediction.away_team, pct: allProbs.away_win },
+            ].map((item, i) => (
+              <div key={i} className="text-center py-1.5 rounded-md border border-border/30 bg-card/20">
+                <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
+                <div className="text-xs md:text-sm font-bold text-foreground/80">{item.pct}%</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-[9px] md:text-[10px] text-muted-foreground/70 italic pt-0.5">
+            ⚠ AI confidence below threshold for a precise pick — analysis provided instead.
+          </p>
+        </div>
+      ) : hasAccess ? (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center gap-1.5">
