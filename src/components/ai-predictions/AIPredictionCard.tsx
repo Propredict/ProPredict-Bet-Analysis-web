@@ -5,7 +5,50 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2 } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame } from "lucide-react";
+
+// Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
+const BIG_MATCH_LEAGUES = [
+  "Premier League",
+  "La Liga",
+  "Primera Division",
+  "Serie A",
+  "Bundesliga",
+  "Ligue 1",
+  "UEFA Champions League",
+  "Champions League",
+  "UEFA Europa League",
+  "Europa League",
+  "UEFA Europa Conference League",
+  "Conference League",
+  "FIFA World Cup",
+  "European Championship",
+  "Euro Championship",
+  "Copa America",
+  "Copa Libertadores",
+];
+
+const BIG_MATCH_TEAMS_HINT = [
+  "arsenal", "manchester", "liverpool", "chelsea", "tottenham", "newcastle",
+  "real madrid", "barcelona", "atletico madrid",
+  "juventus", "inter", "milan", "napoli", "roma",
+  "bayern", "dortmund", "leverkusen",
+  "psg", "paris saint",
+];
+
+function isBigMatch(league: string | null, home: string, away: string): boolean {
+  if (!league) return false;
+  const leagueLower = league.toLowerCase();
+  const inTopLeague = BIG_MATCH_LEAGUES.some((l) => leagueLower.includes(l.toLowerCase()));
+  if (!inTopLeague) return false;
+  // For "Premier League" name collisions (many countries have one), require a known elite team
+  if (leagueLower === "premier league") {
+    const h = home.toLowerCase();
+    const a = away.toLowerCase();
+    return BIG_MATCH_TEAMS_HINT.some((t) => h.includes(t) || a.includes(t));
+  }
+  return true;
+}
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
