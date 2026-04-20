@@ -131,39 +131,73 @@ function decideStep2(
     };
   }
 
-  // === RULE 2: GOALS markets ===
-  if (totalGoals >= 2.7) {
-    const conf = Math.min(80, 62 + Math.round((totalGoals - 2.7) * 10));
+  // === RULE 2: GOALS markets — diversified ladder ===
+  // Over 3.5 (very high-scoring profile)
+  if (totalGoals >= 3.4) {
+    const conf = Math.min(82, 64 + Math.round((totalGoals - 3.4) * 10));
+    const sh = Math.max(1, Math.round(expectedHome));
+    const sa = Math.max(1, Math.round(expectedAway));
+    return {
+      market: "Over 3.5",
+      predicted_score: `${sh}-${sa}`,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 3.4`,
+      baseConfidence: conf,
+    };
+  }
+  // Over 2.5 (clear over signal)
+  if (totalGoals >= 2.5) {
+    const conf = Math.min(80, 62 + Math.round((totalGoals - 2.5) * 12));
     return {
       market: "Over 2.5",
       predicted_score: score,
       expectedHome, expectedAway, totalGoals,
-      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 2.7`,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 2.5`,
       baseConfidence: conf,
     };
   }
-  if (totalGoals <= 2.2) {
-    const conf = Math.min(80, 62 + Math.round((2.2 - totalGoals) * 10));
-    return {
-      market: "Under 2.5",
-      predicted_score: score,
-      expectedHome, expectedAway, totalGoals,
-      reason: `Total expected goals ${totalGoals.toFixed(2)} ≤ 2.2`,
-      baseConfidence: conf,
-    };
-  }
-
-  // === RULE 3: BTTS ===
-  if (expectedHome >= 1.2 && expectedAway >= 1.0) {
+  // BTTS YES — both attacks ≥ 1.0 (priority over Under to balance markets)
+  if (expectedHome >= 1.0 && expectedAway >= 1.0 && totalGoals >= 2.1) {
+    const conf = 65 + Math.round(Math.min(expectedHome, expectedAway) * 4);
     return {
       market: "BTTS Yes",
-      predicted_score: score,
+      predicted_score: `${Math.max(1, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
       expectedHome, expectedAway, totalGoals,
-      reason: `Both teams expected to score (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
-      baseConfidence: 65,
+      reason: `Both attacks expected to score (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
+      baseConfidence: conf,
     };
   }
-  if (expectedHome < 1.0 || expectedAway < 0.8) {
+  // Over 1.5 — moderate goals (replaces a lot of weak Under spam)
+  if (totalGoals >= 1.9) {
+    const conf = Math.min(74, 60 + Math.round((totalGoals - 1.9) * 14));
+    return {
+      market: "Over 1.5",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 1.9`,
+      baseConfidence: conf,
+    };
+  }
+  // Under 2.5 — only TRUE defensive games (totalGoals ≤ 1.8)
+  if (totalGoals <= 1.8) {
+    const conf = Math.min(78, 62 + Math.round((1.8 - totalGoals) * 14));
+    // Variable score by xG diff — not always 1-0
+    const d = expectedHome - expectedAway;
+    let underScore = "1-1";
+    if (totalGoals < 1.0) underScore = "0-0";
+    else if (d > 0.3) underScore = "1-0";
+    else if (d < -0.3) underScore = "0-1";
+    else underScore = totalGoals < 1.5 ? "0-0" : "1-1";
+    return {
+      market: "Under 2.5",
+      predicted_score: underScore,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≤ 1.8`,
+      baseConfidence: conf,
+    };
+  }
+  // BTTS NO — one side clearly weak
+  if (expectedHome < 0.9 || expectedAway < 0.7) {
     return {
       market: "BTTS No",
       predicted_score: score,
@@ -5677,7 +5711,9 @@ async function assignTiers(
   //   2. BTTS (when both teams scoring)
   //   3. Double Chance (fallback only)
   // Quality > diversity → never force-include weak picks.
-  const MAX_UNDER_PER_DAY = 4;
+  // Global daily UNDER 2.5 cap — tightened so the page never feels
+  // like a wall of "Under 2.5 / 1-0" picks.
+  const MAX_UNDER_PER_DAY = 3;
   const MAX_SAME_TYPE_PER_TIER = 5;
   const MAX_SAME_IN_A_ROW = 3;
   const DC_TIER_PCT: Record<string, number> = {
@@ -5836,8 +5872,8 @@ async function assignTiers(
       return "other";
     };
 
-    // 1) UNDER CAP — max 30% of Premium
-    const maxUnder = Math.floor(premiumPicks.length * 0.30);
+    // 1) UNDER CAP — max 25% of Premium (Premium must feel smarter, not safer)
+    const maxUnder = Math.floor(premiumPicks.length * 0.25);
     const underInPremium = premiumPicks.filter(p => classify(p.prediction) === "under");
     if (underInPremium.length > maxUnder) {
       // Sort under picks by confidence ASC → demote weakest excess
@@ -6564,8 +6600,8 @@ async function processBatch(
         fetchTeamStats(homeTeamId, leagueId, season, apiKey),
         fetchTeamStats(awayTeamId, leagueId, season, apiKey),
         fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
-        fetchTeamForm(homeTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
-        fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form (no cups/friendlies)
+        fetchTeamForm(homeTeamId, apiKey, 10),  // Real recent form across all competitions
+        fetchTeamForm(awayTeamId, apiKey, 10),  // Real recent form across all competitions
         fetchStandings(leagueId, season, apiKey),
         fetchOdds(fixtureIdStr, apiKey),
         fetchInjuries(leagueId, season, apiKey),
@@ -7374,8 +7410,8 @@ async function processBatch(
           risk_level: newPrediction.risk_level,
           analysis: newPrediction.analysis,
           key_factors: keyFactors.length > 0 ? keyFactors : null,
-          last_home_goals: Math.round(homeXg * 10) / 10,
-          last_away_goals: Math.round(awayXg * 10) / 10,
+          last_home_goals: Math.round(homeXg),
+          last_away_goals: Math.round(awayXg),
           missing_home_players: missingHome,
           missing_away_players: missingAway,
           injury_impact_home: injuryImpactHome,
@@ -7615,7 +7651,10 @@ async function handleBatchRegenerate(
             is_locked: true,
             prediction: pred,
             predicted_score: scoreMap[pred] || "1-0",
-            confidence: 50,
+            // Placeholder confidence MUST be at/above the display floor so the row
+            // survives the insert filter and gets enriched by Step 1→3.
+            // Real confidence is overwritten when the per-fixture analysis runs.
+            confidence: MIN_DISPLAY_CONFIDENCE,
             home_win: hw,
             draw: dr,
             away_win: aw,
@@ -7647,15 +7686,23 @@ async function handleBatchRegenerate(
         if (insertErrors.length > 0) {
           console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
         }
-      } else if (existingDateIds.size === 0 && existingGlobalIds.size > 0) {
-        // match_ids exist but for different dates - update them to this date
-        console.log(`[DEBUG] Found ${existingGlobalIds.size} match_ids from other dates. Updating match_date to ${matchDate}...`);
-        const idsToUpdate = fixtureIds.filter((id) => existingGlobalIds.has(id) && !existingDateIds.has(id));
-        for (const mid of idsToUpdate) {
+      }
+
+      // Always re-attach existing rows whose match_id matches today's API list
+      // but whose match_date is wrong. Without this, fixtures that were ever
+      // inserted on another date stay frozen there and never re-enrich.
+      const idsToReattach = fixtureIds.filter(
+        (id) => existingGlobalIds.has(id) && !existingDateIds.has(id)
+      );
+      if (idsToReattach.length > 0) {
+        console.log(
+          `[DEBUG] Re-attaching ${idsToReattach.length} existing match_ids to ${matchDate} for fresh enrichment...`
+        );
+        const todayStr2 = new Date().toISOString().split("T")[0];
+        const matchDay = matchDate === todayStr2 ? "today" : "tomorrow";
+        for (const mid of idsToReattach) {
           const f = fixtureById.get(mid);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
-          const matchDay = matchDate === new Date().toISOString().split("T")[0] ? "today" : "tomorrow";
-          
           await supabase
             .from("ai_predictions")
             .update({
@@ -7670,7 +7717,7 @@ async function handleBatchRegenerate(
             })
             .eq("match_id", mid);
         }
-        console.log(`[DEBUG] Updated ${idsToUpdate.length} predictions to match_date=${matchDate}`);
+        console.log(`[DEBUG] Re-attached ${idsToReattach.length} predictions to match_date=${matchDate}`);
       }
     } else {
       console.log(`[DEBUG] fixtureIds is empty - no fixtures from API`);
@@ -8059,8 +8106,8 @@ serve(async (req: Request) => {
 
     // Fetch all data in parallel for efficiency (full analysis like batch mode)
     const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
-      fetchTeamForm(homeTeamId, apiKey, 10, leagueId),  // League-only form, 10 matches
-      fetchTeamForm(awayTeamId, apiKey, 10, leagueId),  // League-only form, 10 matches
+      fetchTeamForm(homeTeamId, apiKey, 10),  // Real recent form, all competitions
+      fetchTeamForm(awayTeamId, apiKey, 10),  // Real recent form, all competitions
       fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
       leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
       leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
