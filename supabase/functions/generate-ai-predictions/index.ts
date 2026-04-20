@@ -4445,28 +4445,28 @@ function calculatePrediction(
   for (const m of allMarkets) {
     // Tempo-based boosts
     if (tempo.label === "HIGH") {
-      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 1.06;
-      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 0.94;
+      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 1.04;
+      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 0.97;
     } else if (tempo.label === "LOW") {
-      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 1.06;
-      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 0.94;
+      if (m.label.startsWith("Under") || m.label === "BTTS No") m.priorityProb *= 1.03;
+      if (m.label.startsWith("Over") || m.label === "BTTS Yes") m.priorityProb *= 0.97;
     }
 
     // League profile boosts
     if (leagueProfile.isOverLeague) {
-      if (m.label.startsWith("Over")) m.priorityProb *= 1.04;
-      if (m.label.startsWith("Under")) m.priorityProb *= 0.96;
+      if (m.label.startsWith("Over")) m.priorityProb *= 1.03;
+      if (m.label.startsWith("Under")) m.priorityProb *= 0.98;
     }
     if (leagueProfile.isUnderLeague) {
-      if (m.label.startsWith("Under")) m.priorityProb *= 1.04;
-      if (m.label.startsWith("Over")) m.priorityProb *= 0.96;
+      if (m.label.startsWith("Under")) m.priorityProb *= 1.02;
+      if (m.label.startsWith("Over")) m.priorityProb *= 0.98;
     }
 
     if (isLowGoals && bothDefensive) {
-      if (m.label === "Under 2.5") m.priorityProb *= 1.12;
-      if (m.label === "Under 3.5") m.priorityProb *= 1.10;
-      if (m.label === "BTTS No") m.priorityProb *= 1.08;
-      if (m.label.startsWith("Over")) m.priorityProb *= 0.90;
+      if (m.label === "Under 2.5") m.priorityProb *= 1.06;
+      if (m.label === "Under 3.5") m.priorityProb *= 1.05;
+      if (m.label === "BTTS No") m.priorityProb *= 1.04;
+      if (m.label.startsWith("Over")) m.priorityProb *= 0.95;
     }
     if (isHighGoals && bothHighScoring) {
       if (m.label === "Over 2.5") m.priorityProb *= 1.12;
