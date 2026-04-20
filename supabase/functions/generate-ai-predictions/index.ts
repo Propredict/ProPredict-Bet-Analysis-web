@@ -7707,6 +7707,41 @@ serve(async (req: Request) => {
       return handleBatchRegenerate(apiKey, body.matchDate, body.offset, body.runId || "manual");
     }
 
+    // Purge mode — delete all predictions whose analysis contains legacy
+    // fallback markers ("Pending data", "Not found in API", etc.).
+    // Per v6.2 strict policy: never display synthesized predictions.
+    if (body.purgeFallbacks === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const markers = [
+        "Pending data",
+        "Not found in API",
+        "Limited team-form data",
+        "Fallback to bookmaker",
+        "Form data limited",
+        "Top-tier matchup. Bookmaker consensus implies",
+        "relying on market intelligence",
+      ];
+      let totalDeleted = 0;
+      const perMarker: Record<string, number> = {};
+      for (const m of markers) {
+        const { data, error } = await supabase
+          .from("ai_predictions")
+          .delete()
+          .ilike("analysis", `%${m}%`)
+          .select("id");
+        const n = data?.length ?? 0;
+        perMarker[m] = n;
+        totalDeleted += n;
+        if (error) console.error(`[PURGE] ${m}:`, error.message);
+      }
+      return new Response(
+        JSON.stringify({ purged: totalDeleted, perMarker }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Full regenerate mode - triggers batch chains for today + tomorrow
     if (body.regenerate === true) {
       return handleRegenerate(apiKey);
