@@ -84,23 +84,27 @@ export function calcTopPickScore(p: AIPrediction): RankedPick {
   const value = calcValue(p);
   const injurySafety = calcInjurySafety(p);
   const trend = calcTrend(p);
+  const variance = getVarianceScore(p);
+  const stability = variance.score;
 
   const score =
-    confidence * 0.5 +
-    value * 0.25 +
+    confidence * 0.45 +
+    value * 0.20 +
     injurySafety * 0.15 +
-    trend * 0.1;
+    trend * 0.10 +
+    stability * 0.10;
 
   // Label: Elite = conf ≥ 80% AND value > 8%
   // value is scaled (bestProb-50)*2, so value > 16 ≈ bestProb > 58 — but the user said ">8%"
   // We interpret "value > 8%" as: best market probability exceeds 58% (8 points above 50% baseline → scaled = 16)
-  const isElite = confidence >= 80 && value >= 16;
+  // Elite also requires variance to be STABLE for a clean signal.
+  const isElite = confidence >= 80 && value >= 16 && variance.stable;
 
   return {
     prediction: p,
     score,
     label: isElite ? "elite" : "strong",
-    components: { confidence, value, injurySafety, trend },
+    components: { confidence, value, injurySafety, trend, stability },
   };
 }
 
