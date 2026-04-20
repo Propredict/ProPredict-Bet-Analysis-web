@@ -7067,7 +7067,7 @@ async function processBatch(
             `Fixture ${fixtureIdStr}: Low confidence after Step 3 (${step3.reason})`,
             { fixtureId: fixtureIdStr, apiKey }
           );
-          locked++;
+          deleted++;
           continue;
         }
 
