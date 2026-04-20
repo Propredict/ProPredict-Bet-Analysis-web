@@ -100,7 +100,19 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  const displayTier: "free" | "pro" | "premium" = overrideTier ?? (prediction.is_premium ? "premium" : "free");
+  // Tier resolution priority:
+  // 1) explicit overrideTier (used by Top AI Picks for locked teaser slots)
+  // 2) Admin/Premium user → always "premium" so they see ALL market tabs
+  // 3) Pro user → at least "pro" (unlocks Goals/BTTS/DC tabs)
+  // 4) Fallback to prediction's intrinsic tier (premium flag → premium, else free)
+  const intrinsicTier: "free" | "pro" | "premium" = prediction.is_premium ? "premium" : "free";
+  const displayTier: "free" | "pro" | "premium" =
+    overrideTier
+    ?? (isAdmin || isPremiumUser
+      ? "premium"
+      : isProUser
+      ? (intrinsicTier === "premium" ? "premium" : "pro")
+      : intrinsicTier);
   const isPremiumTier = displayTier === "premium";
   const isProTier = displayTier === "pro";
   const isDailyTier = displayTier === "free";
