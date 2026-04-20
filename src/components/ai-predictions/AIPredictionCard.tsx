@@ -106,6 +106,17 @@ const AIPredictionCardInner = ({
   const hasAccess = forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
   const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
 
+  // Step 4 — "Strong Signal" badge: confidence >= 80 AND xG diff >= 0.8.
+  // xG diff is encoded by the backend in key_factors as `step2_xg:H|A|Δ`.
+  const isStrongSignal = useMemo(() => {
+    if ((prediction.confidence ?? 0) < 80) return false;
+    const tag = prediction.key_factors?.find((f) => f.startsWith("step2_xg:"));
+    if (!tag) return false;
+    const parts = tag.replace("step2_xg:", "").split("|");
+    const diff = parseFloat(parts[2] ?? "");
+    return Number.isFinite(diff) && diff >= 0.8;
+  }, [prediction.confidence, prediction.key_factors]);
+
   const formatTime = (time: string | null) => {
     if (!time) return "";
     return time.length >= 5 ? time.slice(0, 5) : time;
