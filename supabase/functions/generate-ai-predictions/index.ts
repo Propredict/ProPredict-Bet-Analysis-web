@@ -7057,6 +7057,13 @@ async function processBatch(
           missing_away_players: missingAway,
           injury_impact_home: injuryImpactHome,
           injury_impact_away: injuryImpactAway,
+          // STEP 2/3 — first-class structured data (replaces parsing key_factors tags)
+          xg_home: Math.round(step2.expectedHome * 100) / 100,
+          xg_away: Math.round(step2.expectedAway * 100) / 100,
+          xg_total: Math.round(step2.totalGoals * 100) / 100,
+          xg_diff: Math.round((step2.expectedHome - step2.expectedAway) * 100) / 100,
+          variance_stable: varianceStableDB,
+          variance_score: varianceScoreDB,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
