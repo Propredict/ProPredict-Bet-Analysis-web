@@ -10,6 +10,7 @@ import {
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck, Brain, Info } from "lucide-react";
+import { getMarketColors, classifyMarket } from "../utils/marketColors";
 
 // Big Match leagues — when AI confidence is too low for a precise pick, show AI Insight instead
 const BIG_MATCH_LEAGUES_INSIGHT = [
