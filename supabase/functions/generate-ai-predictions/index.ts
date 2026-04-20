@@ -7001,6 +7001,8 @@ async function processBatch(
         // We approximate variance from `homeXg`/`awayXg` plus the spread vs the
         // expected goals — small spread + balanced expectation = STABLE.
         // Tag format: variance:STABLE|UNSTABLE|score
+        let varianceStableDB = false;
+        let varianceScoreDB: number | null = null;
         try {
           const homeAvg = homeXg;
           const awayAvg = awayXg;
@@ -7020,6 +7022,8 @@ async function processBatch(
           const balancePts = Math.max(0, 100 - spread * 25); // 0 spread = 100, 4 spread = 0
           const totalPts = totalGoals < 1.2 || totalGoals > 4.5 ? 0 : 100 - Math.abs(totalGoals - 2.6) * 20;
           const varianceScore = Math.round((balancePts + Math.max(0, totalPts)) / 2);
+          varianceStableDB = stable;
+          varianceScoreDB = varianceScore;
           const varianceTag = `variance:${stable ? "STABLE" : "UNSTABLE"}|${varianceScore}`;
           if (!keyFactors.some((f) => f.startsWith("variance:"))) {
             keyFactors.unshift(varianceTag);
