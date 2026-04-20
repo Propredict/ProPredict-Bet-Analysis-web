@@ -261,6 +261,7 @@ const AIPredictionCardInner = ({
               awayTeam={prediction.away_team}
               lineupConfirmed={prediction.lineup_confirmed}
             />
+            <DataQualityBadge prediction={prediction} compact />
           </div>
         </div>
 
