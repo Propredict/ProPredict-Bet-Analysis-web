@@ -4823,7 +4823,7 @@ function calculatePrediction(
     if (top2diff <= 3) confidence -= 3;
   }
 
-  // Data quality caps
+  // Data quality caps: confidence shaping only after hard real-data gate passes upstream.
   const hasSeasonStats = !!homeStats && !!awayStats && homeStats.played > 0 && awayStats.played > 0;
   const hasMinMatches = hasSeasonStats && homeStats!.played >= MIN_SEASON_MATCHES && awayStats!.played >= MIN_SEASON_MATCHES;
   if (!hasMinMatches) confidence = Math.min(confidence, 70);
@@ -6583,28 +6583,29 @@ async function processBatch(
         continue;
       }
 
-      // Prefer real form data; fallback to pseudo-form from season stats
-      const homeForm = realHomeForm.length >= 3 ? realHomeForm : buildPseudoFormFromStats(homeStats);
-      const awayForm = realAwayForm.length >= 3 ? realAwayForm : buildPseudoFormFromStats(awayStats);
+      // HARD REAL-DATA GATE: no pseudo/fallback form. If API does not provide
+      // enough real recent history, we do not publish a prediction.
+      const homeForm = realHomeForm;
+      const awayForm = realAwayForm;
 
-      if (homeForm.length === 0 && awayForm.length === 0) {
+      if (homeForm.length === 0 || awayForm.length === 0) {
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
         deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Insufficient form data — DELETED`);
+        console.log(`Fixture ${fixtureIdStr}: Missing real API form/history data — DELETED`);
         continue;
       }
 
       // === STEP 1 DATA QUALITY GATE ===
-      // Require ≥5 recent matches per team OR ≥5 played season matches per team.
+      // Require REAL recent API matches for both teams. No season-stat-only fallback.
       // Lower-tier leagues (Tier 3) are held to a stricter bar to keep the page premium.
-      const homeRecent = Math.max(realHomeForm.length, homeStats?.played ?? 0);
-      const awayRecent = Math.max(realAwayForm.length, awayStats?.played ?? 0);
+      const homeRecent = realHomeForm.length;
+      const awayRecent = realAwayForm.length;
       const fixtureLeagueId = fixtureById.get(fixtureIdStr)?.league?.id ?? null;
       const leagueTier = getLeagueTier(fixtureLeagueId);
       const minRequired = leagueTier === 3 ? 8 : MIN_SEASON_MATCHES; // 5 for T1/T2, 8 for T3
       if (homeRecent < minRequired || awayRecent < minRequired) {
         console.log(
-          `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): home=${homeRecent}, away=${awayRecent}, required>=${minRequired}`
+          `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): real-home=${homeRecent}, real-away=${awayRecent}, required>=${minRequired}`
         );
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
         deleted++;
@@ -7623,7 +7624,7 @@ async function handleBatchRegenerate(
           };
         });
 
-        // Filter out predictions below minimum display confidence (60%)
+        // Filter out predictions below minimum display confidence (55%)
         const displayInserts = inserts.filter((p: any) => p.confidence >= MIN_DISPLAY_CONFIDENCE);
         console.log(`[DEBUG] Filtered ${inserts.length - displayInserts.length} predictions below ${MIN_DISPLAY_CONFIDENCE}% confidence`);
 
