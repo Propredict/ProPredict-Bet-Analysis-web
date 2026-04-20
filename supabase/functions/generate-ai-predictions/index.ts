@@ -29,6 +29,46 @@ const PREMIUM_MIN_COUNT = 5;
 const MIN_SEASON_MATCHES = 5;
 const MIN_SEASON_CONFIDENCE_CAP = 70; // Was 62 — too aggressive
 
+// ============ LEAGUE TIER PRIORITY (Step 1 — quality over quantity) ============
+// Tier 1: top European leagues + UCL — ALWAYS included
+const TIER_1_LEAGUE_IDS = new Set<number>([
+  39,   // Premier League
+  140,  // La Liga
+  78,   // Bundesliga
+  135,  // Serie A
+  61,   // Ligue 1
+  2,    // UEFA Champions League
+  3,    // UEFA Europa League
+  848,  // UEFA Conference League
+  1,    // World Cup
+  4,    // Euro Championship
+]);
+
+// Tier 2: secondary European leagues — included normally
+const TIER_2_LEAGUE_IDS = new Set<number>([
+  94,   // Primeira Liga (Portugal)
+  88,   // Eredivisie (Netherlands)
+  203,  // Super Lig (Turkey)
+  144,  // Jupiler Pro League (Belgium)
+  179,  // Scottish Premiership
+  40,   // Championship (England)
+  141,  // La Liga 2 (Spain)
+  79,   // 2. Bundesliga
+  136,  // Serie B (Italy)
+  62,   // Ligue 2 (France)
+]);
+
+// Minimum Tier 1+2 matches per day to consider day "well-stocked".
+// Below this threshold (e.g., midweek with no top leagues), we allow Tier 3 fallback.
+const TIER_FALLBACK_THRESHOLD = 8;
+
+function getLeagueTier(leagueId: number | null | undefined): 1 | 2 | 3 {
+  if (!leagueId) return 3;
+  if (TIER_1_LEAGUE_IDS.has(leagueId)) return 1;
+  if (TIER_2_LEAGUE_IDS.has(leagueId)) return 2;
+  return 3;
+}
+
 // ============ QUALITY LEAGUE IDS (API-Football) ============
 // Only these leagues can produce PREMIUM (≥85%) predictions
 // Top 20 leagues with most reliable data and predictable patterns
