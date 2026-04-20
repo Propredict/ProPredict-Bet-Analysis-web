@@ -5575,6 +5575,39 @@ async function assignTiers(
     return null;
   };
 
+  // ============ BASELINE QUALITY GATE (applies to Pro + Free) ============
+  // Pro and Free tiers MUST also be backed by real data. The bar is slightly
+  // lower than Premium (we accept matches with weaker form/xG signals),
+  // but we NEVER promote a prediction that has fallback/fabricated analysis
+  // or zero market signal. Better to show fewer cards than mislead the user.
+  //
+  // Baseline requirements (ALL must hold):
+  //   1. Analysis is non-fallback and >= 40 chars (Free can have shorter prose)
+  //   2. At least ONE real signal source: xG (either side) OR recent form
+  //      (last_home_goals / last_away_goals not null) OR bookmaker consensus
+  //   3. Bookmaker presence: bookmakers_count >= 1 (any market signal at all)
+  const failsBaselineGate = (p: any): string | null => {
+    const analysis = String(p.analysis ?? "").toLowerCase();
+    for (const m of FALLBACK_MARKERS) {
+      if (analysis.includes(m)) return `analysis-fallback("${m}")`;
+    }
+    if (analysis.length < 40) return "analysis-too-short";
+
+    const hasXg = num(p.xg_home) > 0 || num(p.xg_away) > 0;
+    const hasForm =
+      p.last_home_goals !== null && p.last_home_goals !== undefined ||
+      p.last_away_goals !== null && p.last_away_goals !== undefined;
+    const hasConsensus =
+      num(p.consensus_home) > 0 ||
+      num(p.consensus_draw) > 0 ||
+      num(p.consensus_away) > 0;
+    if (!hasXg && !hasForm && !hasConsensus) return "no-real-signal";
+
+    if (num(p.bookmakers_count) < 1) return "no-bookmaker";
+
+    return null;
+  };
+
   const premiumCandidates = sorted.filter((p: any) => {
     if ((p.confidence ?? 0) < PREMIUM_MIN_CONFIDENCE) return false;
     const reason = failsPremiumGate(p);
