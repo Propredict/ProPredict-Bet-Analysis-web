@@ -81,13 +81,12 @@ export function TopAIPicksSection({
   if (picks.length === 0) return null;
 
   // Unlocked count per tier:
-  // - Premium/Admin: all 5 unlocked
-  // - Pro: 3 unlocked, 2 locked (visible teasers)
-  // - Free: 1 unlocked, up to 2 locked (visible teasers — for FOMO + swipe UX)
+  // - Premium/Admin: all picks unlocked
+  // - Pro: 3 unlocked, rest locked (visible teasers)
+  // - Free: 1 unlocked, rest locked (visible teasers — swipe to see all 5)
   const unlockedCount = isPremiumUser || isAdmin ? picks.length : isProUser ? 3 : 1;
-  const isFreeViewer = !isPremiumUser && !isProUser && !isAdmin;
-  // Free users see 1 unlocked + 2 locked teasers (max 3 cards) so swipe hint has purpose.
-  const visiblePicks = isFreeViewer ? picks.slice(0, Math.min(3, picks.length)) : picks;
+  // All viewers see all picks (locked teasers visible for FOMO + swipe UX).
+  const visiblePicks = picks;
   const lockedCount = Math.max(0, picks.length - unlockedCount);
   const showUpsell = !isPremiumUser && !isAdmin && lockedCount > 0;
 

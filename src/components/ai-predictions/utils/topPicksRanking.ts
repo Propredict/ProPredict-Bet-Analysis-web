@@ -184,5 +184,27 @@ export function selectTopPicks(predictions: AIPrediction[], limit: number): Rank
     typeCount.set(t, (typeCount.get(t) ?? 0) + 1);
     picks.push(r);
   }
+  // Fallback fill: if diversity cap left us short, top up with remaining ranked picks
+  // (still no duplicates) so the section always has up to `limit` cards.
+  if (picks.length < limit) {
+    for (const r of ranked) {
+      if (picks.length >= limit) break;
+      if (seen.has(r.prediction.id)) continue;
+      seen.add(r.prediction.id);
+      picks.push(r);
+    }
+  }
+  // Last-resort fill: if pool was too small, pull from full pending list by confidence.
+  if (picks.length < limit) {
+    const extras = pending
+      .filter((p) => !seen.has(p.id))
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
+      .map(calcTopPickScore);
+    for (const r of extras) {
+      if (picks.length >= limit) break;
+      seen.add(r.prediction.id);
+      picks.push(r);
+    }
+  }
   return picks;
 }
