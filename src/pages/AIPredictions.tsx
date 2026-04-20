@@ -118,12 +118,41 @@ export default function AIPredictions() {
   // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
   // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
   //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
+  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 30.
+  // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
   const tierAssignment = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
-    for (const p of predictions) {
+    // 1. Compute effective strength per prediction
+    const scored = predictions.map((p) => {
       const bestPickProb = getBestMarketProbability(p);
       const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb);
-      map.set(p.id!, getTierFromConfidence(effectiveStrength));
+      return { id: p.id!, strength: effectiveStrength, baseTier: getTierFromConfidence(effectiveStrength) };
+    });
+    // 2. Sort by strength DESC and apply caps with cascade
+    const sorted = [...scored].sort((a, b) => b.strength - a.strength);
+    const PREMIUM_CAP = 10;
+    const PRO_CAP = 20;
+    const FREE_CAP = 30;
+    let premiumCount = 0;
+    let proCount = 0;
+    let freeCount = 0;
+    for (const s of sorted) {
+      let tier = s.baseTier;
+      // Cascade overflow down: Premium → Pro → Free
+      if (tier === "premium") {
+        if (premiumCount < PREMIUM_CAP) { premiumCount++; }
+        else if (proCount < PRO_CAP) { tier = "pro"; proCount++; }
+        else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
+        else { continue; } // skip — beyond all caps
+      } else if (tier === "pro") {
+        if (proCount < PRO_CAP) { proCount++; }
+        else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
+        else { continue; }
+      } else {
+        if (freeCount < FREE_CAP) { freeCount++; }
+        else { continue; }
+      }
+      map.set(s.id, tier);
     }
     return map;
   }, [predictions]);
