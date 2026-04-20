@@ -6997,6 +6997,36 @@ async function processBatch(
         if (!keyFactors.some((f) => f.startsWith("step2_xg:"))) {
           keyFactors.unshift(xgTag);
         }
+        // STEP 3 — variance stability flag (low/high goal variability across last 5).
+        // We approximate variance from `homeXg`/`awayXg` plus the spread vs the
+        // expected goals — small spread + balanced expectation = STABLE.
+        // Tag format: variance:STABLE|UNSTABLE|score
+        try {
+          const homeAvg = homeXg;
+          const awayAvg = awayXg;
+          const spread = Math.abs(homeAvg - awayAvg);
+          const totalGoals = homeAvg + awayAvg;
+          // STABLE when:
+          //   • neither team is at extreme attacking output (>3.5 / match)
+          //   • neither team is starved (<0.4 / match)
+          //   • spread between teams is moderate (≤ 2.0)
+          //   • total goals within sane band (1.2–4.5)
+          const stable =
+            homeAvg >= 0.4 && homeAvg <= 3.5 &&
+            awayAvg >= 0.4 && awayAvg <= 3.5 &&
+            spread <= 2.0 &&
+            totalGoals >= 1.2 && totalGoals <= 4.5;
+          // Variance score 0–100 (higher = more stable, easier for UI badge)
+          const balancePts = Math.max(0, 100 - spread * 25); // 0 spread = 100, 4 spread = 0
+          const totalPts = totalGoals < 1.2 || totalGoals > 4.5 ? 0 : 100 - Math.abs(totalGoals - 2.6) * 20;
+          const varianceScore = Math.round((balancePts + Math.max(0, totalPts)) / 2);
+          const varianceTag = `variance:${stable ? "STABLE" : "UNSTABLE"}|${varianceScore}`;
+          if (!keyFactors.some((f) => f.startsWith("variance:"))) {
+            keyFactors.unshift(varianceTag);
+          }
+        } catch (_e) {
+          /* best-effort */
+        }
         console.log(
           `[STEP 3] ${fixtureIdStr}: ${beforeConf}% → ${step3.confidence}% | ${step3.reason}`
         );
