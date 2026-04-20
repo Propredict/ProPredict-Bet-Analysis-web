@@ -877,22 +877,51 @@ export default function AIPredictions() {
                     </Badge>
                   </div>
                 </div>
-                <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
-                  <AIPredictionCard
-                    overrideTier="premium"
-                    forceUnlocked={isAdmin || isPremiumUser}
-                    prediction={diamondPick}
-                    isAdmin={isAdmin}
-                    isPremiumUser={isPremiumUser}
-                    isProUser={isProUser}
-                    isFavorite={isFavorite(diamondPick.match_id)}
-                    isSavingFavorite={isSaving(diamondPick.match_id)}
-                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                    onGoPremium={() => navigate("/get-premium")}
-                    onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                    isUnlocking={unlockingId === diamondPick.id}
-                  />
-                </div>
+                {(isAdmin || isPremiumUser) ? (
+                  <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
+                    <AIPredictionCard
+                      overrideTier="premium"
+                      forceUnlocked={true}
+                      prediction={diamondPick}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(diamondPick.match_id)}
+                      isSavingFavorite={isSaving(diamondPick.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === diamondPick.id}
+                    />
+                  </div>
+                ) : (
+                  /* Premium-Only teaser — no blur, no leaked prediction.
+                     Shows match meta + clear CTA so non-premium users understand the value. */
+                  <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)] bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-cyan-950/40 p-4 md:p-5 flex flex-col items-center text-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-5 h-5 text-cyan-300" />
+                      <span className="text-xs md:text-sm font-bold uppercase tracking-wider text-cyan-200">
+                        Premium Only
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-sm md:text-base font-semibold text-foreground">
+                        Today's Diamond Pick is reserved for Premium members
+                      </h3>
+                      <p className="text-[11px] md:text-xs text-muted-foreground max-w-sm mx-auto">
+                        One single, highest-conviction selection of the day — backed by xG dominance and stable form. Available exclusively to Premium subscribers.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => navigate("/get-premium")}
+                      size="sm"
+                      className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-full gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Unlock with Premium
+                    </Button>
+                  </div>
+                )}
                 {/* Diamond CTA */}
                 <div className="mt-3 md:mt-4 flex justify-center">
                   <Button
