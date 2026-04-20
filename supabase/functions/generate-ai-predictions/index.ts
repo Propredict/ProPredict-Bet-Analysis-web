@@ -5529,10 +5529,39 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0, diamond: 0 };
   }
 
-  // 1) PREMIUM candidates: confidence ≥ 78
-  const premiumCandidates = sorted.filter(
-    (p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE
-  );
+  // 1) PREMIUM candidates: confidence ≥ 78 + STRICT QUALITY GATE
+  // Premium tier MUST have real analytical data (form, xG, H2H) — NOT bookmaker fallback.
+  // We detect fallback predictions by their analysis text markers and missing xG signals.
+  const FALLBACK_MARKERS = [
+    "Pending data from API",
+    "Limited team-form data",
+    "Fallback to bookmaker",
+    "Form data limited",
+    "Insufficient form data",
+    "relying on market intelligence",
+  ];
+  const isFallbackPrediction = (p: any): boolean => {
+    const analysis = String(p.analysis ?? "");
+    if (FALLBACK_MARKERS.some((m) => analysis.includes(m))) return true;
+    // No xG data at all → form pipeline never produced real numbers
+    const hasXg =
+      (typeof p.xg_home === "number" && p.xg_home > 0) ||
+      (typeof p.xg_away === "number" && p.xg_away > 0) ||
+      (typeof p.xg_total === "number" && p.xg_total > 0);
+    if (!hasXg) return true;
+    return false;
+  };
+
+  const premiumCandidates = sorted.filter((p: any) => {
+    if ((p.confidence ?? 0) < PREMIUM_MIN_CONFIDENCE) return false;
+    if (isFallbackPrediction(p)) {
+      console.log(
+        `[PREMIUM GATE] Demoted ${p.home_team} vs ${p.away_team} — confidence ${p.confidence}% but fallback/no-data prediction`
+      );
+      return false;
+    }
+    return true;
+  });
 
   // === STEP 5 — SMART DIVERSITY FILTER (soft) ===
   // Caps:
