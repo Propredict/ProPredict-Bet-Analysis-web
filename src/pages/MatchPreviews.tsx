@@ -18,14 +18,70 @@ const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
 const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
 const MAX_MATCHES = 30;
 
-const LEAGUE_PRIORITY: Record<string, number> = {
-  "Premier League": 1, "Championship": 2, "League One": 3, "League Two": 4,
-  "La Liga": 5, "Segunda División": 6, "Bundesliga": 7, "2. Bundesliga": 8,
-  "Serie A": 9, "Serie B": 10, "Ligue 1": 11, "Ligue 2": 12,
-  "Eredivisie": 20, "Eerste Divisie": 21, "Primeira Liga": 25,
-  "Challenger Pro League": 30, "Super Lig": 35, "Ekstraklasa": 40,
-  "Liga Profesional Argentina": 45,
+// Tier 1 = elite top-flight leagues + UEFA competitions (always shown first)
+// Tier 2 = strong second-tier / mid-strength leagues
+// Tier 3 = remaining recognized leagues
+// Anything not listed → tier 4 (only used as last-resort fallback)
+const LEAGUE_TIERS: Record<string, number> = {
+  // Tier 1 — elite
+  "Premier League": 1,
+  "La Liga": 1,
+  "Primera Division": 1,
+  "Bundesliga": 1,
+  "Serie A": 1,
+  "Ligue 1": 1,
+  "UEFA Champions League": 1,
+  "Champions League": 1,
+  "UEFA Europa League": 1,
+  "Europa League": 1,
+  "UEFA Europa Conference League": 1,
+  "Conference League": 1,
+  "FIFA World Cup": 1,
+  "European Championship": 1,
+  "Euro Championship": 1,
+  "Copa America": 1,
+  "Copa Libertadores": 1,
+  // Tier 2 — strong second-tier / solid leagues
+  "Championship": 2,
+  "Segunda División": 2,
+  "2. Bundesliga": 2,
+  "Serie B": 2,
+  "Ligue 2": 2,
+  "Eredivisie": 2,
+  "Primeira Liga": 2,
+  "Super Lig": 2,
+  "Liga Profesional Argentina": 2,
+  // Tier 3 — recognized minor leagues
+  "League One": 3,
+  "League Two": 3,
+  "Eerste Divisie": 3,
+  "Challenger Pro League": 3,
+  "Ekstraklasa": 3,
 };
+
+// Within a tier, this sub-priority orders the elite leagues so PL/LaLiga/UCL show first
+const LEAGUE_PRIORITY: Record<string, number> = {
+  "UEFA Champions League": 1, "Champions League": 1,
+  "Premier League": 2,
+  "La Liga": 3, "Primera Division": 3,
+  "Bundesliga": 4,
+  "Serie A": 5,
+  "Ligue 1": 6,
+  "UEFA Europa League": 7, "Europa League": 7,
+  "UEFA Europa Conference League": 8, "Conference League": 8,
+  "FIFA World Cup": 9, "European Championship": 9, "Euro Championship": 9,
+  "Copa America": 10, "Copa Libertadores": 11,
+  "Championship": 20, "Segunda División": 21, "2. Bundesliga": 22, "Serie B": 23, "Ligue 2": 24,
+  "Eredivisie": 25, "Primeira Liga": 26, "Super Lig": 27, "Liga Profesional Argentina": 28,
+  "League One": 40, "League Two": 41, "Eerste Divisie": 42,
+  "Challenger Pro League": 43, "Ekstraklasa": 44,
+};
+
+function getLeagueTier(league: string | null): number {
+  if (!league) return 4;
+  const entry = Object.entries(LEAGUE_TIERS).find(([key]) => key.toLowerCase() === league.toLowerCase());
+  return entry ? entry[1] : 4;
+}
 
 const EPL_TEAMS = new Set([
   "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
@@ -118,21 +174,28 @@ export default function MatchPreviews() {
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
 
-    // Sort by best market pick % (the number actually shown on the card),
-    // then by general confidence as tie-breaker, then league priority.
-    // This guarantees the highest displayed "Confidence X%" sits on top —
-    // i.e. the safest matches with the highest probability come first.
-    const pool = [...valid]
+    // Tier-first ordering (matches Premium AI logic):
+    //   1) Group by league tier (1 = elite → 4 = obscure)
+    //   2) Within a tier: highest best-pick % first
+    //   3) Tie-break: general AI confidence, then sub-league priority
+    // We then take only top MAX_MATCHES, which naturally hides minor leagues
+    // when there are enough strong matches from top leagues.
+    const enriched = valid
       .filter(p => (p.confidence ?? 0) >= 50)
-      .map(p => ({ p, bestPct: getBestMarketPickWithLabel(p as any).pct }))
+      .map(p => ({
+        p,
+        bestPct: getBestMarketPickWithLabel(p as any).pct,
+        tier: getLeagueTier(p.league),
+      }))
       .sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
         const pctDiff = b.bestPct - a.bestPct;
         if (pctDiff !== 0) return pctDiff;
         const confDiff = (b.p.confidence ?? 0) - (a.p.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
         return getLeaguePriority(a.p.league) - getLeaguePriority(b.p.league);
-      })
-      .map(x => x.p);
+      });
+    const pool = enriched.map(x => x.p);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
