@@ -5498,7 +5498,7 @@ async function assignTiers(
 ): Promise<{ free: number; pro: number; premium: number }> {
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
-    .select("id, confidence, is_locked, result_status")
+    .select("id, confidence, is_locked, result_status, prediction")
     .in("match_date", [todayStr, tomorrowStr])
     .in("result_status", ["pending", null])
     .eq("is_locked", false)
