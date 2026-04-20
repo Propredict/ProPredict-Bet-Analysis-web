@@ -22,6 +22,7 @@ export interface AIPrediction {
   is_premium: boolean | null;
   is_live: boolean | null;
   is_locked: boolean | null;
+  is_diamond?: boolean | null;
   result_status: string | null;
   // Injury & lineup awareness
   missing_home_players?: MissingPlayer[] | null;
