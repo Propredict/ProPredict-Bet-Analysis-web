@@ -471,7 +471,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
       )}
 
       {/* ===== Top Correct Scores — Pro (top 1) & Premium (top 3) ===== */}
-      {hasAccess && displayTier !== "free" && topScores.length > 0 && (
+      {displayTier !== "free" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
             <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
@@ -498,9 +498,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                     : "border-border/30 bg-card/20"
                 )}
               >
-                <div className="text-sm md:text-base font-bold text-foreground">{s.score}</div>
+                <div className={cn(
+                  "text-sm md:text-base font-bold text-foreground",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>{s.score}</div>
                 <div className={cn(
                   "text-[9px] md:text-[10px] font-medium",
+                  !hasAccess && "blur-[5px] select-none",
                   i === 0 
                     ? displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
                     : "text-muted-foreground"
