@@ -342,13 +342,17 @@ export default function AIPredictions() {
   };
 
   // Safe Pick of the Day: confidence ≥75 + low-risk market + xG total ≥ 2.2
+  // Safe Pick of the Day: confidence ≥75 + low-risk market.
+  // xG total ≥2.2 is preferred but optional — when xG isn't parseable from
+  // backend, we still allow the pick (quality > strict gating).
   const safePicks = useMemo(() => {
     return [...globalRankingBase]
       .filter((p) => {
         if ((p.confidence ?? 0) < 75) return false;
         if (!isLowRiskPrediction(p.prediction)) return false;
         const xg = parseXgFromFactors(p.key_factors);
-        if (!xg || xg.total < 2.2) return false;
+        // If xG present, enforce total ≥ 2.2; otherwise allow.
+        if (xg && xg.total < 2.2) return false;
         return true;
       })
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
