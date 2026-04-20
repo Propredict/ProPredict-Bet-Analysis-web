@@ -427,8 +427,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
       )}
 
       {/* ===== 1X2 Probabilities — compact row ===== */}
-      {hasAccess && (
-        <div className="grid grid-cols-3 gap-1 pt-1">
+      <div className="grid grid-cols-3 gap-1 pt-1">
           {[
             { label: prediction.home_team, pct: prediction.home_win, outcome: "home" as const },
             { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
@@ -449,6 +448,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                 <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
                 <div className={cn(
                   "text-xs md:text-sm font-bold",
+                  !hasAccess && "blur-[5px] select-none",
                   isSelected ? "text-primary" : "text-foreground/80"
                 )}>
                   {item.pct}%
@@ -456,8 +456,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </div>
             );
           })}
-        </div>
-      )}
+      </div>
 
       {/* ===== Locked Score Teaser — Free tier ===== */}
       {hasAccess && displayTier === "free" && (
