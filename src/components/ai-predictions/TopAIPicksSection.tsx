@@ -9,6 +9,7 @@ import { AIPredictionCard } from "./AIPredictionCard";
 import type { RankedPick } from "./utils/topPicksRanking";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import type { ContentTier } from "@/hooks/useUserPlan";
+import { getMarketColors } from "./utils/marketColors";
 
 interface Props {
   picks: RankedPick[];
@@ -189,12 +190,21 @@ export function TopAIPicksSection({
                 </div>
                 {/* Market + league quick-scan chips */}
                 <div className="absolute -top-2 right-2 z-10 flex items-center gap-1">
-                  <Badge
-                    variant="outline"
-                    className="bg-background/90 backdrop-blur border-amber-500/40 text-amber-300 text-[8px] md:text-[9px] font-semibold px-1.5 py-0.5"
-                  >
-                    {getMarketTag(rp.prediction.prediction)}
-                  </Badge>
+                  {(() => {
+                    const tag = getMarketTag(rp.prediction.prediction);
+                    const tokens = getMarketColors(rp.prediction.prediction);
+                    return (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "backdrop-blur text-[8px] md:text-[9px] font-semibold px-1.5 py-0.5 border",
+                          tokens.chipClass,
+                        )}
+                      >
+                        {tag}
+                      </Badge>
+                    );
+                  })()}
                   {rp.prediction.league && (
                     <Badge
                       variant="outline"
