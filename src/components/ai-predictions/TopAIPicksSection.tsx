@@ -87,7 +87,7 @@ export function TopAIPicksSection({
             className="mt-2 inline-flex border-amber-500/40 bg-amber-500/10 text-amber-300 text-[9px] md:text-[10px]"
           >
             <Sparkles className="w-3 h-3 mr-1" />
-            Elite Selection
+            🏆 Elite AI Selection
           </Badge>
         </div>
 

@@ -87,33 +87,55 @@ export function calcTopPickScore(p: AIPrediction): RankedPick {
 }
 
 /**
- * Pick top N predictions ranked by composite score.
- * Strategy: prioritize Premium tier (confidence >= 78%) first.
- * If fewer than `limit` Premium picks exist, fill remaining slots with Pro tier (65-77%).
- * Filters out finished matches.
+ * Top 5 = strong but diverse Elite AI Selection.
+ * Hard rules: Tier 1 or Tier 2 league only, confidence ≥ 70.
+ * Diversity: max 2 of same bet type. Quality > diversity (no force-fill).
  */
+const TIER_NAME_FRAGMENTS = [
+  "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+  "champions league", "europa league", "conference league",
+  "world cup", "euro championship",
+  "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
+  "scottish premiership", "championship", "la liga 2",
+  "segunda división", "segunda division", "2. bundesliga", "serie b", "ligue 2",
+];
+function isTierAllowed(league: string | null | undefined): boolean {
+  const l = (league ?? "").toLowerCase();
+  if (!l) return false;
+  return TIER_NAME_FRAGMENTS.some((n) => l.includes(n));
+}
+function classifyBet(raw: string | null | undefined): string {
+  const p = (raw ?? "").toLowerCase().trim();
+  if (!p) return "other";
+  if (p.includes("under")) return "under";
+  if (p.includes("over")) return "over";
+  if (p.includes("btts") || p.includes("both teams")) return "btts";
+  if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) return "dc";
+  if (p === "1" || p === "home") return "home";
+  if (p === "2" || p === "away") return "away";
+  if (p === "x" || p === "draw") return "draw";
+  return p;
+}
+
 export function selectTopPicks(predictions: AIPrediction[], limit: number): RankedPick[] {
   const upcoming = predictions.filter(
-    (p) => !p.result_status || p.result_status === "pending",
+    (p) => (!p.result_status || p.result_status === "pending") &&
+           (p.confidence ?? 0) >= 70 &&
+           isTierAllowed(p.league),
   );
   const ranked = upcoming.map(calcTopPickScore).sort((a, b) => b.score - a.score);
 
-  const premium = ranked.filter((r) => (r.prediction.confidence ?? 0) >= 78);
-  const pro = ranked.filter(
-    (r) => (r.prediction.confidence ?? 0) >= 65 && (r.prediction.confidence ?? 0) < 78,
-  );
-  const rest = ranked.filter((r) => (r.prediction.confidence ?? 0) < 65);
-
-  // Premium first, then Pro, then best of the rest — always fill up to `limit` if possible
-  const ordered = [...premium, ...pro, ...rest];
-  // Deduplicate by id (safety) and slice
   const seen = new Set<string>();
-  const unique: RankedPick[] = [];
-  for (const r of ordered) {
+  const typeCount = new Map<string, number>();
+  const picks: RankedPick[] = [];
+  for (const r of ranked) {
+    if (picks.length >= limit) break;
     if (seen.has(r.prediction.id)) continue;
+    const t = classifyBet(r.prediction.prediction);
+    if ((typeCount.get(t) ?? 0) >= 2) continue; // diversity cap
     seen.add(r.prediction.id);
-    unique.push(r);
-    if (unique.length >= limit) break;
+    typeCount.set(t, (typeCount.get(t) ?? 0) + 1);
+    picks.push(r);
   }
-  return unique;
+  return picks;
 }
