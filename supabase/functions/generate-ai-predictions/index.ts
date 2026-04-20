@@ -17,7 +17,7 @@ const corsHeaders = {
 //   66–77          → PRO       (max 20)
 //   ≥ 78           → PREMIUM   (max 10 — overflow demoted to PRO)
 //   ≥ 85           → SAFE PICK (subset of PREMIUM, top 3 shown first)
-const MIN_DISPLAY_CONFIDENCE = 55;
+const MIN_DISPLAY_CONFIDENCE = 50;
 const FREE_MAX_CONFIDENCE = 65;
 const PRO_MIN_CONFIDENCE = 66;
 const PRO_MAX_CONFIDENCE = 77;
