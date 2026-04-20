@@ -5603,24 +5603,25 @@ async function assignTiers(
   const premiumIds = new Set(premiumPicks.map((p: any) => p.id));
 
   // 2) PRO candidates: confidence 66–77 + premium overflow (still high quality)
-  const proCandidates = [
+  const proPool = [
     ...premiumOverflow,
     ...sorted.filter((p: any) => {
       const c = p.confidence ?? 0;
       return c >= PRO_MIN_CONFIDENCE && c <= PRO_MAX_CONFIDENCE && !premiumIds.has(p.id);
     }),
-  ]
-    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0))
-    .slice(0, PRO_MAX_COUNT);
+  ].sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
+  const proDiv = applyDiversity(proPool, PRO_MAX_COUNT, "Pro");
+  const proCandidates = proDiv.kept;
   const proIds = new Set(proCandidates.map((p: any) => p.id));
 
   // 3) FREE candidates: confidence 55–65 (no minimum — Quality > Quantity)
-  const freePicks = sorted
+  const freePool = sorted
     .filter((p: any) => {
       const c = p.confidence ?? 0;
       return c >= MIN_DISPLAY_CONFIDENCE && c <= FREE_MAX_CONFIDENCE && !premiumIds.has(p.id) && !proIds.has(p.id);
-    })
-    .slice(0, FREE_MAX_COUNT);
+    });
+  const freeDiv = applyDiversity(freePool, FREE_MAX_COUNT, "Free");
+  const freePicks = freeDiv.kept;
   const freeIds = new Set(freePicks.map((p: any) => p.id));
 
   // 4) Anything in `sorted` that didn't make a tier slot → lock (hidden)
