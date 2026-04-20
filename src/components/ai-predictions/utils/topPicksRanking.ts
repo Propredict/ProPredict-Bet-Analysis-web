@@ -12,6 +12,24 @@ export interface RankedPick {
     value: number;
     injurySafety: number;
     trend: number;
+    stability: number;
+  };
+}
+
+/**
+ * Parse the `variance:STABLE|UNSTABLE|<score>` tag from key_factors.
+ * Returns 0 if missing (treated as neutral).
+ */
+function getVarianceScore(p: AIPrediction): { stable: boolean; score: number } {
+  const f = p.key_factors;
+  if (!Array.isArray(f)) return { stable: false, score: 50 };
+  const tag = f.find((s) => typeof s === "string" && s.startsWith("variance:"));
+  if (!tag) return { stable: false, score: 50 };
+  const [flag, scoreStr] = tag.replace("variance:", "").split("|");
+  const score = Number(scoreStr);
+  return {
+    stable: flag === "STABLE",
+    score: Number.isFinite(score) ? score : 50,
   };
 }
 
