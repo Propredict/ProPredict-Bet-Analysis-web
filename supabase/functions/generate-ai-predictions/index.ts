@@ -6572,12 +6572,15 @@ async function processBatch(
         }
       }
 
-      // STRICT POLICY: if fixture truly cannot be located in API, DELETE the prediction
-      // (do not show users fake "Pending data" placeholders that erode trust)
+      // SOFT POLICY: if fixture not found (often transient: rate-limit / network),
+      // SKIP and keep the placeholder so the next batch can retry. Only mark
+      // as locked so users never see the unfinished row.
       if (!fixture) {
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Not found in API after retry — DELETED prediction`);
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Not found in API (likely rate-limit) — SKIPPED, kept locked for retry`);
         continue;
       }
 
@@ -6589,6 +6592,7 @@ async function processBatch(
       const season = fixture.league?.season || new Date().getFullYear();
 
       if (!homeTeamId || !awayTeamId || !leagueId) {
+        // Truly invalid (no team IDs ever) — safe to delete
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
         deleted++;
         console.log(`Fixture ${fixtureIdStr}: Invalid fixture data — DELETED`);
