@@ -33,6 +33,7 @@ export type Database = {
           id: string
           injury_impact_away: number | null
           injury_impact_home: number | null
+          is_diamond: boolean
           is_live: boolean | null
           is_locked: boolean | null
           is_premium: boolean | null
@@ -79,6 +80,7 @@ export type Database = {
           id?: string
           injury_impact_away?: number | null
           injury_impact_home?: number | null
+          is_diamond?: boolean
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
@@ -125,6 +127,7 @@ export type Database = {
           id?: string
           injury_impact_away?: number | null
           injury_impact_home?: number | null
+          is_diamond?: boolean
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
