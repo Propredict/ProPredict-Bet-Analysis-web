@@ -5659,6 +5659,30 @@ async function assignTiers(
       .in("id", Array.from(premiumIds));
   }
 
+  // Mark Safe Picks (Premium subset with confidence >= 85 AND stable variance)
+  // First reset all is_safe_pick for both dates (idempotent)
+  await supabase
+    .from("ai_predictions")
+    .update({ is_safe_pick: false })
+    .in("match_date", [todayStr, tomorrowStr]);
+
+  const safePickIds = premiumPicks
+    .filter((p: any) =>
+      (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE &&
+      p.variance_stable === true
+    )
+    .map((p: any) => p.id);
+
+  if (safePickIds.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_safe_pick: true })
+      .in("id", safePickIds);
+    console.log(`[SAFE PICK] Marked ${safePickIds.length} matches as Safe Pick (conf≥85 + stable)`);
+  } else {
+    console.log(`[SAFE PICK] No qualifying matches today (need conf≥85 + variance_stable=true)`);
+  }
+
   // Ensure Pro & Free are unlocked
   const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
   if (visibleNonPremium.length > 0) {
