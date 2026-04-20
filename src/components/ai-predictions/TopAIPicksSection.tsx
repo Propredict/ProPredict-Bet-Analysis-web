@@ -169,13 +169,16 @@ export function TopAIPicksSection({
             // Cards within unlockedCount → bypass paywall (forceUnlocked).
             // Cards beyond unlockedCount → respect paywall (locked teaser).
             const isUnlockedSlot = idx < unlockedCount;
+            // For LOCKED slots: force "premium" tier so user sees ALL tabs (Goals, BTTS, DC, Combo)
+            // with blurred content — maximizes FOMO and shows full value of upgrade.
+            const effectiveTier = isUnlockedSlot ? realTier : "premium";
             return (
               <div
                 key={rp.prediction.id}
-                className="relative shrink-0 w-[88vw] max-w-[340px] snap-start lg:w-auto lg:max-w-none lg:shrink"
+                className="relative shrink-0 w-[88vw] max-w-[340px] snap-start lg:w-auto lg:max-w-none lg:shrink pt-3"
               >
                 {/* Label badge floating top-right */}
-                <div className="absolute -top-2 left-2 z-10">
+                <div className="absolute top-0 left-2 z-10">
                   {rp.label === "elite" ? (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Sparkles className="w-2.5 h-2.5 mr-1 fill-current" />
@@ -189,7 +192,7 @@ export function TopAIPicksSection({
                   )}
                 </div>
                 {/* Market + league quick-scan chips */}
-                <div className="absolute -top-2 right-2 z-10 flex items-center gap-1">
+                <div className="absolute top-0 right-2 z-10 flex items-center gap-1">
                   {(() => {
                     const tag = getMarketTag(rp.prediction.prediction);
                     const tokens = getMarketColors(rp.prediction.prediction);
@@ -215,9 +218,9 @@ export function TopAIPicksSection({
                     </Badge>
                   )}
                 </div>
-                <div className="pt-2">
+                <div className="pt-1">
                   <AIPredictionCard
-                    overrideTier={realTier}
+                    overrideTier={effectiveTier}
                     forceUnlocked={isUnlockedSlot}
                     forceLocked={!isUnlockedSlot}
                     prediction={rp.prediction}
