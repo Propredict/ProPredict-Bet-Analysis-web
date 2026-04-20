@@ -6545,12 +6545,31 @@ async function handleBatchRegenerate(
   }
 
   const fixtures = fixturesJson?.response ?? [];
-  for (const f of fixtures) {
+
+  // === STEP 1 LEAGUE TIER FILTER ===
+  // Always include Tier 1+2. Allow Tier 3 ONLY when Tier 1+2 yields too few matches
+  // (e.g., midweek with no top leagues), so the page never goes empty.
+  const allFixtures = fixtures as any[];
+  const tier1Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) === 1).length;
+  const tier12Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) <= 2).length;
+  const allowTier3 = tier12Count < TIER_FALLBACK_THRESHOLD;
+
+  let filteredOut = 0;
+  for (const f of allFixtures) {
     const idStr = String(f?.fixture?.id ?? "");
-    if (idStr) fixtureById.set(idStr, f);
+    if (!idStr) continue;
+    const tier = getLeagueTier(f?.league?.id);
+    if (tier === 3 && !allowTier3) {
+      filteredOut++;
+      continue;
+    }
+    fixtureById.set(idStr, f);
   }
 
-  console.log(`Fetched ${fixtures.length} fixtures from API for ${matchDate}`);
+  console.log(
+    `[TIER FILTER] ${matchDate}: total=${allFixtures.length}, T1=${tier1Count}, T1+T2=${tier12Count}, ` +
+    `T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
+  );
 
   if (offset === 0) {
     const fixtureIds = Array.from(fixtureById.keys());
