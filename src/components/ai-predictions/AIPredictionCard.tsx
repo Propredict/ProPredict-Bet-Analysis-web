@@ -61,6 +61,7 @@ import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
 import { MarketTrendBadge } from "./MarketTrendBadge";
 import { ValueBetBadge } from "./ValueBetBadge";
+import { DataQualityBadge } from "./DataQualityBadge";
 
 interface Props {
   prediction: AIPrediction;
