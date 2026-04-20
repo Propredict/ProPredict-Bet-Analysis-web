@@ -127,12 +127,30 @@ export function TopAIPicksSection({
                   {rp.label === "elite" ? (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Crown className="w-2.5 h-2.5 mr-1 fill-current" />
-                      Elite Pick
+                      🏆 Top AI Pick
                     </Badge>
                   ) : (
                     <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Zap className="w-2.5 h-2.5 mr-1" />
                       Strong AI Signal
+                    </Badge>
+                  )}
+                </div>
+                {/* Market + league quick-scan chips */}
+                <div className="absolute -top-2 right-2 z-10 flex items-center gap-1">
+                  <Badge
+                    variant="outline"
+                    className="bg-background/90 backdrop-blur border-amber-500/40 text-amber-300 text-[8px] md:text-[9px] font-semibold px-1.5 py-0.5"
+                  >
+                    {getMarketTag(rp.prediction.prediction)}
+                  </Badge>
+                  {rp.prediction.league && (
+                    <Badge
+                      variant="outline"
+                      className="hidden sm:inline-flex bg-background/90 backdrop-blur border-border/60 text-muted-foreground text-[8px] md:text-[9px] px-1.5 py-0.5 max-w-[110px] truncate"
+                      title={rp.prediction.league}
+                    >
+                      {rp.prediction.league}
                     </Badge>
                   )}
                 </div>
