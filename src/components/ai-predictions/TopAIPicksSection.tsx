@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Trophy, Sparkles, Zap, Lock } from "lucide-react";
+import { Crown, Trophy, Sparkles, Zap, Lock, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AIPredictionCard } from "./AIPredictionCard";
 import type { RankedPick } from "./utils/topPicksRanking";
@@ -59,8 +59,26 @@ export function TopAIPicksSection({
   getPredictionTier,
 }: Props) {
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showHint, setShowHint] = useState(true);
 
   if (picks.length === 0) return null;
+
+  // Hide swipe hint after user starts scrolling
+  // (also auto-hide after 6s in case they don't interact)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (el.scrollLeft > 20) setShowHint(false);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    const t = setTimeout(() => setShowHint(false), 6000);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      clearTimeout(t);
+    };
+  }, []);
 
   // Unlocked count per tier:
   // - Premium/Admin: all 5 unlocked
