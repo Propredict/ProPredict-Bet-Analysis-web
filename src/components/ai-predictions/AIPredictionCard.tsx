@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap } from "lucide-react";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
