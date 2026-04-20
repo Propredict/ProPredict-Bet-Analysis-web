@@ -4531,13 +4531,36 @@ function calculatePrediction(
   } else if (prediction === "BTTS No") {
     if (homeXg > awayXg) scorePrediction = `${Math.max(1, Math.round(homeXg))}-0`;
     else scorePrediction = `0-${Math.max(1, Math.round(awayXg))}`;
-  } else if (prediction === "Under 2.5" || prediction === "Under 1.5") {
-    if (homeXg > awayXg) scorePrediction = "1-0";
-    else if (awayXg > homeXg) scorePrediction = "0-1";
-    else scorePrediction = "1-1";
+  } else if (prediction === "Under 2.5") {
+    // Variety based on xG: pick from 0-0, 1-0, 0-1, 1-1, 2-0, 0-2 weighted by attack strength
+    const totalXg = homeXg + awayXg;
+    const diff = homeXg - awayXg;
+    if (totalXg < 1.4) {
+      scorePrediction = diff > 0.4 ? "1-0" : diff < -0.4 ? "0-1" : "0-0";
+    } else if (totalXg < 2.0) {
+      if (diff > 0.6) scorePrediction = "2-0";
+      else if (diff < -0.6) scorePrediction = "0-2";
+      else if (diff > 0.2) scorePrediction = "1-0";
+      else if (diff < -0.2) scorePrediction = "0-1";
+      else scorePrediction = "1-1";
+    } else {
+      // Total xG 2.0-2.5: more goals likely → 2-0, 1-1, 0-2, 2-1 mix
+      if (diff > 0.5) scorePrediction = "2-0";
+      else if (diff < -0.5) scorePrediction = "0-2";
+      else scorePrediction = "1-1";
+    }
+  } else if (prediction === "Under 1.5") {
+    const diff = homeXg - awayXg;
+    if (Math.abs(diff) < 0.3) scorePrediction = homeXg + awayXg < 0.9 ? "0-0" : "1-0";
+    else if (diff > 0) scorePrediction = "1-0";
+    else scorePrediction = "0-1";
   } else if (prediction === "Under 3.5") {
-    if (homeXg > awayXg) scorePrediction = "2-0";
-    else scorePrediction = "1-1";
+    const diff = homeXg - awayXg;
+    if (diff > 0.7) scorePrediction = "2-1";
+    else if (diff < -0.7) scorePrediction = "1-2";
+    else if (Math.abs(diff) < 0.3) scorePrediction = "1-1";
+    else if (diff > 0) scorePrediction = "2-0";
+    else scorePrediction = "0-2";
   } else if (prediction.startsWith("DC")) {
     scorePrediction = predictScoreV2({
       homeGoalRate, awayGoalRate, homeWin, awayWin, draw,
