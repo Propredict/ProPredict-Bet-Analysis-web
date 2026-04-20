@@ -7984,6 +7984,23 @@ serve(async (req: Request) => {
       return handleRegenerate(apiKey);
     }
 
+    // Tier-only reassignment: re-runs assignTiers + Premium Edge logic
+    // on existing rows WITHOUT calling API-Football (no rate-limit risk).
+    if (body.tierAssignmentOnly === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const today = new Date();
+      const tomorrow = new Date(today.getTime() + 86400000);
+      const todayStr = today.toISOString().split("T")[0];
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
+      const result = await assignTiers(supabase, todayStr, tomorrowStr);
+      return new Response(
+        JSON.stringify({ ok: true, mode: "tierAssignmentOnly", todayStr, tomorrowStr, ...result }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Single fixture mode (unchanged)
     const fixtureId = body.fixtureId;
 
