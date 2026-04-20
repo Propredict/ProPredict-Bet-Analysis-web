@@ -377,8 +377,12 @@ export default function AIPredictions() {
   const safePicks = useMemo(() => {
     return [...globalRankingBase]
       .filter((p) => {
-        if ((p.confidence ?? 0) < 70) return false;
-        if (!isLowRiskPrediction(p.prediction)) return false;
+        const conf = p.confidence ?? 0;
+        if (conf < 70) return false;
+        // Low-risk market OR a very strong 1X2 pick (conf ≥ 82%)
+        const lowRisk = isLowRiskPrediction(p.prediction);
+        const strongMain = conf >= 82 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
+        if (!lowRisk && !strongMain) return false;
         // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
         const xgTotal =
           typeof (p as any).xg_total === "number"
