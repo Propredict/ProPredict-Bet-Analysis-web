@@ -5775,6 +5775,26 @@ async function processBatch(
         continue;
       }
 
+      // === STEP 1 DATA QUALITY GATE ===
+      // Require ≥5 recent matches per team OR ≥5 played season matches per team.
+      // Lower-tier leagues (Tier 3) are held to a stricter bar to keep the page premium.
+      const homeRecent = Math.max(realHomeForm.length, homeStats?.played ?? 0);
+      const awayRecent = Math.max(realAwayForm.length, awayStats?.played ?? 0);
+      const fixtureLeagueId = fixtureById.get(fixtureIdStr)?.league?.id ?? null;
+      const tier = getLeagueTier(fixtureLeagueId);
+      const minRequired = tier === 3 ? 8 : MIN_SEASON_MATCHES; // 5 for T1/T2, 8 for T3
+      if (homeRecent < minRequired || awayRecent < minRequired) {
+        console.log(
+          `[DATA QUALITY] Skip ${fixtureIdStr} (T${tier}): home=${homeRecent}, away=${awayRecent}, required>=${minRequired}`
+        );
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Low-data match (T${tier}, ${homeRecent}/${awayRecent})`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
+        locked++;
+        continue;
+      }
+
       let newPrediction = calculatePrediction(
         homeForm,
         awayForm,
