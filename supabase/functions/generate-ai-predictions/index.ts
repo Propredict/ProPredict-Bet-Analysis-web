@@ -5533,9 +5533,73 @@ async function assignTiers(
   const premiumCandidates = sorted.filter(
     (p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE
   );
-  // Hard cap → top 10 stay Premium, rest demoted to Pro pool
-  const premiumPicks = premiumCandidates.slice(0, PREMIUM_MAX_COUNT);
-  const premiumOverflow = premiumCandidates.slice(PREMIUM_MAX_COUNT);
+
+  // === STEP 5 — SMART DIVERSITY FILTER (soft) ===
+  // Caps:
+  //   - Daily global: max 4 UNDER 2.5
+  //   - Per tier:     max 5 of the same bet type
+  // Priority: highest confidence ALWAYS wins. Diversity applies AFTER ranking.
+  // Quality > diversity → never force-include weak picks.
+  const MAX_UNDER_PER_DAY = 4;
+  const MAX_SAME_TYPE_PER_TIER = 5;
+
+  const classifyBet = (raw: string | null | undefined): string => {
+    const p = (raw ?? "").toString().trim().toLowerCase();
+    if (!p) return "other";
+    if (p.includes("under")) return "under_2_5";
+    if (p.includes("over")) return "over_2_5";
+    if (p.includes("btts") || p.includes("both teams")) return "btts";
+    if (p === "1" || p === "home" || p.includes("home win")) return "home";
+    if (p === "2" || p === "away" || p.includes("away win")) return "away";
+    if (p === "x" || p === "draw") return "draw";
+    return p;
+  };
+
+  const dayUnderCount = { n: 0 };
+
+  const applyDiversity = (
+    pool: any[],
+    cap: number,
+    label: string
+  ): { kept: any[]; demoted: any[] } => {
+    const kept: any[] = [];
+    const demoted: any[] = [];
+    const typeCount = new Map<string, number>();
+
+    for (const p of pool) {
+      if (kept.length >= cap) {
+        demoted.push(p);
+        continue;
+      }
+      const t = classifyBet(p.prediction);
+      const tierCount = typeCount.get(t) ?? 0;
+
+      // Daily UNDER 2.5 cap (global across all tiers)
+      if (t === "under_2_5" && dayUnderCount.n >= MAX_UNDER_PER_DAY) {
+        demoted.push(p);
+        continue;
+      }
+      // Per-tier same-type cap
+      if (tierCount >= MAX_SAME_TYPE_PER_TIER) {
+        demoted.push(p);
+        continue;
+      }
+      kept.push(p);
+      typeCount.set(t, tierCount + 1);
+      if (t === "under_2_5") dayUnderCount.n++;
+    }
+
+    console.log(
+      `[STEP 5] Diversity ${label}: kept=${kept.length}, demoted=${demoted.length}, types=${JSON.stringify(Object.fromEntries(typeCount))}`
+    );
+    return { kept, demoted };
+  };
+
+  // Apply diversity to Premium first (already sorted by confidence)
+  const premiumDiv = applyDiversity(premiumCandidates, PREMIUM_MAX_COUNT, "Premium");
+  const premiumPicks = premiumDiv.kept;
+  // Premium overflow = anything beyond cap OR demoted by diversity
+  const premiumOverflow = premiumDiv.demoted;
   const premiumIds = new Set(premiumPicks.map((p: any) => p.id));
 
   // 2) PRO candidates: confidence 66–77 + premium overflow (still high quality)
