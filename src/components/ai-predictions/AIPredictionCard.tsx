@@ -76,6 +76,8 @@ interface Props {
   isUnlocking?: boolean;
   /** When true, bypass paywall and show full content with all tabs (used by Top AI Picks for promo cards) */
   forceUnlocked?: boolean;
+  /** When true, force locked teaser state even if user has access (used by Top AI Picks to hide picks beyond unlocked slot) */
+  forceLocked?: boolean;
 }
 
 const AIPredictionCardInner = ({ 
@@ -91,6 +93,7 @@ const AIPredictionCardInner = ({
   onUnlockClick,
   isUnlocking = false,
   forceUnlocked = false,
+  forceLocked = false,
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
@@ -103,7 +106,9 @@ const AIPredictionCardInner = ({
   const isDailyTier = displayTier === "free";
 
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
-  const hasAccess = forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
+  const hasAccess = forceLocked
+    ? false
+    : forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
   const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
 
   // Step 4 — "Strong Signal" badge: confidence >= 80 AND xG diff >= 0.8.
