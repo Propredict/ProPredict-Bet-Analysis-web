@@ -495,7 +495,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           <div className="flex items-center gap-1.5 py-2 px-3 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
             <Lock className="w-3 h-3 text-fuchsia-400" />
             <span className="text-[9px] md:text-[10px] text-muted-foreground">
-              💎 AI found <span className="text-fuchsia-400 font-semibold">stronger picks</span> — available in Pro & Premium
+              🔒 <span className="text-fuchsia-400 font-semibold">Stronger picks available in Premium</span>
             </span>
           </div>
         </div>

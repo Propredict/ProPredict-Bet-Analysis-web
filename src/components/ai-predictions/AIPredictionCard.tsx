@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap, DollarSign } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap, DollarSign, Lock } from "lucide-react";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
@@ -313,9 +313,9 @@ const AIPredictionCardInner = ({
           <div className="px-2 md:px-3 pb-2 md:pb-3 space-y-2">
             {/* Teaser text — FOMO */}
             <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
-              <Crown className="w-3 h-3 text-fuchsia-400" />
+              <Lock className="w-3 h-3 text-fuchsia-400" />
               <span className="text-[9px] md:text-[10px] text-muted-foreground">
-                <span className="text-fuchsia-400 font-semibold">+3 stronger picks</span> available in Premium
+                🔒 <span className="text-fuchsia-400 font-semibold">Stronger picks available in Premium</span>
               </span>
             </div>
             
