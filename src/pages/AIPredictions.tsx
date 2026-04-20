@@ -715,6 +715,31 @@ export default function AIPredictions() {
           </Card>
 
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
+          {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
+          {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
+            <div className="relative overflow-hidden rounded-xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-4 md:py-3 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
+              <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
+              <div className="relative flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
+                  <Flame className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
+                    🔥 AI Elite Picks
+                  </h2>
+                  <p className="text-[10px] md:text-[11px] text-muted-foreground leading-tight">
+                    Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
+                  </p>
+                </div>
+                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 shadow shrink-0">
+                  <Sparkles className="w-2.5 h-2.5 mr-1" />
+                  Curated
+                </Badge>
+              </div>
+            </div>
+          )}
+
           {/* 💎 DIAMOND PICK — single elite pick of the day (backend-flagged) */}
           {diamondPick && (tierFilter === "all" || tierFilter === "premium") && (
             <Card
