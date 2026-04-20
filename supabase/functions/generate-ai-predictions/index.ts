@@ -10,20 +10,23 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-// ============ TIER CRITERIA (v3) ============
-// 0–59  → FREE
-// 60–75 → PRO
-// 75+   → PREMIUM
-// 85+   → SAFE PICK (subset of PREMIUM, shown first)
-const MIN_DISPLAY_CONFIDENCE = 45;
-const FREE_MAX_CONFIDENCE = 59;
-const PRO_MIN_CONFIDENCE = 60;
-const PRO_MAX_CONFIDENCE = 75;
-const PREMIUM_MIN_CONFIDENCE = 76;
+// ============ TIER CRITERIA (v4 — Step 4 hybrid) ============
+// Step 4 spec: Quality > Quantity. Hard caps per tier, no force-fill.
+//   < 55           → HIDDEN (do not show)
+//   55–65          → FREE      (max 30, no minimum — show fewer if needed)
+//   66–77          → PRO       (max 20)
+//   ≥ 78           → PREMIUM   (max 10 — overflow demoted to PRO)
+//   ≥ 85           → SAFE PICK (subset of PREMIUM, top 3 shown first)
+const MIN_DISPLAY_CONFIDENCE = 55;
+const FREE_MAX_CONFIDENCE = 65;
+const PRO_MIN_CONFIDENCE = 66;
+const PRO_MAX_CONFIDENCE = 77;
+const PREMIUM_MIN_CONFIDENCE = 78;
 const SAFE_PICK_MIN_CONFIDENCE = 85;
 
-const PREMIUM_MAX_COUNT = 15;
-const PREMIUM_MIN_COUNT = 5;
+const PREMIUM_MAX_COUNT = 10;
+const PRO_MAX_COUNT = 20;
+const FREE_MAX_COUNT = 30;
 
 // ============ MINIMUM DATA THRESHOLDS ============
 const MIN_SEASON_MATCHES = 5;
