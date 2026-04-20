@@ -262,16 +262,22 @@ serve(async (req) => {
       .eq("result_status", "pending")
       .limit(limit);
 
-    const today = new Date().toISOString().slice(0, 10);
+    // Include yesterday too — predictions for today's matches in late timezones
+    // can still have match_date = yesterday (UTC). This keeps the enrichment
+    // window inclusive without touching already-resolved past predictions
+    // (those have result_status != 'pending' and are filtered out above).
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
 
     if (mode === "today") {
-      query = query.gte("match_date", today);
+      query = query.gte("match_date", yesterday);
     } else if (mode === "ids" && Array.isArray(body.ids) && body.ids.length > 0) {
       query = query.in("id", body.ids.slice(0, 200));
     } else if (mode === "missing") {
-      query = query.gte("match_date", today);
+      query = query.gte("match_date", yesterday);
     } else if (mode === "all") {
-      query = query.gte("match_date", today);
+      query = query.gte("match_date", yesterday);
     }
 
     const { data: rows, error: fetchErr } = await query;
