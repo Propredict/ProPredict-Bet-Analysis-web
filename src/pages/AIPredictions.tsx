@@ -414,6 +414,13 @@ export default function AIPredictions() {
                   <p className="text-[9px] sm:text-[10px] text-muted-foreground">ML-powered match analysis</p>
                 </div>
               </div>
+              <div
+                className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-[9px] font-semibold text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.35)]"
+                title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                AI Balanced Picks
+              </div>
             </div>
             <AIPredictionsSidebar
               selectedDay={day}
