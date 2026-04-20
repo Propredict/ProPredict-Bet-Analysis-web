@@ -10,20 +10,23 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-// ============ TIER CRITERIA (v3) ============
-// 0–59  → FREE
-// 60–75 → PRO
-// 75+   → PREMIUM
-// 85+   → SAFE PICK (subset of PREMIUM, shown first)
-const MIN_DISPLAY_CONFIDENCE = 45;
-const FREE_MAX_CONFIDENCE = 59;
-const PRO_MIN_CONFIDENCE = 60;
-const PRO_MAX_CONFIDENCE = 75;
-const PREMIUM_MIN_CONFIDENCE = 76;
+// ============ TIER CRITERIA (v4 — Step 4 hybrid) ============
+// Step 4 spec: Quality > Quantity. Hard caps per tier, no force-fill.
+//   < 55           → HIDDEN (do not show)
+//   55–65          → FREE      (max 30, no minimum — show fewer if needed)
+//   66–77          → PRO       (max 20)
+//   ≥ 78           → PREMIUM   (max 10 — overflow demoted to PRO)
+//   ≥ 85           → SAFE PICK (subset of PREMIUM, top 3 shown first)
+const MIN_DISPLAY_CONFIDENCE = 55;
+const FREE_MAX_CONFIDENCE = 65;
+const PRO_MIN_CONFIDENCE = 66;
+const PRO_MAX_CONFIDENCE = 77;
+const PREMIUM_MIN_CONFIDENCE = 78;
 const SAFE_PICK_MIN_CONFIDENCE = 85;
 
-const PREMIUM_MAX_COUNT = 15;
-const PREMIUM_MIN_COUNT = 5;
+const PREMIUM_MAX_COUNT = 10;
+const PRO_MAX_COUNT = 20;
+const FREE_MAX_COUNT = 30;
 
 // ============ MINIMUM DATA THRESHOLDS ============
 const MIN_SEASON_MATCHES = 5;
@@ -5477,21 +5480,22 @@ async function premiumEnhance(
 
 
 /**
- * Assign tiers to all predictions based on confidence (STRICT):
- * - HIDDEN: confidence < 60% (not displayed)
- * - FREE: confidence >= 60% AND < 75%
- * - PRO: 75–84%
- * - PREMIUM: >= 85%
- * No exceptions (risk/draw caps must NOT downgrade >=85% into PRO).
- * Tier assignment must run AFTER regeneration.
+ * Step 4 — Assign tiers with HARD CAPS (Quality > Quantity).
+ *
+ * Pipeline:
+ *   1) Sort all unlocked predictions by confidence DESC.
+ *   2) Hide everything below MIN_DISPLAY_CONFIDENCE (55) — locked, not shown.
+ *   3) PREMIUM: confidence ≥ 78, hard cap 10. Overflow demoted to PRO pool.
+ *   4) PRO:     confidence 66–77 + Premium overflow, hard cap 20.
+ *   5) FREE:    confidence 55–65, hard cap 30 (no force-fill minimum).
+ *
+ * Anything that doesn't fit a tier slot is locked (hidden).
  */
 async function assignTiers(
   supabase: any,
   todayStr: string,
   tomorrowStr: string
 ): Promise<{ free: number; pro: number; premium: number }> {
-  // Fetch unlocked predictions for today and tomorrow
-  // Include both "pending" and NULL (some rows may be NULL historically)
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
     .select("id, confidence, is_locked, result_status")
@@ -5505,63 +5509,114 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // === TIER DISTRIBUTION (v3) ===
-  // Sort by confidence descending
-  const sorted = allPredictions
+  // === STEP 4 — TIER DISTRIBUTION (v4) ===
+  const sorted = [...allPredictions]
     .filter((p: any) => (p.confidence ?? 0) >= MIN_DISPLAY_CONFIDENCE)
     .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
-  const total = sorted.length;
-  
-  if (total === 0) {
-    console.log("No predictions to distribute across tiers.");
+
+  const belowFloor = allPredictions.length - sorted.length;
+
+  if (sorted.length === 0) {
+    console.log(`[STEP 4] No predictions ≥${MIN_DISPLAY_CONFIDENCE}% — nothing to display.`);
+    // Lock everything below floor
+    const lockIds = allPredictions.map((p: any) => p.id);
+    if (lockIds.length > 0) {
+      await supabase
+        .from("ai_predictions")
+        .update({ is_locked: true, is_premium: false })
+        .in("id", lockIds);
+    }
     return { free: 0, pro: 0, premium: 0 };
   }
 
-  // PREMIUM: confidence > 75, top 10-15 matches
-  const premiumPreds = sorted.filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE)
-    .slice(0, PREMIUM_MAX_COUNT);
-  const premiumIds = premiumPreds.map((p: any) => p.id);
+  // 1) PREMIUM candidates: confidence ≥ 78
+  const premiumCandidates = sorted.filter(
+    (p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE
+  );
+  // Hard cap → top 10 stay Premium, rest demoted to Pro pool
+  const premiumPicks = premiumCandidates.slice(0, PREMIUM_MAX_COUNT);
+  const premiumOverflow = premiumCandidates.slice(PREMIUM_MAX_COUNT);
+  const premiumIds = new Set(premiumPicks.map((p: any) => p.id));
 
-  // Safe picks: confidence > 85 (subset of premium, marked via is_premium flag)
-  const safePicks = premiumPreds.filter((p: any) => (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE)
-    .slice(0, 3);
-  const safePickIds = safePicks.map((p: any) => p.id);
+  // 2) PRO candidates: confidence 66–77 + premium overflow (still high quality)
+  const proCandidates = [
+    ...premiumOverflow,
+    ...sorted.filter((p: any) => {
+      const c = p.confidence ?? 0;
+      return c >= PRO_MIN_CONFIDENCE && c <= PRO_MAX_CONFIDENCE && !premiumIds.has(p.id);
+    }),
+  ]
+    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0))
+    .slice(0, PRO_MAX_COUNT);
+  const proIds = new Set(proCandidates.map((p: any) => p.id));
 
-  // PRO: confidence 60-75, next 20-30
-  const proPreds = sorted.filter((p: any) => {
-    const conf = p.confidence ?? 0;
-    return conf >= PRO_MIN_CONFIDENCE && conf <= PRO_MAX_CONFIDENCE && !premiumIds.includes(p.id);
-  }).slice(0, 30);
-  
-  // FREE: all remaining
-  const freeCount = total - premiumIds.length - proPreds.length;
+  // 3) FREE candidates: confidence 55–65 (no minimum — Quality > Quantity)
+  const freePicks = sorted
+    .filter((p: any) => {
+      const c = p.confidence ?? 0;
+      return c >= MIN_DISPLAY_CONFIDENCE && c <= FREE_MAX_CONFIDENCE && !premiumIds.has(p.id) && !proIds.has(p.id);
+    })
+    .slice(0, FREE_MAX_COUNT);
+  const freeIds = new Set(freePicks.map((p: any) => p.id));
 
-  console.log(`\n=== TIER DISTRIBUTION (v3) ===`);
-  console.log(`Total: ${total}, Premium: ${premiumIds.length} (Safe: ${safePickIds.length}), Pro: ${proPreds.length}, Free: ${freeCount}`);
+  // 4) Anything in `sorted` that didn't make a tier slot → lock (hidden)
+  const overflowIds = sorted
+    .filter((p: any) => !premiumIds.has(p.id) && !proIds.has(p.id) && !freeIds.has(p.id))
+    .map((p: any) => p.id);
 
-  // Reset all to not premium for the two dates
-  const { error: resetError } = await supabase
+  // Safe picks: subset of premium ≥ 85
+  const safePickCount = premiumPicks.filter(
+    (p: any) => (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE
+  ).length;
+
+  console.log(`\n=== STEP 4 — TIER DISTRIBUTION (v4, hard caps) ===`);
+  console.log(
+    `Below floor (<${MIN_DISPLAY_CONFIDENCE}%): ${belowFloor} hidden | ` +
+    `Premium: ${premiumPicks.length}/${PREMIUM_MAX_COUNT} (Safe: ${safePickCount}) | ` +
+    `Pro: ${proCandidates.length}/${PRO_MAX_COUNT} (incl. ${premiumOverflow.length} demoted) | ` +
+    `Free: ${freePicks.length}/${FREE_MAX_COUNT} | ` +
+    `Tier overflow hidden: ${overflowIds.length}`
+  );
+
+  // ---- Apply DB updates ----
+
+  // Reset is_premium for both dates
+  await supabase
     .from("ai_predictions")
     .update({ is_premium: false })
     .in("match_date", [todayStr, tomorrowStr]);
 
-  if (resetError) {
-    console.error("Error resetting premium flags:", resetError);
-  }
-
-  // Mark premium predictions
-  if (premiumIds.length > 0) {
-    const { error: premiumError } = await supabase
+  // Mark Premium
+  if (premiumIds.size > 0) {
+    await supabase
       .from("ai_predictions")
-      .update({ is_premium: true })
-      .in("id", premiumIds);
-
-    if (premiumError) {
-      console.error("Error assigning premium flags:", premiumError);
-    }
+      .update({ is_premium: true, is_locked: false })
+      .in("id", Array.from(premiumIds));
   }
 
-  return { free: freeCount, pro: proPreds.length, premium: premiumIds.length };
+  // Ensure Pro & Free are unlocked
+  const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
+  if (visibleNonPremium.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: false, is_premium: false })
+      .in("id", visibleNonPremium);
+  }
+
+  // Lock overflow (couldn't fit any tier cap)
+  const toLock = [...overflowIds, ...allPredictions.filter((p: any) => (p.confidence ?? 0) < MIN_DISPLAY_CONFIDENCE).map((p: any) => p.id)];
+  if (toLock.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: true, is_premium: false })
+      .in("id", toLock);
+  }
+
+  return {
+    free: freePicks.length,
+    pro: proCandidates.length,
+    premium: premiumPicks.length,
+  };
 }
 
 async function markPredictionLocked(
