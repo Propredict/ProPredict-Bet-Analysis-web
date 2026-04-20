@@ -118,14 +118,21 @@ export default function MatchPreviews() {
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
 
-    // Sort all valid predictions by confidence descending, then league priority
+    // Sort by best market pick % (the number actually shown on the card),
+    // then by general confidence as tie-breaker, then league priority.
+    // This guarantees the highest displayed "Confidence X%" sits on top —
+    // i.e. the safest matches with the highest probability come first.
     const pool = [...valid]
       .filter(p => (p.confidence ?? 0) >= 50)
+      .map(p => ({ p, bestPct: getBestMarketPickWithLabel(p as any).pct }))
       .sort((a, b) => {
-        const confDiff = (b.confidence ?? 0) - (a.confidence ?? 0);
+        const pctDiff = b.bestPct - a.bestPct;
+        if (pctDiff !== 0) return pctDiff;
+        const confDiff = (b.p.confidence ?? 0) - (a.p.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
-        return getLeaguePriority(a.league) - getLeaguePriority(b.league);
-      });
+        return getLeaguePriority(a.p.league) - getLeaguePriority(b.p.league);
+      })
+      .map(x => x.p);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
