@@ -17,10 +17,21 @@ export interface RankedPick {
 }
 
 /**
- * Parse the `variance:STABLE|UNSTABLE|<score>` tag from key_factors.
- * Returns 0 if missing (treated as neutral).
+ * Get variance stability — prefers structured DB columns (variance_stable, variance_score),
+ * falls back to the legacy `variance:STABLE|UNSTABLE|<score>` tag in key_factors
+ * for back-compat with predictions generated before the DB columns were added.
  */
 function getVarianceScore(p: AIPrediction): { stable: boolean; score: number } {
+  // 1) Prefer structured DB columns
+  const dbStable = (p as any).variance_stable;
+  const dbScore = (p as any).variance_score;
+  if (typeof dbStable === "boolean" || typeof dbScore === "number") {
+    return {
+      stable: dbStable === true,
+      score: typeof dbScore === "number" && Number.isFinite(dbScore) ? dbScore : 50,
+    };
+  }
+  // 2) Legacy fallback — parse key_factors tag
   const f = p.key_factors;
   if (!Array.isArray(f)) return { stable: false, score: 50 };
   const tag = f.find((s) => typeof s === "string" && s.startsWith("variance:"));
