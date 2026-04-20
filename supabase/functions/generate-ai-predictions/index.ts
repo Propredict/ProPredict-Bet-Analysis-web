@@ -7686,15 +7686,23 @@ async function handleBatchRegenerate(
         if (insertErrors.length > 0) {
           console.error(`[DEBUG] Insert errors:`, insertErrors.slice(0, 3));
         }
-      } else if (existingDateIds.size === 0 && existingGlobalIds.size > 0) {
-        // match_ids exist but for different dates - update them to this date
-        console.log(`[DEBUG] Found ${existingGlobalIds.size} match_ids from other dates. Updating match_date to ${matchDate}...`);
-        const idsToUpdate = fixtureIds.filter((id) => existingGlobalIds.has(id) && !existingDateIds.has(id));
-        for (const mid of idsToUpdate) {
+      }
+
+      // Always re-attach existing rows whose match_id matches today's API list
+      // but whose match_date is wrong. Without this, fixtures that were ever
+      // inserted on another date stay frozen there and never re-enrich.
+      const idsToReattach = fixtureIds.filter(
+        (id) => existingGlobalIds.has(id) && !existingDateIds.has(id)
+      );
+      if (idsToReattach.length > 0) {
+        console.log(
+          `[DEBUG] Re-attaching ${idsToReattach.length} existing match_ids to ${matchDate} for fresh enrichment...`
+        );
+        const todayStr2 = new Date().toISOString().split("T")[0];
+        const matchDay = matchDate === todayStr2 ? "today" : "tomorrow";
+        for (const mid of idsToReattach) {
           const f = fixtureById.get(mid);
           const matchTime = String(f?.fixture?.date ?? "").split("T")[1]?.slice(0, 5) ?? null;
-          const matchDay = matchDate === new Date().toISOString().split("T")[0] ? "today" : "tomorrow";
-          
           await supabase
             .from("ai_predictions")
             .update({
@@ -7709,7 +7717,7 @@ async function handleBatchRegenerate(
             })
             .eq("match_id", mid);
         }
-        console.log(`[DEBUG] Updated ${idsToUpdate.length} predictions to match_date=${matchDate}`);
+        console.log(`[DEBUG] Re-attached ${idsToReattach.length} predictions to match_date=${matchDate}`);
       }
     } else {
       console.log(`[DEBUG] fixtureIds is empty - no fixtures from API`);
