@@ -745,7 +745,7 @@ export default function AIPredictions() {
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
                 </div>
                 <Badge className="mt-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
-                  85%+ Confidence • Lowest Risk Selections
+                  🛡️ Low Risk • 75%+ Confidence • Over 1.5 / Double Chance / BTTS
                 </Badge>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
