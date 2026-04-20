@@ -5780,7 +5780,18 @@ async function assignTiers(
       const c = p.confidence ?? 0;
       return c >= PRO_MIN_CONFIDENCE && c <= PRO_MAX_CONFIDENCE && !premiumIds.has(p.id);
     }),
-  ].sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
+  ]
+    .filter((p: any) => {
+      const reason = failsBaselineGate(p);
+      if (reason) {
+        console.log(
+          `[PRO GATE] Demoted ${p.home_team} vs ${p.away_team} (conf ${p.confidence}%) — ${reason}`
+        );
+        return false;
+      }
+      return true;
+    })
+    .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
   const proDiv = applyDiversity(proPool, PRO_MAX_COUNT, "Pro");
   const proCandidates = proDiv.kept;
   const proIds = new Set(proCandidates.map((p: any) => p.id));
@@ -5790,6 +5801,16 @@ async function assignTiers(
     .filter((p: any) => {
       const c = p.confidence ?? 0;
       return c >= MIN_DISPLAY_CONFIDENCE && c <= FREE_MAX_CONFIDENCE && !premiumIds.has(p.id) && !proIds.has(p.id);
+    })
+    .filter((p: any) => {
+      const reason = failsBaselineGate(p);
+      if (reason) {
+        console.log(
+          `[FREE GATE] Hidden ${p.home_team} vs ${p.away_team} (conf ${p.confidence}%) — ${reason}`
+        );
+        return false;
+      }
+      return true;
     });
   const freeDiv = applyDiversity(freePool, FREE_MAX_COUNT, "Free");
   const freePicks = freeDiv.kept;
