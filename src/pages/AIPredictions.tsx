@@ -728,6 +728,8 @@ export default function AIPredictions() {
             >
               <div className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-cyan-400/30 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-sky-500/30 blur-3xl" />
+              {/* Subtle moving shine overlay for premium feel */}
+              <div className="pointer-events-none absolute inset-0 animate-diamond-shine opacity-70" />
               <div className="relative p-3 md:p-5">
                 <div className="flex flex-col items-center text-center mb-3 md:mb-4">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -738,15 +740,23 @@ export default function AIPredictions() {
                     <div className="h-px w-10 md:w-14 bg-gradient-to-l from-transparent to-blue-500/70" />
                   </div>
                   <h2 className="text-base md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-300 bg-clip-text text-transparent">
-                    Diamond Pick of the Day
+                    💎 Diamond AI Pick
                   </h2>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 max-w-md">
-                    Single highest-conviction AI selection — strict quality gates
+                  <p className="text-[11px] md:text-sm text-foreground/90 mt-1 max-w-md font-medium">
+                    Strong xG dominance + consistent recent form — single highest-conviction selection
                   </p>
-                  <Badge className="mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2.5 py-0.5">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    💎 Elite • Tier 1/2 • Stable Form
-                  </Badge>
+                  <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+                    <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md shadow-emerald-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
+                      🛡️ Low Risk
+                    </Badge>
+                    <Badge className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Elite Signal
+                    </Badge>
+                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-500/10 text-cyan-200 text-[9px] md:text-[10px] px-2 py-0.5">
+                      Tier 1/2 • Stable Form
+                    </Badge>
+                  </div>
                 </div>
                 <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
                   <AIPredictionCard
@@ -763,6 +773,17 @@ export default function AIPredictions() {
                     onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                     isUnlocking={unlockingId === diamondPick.id}
                   />
+                </div>
+                {/* Diamond CTA */}
+                <div className="mt-3 md:mt-4 flex justify-center">
+                  <Button
+                    onClick={() => navigate("/diamond-pick")}
+                    size="sm"
+                    className="h-9 px-4 text-xs md:text-sm font-semibold bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:opacity-90 text-white border-0 shadow-lg shadow-cyan-500/40 rounded-full gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    View Full Analysis
+                  </Button>
                 </div>
               </div>
             </Card>
