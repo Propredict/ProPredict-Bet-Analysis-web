@@ -348,7 +348,7 @@ export default function AIPredictions() {
   const safePicks = useMemo(() => {
     return [...globalRankingBase]
       .filter((p) => {
-        if ((p.confidence ?? 0) < 75) return false;
+        if ((p.confidence ?? 0) < 70) return false;
         if (!isLowRiskPrediction(p.prediction)) return false;
         const xg = parseXgFromFactors(p.key_factors);
         // If xG present, enforce total ≥ 2.2; otherwise allow.

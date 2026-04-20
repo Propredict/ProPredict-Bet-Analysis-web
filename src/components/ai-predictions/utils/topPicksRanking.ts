@@ -125,11 +125,18 @@ export function selectTopPicks(predictions: AIPrediction[], limit: number): Rank
   const strictPool = pending.filter(
     (p) => (p.confidence ?? 0) >= 70 && isTierAllowed(p.league),
   );
-  // Soft fallback: if strict pool is too small (e.g. weekday with no top
-  // leagues), allow ANY league but require confidence ≥70. Quality > tier.
-  const pool = strictPool.length >= 3
-    ? strictPool
-    : pending.filter((p) => (p.confidence ?? 0) >= 70);
+  // Soft fallback #1: any league, confidence ≥70.
+  const softPool = pending.filter((p) => (p.confidence ?? 0) >= 70);
+  // Soft fallback #2 (weak day): any league, top by confidence, min 55.
+  // Ensures the section is never empty when the day's quality is low.
+  const weakDayPool = pending
+    .filter((p) => (p.confidence ?? 0) >= 55)
+    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+
+  let pool: AIPrediction[];
+  if (strictPool.length >= 3) pool = strictPool;
+  else if (softPool.length >= 3) pool = softPool;
+  else pool = weakDayPool;
   const ranked = pool.map(calcTopPickScore).sort((a, b) => b.score - a.score);
 
   const seen = new Set<string>();
