@@ -387,3 +387,21 @@
 .animate-pulse-glow-star {
   animation: pulseGlowStar 2.5s ease-in-out infinite;
 }
+
+@keyframes diamondShine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-diamond-shine {
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    hsla(190, 95%, 75%, 0.18) 45%,
+    hsla(210, 100%, 80%, 0.28) 50%,
+    hsla(190, 95%, 75%, 0.18) 55%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: diamondShine 3.5s linear infinite;
+}

@@ -715,6 +715,31 @@ export default function AIPredictions() {
           </Card>
 
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
+          {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
+          {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
+            <div className="relative overflow-hidden rounded-xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-4 md:py-3 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
+              <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
+              <div className="relative flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
+                  <Flame className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
+                    🔥 AI Elite Picks
+                  </h2>
+                  <p className="text-[10px] md:text-[11px] text-muted-foreground leading-tight">
+                    Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
+                  </p>
+                </div>
+                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 shadow shrink-0">
+                  <Sparkles className="w-2.5 h-2.5 mr-1" />
+                  Curated
+                </Badge>
+              </div>
+            </div>
+          )}
+
           {/* 💎 DIAMOND PICK — single elite pick of the day (backend-flagged) */}
           {diamondPick && (tierFilter === "all" || tierFilter === "premium") && (
             <Card
@@ -728,6 +753,8 @@ export default function AIPredictions() {
             >
               <div className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-cyan-400/30 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-sky-500/30 blur-3xl" />
+              {/* Subtle moving shine overlay for premium feel */}
+              <div className="pointer-events-none absolute inset-0 animate-diamond-shine opacity-70" />
               <div className="relative p-3 md:p-5">
                 <div className="flex flex-col items-center text-center mb-3 md:mb-4">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -738,15 +765,23 @@ export default function AIPredictions() {
                     <div className="h-px w-10 md:w-14 bg-gradient-to-l from-transparent to-blue-500/70" />
                   </div>
                   <h2 className="text-base md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-300 bg-clip-text text-transparent">
-                    Diamond Pick of the Day
+                    💎 Diamond AI Pick
                   </h2>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 max-w-md">
-                    Single highest-conviction AI selection — strict quality gates
+                  <p className="text-[11px] md:text-sm text-foreground/90 mt-1 max-w-md font-medium">
+                    Strong xG dominance + consistent recent form — single highest-conviction selection
                   </p>
-                  <Badge className="mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2.5 py-0.5">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    💎 Elite • Tier 1/2 • Stable Form
-                  </Badge>
+                  <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+                    <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md shadow-emerald-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
+                      🛡️ Low Risk
+                    </Badge>
+                    <Badge className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Elite Signal
+                    </Badge>
+                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-500/10 text-cyan-200 text-[9px] md:text-[10px] px-2 py-0.5">
+                      Tier 1/2 • Stable Form
+                    </Badge>
+                  </div>
                 </div>
                 <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
                   <AIPredictionCard
@@ -763,6 +798,17 @@ export default function AIPredictions() {
                     onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                     isUnlocking={unlockingId === diamondPick.id}
                   />
+                </div>
+                {/* Diamond CTA */}
+                <div className="mt-3 md:mt-4 flex justify-center">
+                  <Button
+                    onClick={() => navigate("/diamond-pick")}
+                    size="sm"
+                    className="h-9 px-4 text-xs md:text-sm font-semibold bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:opacity-90 text-white border-0 shadow-lg shadow-cyan-500/40 rounded-full gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    View Full Analysis
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -792,7 +838,7 @@ export default function AIPredictions() {
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
                     <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
                     <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
-                      Safe Picks of the Day
+                      🛡️ Safe Pick of the Day
                     </h2>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
@@ -822,6 +868,21 @@ export default function AIPredictions() {
               </div>
             </div>
           )}
+
+          {/* 🏆 TOP 5 ELITE — moved BELOW Safe Pick per layout: 💎 → 🛡️ → 🏆 → 📊 */}
+          <TopAIPicksSection
+            picks={topPicks}
+            isAdmin={isAdmin}
+            isPremiumUser={isPremiumUser}
+            isProUser={isProUser}
+            isAuthenticated={isAuthenticated}
+            isFavorite={isFavorite}
+            isSaving={isSaving}
+            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+            unlockingId={unlockingId}
+            getPredictionTier={getPredictionTier}
+          />
 
           {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
           {!isPremiumUser && !isProUser && !isAdmin && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "pro" || tierFilter === "premium") && (

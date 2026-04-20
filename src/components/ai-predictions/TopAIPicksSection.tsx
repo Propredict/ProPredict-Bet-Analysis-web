@@ -24,6 +24,27 @@ interface Props {
   getPredictionTier: (p: AIPrediction) => "free" | "pro" | "premium";
 }
 
+/** Short market tag for visual scanning (BTTS, Over, 1X2, etc.) */
+function getMarketTag(prediction: string | null | undefined): string {
+  const p = (prediction ?? "").toLowerCase();
+  if (p.includes("btts")) return p.includes("no") ? "BTTS No" : "BTTS";
+  if (p.includes("over 1.5")) return "Over 1.5";
+  if (p.includes("over 2.5")) return "Over 2.5";
+  if (p.includes("over 3.5")) return "Over 3.5";
+  if (p.includes("under 2.5")) return "Under 2.5";
+  if (p.includes("under 3.5")) return "Under 3.5";
+  if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) {
+    if (p.includes("1x")) return "1X";
+    if (p.includes("x2")) return "X2";
+    if (p.includes("12")) return "12";
+    return "Double Chance";
+  }
+  if (prediction === "1") return "Home Win";
+  if (prediction === "2") return "Away Win";
+  if (prediction === "X") return "Draw";
+  return prediction ?? "Pick";
+}
+
 export function TopAIPicksSection({
   picks,
   isAdmin,
@@ -106,12 +127,30 @@ export function TopAIPicksSection({
                   {rp.label === "elite" ? (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Crown className="w-2.5 h-2.5 mr-1 fill-current" />
-                      Elite Pick
+                      🏆 Top AI Pick
                     </Badge>
                   ) : (
                     <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Zap className="w-2.5 h-2.5 mr-1" />
                       Strong AI Signal
+                    </Badge>
+                  )}
+                </div>
+                {/* Market + league quick-scan chips */}
+                <div className="absolute -top-2 right-2 z-10 flex items-center gap-1">
+                  <Badge
+                    variant="outline"
+                    className="bg-background/90 backdrop-blur border-amber-500/40 text-amber-300 text-[8px] md:text-[9px] font-semibold px-1.5 py-0.5"
+                  >
+                    {getMarketTag(rp.prediction.prediction)}
+                  </Badge>
+                  {rp.prediction.league && (
+                    <Badge
+                      variant="outline"
+                      className="hidden sm:inline-flex bg-background/90 backdrop-blur border-border/60 text-muted-foreground text-[8px] md:text-[9px] px-1.5 py-0.5 max-w-[110px] truncate"
+                      title={rp.prediction.league}
+                    >
+                      {rp.prediction.league}
                     </Badge>
                   )}
                 </div>
