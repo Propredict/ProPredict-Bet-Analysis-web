@@ -27,9 +27,6 @@ verify_jwt = false
 [functions.revenuecat-webhook]
 verify_jwt = false
 
-[functions.enrich-prediction-analysis]
-verify_jwt = false
-
 [functions.send-push-notification]
 verify_jwt = false
 
