@@ -202,6 +202,7 @@ export function TopAIPicksSection({
                 {/* Market + league quick-scan chips */}
                 <div className="absolute top-0 right-2 z-10 flex items-center gap-1">
                   {(() => {
+                    if (!isUnlockedSlot) return null;
                     const tag = getMarketTag(rp.prediction.prediction);
                     const tokens = getMarketColors(rp.prediction.prediction);
                     return (
