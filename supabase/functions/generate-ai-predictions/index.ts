@@ -5541,6 +5541,12 @@ async function assignTiers(
     "insufficient form data",
     "relying on market intelligence",
     "data limited",
+    "not found in api",
+    "variancestabledb",
+    "is not defined",
+    "no data available",
+    "unable to fetch",
+    "failed to fetch",
   ];
   const num = (v: any): number =>
     typeof v === "number" && Number.isFinite(v) ? v : 0;
