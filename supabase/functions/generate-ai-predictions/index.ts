@@ -7722,6 +7722,11 @@ serve(async (req: Request) => {
         "Form data limited",
         "Top-tier matchup. Bookmaker consensus implies",
         "relying on market intelligence",
+        "Pending regeneration",
+        "Pending analysis",
+        "Awaiting data",
+        "No data available",
+        "Insufficient data",
       ];
       let totalDeleted = 0;
       const perMarker: Record<string, number> = {};
