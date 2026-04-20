@@ -5711,7 +5711,9 @@ async function assignTiers(
   //   2. BTTS (when both teams scoring)
   //   3. Double Chance (fallback only)
   // Quality > diversity → never force-include weak picks.
-  const MAX_UNDER_PER_DAY = 4;
+  // Global daily UNDER 2.5 cap — tightened so the page never feels
+  // like a wall of "Under 2.5 / 1-0" picks.
+  const MAX_UNDER_PER_DAY = 3;
   const MAX_SAME_TYPE_PER_TIER = 5;
   const MAX_SAME_IN_A_ROW = 3;
   const DC_TIER_PCT: Record<string, number> = {
