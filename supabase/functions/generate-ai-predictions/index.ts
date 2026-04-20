@@ -6045,10 +6045,6 @@ async function markPredictionLocked(
   } else {
     console.log(`[DELETED] ${predictionId} — ${reason}`);
   }
-
-  if (error) {
-    console.error("Error marking prediction as locked:", error);
-  }
 }
 
 // Build pseudo-form from TeamStats (avoids 2 extra API calls per match)
