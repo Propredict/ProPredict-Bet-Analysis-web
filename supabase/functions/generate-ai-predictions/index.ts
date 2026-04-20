@@ -7177,7 +7177,7 @@ async function processBatch(
           apiKey,
         }
       );
-      locked++;
+      deleted++;
       errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
     }
   }
