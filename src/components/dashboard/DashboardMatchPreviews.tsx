@@ -43,7 +43,7 @@ export function DashboardMatchPreviews() {
               <Eye className="h-4 w-4 text-violet-400" />
             </div>
             <div>
-              <h2 className="text-sm md:text-base font-semibold text-foreground">Match Previews</h2>
+              <h2 className="text-sm md:text-base font-semibold text-foreground">Top 30 AI Picks</h2>
               <p className="text-[9px] md:text-[10px] text-muted-foreground">In-depth AI analysis for top matches</p>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function DashboardMatchPreviews() {
             onClick={() => navigate("/match-previews")}
           >
             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            See all Match Previews
+            See all Top 30 AI Picks
             <ChevronRight className="h-3.5 w-3.5 ml-1" />
           </Button>
         </div>
