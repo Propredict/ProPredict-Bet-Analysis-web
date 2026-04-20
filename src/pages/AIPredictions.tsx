@@ -618,7 +618,11 @@ export default function AIPredictions() {
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-amber-400" />
                   <span className="text-xs md:text-sm font-bold text-foreground">
-                    🔥 Today: <span className="text-amber-400">{highValueCount} high confidence picks</span> found
+                    {highValueCount > 0 ? (
+                      <>🔥 Today: <span className="text-amber-400">{highValueCount} high confidence picks</span> found</>
+                    ) : (
+                      <>🔥 Premium picks unlock the strongest analysis</>
+                    )}
                   </span>
                   <span className="text-[9px] text-muted-foreground ml-auto">🔒 Most available in Premium</span>
                 </div>
@@ -646,16 +650,6 @@ export default function AIPredictions() {
                     </div>
                   </div>
                 </div>
-
-                {/* Yesterday Premium Social Proof */}
-                {yesterdayPremiumStats.total >= 3 && (
-                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-green-500/5 border border-green-500/15">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Yesterday Premium: <span className="text-green-400 font-bold">{yesterdayPremiumStats.won}/{yesterdayPremiumStats.total} WON ✅</span>
-                    </span>
-                  </div>
-                )}
 
                 <Button
                   onClick={() => navigate("/get-premium")}
