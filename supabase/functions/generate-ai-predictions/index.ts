@@ -6806,6 +6806,12 @@ async function processBatch(
         if (!keyFactors.some((f) => f.startsWith("confidence_breakdown:"))) {
           keyFactors.unshift(breakdownTag);
         }
+        // Step 4 — expose xG values so the UI can render a "Strong Signal" badge
+        // Tag format: step2_xg:<home>|<away>|<diff>
+        const xgTag = `step2_xg:${step2.expectedHome.toFixed(2)}|${step2.expectedAway.toFixed(2)}|${Math.abs(step2.expectedHome - step2.expectedAway).toFixed(2)}`;
+        if (!keyFactors.some((f) => f.startsWith("step2_xg:"))) {
+          keyFactors.unshift(xgTag);
+        }
         console.log(
           `[STEP 3] ${fixtureIdStr}: ${beforeConf}% → ${step3.confidence}% | ${step3.reason}`
         );

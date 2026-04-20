@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap } from "lucide-react";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
@@ -106,6 +106,17 @@ const AIPredictionCardInner = ({
   const hasAccess = forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
   const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
 
+  // Step 4 — "Strong Signal" badge: confidence >= 80 AND xG diff >= 0.8.
+  // xG diff is encoded by the backend in key_factors as `step2_xg:H|A|Δ`.
+  const isStrongSignal = useMemo(() => {
+    if ((prediction.confidence ?? 0) < 80) return false;
+    const tag = prediction.key_factors?.find((f) => f.startsWith("step2_xg:"));
+    if (!tag) return false;
+    const parts = tag.replace("step2_xg:", "").split("|");
+    const diff = parseFloat(parts[2] ?? "");
+    return Number.isFinite(diff) && diff >= 0.8;
+  }, [prediction.confidence, prediction.key_factors]);
+
   const formatTime = (time: string | null) => {
     if (!time) return "";
     return time.length >= 5 ? time.slice(0, 5) : time;
@@ -151,6 +162,15 @@ const AIPredictionCardInner = ({
               <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 animate-pulse rounded">
                 <Radio className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
                 LIVE
+              </Badge>
+            )}
+            {isStrongSignal && (
+              <Badge
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(16,185,129,0.55)]"
+                title="Confidence ≥ 80% with strong xG dominance (Δ ≥ 0.8) — model's highest-conviction signal"
+              >
+                <Zap className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
+                STRONG SIGNAL
               </Badge>
             )}
             {isPremiumTier && (
