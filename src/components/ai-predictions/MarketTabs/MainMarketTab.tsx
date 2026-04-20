@@ -409,12 +409,26 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* SAFE COMBO — Premium only */}
-          {parsedTags.safeCombo && displayTier === "premium" && (
+          {/* SAFE COMBO — Premium tier only, and only for users with access.
+              For locked Pro/Premium cards we replace it with a generic teaser
+              so the actual combo (e.g. "DC 1X + Over 1.5") doesn't leak through the blur. */}
+          {parsedTags.safeCombo && displayTier === "premium" && hasAccess && (
             <div className="flex items-center gap-1.5 pt-1 pb-0.5">
               <Sparkles className="w-3 h-3 text-fuchsia-400" />
               <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400">SAFE COMBO:</span>
               <span className="text-[9px] md:text-[10px] font-bold text-foreground">{parsedTags.safeCombo}</span>
+            </div>
+          )}
+          {parsedTags.safeCombo && displayTier === "premium" && !hasAccess && (
+            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
+              <Sparkles className="w-3 h-3 text-fuchsia-400" />
+              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400 uppercase tracking-wider">
+                High Value Insight
+              </span>
+              <Badge className="ml-1 bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+                <Lock className="w-2.5 h-2.5" />
+                PREMIUM
+              </Badge>
             </div>
           )}
 
