@@ -5529,39 +5529,67 @@ async function assignTiers(
     return { free: 0, pro: 0, premium: 0, diamond: 0 };
   }
 
-  // 1) PREMIUM candidates: confidence ≥ 78 + STRICT QUALITY GATE
-  // Premium tier MUST have real analytical data (form, xG, H2H) — NOT bookmaker fallback.
-  // We detect fallback predictions by their analysis text markers and missing xG signals.
+  // 1) PREMIUM candidates: confidence ≥ 78 + STRICT MULTI-SIGNAL QUALITY GATE
+  // Premium tier is a PROMISE to the user: "We have ALL the data — form, xG, H2H, odds —
+  // and the analysis is real, not a guess." If ANY core signal is missing, the match is
+  // demoted to Pro/Free regardless of confidence score.
   const FALLBACK_MARKERS = [
-    "Pending data from API",
-    "Limited team-form data",
-    "Fallback to bookmaker",
-    "Form data limited",
-    "Insufficient form data",
+    "pending data from api",
+    "limited team-form data",
+    "fallback to bookmaker",
+    "form data limited",
+    "insufficient form data",
     "relying on market intelligence",
+    "data limited",
   ];
-  const isFallbackPrediction = (p: any): boolean => {
-    const analysis = String(p.analysis ?? "");
-    if (FALLBACK_MARKERS.some((m) => analysis.includes(m))) return true;
-    // No xG data at all → form pipeline never produced real numbers
-    const hasXg =
-      (typeof p.xg_home === "number" && p.xg_home > 0) ||
-      (typeof p.xg_away === "number" && p.xg_away > 0) ||
-      (typeof p.xg_total === "number" && p.xg_total > 0);
-    if (!hasXg) return true;
-    return false;
+  const num = (v: any): number =>
+    typeof v === "number" && Number.isFinite(v) ? v : 0;
+
+  const failsPremiumGate = (p: any): string | null => {
+    // (a) No fallback wording in analysis
+    const analysis = String(p.analysis ?? "").toLowerCase();
+    for (const m of FALLBACK_MARKERS) {
+      if (analysis.includes(m)) return `analysis-fallback("${m}")`;
+    }
+    if (analysis.length < 60) return "analysis-too-short";
+
+    // (b) Real xG signal for BOTH teams (not just total)
+    if (num(p.xg_home) <= 0 || num(p.xg_away) <= 0) return "missing-xg";
+
+    // (c) Recent form data (last N goals computed by pipeline)
+    if (
+      (p.last_home_goals === null || p.last_home_goals === undefined) &&
+      (p.last_away_goals === null || p.last_away_goals === undefined)
+    ) {
+      return "missing-recent-form";
+    }
+
+    // (d) Bookmaker consensus must exist (real market signal)
+    const hasConsensus =
+      num(p.consensus_home) > 0 ||
+      num(p.consensus_draw) > 0 ||
+      num(p.consensus_away) > 0;
+    const hasBookmakers = num(p.bookmakers_count) >= 2;
+    if (!hasConsensus || !hasBookmakers) return "no-bookmaker-consensus";
+
+    return null;
   };
 
   const premiumCandidates = sorted.filter((p: any) => {
     if ((p.confidence ?? 0) < PREMIUM_MIN_CONFIDENCE) return false;
-    if (isFallbackPrediction(p)) {
+    const reason = failsPremiumGate(p);
+    if (reason) {
       console.log(
-        `[PREMIUM GATE] Demoted ${p.home_team} vs ${p.away_team} — confidence ${p.confidence}% but fallback/no-data prediction`
+        `[PREMIUM GATE] Demoted ${p.home_team} vs ${p.away_team} (conf ${p.confidence}%) — ${reason}`
       );
       return false;
     }
     return true;
   });
+
+  console.log(
+    `[PREMIUM GATE] ${premiumCandidates.length}/${sorted.filter((p: any) => (p.confidence ?? 0) >= PREMIUM_MIN_CONFIDENCE).length} high-confidence picks passed strict quality gate`
+  );
 
   // === STEP 5 — SMART DIVERSITY FILTER (soft) ===
   // Caps:
