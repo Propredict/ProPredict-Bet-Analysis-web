@@ -6572,12 +6572,15 @@ async function processBatch(
         }
       }
 
-      // STRICT POLICY: if fixture truly cannot be located in API, DELETE the prediction
-      // (do not show users fake "Pending data" placeholders that erode trust)
+      // SOFT POLICY: if fixture not found (often transient: rate-limit / network),
+      // SKIP and keep the placeholder so the next batch can retry. Only mark
+      // as locked so users never see the unfinished row.
       if (!fixture) {
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Not found in API after retry — DELETED prediction`);
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Not found in API (likely rate-limit) — SKIPPED, kept locked for retry`);
         continue;
       }
 
@@ -6589,6 +6592,7 @@ async function processBatch(
       const season = fixture.league?.season || new Date().getFullYear();
 
       if (!homeTeamId || !awayTeamId || !leagueId) {
+        // Truly invalid (no team IDs ever) — safe to delete
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
         deleted++;
         console.log(`Fixture ${fixtureIdStr}: Invalid fixture data — DELETED`);
@@ -6612,10 +6616,13 @@ async function processBatch(
       ]);
 
       if (!homeStats && !awayStats) {
-        // Both stats missing — DELETE (no real data = no prediction)
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Missing team stats — DELETED`);
+        // Both stats missing — could be rate-limit or genuinely unavailable.
+        // SKIP and keep locked so next run can retry.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Missing team stats (likely rate-limit) — SKIPPED for retry`);
         continue;
       }
 
@@ -6625,9 +6632,13 @@ async function processBatch(
       const awayForm = realAwayForm;
 
       if (homeForm.length === 0 || awayForm.length === 0) {
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Missing real API form/history data — DELETED`);
+        // Form fetch returned empty — almost always API rate-limit (429).
+        // SKIP and keep locked. Do NOT delete — next batch will retry.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Empty form data (likely rate-limit) — SKIPPED for retry`);
         continue;
       }
 
@@ -6643,8 +6654,11 @@ async function processBatch(
         console.log(
           `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): real-home=${homeRecent}, real-away=${awayRecent}, required>=${minRequired}`
         );
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
+        // Insufficient real history — keep locked (hidden) but don't destroy the row.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
         continue;
       }
 
@@ -6653,10 +6667,15 @@ async function processBatch(
       const step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
       if (!step2) {
         console.log(
-          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
+          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal — locked, not deleted`
         );
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
+        // No strong deterministic signal — keep row but lock it so it does not
+        // appear to users. This prevents "lost" matches between batches and
+        // lets the next regeneration try again with fresh data.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
         continue;
       }
       console.log(
