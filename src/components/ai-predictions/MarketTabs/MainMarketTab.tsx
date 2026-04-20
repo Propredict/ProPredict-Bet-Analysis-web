@@ -264,7 +264,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           {/* Pick Name */}
           <div className="flex items-center gap-2">
             {pick.icon}
-            <span className="text-base md:text-lg font-bold text-foreground">
+            <span className={cn(
+              "text-base md:text-lg font-bold text-foreground",
+              !hasAccess && "blur-[5px] select-none"
+            )}>
               {pick.label}
             </span>
             {/* Market category color chip — quick visual scan (Over=blue, BTTS=green, DC=purple, Under=orange) */}
@@ -315,6 +318,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <span className="text-xs text-muted-foreground">🧠 AI Confidence</span>
             <span className={cn(
               "text-2xl md:text-3xl font-extrabold tabular-nums",
+              !hasAccess && "blur-[5px] select-none",
               pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-emerald-400" : pick.conf >= 60 ? "text-amber-400" : "text-orange-400"
             )}>
               {pick.conf}%
