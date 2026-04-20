@@ -839,20 +839,6 @@ export default function AIPredictions() {
             </Card>
           )}
 
-          <TopAIPicksSection
-            picks={topPicks}
-            isAdmin={isAdmin}
-            isPremiumUser={isPremiumUser}
-            isProUser={isProUser}
-            isAuthenticated={isAuthenticated}
-            isFavorite={isFavorite}
-            isSaving={isSaving}
-            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-            unlockingId={unlockingId}
-            getPredictionTier={getPredictionTier}
-          />
-
           {/* 🔒 SAFE PICKS OF THE DAY - Premium only, confidence >= 85 */}
           {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
             <div>
