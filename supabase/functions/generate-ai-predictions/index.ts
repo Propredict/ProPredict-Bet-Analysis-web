@@ -171,6 +171,154 @@ function decideStep2(
   return null;
 }
 
+// ============ STEP 3 — CONFIDENCE CALCULATION ============
+// Formula:  confidence = 50 + (|xH - xA| * 10) + (totalGoals * 5)
+// Then apply penalties (weak signals) and boosts (strong signals).
+// Final clamp 55..95. If raw < 55 BEFORE clamp → SKIP (caller should hide match).
+interface Step3Result {
+  confidence: number;        // final, clamped 55..95 (only if not skipped)
+  skip: boolean;             // true → hide match (low quality signal)
+  reason: string;            // human readable breakdown for tooltip / key_factors
+  baseScore: number;         // formula base (pre penalties/boosts)
+  penalties: number;         // total deducted
+  boosts: number;            // total added
+}
+
+interface Step3Inputs {
+  step2: Step2Decision;
+  homeMatches: number;       // sample size proxies
+  awayMatches: number;
+  injuryImpactFav: number;   // 0..100, impact on the favoured side
+  oddsHome?: number | null;  // raw decimal odds (optional)
+  oddsDraw?: number | null;
+  oddsAway?: number | null;
+}
+
+function applyStep3Confidence(input: Step3Inputs): Step3Result {
+  const { step2 } = input;
+  const diff = Math.abs(step2.expectedHome - step2.expectedAway);
+
+  // ---- Base formula ----
+  const base = 50 + (diff * 10) + (step2.totalGoals * 5);
+  const baseScore = Math.round(base);
+
+  // ---- Penalties (weak signals) ----
+  let penalties = 0;
+  const penaltyReasons: string[] = [];
+
+  // P1: low sample size on either side
+  const minMatches = Math.min(input.homeMatches, input.awayMatches);
+  if (minMatches < 8) {
+    const p = 6;
+    penalties += p;
+    penaltyReasons.push(`small sample (-${p})`);
+  } else if (minMatches < 10) {
+    const p = 3;
+    penalties += p;
+    penaltyReasons.push(`limited sample (-${p})`);
+  }
+
+  // P2: market is 1X2 winner pick but odds are very tight (no clear favourite)
+  if ((step2.market === "1" || step2.market === "2") &&
+      input.oddsHome && input.oddsAway && input.oddsDraw) {
+    const minOdd = Math.min(input.oddsHome, input.oddsAway);
+    const secondOdd = step2.market === "1" ? input.oddsAway : input.oddsHome;
+    if (minOdd > 2.0 && Math.abs(input.oddsHome - input.oddsAway) < 0.4) {
+      const p = 5;
+      penalties += p;
+      penaltyReasons.push(`tight odds (-${p})`);
+    } else if (secondOdd < 2.5) {
+      const p = 2;
+      penalties += p;
+      penaltyReasons.push(`close market (-${p})`);
+    }
+  }
+
+  // P3: heavy injury impact on the favoured side
+  if (input.injuryImpactFav >= 30) {
+    const p = 5;
+    penalties += p;
+    penaltyReasons.push(`key injuries (-${p})`);
+  } else if (input.injuryImpactFav >= 15) {
+    const p = 2;
+    penalties += p;
+    penaltyReasons.push(`some injuries (-${p})`);
+  }
+
+  // ---- Boosts (strong signals) ----
+  let boosts = 0;
+  const boostReasons: string[] = [];
+
+  // B1: very clear xG dominance for winner picks
+  if ((step2.market === "1" || step2.market === "2") && diff >= 1.0) {
+    const b = 4;
+    boosts += b;
+    boostReasons.push(`xG dominance (+${b})`);
+  }
+
+  // B2: sharp money alignment — Step 2 winner pick matches the bookmaker favourite
+  if ((step2.market === "1" || step2.market === "2") &&
+      input.oddsHome && input.oddsAway) {
+    const bookieFav = input.oddsHome < input.oddsAway ? "1" : "2";
+    if (bookieFav === step2.market) {
+      const minOdd = Math.min(input.oddsHome, input.oddsAway);
+      if (minOdd <= 1.7) {
+        const b = 3;
+        boosts += b;
+        boostReasons.push(`sharp money (+${b})`);
+      } else if (minOdd <= 2.0) {
+        const b = 2;
+        boosts += b;
+        boostReasons.push(`market agrees (+${b})`);
+      }
+    }
+  }
+
+  // B3: Goals markets with very strong total signal
+  if (step2.market === "Over 2.5" && step2.totalGoals >= 3.2) {
+    const b = 3;
+    boosts += b;
+    boostReasons.push(`high goal total (+${b})`);
+  }
+  if (step2.market === "Under 2.5" && step2.totalGoals <= 1.8) {
+    const b = 3;
+    boosts += b;
+    boostReasons.push(`low goal total (+${b})`);
+  }
+
+  // ---- Final score ----
+  const raw = base - penalties + boosts;
+
+  // SKIP if raw drops below 55 (low confidence floor → hide match)
+  if (raw < 55) {
+    return {
+      confidence: 55,
+      skip: true,
+      baseScore,
+      penalties,
+      boosts,
+      reason: `Base ${baseScore} − ${penalties} penalties + ${boosts} boosts = ${Math.round(raw)} (below floor)`,
+    };
+  }
+
+  const finalConf = Math.max(55, Math.min(95, Math.round(raw)));
+  const parts = [
+    `Base ${baseScore} (xG Δ ${diff.toFixed(2)}, total ${step2.totalGoals.toFixed(2)})`,
+    penaltyReasons.length ? penaltyReasons.join(", ") : null,
+    boostReasons.length ? boostReasons.join(", ") : null,
+    `= ${finalConf}%`,
+  ].filter(Boolean);
+
+  return {
+    confidence: finalConf,
+    skip: false,
+    baseScore,
+    penalties,
+    boosts,
+    reason: parts.join(" | "),
+  };
+}
+
 // ============ QUALITY LEAGUE IDS (API-Football) ============
 // Only these leagues can produce PREMIUM (≥85%) predictions
 // Top 20 leagues with most reliable data and predictable patterns
@@ -6560,6 +6708,54 @@ async function processBatch(
         }
       } catch (e) {
         console.warn(`[ROTATION] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
+      // === STEP 3 — CONFIDENCE CALCULATION (formula + penalties + boosts) ===
+      // Re-evaluate confidence using deterministic formula on top of Step 2 signal.
+      // SKIP match if final raw confidence falls below 55 (low-quality floor).
+      try {
+        const favIsHome =
+          step2.market === "1" ? true :
+          step2.market === "2" ? false :
+          (newPrediction.home_win >= newPrediction.away_win);
+        const injuryImpactFav = favIsHome ? injuryImpactHome : injuryImpactAway;
+
+        const step3 = applyStep3Confidence({
+          step2,
+          homeMatches: Math.max(homeForm.length, homeStats?.played ?? 0),
+          awayMatches: Math.max(awayForm.length, awayStats?.played ?? 0),
+          injuryImpactFav,
+          oddsHome: odds?.homeOdds ?? null,
+          oddsDraw: odds?.drawOdds ?? null,
+          oddsAway: odds?.awayOdds ?? null,
+        });
+
+        if (step3.skip) {
+          console.log(
+            `[STEP 3 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: ${step3.reason}`
+          );
+          await markPredictionLocked(
+            supabase,
+            pred.id,
+            `Fixture ${fixtureIdStr}: Low confidence after Step 3 (${step3.reason})`,
+            { fixtureId: fixtureIdStr, apiKey }
+          );
+          locked++;
+          continue;
+        }
+
+        const beforeConf = newPrediction.confidence;
+        newPrediction.confidence = step3.confidence;
+        // Push transparency reason as first key_factor for UI tooltip
+        const breakdownTag = `confidence_breakdown:${step3.reason}`;
+        if (!keyFactors.some((f) => f.startsWith("confidence_breakdown:"))) {
+          keyFactors.unshift(breakdownTag);
+        }
+        console.log(
+          `[STEP 3] ${fixtureIdStr}: ${beforeConf}% → ${step3.confidence}% | ${step3.reason}`
+        );
+      } catch (e) {
+        console.warn(`[STEP 3] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
