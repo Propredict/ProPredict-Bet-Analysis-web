@@ -171,7 +171,15 @@ export function TopAIPicksSection({
             const isUnlockedSlot = idx < unlockedCount;
             // For LOCKED slots: force "premium" tier so user sees ALL tabs (Goals, BTTS, DC, Combo)
             // with blurred content — maximizes FOMO and shows full value of upgrade.
-            const effectiveTier = isUnlockedSlot ? realTier : "premium";
+            // For UNLOCKED slots: Premium/Admin always get "premium" view (all tabs visible),
+            // Pro users get at least "pro" so Goals/BTTS/DC tabs render.
+            const unlockedTier: "free" | "pro" | "premium" =
+              isPremiumUser || isAdmin
+                ? "premium"
+                : isProUser
+                ? (realTier === "premium" ? "premium" : "pro")
+                : realTier;
+            const effectiveTier = isUnlockedSlot ? unlockedTier : "premium";
             return (
               <div
                 key={rp.prediction.id}
