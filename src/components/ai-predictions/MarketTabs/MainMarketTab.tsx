@@ -267,6 +267,17 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <span className="text-base md:text-lg font-bold text-foreground">
               {pick.label}
             </span>
+            {/* Market category color chip — quick visual scan (Over=blue, BTTS=green, DC=purple, Under=orange) */}
+            {(() => {
+              const cat = classifyMarket(pick.label);
+              if (cat === "other" || cat === "1x2") return null;
+              const tokens = getMarketColors(pick.label);
+              return (
+                <Badge className={cn("ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold border", tokens.chipClass)}>
+                  {tokens.shortLabel}
+                </Badge>
+              );
+            })()}
           </div>
 
           {/* Confidence Label */}
@@ -310,16 +321,31 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </span>
           </div>
 
-          {/* Probability bar */}
-          <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                pick.conf >= 80 ? "bg-green-500" : pick.conf >= 70 ? "bg-emerald-500" : pick.conf >= 60 ? "bg-amber-500" : "bg-orange-500"
-              )}
-              style={{ width: `${Math.max(10, pick.conf)}%` }}
-            />
-          </div>
+          {/* Animated gradient confidence bar — color reflects market category (Over/BTTS/DC/Under) */}
+          {(() => {
+            const tokens = getMarketColors(pick.label);
+            return (
+              <div className="relative h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "relative h-full rounded-full transition-all duration-700 bg-gradient-to-r",
+                    tokens.barGradient
+                  )}
+                  style={{ width: `${Math.max(10, pick.conf)}%` }}
+                >
+                  {/* Shimmer overlay */}
+                  <div
+                    className="absolute inset-0 rounded-full animate-shimmer-bar"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)",
+                      backgroundSize: "200% 100%",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* AI Tags — badges for tempo, value, market signal, safe combo — PREMIUM only */}
           {displayTier === "premium" && parsedTags.tags.length > 0 && (
