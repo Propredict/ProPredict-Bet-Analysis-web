@@ -5537,11 +5537,22 @@ async function assignTiers(
   // === STEP 5 — SMART DIVERSITY FILTER (soft) ===
   // Caps:
   //   - Daily global: max 4 UNDER 2.5
-  //   - Per tier:     max 5 of the same bet type
-  // Priority: highest confidence ALWAYS wins. Diversity applies AFTER ranking.
+  //   - Per tier: max 5 of the same bet type
+  //   - Per tier: Double Chance cap (Free 40%, Pro 30%, Premium 25%)
+  //   - Sequence: no more than 3 of the same market in a row
+  // Priority order when multiple candidates have similar confidence:
+  //   1. Over 1.5/2.5 (high probability)
+  //   2. BTTS (when both teams scoring)
+  //   3. Double Chance (fallback only)
   // Quality > diversity → never force-include weak picks.
   const MAX_UNDER_PER_DAY = 4;
   const MAX_SAME_TYPE_PER_TIER = 5;
+  const MAX_SAME_IN_A_ROW = 3;
+  const DC_TIER_PCT: Record<string, number> = {
+    Premium: 0.25,
+    Pro: 0.30,
+    Free: 0.40,
+  };
 
   const classifyBet = (raw: string | null | undefined): string => {
     const p = (raw ?? "").toString().trim().toLowerCase();
@@ -5549,10 +5560,23 @@ async function assignTiers(
     if (p.includes("under")) return "under_2_5";
     if (p.includes("over")) return "over_2_5";
     if (p.includes("btts") || p.includes("both teams")) return "btts";
+    if (p.includes("double chance") || p.includes(" dc ") || p.startsWith("dc ") ||
+        /\b(1x|x2|12)\b/.test(p)) return "double_chance";
     if (p === "1" || p === "home" || p.includes("home win")) return "home";
     if (p === "2" || p === "away" || p.includes("away win")) return "away";
     if (p === "x" || p === "draw") return "draw";
     return p;
+  };
+
+  // Priority weight for tie-breaking when confidences are similar.
+  // Lower number = higher priority.
+  const marketPriority = (t: string): number => {
+    if (t === "over_2_5") return 1;
+    if (t === "btts") return 2;
+    if (t === "home" || t === "away") return 3;
+    if (t === "double_chance") return 4; // fallback only
+    if (t === "under_2_5") return 5;
+    return 6;
   };
 
   const dayUnderCount = { n: 0 };
@@ -5565,8 +5589,19 @@ async function assignTiers(
     const kept: any[] = [];
     const demoted: any[] = [];
     const typeCount = new Map<string, number>();
+    const dcCap = Math.max(1, Math.floor(cap * (DC_TIER_PCT[label] ?? 0.40)));
 
-    for (const p of pool) {
+    // Re-rank pool with stable tie-breaker by marketPriority within ±2% confidence bands.
+    // This ensures Over/BTTS are preferred over DC when confidence is similar.
+    const reranked = [...pool].sort((a: any, b: any) => {
+      const ca = a.confidence ?? 0;
+      const cb = b.confidence ?? 0;
+      if (Math.abs(ca - cb) >= 2) return cb - ca;
+      return marketPriority(classifyBet(a.prediction)) -
+             marketPriority(classifyBet(b.prediction));
+    });
+
+    for (const p of reranked) {
       if (kept.length >= cap) {
         demoted.push(p);
         continue;
@@ -5584,13 +5619,59 @@ async function assignTiers(
         demoted.push(p);
         continue;
       }
+      // Per-tier Double Chance percentage cap
+      if (t === "double_chance" && tierCount >= dcCap) {
+        demoted.push(p);
+        continue;
+      }
+      // Sequence cap: no more than 3 of the same market in a row.
+      // Look back at last MAX_SAME_IN_A_ROW kept entries.
+      if (kept.length >= MAX_SAME_IN_A_ROW) {
+        const tail = kept.slice(-MAX_SAME_IN_A_ROW);
+        const allSame = tail.every((k) => classifyBet(k.prediction) === t);
+        if (allSame) {
+          demoted.push(p);
+          continue;
+        }
+      }
       kept.push(p);
       typeCount.set(t, tierCount + 1);
       if (t === "under_2_5") dayUnderCount.n++;
     }
 
+    // STEP 5b — visual quality check: if any single market exceeds 70%
+    // of the kept selection, demote the lowest-confidence excess picks.
+    if (kept.length >= 5) {
+      const dominant = [...typeCount.entries()].find(
+        ([, n]) => n / kept.length > 0.70
+      );
+      if (dominant) {
+        const [domType, domCount] = dominant;
+        const targetCount = Math.floor(kept.length * 0.60);
+        const toRemove = domCount - targetCount;
+        if (toRemove > 0) {
+          // Remove lowest-confidence ones of the dominant type
+          const indexedDom = kept
+            .map((p, i) => ({ p, i, c: p.confidence ?? 0 }))
+            .filter((x) => classifyBet(x.p.prediction) === domType)
+            .sort((a, b) => a.c - b.c)
+            .slice(0, toRemove);
+          const removeIdx = new Set(indexedDom.map((x) => x.i));
+          for (const x of indexedDom) demoted.push(x.p);
+          // Rebuild kept array preserving order
+          const newKept = kept.filter((_, i) => !removeIdx.has(i));
+          kept.length = 0;
+          kept.push(...newKept);
+          typeCount.set(domType, (typeCount.get(domType) ?? 0) - toRemove);
+          console.log(
+            `[STEP 5b] ${label}: rebalanced — ${domType} reduced from ${domCount} to ${domCount - toRemove} (>70% threshold)`
+          );
+        }
+      }
+    }
+
     console.log(
-      `[STEP 5] Diversity ${label}: kept=${kept.length}, demoted=${demoted.length}, types=${JSON.stringify(Object.fromEntries(typeCount))}`
+      `[STEP 5] Diversity ${label}: kept=${kept.length}, demoted=${demoted.length}, dcCap=${dcCap}, types=${JSON.stringify(Object.fromEntries(typeCount))}`
     );
     return { kept, demoted };
   };
