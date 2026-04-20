@@ -241,7 +241,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             ⚠ AI confidence below threshold for a precise pick — analysis provided instead.
           </p>
         </div>
-      ) : hasAccess ? (
+      ) : (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center gap-1.5">
