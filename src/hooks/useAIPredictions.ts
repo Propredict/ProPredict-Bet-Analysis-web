@@ -42,6 +42,16 @@ export interface AIPrediction {
   value_draw?: number | null;
   value_away?: number | null;
   is_value_bet?: boolean | null;
+  // STEP 2 — Expected goals (Poisson) — first-class DB columns
+  xg_home?: number | null;
+  xg_away?: number | null;
+  xg_total?: number | null;
+  xg_diff?: number | null;
+  // STEP 3 — Variance stability — first-class DB columns
+  variance_stable?: boolean | null;
+  variance_score?: number | null;
+  // STEP 11 — Safe Pick flag (premium subset, conf≥85 + stable)
+  is_safe_pick?: boolean | null;
 }
 
 export interface MissingPlayer {
