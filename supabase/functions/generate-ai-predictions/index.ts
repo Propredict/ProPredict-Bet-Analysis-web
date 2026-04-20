@@ -7221,6 +7221,36 @@ async function triggerNextBatch(
 }
 
 /**
+ * Fire-and-forget hook: invoke enrich-prediction-analysis after regeneration
+ * so newly created/refreshed predictions get a real narrative analysis written
+ * by the Lovable AI Gateway. We don't await the response — failures are logged
+ * but never block the regeneration pipeline.
+ */
+function triggerEnrichAnalysis(
+  supabaseUrl: string,
+  supabaseKey: string
+): void {
+  fetch(`${supabaseUrl}/functions/v1/enrich-prediction-analysis`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ mode: "today" }),
+  })
+    .then((r) => {
+      if (!r.ok) {
+        console.error(`[enrich-hook] failed: ${r.status}`);
+      } else {
+        console.log(`[enrich-hook] triggered enrich-prediction-analysis`);
+      }
+    })
+    .catch((e) => {
+      console.error(`[enrich-hook] error:`, e);
+    });
+}
+
+/**
  * Handle batch processing for a single date
  */
 async function handleBatchRegenerate(
