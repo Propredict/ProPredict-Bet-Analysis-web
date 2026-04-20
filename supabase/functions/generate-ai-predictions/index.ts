@@ -7068,6 +7068,9 @@ async function processBatch(
       // === STEP 3 — CONFIDENCE CALCULATION (formula + penalties + boosts) ===
       // Re-evaluate confidence using deterministic formula on top of Step 2 signal.
       // SKIP match if final raw confidence falls below 55 (low-quality floor).
+      // Hoisted out of the try block so they remain in scope for the UPDATE call below.
+      let varianceStableDB = false;
+      let varianceScoreDB: number | null = null;
       try {
         const favIsHome =
           step2.market === "1" ? true :
@@ -7116,8 +7119,6 @@ async function processBatch(
         // We approximate variance from `homeXg`/`awayXg` plus the spread vs the
         // expected goals — small spread + balanced expectation = STABLE.
         // Tag format: variance:STABLE|UNSTABLE|score
-        let varianceStableDB = false;
-        let varianceScoreDB: number | null = null;
         try {
           const homeAvg = homeXg;
           const awayAvg = awayXg;
