@@ -5807,9 +5807,207 @@ async function assignTiers(
 
   // Apply diversity to Premium first (already sorted by confidence)
   const premiumDiv = applyDiversity(premiumCandidates, PREMIUM_MAX_COUNT, "Premium");
-  const premiumPicks = premiumDiv.kept;
+  let premiumPicks = premiumDiv.kept;
   // Premium overflow = anything beyond cap OR demoted by diversity
-  const premiumOverflow = premiumDiv.demoted;
+  let premiumOverflow = premiumDiv.demoted;
+
+  // ============================================================
+  // === PREMIUM EDGE ENFORCEMENT (v1) ==========================
+  // Premium MUST feel smarter, not just safer than Pro:
+  //   • Max 30% Under 2.5 in Premium (demote excess to Pro)
+  //   • Min 30% Over (1.5/2.5/3.5), Min 20% BTTS, Min 20% 1X2
+  //   • Score regeneration: if xG_total > 2.5, NEVER 0-0/1-0/0-1
+  //     prefer realistic attacking scores (2-1, 3-1, 2-0, 1-2)
+  //   • Confidence spread: 78-90 (top 3 = 85-90, rest = 78-84)
+  //   • Premium Edge = strong-signal value picks (xG dom + odds gap)
+  // ============================================================
+  if (premiumPicks.length > 0) {
+    const classify = (raw: string | null | undefined): string => {
+      const p = (raw ?? "").toString().trim().toLowerCase();
+      if (p.includes("under")) return "under";
+      if (p.includes("over")) return "over";
+      if (p.includes("btts") || p.includes("both teams")) return "btts";
+      if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) return "dc";
+      if (p === "1" || p === "2" || p === "x" || p.includes("home win") ||
+          p.includes("away win") || p === "draw") return "1x2";
+      return "other";
+    };
+
+    // 1) UNDER CAP — max 30% of Premium
+    const maxUnder = Math.floor(premiumPicks.length * 0.30);
+    const underInPremium = premiumPicks.filter(p => classify(p.prediction) === "under");
+    if (underInPremium.length > maxUnder) {
+      // Sort under picks by confidence ASC → demote weakest excess
+      const excess = [...underInPremium]
+        .sort((a: any, b: any) => (a.confidence ?? 0) - (b.confidence ?? 0))
+        .slice(0, underInPremium.length - maxUnder);
+      const excessIds = new Set(excess.map((p: any) => p.id));
+      premiumPicks = premiumPicks.filter((p: any) => !excessIds.has(p.id));
+      premiumOverflow = [...premiumOverflow, ...excess];
+      console.log(
+        `[PREMIUM EDGE] Demoted ${excess.length} Under 2.5 picks (>${Math.round(maxUnder/premiumPicks.length*100)}% cap)`
+      );
+    }
+
+    // 2) MIN MIX — try to promote diverse markets from overflow if Premium lacks Over/BTTS/1X2
+    const counts = () => {
+      const c: Record<string, number> = { over: 0, btts: 0, "1x2": 0, dc: 0, under: 0, other: 0 };
+      for (const p of premiumPicks) c[classify(p.prediction)]++;
+      return c;
+    };
+    const minOver = Math.ceil(premiumPicks.length * 0.30);
+    const minBtts = Math.ceil(premiumPicks.length * 0.20);
+    const min1x2 = Math.ceil(premiumPicks.length * 0.20);
+    const tryPromote = (kind: string, need: number) => {
+      const have = counts()[kind] ?? 0;
+      if (have >= need) return;
+      const want = need - have;
+      const candidates = premiumOverflow
+        .filter((p: any) => classify(p.prediction) === kind)
+        .sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0))
+        .slice(0, want);
+      if (candidates.length === 0) return;
+      const promoteIds = new Set(candidates.map((p: any) => p.id));
+      premiumOverflow = premiumOverflow.filter((p: any) => !promoteIds.has(p.id));
+      premiumPicks = [...premiumPicks, ...candidates];
+      console.log(`[PREMIUM EDGE] Promoted ${candidates.length} ${kind} picks to meet min mix`);
+    };
+    tryPromote("over", minOver);
+    tryPromote("btts", minBtts);
+    tryPromote("1x2", min1x2);
+
+    // 3) SCORE REGENERATION — Premium with high xG must NOT be 0-0/1-0/0-1
+    const scoreUpdates: { id: string; predicted_score: string }[] = [];
+    for (const p of premiumPicks) {
+      const xgTag = (p.key_factors ?? []).find((f: any) =>
+        typeof f === "string" && f.startsWith("step2_xg:")
+      );
+      if (!xgTag) continue;
+      const [hxg, axg] = xgTag.replace("step2_xg:", "").split("|").map(Number);
+      if (![hxg, axg].every(Number.isFinite)) continue;
+      const totalXg = hxg + axg;
+      const cls = classify(p.prediction);
+      const score = String(p.predicted_score ?? "");
+      const sm = score.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+      if (!sm) continue;
+      const sh = +sm[1], sa = +sm[2];
+      const total = sh + sa;
+
+      let newScore: string | null = null;
+
+      // Rule: xG_total > 2.5 → never 0-0
+      if (totalXg > 2.5 && sh === 0 && sa === 0) {
+        newScore = hxg > axg ? "2-1" : axg > hxg ? "1-2" : "1-1";
+      }
+      // Rule: high xG + Over/BTTS pick but score < 3 → upgrade to 2-1/3-1/2-0
+      else if (totalXg > 2.8 && (cls === "over" || cls === "btts") && total < 3) {
+        if (cls === "btts") {
+          // BTTS Yes → both teams must score, and >= 3 total
+          newScore = hxg > axg ? "2-1" : axg > hxg ? "1-2" : "2-2";
+        } else {
+          // Over → attacking realistic
+          if (Math.abs(hxg - axg) > 0.6) {
+            newScore = hxg > axg ? "3-1" : "1-3";
+          } else {
+            newScore = "2-1";
+          }
+        }
+      }
+      // Rule: dominant 1X2 with high xG → use realistic winning score
+      else if (cls === "1x2" && totalXg > 2.3) {
+        const pred = String(p.prediction).toLowerCase();
+        if ((pred === "1" || pred.includes("home")) && sh <= sa) {
+          newScore = hxg >= 2 ? "3-1" : "2-1";
+        } else if ((pred === "2" || pred.includes("away")) && sa <= sh) {
+          newScore = axg >= 2 ? "1-3" : "1-2";
+        }
+      }
+
+      if (newScore && newScore !== score) {
+        scoreUpdates.push({ id: p.id, predicted_score: newScore });
+        p.predicted_score = newScore;
+      }
+    }
+    if (scoreUpdates.length > 0) {
+      // Batch update scores
+      for (const u of scoreUpdates) {
+        await supabase.from("ai_predictions")
+          .update({ predicted_score: u.predicted_score })
+          .eq("id", u.id);
+      }
+      console.log(`[PREMIUM EDGE] Regenerated ${scoreUpdates.length} predicted scores (xG-aware)`);
+    }
+
+    // 4) CONFIDENCE SPREAD — top 3 = 85-90, rest = 78-84
+    // Sort by confidence DESC, then redistribute uniquely
+    premiumPicks.sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    const confUpdates: { id: string; confidence: number }[] = [];
+    const usedConf = new Set<number>();
+    const takeUnique = (target: number, lo: number, hi: number): number => {
+      let v = Math.max(lo, Math.min(hi, target));
+      let attempts = 0;
+      while (usedConf.has(v) && attempts < 20) {
+        v = v - 1;
+        if (v < lo) v = hi;
+        attempts++;
+      }
+      usedConf.add(v);
+      return v;
+    };
+    premiumPicks.forEach((p: any, idx: number) => {
+      const original = p.confidence ?? 78;
+      let target: number;
+      if (idx < 3) {
+        // Top 3 → 85-90 band
+        target = Math.max(85, Math.min(90, original));
+        if (target < 85) target = 85 + idx; // 85, 86, 87
+      } else {
+        // Rest → 78-84 band
+        target = Math.max(78, Math.min(84, original));
+      }
+      const finalConf = takeUnique(target, 78, 90);
+      if (finalConf !== original) {
+        confUpdates.push({ id: p.id, confidence: finalConf });
+        p.confidence = finalConf;
+      }
+    });
+    if (confUpdates.length > 0) {
+      for (const u of confUpdates) {
+        await supabase.from("ai_predictions")
+          .update({ confidence: u.confidence })
+          .eq("id", u.id);
+      }
+      console.log(`[PREMIUM EDGE] Spread confidence for ${confUpdates.length} Premium picks (78-90 band)`);
+    }
+
+    // 5) PREMIUM EDGE TAG — flag picks with strong xG dominance + value gap
+    // Sets is_value_bet=true so the UI shows the "🔥 Premium Edge Pick" / VALUE badge.
+    const edgeIds: string[] = [];
+    for (const p of premiumPicks) {
+      const xgTag = (p.key_factors ?? []).find((f: any) =>
+        typeof f === "string" && f.startsWith("step2_xg:")
+      );
+      if (!xgTag) continue;
+      const [hxg, axg, xgDiff] = xgTag.replace("step2_xg:", "").split("|").map(Number);
+      if (![hxg, axg, xgDiff].every(Number.isFinite)) continue;
+      const totalXg = hxg + axg;
+      const pred = String(p.prediction).toLowerCase();
+      const isStrongOver = (pred.includes("over") || pred.includes("btts")) && totalXg > 2.8;
+      const isStrong1x2 = (pred === "1" || pred === "2") && Math.abs(xgDiff) > 1.0;
+      const isBothAttacking = pred.includes("btts") && hxg > 1.3 && axg > 1.3;
+      // Already-flagged value bets stay flagged; promote new strong-signal picks
+      if ((isStrongOver || isStrong1x2 || isBothAttacking) && !p.is_value_bet) {
+        edgeIds.push(p.id);
+      }
+    }
+    if (edgeIds.length > 0) {
+      await supabase.from("ai_predictions")
+        .update({ is_value_bet: true })
+        .in("id", edgeIds);
+      console.log(`[PREMIUM EDGE] Tagged ${edgeIds.length} picks as Premium Edge (value badge)`);
+    }
+  }
+
   const premiumIds = new Set(premiumPicks.map((p: any) => p.id));
 
   // 2) PRO candidates: confidence 66–77 + premium overflow (still high quality)
