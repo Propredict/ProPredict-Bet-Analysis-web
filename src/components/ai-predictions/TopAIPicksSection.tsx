@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Trophy, Sparkles, Zap, Lock, ChevronRight } from "lucide-react";
+import { Crown, Trophy, Sparkles, Zap, Lock, ChevronRight, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AIPredictionCard } from "./AIPredictionCard";
 import type { RankedPick } from "./utils/topPicksRanking";
@@ -61,22 +61,41 @@ export function TopAIPicksSection({
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showHint, setShowHint] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Hide swipe hint after user starts scrolling
-  // (also auto-hide after 6s in case they don't interact)
+  // Hide swipe hint after user starts scrolling + track scroll edges for arrow visibility
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    const updateEdges = () => {
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
     const onScroll = () => {
       if (el.scrollLeft > 20) setShowHint(false);
+      updateEdges();
     };
+    updateEdges();
     el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateEdges);
     const t = setTimeout(() => setShowHint(false), 6000);
     return () => {
       el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", updateEdges);
       clearTimeout(t);
     };
   }, []);
+
+  const scrollByCard = (direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    // First card width as the step (matches snap-start cards: ~88vw + 12px gap).
+    const firstCard = el.querySelector<HTMLElement>(":scope > div");
+    const step = firstCard ? firstCard.getBoundingClientRect().width + 12 : el.clientWidth * 0.9;
+    el.scrollBy({ left: direction === "left" ? -step : step, behavior: "smooth" });
+    setShowHint(false);
+  };
 
   if (picks.length === 0) return null;
 
