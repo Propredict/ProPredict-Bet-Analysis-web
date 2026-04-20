@@ -5897,6 +5897,27 @@ async function processBatch(
         continue;
       }
 
+      // === STEP 2 DETERMINISTIC DECIDER ===
+      // Apply hard expected-goals rules. If NO strong signal → SKIP match (no spam predictions).
+      const step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
+      if (!step2) {
+        console.log(
+          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
+        );
+        await markPredictionLocked(
+          supabase,
+          pred.id,
+          `Fixture ${fixtureIdStr}: No strong signal (Step 2 skip)`,
+          { fixtureId: fixtureIdStr, apiKey }
+        );
+        locked++;
+        continue;
+      }
+      console.log(
+        `[STEP 2] ${fixtureIdStr}: ${step2.market} | xGH=${step2.expectedHome.toFixed(2)} ` +
+        `xGA=${step2.expectedAway.toFixed(2)} total=${step2.totalGoals.toFixed(2)} | ${step2.reason}`
+      );
+
       let newPrediction = calculatePrediction(
         homeForm,
         awayForm,
@@ -5914,6 +5935,13 @@ async function processBatch(
         fixture?.league?.round || undefined,
         fixture?.fixture?.date || pred?.match_timestamp || undefined
       );
+
+      // === Apply Step 2 OVERRIDE ===
+      // Step 2 rules are authoritative for the market. Keep the calculated probabilities
+      // & analysis from the full engine, but replace prediction/score with Step 2 output.
+      newPrediction.prediction = step2.market;
+      newPrediction.predicted_score = step2.predicted_score;
+      newPrediction.confidence = Math.max(newPrediction.confidence, step2.baseConfidence);
 
       // Calculate Poisson goal markets for key_factors and more accurate score
       const homeGoalRate = calculateGoalRate(homeForm);
