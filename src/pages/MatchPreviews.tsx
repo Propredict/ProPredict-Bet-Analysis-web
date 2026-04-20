@@ -243,8 +243,8 @@ export default function MatchPreviews() {
   return (
     <>
       <Helmet>
-        <title>Top Safest Matches – AI Predictions | ProPredict</title>
-        <meta name="description" content="AI-curated safest football matches with 65%+ confidence. Only the best picks today." />
+        <title>Top 30 AI Picks – Safest Football Predictions | ProPredict</title>
+        <meta name="description" content="The Top 30 AI Picks of the day — AI-curated safest football matches with 65%+ confidence." />
       </Helmet>
 
       <div className="page-content space-y-4">
@@ -254,7 +254,7 @@ export default function MatchPreviews() {
               <Trophy className="h-5 w-5 text-violet-400" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Top Matches of the Day</h1>
+              <h1 className="text-lg font-bold">Top 30 AI Picks</h1>
               <p className="text-xs text-muted-foreground">
                 Only the safest AI picks — 65%+ confidence
               </p>
