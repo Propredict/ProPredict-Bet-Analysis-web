@@ -6616,10 +6616,13 @@ async function processBatch(
       ]);
 
       if (!homeStats && !awayStats) {
-        // Both stats missing — DELETE (no real data = no prediction)
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Missing team stats — DELETED`);
+        // Both stats missing — could be rate-limit or genuinely unavailable.
+        // SKIP and keep locked so next run can retry.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Missing team stats (likely rate-limit) — SKIPPED for retry`);
         continue;
       }
 
@@ -6629,9 +6632,13 @@ async function processBatch(
       const awayForm = realAwayForm;
 
       if (homeForm.length === 0 || awayForm.length === 0) {
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
-        console.log(`Fixture ${fixtureIdStr}: Missing real API form/history data — DELETED`);
+        // Form fetch returned empty — almost always API rate-limit (429).
+        // SKIP and keep locked. Do NOT delete — next batch will retry.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
+        console.log(`Fixture ${fixtureIdStr}: Empty form data (likely rate-limit) — SKIPPED for retry`);
         continue;
       }
 
@@ -6647,8 +6654,11 @@ async function processBatch(
         console.log(
           `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): real-home=${homeRecent}, real-away=${awayRecent}, required>=${minRequired}`
         );
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
+        // Insufficient real history — keep locked (hidden) but don't destroy the row.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
         continue;
       }
 
