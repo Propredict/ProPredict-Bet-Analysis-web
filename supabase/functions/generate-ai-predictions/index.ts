@@ -473,7 +473,9 @@ async function fetchJsonWithRetry(
     if (res.status === 429) {
       const retryAfterHeader = res.headers.get("retry-after");
       const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : 0;
-      const backoffMs = Math.round(baseDelayMs * Math.pow(2, attempt));
+      // Cap backoff at 8s to avoid blowing the Edge Function 150s timeout while a single
+      // batch is mid-flight. Previously 1s→2s→4s→8s→16s could stack across many calls.
+      const backoffMs = Math.min(8000, Math.round(baseDelayMs * Math.pow(2, attempt)));
       const waitMs = Math.max(retryAfterMs, backoffMs);
       console.warn(`API-Football rate limit (429). Waiting ${waitMs}ms then retrying: ${url}`);
       await new Promise((r) => setTimeout(r, waitMs));
