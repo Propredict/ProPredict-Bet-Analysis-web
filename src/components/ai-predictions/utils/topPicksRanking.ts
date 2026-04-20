@@ -118,12 +118,19 @@ function classifyBet(raw: string | null | undefined): string {
 }
 
 export function selectTopPicks(predictions: AIPrediction[], limit: number): RankedPick[] {
-  const upcoming = predictions.filter(
-    (p) => (!p.result_status || p.result_status === "pending") &&
-           (p.confidence ?? 0) >= 70 &&
-           isTierAllowed(p.league),
+  const pending = predictions.filter(
+    (p) => !p.result_status || p.result_status === "pending",
   );
-  const ranked = upcoming.map(calcTopPickScore).sort((a, b) => b.score - a.score);
+  // Strict pool: Tier 1/2 + confidence ≥70
+  const strictPool = pending.filter(
+    (p) => (p.confidence ?? 0) >= 70 && isTierAllowed(p.league),
+  );
+  // Soft fallback: if strict pool is too small (e.g. weekday with no top
+  // leagues), allow ANY league but require confidence ≥70. Quality > tier.
+  const pool = strictPool.length >= 3
+    ? strictPool
+    : pending.filter((p) => (p.confidence ?? 0) >= 70);
+  const ranked = pool.map(calcTopPickScore).sort((a, b) => b.score - a.score);
 
   const seen = new Set<string>();
   const typeCount = new Map<string, number>();
