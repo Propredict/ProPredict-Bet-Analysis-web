@@ -6032,143 +6032,18 @@ async function markPredictionLocked(
   reason: string,
   opts?: { fixtureId?: string; apiKey?: string }
 ) {
-  const updatedAt = new Date().toISOString();
-
-  // Generate varied fallback probabilities using a hash of the predictionId
-  // This ensures each match gets unique-looking probabilities instead of flat 33/34/33
-  function hashToVaried(id: string): { hw: number; dr: number; aw: number; pred: "1" | "X" | "2" } {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = ((hash << 5) - hash) + id.charCodeAt(i);
-      hash |= 0;
-    }
-    // Use hash to create a home advantage bias (40-55%) with varied draw (18-28%)
-    const homeBase = 40 + Math.abs(hash % 16);     // 40-55
-    const drawBase = 18 + Math.abs((hash >> 4) % 11); // 18-28
-    const awayBase = 100 - homeBase - drawBase;
-    // Randomly swap home/away bias based on another hash bit
-    const swapBias = (hash >> 8) % 3; // 0, 1, or 2
-    if (swapBias === 1) {
-      return { hw: awayBase, dr: drawBase, aw: homeBase, pred: "2" };
-    }
-    return { hw: homeBase, dr: drawBase, aw: awayBase, pred: homeBase >= awayBase ? "1" : "2" };
-  }
-
-  const varied = hashToVaried(predictionId);
-  
-  // Diversify market type based on hash — don't always use 1X2
-  const marketVariants = [
-    "1", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No", 
-    "Over 1.5", "Under 3.5", "DC 1X", "DC X2"
-  ];
-  let hash2 = 0;
-  for (let i = 0; i < predictionId.length; i++) {
-    hash2 = ((hash2 << 3) + hash2) + predictionId.charCodeAt(i);
-    hash2 |= 0;
-  }
-  const marketIdx = Math.abs(hash2) % marketVariants.length;
-  const variedMarket = marketVariants[marketIdx];
-  
-  let fallbackPrediction: string = variedMarket;
-  let fallbackConfidence = 50;
-  let fallbackHomeWin = varied.hw;
-  let fallbackDraw = varied.dr;
-  let fallbackAwayWin = varied.aw;
-  
-  // Generate score that matches the prediction type
-  function getScoreForMarket(market: string, hw: number, aw: number): string {
-    switch (market) {
-      case "Over 2.5": return hw > aw ? "2-1" : "1-2";
-      case "Over 1.5": return hw > aw ? "1-1" : "1-1";
-      case "Under 2.5": return hw > aw ? "1-0" : "0-1";
-      case "Under 3.5": return hw > aw ? "2-0" : "0-2";
-      case "BTTS Yes": return hw > aw ? "2-1" : "1-2";
-      case "BTTS No": return hw > aw ? "2-0" : "0-1";
-      case "DC 1X": return "1-1";
-      case "DC X2": return "1-1";
-      case "1": return "1-0";
-      case "2": return "0-1";
-      case "X": return "1-1";
-      default: return "1-0";
-    }
-  }
-  
-  let fallbackPredictedScore = getScoreForMarket(variedMarket, varied.hw, varied.aw);
-  let fallbackAnalysis = `Pending data from API-Football. ${reason}`;
-
-  // If odds exist, use them as fallback (more accurate than hash-based)
-  if (opts?.fixtureId && opts?.apiKey) {
-    const odds = await fetchOdds(opts.fixtureId, opts.apiKey);
-
-    if (odds) {
-      // Detect TOP LEAGUE big match for confidence boost via market reliability
-      const { data: predRow } = await supabase
-        .from("ai_predictions")
-        .select("league, home_team, away_team")
-        .eq("id", predictionId)
-        .single();
-
-      const leagueLower = (predRow?.league || "").toLowerCase();
-      const TOP_LEAGUES = [
-        "uefa champions league", "champions league", "uefa europa league", "europa league",
-        "uefa europa conference league", "conference league",
-        "la liga", "primera division", "serie a", "bundesliga", "ligue 1",
-      ];
-      const TOP_TEAMS = [
-        "arsenal", "manchester", "liverpool", "chelsea", "tottenham",
-        "real madrid", "barcelona", "atletico madrid",
-        "juventus", "inter", "milan", "napoli", "roma",
-        "bayern", "dortmund", "leverkusen", "psg", "paris saint",
-      ];
-      const homeL = (predRow?.home_team || "").toLowerCase();
-      const awayL = (predRow?.away_team || "").toLowerCase();
-      const isTopLeague = TOP_LEAGUES.some(l => leagueLower.includes(l));
-      const isTopTeamMatch = TOP_TEAMS.some(t => homeL.includes(t) || awayL.includes(t));
-      const isBigMatch = isTopLeague || (leagueLower === "premier league" && isTopTeamMatch);
-
-      fallbackHomeWin = odds.homeProb;
-      fallbackDraw = odds.drawProb;
-      fallbackAwayWin = odds.awayProb;
-
-      // Best implied 1X2 outcome from bookmaker odds
-      if (odds.homeProb >= odds.drawProb && odds.homeProb >= odds.awayProb) fallbackPrediction = "1";
-      else if (odds.awayProb >= odds.homeProb && odds.awayProb >= odds.drawProb) fallbackPrediction = "2";
-      else fallbackPrediction = "X";
-
-      const baseConfidence = Math.max(odds.homeProb, odds.drawProb, odds.awayProb);
-      // Big match: market data for top leagues is highly reliable, +7% confidence boost
-      const leagueBoost = isBigMatch ? 7 : 0;
-      fallbackConfidence = Math.max(50, Math.min(85, baseConfidence + leagueBoost));
-
-      fallbackAnalysis = isBigMatch
-        ? `Top-tier matchup. Bookmaker consensus implies ${odds.homeProb}/${odds.drawProb}/${odds.awayProb}% (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). Sharp money leans ${fallbackPrediction === "1" ? "home" : fallbackPrediction === "2" ? "away" : "draw"}. Form data limited — relying on market intelligence.`
-        : `Limited team-form data. Fallback to bookmaker 1X2 odds (${odds.homeOdds.toFixed(2)}/${odds.drawOdds.toFixed(2)}/${odds.awayOdds.toFixed(2)}). ${reason}`;
-
-      // Generate a predicted score from implied odds
-      const impliedHomeXg = clamp(odds.homeProb / 35, 0.4, 2.5);
-      const impliedAwayXg = clamp(odds.awayProb / 35, 0.3, 2.0);
-      fallbackPredictedScore = `${Math.round(impliedHomeXg)}-${Math.round(impliedAwayXg)}`;
-    }
-  }
-
+  // STRICT POLICY (v6.2): No fallback predictions. If a match cannot be backed
+  // by real API-Football data, the prediction is DELETED — never shown with
+  // synthetic probabilities or "Pending data" placeholders.
+  // Users only see picks built from verified form, xG, odds, and lineups.
   const { error } = await supabase
     .from("ai_predictions")
-    .update({
-      is_locked: false, // Don't lock — still show data with fallback values
-      prediction: fallbackPrediction,
-      predicted_score: fallbackPredictedScore,
-      confidence: fallbackConfidence,
-      home_win: fallbackHomeWin,
-      draw: fallbackDraw,
-      away_win: fallbackAwayWin,
-      risk_level: "high",
-      analysis: fallbackAnalysis,
-      updated_at: updatedAt,
-    })
+    .delete()
     .eq("id", predictionId);
-
   if (error) {
-    console.error("Error marking prediction as locked:", error);
+    console.error(`[DELETE-FAIL] ${predictionId}: ${error.message} (reason: ${reason})`);
+  } else {
+    console.log(`[DELETED] ${predictionId} — ${reason}`);
   }
 }
 
@@ -7192,7 +7067,7 @@ async function processBatch(
             `Fixture ${fixtureIdStr}: Low confidence after Step 3 (${step3.reason})`,
             { fixtureId: fixtureIdStr, apiKey }
           );
-          locked++;
+          deleted++;
           continue;
         }
 
@@ -7302,7 +7177,7 @@ async function processBatch(
           apiKey,
         }
       );
-      locked++;
+      deleted++;
       errors.push(`Fixture ${pred.match_id}: ${e instanceof Error ? e.message : "Unknown error"}`);
     }
   }
@@ -7830,6 +7705,41 @@ serve(async (req: Request) => {
     // Batch mode - process a single batch for a specific date
     if (body.batchMode === true && body.matchDate && typeof body.offset === "number") {
       return handleBatchRegenerate(apiKey, body.matchDate, body.offset, body.runId || "manual");
+    }
+
+    // Purge mode — delete all predictions whose analysis contains legacy
+    // fallback markers ("Pending data", "Not found in API", etc.).
+    // Per v6.2 strict policy: never display synthesized predictions.
+    if (body.purgeFallbacks === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const markers = [
+        "Pending data",
+        "Not found in API",
+        "Limited team-form data",
+        "Fallback to bookmaker",
+        "Form data limited",
+        "Top-tier matchup. Bookmaker consensus implies",
+        "relying on market intelligence",
+      ];
+      let totalDeleted = 0;
+      const perMarker: Record<string, number> = {};
+      for (const m of markers) {
+        const { data, error } = await supabase
+          .from("ai_predictions")
+          .delete()
+          .ilike("analysis", `%${m}%`)
+          .select("id");
+        const n = data?.length ?? 0;
+        perMarker[m] = n;
+        totalDeleted += n;
+        if (error) console.error(`[PURGE] ${m}:`, error.message);
+      }
+      return new Response(
+        JSON.stringify({ purged: totalDeleted, perMarker }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Full regenerate mode - triggers batch chains for today + tomorrow
