@@ -377,8 +377,12 @@ export default function AIPredictions() {
   const safePicks = useMemo(() => {
     return [...globalRankingBase]
       .filter((p) => {
-        if ((p.confidence ?? 0) < 70) return false;
-        if (!isLowRiskPrediction(p.prediction)) return false;
+        const conf = p.confidence ?? 0;
+        if (conf < 70) return false;
+        // Low-risk market OR a very strong 1X2 pick (conf ≥ 82%)
+        const lowRisk = isLowRiskPrediction(p.prediction);
+        const strongMain = conf >= 82 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
+        if (!lowRisk && !strongMain) return false;
         // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
         const xgTotal =
           typeof (p as any).xg_total === "number"
@@ -403,10 +407,37 @@ export default function AIPredictions() {
       .slice(0, 1);
   }, [globalRankingBase]);
 
-  // Diamond Pick: backend-flagged is_diamond=true (max 1/day, may be empty)
+  // Diamond Pick: prefer backend-flagged is_diamond=true; otherwise compute
+  // client-side as the single highest-quality pick of the day.
+  // Criteria (when backend flag is missing):
+  //  - confidence ≥ 80
+  //  - variance_stable === true (or unknown)
+  //  - low/medium risk (no "high" risk allowed)
+  //  - xG total ≥ 2.4 when available
+  //  - prefer "main" 1X2 picks or Over 2.5 / BTTS — the cleanest signals
   const diamondPick = useMemo(() => {
-    return predictions.find((p) => p.is_diamond === true) ?? null;
-  }, [predictions]);
+    const backendFlagged = predictions.find((p) => p.is_diamond === true);
+    if (backendFlagged) return backendFlagged;
+
+    const candidates = [...globalRankingBase].filter((p) => {
+      if ((p.confidence ?? 0) < 80) return false;
+      if ((p as any).variance_stable === false) return false;
+      if ((p.risk_level ?? "").toLowerCase() === "high") return false;
+      const xgTotal =
+        typeof (p as any).xg_total === "number"
+          ? (p as any).xg_total
+          : parseXgFromFactors(p.key_factors)?.total;
+      if (typeof xgTotal === "number" && xgTotal < 2.4) return false;
+      // Require real data (xG must exist for both teams)
+      const xgH = (p as any).xg_home;
+      const xgA = (p as any).xg_away;
+      if (!(typeof xgH === "number" && xgH > 0 && typeof xgA === "number" && xgA > 0)) return false;
+      return true;
+    });
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    return candidates[0];
+  }, [predictions, globalRankingBase]);
 
   const safePickIds = useMemo(
     () => new Set(safePicks.map((p) => p.id)),
