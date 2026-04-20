@@ -219,6 +219,7 @@ export function TopAIPicksSection({
                   <AIPredictionCard
                     overrideTier={realTier}
                     forceUnlocked={isUnlockedSlot}
+                    forceLocked={!isUnlockedSlot}
                     prediction={rp.prediction}
                     isAdmin={isAdmin}
                     isPremiumUser={isPremiumUser}
