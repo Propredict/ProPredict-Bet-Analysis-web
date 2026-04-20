@@ -5677,10 +5677,130 @@ async function assignTiers(
       .in("id", toLock);
   }
 
+  // === STEP 6 — DIAMOND PICK (max 1 per day) ===
+  // Strict gates: confidence ≥ 82, Tier 1/2 league, low variance,
+  // stable predicted goals, low-risk market preference (Over 1.5 / Double Chance / strong BTTS).
+  // Soft fallback: if 0 candidates → relax xG diff to 0.6 (other rules stay strict).
+  // If still 0 → DO NOT assign Diamond.
+  const TIER_1_NAMES = new Set([
+    "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+    "uefa champions league", "uefa europa league", "uefa conference league",
+    "world cup", "euro championship", "champions league", "europa league",
+  ]);
+  const TIER_2_NAMES = new Set([
+    "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
+    "scottish premiership", "championship", "la liga 2", "segunda división", "segunda division",
+    "2. bundesliga", "serie b", "ligue 2",
+  ]);
+  const isTierAllowed = (league: string | null | undefined): boolean => {
+    const l = (league ?? "").toString().trim().toLowerCase();
+    if (!l) return false;
+    for (const n of TIER_1_NAMES) if (l.includes(n)) return true;
+    for (const n of TIER_2_NAMES) if (l.includes(n)) return true;
+    return false;
+  };
+  const parseXgTag = (factors: any[]): { home: number; away: number; diff: number; total: number } | null => {
+    if (!Array.isArray(factors)) return null;
+    const tag = factors.find((f) => typeof f === "string" && f.startsWith("step2_xg:"));
+    if (!tag) return null;
+    const [h, a, d] = tag.replace("step2_xg:", "").split("|").map(Number);
+    if (![h, a, d].every(Number.isFinite)) return null;
+    return { home: h, away: a, diff: d, total: h + a };
+  };
+  const lastGoalsVarianceOk = (p: any): boolean => {
+    const lh = p.last_home_goals;
+    const la = p.last_away_goals;
+    if (lh == null || la == null) return false;
+    // Both teams roughly stable: average per match
+    // last_home_goals stores total over last 5 → avg should be 0.5–4.0
+    const avgH = lh / 5;
+    const avgA = la / 5;
+    if (avgH < 0.4 || avgH > 4) return false;
+    if (avgA < 0.4 || avgA > 4) return false;
+    // Avoid extreme polarisation (e.g., one team 0.2, other 3.5)
+    if (Math.abs(avgH - avgA) > 2.5) return false;
+    return true;
+  };
+  const stablePredictedScore = (score: string | null | undefined): boolean => {
+    if (!score) return true; // unknown ≠ extreme
+    const m = score.match(/(\d+)\D+(\d+)/);
+    if (!m) return true;
+    const h = +m[1], a = +m[2];
+    if (h + a > 5) return false; // extreme high-scoring
+    if (Math.abs(h - a) >= 4) return false; // blowout
+    return true;
+  };
+  const isLowRiskMarket = (raw: string | null | undefined): boolean => {
+    const p = (raw ?? "").toString().trim().toLowerCase();
+    if (p.includes("over 1.5")) return true;
+    if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) return true;
+    return false;
+  };
+  const deriveLowRiskMarket = (p: any): { market: string; prob: number } | null => {
+    const xg = parseXgTag(p.key_factors);
+    if (!xg) return null;
+    // Approx P(Over 1.5) using Poisson with λ = totalGoals
+    const lambda = Math.max(0.5, xg.total);
+    const pOver15 = 1 - Math.exp(-lambda) - lambda * Math.exp(-lambda); // P(>=2)
+    // Double Chance from win probabilities (already on 0-100 scale)
+    const hw = (p.home_win ?? 0) / 100;
+    const dr = (p.draw ?? 0) / 100;
+    const aw = (p.away_win ?? 0) / 100;
+    const pHomeOrDraw = hw + dr; // 1X
+    const pAwayOrDraw = aw + dr; // X2
+    const candidates = [
+      { market: "Over 1.5", prob: pOver15 },
+      { market: "Double Chance 1X", prob: pHomeOrDraw },
+      { market: "Double Chance X2", prob: pAwayOrDraw },
+    ].filter((c) => c.prob >= 0.85);
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.prob - a.prob);
+    return candidates[0];
+  };
+
+  const diamondCandidate = (minXgDiff: number) => {
+    return premiumPicks.find((p: any) => {
+      if ((p.confidence ?? 0) < 82) return false;
+      if (!isTierAllowed(p.league)) return false;
+      const xg = parseXgTag(p.key_factors);
+      if (!xg) return false;
+      if (Math.abs(xg.diff) < minXgDiff) return false;
+      if (!lastGoalsVarianceOk(p)) return false;
+      if (!stablePredictedScore(p.predicted_score)) return false;
+      // Bet type: prefer model's existing low-risk OR derive from Poisson
+      const lowRisk = isLowRiskMarket(p.prediction) || deriveLowRiskMarket(p) != null;
+      if (!lowRisk) return false;
+      return true;
+    });
+  };
+
+  let diamond: any = diamondCandidate(0.8);
+  if (!diamond) {
+    diamond = diamondCandidate(0.6); // soft fallback
+    if (diamond) console.log(`[STEP 6] Diamond soft fallback (xG diff ≥ 0.6) used.`);
+  }
+
+  // Reset is_diamond for both dates first (idempotent)
+  await supabase
+    .from("ai_predictions")
+    .update({ is_diamond: false })
+    .in("match_date", [todayStr, tomorrowStr]);
+
+  if (diamond) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_diamond: true })
+      .eq("id", diamond.id);
+    console.log(`[STEP 6] 💎 Diamond Pick: ${diamond.id} | conf=${diamond.confidence} | league=${diamond.league}`);
+  } else {
+    console.log(`[STEP 6] No Diamond Pick today — quality threshold not met.`);
+  }
+
   return {
     free: freePicks.length,
     pro: proCandidates.length,
     premium: premiumPicks.length,
+    diamond: diamond ? 1 : 0,
   };
 }
 
