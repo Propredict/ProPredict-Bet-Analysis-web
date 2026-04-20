@@ -302,12 +302,42 @@ export default function AIPredictions() {
     return result;
   }, [predictions, showFavoritesOnly, isFavorite, selectedLeague, searchQuery]);
 
-  // Safe Pick of the Day FIRST: single highest-confidence prediction (global, all tiers)
+  // Helpers for Safe Pick & Diamond Pick
+  const parseXgFromFactors = (factors: string[] | null | undefined): { home: number; away: number; total: number; diff: number } | null => {
+    if (!Array.isArray(factors)) return null;
+    const tag = factors.find((f) => typeof f === "string" && f.startsWith("step2_xg:"));
+    if (!tag) return null;
+    const [h, a, d] = tag.replace("step2_xg:", "").split("|").map(Number);
+    if (![h, a, d].every(Number.isFinite)) return null;
+    return { home: h, away: a, total: h + a, diff: d };
+  };
+  const isLowRiskPrediction = (raw: string | null | undefined): boolean => {
+    const p = (raw ?? "").toLowerCase();
+    if (p.includes("over 1.5")) return true;
+    if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) return true;
+    if (p.includes("over 2.5")) return true; // moderately safe
+    if (p.includes("btts")) return true; // accept BTTS yes/no
+    return false;
+  };
+
+  // Safe Pick of the Day: confidence ≥75 + low-risk market + xG total ≥ 2.2
   const safePicks = useMemo(() => {
     return [...globalRankingBase]
+      .filter((p) => {
+        if ((p.confidence ?? 0) < 75) return false;
+        if (!isLowRiskPrediction(p.prediction)) return false;
+        const xg = parseXgFromFactors(p.key_factors);
+        if (!xg || xg.total < 2.2) return false;
+        return true;
+      })
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
       .slice(0, 1);
   }, [globalRankingBase]);
+
+  // Diamond Pick: backend-flagged is_diamond=true (max 1/day, may be empty)
+  const diamondPick = useMemo(() => {
+    return predictions.find((p) => p.is_diamond === true) ?? null;
+  }, [predictions]);
 
   const safePickIds = useMemo(
     () => new Set(safePicks.map((p) => p.id)),
