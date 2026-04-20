@@ -412,47 +412,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             });
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
-                Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>
+                Predicted Score: <span className={cn(
+                  "font-semibold text-foreground",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>{derivedScore}</span>
               </p>
             );
           })()}
-        </div>
-      ) : (
-        /* Locked state — FOMO teaser */
-        <div className="rounded-lg border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-card/50 to-fuchsia-500/5 p-3 md:p-4 relative overflow-hidden">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
-          
-          <div className="relative space-y-2">
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
-              <span className="text-[10px] md:text-xs font-bold text-fuchsia-400 uppercase tracking-wider">
-                🔒 AI High Confidence Pick
-              </span>
-            </div>
-            
-            {/* Teaser — show confidence but NOT the team */}
-            <div className="flex items-center gap-2">
-              <span className="text-lg md:text-xl font-extrabold text-fuchsia-400">
-                Win probability: {Math.max(pick.conf, 75)}%
-              </span>
-            </div>
-            
-            {pick.conf >= 80 && (
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
-                <Flame className="w-2.5 h-2.5" />
-                HIGH CONFIDENCE
-              </Badge>
-            )}
-            
-            <div className="flex items-end justify-between pt-1">
-              <div className="text-base md:text-lg font-bold text-white/20 blur-md select-none pointer-events-none">Hidden Team Win</div>
-            </div>
-            
-            <p className="text-[9px] md:text-[10px] text-muted-foreground/80">
-              Unlock full prediction to see team, score & analysis 👇
-            </p>
-          </div>
         </div>
       )}
 
