@@ -379,16 +379,24 @@ export default function AIPredictions() {
       .filter((p) => {
         if ((p.confidence ?? 0) < 70) return false;
         if (!isLowRiskPrediction(p.prediction)) return false;
-        const xg = parseXgFromFactors(p.key_factors);
-        // If xG present, enforce total ≥ 2.2; otherwise allow.
-        if (xg && xg.total < 2.2) return false;
-        // STEP 11 — Safe Pick must be from a STABLE match (variance tag).
-        // If variance tag is missing (older predictions), do not block.
+        // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
+        const xgTotal =
+          typeof (p as any).xg_total === "number"
+            ? (p as any).xg_total
+            : parseXgFromFactors(p.key_factors)?.total;
+        // If xG total present and below 2.2, reject. Otherwise allow.
+        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
+        // STEP 11 — Safe Pick must be STABLE.
+        // Prefer DB column variance_stable; fall back to legacy tag.
+        if ((p as any).variance_stable === false) return false;
+        if ((p as any).variance_stable !== true) {
+          // No DB value — try legacy tag (do not block if both missing)
         const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
         const varTag = factors.find(
           (f) => typeof f === "string" && f.startsWith("variance:"),
         );
         if (varTag && varTag.includes("UNSTABLE")) return false;
+        }
         return true;
       })
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))

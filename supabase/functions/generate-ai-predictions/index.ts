@@ -5498,7 +5498,7 @@ async function assignTiers(
 ): Promise<{ free: number; pro: number; premium: number; diamond: number }> {
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
-    .select("id, confidence, is_locked, result_status, prediction, league, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date")
+    .select("id, confidence, is_locked, result_status, prediction, league, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, variance_stable, variance_score, xg_home, xg_away")
     .in("match_date", [todayStr, tomorrowStr])
     .in("result_status", ["pending", null])
     .eq("is_locked", false)
@@ -5657,6 +5657,30 @@ async function assignTiers(
       .from("ai_predictions")
       .update({ is_premium: true, is_locked: false })
       .in("id", Array.from(premiumIds));
+  }
+
+  // Mark Safe Picks (Premium subset with confidence >= 85 AND stable variance)
+  // First reset all is_safe_pick for both dates (idempotent)
+  await supabase
+    .from("ai_predictions")
+    .update({ is_safe_pick: false })
+    .in("match_date", [todayStr, tomorrowStr]);
+
+  const safePickIds = premiumPicks
+    .filter((p: any) =>
+      (p.confidence ?? 0) >= SAFE_PICK_MIN_CONFIDENCE &&
+      p.variance_stable === true
+    )
+    .map((p: any) => p.id);
+
+  if (safePickIds.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_safe_pick: true })
+      .in("id", safePickIds);
+    console.log(`[SAFE PICK] Marked ${safePickIds.length} matches as Safe Pick (conf≥85 + stable)`);
+  } else {
+    console.log(`[SAFE PICK] No qualifying matches today (need conf≥85 + variance_stable=true)`);
   }
 
   // Ensure Pro & Free are unlocked
@@ -7001,6 +7025,8 @@ async function processBatch(
         // We approximate variance from `homeXg`/`awayXg` plus the spread vs the
         // expected goals — small spread + balanced expectation = STABLE.
         // Tag format: variance:STABLE|UNSTABLE|score
+        let varianceStableDB = false;
+        let varianceScoreDB: number | null = null;
         try {
           const homeAvg = homeXg;
           const awayAvg = awayXg;
@@ -7020,6 +7046,8 @@ async function processBatch(
           const balancePts = Math.max(0, 100 - spread * 25); // 0 spread = 100, 4 spread = 0
           const totalPts = totalGoals < 1.2 || totalGoals > 4.5 ? 0 : 100 - Math.abs(totalGoals - 2.6) * 20;
           const varianceScore = Math.round((balancePts + Math.max(0, totalPts)) / 2);
+          varianceStableDB = stable;
+          varianceScoreDB = varianceScore;
           const varianceTag = `variance:${stable ? "STABLE" : "UNSTABLE"}|${varianceScore}`;
           if (!keyFactors.some((f) => f.startsWith("variance:"))) {
             keyFactors.unshift(varianceTag);
@@ -7053,6 +7081,13 @@ async function processBatch(
           missing_away_players: missingAway,
           injury_impact_home: injuryImpactHome,
           injury_impact_away: injuryImpactAway,
+          // STEP 2/3 — first-class structured data (replaces parsing key_factors tags)
+          xg_home: Math.round(step2.expectedHome * 100) / 100,
+          xg_away: Math.round(step2.expectedAway * 100) / 100,
+          xg_total: Math.round(step2.totalGoals * 100) / 100,
+          xg_diff: Math.round((step2.expectedHome - step2.expectedAway) * 100) / 100,
+          variance_stable: varianceStableDB,
+          variance_score: varianceScoreDB,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
