@@ -6667,10 +6667,15 @@ async function processBatch(
       const step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
       if (!step2) {
         console.log(
-          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
+          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal — locked, not deleted`
         );
-        await supabase.from("ai_predictions").delete().eq("id", pred.id);
-        deleted++;
+        // No strong deterministic signal — keep row but lock it so it does not
+        // appear to users. This prevents "lost" matches between batches and
+        // lets the next regeneration try again with fresh data.
+        await supabase
+          .from("ai_predictions")
+          .update({ is_locked: true, result_status: "pending" })
+          .eq("id", pred.id);
         continue;
       }
       console.log(
