@@ -6444,12 +6444,9 @@ async function processBatch(
       const season = fixture.league?.season || new Date().getFullYear();
 
       if (!homeTeamId || !awayTeamId || !leagueId) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Invalid fixture data`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
-        errors.push(`Fixture ${fixtureIdStr}: Invalid fixture data`);
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Invalid fixture data — DELETED`);
         continue;
       }
 
@@ -6470,12 +6467,10 @@ async function processBatch(
       ]);
 
       if (!homeStats && !awayStats) {
-        // Both stats missing — use fallback but don't skip entirely
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        // Both stats missing — DELETE (no real data = no prediction)
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Missing team stats — DELETED`);
         continue;
       }
 
@@ -6484,11 +6479,9 @@ async function processBatch(
       const awayForm = realAwayForm.length >= 3 ? realAwayForm : buildPseudoFormFromStats(awayStats);
 
       if (homeForm.length === 0 && awayForm.length === 0) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Insufficient form data — DELETED`);
         continue;
       }
 
@@ -6504,11 +6497,8 @@ async function processBatch(
         console.log(
           `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): home=${homeRecent}, away=${awayRecent}, required>=${minRequired}`
         );
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Low-data match (T${leagueTier}, ${homeRecent}/${awayRecent})`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
         continue;
       }
 
@@ -6519,13 +6509,8 @@ async function processBatch(
         console.log(
           `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
         );
-        await markPredictionLocked(
-          supabase,
-          pred.id,
-          `Fixture ${fixtureIdStr}: No strong signal (Step 2 skip)`,
-          { fixtureId: fixtureIdStr, apiKey }
-        );
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
         continue;
       }
       console.log(
