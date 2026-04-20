@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap, DollarSign } from "lucide-react";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
@@ -171,6 +171,15 @@ const AIPredictionCardInner = ({
               >
                 <Zap className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 STRONG SIGNAL
+              </Badge>
+            )}
+            {prediction.is_value_bet && !isStrongSignal && (
+              <Badge
+                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                title="AI estimates higher win probability than the bookmaker market — value detected"
+              >
+                <DollarSign className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
+                VALUE
               </Badge>
             )}
             {isPremiumTier && (
