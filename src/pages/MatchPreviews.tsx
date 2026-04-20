@@ -174,21 +174,28 @@ export default function MatchPreviews() {
       p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending");
     const valid = predictions.filter(p => !isPending(p));
 
-    // Sort by best market pick % (the number actually shown on the card),
-    // then by general confidence as tie-breaker, then league priority.
-    // This guarantees the highest displayed "Confidence X%" sits on top —
-    // i.e. the safest matches with the highest probability come first.
-    const pool = [...valid]
+    // Tier-first ordering (matches Premium AI logic):
+    //   1) Group by league tier (1 = elite → 4 = obscure)
+    //   2) Within a tier: highest best-pick % first
+    //   3) Tie-break: general AI confidence, then sub-league priority
+    // We then take only top MAX_MATCHES, which naturally hides minor leagues
+    // when there are enough strong matches from top leagues.
+    const enriched = valid
       .filter(p => (p.confidence ?? 0) >= 50)
-      .map(p => ({ p, bestPct: getBestMarketPickWithLabel(p as any).pct }))
+      .map(p => ({
+        p,
+        bestPct: getBestMarketPickWithLabel(p as any).pct,
+        tier: getLeagueTier(p.league),
+      }))
       .sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
         const pctDiff = b.bestPct - a.bestPct;
         if (pctDiff !== 0) return pctDiff;
         const confDiff = (b.p.confidence ?? 0) - (a.p.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
         return getLeaguePriority(a.p.league) - getLeaguePriority(b.p.league);
-      })
-      .map(x => x.p);
+      });
+    const pool = enriched.map(x => x.p);
 
     // Build a lookup from match_previews for enrichment
     const previewMap = new Map<string, typeof previews[0]>();
