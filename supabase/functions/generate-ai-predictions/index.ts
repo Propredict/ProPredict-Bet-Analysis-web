@@ -7510,6 +7510,9 @@ async function handleBatchRegenerate(
     const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
     await assignTiers(supabase, todayStr, tomorrowStr);
+
+    // Fire-and-forget: auto-enrich narrative analysis after final batch
+    triggerEnrichAnalysis(supabaseUrl, supabaseKey);
   }
 
   return new Response(
