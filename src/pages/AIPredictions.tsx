@@ -922,17 +922,6 @@ export default function AIPredictions() {
                     </Button>
                   </div>
                 )}
-                {/* Diamond CTA */}
-                <div className="mt-3 md:mt-4 flex justify-center">
-                  <Button
-                    onClick={() => navigate("/diamond-pick")}
-                    size="sm"
-                    className="h-9 px-4 text-xs md:text-sm font-semibold bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:opacity-90 text-white border-0 shadow-lg shadow-cyan-500/40 rounded-full gap-1.5"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    View Full Analysis
-                  </Button>
-                </div>
               </div>
             </Card>
           )}
