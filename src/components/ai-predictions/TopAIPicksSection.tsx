@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Trophy, Sparkles, Zap, Lock } from "lucide-react";
+import { Crown, Trophy, Sparkles, Zap, Lock, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AIPredictionCard } from "./AIPredictionCard";
 import type { RankedPick } from "./utils/topPicksRanking";
@@ -59,6 +59,24 @@ export function TopAIPicksSection({
   getPredictionTier,
 }: Props) {
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showHint, setShowHint] = useState(true);
+
+  // Hide swipe hint after user starts scrolling
+  // (also auto-hide after 6s in case they don't interact)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (el.scrollLeft > 20) setShowHint(false);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    const t = setTimeout(() => setShowHint(false), 6000);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      clearTimeout(t);
+    };
+  }, []);
 
   if (picks.length === 0) return null;
 
@@ -118,13 +136,15 @@ export function TopAIPicksSection({
         </p>
 
         {/* Picks horizontal scroll (mobile-first) → grid on desktop */}
-        <div
-          className={cn(
-            "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1",
-            "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/40",
-            "lg:grid lg:grid-cols-3 lg:gap-3 lg:overflow-visible lg:snap-none lg:pb-0 lg:mx-0 lg:px-0",
-          )}
-        >
+        <div className="relative">
+          <div
+            ref={scrollRef}
+            className={cn(
+              "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1",
+              "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/40",
+              "lg:grid lg:grid-cols-3 lg:gap-3 lg:overflow-visible lg:snap-none lg:pb-0 lg:mx-0 lg:px-0",
+            )}
+          >
           {visiblePicks.map((rp, idx) => {
             // Use the prediction's REAL tier so all market tabs (BTTS, Combo, etc.) show.
             const realTier = getPredictionTier(rp.prediction);
@@ -187,6 +207,32 @@ export function TopAIPicksSection({
               </div>
             );
           })}
+          </div>
+
+          {/* Swipe hint — only visible on mobile when there are 2+ picks and user hasn't scrolled yet */}
+          {showHint && visiblePicks.length > 1 && (
+            <div className="lg:hidden pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 z-20 flex items-center">
+              {/* Soft fade gradient on the right edge */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[85%] w-12 bg-gradient-to-l from-background via-background/60 to-transparent rounded-r" />
+              {/* Animated chevron pill */}
+              <div className="relative mr-1 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white shadow-lg shadow-amber-500/40 animate-pulse">
+                <span className="text-[9px] font-bold tracking-wide">Swipe</span>
+                <ChevronRight className="w-3.5 h-3.5 animate-[slide-in-right_1s_ease-in-out_infinite]" />
+              </div>
+            </div>
+          )}
+
+          {/* Pagination dots — mobile only */}
+          {visiblePicks.length > 1 && (
+            <div className="lg:hidden flex justify-center gap-1 mt-1.5">
+              {visiblePicks.map((_, i) => (
+                <span
+                  key={i}
+                  className="h-1 w-1 rounded-full bg-amber-500/40"
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Free user upsell */}
