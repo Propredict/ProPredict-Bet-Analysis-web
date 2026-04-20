@@ -6371,6 +6371,7 @@ async function processBatch(
 ): Promise<{ updated: number; locked: number; errors: string[] }> {
   let updated = 0;
   let locked = 0;
+  let deleted = 0;
   const errors: string[] = [];
 
   // === SELF-LEARNING: Load historical accuracy by league AND by market ===
