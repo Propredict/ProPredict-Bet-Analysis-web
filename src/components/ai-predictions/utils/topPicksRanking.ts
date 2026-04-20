@@ -177,18 +177,18 @@ function hasRealData(p: AIPrediction): boolean {
   if (FALLBACK_MARKERS.some((m) => a.includes(m))) return false;
 
   const anyP = p as any;
+  // CORE quality requirements — must come from real API data:
+  //  1) xG signal for both teams (Poisson model input)
+  //  2) recent form data (last_home_goals OR last_away_goals)
+  // Bookmaker consensus is treated as a BONUS, not a hard gate, because
+  // odds snapshots are not always available for every league/match,
+  // but xG + form are sufficient to guarantee the prediction is real
+  // (not a fabricated fallback).
   if (num(anyP.xg_home) <= 0 || num(anyP.xg_away) <= 0) return false;
 
   const hasForm =
     anyP.last_home_goals != null || anyP.last_away_goals != null;
   if (!hasForm) return false;
-
-  const hasConsensus =
-    num(anyP.consensus_home) > 0 ||
-    num(anyP.consensus_draw) > 0 ||
-    num(anyP.consensus_away) > 0;
-  const hasBooks = num(anyP.bookmakers_count) >= 2;
-  if (!hasConsensus || !hasBooks) return false;
 
   return true;
 }
