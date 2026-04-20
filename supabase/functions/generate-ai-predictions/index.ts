@@ -6371,6 +6371,7 @@ async function processBatch(
 ): Promise<{ updated: number; locked: number; errors: string[] }> {
   let updated = 0;
   let locked = 0;
+  let deleted = 0;
   const errors: string[] = [];
 
   // === SELF-LEARNING: Load historical accuracy by league AND by market ===
@@ -6410,24 +6411,28 @@ async function processBatch(
     try {
       const fixtureIdStr = String(pred.match_id);
 
-      // Use the daily fixture list first. Only fallback to by-id fetch when the batch cache missed it.
+      // Use the daily fixture list first. ALWAYS fallback to direct by-id fetch if missing
+      // (previous logic only retried when entire cache was empty — caused false "Not found in API")
       let fixture = fixtureById.get(fixtureIdStr);
-      if (!fixture && fixtureById.size === 0) {
-        const byId = await fetchJsonWithRetry(
-          `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
-          apiKey,
-          { retries: 4, baseDelayMs: 800 }
-        );
-        fixture = byId?.response?.[0];
+      if (!fixture) {
+        try {
+          const byId = await fetchJsonWithRetry(
+            `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
+            apiKey,
+            { retries: 4, baseDelayMs: 800 }
+          );
+          fixture = byId?.response?.[0];
+        } catch (e) {
+          console.warn(`Direct fixture lookup failed for ${fixtureIdStr}:`, e);
+        }
       }
 
+      // STRICT POLICY: if fixture truly cannot be located in API, DELETE the prediction
+      // (do not show users fake "Pending data" placeholders that erode trust)
       if (!fixture) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Not found in API`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
-        console.log(`Fixture ${fixtureIdStr}: Not found in API - marked as locked`);
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Not found in API after retry — DELETED prediction`);
         continue;
       }
 
@@ -6439,12 +6444,9 @@ async function processBatch(
       const season = fixture.league?.season || new Date().getFullYear();
 
       if (!homeTeamId || !awayTeamId || !leagueId) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Invalid fixture data`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
-        errors.push(`Fixture ${fixtureIdStr}: Invalid fixture data`);
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Invalid fixture data — DELETED`);
         continue;
       }
 
@@ -6465,12 +6467,10 @@ async function processBatch(
       ]);
 
       if (!homeStats && !awayStats) {
-        // Both stats missing — use fallback but don't skip entirely
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Missing team stats`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        // Both stats missing — DELETE (no real data = no prediction)
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Missing team stats — DELETED`);
         continue;
       }
 
@@ -6479,11 +6479,9 @@ async function processBatch(
       const awayForm = realAwayForm.length >= 3 ? realAwayForm : buildPseudoFormFromStats(awayStats);
 
       if (homeForm.length === 0 && awayForm.length === 0) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Insufficient form data`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Insufficient form data — DELETED`);
         continue;
       }
 
@@ -6499,11 +6497,8 @@ async function processBatch(
         console.log(
           `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): home=${homeRecent}, away=${awayRecent}, required>=${minRequired}`
         );
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Low-data match (T${leagueTier}, ${homeRecent}/${awayRecent})`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
         continue;
       }
 
@@ -6514,13 +6509,8 @@ async function processBatch(
         console.log(
           `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
         );
-        await markPredictionLocked(
-          supabase,
-          pred.id,
-          `Fixture ${fixtureIdStr}: No strong signal (Step 2 skip)`,
-          { fixtureId: fixtureIdStr, apiKey }
-        );
-        locked++;
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
         continue;
       }
       console.log(
@@ -7317,7 +7307,7 @@ async function processBatch(
     }
   }
 
-  return { updated, locked, errors };
+  return { updated, locked, deleted, errors };
 }
 
 /**
