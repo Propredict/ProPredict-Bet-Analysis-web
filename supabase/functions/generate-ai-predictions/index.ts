@@ -4594,8 +4594,13 @@ function calculatePrediction(
 
   // Rule C2: Under 2.5 prediction → score must have ≤2 goals  
   if ((prediction === "Under 2.5" || prediction === "Under 1.5") && predTotalGoals > 2) {
-    if (homeXg > awayXg) predictedScore = "1-0";
-    else if (awayXg > homeXg) predictedScore = "0-1";
+    const diff = homeXg - awayXg;
+    const totalXg = homeXg + awayXg;
+    if (totalXg < 1.4 && Math.abs(diff) < 0.3) predictedScore = "0-0";
+    else if (diff > 0.6) predictedScore = "2-0";
+    else if (diff < -0.6) predictedScore = "0-2";
+    else if (diff > 0.2) predictedScore = "1-0";
+    else if (diff < -0.2) predictedScore = "0-1";
     else predictedScore = "1-1";
   }
 
