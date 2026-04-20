@@ -239,6 +239,30 @@ export function TopAIPicksSection({
             </div>
           )}
 
+          {/* Prev arrow — mobile only, visible when scrollable to the left */}
+          {visiblePicks.length > 1 && canScrollLeft && (
+            <button
+              type="button"
+              aria-label="Previous pick"
+              onClick={() => scrollByCard("left")}
+              className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-amber-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-amber-300 active:scale-95 transition"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+
+          {/* Next arrow — mobile only, visible when scrollable to the right */}
+          {visiblePicks.length > 1 && canScrollRight && (
+            <button
+              type="button"
+              aria-label="Next pick"
+              onClick={() => scrollByCard("right")}
+              className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-amber-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-amber-300 active:scale-95 transition"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
+
           {/* Pagination dots — mobile only */}
           {visiblePicks.length > 1 && (
             <div className="lg:hidden flex justify-center gap-1 mt-1.5">
