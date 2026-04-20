@@ -7307,7 +7307,7 @@ async function processBatch(
     }
   }
 
-  return { updated, locked, errors };
+  return { updated, locked, deleted, errors };
 }
 
 /**
