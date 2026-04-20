@@ -715,6 +715,59 @@ export default function AIPredictions() {
           </Card>
 
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
+          {/* 💎 DIAMOND PICK — single elite pick of the day (backend-flagged) */}
+          {diamondPick && (tierFilter === "all" || tierFilter === "premium") && (
+            <Card
+              className={cn(
+                "relative overflow-hidden border-2 mb-3 md:mb-4",
+                "bg-gradient-to-br from-cyan-500/10 via-sky-500/5 to-blue-600/15",
+                "border-cyan-400/50",
+                "shadow-[0_0_50px_rgba(34,211,238,0.35)]",
+                "animate-pulse-glow",
+              )}
+            >
+              <div className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-cyan-400/30 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-sky-500/30 blur-3xl" />
+              <div className="relative p-3 md:p-5">
+                <div className="flex flex-col items-center text-center mb-3 md:mb-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="h-px w-10 md:w-14 bg-gradient-to-r from-transparent to-cyan-400/70" />
+                    <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 shadow-lg shadow-cyan-500/50 ring-1 ring-cyan-200/40">
+                      <span className="text-lg md:text-xl">💎</span>
+                    </div>
+                    <div className="h-px w-10 md:w-14 bg-gradient-to-l from-transparent to-blue-500/70" />
+                  </div>
+                  <h2 className="text-base md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-300 bg-clip-text text-transparent">
+                    Diamond Pick of the Day
+                  </h2>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 max-w-md">
+                    Single highest-conviction AI selection — strict quality gates
+                  </p>
+                  <Badge className="mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2.5 py-0.5">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    💎 Elite • Tier 1/2 • Stable Form
+                  </Badge>
+                </div>
+                <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
+                  <AIPredictionCard
+                    overrideTier="premium"
+                    forceUnlocked={isAdmin || isPremiumUser}
+                    prediction={diamondPick}
+                    isAdmin={isAdmin}
+                    isPremiumUser={isPremiumUser}
+                    isProUser={isProUser}
+                    isFavorite={isFavorite(diamondPick.match_id)}
+                    isSavingFavorite={isSaving(diamondPick.match_id)}
+                    onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                    onGoPremium={() => navigate("/get-premium")}
+                    onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                    isUnlocking={unlockingId === diamondPick.id}
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
+
           <TopAIPicksSection
             picks={topPicks}
             isAdmin={isAdmin}
