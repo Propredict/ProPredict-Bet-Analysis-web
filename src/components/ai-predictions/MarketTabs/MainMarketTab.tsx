@@ -241,14 +241,25 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             ⚠ AI confidence below threshold for a precise pick — analysis provided instead.
           </p>
         </div>
-      ) : hasAccess ? (
+      ) : (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
-              Best Pick
-            </span>
+            {hasAccess ? (
+              <>
+                <CheckCircle className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+                  Best Pick
+                </span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-[10px] md:text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">
+                  AI High Confidence Pick
+                </span>
+              </>
+            )}
             <Badge className={cn(
               "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
               displayTier === "premium" 
@@ -264,7 +275,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           {/* Pick Name */}
           <div className="flex items-center gap-2">
             {pick.icon}
-            <span className="text-base md:text-lg font-bold text-foreground">
+            <span className={cn(
+              "text-base md:text-lg font-bold text-foreground",
+              !hasAccess && "blur-[5px] select-none"
+            )}>
               {pick.label}
             </span>
             {/* Market category color chip — quick visual scan (Over=blue, BTTS=green, DC=purple, Under=orange) */}
@@ -315,6 +329,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <span className="text-xs text-muted-foreground">🧠 AI Confidence</span>
             <span className={cn(
               "text-2xl md:text-3xl font-extrabold tabular-nums",
+              !hasAccess && "blur-[5px] select-none",
               pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-emerald-400" : pick.conf >= 60 ? "text-amber-400" : "text-orange-400"
             )}>
               {pick.conf}%
@@ -412,53 +427,18 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             });
             return (
               <p className="text-[10px] md:text-xs text-muted-foreground/80">
-                Predicted Score: <span className="font-semibold text-foreground">{derivedScore}</span>
+                Predicted Score: <span className={cn(
+                  "font-semibold text-foreground",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>{derivedScore}</span>
               </p>
             );
           })()}
         </div>
-      ) : (
-        /* Locked state — FOMO teaser */
-        <div className="rounded-lg border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-card/50 to-fuchsia-500/5 p-3 md:p-4 relative overflow-hidden">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-transparent pointer-events-none" />
-          
-          <div className="relative space-y-2">
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
-              <span className="text-[10px] md:text-xs font-bold text-fuchsia-400 uppercase tracking-wider">
-                🔒 AI High Confidence Pick
-              </span>
-            </div>
-            
-            {/* Teaser — show confidence but NOT the team */}
-            <div className="flex items-center gap-2">
-              <span className="text-lg md:text-xl font-extrabold text-fuchsia-400">
-                Win probability: {Math.max(pick.conf, 75)}%
-              </span>
-            </div>
-            
-            {pick.conf >= 80 && (
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
-                <Flame className="w-2.5 h-2.5" />
-                HIGH CONFIDENCE
-              </Badge>
-            )}
-            
-            <div className="flex items-end justify-between pt-1">
-              <div className="text-base md:text-lg font-bold text-white/20 blur-md select-none pointer-events-none">Hidden Team Win</div>
-            </div>
-            
-            <p className="text-[9px] md:text-[10px] text-muted-foreground/80">
-              Unlock full prediction to see team, score & analysis 👇
-            </p>
-          </div>
-        </div>
       )}
 
       {/* ===== 1X2 Probabilities — compact row ===== */}
-      {hasAccess && (
-        <div className="grid grid-cols-3 gap-1 pt-1">
+      <div className="grid grid-cols-3 gap-1 pt-1">
           {[
             { label: prediction.home_team, pct: prediction.home_win, outcome: "home" as const },
             { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
@@ -479,6 +459,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                 <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
                 <div className={cn(
                   "text-xs md:text-sm font-bold",
+                  !hasAccess && "blur-[5px] select-none",
                   isSelected ? "text-primary" : "text-foreground/80"
                 )}>
                   {item.pct}%
@@ -486,8 +467,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </div>
             );
           })}
-        </div>
-      )}
+      </div>
 
       {/* ===== Locked Score Teaser — Free tier ===== */}
       {hasAccess && displayTier === "free" && (
@@ -502,7 +482,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
       )}
 
       {/* ===== Top Correct Scores — Pro (top 1) & Premium (top 3) ===== */}
-      {hasAccess && displayTier !== "free" && topScores.length > 0 && (
+      {displayTier !== "free" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
             <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
@@ -529,9 +509,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                     : "border-border/30 bg-card/20"
                 )}
               >
-                <div className="text-sm md:text-base font-bold text-foreground">{s.score}</div>
+                <div className={cn(
+                  "text-sm md:text-base font-bold text-foreground",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>{s.score}</div>
                 <div className={cn(
                   "text-[9px] md:text-[10px] font-medium",
+                  !hasAccess && "blur-[5px] select-none",
                   i === 0 
                     ? displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
                     : "text-muted-foreground"
