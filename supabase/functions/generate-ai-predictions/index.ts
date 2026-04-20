@@ -6410,24 +6410,28 @@ async function processBatch(
     try {
       const fixtureIdStr = String(pred.match_id);
 
-      // Use the daily fixture list first. Only fallback to by-id fetch when the batch cache missed it.
+      // Use the daily fixture list first. ALWAYS fallback to direct by-id fetch if missing
+      // (previous logic only retried when entire cache was empty — caused false "Not found in API")
       let fixture = fixtureById.get(fixtureIdStr);
-      if (!fixture && fixtureById.size === 0) {
-        const byId = await fetchJsonWithRetry(
-          `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
-          apiKey,
-          { retries: 4, baseDelayMs: 800 }
-        );
-        fixture = byId?.response?.[0];
+      if (!fixture) {
+        try {
+          const byId = await fetchJsonWithRetry(
+            `${API_FOOTBALL_URL}/fixtures?id=${fixtureIdStr}`,
+            apiKey,
+            { retries: 4, baseDelayMs: 800 }
+          );
+          fixture = byId?.response?.[0];
+        } catch (e) {
+          console.warn(`Direct fixture lookup failed for ${fixtureIdStr}:`, e);
+        }
       }
 
+      // STRICT POLICY: if fixture truly cannot be located in API, DELETE the prediction
+      // (do not show users fake "Pending data" placeholders that erode trust)
       if (!fixture) {
-        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Not found in API`, {
-          fixtureId: fixtureIdStr,
-          apiKey,
-        });
-        locked++;
-        console.log(`Fixture ${fixtureIdStr}: Not found in API - marked as locked`);
+        await supabase.from("ai_predictions").delete().eq("id", pred.id);
+        deleted++;
+        console.log(`Fixture ${fixtureIdStr}: Not found in API after retry — DELETED prediction`);
         continue;
       }
 
