@@ -112,8 +112,19 @@ export function TopAIPicksSection({
           </Badge>
         </div>
 
-        {/* Picks grid */}
-        <div className="grid gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {/* Trust line */}
+        <p className="text-center text-[9px] md:text-[10px] text-muted-foreground/80 mb-3 -mt-1">
+          AI Confidence based on xG &amp; team form
+        </p>
+
+        {/* Picks horizontal scroll (mobile-first) → grid on desktop */}
+        <div
+          className={cn(
+            "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1",
+            "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/40",
+            "lg:grid lg:grid-cols-3 lg:gap-3 lg:overflow-visible lg:snap-none lg:pb-0 lg:mx-0 lg:px-0",
+          )}
+        >
           {visiblePicks.map((rp, idx) => {
             // Use the prediction's REAL tier so all market tabs (BTTS, Combo, etc.) show.
             const realTier = getPredictionTier(rp.prediction);
@@ -121,13 +132,16 @@ export function TopAIPicksSection({
             // Cards beyond unlockedCount → respect paywall (locked teaser).
             const isUnlockedSlot = idx < unlockedCount;
             return (
-              <div key={rp.prediction.id} className="relative">
+              <div
+                key={rp.prediction.id}
+                className="relative shrink-0 w-[88vw] max-w-[340px] snap-start lg:w-auto lg:max-w-none lg:shrink"
+              >
                 {/* Label badge floating top-right */}
                 <div className="absolute -top-2 left-2 z-10">
                   {rp.label === "elite" ? (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
-                      <Crown className="w-2.5 h-2.5 mr-1 fill-current" />
-                      🏆 Top AI Pick
+                      <Sparkles className="w-2.5 h-2.5 mr-1 fill-current" />
+                      ⭐ Elite
                     </Badge>
                   ) : (
                     <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">

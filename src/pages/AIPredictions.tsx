@@ -883,7 +883,22 @@ export default function AIPredictions() {
             </Card>
           )}
 
-          {/* 🔒 SAFE PICKS OF THE DAY - Premium only, confidence >= 85 */}
+          {/* 🏆 TOP 5 ELITE — moved ABOVE Safe Pick per new layout: 💎 → 🏆 → 🛡️ → 📊 */}
+          <TopAIPicksSection
+            picks={topPicks}
+            isAdmin={isAdmin}
+            isPremiumUser={isPremiumUser}
+            isProUser={isProUser}
+            isAuthenticated={isAuthenticated}
+            isFavorite={isFavorite}
+            isSaving={isSaving}
+            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+            unlockingId={unlockingId}
+            getPredictionTier={getPredictionTier}
+          />
+
+          {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
           {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
             <div>
               {/* Centered section divider title */}
@@ -893,18 +908,24 @@ export default function AIPredictions() {
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
                     <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
                     <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
-                      🛡️ Safe Pick of the Day
+                      🛡️ Lowest Risk Pick Today
                     </h2>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
                 </div>
                 <Badge className="mt-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
-                  🛡️ Low Risk • 75%+ Confidence • Over 1.5 / Double Chance / BTTS
+                  ✅ Stable xG • Strong Form • Lowest Variance Today
                 </Badge>
+                <p className="mt-1.5 text-[9px] md:text-[10px] text-muted-foreground/80 max-w-md">
+                  AI Confidence based on xG &amp; team form
+                </p>
               </div>
               <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
                 {safePicks.map((prediction) => (
-                  <div key={`safe-${prediction.id}`} className="ring-1 ring-emerald-500/30 rounded-lg">
+                  <div
+                    key={`safe-${prediction.id}`}
+                    className="ring-2 ring-emerald-500/40 rounded-lg shadow-[0_0_25px_rgba(16,185,129,0.18)] bg-emerald-500/[0.02]"
+                  >
                     <AIPredictionCard
                       overrideTier="premium"
                       prediction={prediction}
@@ -923,21 +944,6 @@ export default function AIPredictions() {
               </div>
             </div>
           )}
-
-          {/* 🏆 TOP 5 ELITE — moved BELOW Safe Pick per layout: 💎 → 🛡️ → 🏆 → 📊 */}
-          <TopAIPicksSection
-            picks={topPicks}
-            isAdmin={isAdmin}
-            isPremiumUser={isPremiumUser}
-            isProUser={isProUser}
-            isAuthenticated={isAuthenticated}
-            isFavorite={isFavorite}
-            isSaving={isSaving}
-            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-            unlockingId={unlockingId}
-            getPredictionTier={getPredictionTier}
-          />
 
           {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
           {!isPremiumUser && !isProUser && !isAdmin && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "pro" || tierFilter === "premium") && (
