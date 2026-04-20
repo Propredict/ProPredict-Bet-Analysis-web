@@ -5506,7 +5506,7 @@ async function assignTiers(
 
   if (error || !allPredictions) {
     console.error("Error fetching predictions for tier assignment:", error);
-    return { free: 0, pro: 0, premium: 0 };
+    return { free: 0, pro: 0, premium: 0, diamond: 0 };
   }
 
   // === STEP 4 — TIER DISTRIBUTION (v4) ===
@@ -5526,7 +5526,7 @@ async function assignTiers(
         .update({ is_locked: true, is_premium: false })
         .in("id", lockIds);
     }
-    return { free: 0, pro: 0, premium: 0 };
+    return { free: 0, pro: 0, premium: 0, diamond: 0 };
   }
 
   // 1) PREMIUM candidates: confidence ≥ 78
