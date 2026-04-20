@@ -380,7 +380,10 @@ const SUB_STANDINGS = 0.15;  // League table position
 const SUB_TEMPO = 0.07;      // Match intensity/tempo score
 
 // ============ BATCH PROCESSING ============
-const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
+// Reduced from 25 → 8 to survive API-Football rate limits.
+// Each match makes 8-12 API calls; with 429 retries (1s+15s backoff) a batch of 25 can exceed
+// the Edge Function timeout (~150s) and be killed mid-update, losing all enriched predictions.
+const BATCH_SIZE = 8;
 
 interface TeamStats {
   played: number;
@@ -470,7 +473,9 @@ async function fetchJsonWithRetry(
     if (res.status === 429) {
       const retryAfterHeader = res.headers.get("retry-after");
       const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : 0;
-      const backoffMs = Math.round(baseDelayMs * Math.pow(2, attempt));
+      // Cap backoff at 8s to avoid blowing the Edge Function 150s timeout while a single
+      // batch is mid-flight. Previously 1s→2s→4s→8s→16s could stack across many calls.
+      const backoffMs = Math.min(8000, Math.round(baseDelayMs * Math.pow(2, attempt)));
       const waitMs = Math.max(retryAfterMs, backoffMs);
       console.warn(`API-Football rate limit (429). Waiting ${waitMs}ms then retrying: ${url}`);
       await new Promise((r) => setTimeout(r, waitMs));
