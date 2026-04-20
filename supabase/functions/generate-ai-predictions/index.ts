@@ -7469,6 +7469,9 @@ async function handleBatchRegenerate(
 
     const tierResult = await assignTiers(supabase, todayStr, tomorrowStr);
 
+    // Fire-and-forget: auto-enrich narrative analysis after batch completes
+    triggerEnrichAnalysis(supabaseUrl, supabaseKey);
+
     return new Response(
       JSON.stringify({
         message: `Batch complete for ${matchDate}`,
