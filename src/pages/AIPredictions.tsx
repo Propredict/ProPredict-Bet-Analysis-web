@@ -305,11 +305,32 @@ export default function AIPredictions() {
   // Helpers for Safe Pick & Diamond Pick
   const parseXgFromFactors = (factors: string[] | null | undefined): { home: number; away: number; total: number; diff: number } | null => {
     if (!Array.isArray(factors)) return null;
+    // Preferred: explicit step2_xg tag (newer backend versions)
     const tag = factors.find((f) => typeof f === "string" && f.startsWith("step2_xg:"));
-    if (!tag) return null;
-    const [h, a, d] = tag.replace("step2_xg:", "").split("|").map(Number);
-    if (![h, a, d].every(Number.isFinite)) return null;
-    return { home: h, away: a, total: h + a, diff: d };
+    if (tag) {
+      const [h, a, d] = tag.replace("step2_xg:", "").split("|").map(Number);
+      if ([h, a, d].every(Number.isFinite)) {
+        return { home: h, away: a, total: h + a, diff: d };
+      }
+    }
+    // Fallback: parse from "confidence_breakdown" line which contains
+    // e.g. "Base 79 (xG Δ 1.10, total 3.50) | ..."
+    const breakdown = factors.find((f) => typeof f === "string" && f.startsWith("confidence_breakdown:"));
+    if (breakdown) {
+      const diffMatch = breakdown.match(/xG\s*[Δ∆d]\s*([0-9]+(?:\.[0-9]+)?)/i);
+      const totalMatch = breakdown.match(/total\s*([0-9]+(?:\.[0-9]+)?)/i);
+      if (diffMatch && totalMatch) {
+        const diff = Number(diffMatch[1]);
+        const total = Number(totalMatch[1]);
+        if (Number.isFinite(diff) && Number.isFinite(total)) {
+          // Reconstruct home/away approximately (not strictly needed by callers)
+          const home = (total + diff) / 2;
+          const away = (total - diff) / 2;
+          return { home, away, total, diff };
+        }
+      }
+    }
+    return null;
   };
   const isLowRiskPrediction = (raw: string | null | undefined): boolean => {
     const p = (raw ?? "").toLowerCase();
