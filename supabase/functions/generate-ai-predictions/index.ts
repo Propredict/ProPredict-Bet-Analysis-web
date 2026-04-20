@@ -7651,7 +7651,10 @@ async function handleBatchRegenerate(
             is_locked: true,
             prediction: pred,
             predicted_score: scoreMap[pred] || "1-0",
-            confidence: 50,
+            // Placeholder confidence MUST be at/above the display floor so the row
+            // survives the insert filter and gets enriched by Step 1→3.
+            // Real confidence is overwritten when the per-fixture analysis runs.
+            confidence: MIN_DISPLAY_CONFIDENCE,
             home_win: hw,
             draw: dr,
             away_win: aw,
