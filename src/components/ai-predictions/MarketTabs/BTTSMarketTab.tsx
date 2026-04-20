@@ -38,7 +38,6 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
             <div className="flex items-center gap-1.5 md:gap-2">
               <span className={cn(
                 "text-xs md:text-sm font-medium",
-                !hasAccess && "blur-[5px] select-none",
                 "text-foreground"
               )}>
                 {option.label}
