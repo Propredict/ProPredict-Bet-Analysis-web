@@ -24,6 +24,27 @@ interface Props {
   getPredictionTier: (p: AIPrediction) => "free" | "pro" | "premium";
 }
 
+/** Short market tag for visual scanning (BTTS, Over, 1X2, etc.) */
+function getMarketTag(prediction: string | null | undefined): string {
+  const p = (prediction ?? "").toLowerCase();
+  if (p.includes("btts")) return p.includes("no") ? "BTTS No" : "BTTS";
+  if (p.includes("over 1.5")) return "Over 1.5";
+  if (p.includes("over 2.5")) return "Over 2.5";
+  if (p.includes("over 3.5")) return "Over 3.5";
+  if (p.includes("under 2.5")) return "Under 2.5";
+  if (p.includes("under 3.5")) return "Under 3.5";
+  if (p.includes("double chance") || /\b(1x|x2|12)\b/.test(p)) {
+    if (p.includes("1x")) return "1X";
+    if (p.includes("x2")) return "X2";
+    if (p.includes("12")) return "12";
+    return "Double Chance";
+  }
+  if (prediction === "1") return "Home Win";
+  if (prediction === "2") return "Away Win";
+  if (prediction === "X") return "Draw";
+  return prediction ?? "Pick";
+}
+
 export function TopAIPicksSection({
   picks,
   isAdmin,
