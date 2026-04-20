@@ -6710,6 +6710,54 @@ async function processBatch(
         console.warn(`[ROTATION] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // === STEP 3 — CONFIDENCE CALCULATION (formula + penalties + boosts) ===
+      // Re-evaluate confidence using deterministic formula on top of Step 2 signal.
+      // SKIP match if final raw confidence falls below 55 (low-quality floor).
+      try {
+        const favIsHome =
+          step2.market === "1" ? true :
+          step2.market === "2" ? false :
+          (newPrediction.home_win >= newPrediction.away_win);
+        const injuryImpactFav = favIsHome ? injuryImpactHome : injuryImpactAway;
+
+        const step3 = applyStep3Confidence({
+          step2,
+          homeMatches: Math.max(homeForm.length, homeStats?.played ?? 0),
+          awayMatches: Math.max(awayForm.length, awayStats?.played ?? 0),
+          injuryImpactFav,
+          oddsHome: odds?.homeOdds ?? null,
+          oddsDraw: odds?.drawOdds ?? null,
+          oddsAway: odds?.awayOdds ?? null,
+        });
+
+        if (step3.skip) {
+          console.log(
+            `[STEP 3 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: ${step3.reason}`
+          );
+          await markPredictionLocked(
+            supabase,
+            pred.id,
+            `Fixture ${fixtureIdStr}: Low confidence after Step 3 (${step3.reason})`,
+            { fixtureId: fixtureIdStr, apiKey }
+          );
+          locked++;
+          continue;
+        }
+
+        const beforeConf = newPrediction.confidence;
+        newPrediction.confidence = step3.confidence;
+        // Push transparency reason as first key_factor for UI tooltip
+        const breakdownTag = `confidence_breakdown:${step3.reason}`;
+        if (!keyFactors.some((f) => f.startsWith("confidence_breakdown:"))) {
+          keyFactors.unshift(breakdownTag);
+        }
+        console.log(
+          `[STEP 3] ${fixtureIdStr}: ${beforeConf}% → ${step3.confidence}% | ${step3.reason}`
+        );
+      } catch (e) {
+        console.warn(`[STEP 3] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
