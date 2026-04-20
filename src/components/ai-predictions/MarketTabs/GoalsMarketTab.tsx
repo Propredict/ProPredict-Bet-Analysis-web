@@ -48,27 +48,25 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              {hasAccess ? (
-                <>
-                  <div className="w-16 md:w-20 h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
-                    <div
-                      className={cn(
-                        "h-full rounded-full",
-                        goal.recommended ? "bg-green-500" : "bg-gray-500"
-                      )}
-                      style={{ width: `${goal.prob}%` }}
-                    />
-                  </div>
-                  <span className={cn(
-                    "text-xs md:text-sm font-bold tabular-nums min-w-[32px] text-right",
-                    goal.recommended ? "text-green-400" : "text-muted-foreground"
-                  )}>
-                    {goal.prob}%
-                  </span>
-                </>
-              ) : (
-                <span className="text-xs text-muted-foreground blur-sm select-none">??%</span>
-              )}
+              <div className={cn(
+                "w-16 md:w-20 h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden",
+                !hasAccess && "blur-[4px]"
+              )}>
+                <div
+                  className={cn(
+                    "h-full rounded-full",
+                    goal.recommended ? "bg-green-500" : "bg-gray-500"
+                  )}
+                  style={{ width: `${goal.prob}%` }}
+                />
+              </div>
+              <span className={cn(
+                "text-xs md:text-sm font-bold tabular-nums min-w-[32px] text-right",
+                !hasAccess && "blur-[5px] select-none",
+                goal.recommended ? "text-green-400" : "text-muted-foreground"
+              )}>
+                {goal.prob}%
+              </span>
             </div>
           </div>
         ))}

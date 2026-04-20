@@ -38,10 +38,10 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
             <div className="flex items-center gap-1.5 md:gap-2">
               <span className={cn(
                 "text-xs md:text-sm font-medium",
-                !hasAccess && "blur-sm select-none",
-                hasAccess ? "text-foreground" : "text-muted-foreground"
+                !hasAccess && "blur-[5px] select-none",
+                "text-foreground"
               )}>
-                {hasAccess ? option.label : "???"}
+                {option.label}
               </span>
               {option.recommended && hasAccess && (
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
@@ -50,16 +50,13 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
                 </Badge>
               )}
             </div>
-            {hasAccess && (
-              <span className={cn(
-                "text-xs md:text-sm font-bold tabular-nums",
-                option.recommended 
-                  ? "text-green-400" 
-                  : "text-muted-foreground"
-              )}>
-                {option.prob}%
-              </span>
-            )}
+            <span className={cn(
+              "text-xs md:text-sm font-bold tabular-nums",
+              !hasAccess && "blur-[5px] select-none",
+              option.recommended ? "text-green-400" : "text-muted-foreground"
+            )}>
+              {option.prob}%
+            </span>
           </div>
         ))}
       </div>
