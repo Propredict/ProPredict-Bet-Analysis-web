@@ -33,16 +33,18 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
       </div>
 
       <div className={cn(
-        "p-2.5 md:p-4 rounded-lg border bg-green-500/10 border-green-500/30"
+        "p-2.5 md:p-4 rounded-lg border",
+        hasAccess
+          ? "bg-green-500/10 border-green-500/30"
+          : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
       )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 md:gap-2">
             <span className={cn(
-              "text-base md:text-lg font-bold",
-              !hasAccess && "blur-[5px] select-none",
-              "text-foreground"
+              "text-base md:text-lg font-bold text-foreground",
+              !hasAccess && "blur-md select-none"
             )}>
-              {markets.doubleChance.option}
+              {hasAccess ? markets.doubleChance.option : "••"}
             </span>
             {hasAccess && (
               <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
@@ -52,12 +54,12 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
             )}
           </div>
         </div>
-        
+
         <p className={cn(
           "text-xs md:text-sm text-muted-foreground mt-1.5 md:mt-2",
-          !hasAccess && "blur-[4px] select-none"
+          !hasAccess && "blur-md select-none"
         )}>
-          {getDoubleChanceLabel(markets.doubleChance.option)}
+          {hasAccess ? getDoubleChanceLabel(markets.doubleChance.option) : "•••••• •• ••••••"}
         </p>
       </div>
 

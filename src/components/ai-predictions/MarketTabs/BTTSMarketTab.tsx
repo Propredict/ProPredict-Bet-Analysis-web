@@ -30,16 +30,13 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
             key={option.label}
             className={cn(
               "flex items-center justify-between p-2 md:p-3 rounded-lg border transition-all",
-              option.recommended
+              hasAccess && option.recommended
                 ? "bg-green-500/10 border-green-500/30"
                 : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
             )}
           >
             <div className="flex items-center gap-1.5 md:gap-2">
-              <span className={cn(
-                "text-xs md:text-sm font-medium",
-                "text-foreground"
-              )}>
+              <span className="text-xs md:text-sm font-medium text-foreground">
                 {option.label}
               </span>
               {option.recommended && hasAccess && (
@@ -51,10 +48,10 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
             </div>
             <span className={cn(
               "text-xs md:text-sm font-bold tabular-nums",
-              !hasAccess && "blur-[5px] select-none",
-              option.recommended ? "text-green-400" : "text-muted-foreground"
+              !hasAccess && "blur-md select-none text-muted-foreground/40",
+              hasAccess && (option.recommended ? "text-green-400" : "text-muted-foreground")
             )}>
-              {option.prob}%
+              {hasAccess ? `${option.prob}%` : "••%"}
             </span>
           </div>
         ))}

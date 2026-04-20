@@ -33,7 +33,8 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
             key={goal.label}
             className={cn(
               "flex items-center justify-between p-2 md:p-3 rounded-lg border transition-all",
-              goal.recommended
+              // Hide the recommendation hint (green container) for locked users
+              hasAccess && goal.recommended
                 ? "bg-green-500/10 border-green-500/30"
                 : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
             )}
@@ -48,24 +49,27 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {/* Bar: when locked, show neutral muted bar at fixed width so probability isn't leaked */}
               <div className={cn(
                 "w-16 md:w-20 h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden",
-                !hasAccess && "blur-[4px]"
+                !hasAccess && "blur-md opacity-60"
               )}>
                 <div
                   className={cn(
                     "h-full rounded-full",
-                    goal.recommended ? "bg-green-500" : "bg-gray-500"
+                    !hasAccess
+                      ? "bg-muted-foreground/30"
+                      : goal.recommended ? "bg-green-500" : "bg-gray-500"
                   )}
-                  style={{ width: `${goal.prob}%` }}
+                  style={{ width: hasAccess ? `${goal.prob}%` : "60%" }}
                 />
               </div>
               <span className={cn(
                 "text-xs md:text-sm font-bold tabular-nums min-w-[32px] text-right",
-                !hasAccess && "blur-[5px] select-none",
-                goal.recommended ? "text-green-400" : "text-muted-foreground"
+                !hasAccess && "blur-md select-none text-muted-foreground/40",
+                hasAccess && (goal.recommended ? "text-green-400" : "text-muted-foreground")
               )}>
-                {goal.prob}%
+                {hasAccess ? `${goal.prob}%` : "••%"}
               </span>
             </div>
           </div>

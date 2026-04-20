@@ -37,18 +37,17 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
             key={index}
             className={cn(
               "flex items-center justify-between p-2 md:p-3 rounded-lg border transition-all",
-              combo.recommended
+              hasAccess && combo.recommended
                 ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30"
                 : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
             )}
           >
             <div className="flex items-center gap-1.5 md:gap-2">
               <span className={cn(
-                "text-xs md:text-sm font-semibold",
-                !hasAccess && "blur-[5px] select-none",
-                "text-foreground"
+                "text-xs md:text-sm font-semibold text-foreground",
+                !hasAccess && "blur-md select-none"
               )}>
-                {combo.label}
+                {hasAccess ? combo.label : "•••••• ••••"}
               </span>
               {combo.recommended && hasAccess && (
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
@@ -59,10 +58,10 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
             </div>
             <span className={cn(
               "text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-lg font-medium",
-              !hasAccess && "blur-[5px] select-none",
-              combo.recommended ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+              !hasAccess && "blur-md select-none bg-muted-foreground/10 text-muted-foreground/40",
+              hasAccess && (combo.recommended ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400")
             )}>
-              {combo.recommended ? "Strong" : "Moderate"}
+              {hasAccess ? (combo.recommended ? "Strong" : "Moderate") : "•••••"}
             </span>
           </div>
         ))}
