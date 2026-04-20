@@ -382,6 +382,13 @@ export default function AIPredictions() {
         const xg = parseXgFromFactors(p.key_factors);
         // If xG present, enforce total ≥ 2.2; otherwise allow.
         if (xg && xg.total < 2.2) return false;
+        // STEP 11 — Safe Pick must be from a STABLE match (variance tag).
+        // If variance tag is missing (older predictions), do not block.
+        const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
+        const varTag = factors.find(
+          (f) => typeof f === "string" && f.startsWith("variance:"),
+        );
+        if (varTag && varTag.includes("UNSTABLE")) return false;
         return true;
       })
       .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
