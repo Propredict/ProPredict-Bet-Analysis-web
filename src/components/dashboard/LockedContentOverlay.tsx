@@ -81,6 +81,24 @@ export function LockedContentOverlay({
     return unlockMethod.message;
   };
 
+  // Conversion-focused headline shown above the unlock button.
+  // Replaces the generic "Content Locked" with a value-oriented message.
+  const getHeadline = (): string => {
+    if (unlockMethod.type === "upgrade_premium" || unlockMethod.type === "android_premium_only") {
+      return "Stronger picks available in Premium";
+    }
+    if (unlockMethod.type === "upgrade_basic") {
+      return "Stronger picks available in Pro";
+    }
+    if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") {
+      return "Unlock this pick instantly";
+    }
+    if (unlockMethod.type === "login_required") {
+      return "Sign in to see this pick";
+    }
+    return "Content Locked";
+  };
+
   const Icon = getIcon();
 
   // Android dual-button layout for exclusive content (Watch Ad + Buy Pro)
@@ -115,9 +133,9 @@ export function LockedContentOverlay({
         "absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm rounded-lg z-10",
         className
       )}>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Lock className="h-5 w-5" />
-          <span className="text-sm font-medium">Content Locked</span>
+        <div className="flex items-center gap-2 text-foreground/90">
+          <Lock className="h-4 w-4 text-fuchsia-400" />
+          <span className="text-sm font-semibold">🔒 {getHeadline()}</span>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Button
@@ -161,9 +179,9 @@ export function LockedContentOverlay({
       "absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm rounded-lg z-10",
       className
     )}>
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Lock className="h-5 w-5" />
-        <span className="text-sm font-medium">Content Locked</span>
+      <div className="flex items-center gap-2 text-foreground/90 px-3 text-center">
+        <Lock className="h-4 w-4 text-fuchsia-400 shrink-0" />
+        <span className="text-sm font-semibold">🔒 {getHeadline()}</span>
       </div>
       <Button
         variant={getButtonVariant()}
