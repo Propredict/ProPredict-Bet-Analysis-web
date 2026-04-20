@@ -69,6 +69,108 @@ function getLeagueTier(leagueId: number | null | undefined): 1 | 2 | 3 {
   return 3;
 }
 
+// ============ STEP 2 — DETERMINISTIC EXPECTED-GOALS DECIDER ============
+// Hard rules per user spec. Returns null when there's NO strong signal → SKIP match.
+interface Step2Decision {
+  market: string;        // "Over 2.5" | "Under 2.5" | "BTTS Yes" | "BTTS No" | "1" | "2"
+  predicted_score: string;
+  expectedHome: number;
+  expectedAway: number;
+  totalGoals: number;
+  reason: string;
+  baseConfidence: number; // 60..82 depending on signal strength
+}
+
+function decideStep2(
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[]
+): Step2Decision | null {
+  // Need at least one reliable source per team
+  const homeFor = homeStats?.homeGoalsForAvg || calculateGoalRate(homeForm).scored;
+  const homeAgainst = homeStats?.homeGoalsAgainstAvg || calculateGoalRate(homeForm).conceded;
+  const awayFor = awayStats?.awayGoalsForAvg || calculateGoalRate(awayForm).scored;
+  const awayAgainst = awayStats?.awayGoalsAgainstAvg || calculateGoalRate(awayForm).conceded;
+
+  // If any value is zero/missing AND no form fallback → not enough data
+  if (homeFor <= 0 || homeAgainst <= 0 || awayFor <= 0 || awayAgainst <= 0) return null;
+
+  const expectedHome = (homeFor + awayAgainst) / 2;
+  const expectedAway = (awayFor + homeAgainst) / 2;
+  const totalGoals = expectedHome + expectedAway;
+  const diff = expectedHome - expectedAway;
+
+  const score = `${Math.max(0, Math.round(expectedHome))}-${Math.max(0, Math.round(expectedAway))}`;
+
+  // === RULE 1: WINNER (strongest signal first — diff dominates) ===
+  if (diff >= 0.6) {
+    const conf = Math.min(82, 60 + Math.round((diff - 0.6) * 12));
+    return {
+      market: "1",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Home expected ${expectedHome.toFixed(2)} vs away ${expectedAway.toFixed(2)} (Δ ${diff.toFixed(2)})`,
+      baseConfidence: conf,
+    };
+  }
+  if (diff <= -0.6) {
+    const conf = Math.min(82, 60 + Math.round((Math.abs(diff) - 0.6) * 12));
+    return {
+      market: "2",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Away expected ${expectedAway.toFixed(2)} vs home ${expectedHome.toFixed(2)} (Δ ${Math.abs(diff).toFixed(2)})`,
+      baseConfidence: conf,
+    };
+  }
+
+  // === RULE 2: GOALS markets ===
+  if (totalGoals >= 2.7) {
+    const conf = Math.min(80, 62 + Math.round((totalGoals - 2.7) * 10));
+    return {
+      market: "Over 2.5",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 2.7`,
+      baseConfidence: conf,
+    };
+  }
+  if (totalGoals <= 2.2) {
+    const conf = Math.min(80, 62 + Math.round((2.2 - totalGoals) * 10));
+    return {
+      market: "Under 2.5",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} ≤ 2.2`,
+      baseConfidence: conf,
+    };
+  }
+
+  // === RULE 3: BTTS ===
+  if (expectedHome >= 1.2 && expectedAway >= 1.0) {
+    return {
+      market: "BTTS Yes",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Both teams expected to score (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
+      baseConfidence: 65,
+    };
+  }
+  if (expectedHome < 1.0 || expectedAway < 0.8) {
+    return {
+      market: "BTTS No",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `One side weak attack (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
+      baseConfidence: 63,
+    };
+  }
+
+  // === NO STRONG SIGNAL ===
+  return null;
+}
+
 // ============ QUALITY LEAGUE IDS (API-Football) ============
 // Only these leagues can produce PREMIUM (≥85%) predictions
 // Top 20 leagues with most reliable data and predictable patterns
@@ -5795,6 +5897,27 @@ async function processBatch(
         continue;
       }
 
+      // === STEP 2 DETERMINISTIC DECIDER ===
+      // Apply hard expected-goals rules. If NO strong signal → SKIP match (no spam predictions).
+      const step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
+      if (!step2) {
+        console.log(
+          `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal`
+        );
+        await markPredictionLocked(
+          supabase,
+          pred.id,
+          `Fixture ${fixtureIdStr}: No strong signal (Step 2 skip)`,
+          { fixtureId: fixtureIdStr, apiKey }
+        );
+        locked++;
+        continue;
+      }
+      console.log(
+        `[STEP 2] ${fixtureIdStr}: ${step2.market} | xGH=${step2.expectedHome.toFixed(2)} ` +
+        `xGA=${step2.expectedAway.toFixed(2)} total=${step2.totalGoals.toFixed(2)} | ${step2.reason}`
+      );
+
       let newPrediction = calculatePrediction(
         homeForm,
         awayForm,
@@ -5812,6 +5935,13 @@ async function processBatch(
         fixture?.league?.round || undefined,
         fixture?.fixture?.date || pred?.match_timestamp || undefined
       );
+
+      // === Apply Step 2 OVERRIDE ===
+      // Step 2 rules are authoritative for the market. Keep the calculated probabilities
+      // & analysis from the full engine, but replace prediction/score with Step 2 output.
+      newPrediction.prediction = step2.market;
+      newPrediction.predicted_score = step2.predicted_score;
+      newPrediction.confidence = Math.max(newPrediction.confidence, step2.baseConfidence);
 
       // Calculate Poisson goal markets for key_factors and more accurate score
       const homeGoalRate = calculateGoalRate(homeForm);
