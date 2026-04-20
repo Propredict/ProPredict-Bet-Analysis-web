@@ -37,6 +37,7 @@ export type Database = {
           is_live: boolean | null
           is_locked: boolean | null
           is_premium: boolean | null
+          is_safe_pick: boolean
           is_value_bet: boolean | null
           key_factors: string[] | null
           last_away_goals: number | null
@@ -45,6 +46,7 @@ export type Database = {
           lineup_confirmed: boolean | null
           market_trend: string | null
           market_trend_strength: string | null
+          market_type: string | null
           match_date: string | null
           match_day: string | null
           match_id: string
@@ -61,6 +63,12 @@ export type Database = {
           value_away: number | null
           value_draw: number | null
           value_home: number | null
+          variance_score: number | null
+          variance_stable: boolean | null
+          xg_away: number | null
+          xg_diff: number | null
+          xg_home: number | null
+          xg_total: number | null
         }
         Insert: {
           analysis?: string | null
@@ -84,6 +92,7 @@ export type Database = {
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
+          is_safe_pick?: boolean
           is_value_bet?: boolean | null
           key_factors?: string[] | null
           last_away_goals?: number | null
@@ -92,6 +101,7 @@ export type Database = {
           lineup_confirmed?: boolean | null
           market_trend?: string | null
           market_trend_strength?: string | null
+          market_type?: string | null
           match_date?: string | null
           match_day?: string | null
           match_id: string
@@ -108,6 +118,12 @@ export type Database = {
           value_away?: number | null
           value_draw?: number | null
           value_home?: number | null
+          variance_score?: number | null
+          variance_stable?: boolean | null
+          xg_away?: number | null
+          xg_diff?: number | null
+          xg_home?: number | null
+          xg_total?: number | null
         }
         Update: {
           analysis?: string | null
@@ -131,6 +147,7 @@ export type Database = {
           is_live?: boolean | null
           is_locked?: boolean | null
           is_premium?: boolean | null
+          is_safe_pick?: boolean
           is_value_bet?: boolean | null
           key_factors?: string[] | null
           last_away_goals?: number | null
@@ -139,6 +156,7 @@ export type Database = {
           lineup_confirmed?: boolean | null
           market_trend?: string | null
           market_trend_strength?: string | null
+          market_type?: string | null
           match_date?: string | null
           match_day?: string | null
           match_id?: string
@@ -155,6 +173,12 @@ export type Database = {
           value_away?: number | null
           value_draw?: number | null
           value_home?: number | null
+          variance_score?: number | null
+          variance_stable?: boolean | null
+          xg_away?: number | null
+          xg_diff?: number | null
+          xg_home?: number | null
+          xg_total?: number | null
         }
         Relationships: []
       }
