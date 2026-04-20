@@ -150,26 +150,69 @@ function classifyBet(raw: string | null | undefined): string {
   return p;
 }
 
+/**
+ * Quality gate — mirrors the backend Premium gate.
+ * A Top-5 "Elite" pick MUST have real analytical data:
+ *  - non-fallback analysis text
+ *  - xG signal for both teams
+ *  - recent form data (last_home_goals / last_away_goals)
+ *  - bookmaker consensus (≥2 books)
+ * Without these, the pick is hidden from the Top 5 — we never promote a fabricated pick as "Elite".
+ */
+const FALLBACK_MARKERS = [
+  "pending data from api",
+  "limited team-form data",
+  "fallback to bookmaker",
+  "form data limited",
+  "insufficient form data",
+  "relying on market intelligence",
+  "data limited",
+];
+function num(v: unknown): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+function hasRealData(p: AIPrediction): boolean {
+  const a = (p.analysis ?? "").toString().toLowerCase();
+  if (a.length < 60) return false;
+  if (FALLBACK_MARKERS.some((m) => a.includes(m))) return false;
+
+  const anyP = p as any;
+  if (num(anyP.xg_home) <= 0 || num(anyP.xg_away) <= 0) return false;
+
+  const hasForm =
+    anyP.last_home_goals != null || anyP.last_away_goals != null;
+  if (!hasForm) return false;
+
+  const hasConsensus =
+    num(anyP.consensus_home) > 0 ||
+    num(anyP.consensus_draw) > 0 ||
+    num(anyP.consensus_away) > 0;
+  const hasBooks = num(anyP.bookmakers_count) >= 2;
+  if (!hasConsensus || !hasBooks) return false;
+
+  return true;
+}
+
 export function selectTopPicks(predictions: AIPrediction[], limit: number): RankedPick[] {
   const pending = predictions.filter(
     (p) => !p.result_status || p.result_status === "pending",
   );
-  // Strict pool: Tier 1/2 + confidence ≥70
-  const strictPool = pending.filter(
+  // QUALITY GATE: every Top 5 pick must have real analytical data.
+  // We never fall back to "any high-confidence pick" — better to show fewer
+  // cards than to label a fabricated/fallback prediction as "Elite".
+  const qualified = pending.filter(hasRealData);
+
+  // Strict pool: qualified + Tier 1/2 + confidence ≥70
+  const strictPool = qualified.filter(
     (p) => (p.confidence ?? 0) >= 70 && isTierAllowed(p.league),
   );
-  // Soft fallback #1: any league, confidence ≥70.
-  const softPool = pending.filter((p) => (p.confidence ?? 0) >= 70);
-  // Soft fallback #2 (weak day): any league, top by confidence, min 55.
-  // Ensures the section is never empty when the day's quality is low.
-  const weakDayPool = pending
-    .filter((p) => (p.confidence ?? 0) >= 55)
-    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+  // Soft pool (still quality-gated): any league, confidence ≥70.
+  const softPool = qualified.filter((p) => (p.confidence ?? 0) >= 70);
 
   let pool: AIPrediction[];
   if (strictPool.length >= 3) pool = strictPool;
   else if (softPool.length >= 3) pool = softPool;
-  else pool = weakDayPool;
+  else pool = softPool; // never relax to <70 conf or non-quality data
   const ranked = pool.map(calcTopPickScore).sort((a, b) => b.score - a.score);
 
   const seen = new Set<string>();
@@ -194,17 +237,8 @@ export function selectTopPicks(predictions: AIPrediction[], limit: number): Rank
       picks.push(r);
     }
   }
-  // Last-resort fill: if pool was too small, pull from full pending list by confidence.
-  if (picks.length < limit) {
-    const extras = pending
-      .filter((p) => !seen.has(p.id))
-      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-      .map(calcTopPickScore);
-    for (const r of extras) {
-      if (picks.length >= limit) break;
-      seen.add(r.prediction.id);
-      picks.push(r);
-    }
-  }
+  // NOTE: removed last-resort fill that pulled from un-gated pending list.
+  // Quality > quantity. If we have fewer than `limit` qualified picks,
+  // the section shows fewer cards rather than promoting low-data picks.
   return picks;
 }
