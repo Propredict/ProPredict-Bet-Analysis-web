@@ -29,6 +29,46 @@ const PREMIUM_MIN_COUNT = 5;
 const MIN_SEASON_MATCHES = 5;
 const MIN_SEASON_CONFIDENCE_CAP = 70; // Was 62 — too aggressive
 
+// ============ LEAGUE TIER PRIORITY (Step 1 — quality over quantity) ============
+// Tier 1: top European leagues + UCL — ALWAYS included
+const TIER_1_LEAGUE_IDS = new Set<number>([
+  39,   // Premier League
+  140,  // La Liga
+  78,   // Bundesliga
+  135,  // Serie A
+  61,   // Ligue 1
+  2,    // UEFA Champions League
+  3,    // UEFA Europa League
+  848,  // UEFA Conference League
+  1,    // World Cup
+  4,    // Euro Championship
+]);
+
+// Tier 2: secondary European leagues — included normally
+const TIER_2_LEAGUE_IDS = new Set<number>([
+  94,   // Primeira Liga (Portugal)
+  88,   // Eredivisie (Netherlands)
+  203,  // Super Lig (Turkey)
+  144,  // Jupiler Pro League (Belgium)
+  179,  // Scottish Premiership
+  40,   // Championship (England)
+  141,  // La Liga 2 (Spain)
+  79,   // 2. Bundesliga
+  136,  // Serie B (Italy)
+  62,   // Ligue 2 (France)
+]);
+
+// Minimum Tier 1+2 matches per day to consider day "well-stocked".
+// Below this threshold (e.g., midweek with no top leagues), we allow Tier 3 fallback.
+const TIER_FALLBACK_THRESHOLD = 8;
+
+function getLeagueTier(leagueId: number | null | undefined): 1 | 2 | 3 {
+  if (!leagueId) return 3;
+  if (TIER_1_LEAGUE_IDS.has(leagueId)) return 1;
+  if (TIER_2_LEAGUE_IDS.has(leagueId)) return 2;
+  return 3;
+}
+
 // ============ QUALITY LEAGUE IDS (API-Football) ============
 // Only these leagues can produce PREMIUM (≥85%) predictions
 // Top 20 leagues with most reliable data and predictable patterns
@@ -5735,6 +5775,26 @@ async function processBatch(
         continue;
       }
 
+      // === STEP 1 DATA QUALITY GATE ===
+      // Require ≥5 recent matches per team OR ≥5 played season matches per team.
+      // Lower-tier leagues (Tier 3) are held to a stricter bar to keep the page premium.
+      const homeRecent = Math.max(realHomeForm.length, homeStats?.played ?? 0);
+      const awayRecent = Math.max(realAwayForm.length, awayStats?.played ?? 0);
+      const fixtureLeagueId = fixtureById.get(fixtureIdStr)?.league?.id ?? null;
+      const leagueTier = getLeagueTier(fixtureLeagueId);
+      const minRequired = leagueTier === 3 ? 8 : MIN_SEASON_MATCHES; // 5 for T1/T2, 8 for T3
+      if (homeRecent < minRequired || awayRecent < minRequired) {
+        console.log(
+          `[DATA QUALITY] Skip ${fixtureIdStr} (T${leagueTier}): home=${homeRecent}, away=${awayRecent}, required>=${minRequired}`
+        );
+        await markPredictionLocked(supabase, pred.id, `Fixture ${fixtureIdStr}: Low-data match (T${leagueTier}, ${homeRecent}/${awayRecent})`, {
+          fixtureId: fixtureIdStr,
+          apiKey,
+        });
+        locked++;
+        continue;
+      }
+
       let newPrediction = calculatePrediction(
         homeForm,
         awayForm,
@@ -6505,12 +6565,31 @@ async function handleBatchRegenerate(
   }
 
   const fixtures = fixturesJson?.response ?? [];
-  for (const f of fixtures) {
+
+  // === STEP 1 LEAGUE TIER FILTER ===
+  // Always include Tier 1+2. Allow Tier 3 ONLY when Tier 1+2 yields too few matches
+  // (e.g., midweek with no top leagues), so the page never goes empty.
+  const allFixtures = fixtures as any[];
+  const tier1Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) === 1).length;
+  const tier12Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) <= 2).length;
+  const allowTier3 = tier12Count < TIER_FALLBACK_THRESHOLD;
+
+  let filteredOut = 0;
+  for (const f of allFixtures) {
     const idStr = String(f?.fixture?.id ?? "");
-    if (idStr) fixtureById.set(idStr, f);
+    if (!idStr) continue;
+    const tier = getLeagueTier(f?.league?.id);
+    if (tier === 3 && !allowTier3) {
+      filteredOut++;
+      continue;
+    }
+    fixtureById.set(idStr, f);
   }
 
-  console.log(`Fetched ${fixtures.length} fixtures from API for ${matchDate}`);
+  console.log(
+    `[TIER FILTER] ${matchDate}: total=${allFixtures.length}, T1=${tier1Count}, T1+T2=${tier12Count}, ` +
+    `T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
+  );
 
   if (offset === 0) {
     const fixtureIds = Array.from(fixtureById.keys());
