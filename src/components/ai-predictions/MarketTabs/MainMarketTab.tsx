@@ -245,10 +245,21 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
-              Best Pick
-            </span>
+            {hasAccess ? (
+              <>
+                <CheckCircle className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+                  Best Pick
+                </span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-[10px] md:text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">
+                  AI High Confidence Pick
+                </span>
+              </>
+            )}
             <Badge className={cn(
               "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
               displayTier === "premium" 
