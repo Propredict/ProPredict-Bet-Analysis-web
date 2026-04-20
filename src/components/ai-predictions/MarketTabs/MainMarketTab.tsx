@@ -283,6 +283,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </span>
             {/* Market category color chip — quick visual scan (Over=blue, BTTS=green, DC=purple, Under=orange) */}
             {(() => {
+              if (!hasAccess) return null;
               const cat = classifyMarket(pick.label);
               if (cat === "other" || cat === "1x2") return null;
               const tokens = getMarketColors(pick.label);
