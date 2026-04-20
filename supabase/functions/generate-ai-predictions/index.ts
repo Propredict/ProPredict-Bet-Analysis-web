@@ -380,7 +380,10 @@ const SUB_STANDINGS = 0.15;  // League table position
 const SUB_TEMPO = 0.07;      // Match intensity/tempo score
 
 // ============ BATCH PROCESSING ============
-const BATCH_SIZE = 25; // Process 25 matches per invocation to stay under timeout
+// Reduced from 25 → 8 to survive API-Football rate limits.
+// Each match makes 8-12 API calls; with 429 retries (1s+15s backoff) a batch of 25 can exceed
+// the Edge Function timeout (~150s) and be killed mid-update, losing all enriched predictions.
+const BATCH_SIZE = 8;
 
 interface TeamStats {
   played: number;
