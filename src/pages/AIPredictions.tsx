@@ -838,7 +838,7 @@ export default function AIPredictions() {
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
                     <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
                     <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
-                      Safe Picks of the Day
+                      🛡️ Safe Pick of the Day
                     </h2>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
@@ -868,6 +868,21 @@ export default function AIPredictions() {
               </div>
             </div>
           )}
+
+          {/* 🏆 TOP 5 ELITE — moved BELOW Safe Pick per layout: 💎 → 🛡️ → 🏆 → 📊 */}
+          <TopAIPicksSection
+            picks={topPicks}
+            isAdmin={isAdmin}
+            isPremiumUser={isPremiumUser}
+            isProUser={isProUser}
+            isAuthenticated={isAuthenticated}
+            isFavorite={isFavorite}
+            isSaving={isSaving}
+            onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+            onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+            unlockingId={unlockingId}
+            getPredictionTier={getPredictionTier}
+          />
 
           {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
           {!isPremiumUser && !isProUser && !isAdmin && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "pro" || tierFilter === "premium") && (
