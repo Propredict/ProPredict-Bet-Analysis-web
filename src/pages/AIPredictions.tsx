@@ -371,43 +371,6 @@ export default function AIPredictions() {
     return false;
   };
 
-  // Safe Pick of the Day: confidence ≥75 + low-risk market + xG total ≥ 2.2
-  // Safe Pick of the Day: confidence ≥75 + low-risk market.
-  // xG total ≥2.2 is preferred but optional — when xG isn't parseable from
-  // backend, we still allow the pick (quality > strict gating).
-  const safePicks = useMemo(() => {
-    return [...globalRankingBase]
-      .filter((p) => {
-        const conf = p.confidence ?? 0;
-        if (conf < 70) return false;
-        // Low-risk market OR a very strong 1X2 pick (conf ≥ 82%)
-        const lowRisk = isLowRiskPrediction(p.prediction);
-        const strongMain = conf >= 82 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
-        if (!lowRisk && !strongMain) return false;
-        // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
-        const xgTotal =
-          typeof (p as any).xg_total === "number"
-            ? (p as any).xg_total
-            : parseXgFromFactors(p.key_factors)?.total;
-        // If xG total present and below 2.2, reject. Otherwise allow.
-        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
-        // STEP 11 — Safe Pick must be STABLE.
-        // Prefer DB column variance_stable; fall back to legacy tag.
-        if ((p as any).variance_stable === false) return false;
-        if ((p as any).variance_stable !== true) {
-          // No DB value — try legacy tag (do not block if both missing)
-        const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
-        const varTag = factors.find(
-          (f) => typeof f === "string" && f.startsWith("variance:"),
-        );
-        if (varTag && varTag.includes("UNSTABLE")) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-      .slice(0, 1);
-  }, [globalRankingBase]);
-
   // Diamond Pick: prefer backend-flagged is_diamond=true; otherwise compute
   // client-side as the single highest-quality pick of the day.
   // Criteria (when backend flag is missing):
@@ -439,6 +402,44 @@ export default function AIPredictions() {
     candidates.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     return candidates[0];
   }, [predictions, globalRankingBase]);
+
+  // Safe Pick of the Day: high-confidence (≥85%) + low-risk market + stable.
+  // Always different from Diamond Pick — the same match never appears in both.
+  const safePicks = useMemo(() => {
+    const diamondId = diamondPick?.id;
+    return [...globalRankingBase]
+      .filter((p) => {
+        // Strict dedupe: never reuse the Diamond match.
+        if (diamondId && p.id === diamondId) return false;
+        const conf = p.confidence ?? 0;
+        if (conf < 85) return false;
+        // Low-risk market OR a very strong 1X2 pick (conf ≥ 82%)
+        const lowRisk = isLowRiskPrediction(p.prediction);
+        const strongMain = conf >= 82 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
+        if (!lowRisk && !strongMain) return false;
+        // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
+        const xgTotal =
+          typeof (p as any).xg_total === "number"
+            ? (p as any).xg_total
+            : parseXgFromFactors(p.key_factors)?.total;
+        // If xG total present and below 2.2, reject. Otherwise allow.
+        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
+        // STEP 11 — Safe Pick must be STABLE.
+        // Prefer DB column variance_stable; fall back to legacy tag.
+        if ((p as any).variance_stable === false) return false;
+        if ((p as any).variance_stable !== true) {
+          // No DB value — try legacy tag (do not block if both missing)
+          const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
+          const varTag = factors.find(
+            (f) => typeof f === "string" && f.startsWith("variance:"),
+          );
+          if (varTag && varTag.includes("UNSTABLE")) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
+      .slice(0, 1);
+  }, [globalRankingBase, diamondPick]);
 
   // Safe Pick excludes the Diamond Pick — the same match must never appear
   // in both curated sections.
