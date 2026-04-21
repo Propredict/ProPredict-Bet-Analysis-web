@@ -440,9 +440,16 @@ export default function AIPredictions() {
     return candidates[0];
   }, [predictions, globalRankingBase]);
 
+  // Safe Pick excludes the Diamond Pick — the same match must never appear
+  // in both curated sections.
+  const safePicksDeduped = useMemo(() => {
+    if (!diamondPick) return safePicks;
+    return safePicks.filter((p) => p.id !== diamondPick.id);
+  }, [safePicks, diamondPick]);
+
   const safePickIds = useMemo(
-    () => new Set(safePicks.map((p) => p.id)),
-    [safePicks],
+    () => new Set(safePicksDeduped.map((p) => p.id)),
+    [safePicksDeduped],
   );
 
   // IDs surfaced in curated sections (Diamond + Safe Pick) — excluded from
