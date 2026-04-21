@@ -445,6 +445,14 @@ export default function AIPredictions() {
     [safePicks],
   );
 
+  // IDs surfaced in curated sections (Diamond + Safe Pick) — excluded from
+  // tier lists below so the same match never appears twice on the page.
+  const curatedExcludedIds = useMemo(() => {
+    const ids = new Set<string>(safePickIds);
+    if (diamondPick) ids.add(diamondPick.id);
+    return ids;
+  }, [safePickIds, diamondPick]);
+
   // Top AI Picks: ranked from remaining (excludes Safe Pick), always fills up to 5
   // Mix of Free/Pro/Premium — same across all tier tabs.
   const topPicks = useMemo(() => {
@@ -483,8 +491,12 @@ export default function AIPredictions() {
     return () => observer.disconnect();
   }, [featuredPredictions.length, regularPredictions.length]);
 
-  const visibleFeatured = featuredPredictions.slice(0, visibleFeaturedCount);
-  const visibleRegular = regularPredictions.slice(0, visibleRegularCount);
+  const visibleFeatured = featuredPredictions
+    .filter((p) => !curatedExcludedIds.has(p.id))
+    .slice(0, visibleFeaturedCount);
+  const visibleRegular = regularPredictions
+    .filter((p) => !curatedExcludedIds.has(p.id))
+    .slice(0, visibleRegularCount);
 
   // Calculate live count from predictions
   const liveCount = useMemo(() => {
