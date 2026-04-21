@@ -473,7 +473,7 @@ export default function AIPredictions() {
   // tier lists below to prevent duplication across the page.
   const allExcludedIds = useMemo(() => {
     const ids = new Set<string>(curatedExcludedIds);
-    topPicks.forEach((p) => ids.add(p.id));
+    topPicks.forEach((rp) => ids.add(rp.prediction.id));
     return ids;
   }, [curatedExcludedIds, topPicks]);
 
