@@ -440,9 +440,16 @@ export default function AIPredictions() {
     return candidates[0];
   }, [predictions, globalRankingBase]);
 
+  // Safe Pick excludes the Diamond Pick — the same match must never appear
+  // in both curated sections.
+  const safePicksDeduped = useMemo(() => {
+    if (!diamondPick) return safePicks;
+    return safePicks.filter((p) => p.id !== diamondPick.id);
+  }, [safePicks, diamondPick]);
+
   const safePickIds = useMemo(
-    () => new Set(safePicks.map((p) => p.id)),
-    [safePicks],
+    () => new Set(safePicksDeduped.map((p) => p.id)),
+    [safePicksDeduped],
   );
 
   // IDs surfaced in curated sections (Diamond + Safe Pick) — excluded from
@@ -955,7 +962,7 @@ export default function AIPredictions() {
           />
 
           {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
-          {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
             <Card
               className={cn(
                 "relative overflow-hidden border mb-3 md:mb-4",
@@ -1000,7 +1007,7 @@ export default function AIPredictions() {
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                  {safePicks.map((prediction) => (
+                  {safePicksDeduped.map((prediction) => (
                     <div
                       key={`safe-${prediction.id}`}
                       className="rounded-lg ring-1 ring-emerald-500/30 bg-background/40"
