@@ -303,28 +303,15 @@ export default function AIPredictions() {
     return sortPredictions(result);
   }, [predictions, searchQuery, selectedLeague, sortBy, showFavoritesOnly, isFavorite, tierFilter, marketFilter]);
 
-  // IDs surfaced in curated sections (Diamond + Safe Pick) — excluded from
-  // tier lists below to avoid showing the same match twice.
-  const curatedExcludedIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (diamondPick) ids.add(diamondPick.id);
-    safePicks.forEach((p) => ids.add(p.id));
-    return ids;
-  }, [diamondPick, safePicks]);
-
   // Separate featured (premium/pro) from regular (free) predictions.
-  // Curated picks (Diamond, Safe Pick) are removed so they don't duplicate.
+  // Curated picks (Diamond, Safe Pick) are removed below to avoid duplicates.
   const featuredPredictions = useMemo(() => {
-    return filteredPredictions.filter(
-      (p) => getPredictionTier(p) !== "free" && !curatedExcludedIds.has(p.id),
-    );
-  }, [filteredPredictions, curatedExcludedIds]);
+    return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
+  }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
-    return filteredPredictions.filter(
-      (p) => getPredictionTier(p) === "free" && !curatedExcludedIds.has(p.id),
-    );
-  }, [filteredPredictions, curatedExcludedIds]);
+    return filteredPredictions.filter((p) => getPredictionTier(p) === "free");
+  }, [filteredPredictions]);
 
   // Base for Top AI Picks & Safe Pick: ignores tier/market filters so the
   // ranking is identical across All / Free / Pro / Premium tabs (mix of best
