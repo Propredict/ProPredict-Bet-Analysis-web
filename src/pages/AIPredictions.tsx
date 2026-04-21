@@ -509,10 +509,10 @@ export default function AIPredictions() {
   }, [featuredPredictions.length, regularPredictions.length]);
 
   const visibleFeatured = featuredPredictions
-    .filter((p) => !curatedExcludedIds.has(p.id))
+    .filter((p) => !allExcludedIds.has(p.id))
     .slice(0, visibleFeaturedCount);
   const visibleRegular = regularPredictions
-    .filter((p) => !curatedExcludedIds.has(p.id))
+    .filter((p) => !allExcludedIds.has(p.id))
     .slice(0, visibleRegularCount);
 
   // Calculate live count from predictions
