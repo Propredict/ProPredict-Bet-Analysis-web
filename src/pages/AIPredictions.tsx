@@ -956,49 +956,73 @@ export default function AIPredictions() {
 
           {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
           {safePicks.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
-            <div>
-              {/* Centered section divider title */}
-              <div className="flex flex-col items-center text-center my-5 md:my-7">
-                <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-emerald-500/60" />
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
-                    <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
-                    <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
-                      🛡️ Lowest Risk Pick Today
-                    </h2>
+            <Card
+              className={cn(
+                "relative overflow-hidden border mb-3 md:mb-4",
+                "bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-teal-950/40",
+                "border-emerald-500/40",
+                "shadow-[0_0_30px_rgba(16,185,129,0.18)]",
+              )}
+            >
+              {/* Subtle corner glows — softer than Diamond's pulse */}
+              <div className="pointer-events-none absolute -top-16 -left-16 h-36 w-36 rounded-full bg-emerald-500/15 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-16 -right-16 h-36 w-36 rounded-full bg-teal-500/10 blur-3xl" />
+              {/* Repeating "shield grid" texture for fortress feel */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, hsl(var(--primary)) 0 1px, transparent 1px 14px)",
+                }}
+              />
+              <div className="relative p-3 md:p-4">
+                <div className="flex flex-col items-center text-center mb-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-emerald-400/60" />
+                    <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 shadow-md shadow-emerald-500/30 ring-1 ring-emerald-300/30">
+                      <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
+                    <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-teal-500/60" />
                   </div>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
+                  <h2 className="text-sm md:text-base font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                    🛡️ Safe Pick of the Day
+                  </h2>
+                  <p className="text-[10px] md:text-[11px] text-foreground/80 mt-0.5 max-w-md font-medium">
+                    Lowest variance + stable form — the most defensive selection today
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+                    <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
+                      ✅ Low Variance
+                    </Badge>
+                    <Badge className="bg-teal-500/20 text-teal-200 border-teal-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
+                      🛡️ Defensive Edge
+                    </Badge>
+                  </div>
                 </div>
-                <Badge className="mt-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
-                  ✅ Stable xG • Strong Form • Lowest Variance Today
-                </Badge>
-                <p className="mt-1.5 text-[9px] md:text-[10px] text-muted-foreground/80 max-w-md">
-                  AI Confidence based on xG &amp; team form
-                </p>
+                <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                  {safePicks.map((prediction) => (
+                    <div
+                      key={`safe-${prediction.id}`}
+                      className="rounded-lg ring-1 ring-emerald-500/30 bg-background/40"
+                    >
+                      <AIPredictionCard
+                        overrideTier="premium"
+                        prediction={prediction}
+                        isAdmin={isAdmin}
+                        isPremiumUser={isPremiumUser}
+                        isProUser={isProUser}
+                        isFavorite={isFavorite(prediction.match_id)}
+                        isSavingFavorite={isSaving(prediction.match_id)}
+                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                        onGoPremium={() => navigate("/get-premium")}
+                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                        isUnlocking={unlockingId === prediction.id}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-1.5 md:gap-2 mb-4">
-                {safePicks.map((prediction) => (
-                  <div
-                    key={`safe-${prediction.id}`}
-                    className="ring-2 ring-emerald-500/40 rounded-lg shadow-[0_0_25px_rgba(16,185,129,0.18)] bg-emerald-500/[0.02]"
-                  >
-                    <AIPredictionCard
-                      overrideTier="premium"
-                      prediction={prediction}
-                      isAdmin={isAdmin}
-                      isPremiumUser={isPremiumUser}
-                      isProUser={isProUser}
-                      isFavorite={isFavorite(prediction.match_id)}
-                      isSavingFavorite={isSaving(prediction.match_id)}
-                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                      onGoPremium={() => navigate("/get-premium")}
-                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                      isUnlocking={unlockingId === prediction.id}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            </Card>
           )}
 
           {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
