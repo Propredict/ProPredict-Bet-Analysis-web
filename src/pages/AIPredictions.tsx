@@ -468,6 +468,15 @@ export default function AIPredictions() {
     return selectTopPicks(remaining, 5);
   }, [globalRankingBase, safePickIds]);
 
+  // Combined exclusion set: curated (Diamond + Safe Pick) + Top AI Picks.
+  // Any match shown in those highlighted sections is removed from Free/Pro/Premium
+  // tier lists below to prevent duplication across the page.
+  const allExcludedIds = useMemo(() => {
+    const ids = new Set<string>(curatedExcludedIds);
+    topPicks.forEach((rp) => ids.add(rp.prediction.id));
+    return ids;
+  }, [curatedExcludedIds, topPicks]);
+
 
   // Progressive rendering: show 12 cards initially, load 12 more on scroll
   const INITIAL_COUNT = 12;
@@ -500,10 +509,10 @@ export default function AIPredictions() {
   }, [featuredPredictions.length, regularPredictions.length]);
 
   const visibleFeatured = featuredPredictions
-    .filter((p) => !curatedExcludedIds.has(p.id))
+    .filter((p) => !allExcludedIds.has(p.id))
     .slice(0, visibleFeaturedCount);
   const visibleRegular = regularPredictions
-    .filter((p) => !curatedExcludedIds.has(p.id))
+    .filter((p) => !allExcludedIds.has(p.id))
     .slice(0, visibleRegularCount);
 
   // Calculate live count from predictions
