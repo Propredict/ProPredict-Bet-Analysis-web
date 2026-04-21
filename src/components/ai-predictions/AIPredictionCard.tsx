@@ -136,6 +136,22 @@ const AIPredictionCardInner = ({
   }, [prediction.confidence, prediction.key_factors]);
 
   const formatTime = (time: string | null) => {
+    // Prefer full ISO timestamp (UTC) → convert to user's local time.
+    const ts = (prediction as any).match_timestamp as string | null | undefined;
+    if (ts) {
+      const d = new Date(ts);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+    }
+    // Fallback: combine match_date + match_time (assumed UTC) and convert
+    if (time && prediction.match_date) {
+      const iso = `${prediction.match_date}T${time.length === 5 ? time : time.slice(0, 5)}:00Z`;
+      const d = new Date(iso);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+    }
     if (!time) return "";
     return time.length >= 5 ? time.slice(0, 5) : time;
   };
