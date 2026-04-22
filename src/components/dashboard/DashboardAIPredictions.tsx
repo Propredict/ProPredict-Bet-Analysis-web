@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Brain, Loader2, ChevronRight, Zap } from "lucide-react";
+import { Brain, Loader2, ChevronRight, Zap, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useUserPlan } from "@/hooks/useUserPlan";
 
 function ConfidenceBar({ value }: { value: number }) {
   return (
@@ -15,7 +16,7 @@ function ConfidenceBar({ value }: { value: number }) {
   );
 }
 
-function PredictionCard({ prediction, onClick }: { prediction: any; onClick: () => void }) {
+function PredictionCard({ prediction, onClick, locked = false }: { prediction: any; onClick: () => void; locked?: boolean }) {
   const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
   const favored = prediction.home_win === maxProb ? "1" : prediction.draw === maxProb ? "X" : "2";
   const confidence = prediction.confidence ?? 0;
@@ -27,7 +28,7 @@ function PredictionCard({ prediction, onClick }: { prediction: any; onClick: () 
     >
       <div className="h-0.5 w-full bg-gradient-to-r from-primary to-primary/50" />
 
-      <div className="p-4 space-y-3">
+      <div className={`p-4 space-y-3 ${locked ? "blur-sm select-none pointer-events-none" : ""}`}>
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate max-w-[60%]">
             {prediction.league || "League"}
@@ -74,6 +75,16 @@ function PredictionCard({ prediction, onClick }: { prediction: any; onClick: () 
           <ConfidenceBar value={confidence} />
         </div>
       </div>
+
+      {locked && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/40 backdrop-blur-[2px]">
+          <div className="p-2 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg">
+            <Lock className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Premium Pick</span>
+          <span className="text-[9px] text-muted-foreground">Tap to unlock</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,6 +92,8 @@ function PredictionCard({ prediction, onClick }: { prediction: any; onClick: () 
 export function DashboardAIPredictions() {
   const navigate = useNavigate();
   const { predictions, loading } = useAIPredictions("today");
+  const { plan } = useUserPlan();
+  const isFree = plan === "free";
 
   const displayedPredictions = [...predictions]
     .filter((p) => (p.confidence ?? 0) >= 50)
@@ -117,6 +130,7 @@ export function DashboardAIPredictions() {
               key={prediction.id}
               prediction={prediction}
               onClick={() => navigate("/ai-predictions")}
+              locked={isFree && (prediction.confidence ?? 0) >= 75}
             />
           ))}
         </div>
