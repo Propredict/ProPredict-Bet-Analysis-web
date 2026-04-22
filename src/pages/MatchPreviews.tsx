@@ -214,6 +214,7 @@ export default function MatchPreviews() {
         league: p.league,
         match_date: p.match_date,
         match_time: p.match_time,
+        match_timestamp: (p as any).match_timestamp ?? null,
         confidence: p.confidence ?? 0,
         risk_rating: getRiskRating(bestPick.pct),
         home_win: p.home_win,
