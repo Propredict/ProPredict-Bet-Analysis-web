@@ -37,7 +37,25 @@ async function fetchFixtures(
   const res = await fetch(`${EDGE_URL}?mode=${dateMode}`, { signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: ApiResponse = await res.json();
-  return data.fixtures ?? [];
+  // Edge function now returns ISO timestamps for `startTime`.
+  // Convert to the user's local time (e.g., CET/CEST = UTC+1/+2) for display,
+  // while keeping a fallback if a non-ISO string slips through.
+  const fixtures = data.fixtures ?? [];
+  return fixtures.map((m) => {
+    const raw = m.startTime;
+    if (raw && raw.includes("T")) {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        const local = d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        return { ...m, startTime: local };
+      }
+    }
+    return m;
+  });
 }
 
 export function useLiveScores({
