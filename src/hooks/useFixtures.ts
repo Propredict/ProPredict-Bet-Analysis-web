@@ -83,7 +83,25 @@ export function useFixtures(dateFilter: DateFilter, fetchLiveOnly: boolean = fal
         throw new Error(result.error);
       }
 
-      setMatches(result.fixtures || []);
+      const fixtures: Match[] = result.fixtures || [];
+      // Edge function returns ISO timestamps for `startTime`.
+      // Convert to user's local time (CET/CEST = UTC+1/+2) for display.
+      const normalized = fixtures.map((m) => {
+        const raw = m.startTime;
+        if (raw && raw.includes("T")) {
+          const d = new Date(raw);
+          if (!isNaN(d.getTime())) {
+            const local = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
+            return { ...m, startTime: local };
+          }
+        }
+        return m;
+      });
+      setMatches(normalized);
     } catch (err) {
       // Ignore abort errors
       if (err instanceof Error && err.name === "AbortError") {
