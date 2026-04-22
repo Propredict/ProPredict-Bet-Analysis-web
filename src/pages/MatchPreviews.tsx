@@ -362,7 +362,9 @@ export default function MatchPreviews() {
                         <span className="text-lg font-black text-muted-foreground">VS</span>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3 text-muted-foreground/60" />
-                          <span className="text-[11px] text-muted-foreground">{match.match_time?.slice(0, 5) || "TBD"}</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {formatMatchTime((match as any).match_timestamp, match.match_time, match.match_date)}
+                          </span>
                         </div>
                       </div>
 
