@@ -1385,6 +1385,15 @@ export default function AIPredictions() {
                 </div>
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
               </div>
+              {/* Smart Fallback notice — shown when Free tier is populated only via fallback */}
+              {safeFallbackIds.size > 0 && regularPredictions.some((p) => safeFallbackIds.has(p.id!)) && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 max-w-md mx-auto">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <p className="text-[10px] md:text-xs text-emerald-300/90 leading-tight text-left">
+                    No free picks met today's strict data gate. Showing the safest available alternatives instead.
+                  </p>
+                </div>
+              )}
             </div>
 
             {!isAuthenticated && !planLoading ? (
