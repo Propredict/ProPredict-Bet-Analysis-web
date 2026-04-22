@@ -28,7 +28,7 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
     >
       <div className="h-0.5 w-full bg-gradient-to-r from-primary to-primary/50" />
 
-      <div className={`p-4 space-y-3 ${locked ? "blur-sm select-none pointer-events-none" : ""}`}>
+      <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate max-w-[60%]">
             {prediction.league || "League"}
@@ -36,11 +36,11 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
           <span className="text-[10px] text-muted-foreground font-mono">{prediction.match_time}</span>
         </div>
 
-        <p className={`font-semibold text-sm text-foreground leading-tight line-clamp-1 ${locked ? "!blur-none" : ""}`}>
+        <p className="font-semibold text-sm text-foreground leading-tight line-clamp-1">
           {prediction.home_team} vs {prediction.away_team}
         </p>
 
-        <div className={`flex items-center gap-1 ${locked ? "blur-md" : ""}`}>
+        <div className={`flex items-center gap-1 ${locked ? "blur-md select-none pointer-events-none" : ""}`}>
           {[
             { label: "1", value: prediction.home_win, active: favored === "1" },
             { label: "X", value: prediction.draw, active: favored === "X" },
@@ -60,7 +60,7 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
           ))}
         </div>
 
-        <div className={`space-y-2 ${locked ? "blur-md" : ""}`}>
+        <div className={`space-y-2 ${locked ? "blur-md select-none pointer-events-none" : ""}`}>
           <div className="flex items-center justify-between">
             <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/20 text-[10px] px-2">
               {prediction.prediction}
@@ -77,12 +77,11 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
       </div>
 
       {locked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/40 backdrop-blur-[2px]">
-          <div className="p-2 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg">
-            <Lock className="h-4 w-4 text-white" />
+        <div className="absolute inset-x-0 bottom-3 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-lg">
+            <Lock className="h-3 w-3 text-white" />
+            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium · Tap to unlock</span>
           </div>
-          <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Premium Pick</span>
-          <span className="text-[9px] text-muted-foreground">Tap to unlock</span>
         </div>
       )}
     </div>
