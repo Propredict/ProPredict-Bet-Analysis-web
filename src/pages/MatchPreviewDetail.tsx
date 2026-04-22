@@ -13,6 +13,7 @@ import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAn
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useMatchPreviewUnlocks } from "@/hooks/useMatchPreviewUnlocks";
 import { cn } from "@/lib/utils";
+import { formatMatchTime } from "@/utils/formatMatchTime";
 import type { Match } from "@/hooks/useLiveScores";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { deriveMatchPreviewAIPicks, getTopMatchPreviewPick, type MatchPreviewAIPick } from "@/utils/matchPreviewPicks";
@@ -252,7 +253,9 @@ export default function MatchPreviewDetail() {
               </Badge>
               <div className="flex items-center gap-1 text-white/50">
                 <Clock className="h-3 w-3" />
-                <span className="text-[10px] font-medium">{prediction.match_time || "TBD"}</span>
+                <span className="text-[10px] font-medium">
+                  {formatMatchTime((prediction as any).match_timestamp, prediction.match_time, (prediction as any).match_date)}
+                </span>
               </div>
             </div>
 

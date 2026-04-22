@@ -124,11 +124,9 @@ serve(async (req) => {
         awayScore: goals.away,
         status: mapStatus(status.short),
         minute: status.elapsed,
-        startTime: new Date(fixture.date).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
+        // Send the raw ISO timestamp so the client renders kickoff time
+        // in the user's local timezone (e.g., CET/CEST = UTC+1/+2).
+        startTime: fixture.date,
         league: league.name,
         leagueCountry: league.country,
         leagueLogo: league.logo,

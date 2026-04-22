@@ -12,6 +12,7 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs, getBestMarketPickWithLabel } from "@/components/ai-predictions/utils/marketDerivation";
 import { cn } from "@/lib/utils";
+import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
@@ -214,6 +215,7 @@ export default function MatchPreviews() {
         league: p.league,
         match_date: p.match_date,
         match_time: p.match_time,
+        match_timestamp: (p as any).match_timestamp ?? null,
         confidence: p.confidence ?? 0,
         risk_rating: getRiskRating(bestPick.pct),
         home_win: p.home_win,
@@ -360,7 +362,9 @@ export default function MatchPreviews() {
                         <span className="text-lg font-black text-muted-foreground">VS</span>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3 text-muted-foreground/60" />
-                          <span className="text-[11px] text-muted-foreground">{match.match_time?.slice(0, 5) || "TBD"}</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {formatMatchTime((match as any).match_timestamp, match.match_time, match.match_date)}
+                          </span>
                         </div>
                       </div>
 
