@@ -65,8 +65,7 @@ const packagesItems = [
 ];
 
 const tools = [
-  { title: "AI Predictions", url: "/ai-predictions", icon: Brain },
-  { title: "Top 30 AI Picks", url: "/match-previews", icon: Eye },
+  { title: "AI vs Members", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
@@ -158,12 +157,24 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <NavLink 
-                  to="/ai-vs-community" 
+                  to="/ai-predictions" 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
                   activeClassName="bg-primary/20 text-primary"
                 >
-                  <Swords className="h-4 w-4" />
-                  {!collapsed && <span>AI vs Members</span>}
+                  <Brain className="h-4 w-4" />
+                  {!collapsed && <span>AI Predictions</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/match-previews" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Eye className="h-4 w-4" />
+                  {!collapsed && <span>Top 30 AI Picks</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
