@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { cn } from "@/lib/utils";
+import { formatMatchTime } from "@/utils/formatMatchTime";
 
 const QUALITY_LEAGUES: Record<string, number> = {
   "Premier League": 1, "Championship": 2, "La Liga": 3, "Bundesliga": 4,
@@ -78,7 +79,7 @@ export function DashboardMatchPreviews() {
                     {match.league}
                   </span>
                   <span className="text-[8px] md:text-[9px] text-muted-foreground">
-                    {match.match_time?.slice(0, 5)}
+                    {formatMatchTime((match as any).match_timestamp, match.match_time, (match as any).match_date)}
                   </span>
                 </div>
 
