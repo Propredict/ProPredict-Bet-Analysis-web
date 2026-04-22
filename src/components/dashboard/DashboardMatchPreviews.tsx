@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { cn } from "@/lib/utils";
 
 const QUALITY_LEAGUES: Record<string, number> = {
@@ -16,6 +17,8 @@ const QUALITY_LEAGUES: Record<string, number> = {
 export function DashboardMatchPreviews() {
   const navigate = useNavigate();
   const { predictions, loading } = useAIPredictions("today");
+  const { plan } = useUserPlan();
+  const isFree = plan === "free";
 
   const topMatches = useMemo(() => {
     if (!predictions.length) return [];
@@ -83,7 +86,10 @@ export function DashboardMatchPreviews() {
                   {match.home_team} vs {match.away_team}
                 </h3>
 
-                <div className="flex items-center justify-between">
+                <div className={cn(
+                  "flex items-center justify-between",
+                  isFree && "blur-md select-none pointer-events-none"
+                )}>
                   <div className="flex items-center gap-1">
                     <TrendingUp className="h-2.5 w-2.5 text-violet-400" />
                     <span className="text-[9px] md:text-[10px] text-muted-foreground truncate max-w-[80px]">
