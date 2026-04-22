@@ -12,6 +12,7 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs, getBestMarketPickWithLabel } from "@/components/ai-predictions/utils/marketDerivation";
 import { cn } from "@/lib/utils";
+import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
