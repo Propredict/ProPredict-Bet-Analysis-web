@@ -120,13 +120,23 @@ export default function AIPredictions() {
   //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
   // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 30.
   // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
-  const tierAssignment = useMemo(() => {
+  // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
+  // generated today), promote up to 3 of the safest "below threshold" matches
+  // (effective strength 58–64 + variance_stable !== false) into Free so users
+  // always see something. Promoted matches are tracked in safeFallbackIds.
+  const { tierMap: tierAssignment, safeFallbackIds } = useMemo(() => {
     const map = new Map<string, "free" | "pro" | "premium">();
+    const fallbackIds = new Set<string>();
     // 1. Compute effective strength per prediction
     const scored = predictions.map((p) => {
       const bestPickProb = getBestMarketProbability(p);
       const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb);
-      return { id: p.id!, strength: effectiveStrength, baseTier: getTierFromConfidence(effectiveStrength) };
+      return {
+        id: p.id!,
+        strength: effectiveStrength,
+        baseTier: getTierFromConfidence(effectiveStrength),
+        prediction: p,
+      };
     });
     // 2. Sort by strength DESC and apply caps with cascade
     const sorted = [...scored].sort((a, b) => b.strength - a.strength);
@@ -154,7 +164,23 @@ export default function AIPredictions() {
       }
       map.set(s.id, tier);
     }
-    return map;
+
+    // 3. SMART FALLBACK — only triggers if Free tier is empty after classification.
+    // Pick up to 3 safest matches from the 58–64% band that aren't already
+    // placed in any tier, requiring variance_stable !== false (model is consistent).
+    if (freeCount === 0) {
+      const fallbackCandidates = sorted
+        .filter((s) => !map.has(s.id))
+        .filter((s) => s.strength >= 58 && s.strength < 65)
+        .filter((s) => (s.prediction as any).variance_stable !== false)
+        .slice(0, 3);
+      for (const c of fallbackCandidates) {
+        map.set(c.id, "free");
+        fallbackIds.add(c.id);
+      }
+    }
+
+    return { tierMap: map, safeFallbackIds: fallbackIds };
   }, [predictions]);
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
@@ -1359,6 +1385,15 @@ export default function AIPredictions() {
                 </div>
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
               </div>
+              {/* Smart Fallback notice — shown when Free tier is populated only via fallback */}
+              {safeFallbackIds.size > 0 && regularPredictions.some((p) => safeFallbackIds.has(p.id!)) && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 max-w-md mx-auto">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <p className="text-[10px] md:text-xs text-emerald-300/90 leading-tight text-left">
+                    No free picks met today's strict data gate. Showing the safest available alternatives instead.
+                  </p>
+                </div>
+              )}
             </div>
 
             {!isAuthenticated && !planLoading ? (
