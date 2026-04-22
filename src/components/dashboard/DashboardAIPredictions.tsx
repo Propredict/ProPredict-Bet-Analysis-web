@@ -36,11 +36,11 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
           <span className="text-[10px] text-muted-foreground font-mono">{prediction.match_time}</span>
         </div>
 
-        <p className="font-semibold text-sm text-foreground leading-tight line-clamp-1">
+        <p className={`font-semibold text-sm text-foreground leading-tight line-clamp-1 ${locked ? "!blur-none" : ""}`}>
           {prediction.home_team} vs {prediction.away_team}
         </p>
 
-        <div className="flex items-center gap-1">
+        <div className={`flex items-center gap-1 ${locked ? "blur-md" : ""}`}>
           {[
             { label: "1", value: prediction.home_win, active: favored === "1" },
             { label: "X", value: prediction.draw, active: favored === "X" },
@@ -60,7 +60,7 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
           ))}
         </div>
 
-        <div className="space-y-2">
+        <div className={`space-y-2 ${locked ? "blur-md" : ""}`}>
           <div className="flex items-center justify-between">
             <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/20 text-[10px] px-2">
               {prediction.prediction}
