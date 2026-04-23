@@ -180,6 +180,25 @@ export default function AIPredictions() {
       }
     }
 
+    // 3b. SECONDARY FALLBACK — when even the 58–64 band is empty (very strict
+    // data-quality day, e.g. only 8–10 high-quality matches generated), borrow
+    // the WEAKEST matches currently in Pro (closest to the 65% cutoff) and
+    // re-tag them as Free so the page never shows an empty Free tier. Pro
+    // keeps the strongest picks; users always see something.
+    if (freeCount === 0 && fallbackIds.size === 0) {
+      const proCandidates = sorted
+        .filter((s) => map.get(s.id) === "pro")
+        .filter((s) => (s.prediction as any).variance_stable !== false)
+        .sort((a, b) => a.strength - b.strength) // weakest Pro first
+        .slice(0, Math.min(3, Math.max(1, Math.floor(proCount / 3))));
+      for (const c of proCandidates) {
+        map.set(c.id, "free");
+        fallbackIds.add(c.id);
+        proCount--;
+        freeCount++;
+      }
+    }
+
     return { tierMap: map, safeFallbackIds: fallbackIds };
   }, [predictions]);
 
