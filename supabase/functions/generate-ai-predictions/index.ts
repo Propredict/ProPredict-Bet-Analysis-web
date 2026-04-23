@@ -211,6 +211,87 @@ function decideStep2(
   return null;
 }
 
+// ============ STEP 2 — SOFT FALLBACK (Free tier only) ============
+// Triggered ONLY when decideStep2() returns null. Uses LOWER thresholds
+// (xG diff ≥0.4 instead of 0.6, totalGoals ≥1.7 instead of 1.9).
+// All output is HARD-CAPPED to baseConfidence 60–64 so these matches always
+// land in FREE tier (Pro/Premium quality is preserved). Returns null if even
+// these soft rules fail — match is then locked as before.
+function decideStep2Soft(
+  homeStats: TeamStats | null,
+  awayStats: TeamStats | null,
+  homeForm: FormMatch[],
+  awayForm: FormMatch[]
+): Step2Decision | null {
+  const homeFor = homeStats?.homeGoalsForAvg || calculateGoalRate(homeForm).scored;
+  const homeAgainst = homeStats?.homeGoalsAgainstAvg || calculateGoalRate(homeForm).conceded;
+  const awayFor = awayStats?.awayGoalsForAvg || calculateGoalRate(awayForm).scored;
+  const awayAgainst = awayStats?.awayGoalsAgainstAvg || calculateGoalRate(awayForm).conceded;
+
+  if (homeFor <= 0 || homeAgainst <= 0 || awayFor <= 0 || awayAgainst <= 0) return null;
+
+  const expectedHome = (homeFor + awayAgainst) / 2;
+  const expectedAway = (awayFor + homeAgainst) / 2;
+  const totalGoals = expectedHome + expectedAway;
+  const diff = expectedHome - expectedAway;
+  const score = `${Math.max(0, Math.round(expectedHome))}-${Math.max(0, Math.round(expectedAway))}`;
+
+  // SOFT WINNER (diff ≥ 0.4)
+  if (diff >= 0.4) {
+    return {
+      market: "1",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Home edge Δ ${diff.toFixed(2)} (free tier)`,
+      baseConfidence: 62,
+    };
+  }
+  if (diff <= -0.4) {
+    return {
+      market: "2",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Away edge Δ ${Math.abs(diff).toFixed(2)} (free tier)`,
+      baseConfidence: 62,
+    };
+  }
+
+  // SOFT GOALS — Over 1.5 if total ≥ 1.7
+  if (totalGoals >= 1.7) {
+    return {
+      market: "Over 1.5",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Moderate goals total ${totalGoals.toFixed(2)} (free tier)`,
+      baseConfidence: 60,
+    };
+  }
+
+  // SOFT UNDER — total ≤ 2.0 (less strict than 1.8)
+  if (totalGoals <= 2.0) {
+    return {
+      market: "Under 2.5",
+      predicted_score: totalGoals < 1.4 ? "0-0" : "1-1",
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Defensive lean total ${totalGoals.toFixed(2)} (free tier)`,
+      baseConfidence: 60,
+    };
+  }
+
+  // SOFT BTTS — both teams ≥ 0.8
+  if (expectedHome >= 0.8 && expectedAway >= 0.8) {
+    return {
+      market: "BTTS Yes",
+      predicted_score: `${Math.max(1, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Both score lean (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)}) (free tier)`,
+      baseConfidence: 61,
+    };
+  }
+
+  return null;
+}
+
 // ============ STEP 3 — CONFIDENCE CALCULATION ============
 // Formula:  confidence = 50 + (|xH - xA| * 10) + (totalGoals * 5)
 // Then apply penalties (weak signals) and boosts (strong signals).
