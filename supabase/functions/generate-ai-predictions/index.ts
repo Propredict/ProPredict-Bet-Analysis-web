@@ -6173,6 +6173,59 @@ async function assignTiers(
   const freePicks = freeDiv.kept;
   const freeIds = new Set(freePicks.map((p: any) => p.id));
 
+  // ============ CONDITIONAL SOFT FALLBACK CLEANUP ============
+  // Soft fallback (lower xG threshold 0.4 instead of 0.6) is meant as a SAFETY
+  // NET — only used when the strict pipeline produces too few Free matches.
+  // Pro/Premium are NEVER touched by this logic (their gates remain strict).
+  //
+  // Rule: count "strict" Free matches (NOT tagged with __sf__ in key_factors).
+  //       - If >= 5 strict Free matches exist → DELETE all soft fallback rows
+  //         (we have enough quality content, no need for the safety net).
+  //       - If < 5 strict Free → KEEP soft fallback rows (volume safety net).
+  const SOFT_FALLBACK_MARKER = "__sf__";
+  const STRICT_FREE_THRESHOLD = 5;
+
+  const isSoftFallback = (p: any): boolean => {
+    const kf = Array.isArray(p.key_factors) ? p.key_factors : [];
+    return kf.includes(SOFT_FALLBACK_MARKER);
+  };
+
+  const strictFreePicks = freePicks.filter((p: any) => !isSoftFallback(p));
+  const softFreePicks = freePicks.filter((p: any) => isSoftFallback(p));
+
+  console.log(
+    `[SOFT FALLBACK CHECK] Free tier: ${strictFreePicks.length} strict + ${softFreePicks.length} soft (threshold: >=${STRICT_FREE_THRESHOLD} strict triggers cleanup)`
+  );
+
+  if (strictFreePicks.length >= STRICT_FREE_THRESHOLD && softFreePicks.length > 0) {
+    // Enough quality strict Free matches — delete soft fallback rows entirely.
+    const softIds = softFreePicks.map((p: any) => p.id);
+    const { error: delErr } = await supabase
+      .from("ai_predictions")
+      .delete()
+      .in("id", softIds);
+    if (delErr) {
+      console.warn(`[SOFT FALLBACK CHECK] Delete failed:`, delErr.message);
+    } else {
+      console.log(
+        `[SOFT FALLBACK CHECK] ✅ Deleted ${softIds.length} soft fallback matches (strict Free has ${strictFreePicks.length} >= ${STRICT_FREE_THRESHOLD})`
+      );
+      // Remove from in-memory freePicks so subsequent overflow logic is correct
+      const softIdSet = new Set(softIds);
+      for (let i = freePicks.length - 1; i >= 0; i--) {
+        if (softIdSet.has(freePicks[i].id)) freePicks.splice(i, 1);
+        freeIds.delete(freePicks[i]?.id);
+      }
+      // Rebuild freeIds cleanly
+      freeIds.clear();
+      freePicks.forEach((p: any) => freeIds.add(p.id));
+    }
+  } else if (softFreePicks.length > 0) {
+    console.log(
+      `[SOFT FALLBACK CHECK] ⏳ Keeping ${softFreePicks.length} soft fallback matches (only ${strictFreePicks.length} strict Free < ${STRICT_FREE_THRESHOLD})`
+    );
+  }
+
   // 4) Anything in `sorted` that didn't make a tier slot → lock (hidden)
   const overflowIds = sorted
     .filter((p: any) => !premiumIds.has(p.id) && !proIds.has(p.id) && !freeIds.has(p.id))
@@ -7526,6 +7579,10 @@ async function processBatch(
             `[SOFT CAP] ${fixtureIdStr}: confidence ${beforeCap}% → ${newPrediction.confidence}% (Free tier cap)`
           );
         }
+        // Tag this match as soft-fallback so the post-pass cleanup can identify
+        // and remove it if enough strict Free matches exist. This marker starts
+        // with "__" so the UI can filter it out of key_factors display.
+        if (!keyFactors.includes("__sf__")) keyFactors.unshift("__sf__");
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)

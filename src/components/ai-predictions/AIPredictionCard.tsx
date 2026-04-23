@@ -407,7 +407,7 @@ const AIPredictionCardInner = ({
                    {prediction.key_factors && prediction.key_factors.length > 0 && (
                      <div className="flex flex-wrap gap-0.5">
                        {prediction.key_factors
-                         .filter((f) => !f.startsWith("[TAG]") && !f.startsWith("confidence_breakdown:"))
+                         .filter((f) => !f.startsWith("[TAG]") && !f.startsWith("confidence_breakdown:") && !f.startsWith("__"))
                          .slice(0, displayTier === "premium" ? 5 : 3)
                          .map((factor, i) => (
                          <Badge 
