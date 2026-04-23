@@ -6745,7 +6745,23 @@ async function processBatch(
 
       // === STEP 2 DETERMINISTIC DECIDER ===
       // Apply hard expected-goals rules. If NO strong signal → SKIP match (no spam predictions).
-      const step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
+      let step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
+      let step2IsSoftFallback = false;
+
+      // SOFT FALLBACK: when strict Step 2 fails, try lenient thresholds.
+      // Result is hard-capped to base confidence 60–64 → always lands in Free tier.
+      // Pro/Premium quality stays untouched.
+      if (!step2) {
+        const soft = decideStep2Soft(homeStats, awayStats, homeForm, awayForm);
+        if (soft) {
+          step2 = soft;
+          step2IsSoftFallback = true;
+          console.log(
+            `[STEP 2 SOFT] ${fixtureIdStr}: ${soft.market} | ${soft.reason} → Free tier`
+          );
+        }
+      }
+
       if (!step2) {
         console.log(
           `[STEP 2 SKIP] ${fixtureIdStr} ${homeTeamName} vs ${awayTeamName}: no strong signal — locked, not deleted`
