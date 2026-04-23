@@ -7513,6 +7513,21 @@ async function processBatch(
         console.warn(`[STEP 3] failed for ${homeTeamName} vs ${awayTeamName}:`, (e as any)?.message);
       }
 
+      // === SOFT FALLBACK CAP ===
+      // If this prediction came from the Soft Step 2 fallback (lower xG diff
+      // threshold), force confidence into the Free tier band (max 64) so it
+      // can never accidentally promote into Pro/Premium. Pro/Premium quality
+      // is preserved — only weaker matches use this path and they stay Free.
+      if (step2IsSoftFallback) {
+        const beforeCap = newPrediction.confidence;
+        newPrediction.confidence = Math.min(newPrediction.confidence, 64);
+        if (beforeCap !== newPrediction.confidence) {
+          console.log(
+            `[SOFT CAP] ${fixtureIdStr}: confidence ${beforeCap}% → ${newPrediction.confidence}% (Free tier cap)`
+          );
+        }
+      }
+
       // SAVE IMMEDIATELY after each item (incremental saving)
       const { error: updateError } = await supabase
         .from("ai_predictions")
