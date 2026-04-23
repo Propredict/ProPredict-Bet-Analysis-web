@@ -7526,6 +7526,10 @@ async function processBatch(
             `[SOFT CAP] ${fixtureIdStr}: confidence ${beforeCap}% → ${newPrediction.confidence}% (Free tier cap)`
           );
         }
+        // Tag this match as soft-fallback so the post-pass cleanup can identify
+        // and remove it if enough strict Free matches exist. This marker starts
+        // with "__" so the UI can filter it out of key_factors display.
+        if (!keyFactors.includes("__sf__")) keyFactors.unshift("__sf__");
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
