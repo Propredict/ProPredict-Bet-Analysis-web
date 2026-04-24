@@ -110,7 +110,7 @@ export function DashboardAIPredictions() {
   const { predictions, loading } = useAIPredictions("today");
   const { plan } = useUserPlan();
   const isFree = plan === "free";
-  const isPro = plan === "basic" || plan === "pro";
+  const isPro = plan === "basic";
 
   const displayedPredictions = [...predictions]
     .filter((p) => (p.confidence ?? 0) >= 50)
