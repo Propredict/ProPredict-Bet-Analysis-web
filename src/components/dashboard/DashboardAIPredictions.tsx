@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { Brain, Loader2, ChevronRight, Zap, Lock, Crown, Star } from "lucide-react";
+import { Brain, Loader2, ChevronRight, Zap, Lock, Crown, Star, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { usePlatform } from "@/hooks/usePlatform";
 
 type LockTier = "pro" | "premium" | null;
 
@@ -22,10 +24,16 @@ function PredictionCard({
   prediction,
   onClick,
   lockTier = null,
+  showWatchAd = false,
+  isUnlocking = false,
+  onWatchAd,
 }: {
   prediction: any;
   onClick: () => void;
   lockTier?: LockTier;
+  showWatchAd?: boolean;
+  isUnlocking?: boolean;
+  onWatchAd?: () => void;
 }) {
   const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
   const favored = prediction.home_win === maxProb ? "1" : prediction.draw === maxProb ? "X" : "2";
@@ -37,6 +45,8 @@ function PredictionCard({
     ? "from-violet-600 to-fuchsia-500"
     : "from-amber-500 to-yellow-500";
   const CtaIcon = isPremiumLock ? Crown : Star;
+  // On Android, Free users can watch an ad to unlock Pro AND non-premium picks.
+  const watchAdMode = locked && showWatchAd && !isPremiumLock;
 
   return (
     <div
@@ -93,12 +103,34 @@ function PredictionCard({
         </div>
       </div>
 
-      {locked && (
+      {locked && !watchAdMode && (
         <div className="absolute inset-x-0 bottom-3 flex items-center justify-center pointer-events-none">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${ctaGradient} shadow-lg`}>
             <CtaIcon className="h-3 w-3 text-white" />
             <span className="text-[10px] font-bold text-white uppercase tracking-wider">{ctaLabel}</span>
           </div>
+        </div>
+      )}
+
+      {watchAdMode && (
+        <div className="absolute inset-x-0 bottom-3 flex items-center justify-center px-3">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onWatchAd?.();
+            }}
+            disabled={isUnlocking}
+            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 shadow-lg hover:from-teal-600 hover:to-emerald-600 transition-colors disabled:opacity-70"
+          >
+            {isUnlocking ? (
+              <Loader2 className="h-3 w-3 text-white animate-spin" />
+            ) : (
+              <Play className="h-3 w-3 text-white fill-current" />
+            )}
+            <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+              {isUnlocking ? "Loading…" : "Watch Ad to Unlock"}
+            </span>
+          </button>
         </div>
       )}
     </div>
@@ -108,7 +140,9 @@ function PredictionCard({
 export function DashboardAIPredictions() {
   const navigate = useNavigate();
   const { predictions, loading } = useAIPredictions("today");
-  const { plan } = useUserPlan();
+  const { plan, canAccess } = useUserPlan();
+  const { isAndroidApp } = usePlatform();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
   const isFree = plan === "free";
   const isPro = plan === "basic";
 
@@ -158,7 +192,23 @@ export function DashboardAIPredictions() {
               key={prediction.id}
               prediction={prediction}
               onClick={() => navigate("/ai-predictions")}
-              lockTier={getLockTier(prediction.confidence ?? 0)}
+              lockTier={
+                // If user has already unlocked this pick via ad, treat as unlocked
+                canAccess("exclusive", "tip", prediction.id)
+                  ? getLockTier(prediction.confidence ?? 0) === "premium" &&
+                    !canAccess("premium", "tip", prediction.id)
+                    ? "premium"
+                    : null
+                  : getLockTier(prediction.confidence ?? 0)
+              }
+              showWatchAd={isAndroidApp && isFree}
+              isUnlocking={unlockingId === prediction.id}
+              onWatchAd={() => {
+                const tier = getLockTier(prediction.confidence ?? 0);
+                if (tier === "pro") {
+                  handleUnlock("tip", prediction.id, "exclusive");
+                }
+              }}
             />
           ))}
         </div>
