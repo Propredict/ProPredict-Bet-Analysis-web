@@ -509,9 +509,13 @@ export default function AIPredictions() {
   // Top AI Picks: ranked from remaining (excludes Safe Pick), always fills up to 5
   // Mix of Free/Pro/Premium — same across all tier tabs.
   const topPicks = useMemo(() => {
-    const remaining = globalRankingBase.filter((p) => !safePickIds.has(p.id));
+    // Exclude BOTH Safe Pick(s) AND Diamond Pick so the same match never
+    // appears in both the curated highlight section and the Top 5 carousel.
+    const remaining = globalRankingBase.filter(
+      (p) => !safePickIds.has(p.id) && p.id !== diamondPick?.id,
+    );
     return selectTopPicks(remaining, 5);
-  }, [globalRankingBase, safePickIds]);
+  }, [globalRankingBase, safePickIds, diamondPick]);
 
   // Combined exclusion set: curated (Diamond + Safe Pick) + Top AI Picks.
   // Any match shown in those highlighted sections is removed from Free/Pro/Premium
