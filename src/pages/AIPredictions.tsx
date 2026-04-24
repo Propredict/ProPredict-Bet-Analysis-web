@@ -452,38 +452,46 @@ export default function AIPredictions() {
   // Always different from Diamond Pick — the same match never appears in both.
   const safePicks = useMemo(() => {
     const diamondId = diamondPick?.id;
-    return [...globalRankingBase]
-      .filter((p) => {
-        // Strict dedupe: never reuse the Diamond match.
-        if (diamondId && p.id === diamondId) return false;
-        const conf = p.confidence ?? 0;
-        if (conf < 85) return false;
-        // Low-risk market OR a very strong 1X2 pick (conf ≥ 82%)
-        const lowRisk = isLowRiskPrediction(p.prediction);
-        const strongMain = conf >= 82 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
-        if (!lowRisk && !strongMain) return false;
-        // STEP 2 — prefer DB column xg_total; fall back to legacy tag parser.
-        const xgTotal =
-          typeof (p as any).xg_total === "number"
-            ? (p as any).xg_total
-            : parseXgFromFactors(p.key_factors)?.total;
-        // If xG total present and below 2.2, reject. Otherwise allow.
-        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
-        // STEP 11 — Safe Pick must be STABLE.
-        // Prefer DB column variance_stable; fall back to legacy tag.
-        if ((p as any).variance_stable === false) return false;
-        if ((p as any).variance_stable !== true) {
-          // No DB value — try legacy tag (do not block if both missing)
-          const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
-          const varTag = factors.find(
-            (f) => typeof f === "string" && f.startsWith("variance:"),
-          );
-          if (varTag && varTag.includes("UNSTABLE")) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-      .slice(0, 1);
+    // Quality gate (constant across thresholds): low-risk market + stable + xG ≥ 2.2.
+    // Diamond is always excluded so the same match never appears in both sections.
+    const passesQuality = (p: typeof globalRankingBase[number]): boolean => {
+      if (diamondId && p.id === diamondId) return false;
+      const conf = p.confidence ?? 0;
+      // Low-risk market OR strong main 1X2 (conf ≥ 75% for fallback flexibility)
+      const lowRisk = isLowRiskPrediction(p.prediction);
+      const strongMain = conf >= 75 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
+      if (!lowRisk && !strongMain) return false;
+      // xG total must be ≥ 2.2 when present.
+      const xgTotal =
+        typeof (p as any).xg_total === "number"
+          ? (p as any).xg_total
+          : parseXgFromFactors(p.key_factors)?.total;
+      if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
+      // Variance must be STABLE.
+      if ((p as any).variance_stable === false) return false;
+      if ((p as any).variance_stable !== true) {
+        const factors = Array.isArray(p.key_factors) ? p.key_factors : [];
+        const varTag = factors.find(
+          (f) => typeof f === "string" && f.startsWith("variance:"),
+        );
+        if (varTag && varTag.includes("UNSTABLE")) return false;
+      }
+      return true;
+    };
+
+    const sorted = [...globalRankingBase].sort(
+      (a, b) => (b.confidence ?? 0) - (a.confidence ?? 0),
+    );
+    // Dynamic threshold ladder: try strict first (85), then relax progressively
+    // so Safe Pick is never empty when at least one quality low-risk match exists.
+    const thresholds = [85, 80, 75, 70];
+    for (const minConf of thresholds) {
+      const match = sorted.find(
+        (p) => (p.confidence ?? 0) >= minConf && passesQuality(p),
+      );
+      if (match) return [match];
+    }
+    return [];
   }, [globalRankingBase, diamondPick]);
 
   // Safe Pick excludes the Diamond Pick — the same match must never appear
