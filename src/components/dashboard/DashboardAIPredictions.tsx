@@ -110,6 +110,7 @@ export function DashboardAIPredictions() {
   const { predictions, loading } = useAIPredictions("today");
   const { plan } = useUserPlan();
   const isFree = plan === "free";
+  const isPro = plan === "basic";
 
   const displayedPredictions = [...predictions]
     .filter((p) => (p.confidence ?? 0) >= 50)
@@ -117,7 +118,11 @@ export function DashboardAIPredictions() {
     .slice(0, 3);
 
   const getLockTier = (conf: number): LockTier => {
-    if (!isFree) return null;
+    // Premium plan unlocks everything
+    if (!isFree && !isPro) return null;
+    // Pro plan: only Premium picks (≥78%) are locked
+    if (isPro) return conf >= 78 ? "premium" : null;
+    // Free plan: Pro (65-77%) + Premium (≥78%) locked
     if (conf >= 78) return "premium";
     if (conf >= 65) return "pro";
     return null;
