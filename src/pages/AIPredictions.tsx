@@ -454,19 +454,24 @@ export default function AIPredictions() {
     const diamondId = diamondPick?.id;
     // Quality gate (constant across thresholds): low-risk market + stable + xG ≥ 2.2.
     // Diamond is always excluded so the same match never appears in both sections.
-    const passesQuality = (p: typeof globalRankingBase[number]): boolean => {
+    const passesQuality = (
+      p: typeof globalRankingBase[number],
+      opts: { requireXg?: boolean } = { requireXg: true },
+    ): boolean => {
       if (diamondId && p.id === diamondId) return false;
       const conf = p.confidence ?? 0;
       // Low-risk market OR strong main 1X2 (conf ≥ 75% for fallback flexibility)
       const lowRisk = isLowRiskPrediction(p.prediction);
       const strongMain = conf >= 75 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
       if (!lowRisk && !strongMain) return false;
-      // xG total must be ≥ 2.2 when present.
-      const xgTotal =
-        typeof (p as any).xg_total === "number"
-          ? (p as any).xg_total
-          : parseXgFromFactors(p.key_factors)?.total;
-      if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
+      // xG total must be ≥ 2.2 when present (relaxed in last-resort fallback).
+      if (opts.requireXg !== false) {
+        const xgTotal =
+          typeof (p as any).xg_total === "number"
+            ? (p as any).xg_total
+            : parseXgFromFactors(p.key_factors)?.total;
+        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
+      }
       // Variance must be STABLE.
       if ((p as any).variance_stable === false) return false;
       if ((p as any).variance_stable !== true) {
@@ -487,10 +492,17 @@ export default function AIPredictions() {
     const thresholds = [85, 80, 75, 70];
     for (const minConf of thresholds) {
       const match = sorted.find(
-        (p) => (p.confidence ?? 0) >= minConf && passesQuality(p),
+        (p) => (p.confidence ?? 0) >= minConf && passesQuality(p, { requireXg: true }),
       );
       if (match) return [match];
     }
+    // Last-resort fallback: best low-risk + stable match ≥ 65% confidence,
+    // ignoring the xG gate so the section is not empty when xG data is sparse
+    // or the only strong pick is already used as Diamond.
+    const lastResort = sorted.find(
+      (p) => (p.confidence ?? 0) >= 65 && passesQuality(p, { requireXg: false }),
+    );
+    if (lastResort) return [lastResort];
     return [];
   }, [globalRankingBase, diamondPick]);
 
