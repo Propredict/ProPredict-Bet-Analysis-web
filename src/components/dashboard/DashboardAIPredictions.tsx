@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { Brain, Loader2, ChevronRight, Zap, Lock } from "lucide-react";
+import { Brain, Loader2, ChevronRight, Zap, Lock, Crown, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
+
+type LockTier = "pro" | "premium" | null;
 
 function ConfidenceBar({ value }: { value: number }) {
   return (
@@ -16,10 +18,25 @@ function ConfidenceBar({ value }: { value: number }) {
   );
 }
 
-function PredictionCard({ prediction, onClick, locked = false }: { prediction: any; onClick: () => void; locked?: boolean }) {
+function PredictionCard({
+  prediction,
+  onClick,
+  lockTier = null,
+}: {
+  prediction: any;
+  onClick: () => void;
+  lockTier?: LockTier;
+}) {
   const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
   const favored = prediction.home_win === maxProb ? "1" : prediction.draw === maxProb ? "X" : "2";
   const confidence = prediction.confidence ?? 0;
+  const locked = lockTier !== null;
+  const isPremiumLock = lockTier === "premium";
+  const ctaLabel = isPremiumLock ? "Premium · Tap to unlock" : "Pro · Tap to unlock";
+  const ctaGradient = isPremiumLock
+    ? "from-violet-600 to-fuchsia-500"
+    : "from-amber-500 to-yellow-500";
+  const CtaIcon = isPremiumLock ? Crown : Star;
 
   return (
     <div
@@ -78,9 +95,9 @@ function PredictionCard({ prediction, onClick, locked = false }: { prediction: a
 
       {locked && (
         <div className="absolute inset-x-0 bottom-3 flex items-center justify-center pointer-events-none">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-lg">
-            <Lock className="h-3 w-3 text-white" />
-            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium · Tap to unlock</span>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${ctaGradient} shadow-lg`}>
+            <CtaIcon className="h-3 w-3 text-white" />
+            <span className="text-[10px] font-bold text-white uppercase tracking-wider">{ctaLabel}</span>
           </div>
         </div>
       )}
@@ -98,6 +115,13 @@ export function DashboardAIPredictions() {
     .filter((p) => (p.confidence ?? 0) >= 50)
     .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
     .slice(0, 3);
+
+  const getLockTier = (conf: number): LockTier => {
+    if (!isFree) return null;
+    if (conf >= 78) return "premium";
+    if (conf >= 65) return "pro";
+    return null;
+  };
 
   return (
     <section className="space-y-4">
@@ -129,7 +153,7 @@ export function DashboardAIPredictions() {
               key={prediction.id}
               prediction={prediction}
               onClick={() => navigate("/ai-predictions")}
-              locked={isFree && (prediction.confidence ?? 0) >= 75}
+              lockTier={getLockTier(prediction.confidence ?? 0)}
             />
           ))}
         </div>
