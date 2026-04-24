@@ -194,9 +194,9 @@ export function DashboardAIPredictions() {
               onClick={() => navigate("/ai-predictions")}
               lockTier={
                 // If user has already unlocked this pick via ad, treat as unlocked
-                canAccess("exclusive", "ai_prediction", prediction.id)
+                canAccess("exclusive", "tip", prediction.id)
                   ? getLockTier(prediction.confidence ?? 0) === "premium" &&
-                    !canAccess("premium", "ai_prediction", prediction.id)
+                    !canAccess("premium", "tip", prediction.id)
                     ? "premium"
                     : null
                   : getLockTier(prediction.confidence ?? 0)
@@ -206,7 +206,7 @@ export function DashboardAIPredictions() {
               onWatchAd={() => {
                 const tier = getLockTier(prediction.confidence ?? 0);
                 if (tier === "pro") {
-                  handleUnlock("ai_prediction", prediction.id, "exclusive");
+                  handleUnlock("tip", prediction.id, "exclusive");
                 }
               }}
             />
