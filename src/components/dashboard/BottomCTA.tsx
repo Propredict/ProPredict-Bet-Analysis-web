@@ -1,4 +1,4 @@
-import { TrendingUp, Trophy, Crown } from "lucide-react";
+import { TrendingUp, BarChart3, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -40,10 +40,10 @@ export function BottomCTA() {
           <Button 
             variant="ghost" 
             className="gap-1.5 h-8 text-[10px] sm:text-xs px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50" 
-            onClick={() => navigate("/winning-history")}
+            onClick={() => navigate("/league-statistics")}
           >
-            <Trophy className="h-3.5 w-3.5" />
-            Prediction History
+            <BarChart3 className="h-3.5 w-3.5" />
+            League Standings
           </Button>
         </div>
       </Card>
