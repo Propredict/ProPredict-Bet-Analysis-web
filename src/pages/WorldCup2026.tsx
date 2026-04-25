@@ -14,6 +14,7 @@ import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
 } from "@/data/worldCup2026";
@@ -219,6 +220,11 @@ export default function WorldCup2026() {
           </div>
         </div>
       </section>
+
+      {/* Sponsored: 1xBet affiliate banner – web only */}
+      <div className="px-3 sm:px-4 pt-3">
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_world_cup&site=5489744&ad=1599&r=sports" />
+      </div>
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
