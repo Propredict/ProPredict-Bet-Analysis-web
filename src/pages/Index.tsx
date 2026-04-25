@@ -174,13 +174,6 @@ const Index = () => {
           </>
         )}
         
-        {/* League Standings — web only */}
-        {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <LeagueStandings />
-          </Suspense>
-        )}
-        
         {/* AI Predictions Section – web only */}
         {!isAndroid && (
           <Suspense fallback={<LazyFallback />}>
