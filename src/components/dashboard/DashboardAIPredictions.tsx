@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Brain, Loader2, ChevronRight, Zap, Lock, Crown, Star, Play } from "lucide-react";
+import { Brain, Loader2, ChevronRight, Zap, Crown, Star, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
@@ -146,11 +146,6 @@ export function DashboardAIPredictions() {
   const isFree = plan === "free";
   const isPro = plan === "basic";
 
-  const displayedPredictions = [...predictions]
-    .filter((p) => (p.confidence ?? 0) >= 50)
-    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-    .slice(0, 3);
-
   const getLockTier = (conf: number): LockTier => {
     // Premium plan unlocks everything
     if (!isFree && !isPro) return null;
@@ -162,6 +157,125 @@ export function DashboardAIPredictions() {
     return null;
   };
 
+  // Tier classification (independent of user plan) — used to bucket predictions
+  const classifyTier = (conf: number): "free" | "pro" | "premium" => {
+    if (conf >= 78) return "premium";
+    if (conf >= 65) return "pro";
+    return "free";
+  };
+
+  const sorted = [...predictions]
+    .filter((p) => (p.confidence ?? 0) >= 50)
+    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+
+  const freePicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "free").slice(0, 2);
+  const proPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "pro").slice(0, 2);
+  const premiumPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "premium").slice(0, 2);
+
+  const displayedPredictions = sorted.slice(0, 3);
+
+  const renderCard = (prediction: any) => {
+    const conf = prediction.confidence ?? 0;
+    const baseTier = getLockTier(conf);
+    const lockTier: LockTier = canAccess("exclusive", "tip", prediction.id)
+      ? baseTier === "premium" && !canAccess("premium", "tip", prediction.id)
+        ? "premium"
+        : null
+      : baseTier;
+    return (
+      <PredictionCard
+        key={prediction.id}
+        prediction={prediction}
+        onClick={() => navigate("/ai-predictions")}
+        lockTier={lockTier}
+        showWatchAd={isAndroidApp && isFree}
+        isUnlocking={unlockingId === prediction.id}
+        onWatchAd={() => {
+          const tier = getLockTier(conf);
+          if (tier === "pro") {
+            handleUnlock("tip", prediction.id, "exclusive");
+          }
+        }}
+      />
+    );
+  };
+
+  // --- WEB: vertical sections (Free / Pro / Premium) ---
+  if (!isAndroidApp) {
+    return (
+      <section className="space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Brain className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground">AI Predictions</h2>
+              <p className="text-[10px] text-muted-foreground">AI-powered match analysis</p>
+            </div>
+          </div>
+          {predictions.length > 0 && (
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs font-semibold">
+              {predictions.length} matches
+            </Badge>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* SECTION 1: FREE */}
+            <TierSection
+              title="Free Daily Picks"
+              subtitle="Open access · everyday value"
+              badgeIcon={Sparkles}
+              badgeLabel="Free"
+              tone="free"
+              ctaLabel="See all Free Picks"
+              onCta={() => navigate("/ai-predictions?tier=free")}
+              empty="No free picks available today"
+              picks={freePicks}
+              renderCard={renderCard}
+            />
+
+            {/* SECTION 2: PRO */}
+            <TierSection
+              title="Pro Picks"
+              subtitle="Higher confidence · curated edge"
+              badgeIcon={Star}
+              badgeLabel="⭐ Pro"
+              tone="pro"
+              ctaLabel="See all Pro Picks"
+              onCta={() => navigate("/ai-predictions?tier=pro")}
+              empty="No Pro picks available today"
+              picks={proPicks}
+              renderCard={renderCard}
+            />
+
+            {/* SECTION 3: PREMIUM */}
+            <TierSection
+              title="Premium Picks"
+              subtitle="Best AI predictions · maximum edge"
+              badgeIcon={Crown}
+              badgeLabel="👑 Premium"
+              tone="premium"
+              ctaLabel="See all Premium Picks"
+              onCta={() => navigate("/ai-predictions?tier=premium")}
+              empty="No Premium picks available today"
+              picks={premiumPicks}
+              renderCard={renderCard}
+            />
+          </>
+        )}
+      </section>
+    );
+  }
+
+  // --- ANDROID: keep existing combined layout ---
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
@@ -187,30 +301,7 @@ export function DashboardAIPredictions() {
         </div>
       ) : displayedPredictions.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {displayedPredictions.map((prediction) => (
-            <PredictionCard
-              key={prediction.id}
-              prediction={prediction}
-              onClick={() => navigate("/ai-predictions")}
-              lockTier={
-                // If user has already unlocked this pick via ad, treat as unlocked
-                canAccess("exclusive", "tip", prediction.id)
-                  ? getLockTier(prediction.confidence ?? 0) === "premium" &&
-                    !canAccess("premium", "tip", prediction.id)
-                    ? "premium"
-                    : null
-                  : getLockTier(prediction.confidence ?? 0)
-              }
-              showWatchAd={isAndroidApp && isFree}
-              isUnlocking={unlockingId === prediction.id}
-              onWatchAd={() => {
-                const tier = getLockTier(prediction.confidence ?? 0);
-                if (tier === "pro") {
-                  handleUnlock("tip", prediction.id, "exclusive");
-                }
-              }}
-            />
-          ))}
+          {displayedPredictions.map((prediction) => renderCard(prediction))}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 py-8 rounded-xl border border-border/50 bg-card/50">
@@ -231,5 +322,106 @@ export function DashboardAIPredictions() {
         </div>
       )}
     </section>
+  );
+}
+
+/* =======================
+   Tier Section (web)
+======================= */
+
+type Tone = "free" | "pro" | "premium";
+
+const TONE_STYLES: Record<Tone, {
+  border: string;
+  bg: string;
+  badge: string;
+  text: string;
+  cta: string;
+}> = {
+  free: {
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+  },
+  pro: {
+    border: "border-amber-500/30",
+    bg: "from-amber-500/10 via-amber-500/5 to-transparent",
+    badge: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+    text: "text-amber-400",
+    cta: "from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600",
+  },
+  premium: {
+    border: "border-fuchsia-500/30",
+    bg: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
+    badge: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30",
+    text: "text-fuchsia-400",
+    cta: "from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600",
+  },
+};
+
+function TierSection({
+  title,
+  subtitle,
+  badgeIcon: BadgeIcon,
+  badgeLabel,
+  tone,
+  ctaLabel,
+  onCta,
+  empty,
+  picks,
+  renderCard,
+}: {
+  title: string;
+  subtitle: string;
+  badgeIcon: any;
+  badgeLabel: string;
+  tone: Tone;
+  ctaLabel: string;
+  onCta: () => void;
+  empty: string;
+  picks: any[];
+  renderCard: (p: any) => JSX.Element;
+}) {
+  const styles = TONE_STYLES[tone];
+
+  return (
+    <div className={`rounded-2xl border ${styles.border} bg-gradient-to-br ${styles.bg} p-3 sm:p-4 space-y-3`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <Badge variant="outline" className={`gap-1 ${styles.badge} text-[10px] px-2 py-0.5`}>
+              <BadgeIcon className="h-3 w-3" />
+              {badgeLabel}
+            </Badge>
+            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
+          </div>
+          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
+        </div>
+      </div>
+
+      {picks.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {picks.map(renderCard)}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-1.5 py-6 rounded-xl border border-border/40 bg-card/40">
+          <BadgeIcon className={`h-5 w-5 ${styles.text} opacity-50`} />
+          <p className="text-[11px] text-muted-foreground">{empty}</p>
+        </div>
+      )}
+
+      <div className="flex justify-center pt-1">
+        <Button
+          size="sm"
+          className={`px-5 group bg-gradient-to-r ${styles.cta} text-white text-xs border-0 rounded-full`}
+          onClick={onCta}
+        >
+          <span>{ctaLabel}</span>
+          <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+        </Button>
+      </div>
+    </div>
   );
 }
