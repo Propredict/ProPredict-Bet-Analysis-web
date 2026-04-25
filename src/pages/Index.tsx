@@ -97,8 +97,13 @@ const Index = () => {
                 </Link>
               )}
               {!isAndroid && (
-                <a href="https://play.google.com/store/apps/details?id=com.propredict.app" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
-                  Download App 🔓
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-extrabold hover:opacity-90 transition-all shadow-lg shadow-amber-500/40 animate-pulse ring-2 ring-amber-300/50"
+                >
+                  ⬇️ Download App 🔓
                 </a>
               )}
             </div>
