@@ -167,11 +167,9 @@ export function MatchPredictions() {
       .slice(0, 2);
     premiumTips.forEach((t) => reserved.add(`${t.homeTeam.toLowerCase().trim()}__${t.awayTeam.toLowerCase().trim()}`));
 
-    // Pro — match Pro Insights: show exclusive tier tips, but prefer non-specialized ones first.
-    const availableExclusiveTips = todayDbTips.filter((t: any) => t.tier === "exclusive" && !reserved.has(matchKey(t)));
-    const exclusiveTips = (availableExclusiveTips.length > 0
-      ? availableExclusiveTips
-      : todayDbTips.filter((t: any) => t.tier === "exclusive"))
+    // Pro — match Pro Insights: show standalone Pro tips even if Risk uses the same fixture.
+    const exclusiveTips = todayDbTips
+      .filter((t: any) => t.tier === "exclusive" && t.category !== "risk_of_day" && t.category !== "diamond_pick")
       .map(mapDbTipToTip)
       .slice(0, 2);
     const proTips = exclusiveTips;
