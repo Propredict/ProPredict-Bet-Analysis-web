@@ -266,7 +266,7 @@ export default function MatchPreviews() {
         </div>
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
-        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_top_30&site=5489744&ad=1599&r=sports" />
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599" />
 
         <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
           <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
