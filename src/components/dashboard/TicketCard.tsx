@@ -216,7 +216,7 @@ function TicketCard({
               const parsed = parseMatchName(match.name);
               return (
                 <div key={idx} className="flex items-center justify-between gap-2 p-2.5">
-                  <div className={cn("flex-1 min-w-0", (getIsAndroidApp() ? isPremium : (isPro || isPremium)) && "blur-[5px] select-none")}>
+                  <div className="flex-1 min-w-0">
                     <span className="text-xs text-foreground truncate block font-medium">
                       {parsed.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {parsed.awayTeam}
                     </span>
