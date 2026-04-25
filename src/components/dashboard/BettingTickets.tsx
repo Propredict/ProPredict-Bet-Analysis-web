@@ -153,18 +153,10 @@ export function BettingTickets() {
 
     return (
       <section className="space-y-5">
-        {/* Section Header */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-primary/20">
-              <Ticket className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">Daily Multi-Match Predictions</h2>
-              <p className="text-[9px] text-muted-foreground">Multi-match combinations</p>
-            </div>
-          </div>
-        </div>
+        {/* Section Header — centered bold title */}
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground text-center tracking-tight pt-2">
+          Daily Combos Multi Matches
+        </h2>
 
         {isLoading ? (
           <div className="flex justify-center py-6">
