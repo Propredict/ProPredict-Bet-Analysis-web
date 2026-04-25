@@ -184,7 +184,8 @@ export function TodaysTopPicks() {
                   </div>
                 )}
               </div>
-            </Card>
+              </Card>
+            </div>
           );
         })}
       </div>
