@@ -26,6 +26,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
