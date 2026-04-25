@@ -175,9 +175,9 @@ export function MatchPredictions() {
     const proTips = exclusiveTips;
     proTips.forEach((t) => reserved.add(`${t.homeTeam.toLowerCase().trim()}__${t.awayTeam.toLowerCase().trim()}`));
 
-    // Daily (Free) — exclude anything reserved by sections above
+    // Daily (Free) — include both 'daily' and 'free' tier, exclude reserved
     const dailyTips = todayDbTips
-      .filter((t: any) => t.tier === "daily" && !reserved.has(matchKey(t)))
+      .filter((t: any) => (t.tier === "daily" || t.tier === "free") && !reserved.has(matchKey(t)))
       .map(mapDbTipToTip)
       .slice(0, 2);
 
