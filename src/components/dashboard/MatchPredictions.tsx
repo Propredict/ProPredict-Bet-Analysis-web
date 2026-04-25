@@ -489,17 +489,12 @@ function TipTierSection({
 
   return (
     <div className={cn("rounded-2xl border p-3 sm:p-4 space-y-3 bg-gradient-to-br", styles.border, styles.bg)}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <Badge variant="outline" className={cn("gap-1 text-[10px] px-2 py-0.5", styles.badge)}>
-              <BadgeIcon className="h-3 w-3" />
-              {badgeLabel}
-            </Badge>
-            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
-          </div>
-          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
-        </div>
+      <div className="text-center space-y-1">
+        <h3 className={cn("text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2")}>
+          <BadgeIcon className={cn("h-5 w-5 sm:h-6 sm:w-6", styles.text)} />
+          {title}
+        </h3>
+        <p className="text-[11px] text-muted-foreground">{subtitle}</p>
       </div>
 
       {items.length > 0 ? (
