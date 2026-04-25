@@ -396,18 +396,26 @@ export default function AIvsCommunity() {
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : displayedMatches.length > 0 ? (
-              <div className="space-y-4">
-                {displayedMatches.map((prediction) => (
-                  <MatchDuelCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    userTier={userTier}
-                    seasonId={arenaStats.seasonId}
-                    dailyUsed={dailyCount}
-                    dailyLimit={dailyLimit}
-                    onPredictionMade={increment}
-                    onViewMyPredictions={() => setActiveTab("my-predictions")}
-                  />
+              <div className="space-y-6">
+                {displayedMatches.map((prediction, idx) => (
+                  <div key={prediction.id} className="relative">
+                    {idx > 0 && (
+                      <div className="flex items-center gap-3 mb-6 -mt-1">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Next Match</span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                      </div>
+                    )}
+                    <MatchDuelCard
+                      prediction={prediction}
+                      userTier={userTier}
+                      seasonId={arenaStats.seasonId}
+                      dailyUsed={dailyCount}
+                      dailyLimit={dailyLimit}
+                      onPredictionMade={increment}
+                      onViewMyPredictions={() => setActiveTab("my-predictions")}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
