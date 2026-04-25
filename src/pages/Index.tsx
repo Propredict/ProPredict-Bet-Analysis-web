@@ -183,6 +183,45 @@ const Index = () => {
         )}
 
         {/* Live Scores — placed below Top 30 AI Picks */}
+        {isAndroid && (
+          <>
+            {/* Daily Predictions made by AI */}
+            <div className="space-y-2">
+              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+                Daily Predictions made by AI
+              </h3>
+              <Suspense fallback={<LazyFallback />}>
+                <DashboardAIPredictions />
+              </Suspense>
+            </div>
+
+            {/* Top 30 AI Picks */}
+            <div className="space-y-2">
+              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+                Top 30 AI Picks
+              </h3>
+              <button
+                onClick={() => navigate("/ai-predictions?tab=top-picks")}
+                className="w-full rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-4 text-left shadow-[0_0_20px_rgba(15,155,142,0.25)] active:scale-[0.99] transition-transform"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-extrabold text-foreground">
+                      🏆 Top 30 AI Picks of the Day
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Highest-confidence picks ranked by our AI.
+                    </p>
+                  </div>
+                  <span className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold whitespace-nowrap shadow-md">
+                    See all →
+                  </span>
+                </div>
+              </button>
+            </div>
+          </>
+        )}
+
         <Suspense fallback={<LazyFallback />}>
           <TodaysMatches />
         </Suspense>
