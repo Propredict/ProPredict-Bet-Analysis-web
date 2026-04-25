@@ -16,6 +16,7 @@ import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -114,6 +115,9 @@ const Index = () => {
             <p className="text-xs text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
           </div>
         </div>
+
+        {/* Sponsored: 1xBet affiliate banner – web only */}
+        <AffiliateBanner1xBet />
 
         {/* Social Proof Section */}
         <Suspense fallback={<LazyFallback />}>
