@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, Sparkles, Star, Crown, Users, Loader2, ChevronRight } from "lucide-react";
+import { TrendingUp, Sparkles, Star, Crown, Users, Loader2, ChevronRight, Gem, Flame } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { TipCard, type Tip } from "./TipCard";
 import { PricingModal } from "@/components/PricingModal";
 import { useTips } from "@/hooks/useTips";
+import { usePlatform } from "@/hooks/usePlatform";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -38,6 +40,7 @@ export function MatchPredictions() {
   const [activeTab, setActiveTab] = useState<TabType>("daily");
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
+  const { isAndroidApp } = usePlatform();
   
   const { canAccess, getUnlockMethod } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler({
@@ -66,6 +69,22 @@ export function MatchPredictions() {
   // Count only today's tips per tier (todayDate already defined above)
   const todayTipCountByTier = (tierId: string) =>
     todayDbTips.filter((t: any) => t.tier === tierId).length;
+
+  // ----- Shared renderer -----
+  const renderTip = (tip: Tip) => {
+    const isLocked = !canAccess(tip.tier, "tip", tip.id);
+    const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
+    return (
+      <TipCard
+        key={tip.id}
+        tip={tip}
+        isLocked={isLocked}
+        unlockMethod={unlockMethod}
+        isUnlocking={unlockingId === tip.id}
+        onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
+      />
+    );
+  };
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
@@ -120,6 +139,151 @@ export function MatchPredictions() {
     }
   };
 
+  // --- WEB: vertical sections (Free / Pro / Premium) ---
+  if (!isAndroidApp) {
+    // Daily (Free) — standard daily tier tips
+    const dailyTips = tips.filter((t) => t.tier === "daily").slice(0, 2);
+
+    // Pro — exclusive tier + Diamond Pick + Risk of the Day teasers
+    const exclusiveTips = tips.filter((t) => t.tier === "exclusive").slice(0, 1);
+    const diamondTips = todayDbTips
+      .filter((t: any) => t.category === "diamond_pick")
+      .map(mapDbTipToTip)
+      .slice(0, 1);
+    const riskTips = todayDbTips
+      .filter((t: any) => t.category === "risk_of_day")
+      .map(mapDbTipToTip)
+      .slice(0, 1);
+    const proTips = [...exclusiveTips, ...diamondTips, ...riskTips].slice(0, 2);
+
+    // Premium — standard premium tier tips
+    const premiumTips = tips.filter((t) => t.tier === "premium").slice(0, 2);
+
+    return (
+      <section className="space-y-5">
+        {/* Section Header */}
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
+          <div className="p-1.5 rounded-md bg-primary/20">
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-primary">Daily AI Predictions</h2>
+            <p className="text-[9px] text-muted-foreground">Single-match expert picks</p>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* SECTION 1: FREE / Daily Tips */}
+            <TipTierSection
+              title="Daily Tips"
+              subtitle="Open access · everyday value"
+              badgeIcon={Sparkles}
+              badgeLabel="Free"
+              tone="free"
+              ctaLabel="See all Daily Tips"
+              onCta={() => navigate("/daily-analysis")}
+              empty="No Daily predictions available"
+              items={dailyTips}
+              renderItem={renderTip}
+            />
+
+            {/* SECTION 2: PRO — Diamond Pick + Risk of the Day + Exclusive */}
+            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px] px-2 py-0.5">
+                      <Star className="h-3 w-3" />
+                      ⭐ Pro
+                    </Badge>
+                    <h3 className="text-sm font-bold text-foreground truncate">Pro Picks</h3>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Includes Diamond Pick & Risk of the Day · higher confidence
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick links to specialised pages */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => navigate("/diamond-pick")}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-left"
+                >
+                  <Gem className="h-4 w-4 text-amber-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-foreground truncate">Diamond Pick</p>
+                    <p className="text-[9px] text-muted-foreground truncate">Hand-picked best</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => navigate("/risk-of-the-day")}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-left"
+                >
+                  <Flame className="h-4 w-4 text-amber-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-foreground truncate">Risk of the Day</p>
+                    <p className="text-[9px] text-muted-foreground truncate">High-odds bold pick</p>
+                  </div>
+                </button>
+              </div>
+
+              {proTips.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {proTips.map(renderTip)}
+                </div>
+              ) : (
+                <Card className="empty-state-compact bg-card/40 border-border/40">
+                  <div className="flex flex-col items-center gap-1">
+                    <Star className="h-5 w-5 text-amber-500/50" />
+                    <p className="text-[10px] text-muted-foreground">No Pro predictions available</p>
+                  </div>
+                </Card>
+              )}
+
+              <div className="flex justify-center pt-1">
+                <Button
+                  size="sm"
+                  className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
+                  onClick={() => navigate("/pro-analysis")}
+                >
+                  <span>See all Pro Tips</span>
+                  <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* SECTION 3: PREMIUM */}
+            <TipTierSection
+              title="Premium Tips"
+              subtitle="Best AI predictions · maximum edge"
+              badgeIcon={Crown}
+              badgeLabel="👑 Premium"
+              tone="premium"
+              ctaLabel="See all Premium Tips"
+              onCta={() => navigate("/premium-analysis")}
+              empty="No Premium predictions available"
+              items={premiumTips}
+              renderItem={renderTip}
+            />
+          </>
+        )}
+
+        <PricingModal
+          open={showPricingModal}
+          onOpenChange={setShowPricingModal}
+          highlightPlan={highlightPlan}
+        />
+      </section>
+    );
+  }
+
+  // --- ANDROID: keep existing tabbed layout ---
   return (
     <section className="space-y-4">
       {/* Section Header */}
@@ -180,20 +344,7 @@ export function MatchPredictions() {
         </div>
       ) : displayedTips.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {displayedTips.map((tip) => {
-            const isLocked = !canAccess(tip.tier, "tip", tip.id);
-            const unlockMethod = getUnlockMethod(tip.tier, "tip", tip.id);
-            return (
-              <TipCard
-                key={tip.id}
-                tip={tip}
-                isLocked={isLocked}
-                unlockMethod={unlockMethod}
-                isUnlocking={unlockingId === tip.id}
-                onUnlockClick={() => handleUnlock("tip", tip.id, tip.tier)}
-              />
-            );
-          })}
+          {displayedTips.map((tip) => renderTip(tip))}
         </div>
       ) : (
         <Card className="empty-state-compact bg-card/50 border-border/50">
@@ -227,5 +378,101 @@ export function MatchPredictions() {
         highlightPlan={highlightPlan} 
       />
     </section>
+  );
+}
+
+/* =======================
+   Tip Tier Section (web)
+======================= */
+
+type TipTone = "free" | "premium";
+
+const TIP_TONE: Record<TipTone, {
+  border: string;
+  bg: string;
+  badge: string;
+  text: string;
+  cta: string;
+}> = {
+  free: {
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+  },
+  premium: {
+    border: "border-fuchsia-500/30",
+    bg: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
+    badge: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30",
+    text: "text-fuchsia-400",
+    cta: "from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600",
+  },
+};
+
+function TipTierSection({
+  title,
+  subtitle,
+  badgeIcon: BadgeIcon,
+  badgeLabel,
+  tone,
+  ctaLabel,
+  onCta,
+  empty,
+  items,
+  renderItem,
+}: {
+  title: string;
+  subtitle: string;
+  badgeIcon: any;
+  badgeLabel: string;
+  tone: TipTone;
+  ctaLabel: string;
+  onCta: () => void;
+  empty: string;
+  items: Tip[];
+  renderItem: (t: Tip) => JSX.Element;
+}) {
+  const styles = TIP_TONE[tone];
+
+  return (
+    <div className={cn("rounded-2xl border p-3 sm:p-4 space-y-3 bg-gradient-to-br", styles.border, styles.bg)}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <Badge variant="outline" className={cn("gap-1 text-[10px] px-2 py-0.5", styles.badge)}>
+              <BadgeIcon className="h-3 w-3" />
+              {badgeLabel}
+            </Badge>
+            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
+          </div>
+          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
+        </div>
+      </div>
+
+      {items.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {items.map(renderItem)}
+        </div>
+      ) : (
+        <Card className="empty-state-compact bg-card/40 border-border/40">
+          <div className="flex flex-col items-center gap-1">
+            <BadgeIcon className={cn("h-5 w-5 opacity-50", styles.text)} />
+            <p className="text-[10px] text-muted-foreground">{empty}</p>
+          </div>
+        </Card>
+      )}
+
+      <div className="flex justify-center pt-1">
+        <Button
+          size="sm"
+          className={cn("px-5 group text-white text-xs border-0 rounded-full bg-gradient-to-r", styles.cta)}
+          onClick={onCta}
+        >
+          <span>{ctaLabel}</span>
+          <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+        </Button>
+      </div>
+    </div>
   );
 }
