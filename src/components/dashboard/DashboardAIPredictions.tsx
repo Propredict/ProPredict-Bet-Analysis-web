@@ -204,22 +204,15 @@ export function DashboardAIPredictions() {
   if (!isAndroidApp) {
     return (
       <section className="space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/20">
-              <Brain className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-foreground">AI Predictions</h2>
-              <p className="text-[10px] text-muted-foreground">AI-powered match analysis</p>
-            </div>
-          </div>
-          {predictions.length > 0 && (
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs font-semibold">
-              {predictions.length} matches
-            </Badge>
-          )}
+        {/* Section Header — centered bold title */}
+        <div className="text-center space-y-1 pt-2">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+            <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+            AI Predictions
+          </h2>
+          <p className="text-[11px] text-muted-foreground">
+            AI-powered match analysis{predictions.length > 0 ? ` · ${predictions.length} matches` : ""}
+          </p>
         </div>
 
         {loading ? (
