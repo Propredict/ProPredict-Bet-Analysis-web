@@ -43,6 +43,7 @@ export function TodaysTopPicks() {
       locked: false,
       seeAllLabel: "See all Free Picks",
       seeAllRoute: "/daily-analysis",
+      sectionTitle: "Free Picks",
     },
     {
       label: "PRO", tier: "exclusive" as const, pick: proPick,
@@ -51,6 +52,7 @@ export function TodaysTopPicks() {
       locked: true,
       seeAllLabel: "See all Pro Picks",
       seeAllRoute: "/pro-analysis",
+      sectionTitle: "Pro Picks",
     },
     {
       label: "PREMIUM", tier: "premium" as const, pick: premiumPick,
@@ -59,6 +61,7 @@ export function TodaysTopPicks() {
       locked: true,
       seeAllLabel: "See all Premium Picks",
       seeAllRoute: "/premium-analysis",
+      sectionTitle: "Premium Picks",
     },
   ];
 
@@ -89,15 +92,19 @@ export function TodaysTopPicks() {
       </div>
 
       {/* Cards */}
-      <div className="space-y-3">
-        {picks.map(({ label, tier, pick, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute }) => {
+      <div className="space-y-5">
+        {picks.map(({ label, tier, pick, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute, sectionTitle }) => {
           if (!pick) return null;
           const isUnlocked = canAccess(tier, "tip", pick.id);
           const isLocked = locked && !isUnlocked;
           const isUnlocking = unlockingId === pick.id;
 
           return (
-            <Card key={tier} className={cn("relative p-4 border-2 rounded-xl", border, glow, bg)}>
+            <div key={tier} className="space-y-2">
+              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+                {sectionTitle}
+              </h3>
+              <Card className={cn("relative p-4 border-2 rounded-xl", border, glow, bg)}>
               <Badge className={cn("absolute top-3 right-3 text-[10px] font-bold border-0", badgeBg)}>
                 {label}
               </Badge>
