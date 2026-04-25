@@ -172,7 +172,14 @@ export function DashboardAIPredictions() {
   const proPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "pro").slice(0, 2);
   const premiumPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "premium").slice(0, 2);
 
-  const displayedPredictions = sorted.slice(0, 3);
+  // Android: free users see free picks first so they get immediate value,
+  // followed by a teaser of higher-tier (locked) picks. Paid users see top confidence.
+  const displayedPredictions = isAndroidApp && isFree
+    ? [
+        ...sorted.filter((p) => classifyTier(p.confidence ?? 0) === "free").slice(0, 2),
+        ...sorted.filter((p) => classifyTier(p.confidence ?? 0) !== "free").slice(0, 1),
+      ].slice(0, 3)
+    : sorted.slice(0, 3);
 
   const renderCard = (prediction: any) => {
     const conf = prediction.confidence ?? 0;
