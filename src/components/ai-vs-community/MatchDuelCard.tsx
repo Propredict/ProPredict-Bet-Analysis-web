@@ -366,9 +366,11 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-muted-foreground font-medium">Your Prediction</p>
-              <span className="text-[8px] text-muted-foreground/60 italic">{dailyUsed}/{dailyLimit} used today</span>
+            <div className="relative flex items-center justify-center py-1.5 px-3 rounded-lg bg-white/5 border border-white/10">
+              <p className="text-[12px] font-extrabold text-white text-center tracking-wide">
+                Add your Prediction and Win Points
+              </p>
+              <span className="absolute right-2 text-[8px] text-muted-foreground/60 italic">{dailyUsed}/{dailyLimit} used today</span>
             </div>
 
             {/* Match Result */}
