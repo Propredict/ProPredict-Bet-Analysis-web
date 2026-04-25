@@ -208,7 +208,7 @@ export function DashboardAIPredictions() {
         <div className="text-center space-y-1 pt-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
             <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-            AI Predictions
+            Daily Predictions made by AI
           </h2>
           <p className="text-[11px] text-muted-foreground">
             AI-powered match analysis{predictions.length > 0 ? ` · ${predictions.length} matches` : ""}
