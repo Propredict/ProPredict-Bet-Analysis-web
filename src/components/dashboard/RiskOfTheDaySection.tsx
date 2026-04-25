@@ -68,6 +68,12 @@ export function RiskOfTheDaySection() {
                 {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
                 Watch Ad to Unlock
               </Button>
+              <button
+                onClick={() => navigate("/risk-of-the-day")}
+                className="block w-full text-center text-[11px] text-red-400/80 hover:text-red-400 font-semibold transition-colors"
+              >
+                See all Risk Picks →
+              </button>
             </div>
           ) : (
             <div className="space-y-2 pt-1">

@@ -70,6 +70,12 @@ export function DiamondPickSection() {
                 {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
                 Watch Ad to Unlock
               </Button>
+              <button
+                onClick={() => navigate("/diamond-pick")}
+                className="block w-full text-center text-[11px] text-cyan-300/80 hover:text-cyan-300 font-semibold transition-colors"
+              >
+                See all Diamond Picks →
+              </button>
             </div>
           ) : (
             <div className="space-y-2 pt-1">
