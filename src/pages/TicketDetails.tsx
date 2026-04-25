@@ -399,11 +399,8 @@ export default function TicketDetails() {
                   return (
                     <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between">
-                        {/* Match name - blur for free users (web: pro+premium, android: premium only) */}
-                        <div className={cn(
-                          "flex-1 mr-4 min-w-0",
-                          (getIsAndroidApp() ? ticket.tier === "premium" : (ticket.tier === "exclusive" || ticket.tier === "premium")) && "blur-[5px] select-none"
-                        )}>
+                        {/* Match name — always visible, even when ticket is locked */}
+                        <div className="flex-1 mr-4 min-w-0">
                           <span className="text-sm font-bold text-gray-900 truncate block">
                             {parsed.homeTeam} vs {parsed.awayTeam}
                           </span>
