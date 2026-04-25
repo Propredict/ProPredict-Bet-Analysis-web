@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Gem, Lock, Loader2, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Gem, Lock, Loader2, Play, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
 
 export function DiamondPickSection() {
+  const navigate = useNavigate();
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
 
@@ -70,11 +72,18 @@ export function DiamondPickSection() {
               </Button>
             </div>
           ) : (
-            <div className="pt-1">
+            <div className="space-y-2 pt-1">
               <p className="text-xs font-semibold text-foreground">{diamondPick.prediction}</p>
               {diamondPick.confidence && (
-                <p className="text-xs text-cyan-300 font-bold mt-1">Confidence: {diamondPick.confidence}%</p>
+                <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
               )}
+              <Button
+                size="sm"
+                className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)]"
+                onClick={() => navigate("/diamond-pick")}
+              >
+                <Eye className="h-3.5 w-3.5 mr-1" /> See all Diamond Picks
+              </Button>
             </div>
           )}
         </div>

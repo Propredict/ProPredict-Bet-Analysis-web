@@ -42,6 +42,7 @@ export function TodaysTopTickets() {
       seeAllLabel: "See all Free Tickets",
       seeAllRoute: "/daily-tickets",
       sectionTitle: "Free Picks",
+      ctaGradient: "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-[0_0_15px_rgba(34,197,94,0.4)]",
     },
     {
       label: "PRO", tier: "exclusive" as const, ticket: proTicket,
@@ -51,6 +52,7 @@ export function TodaysTopTickets() {
       seeAllLabel: "See all Pro Tickets",
       seeAllRoute: "/exclusive-tickets",
       sectionTitle: "Pro Picks",
+      ctaGradient: "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-[0_0_15px_rgba(245,158,11,0.4)]",
     },
     {
       label: "PREMIUM", tier: "premium" as const, ticket: premiumTicket,
@@ -60,6 +62,7 @@ export function TodaysTopTickets() {
       seeAllLabel: "See all Premium Tickets",
       seeAllRoute: "/premium-tickets",
       sectionTitle: "Premium Picks",
+      ctaGradient: "bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 shadow-[0_0_15px_rgba(168,85,247,0.4)]",
     },
   ];
 
@@ -86,7 +89,7 @@ export function TodaysTopTickets() {
 
       {/* Cards */}
       <div className="space-y-5">
-        {tiers.map(({ label, tier, ticket, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute, sectionTitle }) => {
+        {tiers.map(({ label, tier, ticket, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute, sectionTitle, ctaGradient }) => {
           if (!ticket) return null;
           const isUnlocked = canAccess(tier as any, "ticket", ticket.id);
           const isLocked = locked && !isUnlocked;
@@ -166,8 +169,7 @@ export function TodaysTopTickets() {
               ) : (
                 <Button
                   size="sm"
-                  variant="outline"
-                  className={cn("w-full text-xs border", border, accent)}
+                  className={cn("w-full text-xs font-bold text-white rounded-lg border-0", ctaGradient)}
                   onClick={() => navigate(seeAllRoute)}
                 >
                   <Eye className="h-3.5 w-3.5 mr-1" /> {seeAllLabel}

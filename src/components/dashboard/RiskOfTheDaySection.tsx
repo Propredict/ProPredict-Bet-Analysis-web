@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Target, Lock, Loader2, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Target, Lock, Loader2, Play, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
 
 export function RiskOfTheDaySection() {
+  const navigate = useNavigate();
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
 
@@ -68,11 +70,18 @@ export function RiskOfTheDaySection() {
               </Button>
             </div>
           ) : (
-            <div className="pt-1">
+            <div className="space-y-2 pt-1">
               <p className="text-xs font-semibold text-foreground">{riskPick.prediction}</p>
               {riskPick.odds && (
-                <p className="text-xs text-red-400 font-bold mt-1">Odds: {riskPick.odds}</p>
+                <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds}</p>
               )}
+              <Button
+                size="sm"
+                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                onClick={() => navigate("/risk-of-the-day")}
+              >
+                <Eye className="h-3.5 w-3.5 mr-1" /> See all Risk Picks
+              </Button>
             </div>
           )}
         </div>
