@@ -141,23 +141,44 @@ export function MatchPredictions() {
 
   // --- WEB: vertical sections (Free / Pro / Premium) ---
   if (!isAndroidApp) {
-    // Daily (Free) — standard daily tier tips
-    const dailyTips = tips.filter((t) => t.tier === "daily").slice(0, 2);
+    // Helper: stable match key to dedupe the same fixture across sections
+    const matchKey = (t: any) =>
+      `${(t.home_team ?? t.homeTeam ?? "").toLowerCase().trim()}__${(t.away_team ?? t.awayTeam ?? "").toLowerCase().trim()}`;
 
-    // Pro — exclusive tier + Risk of the Day teaser (Diamond is its own section)
-    const exclusiveTips = tips.filter((t) => t.tier === "exclusive").slice(0, 1);
-    const diamondTips = todayDbTips
-      .filter((t: any) => t.category === "diamond_pick")
+    // Reserve specialized matches first so they don't appear elsewhere.
+    // Priority of ownership: Diamond > Risk of the Day > Premium > Pro > Daily.
+    const diamondDb = todayDbTips.filter((t: any) => t.category === "diamond_pick");
+    const riskDb = todayDbTips.filter((t: any) => t.category === "risk_of_day");
+
+    const reserved = new Set<string>();
+    diamondDb.forEach((t: any) => reserved.add(matchKey(t)));
+    riskDb.forEach((t: any) => {
+      const k = matchKey(t);
+      if (!reserved.has(k)) reserved.add(k);
+    });
+
+    const diamondTips = diamondDb.map(mapDbTipToTip).slice(0, 2);
+
+    // Premium — exclude any match already used by Diamond / Risk
+    const premiumTips = todayDbTips
+      .filter((t: any) => t.tier === "premium" && !reserved.has(matchKey(t)))
       .map(mapDbTipToTip)
       .slice(0, 2);
-    const riskTips = todayDbTips
-      .filter((t: any) => t.category === "risk_of_day")
-      .map(mapDbTipToTip)
-      .slice(0, 1);
-    const proTips = [...exclusiveTips, ...riskTips].slice(0, 2);
+    premiumTips.forEach((t) => reserved.add(`${t.homeTeam.toLowerCase().trim()}__${t.awayTeam.toLowerCase().trim()}`));
 
-    // Premium — standard premium tier tips
-    const premiumTips = tips.filter((t) => t.tier === "premium").slice(0, 2);
+    // Pro — exclusive tier minus anything already reserved
+    const exclusiveTips = todayDbTips
+      .filter((t: any) => t.tier === "exclusive" && !reserved.has(matchKey(t)))
+      .map(mapDbTipToTip)
+      .slice(0, 2);
+    const proTips = exclusiveTips;
+    proTips.forEach((t) => reserved.add(`${t.homeTeam.toLowerCase().trim()}__${t.awayTeam.toLowerCase().trim()}`));
+
+    // Daily (Free) — exclude anything reserved by sections above
+    const dailyTips = todayDbTips
+      .filter((t: any) => t.tier === "daily" && !reserved.has(matchKey(t)))
+      .map(mapDbTipToTip)
+      .slice(0, 2);
 
     return (
       <section className="space-y-5">
