@@ -740,6 +740,9 @@ export default function AIPredictions() {
             </Card>
           </div>
 
+          {/* Sponsored: 1xBet affiliate banner – web only */}
+          <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_ai_predictions&site=5489744&ad=1599&r=sports" />
+
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
             <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
