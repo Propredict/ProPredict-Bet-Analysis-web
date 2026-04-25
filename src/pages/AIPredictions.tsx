@@ -26,6 +26,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type SortOption = "confidence" | "kickoff";
@@ -739,6 +740,9 @@ export default function AIPredictions() {
               </div>
             </Card>
           </div>
+
+          {/* Sponsored: 1xBet affiliate banner – web only */}
+          <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_ai_predictions&site=5489744&ad=1599&r=sports" />
 
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (

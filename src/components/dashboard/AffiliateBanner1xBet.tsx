@@ -1,20 +1,24 @@
 import { TrendingUp, Shield, Zap, ArrowRight, Lock } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
-const AFFILIATE_URL =
+const DEFAULT_AFFILIATE_URL =
   "https://reffpa.com/L?tag=d_5489744m_1599c_dashboard&site=5489744&ad=1599&r=sports";
+
+interface AffiliateBanner1xBetProps {
+  href?: string;
+}
 
 /**
  * 1xBet affiliate banner – WEB ONLY.
  * Hidden entirely on Android WebView per compliance.
  */
-export function AffiliateBanner1xBet() {
+export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL }: AffiliateBanner1xBetProps = {}) {
   const isAndroid = getIsAndroidApp();
   if (isAndroid) return null;
 
   return (
     <a
-      href={AFFILIATE_URL}
+      href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
       aria-label="1xBet – Get the Best Odds Today (sponsored)"
