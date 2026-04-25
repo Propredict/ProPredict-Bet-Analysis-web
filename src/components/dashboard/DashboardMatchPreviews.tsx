@@ -40,24 +40,15 @@ export function DashboardMatchPreviews() {
   return (
     <Card className="bg-card/80 border-border/50 overflow-hidden">
       <CardContent className="p-3 md:p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-violet-500/15">
-              <Eye className="h-4 w-4 text-violet-400" />
-            </div>
-            <div>
-              <h2 className="text-sm md:text-base font-semibold text-foreground">Top 30 AI Picks</h2>
-              <p className="text-[9px] md:text-[10px] text-muted-foreground">In-depth AI analysis for top matches</p>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="text-[9px] md:text-[10px] border-violet-500/40 text-violet-400 cursor-pointer hover:bg-violet-500/10"
-            onClick={() => navigate("/match-previews")}
-          >
-            View all
-          </Badge>
+        {/* Section Header — centered bold title */}
+        <div className="text-center space-y-1 pt-1">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+            <Eye className="h-6 w-6 sm:h-7 sm:w-7 text-violet-400" />
+            Top 30 AI Picks
+          </h2>
+          <p className="text-[11px] text-muted-foreground">
+            In-depth AI analysis for top matches
+          </p>
         </div>
 
         {/* Match Cards */}
