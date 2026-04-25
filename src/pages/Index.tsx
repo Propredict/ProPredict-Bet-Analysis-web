@@ -174,13 +174,12 @@ const Index = () => {
           </>
         )}
         
-        {/* Two-column layout for Standings and Live Scores */}
-        <Suspense fallback={<LazyFallback />}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {!isAndroid && <LeagueStandings />}
-            <TodaysMatches />
-          </div>
-        </Suspense>
+        {/* League Standings — web only */}
+        {!isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <LeagueStandings />
+          </Suspense>
+        )}
         
         {/* AI Predictions Section – web only */}
         {!isAndroid && (
@@ -196,6 +195,10 @@ const Index = () => {
           </Suspense>
         )}
 
+        {/* Live Scores — placed below Top 30 AI Picks */}
+        <Suspense fallback={<LazyFallback />}>
+          <TodaysMatches />
+        </Suspense>
 
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />
