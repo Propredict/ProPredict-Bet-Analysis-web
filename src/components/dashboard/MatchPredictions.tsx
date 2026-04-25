@@ -158,6 +158,7 @@ export function MatchPredictions() {
     });
 
     const diamondTips = diamondDb.map(mapDbTipToTip).slice(0, 2);
+    const riskTips = riskDb.map(mapDbTipToTip).slice(0, 2);
 
     // Premium — exclude any match already used by Diamond / Risk
     const premiumTips = todayDbTips
@@ -207,7 +208,7 @@ export function MatchPredictions() {
               renderItem={renderTip}
             />
 
-            {/* SECTION 2: PRO — Exclusive + Risk of the Day */}
+            {/* SECTION 2: PRO — Exclusive only */}
             <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -219,23 +220,9 @@ export function MatchPredictions() {
                     <h3 className="text-sm font-bold text-foreground truncate">Pro Picks</h3>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Includes Risk of the Day · higher confidence
+                    Higher confidence · sharper edge
                   </p>
                 </div>
-              </div>
-
-              {/* Quick link to Risk of the Day */}
-              <div className="grid grid-cols-1 gap-2">
-                <button
-                  onClick={() => navigate("/risk-of-the-day")}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-left"
-                >
-                  <Flame className="h-4 w-4 text-amber-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-foreground truncate">Risk of the Day</p>
-                    <p className="text-[9px] text-muted-foreground truncate">High-odds bold pick</p>
-                  </div>
-                </button>
               </div>
 
               {proTips.length > 0 ? (
@@ -262,6 +249,41 @@ export function MatchPredictions() {
                 </Button>
               </div>
             </div>
+
+            {/* SECTION 2b: RISK OF THE DAY — standalone */}
+            {riskTips.length > 0 && (
+              <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent p-3 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <Badge variant="outline" className="gap-1 bg-orange-500/15 text-orange-400 border-orange-500/30 text-[10px] px-2 py-0.5">
+                        <Flame className="h-3 w-3" />
+                        🔥 Risk of the Day
+                      </Badge>
+                      <h3 className="text-sm font-bold text-foreground truncate">Risk of the Day</h3>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Bold high-odds pick · for the brave
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {riskTips.map(renderTip)}
+                </div>
+
+                <div className="flex justify-center pt-1">
+                  <Button
+                    size="sm"
+                    className="px-5 group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-xs border-0 rounded-full"
+                    onClick={() => navigate("/risk-of-the-day")}
+                  >
+                    <span>See Risk of the Day</span>
+                    <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* SECTION 3: DIAMOND PICK — standalone */}
             {diamondTips.length > 0 && (
