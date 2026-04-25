@@ -41,6 +41,7 @@ export function TodaysTopTickets() {
       locked: false,
       seeAllLabel: "See all Free Tickets",
       seeAllRoute: "/daily-tickets",
+      sectionTitle: "Free Picks",
     },
     {
       label: "PRO", tier: "exclusive" as const, ticket: proTicket,
@@ -49,6 +50,7 @@ export function TodaysTopTickets() {
       locked: true,
       seeAllLabel: "See all Pro Tickets",
       seeAllRoute: "/exclusive-tickets",
+      sectionTitle: "Pro Picks",
     },
     {
       label: "PREMIUM", tier: "premium" as const, ticket: premiumTicket,
@@ -57,6 +59,7 @@ export function TodaysTopTickets() {
       locked: true,
       seeAllLabel: "See all Premium Tickets",
       seeAllRoute: "/premium-tickets",
+      sectionTitle: "Premium Picks",
     },
   ];
 
@@ -82,8 +85,8 @@ export function TodaysTopTickets() {
       </div>
 
       {/* Cards */}
-      <div className="space-y-3">
-        {tiers.map(({ label, tier, ticket, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute }) => {
+      <div className="space-y-5">
+        {tiers.map(({ label, tier, ticket, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute, sectionTitle }) => {
           if (!ticket) return null;
           const isUnlocked = canAccess(tier as any, "ticket", ticket.id);
           const isLocked = locked && !isUnlocked;
@@ -92,7 +95,13 @@ export function TodaysTopTickets() {
           const previewMatches = matches.slice(0, 3);
 
           return (
-            <Card key={tier} className={cn("relative p-4 border-2 rounded-xl overflow-hidden", border, glow, bg)}>
+            <div key={tier} className="space-y-2">
+              {/* Section title */}
+              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+                {sectionTitle}
+              </h3>
+
+              <Card className={cn("relative p-4 border-2 rounded-xl overflow-hidden", border, glow, bg)}>
               <div className="flex items-center justify-between mb-3">
                 <Badge className={cn("text-[10px] font-bold border-0", badgeBg)}>
                   {label}
@@ -164,7 +173,8 @@ export function TodaysTopTickets() {
                   <Eye className="h-3.5 w-3.5 mr-1" /> {seeAllLabel}
                 </Button>
               )}
-            </Card>
+              </Card>
+            </div>
           );
         })}
       </div>
