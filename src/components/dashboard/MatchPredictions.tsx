@@ -167,9 +167,11 @@ export function MatchPredictions() {
       .slice(0, 2);
     premiumTips.forEach((t) => reserved.add(`${t.homeTeam.toLowerCase().trim()}__${t.awayTeam.toLowerCase().trim()}`));
 
-    // Pro — exclusive tier minus anything already reserved
-    const exclusiveTips = todayDbTips
-      .filter((t: any) => t.tier === "exclusive" && !reserved.has(matchKey(t)))
+    // Pro — match Pro Insights: show exclusive tier tips, but prefer non-specialized ones first.
+    const availableExclusiveTips = todayDbTips.filter((t: any) => t.tier === "exclusive" && !reserved.has(matchKey(t)));
+    const exclusiveTips = (availableExclusiveTips.length > 0
+      ? availableExclusiveTips
+      : todayDbTips.filter((t: any) => t.tier === "exclusive"))
       .map(mapDbTipToTip)
       .slice(0, 2);
     const proTips = exclusiveTips;
