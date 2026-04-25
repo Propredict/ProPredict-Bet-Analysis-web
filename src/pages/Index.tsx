@@ -81,6 +81,11 @@ const Index = () => {
             <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
               AI-powered picks, probabilities and match insights updated daily.
             </p>
+            {!isAndroid && (
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
+                Get access to <span className="text-primary font-bold">PRO tips</span>, <span className="text-primary font-bold">combo tickets</span>, <span className="text-primary font-bold">Diamond Picks</span> and full match analysis.
+              </p>
+            )}
             <div className="flex items-center gap-3 pt-1">
               {isAndroid ? (
                 <button onClick={() => setShowCategoryModal(true)} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
@@ -118,31 +123,6 @@ const Index = () => {
 
 
 
-
-        {/* App Promo CTA – Web only */}
-        {!isAndroid && (
-          <a
-            href="https://play.google.com/store/apps/details?id=com.propredict.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-primary/10 p-5 sm:p-8 hover:border-primary/50 transition-colors"
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.15),transparent_70%)]" />
-            <div className="relative flex flex-col items-center text-center space-y-3">
-              <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">
-                Unlock More Winning Picks 🚀
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-lg">
-                Get access to <span className="text-primary font-bold">PRO tips</span>, <span className="text-primary font-bold">combo tickets</span>, <span className="text-primary font-bold">Diamond Picks</span> and full match analysis.
-              </p>
-              <p className="text-xs text-primary font-semibold">⚡ Updated daily • Limited picks • High confidence</p>
-              <div className="inline-flex items-center gap-2 mt-1 bg-primary/10 border border-primary/30 rounded-lg px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/20 transition-colors">
-                Download App – Unlock Now 🔓
-              </div>
-              <p className="text-[10px] text-muted-foreground">Only available in app</p>
-            </div>
-          </a>
-        )}
 
         {/* Rate App Card – all users, inline */}
         <RateAppCard onRate={() => window.dispatchEvent(new Event("propredict:open-rate-popup"))} />
