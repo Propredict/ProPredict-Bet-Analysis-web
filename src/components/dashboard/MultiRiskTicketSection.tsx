@@ -72,15 +72,23 @@ export function MultiRiskTicketSection() {
         </div>
 
         {!isUnlocked ? (
-          <Button
-            size="sm"
-            className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
-            onClick={() => handleUnlock("ticket", multiRisk.id, multiRisk.tier as any)}
-            disabled={isUnlocking}
-          >
-            {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
-            Watch Ad to Unlock
-          </Button>
+          <div className="space-y-2">
+            <Button
+              size="sm"
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
+              onClick={() => handleUnlock("ticket", multiRisk.id, multiRisk.tier as any)}
+              disabled={isUnlocking}
+            >
+              {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
+              Watch Ad to Unlock
+            </Button>
+            <button
+              onClick={() => navigate("/multi-risk-matches")}
+              className="block w-full text-center text-[11px] text-red-400/80 hover:text-red-400 font-semibold transition-colors"
+            >
+              See all Multi Risk Picks →
+            </button>
+          </div>
         ) : (
           <Button
             size="sm"
