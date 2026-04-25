@@ -12,6 +12,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import AdSlot from "@/components/ads/AdSlot";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 
 export default function PremiumTips() {
@@ -242,6 +243,11 @@ export default function PremiumTips() {
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
         These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.
       </p>
+      {/* Sponsored: 1xBet affiliate banner – web only */}
+      <div className="mt-4">
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_premium&site=5489744&ad=1599&r=sports" />
+      </div>
+
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
   </>;

@@ -14,6 +14,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 export default function ExclusiveTips() {
   const navigate = useNavigate();
@@ -238,6 +239,11 @@ export default function ExclusiveTips() {
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
         These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.
       </p>
+      {/* Sponsored: 1xBet affiliate banner – web only */}
+      <div className="mt-4">
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_pro&site=5489744&ad=1599&r=sports" />
+      </div>
+
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
     <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
