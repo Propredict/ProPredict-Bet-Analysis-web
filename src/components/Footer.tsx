@@ -34,7 +34,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <span>Join on Telegram</span>
           </a>
           <a
-            href="https://www.facebook.com/propredict"
+            href="https://www.facebook.com/profile.php?id=61586935684859"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Join us on Facebook"
@@ -46,7 +46,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <span>Follow on Facebook</span>
           </a>
           <a
-            href="https://www.instagram.com/propredict"
+            href="https://www.instagram.com/propredictt/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Follow us on Instagram"
