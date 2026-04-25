@@ -253,19 +253,14 @@ export function MatchPredictions() {
             {/* SECTION 2b: RISK OF THE DAY — standalone */}
             {riskTips.length > 0 && (
               <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent p-3 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <Badge variant="outline" className="gap-1 bg-orange-500/15 text-orange-400 border-orange-500/30 text-[10px] px-2 py-0.5">
-                        <Flame className="h-3 w-3" />
-                        🔥 Risk of the Day
-                      </Badge>
-                      <h3 className="text-sm font-bold text-foreground truncate">Risk of the Day</h3>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      Bold high-odds pick · for the brave
-                    </p>
-                  </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+                    <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
+                    Risk of the Day
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Bold high-odds pick · for the brave
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -288,19 +283,14 @@ export function MatchPredictions() {
             {/* SECTION 3: DIAMOND PICK — standalone */}
             {diamondTips.length > 0 && (
               <div className="rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-sky-500/5 to-transparent p-3 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <Badge variant="outline" className="gap-1 bg-cyan-500/15 text-cyan-300 border-cyan-400/30 text-[10px] px-2 py-0.5">
-                        <Gem className="h-3 w-3" />
-                        💎 Diamond
-                      </Badge>
-                      <h3 className="text-sm font-bold text-foreground truncate">Diamond Pick</h3>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      Hand-picked best of the day · highest conviction
-                    </p>
-                  </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+                    <Gem className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-300" />
+                    Diamond Pick
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Hand-picked best of the day · highest conviction
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
