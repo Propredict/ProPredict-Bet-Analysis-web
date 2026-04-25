@@ -34,6 +34,7 @@ const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m =
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
 const RiskOfTheDaySection = lazy(() => import("@/components/dashboard/RiskOfTheDaySection").then(m => ({ default: m.RiskOfTheDaySection })));
 const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
+const DiamondPickSection = lazy(() => import("@/components/dashboard/DiamondPickSection").then(m => ({ default: m.DiamondPickSection })));
 
 import { PicksCategoryModal } from "@/components/dashboard/PicksCategoryModal";
 
@@ -143,6 +144,9 @@ const Index = () => {
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
               <RiskOfTheDaySection />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <DiamondPickSection />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
               <TodaysComboTicket />

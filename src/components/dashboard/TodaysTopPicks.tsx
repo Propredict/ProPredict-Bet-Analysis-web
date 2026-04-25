@@ -41,18 +41,24 @@ export function TodaysTopPicks() {
       accent: "text-green-400", border: "border-green-500/40", glow: "shadow-[0_0_15px_rgba(34,197,94,0.2)]",
       bg: "bg-green-500/10", badgeBg: "bg-green-500/20 text-green-400",
       locked: false,
+      seeAllLabel: "See all Free Picks",
+      seeAllRoute: "/daily-analysis",
     },
     {
       label: "PRO", tier: "exclusive" as const, pick: proPick,
       accent: "text-amber-400", border: "border-amber-500/40", glow: "shadow-[0_0_15px_rgba(245,158,11,0.25)]",
       bg: "bg-amber-500/10", badgeBg: "bg-amber-500/20 text-amber-400",
       locked: true,
+      seeAllLabel: "See all Pro Picks",
+      seeAllRoute: "/pro-analysis",
     },
     {
       label: "PREMIUM", tier: "premium" as const, pick: premiumPick,
       accent: "text-purple-400", border: "border-purple-500/40", glow: "shadow-[0_0_20px_rgba(168,85,247,0.3)]",
       bg: "bg-purple-500/10", badgeBg: "bg-purple-500/20 text-purple-400",
       locked: true,
+      seeAllLabel: "See all Premium Picks",
+      seeAllRoute: "/premium-analysis",
     },
   ];
 
@@ -84,7 +90,7 @@ export function TodaysTopPicks() {
 
       {/* Cards */}
       <div className="space-y-3">
-        {picks.map(({ label, tier, pick, accent, border, glow, bg, badgeBg, locked }) => {
+        {picks.map(({ label, tier, pick, accent, border, glow, bg, badgeBg, locked, seeAllLabel, seeAllRoute }) => {
           if (!pick) return null;
           const isUnlocked = canAccess(tier, "tip", pick.id);
           const isLocked = locked && !isUnlocked;
@@ -164,9 +170,9 @@ export function TodaysTopPicks() {
                       size="sm"
                       variant="outline"
                       className={cn("w-full text-xs border", border, accent)}
-                      onClick={() => navigate(tier === "free" ? "/daily-analysis" : tier === "exclusive" ? "/pro-analysis" : "/premium-analysis")}
+                      onClick={() => navigate(seeAllRoute)}
                     >
-                      <Eye className="h-3.5 w-3.5 mr-1" /> View Pick
+                      <Eye className="h-3.5 w-3.5 mr-1" /> {seeAllLabel}
                     </Button>
                   </div>
                 )}
