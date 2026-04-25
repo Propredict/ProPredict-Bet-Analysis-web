@@ -69,28 +69,21 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             </svg>
             <span>Follow on TikTok</span>
           </a>
+          {!isAndroidApp && (
+            <a
+              href="https://play.google.com/store/apps/details?id=com.propredict.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Get it on Google Play"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/95 hover:bg-foreground text-background text-[10px] sm:text-xs font-semibold transition-all hover:scale-105"
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden="true">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" />
+              </svg>
+              <span>Get it on Google Play</span>
+            </a>
+          )}
         </div>
-
-        {/* Google Play - small square button (right aligned) - Hidden on Android */}
-        {!isAndroidApp && (
-          <div className="flex justify-end mb-2">
-            <div className="flex flex-col items-center gap-1">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.propredict.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Get it on Google Play"
-                title="Get it on Google Play"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-foreground/95 text-background hover:bg-foreground transition-colors shadow-sm"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z" />
-                </svg>
-              </a>
-              <span className="text-[8px] text-muted-foreground">Get Google Play App</span>
-            </div>
-          </div>
-        )}
 
         {/* Legal Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mb-3">
