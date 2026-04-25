@@ -58,7 +58,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <span>Follow on Instagram</span>
           </a>
           <a
-            href="https://www.tiktok.com/@propredict"
+            href="https://www.tiktok.com/@soccerhubpro"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Follow us on TikTok"
