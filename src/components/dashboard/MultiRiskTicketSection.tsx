@@ -84,8 +84,7 @@ export function MultiRiskTicketSection() {
         ) : (
           <Button
             size="sm"
-            variant="outline"
-            className="w-full text-xs border border-red-500/40 text-red-400"
+            className="w-full text-xs font-bold text-white rounded-lg border-0 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
             onClick={() => navigate("/multi-risk-matches")}
           >
             <Eye className="h-3.5 w-3.5 mr-1" /> See all Multi Risk
