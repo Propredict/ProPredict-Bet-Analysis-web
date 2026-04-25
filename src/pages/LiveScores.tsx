@@ -23,6 +23,7 @@ import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
+import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 /* -------------------- CONSTANTS -------------------- */
 
@@ -356,20 +357,13 @@ export default function LiveScores() {
         <meta property="og:type" content="website" />
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">
-        {/* HEADER - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="p-1.5 rounded-md bg-primary/20">
-              <Zap className="text-primary h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold sm:text-base text-foreground">All Leagues Live Scores</h1>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Real-time updates</p>
-            </div>
-          </div>
-
-          <div className="flex gap-1 items-center">
-            <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5">
+        {/* HEADER - CENTERED TITLE */}
+        <div className="relative flex items-center justify-center p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            Live Scores
+          </h1>
+          <div className="absolute right-3 flex gap-1 items-center">
+            <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5 hidden sm:inline-flex">
               {format(currentTime, "HH:mm:ss")}
             </Badge>
             <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-5 sm:h-6 px-1 sm:px-1.5">
@@ -378,6 +372,9 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* Sponsored: 1xBet affiliate banner – web only */}
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_livescore&site=5489744&ad=1599&r=sports" />
 
         {/* ALERT STATUS BANNER */}
         <div
