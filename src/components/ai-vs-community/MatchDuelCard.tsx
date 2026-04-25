@@ -365,17 +365,19 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             <p className="text-[9px] text-muted-foreground/70 leading-relaxed">Predictions are locked for this match. You can still leave a comment.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="relative flex items-center justify-center py-1.5 px-3 rounded-lg bg-white/5 border border-white/10">
-              <p className="text-[12px] font-extrabold text-white text-center tracking-wide">
-                Add your Prediction and Win Points
+          <div className="space-y-3 p-3 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/30 shadow-[0_0_20px_rgba(15,155,142,0.15)]">
+            <div className="relative flex items-center justify-center py-2 px-3 rounded-lg bg-primary/15 border border-primary/40">
+              <p className="text-[13px] font-extrabold text-white text-center tracking-wide">
+                👇 Add your Prediction & Win Points
               </p>
-              <span className="absolute right-2 text-[8px] text-muted-foreground/60 italic">{dailyUsed}/{dailyLimit} used today</span>
+              <span className="absolute right-2 text-[8px] text-white/60 italic">{dailyUsed}/{dailyLimit} today</span>
             </div>
 
             {/* Match Result */}
-            <div className="space-y-1">
-              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Match Result</span>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                <span className="h-1 w-1 rounded-full bg-primary" /> Match Result
+              </span>
               <div className="grid grid-cols-3 gap-1.5">
                 {(["Home", "Draw", "Away"] as const).map((option) => (
                   <Button
@@ -383,8 +385,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-7 text-[10px] transition-all",
-                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
                     onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
@@ -397,8 +399,10 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             </div>
 
             {/* BTTS */}
-            <div className="space-y-1">
-              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Both Teams to Score</span>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                <span className="h-1 w-1 rounded-full bg-primary" /> Both Teams to Score
+              </span>
               <div className="grid grid-cols-2 gap-1.5">
                 {(["GG (Yes)", "NG (No)"] as const).map((option) => (
                   <Button
@@ -406,8 +410,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-7 text-[10px] transition-all",
-                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
                     onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
@@ -420,8 +424,10 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             </div>
 
             {/* Goals */}
-            <div className="space-y-1">
-              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Goals</span>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                <span className="h-1 w-1 rounded-full bg-primary" /> Goals
+              </span>
               <div className="grid grid-cols-2 gap-1.5">
                 {(["Over 2.5", "Under 2.5"] as const).map((option) => (
                   <Button
@@ -429,8 +435,8 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-7 text-[10px] transition-all",
-                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/40 shadow-[0_0_8px_rgba(15,155,142,0.3)]",
+                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
                     onClick={() => !isKickedOff && setPendingPick(pendingPick === option ? null : option)}
@@ -465,7 +471,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
             )}
 
             {!pendingPick && (
-              <p className="text-[9px] text-muted-foreground/60 text-right italic">Make your prediction above</p>
+              <p className="text-[10px] text-primary/70 text-center font-medium">👆 Tap an option above to predict</p>
             )}
           </div>
         )}
