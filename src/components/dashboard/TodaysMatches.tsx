@@ -23,22 +23,18 @@ export function TodaysMatches() {
 
   return (
     <section className="space-y-4">
-      {/* Section Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-primary/20">
-            <Zap className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">⚡ Live Matches Today</h2>
-            <p className="text-[10px] text-muted-foreground">Real-time updates • All matches today</p>
-          </div>
+      {/* Section Header — centered bold title */}
+      <div className="text-center space-y-1 pt-1">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+          <Zap className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+          Live Scores
           {liveCount > 0 && (
-            <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-1.5 animate-pulse">
+            <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] px-1.5 animate-pulse ml-1">
               {liveCount} LIVE
             </Badge>
           )}
-        </div>
+        </h2>
+        <p className="text-[11px] text-muted-foreground">Real-time updates · All matches today</p>
       </div>
 
       {/* Matches List */}
