@@ -146,15 +146,16 @@ export function MatchPredictions() {
       `${(t.home_team ?? t.homeTeam ?? "").toLowerCase().trim()}__${(t.away_team ?? t.awayTeam ?? "").toLowerCase().trim()}`;
 
     // Reserve specialized matches first so they don't appear elsewhere.
-    // Priority of ownership: Diamond > Premium > Pro > Daily.
-    // NOTE: Risk of the Day is NOT reserved against Pro/Daily — same match
-    // can appear both in Pro Picks (as the regular pick) and Risk of the Day
-    // section. This avoids hiding Pro tips when only one Pro match exists.
+    // Priority of ownership: Diamond > Risk of the Day > Premium > Pro > Daily.
     const diamondDb = todayDbTips.filter((t: any) => t.category === "diamond_pick");
     const riskDb = todayDbTips.filter((t: any) => t.category === "risk_of_day");
 
     const reserved = new Set<string>();
     diamondDb.forEach((t: any) => reserved.add(matchKey(t)));
+    riskDb.forEach((t: any) => {
+      const k = matchKey(t);
+      if (!reserved.has(k)) reserved.add(k);
+    });
 
     const diamondTips = diamondDb.map(mapDbTipToTip).slice(0, 2);
     const riskTips = riskDb.map(mapDbTipToTip).slice(0, 2);
