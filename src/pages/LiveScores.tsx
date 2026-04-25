@@ -374,7 +374,7 @@ export default function LiveScores() {
         </div>
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
-        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_livescore&site=5489744&ad=1599&r=sports" />
+        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599" />
 
         {/* ALERT STATUS BANNER */}
         <div

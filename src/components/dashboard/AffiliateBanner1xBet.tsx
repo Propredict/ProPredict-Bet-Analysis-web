@@ -2,7 +2,7 @@ import { TrendingUp, Shield, Zap, ArrowRight, Lock } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const DEFAULT_AFFILIATE_URL =
-  "https://reffpa.com/L?tag=d_5489744m_1599c_dashboard&site=5489744&ad=1599&r=sports";
+  "https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599";
 
 interface AffiliateBanner1xBetProps {
   href?: string;
