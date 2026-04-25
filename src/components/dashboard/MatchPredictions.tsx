@@ -210,19 +210,14 @@ export function MatchPredictions() {
 
             {/* SECTION 2: PRO — Exclusive only */}
             <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px] px-2 py-0.5">
-                      <Star className="h-3 w-3" />
-                      ⭐ Pro
-                    </Badge>
-                    <h3 className="text-sm font-bold text-foreground truncate">Pro Picks</h3>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Higher confidence · sharper edge
-                  </p>
-                </div>
+              <div className="text-center space-y-1">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+                  Pro Picks
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Higher confidence · sharper edge
+                </p>
               </div>
 
               {proTips.length > 0 ? (
@@ -489,17 +484,12 @@ function TipTierSection({
 
   return (
     <div className={cn("rounded-2xl border p-3 sm:p-4 space-y-3 bg-gradient-to-br", styles.border, styles.bg)}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <Badge variant="outline" className={cn("gap-1 text-[10px] px-2 py-0.5", styles.badge)}>
-              <BadgeIcon className="h-3 w-3" />
-              {badgeLabel}
-            </Badge>
-            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
-          </div>
-          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
-        </div>
+      <div className="text-center space-y-1">
+        <h3 className={cn("text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2")}>
+          <BadgeIcon className={cn("h-5 w-5 sm:h-6 sm:w-6", styles.text)} />
+          {title}
+        </h3>
+        <p className="text-[11px] text-muted-foreground">{subtitle}</p>
       </div>
 
       {items.length > 0 ? (
