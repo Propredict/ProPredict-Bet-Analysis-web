@@ -144,17 +144,17 @@ export function MatchPredictions() {
     // Daily (Free) — standard daily tier tips
     const dailyTips = tips.filter((t) => t.tier === "daily").slice(0, 2);
 
-    // Pro — exclusive tier + Diamond Pick + Risk of the Day teasers
+    // Pro — exclusive tier + Risk of the Day teaser (Diamond is its own section)
     const exclusiveTips = tips.filter((t) => t.tier === "exclusive").slice(0, 1);
     const diamondTips = todayDbTips
       .filter((t: any) => t.category === "diamond_pick")
       .map(mapDbTipToTip)
-      .slice(0, 1);
+      .slice(0, 2);
     const riskTips = todayDbTips
       .filter((t: any) => t.category === "risk_of_day")
       .map(mapDbTipToTip)
       .slice(0, 1);
-    const proTips = [...exclusiveTips, ...diamondTips, ...riskTips].slice(0, 2);
+    const proTips = [...exclusiveTips, ...riskTips].slice(0, 2);
 
     // Premium — standard premium tier tips
     const premiumTips = tips.filter((t) => t.tier === "premium").slice(0, 2);
@@ -186,7 +186,7 @@ export function MatchPredictions() {
               renderItem={renderTip}
             />
 
-            {/* SECTION 2: PRO — Diamond Pick + Risk of the Day + Exclusive */}
+            {/* SECTION 2: PRO — Exclusive + Risk of the Day */}
             <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -198,23 +198,13 @@ export function MatchPredictions() {
                     <h3 className="text-sm font-bold text-foreground truncate">Pro Picks</h3>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Includes Diamond Pick & Risk of the Day · higher confidence
+                    Includes Risk of the Day · higher confidence
                   </p>
                 </div>
               </div>
 
-              {/* Quick links to specialised pages */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => navigate("/diamond-pick")}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-left"
-                >
-                  <Gem className="h-4 w-4 text-amber-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-foreground truncate">Diamond Pick</p>
-                    <p className="text-[9px] text-muted-foreground truncate">Hand-picked best</p>
-                  </div>
-                </button>
+              {/* Quick link to Risk of the Day */}
+              <div className="grid grid-cols-1 gap-2">
                 <button
                   onClick={() => navigate("/risk-of-the-day")}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-left"
@@ -252,7 +242,42 @@ export function MatchPredictions() {
               </div>
             </div>
 
-            {/* SECTION 3: PREMIUM */}
+            {/* SECTION 3: DIAMOND PICK — standalone */}
+            {diamondTips.length > 0 && (
+              <div className="rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-sky-500/5 to-transparent p-3 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <Badge variant="outline" className="gap-1 bg-cyan-500/15 text-cyan-300 border-cyan-400/30 text-[10px] px-2 py-0.5">
+                        <Gem className="h-3 w-3" />
+                        💎 Diamond
+                      </Badge>
+                      <h3 className="text-sm font-bold text-foreground truncate">Diamond Pick</h3>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Hand-picked best of the day · highest conviction
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {diamondTips.map(renderTip)}
+                </div>
+
+                <div className="flex justify-center pt-1">
+                  <Button
+                    size="sm"
+                    className="px-5 group bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs border-0 rounded-full"
+                    onClick={() => navigate("/diamond-pick")}
+                  >
+                    <span>See Diamond Pick</span>
+                    <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* SECTION 4: PREMIUM */}
             <TipTierSection
               title="Premium Tips"
               subtitle="Best AI predictions · maximum edge"
