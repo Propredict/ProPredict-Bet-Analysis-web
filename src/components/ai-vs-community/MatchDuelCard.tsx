@@ -385,7 +385,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      "h-9 text-[11px] font-bold transition-all bg-white/10 hover:bg-primary/30 hover:border-primary text-white border border-white/25 shadow-sm",
                       pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
@@ -410,7 +410,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      "h-9 text-[11px] font-bold transition-all bg-white/10 hover:bg-primary/30 hover:border-primary text-white border border-white/25 shadow-sm",
                       pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
@@ -435,7 +435,7 @@ export function MatchDuelCard({ prediction, userTier, seasonId, dailyUsed, daily
                     size="sm"
                     variant={pendingPick === option ? "default" : "outline"}
                     className={cn(
-                      "h-8 text-[11px] font-semibold transition-all bg-card/80 hover:bg-primary/20 hover:border-primary/60 hover:text-white border-border/60",
+                      "h-9 text-[11px] font-bold transition-all bg-white/10 hover:bg-primary/30 hover:border-primary text-white border border-white/25 shadow-sm",
                       pendingPick === option && "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-[0_0_10px_rgba(15,155,142,0.4)] hover:bg-primary",
                       pendingPick && pendingPick !== option && "opacity-60"
                     )}
