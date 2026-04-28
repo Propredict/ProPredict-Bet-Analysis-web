@@ -395,16 +395,16 @@ export default function WorldCup2026() {
           {/* Tier-aware CTA */}
           <section className="px-3 mt-6 mb-4">
             {!isPro ? (
-              /* FREE user — Pro upsell */
-              <Card className="bg-card border-border overflow-hidden border-t-2 border-t-amber-500">
+              /* FREE user — Premium (primary) + Pro (secondary) upsell */
+              <Card className="bg-card border-border overflow-hidden border-t-2 border-t-fuchsia-500">
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 rounded-full bg-amber-500/10">
-                      <Brain className="h-5 w-5 text-amber-500" />
+                    <div className="p-2 rounded-full bg-fuchsia-500/10">
+                      <Brain className="h-5 w-5 text-fuchsia-400" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground">Unlock AI Predictions</h3>
-                      <p className="text-[10px] text-muted-foreground">Get Pro for World Cup insights</p>
+                      <p className="text-[10px] text-muted-foreground">Choose your plan for World Cup insights</p>
                     </div>
                   </div>
                   <div className="space-y-1.5 mb-4">
@@ -415,16 +415,19 @@ export default function WorldCup2026() {
                       "Priority access during World Cup",
                     ].map((f, i) => (
                       <div key={i} className="flex items-center gap-2 text-[11px] text-foreground/80">
-                        <span className="text-amber-500">✓</span> {f}
+                        <span className="text-fuchsia-400">✓</span> {f}
                       </div>
                     ))}
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button onClick={() => navigate("/get-premium")} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs">
+                  <div className="flex flex-col gap-2">
+                    <Button onClick={() => navigate("/get-premium")} className="w-full bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold text-xs">
+                      <Zap className="h-3.5 w-3.5 mr-1.5" /> Get Premium — €5.99/mo
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate("/get-premium")} className="w-full text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400">
                       <Zap className="h-3.5 w-3.5 mr-1.5" /> Get Pro — €3.99/mo
                     </Button>
                     {!isApp && (
-                      <Button variant="outline" onClick={openPlayStore} className="flex-1 text-xs border-border">
+                      <Button variant="ghost" size="sm" onClick={openPlayStore} className="w-full text-[11px] text-muted-foreground">
                         <Smartphone className="h-3.5 w-3.5 mr-1.5" /> More options in App
                       </Button>
                     )}
