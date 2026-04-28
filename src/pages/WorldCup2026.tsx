@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
+import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -234,6 +235,7 @@ export default function WorldCup2026() {
           {[
             { value: "overview", label: "Overview", icon: Trophy },
             { value: "predictions", label: "AI Picks", icon: Brain },
+            { value: "bracket", label: "Bracket", icon: GitFork },
             { value: "matches", label: "Matches", icon: Calendar },
             { value: "standings", label: "Standings", icon: BarChart3 },
             { value: "teams", label: "Teams", icon: Users },
