@@ -37,13 +37,25 @@ export function TodaysTopPicks() {
   const normalize = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
   const matchKey = (t: any) =>
     `${normalize(t?.home_team || "")}__${normalize(t?.away_team || "")}`;
+  // Last-word key catches "Stefanos Tsitsipas" vs "S. Tsitsipas" style mismatches
+  const lastWord = (value: string) => {
+    const parts = (value || "").trim().split(/\s+/);
+    return normalize(parts[parts.length - 1] || "");
+  };
+  const surnameKey = (t: any) => {
+    const a = lastWord(t?.home_team || "");
+    const b = lastWord(t?.away_team || "");
+    return [a, b].sort().join("__");
+  };
   const excludedIds = new Set(specialPicks.map((t: any) => t.id));
   const excludedMatchIds = new Set(specialPicks.map((t: any) => t.match_id).filter(Boolean));
   const excludedKeys = new Set(specialPicks.map((t: any) => matchKey(t)));
+  const excludedSurnames = new Set(specialPicks.map((t: any) => surnameKey(t)).filter(k => k && k !== "__"));
   const isExcluded = (t: any) =>
     excludedIds.has(t.id) ||
     excludedMatchIds.has(t.match_id) ||
-    excludedKeys.has(matchKey(t));
+    excludedKeys.has(matchKey(t)) ||
+    excludedSurnames.has(surnameKey(t));
 
   // Free pick uses tier "free", not "daily"
   const freePick = todayTips.find((t: any) => t.tier === "free" && !isExcluded(t));
