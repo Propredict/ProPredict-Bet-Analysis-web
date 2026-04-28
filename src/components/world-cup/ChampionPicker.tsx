@@ -48,7 +48,7 @@ export default function ChampionPicker() {
       navigate("/login");
       return;
     }
-    const res = await castVote(selectedTeam.name, selectedTeam.code, selectedTeam.flag);
+    const res: any = await castVote(selectedTeam.name, selectedTeam.code, selectedTeam.flag);
     if (res?.success) {
       toast({
         title: res.updated ? "Pick updated! 🎯" : "Pick locked in! 🏆",
