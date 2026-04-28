@@ -31,11 +31,11 @@ export function useChampionPrediction() {
   const refresh = useCallback(async () => {
     setLoading(true);
     const [pickRes, lbRes] = await Promise.all([
-      supabase.rpc("get_my_champion_prediction"),
-      supabase.rpc("get_champion_leaderboard"),
+      (supabase.rpc as any)("get_my_champion_prediction"),
+      (supabase.rpc as any)("get_champion_leaderboard"),
     ]);
     if (!pickRes.error && pickRes.data) setMyPick(pickRes.data as unknown as MyChampionPick);
-    if (!lbRes.error && lbRes.data) setLeaderboard(lbRes.data as ChampionLeaderboardRow[]);
+    if (!lbRes.error && lbRes.data) setLeaderboard(lbRes.data as unknown as ChampionLeaderboardRow[]);
     setLoading(false);
   }, []);
 
@@ -44,7 +44,7 @@ export function useChampionPrediction() {
   const castVote = useCallback(
     async (teamName: string, teamCode?: string, teamFlag?: string) => {
       setSubmitting(true);
-      const { data, error } = await supabase.rpc("cast_champion_vote", {
+      const { data, error } = await (supabase.rpc as any)("cast_champion_vote", {
         p_team_name: teamName,
         p_team_code: teamCode ?? null,
         p_team_flag: teamFlag ?? null,
