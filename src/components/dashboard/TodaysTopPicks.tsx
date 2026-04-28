@@ -33,8 +33,15 @@ export function TodaysTopPicks() {
   // Picks shown in their own dedicated sections — exclude from Free/Pro/Premium
   const riskPick = todayTips.find((t: any) => t.category === "risk_of_day");
   const diamondPick = todayTips.find((t: any) => t.category === "diamond_pick");
+  const matchKey = (t: any) =>
+    `${(t?.home_team || "").trim().toLowerCase()}__${(t?.away_team || "").trim().toLowerCase()}`;
+  const excludedKeys = new Set(
+    [riskPick, diamondPick].filter(Boolean).map((t: any) => matchKey(t))
+  );
   const isExcluded = (t: any) =>
-    (riskPick && t.id === riskPick.id) || (diamondPick && t.id === diamondPick.id);
+    (riskPick && t.id === riskPick.id) ||
+    (diamondPick && t.id === diamondPick.id) ||
+    excludedKeys.has(matchKey(t));
 
   // Free pick uses tier "free", not "daily"
   const freePick = todayTips.find((t: any) => t.tier === "free" && !isExcluded(t));
