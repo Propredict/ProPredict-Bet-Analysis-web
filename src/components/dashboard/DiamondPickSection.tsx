@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gem, Lock, Loader2, Play, Eye } from "lucide-react";
+import { Gem, Lock, Eye, Crown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +15,6 @@ export function DiamondPickSection() {
   const [highlightPlan, setHighlightPlan] = useState<"basic" | "premium">();
 
   const { canAccess } = useUserPlan();
-  const { unlockingId, handleUnlock } = useUnlockHandler({
-    onUpgradeBasic: () => { setHighlightPlan("basic"); setShowPricingModal(true); },
-    onUpgradePremium: () => { setHighlightPlan("premium"); setShowPricingModal(true); },
-  });
 
   const tipsQuery = useTips(false);
   if (!tipsQuery) return null;
@@ -30,7 +26,6 @@ export function DiamondPickSection() {
   if (!diamondPick) return null;
 
   const isUnlocked = canAccess(diamondPick.tier as any, "tip", diamondPick.id);
-  const isUnlocking = unlockingId === diamondPick.id;
 
   return (
     <section className="space-y-3">
@@ -63,12 +58,10 @@ export function DiamondPickSection() {
               )}
               <Button
                 size="sm"
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
-                onClick={() => handleUnlock("tip", diamondPick.id, diamondPick.tier as any)}
-                disabled={isUnlocking}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                onClick={() => { setHighlightPlan("premium"); setShowPricingModal(true); }}
               >
-                {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
-                Watch Ad to Unlock
+                <Crown className="h-3.5 w-3.5 mr-1" /> Get Premium
               </Button>
               <button
                 onClick={() => navigate("/diamond-pick")}
