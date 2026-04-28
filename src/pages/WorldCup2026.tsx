@@ -619,6 +619,11 @@ export default function WorldCup2026() {
           </div>
         </TabsContent>
 
+        {/* ==================== BRACKET ==================== */}
+        <TabsContent value="bracket" className="mt-0">
+          <WorldCupBracket onGoToGroups={() => setActiveTab("standings")} />
+        </TabsContent>
+
         {/* ==================== MATCHES ==================== */}
         <TabsContent value="matches" className="mt-0 px-3">
           <div className="mt-4">
