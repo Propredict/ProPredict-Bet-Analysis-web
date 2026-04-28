@@ -30,17 +30,19 @@ export function TodaysTopPicks() {
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayTips = dbTips.filter((t: any) => t.tip_date === todayDate);
 
-  // Picks shown in their own dedicated sections — exclude from Free/Pro/Premium
-  const riskPick = todayTips.find((t: any) => t.category === "risk_of_day");
-  const diamondPick = todayTips.find((t: any) => t.category === "diamond_pick");
-  const matchKey = (t: any) =>
-    `${(t?.home_team || "").trim().toLowerCase()}__${(t?.away_team || "").trim().toLowerCase()}`;
-  const excludedKeys = new Set(
-    [riskPick, diamondPick].filter(Boolean).map((t: any) => matchKey(t))
+  // Picks shown in their own dedicated sections — exclude ALL Risk/Diamond matches from Free/Pro/Premium.
+  const specialPicks = todayTips.filter((t: any) =>
+    t.category === "risk_of_day" || t.category === "diamond_pick"
   );
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const matchKey = (t: any) =>
+    `${normalize(t?.home_team || "")}__${normalize(t?.away_team || "")}`;
+  const excludedIds = new Set(specialPicks.map((t: any) => t.id));
+  const excludedMatchIds = new Set(specialPicks.map((t: any) => t.match_id).filter(Boolean));
+  const excludedKeys = new Set(specialPicks.map((t: any) => matchKey(t)));
   const isExcluded = (t: any) =>
-    (riskPick && t.id === riskPick.id) ||
-    (diamondPick && t.id === diamondPick.id) ||
+    excludedIds.has(t.id) ||
+    excludedMatchIds.has(t.match_id) ||
     excludedKeys.has(matchKey(t));
 
   // Free pick uses tier "free", not "daily"
