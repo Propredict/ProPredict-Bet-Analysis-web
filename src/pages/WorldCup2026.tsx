@@ -469,7 +469,14 @@ export default function WorldCup2026() {
             <h2 className="text-base font-bold text-foreground flex items-center gap-2 mb-1">
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
-            <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Matchday 1 · Group Stage{" "}
+              {hasRealAI ? (
+                <span className="text-primary font-semibold">· Live AI active</span>
+              ) : (
+                <span className="text-amber-400/80">· Pre-tournament projections (FIFA rank). Live AI activates on match day.</span>
+              )}
+            </p>
 
             {/* App: Free user — Watch Ad CTA at top */}
             {isApp && !appCanSeeBasic && (
