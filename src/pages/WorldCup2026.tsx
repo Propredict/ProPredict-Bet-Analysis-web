@@ -14,6 +14,7 @@ import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
@@ -71,6 +72,7 @@ export default function WorldCup2026() {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
 
   useEffect(() => {
     if (!interstitialFired.current) {
@@ -467,7 +469,14 @@ export default function WorldCup2026() {
             <h2 className="text-base font-bold text-foreground flex items-center gap-2 mb-1">
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
-            <p className="text-[10px] text-muted-foreground mb-2">Matchday 1 · Group Stage</p>
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Matchday 1 · Group Stage{" "}
+              {hasRealAI ? (
+                <span className="text-primary font-semibold">· Live AI active</span>
+              ) : (
+                <span className="text-amber-400/80">· Pre-tournament projections (FIFA rank). Live AI activates on match day.</span>
+              )}
+            </p>
 
             {/* App: Free user — Watch Ad CTA at top */}
             {isApp && !appCanSeeBasic && (
@@ -483,7 +492,22 @@ export default function WorldCup2026() {
               </Card>
             )}
 
-            {AI_PREDICTIONS.map((pred, i) => {
+            {AI_PREDICTIONS.map((mockPred, i) => {
+              // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
+              // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
+              const real = findRealAI(mockPred.home, mockPred.away);
+              const pred = real
+                ? {
+                    home: mockPred.home,
+                    away: mockPred.away,
+                    date: mockPred.date,
+                    homeWin: real.home_win,
+                    draw: real.draw,
+                    awayWin: real.away_win,
+                    confidence: real.confidence,
+                  }
+                : mockPred;
+              const isReal = !!real;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : (isPremium || (isPro && i === 0));
               return (
@@ -494,9 +518,16 @@ export default function WorldCup2026() {
                     </span>
                     {showBasic ? (
                       appCanSeeAdvanced ? (
-                        <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
-                          {pred.confidence}% conf
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          {isReal && (
+                            <Badge variant="outline" className="text-[9px] border-primary/60 text-primary bg-primary/10">
+                              <Zap className="h-2.5 w-2.5 mr-0.5" />Live AI
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                            {pred.confidence}% conf
+                          </Badge>
+                        </div>
                       ) : (
                         <Badge variant="outline" className="text-[9px] text-primary border-primary/30">Basic</Badge>
                       )
@@ -546,7 +577,7 @@ export default function WorldCup2026() {
                         <div className="grid grid-cols-2 gap-2 text-[11px]">
                           <div>
                             <span className="text-muted-foreground">Predicted Score</span>
-                            <p className="font-bold text-foreground">{pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1"}</p>
+                            <p className="font-bold text-foreground">{real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1")}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Confidence</span>
@@ -554,10 +585,14 @@ export default function WorldCup2026() {
                           </div>
                         </div>
                         <div className="text-[10px] text-muted-foreground">
-                          <span className="font-medium text-foreground">AI Insight:</span> Based on FIFA rankings, recent form, and historical data, {pred.homeWin > pred.awayWin ? pred.home : pred.away} has the edge in this matchup.
+                          <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                          {real?.analysis
+                            ? real.analysis.slice(0, 180) + (real.analysis.length > 180 ? "…" : "")
+                            : `Pre-tournament projection based on FIFA rankings. Live AI analysis (form, xG, odds) activates on match day. ${pred.homeWin > pred.awayWin ? pred.home : pred.away} currently holds the edge.`}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
-                          <span className="font-medium text-foreground">Key Factors:</span> Home advantage, squad depth, tactical approach
+                          <span className="font-medium text-foreground">Key Factors:</span>{" "}
+                          {real?.key_factors?.length ? real.key_factors.slice(0, 3).join(" • ") : "Home advantage, squad depth, tactical approach"}
                         </div>
                       </div>
                       {/* Lock overlay for non-premium */}
