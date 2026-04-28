@@ -30,10 +30,14 @@ export function TodaysTopPicks() {
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayTips = dbTips.filter((t: any) => t.tip_date === todayDate);
 
+  // Risk of the Day pick is shown in its own section — exclude it from Pro/Premium
+  const riskPick = todayTips.find((t: any) => t.category === "risk_of_day");
+  const isRisk = (t: any) => riskPick && t.id === riskPick.id;
+
   // Free pick uses tier "free", not "daily"
-  const freePick = todayTips.find((t: any) => t.tier === "free");
-  const proPick = todayTips.find((t: any) => t.tier === "exclusive");
-  const premiumPick = todayTips.find((t: any) => t.tier === "premium");
+  const freePick = todayTips.find((t: any) => t.tier === "free" && !isRisk(t));
+  const proPick = todayTips.find((t: any) => t.tier === "exclusive" && !isRisk(t));
+  const premiumPick = todayTips.find((t: any) => t.tier === "premium" && !isRisk(t));
 
   const picks = [
     {
