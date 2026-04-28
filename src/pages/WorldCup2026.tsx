@@ -410,7 +410,7 @@ export default function WorldCup2026() {
                   <div className="space-y-1.5 mb-4">
                     {[
                       "AI match predictions with win probabilities",
-                      "1 free AI pick daily on web",
+                      "Full access in the app",
                       "Live match schedule access",
                       "Priority access during World Cup",
                     ].map((f, i) => (
