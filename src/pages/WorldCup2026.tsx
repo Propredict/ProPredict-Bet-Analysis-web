@@ -485,7 +485,22 @@ export default function WorldCup2026() {
               </Card>
             )}
 
-            {AI_PREDICTIONS.map((pred, i) => {
+            {AI_PREDICTIONS.map((mockPred, i) => {
+              // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
+              // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
+              const real = findRealAI(mockPred.home, mockPred.away);
+              const pred = real
+                ? {
+                    home: mockPred.home,
+                    away: mockPred.away,
+                    date: mockPred.date,
+                    homeWin: real.home_win,
+                    draw: real.draw,
+                    awayWin: real.away_win,
+                    confidence: real.confidence,
+                  }
+                : mockPred;
+              const isReal = !!real;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : (isPremium || (isPro && i === 0));
               return (
@@ -496,9 +511,16 @@ export default function WorldCup2026() {
                     </span>
                     {showBasic ? (
                       appCanSeeAdvanced ? (
-                        <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
-                          {pred.confidence}% conf
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          {isReal && (
+                            <Badge variant="outline" className="text-[9px] border-primary/60 text-primary bg-primary/10">
+                              <Zap className="h-2.5 w-2.5 mr-0.5" />Live AI
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                            {pred.confidence}% conf
+                          </Badge>
+                        </div>
                       ) : (
                         <Badge variant="outline" className="text-[9px] text-primary border-primary/30">Basic</Badge>
                       )
