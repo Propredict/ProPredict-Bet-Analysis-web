@@ -14,6 +14,7 @@ import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
@@ -71,6 +72,7 @@ export default function WorldCup2026() {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
 
   useEffect(() => {
     if (!interstitialFired.current) {
