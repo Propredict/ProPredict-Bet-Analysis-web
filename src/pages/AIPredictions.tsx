@@ -119,7 +119,7 @@ export default function AIPredictions() {
   // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
   // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
   //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
-  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 30.
+  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 50.
   // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
   // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
   // generated today), promote up to 3 of the safest "below threshold" matches
@@ -143,7 +143,7 @@ export default function AIPredictions() {
     const sorted = [...scored].sort((a, b) => b.strength - a.strength);
     const PREMIUM_CAP = 10;
     const PRO_CAP = 20;
-    const FREE_CAP = 30;
+    const FREE_CAP = 50;
     let premiumCount = 0;
     let proCount = 0;
     let freeCount = 0;
@@ -203,9 +203,11 @@ export default function AIPredictions() {
     return { tierMap: map, safeFallbackIds: fallbackIds };
   }, [predictions]);
 
-  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
+  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
     // Tier is determined purely by displayed confidence (Premium ≥78%, Pro ≥65%, Free <65%)
-    return tierAssignment.get(prediction.id!) ?? "free";
+    // Returns null for predictions that exceed the tier caps — these are filtered out below
+    // so we never show 300+ Free predictions when FREE_CAP = 50.
+    return tierAssignment.get(prediction.id!) ?? null;
   };
 
   // Calculate accuracy per tier (FREE, PRO, PREMIUM)
@@ -230,7 +232,8 @@ export default function AIPredictions() {
   const tierCounts = useMemo(() => {
     const counts = { free: 0, pro: 0, premium: 0 };
     predictions.forEach((p) => {
-      counts[getPredictionTier(p)]++;
+      const tier = getPredictionTier(p);
+      if (tier) counts[tier]++;
     });
     return counts;
   }, [predictions]);
@@ -311,9 +314,13 @@ export default function AIPredictions() {
 
   // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
-    // Hide predictions below 60% confidence
+    // Hide predictions below 50% confidence
     let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 50 : true);
-    
+
+    // Always drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 50 = 80 max).
+    // These have no tier assignment and would otherwise leak into the "All" view.
+    result = result.filter((p) => getPredictionTier(p) !== null);
+
     // Filter by tier if not "all"
     if (tierFilter !== "all") {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
@@ -352,7 +359,10 @@ export default function AIPredictions() {
   // Separate featured (premium/pro) from regular (free) predictions.
   // Curated picks (Diamond, Safe Pick) are removed below to avoid duplicates.
   const featuredPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
+    return filteredPredictions.filter((p) => {
+      const t = getPredictionTier(p);
+      return t === "premium" || t === "pro";
+    });
   }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
@@ -1337,7 +1347,7 @@ export default function AIPredictions() {
             const renderCard = (prediction: typeof predictions[0]) => (
               <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
                 <AIPredictionCard
-                  overrideTier={getPredictionTier(prediction)}
+                  overrideTier={getPredictionTier(prediction) ?? undefined}
                   prediction={prediction}
                   isAdmin={isAdmin}
                   isPremiumUser={isPremiumUser}
@@ -1480,7 +1490,7 @@ export default function AIPredictions() {
                     <React.Fragment key={prediction.id}>
                       <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                         <AIPredictionCard
-                          overrideTier={getPredictionTier(prediction)}
+                          overrideTier={getPredictionTier(prediction) ?? undefined}
                           prediction={prediction}
                           isAdmin={isAdmin}
                           isPremiumUser={isPremiumUser}
