@@ -152,7 +152,9 @@ export function TopAIPicksSection({
           >
           {visiblePicks.map((rp, idx) => {
             // Use the prediction's REAL tier so all market tabs (BTTS, Combo, etc.) show.
-            const realTier = getPredictionTier(rp.prediction);
+            // Top AI Picks may include high-strength matches that overflowed tier caps —
+            // fall back to "premium" so they still render with full tab set.
+            const realTier = getPredictionTier(rp.prediction) ?? "premium";
             // Cards within unlockedCount → bypass paywall (forceUnlocked).
             // Cards beyond unlockedCount → respect paywall (locked teaser).
             const isUnlockedSlot = idx < unlockedCount;
