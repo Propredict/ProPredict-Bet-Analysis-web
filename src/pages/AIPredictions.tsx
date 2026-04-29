@@ -203,9 +203,11 @@ export default function AIPredictions() {
     return { tierMap: map, safeFallbackIds: fallbackIds };
   }, [predictions]);
 
-  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" => {
+  const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
     // Tier is determined purely by displayed confidence (Premium ≥78%, Pro ≥65%, Free <65%)
-    return tierAssignment.get(prediction.id!) ?? "free";
+    // Returns null for predictions that exceed the tier caps — these are filtered out below
+    // so we never show 300+ Free predictions when FREE_CAP = 50.
+    return tierAssignment.get(prediction.id!) ?? null;
   };
 
   // Calculate accuracy per tier (FREE, PRO, PREMIUM)
