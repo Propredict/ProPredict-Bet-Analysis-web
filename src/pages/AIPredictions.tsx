@@ -232,7 +232,8 @@ export default function AIPredictions() {
   const tierCounts = useMemo(() => {
     const counts = { free: 0, pro: 0, premium: 0 };
     predictions.forEach((p) => {
-      counts[getPredictionTier(p)]++;
+      const tier = getPredictionTier(p);
+      if (tier) counts[tier]++;
     });
     return counts;
   }, [predictions]);
@@ -354,7 +355,10 @@ export default function AIPredictions() {
   // Separate featured (premium/pro) from regular (free) predictions.
   // Curated picks (Diamond, Safe Pick) are removed below to avoid duplicates.
   const featuredPredictions = useMemo(() => {
-    return filteredPredictions.filter((p) => getPredictionTier(p) !== "free");
+    return filteredPredictions.filter((p) => {
+      const t = getPredictionTier(p);
+      return t === "premium" || t === "pro";
+    });
   }, [filteredPredictions]);
 
   const regularPredictions = useMemo(() => {
