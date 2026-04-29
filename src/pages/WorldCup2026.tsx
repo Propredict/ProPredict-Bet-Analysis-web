@@ -631,7 +631,56 @@ export default function WorldCup2026() {
 
         {/* ==================== PREDICT CHAMPION ==================== */}
         <TabsContent value="champion" className="mt-0">
-          <ChampionPicker />
+          {isAndroidApp ? (
+            <ChampionPicker />
+          ) : (
+            <div className="relative">
+              {/* Web preview: read-only ChampionPicker with voting gated behind app CTA */}
+              <div className="pointer-events-none select-none opacity-90">
+                <ChampionPicker />
+              </div>
+              <div className="absolute inset-0 flex items-start justify-center pt-6 pb-4 px-3 bg-gradient-to-b from-background/40 via-background/85 to-background">
+                <Card className="w-full max-w-sm border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-500/10 via-violet-500/5 to-card shadow-2xl shadow-fuchsia-500/10">
+                  <div className="p-5 text-center space-y-3">
+                    <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                      <Crown className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-fuchsia-400 font-semibold mb-1">App-only feature</p>
+                      <h3 className="text-base font-bold text-foreground leading-tight">
+                        Voting is available only in the app
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-1.5">
+                        Browse all teams and the live community leaderboard here. To <strong>cast your pick</strong> and win <span className="text-amber-400 font-semibold">1 month FREE Premium</span>, download the app.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      {[
+                        { emoji: "🗳️", label: "Vote" },
+                        { emoji: "🏆", label: "Win Premium" },
+                        { emoji: "🎖️", label: "Badge" },
+                      ].map((f) => (
+                        <div key={f.label} className="py-2 rounded-lg bg-muted/30 border border-border/50">
+                          <span className="text-base">{f.emoji}</span>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">{f.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={openPlayStore}
+                      className="w-full bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold"
+                    >
+                      <Smartphone className="h-4 w-4 mr-2" />
+                      Download the App & Vote
+                    </Button>
+                    <p className="text-[9px] text-muted-foreground">
+                      Leaderboard updates live for everyone — even on web.
+                    </p>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* ==================== MATCHES ==================== */}
