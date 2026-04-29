@@ -314,9 +314,13 @@ export default function AIPredictions() {
 
   // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
-    // Hide predictions below 60% confidence
+    // Hide predictions below 50% confidence
     let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 50 : true);
-    
+
+    // Always drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 50 = 80 max).
+    // These have no tier assignment and would otherwise leak into the "All" view.
+    result = result.filter((p) => getPredictionTier(p) !== null);
+
     // Filter by tier if not "all"
     if (tierFilter !== "all") {
       result = result.filter((p) => getPredictionTier(p) === tierFilter);
