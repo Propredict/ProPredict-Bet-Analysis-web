@@ -22,7 +22,7 @@ interface Props {
   onToggleFavorite: (matchId: string) => void;
   onUnlock?: (contentType: "tip", contentId: string, tier: ContentTier) => void;
   unlockingId?: string | null;
-  getPredictionTier: (p: AIPrediction) => "free" | "pro" | "premium";
+  getPredictionTier: (p: AIPrediction) => "free" | "pro" | "premium" | null;
 }
 
 /** Short market tag for visual scanning (BTTS, Over, 1X2, etc.) */
