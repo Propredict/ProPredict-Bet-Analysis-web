@@ -1347,7 +1347,7 @@ export default function AIPredictions() {
             const renderCard = (prediction: typeof predictions[0]) => (
               <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
                 <AIPredictionCard
-                  overrideTier={getPredictionTier(prediction)}
+                  overrideTier={getPredictionTier(prediction) ?? undefined}
                   prediction={prediction}
                   isAdmin={isAdmin}
                   isPremiumUser={isPremiumUser}
