@@ -119,7 +119,7 @@ export default function AIPredictions() {
   // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
   // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
   //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
-  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 30.
+  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 50.
   // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
   // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
   // generated today), promote up to 3 of the safest "below threshold" matches
@@ -143,7 +143,7 @@ export default function AIPredictions() {
     const sorted = [...scored].sort((a, b) => b.strength - a.strength);
     const PREMIUM_CAP = 10;
     const PRO_CAP = 20;
-    const FREE_CAP = 30;
+    const FREE_CAP = 50;
     let premiumCount = 0;
     let proCount = 0;
     let freeCount = 0;
