@@ -120,22 +120,36 @@ export function calcTopPickScore(p: AIPrediction): RankedPick {
 }
 
 /**
- * Top 5 = strong but diverse Elite AI Selection.
- * Hard rules: Tier 1 or Tier 2 league only, confidence ≥ 70.
- * Diversity: max 2 of same bet type. Quality > diversity (no force-fill).
+ * Top 5 = highest-confidence picks from the most important leagues first.
+ * Cascading selection (in priority order):
+ *   1. Tier 1 league + confidence ≥ 85
+ *   2. Tier 1 league + confidence ≥ 75
+ *   3. Tier 2 league + confidence ≥ 85
+ *   4. Tier 2 league + confidence ≥ 75
+ *   5. Any league   + confidence ≥ 85
+ *   6. Any league   + confidence ≥ 75
+ * Hard floor: confidence ≥ 75 — never lower.
+ * Diversity: max 2 of same bet type. Show fewer cards if needed (no force-fill).
  */
-const TIER_NAME_FRAGMENTS = [
+const TIER1_FRAGMENTS = [
   "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
   "champions league", "europa league", "conference league",
-  "world cup", "euro championship",
+  "world cup", "euro championship", "copa america", "copa libertadores",
+];
+const TIER2_FRAGMENTS = [
   "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
   "scottish premiership", "championship", "la liga 2",
   "segunda división", "segunda division", "2. bundesliga", "serie b", "ligue 2",
+  "mls", "brasileirão", "brasileirao", "liga mx",
 ];
-function isTierAllowed(league: string | null | undefined): boolean {
+function leagueTier(league: string | null | undefined): 1 | 2 | 3 {
   const l = (league ?? "").toLowerCase();
-  if (!l) return false;
-  return TIER_NAME_FRAGMENTS.some((n) => l.includes(n));
+  if (!l) return 3;
+  // Exclude Tier 1 matches if they're a youth/reserve competition
+  if (/\bu1[5-9]\b|\bu2[0-3]\b|reserve|youth/i.test(l)) return 3;
+  if (TIER1_FRAGMENTS.some((n) => l.includes(n))) return 1;
+  if (TIER2_FRAGMENTS.some((n) => l.includes(n))) return 2;
+  return 3;
 }
 function classifyBet(raw: string | null | undefined): string {
   const p = (raw ?? "").toLowerCase().trim();
@@ -198,47 +212,37 @@ export function selectTopPicks(predictions: AIPrediction[], limit: number): Rank
     (p) => !p.result_status || p.result_status === "pending",
   );
   // QUALITY GATE: every Top 5 pick must have real analytical data.
-  // We never fall back to "any high-confidence pick" — better to show fewer
-  // cards than to label a fabricated/fallback prediction as "Elite".
   const qualified = pending.filter(hasRealData);
 
-  // Strict pool: qualified + Tier 1/2 + confidence ≥70
-  const strictPool = qualified.filter(
-    (p) => (p.confidence ?? 0) >= 70 && isTierAllowed(p.league),
-  );
-  // Soft pool (still quality-gated): any league, confidence ≥70.
-  const softPool = qualified.filter((p) => (p.confidence ?? 0) >= 70);
-
-  let pool: AIPrediction[];
-  if (strictPool.length >= 3) pool = strictPool;
-  else if (softPool.length >= 3) pool = softPool;
-  else pool = softPool; // never relax to <70 conf or non-quality data
-  const ranked = pool.map(calcTopPickScore).sort((a, b) => b.score - a.score);
+  // Cascading buckets (priority order: top leagues + highest conf first)
+  const buckets: AIPrediction[][] = [
+    qualified.filter((p) => leagueTier(p.league) === 1 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => leagueTier(p.league) === 1 && (p.confidence ?? 0) >= 75 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => leagueTier(p.league) === 2 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => leagueTier(p.league) === 2 && (p.confidence ?? 0) >= 75 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => leagueTier(p.league) === 3 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => leagueTier(p.league) === 3 && (p.confidence ?? 0) >= 75 && (p.confidence ?? 0) < 85),
+  ];
 
   const seen = new Set<string>();
   const typeCount = new Map<string, number>();
   const picks: RankedPick[] = [];
-  for (const r of ranked) {
+
+  // Walk through each bucket in order; within a bucket sort by score and apply diversity cap.
+  for (const bucket of buckets) {
     if (picks.length >= limit) break;
-    if (seen.has(r.prediction.id)) continue;
-    const t = classifyBet(r.prediction.prediction);
-    if ((typeCount.get(t) ?? 0) >= 2) continue; // diversity cap
-    seen.add(r.prediction.id);
-    typeCount.set(t, (typeCount.get(t) ?? 0) + 1);
-    picks.push(r);
-  }
-  // Fallback fill: if diversity cap left us short, top up with remaining ranked picks
-  // (still no duplicates) so the section always has up to `limit` cards.
-  if (picks.length < limit) {
+    const ranked = bucket.map(calcTopPickScore).sort((a, b) => b.score - a.score);
     for (const r of ranked) {
       if (picks.length >= limit) break;
       if (seen.has(r.prediction.id)) continue;
+      const t = classifyBet(r.prediction.prediction);
+      if ((typeCount.get(t) ?? 0) >= 2) continue; // diversity cap
       seen.add(r.prediction.id);
+      typeCount.set(t, (typeCount.get(t) ?? 0) + 1);
       picks.push(r);
     }
   }
-  // NOTE: removed last-resort fill that pulled from un-gated pending list.
-  // Quality > quantity. If we have fewer than `limit` qualified picks,
-  // the section shows fewer cards rather than promoting low-data picks.
+
+  // No force-fill below 75% confidence — show fewer cards if quality pool is small.
   return picks;
 }
