@@ -459,7 +459,9 @@ export default function AIPredictions() {
     return candidates[0];
   }, [predictions, globalRankingBase]);
 
-  // Safe Pick of the Day: high-confidence (≥85%) + low-risk market + stable.
+  // Safe Pick of the Day: STRICT high-confidence (≥85%) + low-risk market + stable.
+  // The name promises "safe" — we never relax the threshold below 85%.
+  // If no match qualifies today, the section is hidden (rendered conditionally below).
   // Always different from Diamond Pick — the same match never appears in both.
   const safePicks = useMemo(() => {
     const diamondId = diamondPick?.id;
@@ -467,22 +469,19 @@ export default function AIPredictions() {
     // Diamond is always excluded so the same match never appears in both sections.
     const passesQuality = (
       p: typeof globalRankingBase[number],
-      opts: { requireXg?: boolean } = { requireXg: true },
     ): boolean => {
       if (diamondId && p.id === diamondId) return false;
       const conf = p.confidence ?? 0;
-      // Low-risk market OR strong main 1X2 (conf ≥ 75% for fallback flexibility)
+      // Low-risk market OR strong main 1X2 — both must still meet the 85% confidence floor.
       const lowRisk = isLowRiskPrediction(p.prediction);
-      const strongMain = conf >= 75 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
+      const strongMain = conf >= 85 && /^(1|2|x|home|away|draw)$/i.test((p.prediction ?? "").trim());
       if (!lowRisk && !strongMain) return false;
-      // xG total must be ≥ 2.2 when present (relaxed in last-resort fallback).
-      if (opts.requireXg !== false) {
-        const xgTotal =
-          typeof (p as any).xg_total === "number"
-            ? (p as any).xg_total
-            : parseXgFromFactors(p.key_factors)?.total;
-        if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
-      }
+      // xG total must be ≥ 2.2 when present (real analytical signal required).
+      const xgTotal =
+        typeof (p as any).xg_total === "number"
+          ? (p as any).xg_total
+          : parseXgFromFactors(p.key_factors)?.total;
+      if (typeof xgTotal === "number" && xgTotal < 2.2) return false;
       // Variance must be STABLE.
       if ((p as any).variance_stable === false) return false;
       if ((p as any).variance_stable !== true) {
@@ -498,22 +497,12 @@ export default function AIPredictions() {
     const sorted = [...globalRankingBase].sort(
       (a, b) => (b.confidence ?? 0) - (a.confidence ?? 0),
     );
-    // Dynamic threshold ladder: try strict first (85), then relax progressively
-    // so Safe Pick is never empty when at least one quality low-risk match exists.
-    const thresholds = [85, 80, 75, 70];
-    for (const minConf of thresholds) {
-      const match = sorted.find(
-        (p) => (p.confidence ?? 0) >= minConf && passesQuality(p, { requireXg: true }),
-      );
-      if (match) return [match];
-    }
-    // Last-resort fallback: best low-risk + stable match ≥ 65% confidence,
-    // ignoring the xG gate so the section is not empty when xG data is sparse
-    // or the only strong pick is already used as Diamond.
-    const lastResort = sorted.find(
-      (p) => (p.confidence ?? 0) >= 65 && passesQuality(p, { requireXg: false }),
+    // STRICT: confidence ≥ 85%, no fallback ladder, no last-resort relaxation.
+    // "Safe Pick" must be genuinely safe — better empty than misleading.
+    const match = sorted.find(
+      (p) => (p.confidence ?? 0) >= 85 && passesQuality(p),
     );
-    if (lastResort) return [lastResort];
+    if (match) return [match];
     return [];
   }, [globalRankingBase, diamondPick]);
 
