@@ -6916,8 +6916,8 @@ async function processBatch(
           leagueId,
           season,
           apiKey,
-          homeXg,
-          awayXg,
+          proxyHomeXg,
+          proxyAwayXg,
           newPrediction.prediction,
           newPrediction.confidence
         ).catch((e) => console.warn(`[xG-SAFE] log failed:`, e?.message));
@@ -7651,6 +7651,7 @@ async function processBatch(
           xg_diff: Math.round((step2.expectedHome - step2.expectedAway) * 100) / 100,
           variance_stable: varianceStableDB,
           variance_score: varianceScoreDB,
+          xg_source: xgSource,
           is_locked: false,
           updated_at: new Date().toISOString(),
         })
