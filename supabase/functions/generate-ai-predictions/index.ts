@@ -6861,8 +6861,48 @@ async function processBatch(
       // Calculate Poisson goal markets for key_factors and more accurate score
       const homeGoalRate = calculateGoalRate(homeForm);
       const awayGoalRate = calculateGoalRate(awayForm);
-      const homeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
-      const awayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+      const proxyHomeXg = clamp((homeGoalRate.scored + awayGoalRate.conceded) / 2, 0.3, 3.0);
+      const proxyAwayXg = clamp((awayGoalRate.scored + homeGoalRate.conceded) / 2, 0.3, 3.0);
+
+      // ============= PHASE 1: REAL xG BLEND (minimal) =============
+      // If real xG is available for BOTH teams from team_xg_cache, blend it
+      // with the proxy at fixed weight: 0.7 * real + 0.3 * proxy.
+      // If real xG is missing for either team → fall back to proxy only.
+      // No dynamic weights, no sanity guard, no extra boosts.
+      let homeXg = proxyHomeXg;
+      let awayXg = proxyAwayXg;
+      let xgSource: "real" | "proxy" = "proxy";
+      try {
+        if (leagueId && homeTeamId && awayTeamId) {
+          const [homeRealXG, awayRealXG] = await Promise.all([
+            getCachedRealXG(supabase, homeTeamId, leagueId, season, apiKey),
+            getCachedRealXG(supabase, awayTeamId, leagueId, season, apiKey),
+          ]);
+          // Predicted real xG using opponent's defensive real xG (symmetric formula)
+          const realHomePred =
+            homeRealXG?.home_xg_for_avg != null && awayRealXG?.away_xg_against_avg != null
+              ? (homeRealXG.home_xg_for_avg + awayRealXG.away_xg_against_avg) / 2
+              : null;
+          const realAwayPred =
+            awayRealXG?.away_xg_for_avg != null && homeRealXG?.home_xg_against_avg != null
+              ? (awayRealXG.away_xg_for_avg + homeRealXG.home_xg_against_avg) / 2
+              : null;
+          if (realHomePred != null && realAwayPred != null) {
+            homeXg = clamp(0.7 * realHomePred + 0.3 * proxyHomeXg, 0.3, 3.0);
+            awayXg = clamp(0.7 * realAwayPred + 0.3 * proxyAwayXg, 0.3, 3.0);
+            xgSource = "real";
+            console.log(
+              `[xG-PHASE1] ${homeTeamName} vs ${awayTeamName} | source=real | ` +
+              `proxy(${proxyHomeXg.toFixed(2)}/${proxyAwayXg.toFixed(2)}) → ` +
+              `blended(${homeXg.toFixed(2)}/${awayXg.toFixed(2)})`
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[xG-PHASE1] blend failed for ${homeTeamName} vs ${awayTeamName}:`, (e as Error)?.message);
+      }
+      // ============= END PHASE 1 =============
+
       const goalMarkets = poissonGoalMarkets(homeXg, awayXg);
 
       // ============= SAFE MODE: log real xG vs proxy xG (fire & forget) =============
