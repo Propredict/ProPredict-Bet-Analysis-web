@@ -68,6 +68,7 @@ export type Database = {
           xg_away: number | null
           xg_diff: number | null
           xg_home: number | null
+          xg_source: string | null
           xg_total: number | null
         }
         Insert: {
@@ -123,6 +124,7 @@ export type Database = {
           xg_away?: number | null
           xg_diff?: number | null
           xg_home?: number | null
+          xg_source?: string | null
           xg_total?: number | null
         }
         Update: {
@@ -178,6 +180,7 @@ export type Database = {
           xg_away?: number | null
           xg_diff?: number | null
           xg_home?: number | null
+          xg_source?: string | null
           xg_total?: number | null
         }
         Relationships: []
