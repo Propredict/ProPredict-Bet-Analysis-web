@@ -74,20 +74,37 @@ function clampProb(n: number, min = 5, max = 95): number {
 function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number } {
   const lastHomeGoals = (prediction as any).last_home_goals;
   const lastAwayGoals = (prediction as any).last_away_goals;
-  
+
+  let homeXg: number;
+  let awayXg: number;
+
   if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
-    return { homeXg: Math.max(0.4, lastHomeGoals), awayXg: Math.max(0.3, lastAwayGoals) };
+    homeXg = Math.max(0.4, lastHomeGoals);
+    awayXg = Math.max(0.3, lastAwayGoals);
+  } else {
+    const score = parseScore(prediction.predicted_score);
+    if (score) {
+      homeXg = Math.max(0.4, score.home * 0.85 + 0.2);
+      awayXg = Math.max(0.3, score.away * 0.85 + 0.15);
+    } else {
+      const hw = prediction.home_win ?? 40;
+      const aw = prediction.away_win ?? 30;
+      homeXg = Math.max(0.5, hw / 30);
+      awayXg = Math.max(0.4, aw / 30);
+    }
   }
-  
-  const score = parseScore(prediction.predicted_score);
-  if (score) {
-    return { homeXg: Math.max(0.4, score.home * 0.85 + 0.2), awayXg: Math.max(0.3, score.away * 0.85 + 0.15) };
+
+  // Consistency guard: if 1X2 has a clear favorite, ensure xG reflects it.
+  // Prevents contradictions like Lyon 65% home but xG suggesting Rennes win.
+  const hw = prediction.home_win ?? 0;
+  const aw = prediction.away_win ?? 0;
+  if (hw >= 55 && hw - aw >= 20 && homeXg <= awayXg) {
+    homeXg = Math.max(awayXg + 0.4, 1.6);
+  } else if (aw >= 55 && aw - hw >= 20 && awayXg <= homeXg) {
+    awayXg = Math.max(homeXg + 0.4, 1.6);
   }
-  
-  // Fallback: derive from 1X2 probabilities
-  const hw = prediction.home_win ?? 40;
-  const aw = prediction.away_win ?? 30;
-  return { homeXg: Math.max(0.5, hw / 30), awayXg: Math.max(0.4, aw / 30) };
+
+  return { homeXg, awayXg };
 }
 
 export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
