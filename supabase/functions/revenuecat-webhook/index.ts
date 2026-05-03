@@ -137,6 +137,8 @@ serve(async (req) => {
       "UNCANCELLATION",
       "NON_RENEWING_PURCHASE",
       "PRODUCT_CHANGE",
+      "SUBSCRIPTION_EXTENDED",
+      "TEMPORARY_ENTITLEMENT_GRANT",
     ];
 
     // Handle expiration → fully deactivate subscription
