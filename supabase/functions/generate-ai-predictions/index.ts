@@ -6043,6 +6043,34 @@ async function assignTiers(
         }
       }
 
+      // Rule (NEW): predicted score must NOT contradict the 1X2 favorite,
+      // even when the headline pick is Over/BTTS/DC. If one side is a clear
+      // favorite (≥55% and ≥20pp ahead), force the score in that direction.
+      if (!newScore) {
+        const hw = Number(p.home_win ?? 0);
+        const aw = Number(p.away_win ?? 0);
+        const homeFav = hw >= 55 && hw - aw >= 20;
+        const awayFav = aw >= 55 && aw - hw >= 20;
+        if (homeFav && sh <= sa) {
+          // Respect over/btts requirements while flipping direction
+          if (cls === "over" || cls === "btts") {
+            newScore = hxg >= 1.8 ? "3-1" : "2-1";
+          } else if (cls === "under") {
+            newScore = "1-0";
+          } else {
+            newScore = hxg >= 2 ? "3-1" : "2-1";
+          }
+        } else if (awayFav && sa <= sh) {
+          if (cls === "over" || cls === "btts") {
+            newScore = axg >= 1.8 ? "1-3" : "1-2";
+          } else if (cls === "under") {
+            newScore = "0-1";
+          } else {
+            newScore = axg >= 2 ? "1-3" : "1-2";
+          }
+        }
+      }
+
       if (newScore && newScore !== score) {
         scoreUpdates.push({ id: p.id, predicted_score: newScore });
         p.predicted_score = newScore;
