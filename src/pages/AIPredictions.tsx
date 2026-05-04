@@ -166,33 +166,27 @@ export default function AIPredictions() {
       map.set(s.id, tier);
     }
 
-    // 3. SMART FALLBACK — triggers when Free tier has fewer than MIN_FREE picks.
-    // Lowers the safety threshold progressively (58 → 40) so users always see
-    // a healthy set of Free matches on slow days. Still requires
-    // variance_stable !== false so we never promote noisy/unstable predictions.
-    const MIN_FREE = 3;
-    if (freeCount < MIN_FREE) {
-      const need = MIN_FREE - freeCount;
+    // 3. SMART FALLBACK — only triggers if Free tier is empty after classification.
+    // Pick up to 3 safest matches from the 58–64% band that aren't already
+    // placed in any tier, requiring variance_stable !== false (model is consistent).
+    if (freeCount === 0) {
       const fallbackCandidates = sorted
         .filter((s) => !map.has(s.id))
-        .filter((s) => s.strength >= 40 && s.strength < 65)
+        .filter((s) => s.strength >= 58 && s.strength < 65)
         .filter((s) => (s.prediction as any).variance_stable !== false)
-        // Sort strongest first within the relaxed 40–64 band
-        .sort((a, b) => b.strength - a.strength)
-        .slice(0, need);
+        .slice(0, 3);
       for (const c of fallbackCandidates) {
         map.set(c.id, "free");
         fallbackIds.add(c.id);
-        freeCount++;
       }
     }
 
-    // 3b. SECONDARY FALLBACK — when even the 40–64 band is empty (very strict
+    // 3b. SECONDARY FALLBACK — when even the 58–64 band is empty (very strict
     // data-quality day, e.g. only 8–10 high-quality matches generated), borrow
     // the WEAKEST matches currently in Pro (closest to the 65% cutoff) and
     // re-tag them as Free so the page never shows an empty Free tier. Pro
     // keeps the strongest picks; users always see something.
-    if (freeCount === 0) {
+    if (freeCount === 0 && fallbackIds.size === 0) {
       const proCandidates = sorted
         .filter((s) => map.get(s.id) === "pro")
         .filter((s) => (s.prediction as any).variance_stable !== false)
