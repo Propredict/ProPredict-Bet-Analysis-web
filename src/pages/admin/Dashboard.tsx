@@ -26,7 +26,9 @@ export default function AdminDashboard() {
         const { data, error } = await supabase
           .from("user_subscriptions")
           .select("plan, expires_at")
-          .gt("expires_at", now);
+          .gt("expires_at", now)
+          .in("status", ["active", "canceled"])
+          .neq("plan", "free");
 
         if (error) {
           console.error("Error fetching subscriptions:", error);

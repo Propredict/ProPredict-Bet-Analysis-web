@@ -202,6 +202,7 @@ serve(async (req) => {
           plan: "free",
           status: "expired",
           subscription_source: "google_play",
+          expires_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", userId);
