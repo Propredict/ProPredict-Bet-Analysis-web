@@ -595,14 +595,19 @@ Deno.serve(async (req) => {
             if (hg === null || ag === null) { tipsSkipped++; continue; }
 
             const won = evalCombo(String(tip.prediction ?? ""), hg, ag);
-            const newResult = won ? "won" : "lost";
-            const { error: tipUpdErr } = await supabase
-              .from("tips")
-              .update({ result: newResult })
-              .eq("id", tip.id);
-            if (!tipUpdErr) {
-              tipsResolved++;
-              console.log(`✓ Diamond tip ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → ${newResult}`);
+            // Policy: only mark WON publicly. If lost → leave as pending (silent).
+            if (won) {
+              const { error: tipUpdErr } = await supabase
+                .from("tips")
+                .update({ result: "won" })
+                .eq("id", tip.id);
+              if (!tipUpdErr) {
+                tipsResolved++;
+                console.log(`✓ Diamond tip ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → won`);
+              }
+            } else {
+              tipsSkipped++;
+              console.log(`· Diamond tip ${tip.home_team} vs ${tip.away_team} lost — kept as pending (display policy)`);
             }
             await new Promise((r) => setTimeout(r, 100));
           } catch (e) {
@@ -718,14 +723,19 @@ Deno.serve(async (req) => {
 
             if (!allFinished || unevaluable) { ticketsSkipped++; continue; }
 
-            const newResult = allLegsWon ? "won" : "lost";
-            const { error: tkUpdErr } = await supabase
-              .from("tickets")
-              .update({ result: newResult })
-              .eq("id", ticket.id);
-            if (!tkUpdErr) {
-              ticketsResolved++;
-              console.log(`✓ Ticket ${ticket.id} (${matches.length} legs) → ${newResult}`);
+            // Policy: only mark WON publicly. If lost → leave as pending (silent).
+            if (allLegsWon) {
+              const { error: tkUpdErr } = await supabase
+                .from("tickets")
+                .update({ result: "won" })
+                .eq("id", ticket.id);
+              if (!tkUpdErr) {
+                ticketsResolved++;
+                console.log(`✓ Ticket ${ticket.id} (${matches.length} legs) → won`);
+              }
+            } else {
+              ticketsSkipped++;
+              console.log(`· Ticket ${ticket.id} lost — kept as pending (display policy)`);
             }
           } catch (e) {
             console.error(`Ticket resolve error ${ticket.id}:`, e);
