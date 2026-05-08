@@ -404,8 +404,8 @@ serve(async (req: Request) => {
             total_odds: proCombo.total,
             ticket_date: date,
             ai_analysis: `Auto-generated Pro combo from ${proCombo.picks.length} high-confidence picks. Avg confidence: ${Math.round(
-              proCombo.picks.reduce((s, p) => s + p.confidence, 0) / proCombo.picks.length,
-            )}%. Markets: 1/X/2, Double Chance, GG, Over/Under (no correct score).`,
+              proCombo.picks.reduce((s, x) => s + x.p.confidence, 0) / proCombo.picks.length,
+            )}%. Safest market chosen per pick (1/X/2, Double Chance, GG/NG, Over/Under 2.5/3.5 — no correct score).`,
           })
           .select()
           .single();
