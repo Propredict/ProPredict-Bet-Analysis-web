@@ -502,16 +502,12 @@ serve(async (req: Request) => {
     const targetTickets = freePool.length > 15 ? 2 : 1;
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
-
-    if (ticketsToCreate === 0) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "Already at target ticket count for today" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     const usedMatchIds = new Set<string>();
     const created: Array<{ id: string; picks: number; total_odds: number; strategy: string }> = [];
+    let dailySkipReason: string | null = null;
+    if (ticketsToCreate === 0) {
+      dailySkipReason = "Daily AI ticket already at target for today";
+    }
 
     for (let i = 0; i < ticketsToCreate; i++) {
       // Try Free-only combo first, then supplement with Pro, then single fallback
