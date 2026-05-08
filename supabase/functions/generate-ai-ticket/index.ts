@@ -341,7 +341,7 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
   // 1) Primary AI prediction with high natural odds.
   const original = (p.prediction || "").trim();
   const oOrig = pickOdds(p) ?? 0;
-  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 6) {
+  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 15) {
     return { market: original, odds: oOrig, prob: 0 };
   }
 
@@ -368,14 +368,14 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
     if (hg >= 2 && ag >= 2) candidates.push({ market: "GG & Over 2.5", prob: 55 });
   }
 
-  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 6.0
+  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 15.0
   const eligible = candidates
     .map((c) => ({
       market: c.market,
       prob: c.prob,
       odds: Math.round((100 / Math.max(c.prob, 1)) * 0.95 * 100) / 100,
     }))
-    .filter((c) => c.odds >= 2.5 && c.odds <= 6.0 && c.prob >= 25)
+    .filter((c) => c.odds >= 2.5 && c.odds <= 15.0 && c.prob >= 12)
     .sort((a, b) => b.prob - a.prob);
 
   if (eligible.length > 0) {
@@ -405,7 +405,7 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
       const scoreSide = hg > ag ? "H" : ag > hg ? "A" : "D";
       if (dominant === scoreSide) {
         const o = correctScoreOdds(ps);
-        if (o && o >= 3.5 && o <= 8.0) {
+        if (o && o >= 2.5 && o <= 15.0) {
           return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
         }
       }
