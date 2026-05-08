@@ -161,7 +161,8 @@ export default function TicketDetails() {
     );
   }
 
-  const unlockMethod = getUnlockMethod(ticket.tier, "ticket", ticket.id);
+  const effectiveTier = (ticket as any).category === "multi_risk" ? "premium" : ticket.tier;
+  const unlockMethod = getUnlockMethod(effectiveTier, "ticket", ticket.id);
   const isLocked = unlockMethod?.type !== "unlocked";
 
   // Dynamic OG meta data
