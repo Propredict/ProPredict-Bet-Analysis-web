@@ -320,12 +320,29 @@ serve(async (req) => {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      const user = await findUserByMetadata(subscription) || await findUserByCustomerId(customerId);
+      const customerUser = await findUserByCustomerId(customerId);
+      const user = await findUserByMetadata(subscription) || customerUser;
       if (!user) {
         console.error(`No user found for customer: ${customerId}`);
         return new Response(
           JSON.stringify({ error: "User not found" }),
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!user.email && customerUser?.email) user.email = customerUser.email;
+
+      const staleHandled = await protectFromStaleFailedSubscription(
+        stripe,
+        supabase,
+        user.id,
+        user.email,
+        subscription.id,
+        event.type
+      );
+      if (staleHandled) {
+        return new Response(
+          JSON.stringify({ received: true, protected_active_subscription: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
