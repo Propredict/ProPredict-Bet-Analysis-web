@@ -110,23 +110,40 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch today's predictions
+    // Fetch today's predictions, EXCLUDING Premium tier (confidence >= 78).
+    // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
       .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium")
       .eq("match_date", date)
-      .gte("confidence", 65)
+      .gte("confidence", 50)
+      .lt("confidence", 78) // never include Premium
       .order("confidence", { ascending: false })
-      .limit(40);
+      .limit(60);
 
     if (pErr) throw pErr;
-    const pool = (preds ?? []) as Pred[];
-    // Prefer variance_stable; if none stable, allow all
-    const stable = pool.filter((p) => p.variance_stable);
-    const workingPool = stable.length >= 4 ? stable : pool;
+    const all = (preds ?? []) as Pred[];
 
-    let combo = buildCombo(workingPool);
-    if (!combo) combo = buildSingle(workingPool);
+    // Split into Free (<65) and Pro (65–77). Premium already excluded by query.
+    const freePool = all.filter((p) => p.confidence < 65);
+    const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
+
+    // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
+    const stableOnly = (arr: Pred[]) => {
+      const stable = arr.filter((p) => p.variance_stable);
+      return stable.length >= 4 ? stable : arr;
+    };
+
+    let combo = buildCombo(stableOnly(freePool));
+    if (!combo) {
+      // Free pool insufficient — combine Free + Pro (Free still preferred via sort by conf desc inside buildCombo)
+      const combined = stableOnly([...freePool, ...proPool]);
+      combo = buildCombo(combined);
+    }
+    if (!combo) {
+      // Final fallback: single pick from combined pool
+      combo = buildSingle(stableOnly([...freePool, ...proPool]));
+    }
 
     if (!combo) {
       return new Response(
