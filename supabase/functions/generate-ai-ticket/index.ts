@@ -134,17 +134,17 @@ serve(async (req: Request) => {
       const stable = arr.filter((p) => p.variance_stable);
       return stable.length >= 4 ? stable : arr;
     };
+    // Sort each tier internally by confidence DESC, then concatenate (Free always first).
+    const byConfDesc = (a: Pred, b: Pred) => b.confidence - a.confidence;
+    const freeOrdered = stableOnly(freePool).slice().sort(byConfDesc);
+    const proOrdered = stableOnly(proPool).slice().sort(byConfDesc);
 
-    let combo = buildCombo(stableOnly(freePool));
-    if (!combo) {
-      // Free pool insufficient — combine Free + Pro (Free still preferred via sort by conf desc inside buildCombo)
-      const combined = stableOnly([...freePool, ...proPool]);
-      combo = buildCombo(combined);
-    }
-    if (!combo) {
-      // Final fallback: single pick from combined pool
-      combo = buildSingle(stableOnly([...freePool, ...proPool]));
-    }
+    // Try Free-only combo first
+    let combo = buildCombo(freeOrdered);
+    // Free insufficient → supplement with Pro (Free still iterated first)
+    if (!combo) combo = buildCombo([...freeOrdered, ...proOrdered]);
+    // Final fallback: single pick (Free preferred)
+    if (!combo) combo = buildSingle([...freeOrdered, ...proOrdered]);
 
     if (!combo) {
       return new Response(
