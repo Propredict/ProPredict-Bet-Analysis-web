@@ -306,7 +306,7 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
  *  - Excludes raw correct-score predictions (those go through Score Hunter logic
  *    inside `highOddsSafePick` if/when the underlying market odds cross 2.50).
  */
-type RiskSize = 1 | 2 | 3 | 4;
+type RiskSize = 3 | 4;
 
 function correctScoreOdds(predictedScore: string | null): number | null {
   // Approximate market odds for a correct-score bet from the predicted score.
@@ -759,7 +759,7 @@ serve(async (req: Request) => {
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const riskUsed = new Set<string>();
       // Rotate ticket sizes for variety: single, double, triple, quadruple, double
-      const sizes: RiskSize[] = [1, 2, 3, 4, 2];
+      const sizes: RiskSize[] = [3, 4, 3, 4, 3];
 
       for (let i = 0; i < riskToCreate; i++) {
         const size = sizes[(existingRiskCount + i) % sizes.length];
@@ -770,8 +770,8 @@ serve(async (req: Request) => {
           continue;
         }
         const idx = existingRiskCount + i + 1;
-        const sizeEmoji = riskCombo.size === 1 ? "🎯" : riskCombo.size === 2 ? "⚡" : riskCombo.size === 3 ? "🔥" : "💥";
-        const sizeName  = riskCombo.size === 1 ? "Solo Shot" : riskCombo.size === 2 ? "Double Up" : riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
+        const sizeEmoji = riskCombo.size === 3 ? "🔥" : "💥";
+        const sizeName  = riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
         const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""} • ${riskCombo.total.toFixed(2)}x`;
         const { data: newRiskTicket, error: rtErr } = await supabase
         .from("tickets")
@@ -783,7 +783,7 @@ serve(async (req: Request) => {
           category: "multi_risk",
           total_odds: riskCombo.total,
           ticket_date: date,
-          ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI pick${riskCombo.picks.length > 1 ? "s" : ""}. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (min 4.00, up to 4 picks). Source: Pro + Premium AI pools.`,
+            ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI picks. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (3 or 4 picks). Source: Pro + Premium AI pools.`,
         })
           .select()
           .single();
