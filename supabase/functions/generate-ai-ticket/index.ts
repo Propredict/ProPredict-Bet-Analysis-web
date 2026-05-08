@@ -8,14 +8,17 @@ const corsHeaders = {
 };
 
 /**
- * AI Daily Ticket Generator
+ * AI Ticket Generator
  *
- * Generates 1 Daily ticket per day automatically based on ai_predictions:
- *  - Combo strategy (preferred): 4–6 safest picks, total odds in [2.0, 6.0]
- *  - Single strategy (fallback): 1 pick with odds in [3.0, 4.0]
+ * Daily tickets (tier='daily', category='ai_daily'):
+ *   - 1 ticket/day, or 2 if Free pool > 15
+ *   - Combo: 4–6 picks, total odds [2.0, 6.0] (Free first, Pro fallback, NO Premium)
+ *   - Single fallback: odds [2.5, 4.0]
  *
- * Inserted as: tier='daily', status='published', category='ai_daily'.
- * Skips if an AI daily ticket already exists for today.
+ * Pro ticket (tier='pro', category='ai_pro'):
+ *   - 1 ticket/day from Pro pool (confidence 65–77)
+ *   - Combo: 3–7 picks, total odds [3.0, 10.0]
+ *   - All prediction types allowed EXCEPT correct score (e.g. "2-1", "1:0")
  */
 
 type Pred = {
@@ -41,6 +44,14 @@ function pickOdds(p: Pred): number | null {
   // fallback from confidence
   if (p.confidence > 0) return Math.max(1.1, Math.round((100 / p.confidence) * 100) / 100);
   return null;
+}
+
+/** Detect "correct score"-style predictions like "2-1", "1:0", "Score 3-2". */
+function isCorrectScore(prediction: string): boolean {
+  const s = (prediction || "").toLowerCase();
+  if (/\b\d{1,2}\s*[-:]\s*\d{1,2}\b/.test(s)) return true;
+  if (s.includes("correct score") || s.includes("exact score")) return true;
+  return false;
 }
 
 function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
@@ -69,6 +80,43 @@ function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { p
   }
 
   if (chosen.length >= 4 && total >= 2.0 && total <= 6.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
+/**
+ * Pro combo builder.
+ *  - 3–7 picks, total odds in [3.0, 10.0]
+ *  - Per-pick odds capped at 2.6 to keep combo "safe"
+ *  - Excludes correct-score predictions
+ *  - Caller pre-sorts pool (confidence DESC) and may exclude match IDs
+ */
+function buildProCombo(
+  pool: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: Pred[]; total: number } | null {
+  const usedMatchIds = new Set<string>();
+  const chosen: Pred[] = [];
+  let total = 1;
+
+  for (const p of pool) {
+    if (chosen.length >= 7) break;
+    if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
+    if (isCorrectScore(p.prediction)) continue;
+    const o = pickOdds(p);
+    if (!o) continue;
+    if (o < 1.2 || o > 2.6) continue;
+    const next = total * o;
+    if (next > 10.0) continue;
+    chosen.push(p);
+    usedMatchIds.add(p.match_id);
+    total = next;
+    // Stop early once we are inside the safe sweet spot with enough picks
+    if (chosen.length >= 5 && total >= 4.0) break;
+  }
+
+  if (chosen.length >= 3 && total >= 3.0 && total <= 10.0) {
     return { picks: chosen, total: Math.round(total * 100) / 100 };
   }
   return null;
@@ -214,6 +262,75 @@ serve(async (req: Request) => {
       });
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // PRO TICKET (1 per day) — only from Pro pool, excludes correct score
+    // ───────────────────────────────────────────────────────────────────
+    let proResult: { id?: string; skipped?: boolean; reason?: string; picks?: number; total_odds?: number } = {
+      skipped: true,
+      reason: "not_attempted",
+    };
+
+    const { data: existingPro } = await supabase
+      .from("tickets")
+      .select("id")
+      .eq("ticket_date", date)
+      .eq("category", "ai_pro");
+
+    if ((existingPro?.length ?? 0) >= 1) {
+      proResult = { skipped: true, reason: "Pro AI ticket already exists for today" };
+    } else if (proPool.length < 3) {
+      proResult = { skipped: true, reason: `Pro pool too small (${proPool.length} < 3)` };
+    } else {
+      // Pro pool sorted by confidence DESC; prefer variance_stable when we have ≥3 stable.
+      const stableProPool = proPool.filter((p) => p.variance_stable);
+      const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
+      const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
+
+      const proCombo = buildProCombo(proOrderedAll);
+      if (!proCombo) {
+        proResult = { skipped: true, reason: "No valid Pro combo (odds 3–10, 3–7 picks)" };
+      } else {
+        const proTitle = `🎯 AI Pro Combo • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
+        const { data: newProTicket, error: ptErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: proTitle,
+            tier: "pro",
+            status: "published",
+            category: "ai_pro",
+            total_odds: proCombo.total,
+            ticket_date: date,
+            ai_analysis: `Auto-generated Pro combo from ${proCombo.picks.length} high-confidence picks. Avg confidence: ${Math.round(
+              proCombo.picks.reduce((s, p) => s + p.confidence, 0) / proCombo.picks.length,
+            )}%. Markets: any (no correct score).`,
+          })
+          .select()
+          .single();
+
+        if (ptErr) throw ptErr;
+
+        const proRows = proCombo.picks.map((p, idx) => ({
+          ticket_id: newProTicket.id,
+          match_name: `${p.home_team} vs ${p.away_team}`,
+          home_team: p.home_team,
+          away_team: p.away_team,
+          league: p.league,
+          prediction: p.prediction,
+          odds: pickOdds(p)!,
+          match_date: p.match_date,
+          sort_order: idx,
+        }));
+        const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
+        if (pmErr) throw pmErr;
+
+        proResult = {
+          id: newProTicket.id,
+          picks: proCombo.picks.length,
+          total_odds: proCombo.total,
+        };
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -222,6 +339,7 @@ serve(async (req: Request) => {
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
+        pro_ticket: proResult,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
