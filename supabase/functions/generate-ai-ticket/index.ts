@@ -297,6 +297,117 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
   return { picks: [top.p], total: Math.round(top.o! * 100) / 100 };
 }
 
+/**
+ * Multi-Risk combo builder.
+ *  - 3–6 picks per ticket; total odds [10, 100]
+ *  - Mixes safe markets with HIGH-RISK markets (correct score, Over 3.5, NG, etc.)
+ *  - Each ticket uses one of these risk profiles:
+ *      "score_heavy" : 1–2 correct-score picks + 2–3 safe picks  (huge payout)
+ *      "goals_heavy" : Over 3.5 / NG / X anchors + safe picks    (medium-high)
+ *      "underdog"    : Mix of safe + 1 underdog pick (X / 2 against form)
+ *  - Source: Pro pool (65–77) + Premium pool (≥78); skips Free.
+ */
+type RiskProfile = "score_heavy" | "goals_heavy" | "underdog";
+
+function correctScoreOdds(predictedScore: string | null): number | null {
+  // Approximate market odds for a correct-score bet from the predicted score.
+  // Common scorelines have well-known typical odds.
+  const ps = (predictedScore || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (!m) return null;
+  const hg = parseInt(m[1], 10);
+  const ag = parseInt(m[2], 10);
+  const total = hg + ag;
+  // Heuristic odds table
+  if (hg === ag && hg <= 1) return 6.5;          // 0-0, 1-1
+  if (Math.abs(hg - ag) === 1 && total <= 3) return 7.5; // 1-0, 2-1, 0-1, 1-2
+  if (total === 3 || total === 4) return 9.0;    // 2-2, 3-1, 1-3, 3-0
+  if (total === 5) return 14.0;                  // 4-1, 3-2, etc.
+  if (total >= 6) return 25.0;                   // wild scores
+  return 8.0;
+}
+
+function highRiskMarket(p: Pred, profile: RiskProfile): { market: string; odds: number } | null {
+  const ps = (p.predicted_score || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const hg = m ? parseInt(m[1], 10) : -1;
+  const ag = m ? parseInt(m[2], 10) : -1;
+  const total = hg >= 0 ? hg + ag : -1;
+  const dr = p.draw ?? 0;
+
+  if (profile === "score_heavy") {
+    const o = correctScoreOdds(ps);
+    if (o && hg >= 0 && ag >= 0) return { market: `Correct Score ${hg}-${ag}`, odds: o };
+  }
+  if (profile === "goals_heavy") {
+    if (total >= 4) return { market: "Over 3.5", odds: 2.6 };
+    if (total <= 1) return { market: "Under 1.5", odds: 3.2 };
+    if (hg === 0 || ag === 0) return { market: "NG", odds: 2.4 };
+  }
+  if (profile === "underdog") {
+    if (dr >= 28 && dr < 45) return { market: "Draw", odds: 3.5 };
+  }
+  return null;
+}
+
+function buildRiskCombo(
+  premiumOrdered: Pred[],
+  proOrdered: Pred[],
+  excludeMatchIds: Set<string>,
+  profile: RiskProfile,
+): { picks: { p: Pred; market: string; odds: number }[]; total: number; profile: RiskProfile } | null {
+  const used = new Set<string>();
+  const chosen: { p: Pred; market: string; odds: number }[] = [];
+  let total = 1;
+
+  const tryAddSafe = (p: Pred): boolean => {
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
+    const choice = safestProPick(p);
+    if (choice.prob > 0 && choice.prob < 60) return false;
+    if (choice.odds < 1.25 || choice.odds > 2.4) return false;
+    const next = total * choice.odds;
+    if (next > 100) return false;
+    chosen.push({ p, market: choice.market, odds: choice.odds });
+    used.add(p.match_id);
+    total = next;
+    return true;
+  };
+
+  const tryAddRisk = (p: Pred): boolean => {
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
+    const r = highRiskMarket(p, profile);
+    if (!r) return false;
+    const next = total * r.odds;
+    if (next > 100) return false;
+    chosen.push({ p, market: r.market, odds: r.odds });
+    used.add(p.match_id);
+    total = next;
+    return true;
+  };
+
+  // 1) Add risk picks (1–2)
+  const riskTarget = profile === "score_heavy" ? 1 : profile === "goals_heavy" ? 2 : 1;
+  let riskAdded = 0;
+  // Prefer premium for risk picks (more reliable predicted score)
+  for (const p of [...premiumOrdered, ...proOrdered]) {
+    if (riskAdded >= riskTarget) break;
+    if (tryAddRisk(p)) riskAdded++;
+  }
+  if (riskAdded === 0) return null;
+
+  // 2) Fill with safe picks (premium first, then pro) until we have 3–6 picks
+  for (const p of [...premiumOrdered, ...proOrdered]) {
+    if (chosen.length >= 6) break;
+    if (chosen.length >= 4 && total >= 15) break;
+    tryAddSafe(p);
+  }
+
+  if (chosen.length >= 3 && total >= 10 && total <= 100) {
+    return { picks: chosen, total: Math.round(total * 100) / 100, profile };
+  }
+  return null;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -587,6 +698,98 @@ serve(async (req: Request) => {
       }
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // MULTI-RISK TICKETS (4–5 per day) — high-risk/high-payout combos
+    //   - Mix of safe picks + risk picks (correct score, Over 3.5, NG, Draw)
+    //   - Total odds 10–100, 3–6 picks, varied risk profiles
+    //   - Source: Pro + Premium pools (no Free)
+    //   - Page filter: tier='exclusive', category='multi_risk'
+    // ───────────────────────────────────────────────────────────────────
+    const riskCreated: Array<{ id: string; picks: number; total_odds: number; profile: string }> = [];
+    let riskSkipReason: string | null = null;
+
+    const { data: existingRisk } = await supabase
+      .from("tickets")
+      .select("id")
+      .eq("ticket_date", date)
+      .eq("category", "multi_risk");
+
+    const existingRiskCount = existingRisk?.length ?? 0;
+    // 4 default; 5 if combined Pro+Premium pool > 15
+    const riskTarget = (proPool.length + premiumPool.length) > 15 ? 5 : 4;
+    const riskToCreate = Math.max(0, riskTarget - existingRiskCount);
+
+    if (riskToCreate === 0) {
+      riskSkipReason = existingRiskCount >= riskTarget
+        ? "Multi-Risk tickets already at target"
+        : "not_attempted";
+    } else if (premiumPool.length + proPool.length < 4) {
+      riskSkipReason = `Pool too small (Pro+Premium ${premiumPool.length + proPool.length} < 4)`;
+    } else {
+      const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const riskUsed = new Set<string>();
+      // Rotate risk profiles for variety
+      const profiles: RiskProfile[] = ["score_heavy", "goals_heavy", "score_heavy", "underdog", "goals_heavy"];
+
+      for (let i = 0; i < riskToCreate; i++) {
+        const profile = profiles[(existingRiskCount + i) % profiles.length];
+        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, profile);
+        if (!riskCombo) {
+          if (riskCreated.length === 0)
+            riskSkipReason = `No valid Multi-Risk combo (profile=${profile})`;
+          continue;
+        }
+        const idx = existingRiskCount + i + 1;
+        const profileEmoji =
+          riskCombo.profile === "score_heavy" ? "🎯"
+          : riskCombo.profile === "goals_heavy" ? "⚡"
+          : "🔥";
+        const profileName =
+          riskCombo.profile === "score_heavy" ? "Score Hunter"
+          : riskCombo.profile === "goals_heavy" ? "Goals Rush"
+          : "Underdog Hunt";
+        const riskTitle = `${profileEmoji} Multi-Risk ${profileName}${riskTarget > 1 ? ` #${idx}` : ""} • ${riskCombo.picks.length} Picks • ${riskCombo.total.toFixed(2)}x`;
+        const { data: newRiskTicket, error: rtErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: riskTitle,
+            // Use 'exclusive' so canAccess('exclusive') gates as Pro/Premium-only.
+            tier: "exclusive",
+            status: "published",
+            category: "multi_risk",
+            total_odds: riskCombo.total,
+            ticket_date: date,
+            ai_analysis: `High-risk/high-reward combo (${profileName}). ${riskCombo.picks.length} picks, total odds ${riskCombo.total.toFixed(2)}x. Mix of safe Premium/Pro markets with ${riskCombo.profile === "score_heavy" ? "correct-score anchors" : riskCombo.profile === "goals_heavy" ? "goals markets (Over 3.5 / NG / Under 1.5)" : "an underdog Draw anchor"}.`,
+          })
+          .select()
+          .single();
+        if (rtErr) throw rtErr;
+
+        const riskRows = riskCombo.picks.map((p, k) => ({
+          ticket_id: newRiskTicket.id,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.market,
+          odds: p.odds,
+          match_date: p.p.match_date,
+          sort_order: k,
+        }));
+        const { error: rmErr } = await supabase.from("ticket_matches").insert(riskRows);
+        if (rmErr) throw rmErr;
+
+        riskCombo.picks.forEach((x) => riskUsed.add(x.p.match_id));
+        riskCreated.push({
+          id: newRiskTicket.id,
+          picks: riskCombo.picks.length,
+          total_odds: riskCombo.total,
+          profile: riskCombo.profile,
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -604,6 +807,10 @@ serve(async (req: Request) => {
         premium_created_count: premiumCreated.length,
         premium_tickets: premiumCreated,
         premium_skip_reason: premiumSkipReason,
+        risk_target: riskTarget,
+        risk_created_count: riskCreated.length,
+        risk_tickets: riskCreated,
+        risk_skip_reason: riskSkipReason,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
