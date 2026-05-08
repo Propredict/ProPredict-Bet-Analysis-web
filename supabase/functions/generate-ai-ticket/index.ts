@@ -341,7 +341,7 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
   // 1) Primary AI prediction with high natural odds.
   const original = (p.prediction || "").trim();
   const oOrig = pickOdds(p) ?? 0;
-  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 6) {
+  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 15) {
     return { market: original, odds: oOrig, prob: 0 };
   }
 
@@ -368,14 +368,14 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
     if (hg >= 2 && ag >= 2) candidates.push({ market: "GG & Over 2.5", prob: 55 });
   }
 
-  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 6.0
+  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 15.0
   const eligible = candidates
     .map((c) => ({
       market: c.market,
       prob: c.prob,
       odds: Math.round((100 / Math.max(c.prob, 1)) * 0.95 * 100) / 100,
     }))
-    .filter((c) => c.odds >= 2.5 && c.odds <= 6.0 && c.prob >= 25)
+    .filter((c) => c.odds >= 2.5 && c.odds <= 15.0 && c.prob >= 12)
     .sort((a, b) => b.prob - a.prob);
 
   if (eligible.length > 0) {
@@ -405,7 +405,7 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
       const scoreSide = hg > ag ? "H" : ag > hg ? "A" : "D";
       if (dominant === scoreSide) {
         const o = correctScoreOdds(ps);
-        if (o && o >= 3.5 && o <= 8.0) {
+        if (o && o >= 2.5 && o <= 15.0) {
           return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
         }
       }
@@ -430,14 +430,18 @@ function buildRiskCombo(
     if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
     const pick = highOddsSafePick(p);
     if (!pick) continue;
+    // Per-match floor: every single odds must be ≥ 2.50
+    if (pick.odds < 2.5) continue;
+    // Look-ahead: don't blow past combined cap of 15.00
+    if (total * pick.odds > 15) continue;
     chosen.push({ p, market: pick.market, odds: pick.odds });
     used.add(p.match_id);
     total *= pick.odds;
   }
 
   if (chosen.length !== size) return null;
-  // Sanity: total odds floor (≥ 2.50 for singles, scales for combos)
-  if (total < 2.5) return null;
+  // Risk Ticket window: combined odds must be in [4.00, 15.00]
+  if (total < 4 || total > 15) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
@@ -725,11 +729,12 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
-    // MULTI-RISK TICKETS (4–5 per day) — high-risk/high-payout combos
-    //   - Mix of safe picks + risk picks (correct score, Over 3.5, NG, Draw)
-    //   - Total odds 10–100, 3–6 picks, varied risk profiles
+    // RISK TICKETS (4–5 per day) — bold AI picks, high-payout single/combo
+    //   - 1, 2 or 3 picks per ticket
+    //   - Each individual pick odds ≥ 2.50
+    //   - Combined total odds in [4.00, 15.00]
     //   - Source: Pro + Premium pools (no Free)
-    //   - Page filter: tier='exclusive', category='multi_risk'
+    //   - Page filter: tier='premium' (frontend), category='multi_risk'
     // ───────────────────────────────────────────────────────────────────
     const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
@@ -763,7 +768,7 @@ serve(async (req: Request) => {
         const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, size);
         if (!riskCombo) {
           if (riskCreated.length === 0)
-            riskSkipReason = `No valid Multi-Risk combo (size=${size}) — not enough picks with odds ≥ 2.50`;
+            riskSkipReason = `No valid Risk combo (size=${size}) — needs picks ≥ 2.50 and total odds 4.00–15.00`;
           continue;
         }
         const idx = existingRiskCount + i + 1;
@@ -780,7 +785,7 @@ serve(async (req: Request) => {
             category: "multi_risk",
             total_odds: riskCombo.total,
             ticket_date: date,
-            ai_analysis: `${sizeName}: ${riskCombo.picks.length} safe AI prediction${riskCombo.picks.length > 1 ? "s" : ""} where each market price is ≥ 2.50. Total odds ${riskCombo.total.toFixed(2)}x. Source: Pro + Premium AI pools.`,
+            ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI pick${riskCombo.picks.length > 1 ? "s" : ""}. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (window: 4.00–15.00). Source: Pro + Premium AI pools.`,
           })
           .select()
           .single();
