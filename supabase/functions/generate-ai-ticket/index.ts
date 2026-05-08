@@ -43,7 +43,7 @@ function pickOdds(p: Pred): number | null {
   return null;
 }
 
-function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
+function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   // Greedy: iterate pool in caller-provided priority order.
   // Caller must pre-sort (e.g. Free first, then Pro).
   const sorted = pool;
@@ -53,7 +53,7 @@ function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
 
   for (const p of sorted) {
     if (chosen.length >= 6) break;
-    if (usedMatchIds.has(p.match_id)) continue;
+    if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
     const o = pickOdds(p);
     if (!o) continue;
     // Avoid single-pick odds that are too high in a combo
@@ -74,8 +74,9 @@ function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
   return null;
 }
 
-function buildSingle(pool: Pred[]): { picks: Pred[]; total: number } | null {
+function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
+    .filter((p) => !excludeMatchIds.has(p.match_id))
     .map((p) => ({ p, o: pickOdds(p) }))
     .filter((x) => x.o !== null && x.o! >= 2.5 && x.o! <= 4.0)
     .sort((a, b) => b.p.confidence - a.p.confidence);
