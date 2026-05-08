@@ -255,23 +255,23 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch today's predictions, EXCLUDING Premium tier (confidence >= 78).
+    // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
       .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win")
       .eq("match_date", date)
       .gte("confidence", 50)
-      .lt("confidence", 78) // never include Premium
       .order("confidence", { ascending: false })
-      .limit(60);
+      .limit(120);
 
     if (pErr) throw pErr;
     const all = (preds ?? []) as Pred[];
 
-    // Split into Free (<65) and Pro (65–77). Premium already excluded by query.
+    // Split into Free (<65), Pro (65–77), Premium (≥78).
     const freePool = all.filter((p) => p.confidence < 65);
     const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
+    const premiumPool = all.filter((p) => p.confidence >= 78);
 
     // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
     const stableOnly = (arr: Pred[]) => {
