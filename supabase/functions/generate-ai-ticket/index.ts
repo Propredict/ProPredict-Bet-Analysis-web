@@ -521,7 +521,7 @@ serve(async (req: Request) => {
       .eq("category", "ai_premium");
 
     const existingPremiumCount = existingPremium?.length ?? 0;
-    const premiumTarget =
+    const premiumTarget: number =
       premiumPool.length > 8 && proPool.length > 10 ? 3 : 2;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
