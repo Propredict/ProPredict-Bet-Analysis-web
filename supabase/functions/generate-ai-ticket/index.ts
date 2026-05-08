@@ -217,6 +217,75 @@ function buildProCombo(
   return null;
 }
 
+/**
+ * Premium combo builder.
+ *  - 4–6 picks, total odds in [5.0, 15.0]
+ *  - Composition: ~60% Premium picks + ~40% Pro picks (mix for higher payout)
+ *  - Per-pick odds in [1.25, 3.0]
+ *  - Excludes correct-score predictions; uses safestProPick for safe markets
+ *  - Allows higher individual odds than Pro tickets (e.g. "1 + Over 3.5")
+ */
+function buildPremiumCombo(
+  premiumOrdered: Pred[],
+  proOrdered: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
+  const used = new Set<string>();
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
+  let total = 1;
+  // Target ratio: 60% premium, 40% pro
+  const targetSize = 5;
+  const targetPremium = 3;
+  const targetPro = 2;
+  let premiumCount = 0;
+  let proCount = 0;
+
+  const tryAdd = (p: Pred): boolean => {
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
+    const choice = safestProPick(p);
+    if (choice.prob > 0 && choice.prob < 60) return false;
+    const o = choice.odds;
+    if (o < 1.25 || o > 3.0) return false;
+    const next = total * o;
+    if (next > 15.0) return false;
+    chosen.push({ p, choice });
+    used.add(p.match_id);
+    total = next;
+    return true;
+  };
+
+  // First pass: fill premium quota
+  for (const p of premiumOrdered) {
+    if (premiumCount >= targetPremium) break;
+    if (tryAdd(p)) premiumCount++;
+  }
+  // Second pass: fill pro quota
+  for (const p of proOrdered) {
+    if (proCount >= targetPro) break;
+    if (tryAdd(p)) proCount++;
+  }
+  // Top-up if we are below target size or below odds floor — prefer remaining premium first
+  if (chosen.length < targetSize || total < 5.0) {
+    for (const p of premiumOrdered) {
+      if (chosen.length >= 6) break;
+      if (total >= 8.0 && chosen.length >= 4) break;
+      tryAdd(p);
+    }
+  }
+  if (chosen.length < targetSize || total < 5.0) {
+    for (const p of proOrdered) {
+      if (chosen.length >= 6) break;
+      if (total >= 8.0 && chosen.length >= 4) break;
+      tryAdd(p);
+    }
+  }
+
+  if (chosen.length >= 4 && total >= 5.0 && total <= 15.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
@@ -255,23 +324,23 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch today's predictions, EXCLUDING Premium tier (confidence >= 78).
+    // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
       .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win")
       .eq("match_date", date)
       .gte("confidence", 50)
-      .lt("confidence", 78) // never include Premium
       .order("confidence", { ascending: false })
-      .limit(60);
+      .limit(120);
 
     if (pErr) throw pErr;
     const all = (preds ?? []) as Pred[];
 
-    // Split into Free (<65) and Pro (65–77). Premium already excluded by query.
+    // Split into Free (<65), Pro (65–77), Premium (≥78).
     const freePool = all.filter((p) => p.confidence < 65);
     const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
+    const premiumPool = all.filter((p) => p.confidence >= 78);
 
     // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
     const stableOnly = (arr: Pred[]) => {
@@ -436,11 +505,94 @@ serve(async (req: Request) => {
       }
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // PREMIUM TICKETS (2–3 per day) — mix of Premium (≥78) and Pro (65–77)
+    //   - 2 default; 3 if premiumPool > 8 AND proPool > 10
+    //   - 4–6 picks per ticket; total odds 5–15
+    //   - Composition: ~60% Premium picks + ~40% Pro picks
+    // ───────────────────────────────────────────────────────────────────
+    const premiumCreated: Array<{ id: string; picks: number; total_odds: number }> = [];
+    let premiumSkipReason: string | null = null;
+
+    const { data: existingPremium } = await supabase
+      .from("tickets")
+      .select("id")
+      .eq("ticket_date", date)
+      .eq("category", "ai_premium");
+
+    const existingPremiumCount = existingPremium?.length ?? 0;
+    const premiumTarget: number =
+      premiumPool.length > 8 && proPool.length > 10 ? 3 : 2;
+    const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
+
+    if (premiumToCreate === 0) {
+      premiumSkipReason = existingPremiumCount >= premiumTarget
+        ? "Premium AI ticket already at target for today"
+        : "not_attempted";
+    } else if (premiumPool.length < 2) {
+      premiumSkipReason = `Premium pool too small (${premiumPool.length} < 2)`;
+    } else {
+      const stablePremium = premiumPool.filter((p) => p.variance_stable);
+      const premiumSource = stablePremium.length >= 2 ? stablePremium : premiumPool;
+      const premiumOrderedAll = premiumSource.slice().sort((a, b) => b.confidence - a.confidence);
+      const proOrderedForPremium = proPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const premiumUsed = new Set<string>();
+
+      for (let i = 0; i < premiumToCreate; i++) {
+        const premCombo = buildPremiumCombo(premiumOrderedAll, proOrderedForPremium, premiumUsed);
+        if (!premCombo) {
+          if (premiumCreated.length === 0)
+            premiumSkipReason = "No valid Premium combo (4–6 picks, odds 5–15)";
+          break;
+        }
+        const idx = existingPremiumCount + i + 1;
+        const premTitle = `👑 AI Premium Combo${premiumTarget > 1 ? ` #${idx}` : ""} • ${premCombo.picks.length} Picks • ${premCombo.total.toFixed(2)}x`;
+        const { data: newPremTicket, error: ptErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: premTitle,
+            tier: "premium",
+            status: "published",
+            category: "ai_premium",
+            total_odds: premCombo.total,
+            ticket_date: date,
+            ai_analysis: `Auto-generated Premium combo. ${premCombo.picks.length} picks (mix of Premium ≥78 and Pro 65–77). Avg confidence: ${Math.round(
+              premCombo.picks.reduce((s, x) => s + x.p.confidence, 0) / premCombo.picks.length,
+            )}%. Total odds ${premCombo.total.toFixed(2)}x. Markets: 1/X/2, Double Chance, GG/NG, Over/Under 2.5/3.5 (no correct score).`,
+          })
+          .select()
+          .single();
+        if (ptErr) throw ptErr;
+
+        const premRows = premCombo.picks.map((p, k) => ({
+          ticket_id: newPremTicket.id,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.choice.market,
+          odds: p.choice.odds,
+          match_date: p.p.match_date,
+          sort_order: k,
+        }));
+        const { error: pmErr } = await supabase.from("ticket_matches").insert(premRows);
+        if (pmErr) throw pmErr;
+
+        premCombo.picks.forEach((x) => premiumUsed.add(x.p.match_id));
+        premiumCreated.push({
+          id: newPremTicket.id,
+          picks: premCombo.picks.length,
+          total_odds: premCombo.total,
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         free_pool_size: freePool.length,
         pro_pool_size: proPool.length,
+        premium_pool_size: premiumPool.length,
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
@@ -448,6 +600,10 @@ serve(async (req: Request) => {
         pro_created_count: proCreated.length,
         pro_tickets: proCreated,
         pro_skip_reason: proSkipReason,
+        premium_target: premiumTarget,
+        premium_created_count: premiumCreated.length,
+        premium_tickets: premiumCreated,
+        premium_skip_reason: premiumSkipReason,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
