@@ -371,9 +371,25 @@ serve(async (req) => {
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
       const customerId = invoice.customer as string;
+      const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : undefined;
 
       const user = await findUserByCustomerId(customerId);
       if (user) {
+        const staleHandled = await protectFromStaleFailedSubscription(
+          stripe,
+          supabase,
+          user.id,
+          user.email,
+          subscriptionId || `invoice:${invoice.id}`,
+          event.type
+        );
+        if (staleHandled) {
+          return new Response(
+            JSON.stringify({ received: true, protected_active_subscription: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         console.log(`Payment failed for user ${user.id}, marking as past_due`);
 
         const { error } = await supabase
