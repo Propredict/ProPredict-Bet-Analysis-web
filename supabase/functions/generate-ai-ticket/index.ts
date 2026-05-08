@@ -298,16 +298,15 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
 }
 
 /**
- * Multi-Risk combo builder.
- *  - 3–6 picks per ticket; total odds [10, 100]
- *  - Mixes safe markets with HIGH-RISK markets (correct score, Over 3.5, NG, etc.)
- *  - Each ticket uses one of these risk profiles:
- *      "score_heavy" : 1–2 correct-score picks + 2–3 safe picks  (huge payout)
- *      "goals_heavy" : Over 3.5 / NG / X anchors + safe picks    (medium-high)
- *      "underdog"    : Mix of safe + 1 underdog pick (X / 2 against form)
+ * Multi-Risk combo builder (v2).
+ *  - 1, 2 or 3 picks per ticket (small-size, high-odds combos).
+ *  - Uses SAFE AI predictions (AI's main prediction or safest market choice)
+ *    BUT only when that pick's odds are ≥ 2.50.
  *  - Source: Pro pool (65–77) + Premium pool (≥78); skips Free.
+ *  - Excludes raw correct-score predictions (those go through Score Hunter logic
+ *    inside `highOddsSafePick` if/when the underlying market odds cross 2.50).
  */
-type RiskProfile = "score_heavy" | "goals_heavy" | "underdog";
+type RiskSize = 1 | 2 | 3;
 
 function correctScoreOdds(predictedScore: string | null): number | null {
   // Approximate market odds for a correct-score bet from the predicted score.
@@ -327,26 +326,71 @@ function correctScoreOdds(predictedScore: string | null): number | null {
   return 8.0;
 }
 
-function highRiskMarket(p: Pred, profile: RiskProfile): { market: string; odds: number } | null {
+/**
+ * Pick a SAFE market for a prediction whose odds are ≥ 2.50.
+ * Strategy:
+ *   1) If the AI's primary prediction has odds in [2.50, 6.0] and isn't a
+ *      raw correct-score, use it directly (this is the "safe pick at high odds"
+ *      case the user described — e.g. "Home Win & Over 2.5" @ 2.70).
+ *   2) Otherwise, derive odds from probabilities for 1X2 and from the
+ *      predicted score for goals/BTTS markets, and accept the highest-prob
+ *      candidate whose computed odds fall in [2.50, 6.0].
+ *   3) Optionally allow a correct-score fallback if its heuristic odds fit.
+ */
+function highOddsSafePick(p: Pred): MarketChoice | null {
+  // 1) Primary AI prediction with high natural odds.
+  const original = (p.prediction || "").trim();
+  const oOrig = pickOdds(p) ?? 0;
+  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 6) {
+    return { market: original, odds: oOrig, prob: 0 };
+  }
+
+  const hw = p.home_win ?? 0;
+  const dr = p.draw ?? 0;
+  const aw = p.away_win ?? 0;
+
   const ps = (p.predicted_score || "").trim();
   const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
   const hg = m ? parseInt(m[1], 10) : -1;
   const ag = m ? parseInt(m[2], 10) : -1;
   const total = hg >= 0 ? hg + ag : -1;
-  const dr = p.draw ?? 0;
 
-  if (profile === "score_heavy") {
+  const candidates: { market: string; prob: number }[] = [];
+  if (hw > 0 || dr > 0 || aw > 0) {
+    candidates.push({ market: "Home Win", prob: hw });
+    candidates.push({ market: "Away Win", prob: aw });
+    candidates.push({ market: "Draw", prob: dr });
+  }
+  if (total >= 0) {
+    if (total >= 4) candidates.push({ market: "Over 3.5", prob: 60 });
+    if (total >= 5) candidates.push({ market: "Over 4.5", prob: 50 });
+    if (total <= 1) candidates.push({ market: "Under 1.5", prob: 50 });
+    if (hg >= 2 && ag >= 2) candidates.push({ market: "GG & Over 2.5", prob: 55 });
+  }
+
+  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 6.0
+  const eligible = candidates
+    .map((c) => ({
+      market: c.market,
+      prob: c.prob,
+      odds: Math.round((100 / Math.max(c.prob, 1)) * 0.95 * 100) / 100,
+    }))
+    .filter((c) => c.odds >= 2.5 && c.odds <= 6.0 && c.prob >= 25)
+    .sort((a, b) => b.prob - a.prob);
+
+  if (eligible.length > 0) {
+    const best = eligible[0];
+    return { market: best.market, odds: best.odds, prob: best.prob };
+  }
+
+  // Correct-score fallback (only for high-confidence Premium with a clear score).
+  if ((p.confidence ?? 0) >= 78 && hg >= 0 && ag >= 0) {
     const o = correctScoreOdds(ps);
-    if (o && hg >= 0 && ag >= 0) return { market: `Correct Score ${hg}-${ag}`, odds: o };
+    if (o && o >= 2.5 && o <= 6.0) {
+      return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
+    }
   }
-  if (profile === "goals_heavy") {
-    if (total >= 4) return { market: "Over 3.5", odds: 2.6 };
-    if (total <= 1) return { market: "Under 1.5", odds: 3.2 };
-    if (hg === 0 || ag === 0) return { market: "NG", odds: 2.4 };
-  }
-  if (profile === "underdog") {
-    if (dr >= 28 && dr < 45) return { market: "Draw", odds: 3.5 };
-  }
+
   return null;
 }
 
@@ -354,58 +398,26 @@ function buildRiskCombo(
   premiumOrdered: Pred[],
   proOrdered: Pred[],
   excludeMatchIds: Set<string>,
-  profile: RiskProfile,
-): { picks: { p: Pred; market: string; odds: number }[]; total: number; profile: RiskProfile } | null {
+  size: RiskSize,
+): { picks: { p: Pred; market: string; odds: number }[]; total: number; size: RiskSize } | null {
   const used = new Set<string>();
   const chosen: { p: Pred; market: string; odds: number }[] = [];
   let total = 1;
 
-  const tryAddSafe = (p: Pred): boolean => {
-    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
-    const choice = safestProPick(p);
-    if (choice.prob > 0 && choice.prob < 60) return false;
-    if (choice.odds < 1.25 || choice.odds > 2.4) return false;
-    const next = total * choice.odds;
-    if (next > 100) return false;
-    chosen.push({ p, market: choice.market, odds: choice.odds });
-    used.add(p.match_id);
-    total = next;
-    return true;
-  };
-
-  const tryAddRisk = (p: Pred): boolean => {
-    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
-    const r = highRiskMarket(p, profile);
-    if (!r) return false;
-    const next = total * r.odds;
-    if (next > 100) return false;
-    chosen.push({ p, market: r.market, odds: r.odds });
-    used.add(p.match_id);
-    total = next;
-    return true;
-  };
-
-  // 1) Add risk picks (1–2)
-  const riskTarget = profile === "score_heavy" ? 1 : profile === "goals_heavy" ? 2 : 1;
-  let riskAdded = 0;
-  // Prefer premium for risk picks (more reliable predicted score)
   for (const p of [...premiumOrdered, ...proOrdered]) {
-    if (riskAdded >= riskTarget) break;
-    if (tryAddRisk(p)) riskAdded++;
-  }
-  if (riskAdded === 0) return null;
-
-  // 2) Fill with safe picks (premium first, then pro) until we have 3–6 picks
-  for (const p of [...premiumOrdered, ...proOrdered]) {
-    if (chosen.length >= 6) break;
-    if (chosen.length >= 4 && total >= 15) break;
-    tryAddSafe(p);
+    if (chosen.length >= size) break;
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
+    const pick = highOddsSafePick(p);
+    if (!pick) continue;
+    chosen.push({ p, market: pick.market, odds: pick.odds });
+    used.add(p.match_id);
+    total *= pick.odds;
   }
 
-  if (chosen.length >= 3 && total >= 10 && total <= 100) {
-    return { picks: chosen, total: Math.round(total * 100) / 100, profile };
-  }
-  return null;
+  if (chosen.length !== size) return null;
+  // Sanity: total odds floor (≥ 2.50 for singles, scales for combos)
+  if (total < 2.5) return null;
+  return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
 serve(async (req: Request) => {
@@ -705,7 +717,7 @@ serve(async (req: Request) => {
     //   - Source: Pro + Premium pools (no Free)
     //   - Page filter: tier='exclusive', category='multi_risk'
     // ───────────────────────────────────────────────────────────────────
-    const riskCreated: Array<{ id: string; picks: number; total_odds: number; profile: string }> = [];
+    const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
 
     const { data: existingRisk } = await supabase
@@ -723,33 +735,27 @@ serve(async (req: Request) => {
       riskSkipReason = existingRiskCount >= riskTarget
         ? "Multi-Risk tickets already at target"
         : "not_attempted";
-    } else if (premiumPool.length + proPool.length < 4) {
-      riskSkipReason = `Pool too small (Pro+Premium ${premiumPool.length + proPool.length} < 4)`;
+    } else if (premiumPool.length + proPool.length < 1) {
+      riskSkipReason = `Pool empty (Pro+Premium = 0)`;
     } else {
       const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const riskUsed = new Set<string>();
-      // Rotate risk profiles for variety
-      const profiles: RiskProfile[] = ["score_heavy", "goals_heavy", "score_heavy", "underdog", "goals_heavy"];
+      // Rotate ticket sizes for variety: single, double, triple, double, single
+      const sizes: RiskSize[] = [1, 2, 3, 2, 1];
 
       for (let i = 0; i < riskToCreate; i++) {
-        const profile = profiles[(existingRiskCount + i) % profiles.length];
-        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, profile);
+        const size = sizes[(existingRiskCount + i) % sizes.length];
+        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, size);
         if (!riskCombo) {
           if (riskCreated.length === 0)
-            riskSkipReason = `No valid Multi-Risk combo (profile=${profile})`;
+            riskSkipReason = `No valid Multi-Risk combo (size=${size}) — not enough picks with odds ≥ 2.50`;
           continue;
         }
         const idx = existingRiskCount + i + 1;
-        const profileEmoji =
-          riskCombo.profile === "score_heavy" ? "🎯"
-          : riskCombo.profile === "goals_heavy" ? "⚡"
-          : "🔥";
-        const profileName =
-          riskCombo.profile === "score_heavy" ? "Score Hunter"
-          : riskCombo.profile === "goals_heavy" ? "Goals Rush"
-          : "Underdog Hunt";
-        const riskTitle = `${profileEmoji} Multi-Risk ${profileName}${riskTarget > 1 ? ` #${idx}` : ""} • ${riskCombo.picks.length} Picks • ${riskCombo.total.toFixed(2)}x`;
+        const sizeEmoji = riskCombo.size === 1 ? "🎯" : riskCombo.size === 2 ? "⚡" : "🔥";
+        const sizeName  = riskCombo.size === 1 ? "Solo Shot" : riskCombo.size === 2 ? "Double Up" : "Triple Threat";
+        const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""} • ${riskCombo.total.toFixed(2)}x`;
         const { data: newRiskTicket, error: rtErr } = await supabase
           .from("tickets")
           .insert({
@@ -760,7 +766,7 @@ serve(async (req: Request) => {
             category: "multi_risk",
             total_odds: riskCombo.total,
             ticket_date: date,
-            ai_analysis: `High-risk/high-reward combo (${profileName}). ${riskCombo.picks.length} picks, total odds ${riskCombo.total.toFixed(2)}x. Mix of safe Premium/Pro markets with ${riskCombo.profile === "score_heavy" ? "correct-score anchors" : riskCombo.profile === "goals_heavy" ? "goals markets (Over 3.5 / NG / Under 1.5)" : "an underdog Draw anchor"}.`,
+            ai_analysis: `${sizeName}: ${riskCombo.picks.length} safe AI prediction${riskCombo.picks.length > 1 ? "s" : ""} where each market price is ≥ 2.50. Total odds ${riskCombo.total.toFixed(2)}x. Source: Pro + Premium AI pools.`,
           })
           .select()
           .single();
@@ -785,7 +791,7 @@ serve(async (req: Request) => {
           id: newRiskTicket.id,
           picks: riskCombo.picks.length,
           total_odds: riskCombo.total,
-          profile: riskCombo.profile,
+          size: riskCombo.size,
         });
       }
     }
