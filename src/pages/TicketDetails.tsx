@@ -180,6 +180,9 @@ export default function TicketDetails() {
 
   // Tier-specific breadcrumb path
   const getTierBreadcrumb = () => {
+    if ((ticket as any).category === "multi_risk") {
+      return { label: "Risk Ticket", path: "/multi-risk-matches" };
+    }
     switch (ticket.tier) {
       case "premium":
         return { label: "Premium Ticket", path: "/premium-predictions" };
