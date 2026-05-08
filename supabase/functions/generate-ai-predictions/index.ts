@@ -6467,44 +6467,91 @@ async function assignTiers(
       const lH = Math.max(0.2, Math.min(4.5, xgH));
       const lA = Math.max(0.2, Math.min(4.5, xgA));
       const MAX = 8;
-      let pBttsYes = 0, pBttsNo = 0;
-      let pOver15 = 0, pOver25 = 0, pUnder35 = 0;
-      // Joint combos
-      let pBttsYesAndOver25 = 0;
-      let pBttsNoAndUnder35 = 0;
-      let pHomeWin = 0, pAwayWin = 0, pDraw = 0;
-      let pHomeAndOver15 = 0, pAwayAndOver15 = 0;
-      let p1xAndOver15 = 0, pX2AndOver15 = 0;
+      // Build full joint distribution table — enables ANY combo from premium markets
+      const acc: Record<string, number> = {
+        // BTTS
+        bttsYes: 0, bttsNo: 0,
+        // Total goals lines
+        over05: 0, over15: 0, over25: 0, over35: 0, over45: 0,
+        under15: 0, under25: 0, under35: 0, under45: 0, under55: 0,
+        // 1X2
+        home: 0, draw: 0, away: 0,
+        // Double Chance
+        dc1x: 0, dcx2: 0, dc12: 0,
+        // DNB
+        dnbHome: 0, dnbAway: 0,
+        // Goal-line combos with BTTS
+        bttsYes_o25: 0, bttsYes_o35: 0, bttsNo_u35: 0, bttsNo_u25: 0,
+        // 1X2 + goals combos
+        home_o15: 0, home_o25: 0, away_o15: 0, away_o25: 0, draw_u35: 0,
+        // Double Chance + goals
+        dc1x_o15: 0, dc1x_o25: 0, dcx2_o15: 0, dcx2_o25: 0, dc12_o25: 0,
+        dc1x_btts: 0, dcx2_btts: 0, dc12_btts: 0,
+        // 1X2 + BTTS
+        home_btts: 0, away_btts: 0,
+        // Triple combos
+        home_o15_btts: 0, away_o15_btts: 0, dc1x_o15_btts: 0, dcx2_o15_btts: 0,
+      };
       for (let h = 0; h <= MAX; h++) {
         const ph = poissonPmf(h, lH);
         for (let a = 0; a <= MAX; a++) {
           const pa = poissonPmf(a, lA);
           const j = ph * pa;
-          const total = h + a;
+          const tot = h + a;
           const btts = h > 0 && a > 0;
-          if (btts) pBttsYes += j; else pBttsNo += j;
-          if (total >= 2) pOver15 += j;
-          if (total >= 3) pOver25 += j;
-          if (total <= 3) pUnder35 += j;
-          if (h > a) pHomeWin += j;
-          else if (h < a) pAwayWin += j;
-          else pDraw += j;
-          if (btts && total >= 3) pBttsYesAndOver25 += j;
-          if (!btts && total <= 3) pBttsNoAndUnder35 += j;
-          if (h > a && total >= 2) pHomeAndOver15 += j;
-          if (h < a && total >= 2) pAwayAndOver15 += j;
-          if (h >= a && total >= 2) p1xAndOver15 += j;
-          if (h <= a && total >= 2) pX2AndOver15 += j;
+          const isHome = h > a, isAway = h < a, isDraw = h === a;
+
+          if (btts) acc.bttsYes += j; else acc.bttsNo += j;
+          if (tot >= 1) acc.over05 += j;
+          if (tot >= 2) acc.over15 += j;
+          if (tot >= 3) acc.over25 += j;
+          if (tot >= 4) acc.over35 += j;
+          if (tot >= 5) acc.over45 += j;
+          if (tot <= 1) acc.under15 += j;
+          if (tot <= 2) acc.under25 += j;
+          if (tot <= 3) acc.under35 += j;
+          if (tot <= 4) acc.under45 += j;
+          if (tot <= 5) acc.under55 += j;
+
+          if (isHome) acc.home += j;
+          if (isDraw) acc.draw += j;
+          if (isAway) acc.away += j;
+          if (isHome || isDraw) acc.dc1x += j;
+          if (isAway || isDraw) acc.dcx2 += j;
+          if (isHome || isAway) acc.dc12 += j;
+          if (isHome) acc.dnbHome += j;
+          if (isAway) acc.dnbAway += j;
+
+          if (btts && tot >= 3) acc.bttsYes_o25 += j;
+          if (btts && tot >= 4) acc.bttsYes_o35 += j;
+          if (!btts && tot <= 3) acc.bttsNo_u35 += j;
+          if (!btts && tot <= 2) acc.bttsNo_u25 += j;
+
+          if (isHome && tot >= 2) acc.home_o15 += j;
+          if (isHome && tot >= 3) acc.home_o25 += j;
+          if (isAway && tot >= 2) acc.away_o15 += j;
+          if (isAway && tot >= 3) acc.away_o25 += j;
+          if (isDraw && tot <= 3) acc.draw_u35 += j;
+
+          if ((isHome || isDraw) && tot >= 2) acc.dc1x_o15 += j;
+          if ((isHome || isDraw) && tot >= 3) acc.dc1x_o25 += j;
+          if ((isAway || isDraw) && tot >= 2) acc.dcx2_o15 += j;
+          if ((isAway || isDraw) && tot >= 3) acc.dcx2_o25 += j;
+          if ((isHome || isAway) && tot >= 3) acc.dc12_o25 += j;
+
+          if ((isHome || isDraw) && btts) acc.dc1x_btts += j;
+          if ((isAway || isDraw) && btts) acc.dcx2_btts += j;
+          if ((isHome || isAway) && btts) acc.dc12_btts += j;
+          if (isHome && btts) acc.home_btts += j;
+          if (isAway && btts) acc.away_btts += j;
+
+          if (isHome && tot >= 2 && btts) acc.home_o15_btts += j;
+          if (isAway && tot >= 2 && btts) acc.away_o15_btts += j;
+          if ((isHome || isDraw) && tot >= 2 && btts) acc.dc1x_o15_btts += j;
+          if ((isAway || isDraw) && tot >= 2 && btts) acc.dcx2_o15_btts += j;
         }
       }
-      return {
-        pBttsYesAndOver25,
-        pBttsNoAndUnder35,
-        pHomeAndOver15,
-        pAwayAndOver15,
-        p1xAndOver15,
-        pX2AndOver15,
-      };
+      return acc;
     };
 
     type ComboPick = {
@@ -6526,15 +6573,48 @@ async function assignTiers(
       .filter((p: any) => (p.confidence ?? 0) >= 75);
 
     for (const p of eligibleForCombo) {
-      const probs = computeMarketProbs(p);
-      if (!probs) continue;
+      const m = computeMarketProbs(p);
+      if (!m) continue;
+      // Full market menu — same families used in AI Premium predictions.
+      // AI is free to choose ANY of these (single safe pick OR multi-leg combo)
+      // as long as combined probability ≥ COMBO_MIN_PROB.
       const options: Array<{ label: string; prob: number }> = [
-        { label: "BTTS & Over 2.5", prob: probs.pBttsYesAndOver25 },
-        { label: "BTTS No & Under 3.5", prob: probs.pBttsNoAndUnder35 },
-        { label: "1X & Over 1.5", prob: probs.p1xAndOver15 },
-        { label: "X2 & Over 1.5", prob: probs.pX2AndOver15 },
-        { label: "Home Win & Over 1.5", prob: probs.pHomeAndOver15 },
-        { label: "Away Win & Over 1.5", prob: probs.pAwayAndOver15 },
+        // Safe singles
+        { label: "Over 0.5", prob: m.over05 },
+        { label: "Over 1.5", prob: m.over15 },
+        { label: "Under 4.5", prob: m.under45 },
+        { label: "Under 5.5", prob: m.under55 },
+        { label: "1X (Home or Draw)", prob: m.dc1x },
+        { label: "X2 (Draw or Away)", prob: m.dcx2 },
+        { label: "12 (No Draw)", prob: m.dc12 },
+        // BTTS + goals
+        { label: "BTTS & Over 2.5", prob: m.bttsYes_o25 },
+        { label: "BTTS & Over 3.5", prob: m.bttsYes_o35 },
+        { label: "BTTS No & Under 3.5", prob: m.bttsNo_u35 },
+        { label: "BTTS No & Under 2.5", prob: m.bttsNo_u25 },
+        // 1X2 + goals
+        { label: "Home Win & Over 1.5", prob: m.home_o15 },
+        { label: "Home Win & Over 2.5", prob: m.home_o25 },
+        { label: "Away Win & Over 1.5", prob: m.away_o15 },
+        { label: "Away Win & Over 2.5", prob: m.away_o25 },
+        { label: "Draw & Under 3.5", prob: m.draw_u35 },
+        // Double Chance + goals
+        { label: "1X & Over 1.5", prob: m.dc1x_o15 },
+        { label: "1X & Over 2.5", prob: m.dc1x_o25 },
+        { label: "X2 & Over 1.5", prob: m.dcx2_o15 },
+        { label: "X2 & Over 2.5", prob: m.dcx2_o25 },
+        { label: "12 & Over 2.5", prob: m.dc12_o25 },
+        // 1X2 / DC + BTTS
+        { label: "Home Win & BTTS", prob: m.home_btts },
+        { label: "Away Win & BTTS", prob: m.away_btts },
+        { label: "1X & BTTS", prob: m.dc1x_btts },
+        { label: "X2 & BTTS", prob: m.dcx2_btts },
+        { label: "12 & BTTS", prob: m.dc12_btts },
+        // Triple combos (rare to qualify, but allowed)
+        { label: "Home & Over 1.5 & BTTS", prob: m.home_o15_btts },
+        { label: "Away & Over 1.5 & BTTS", prob: m.away_o15_btts },
+        { label: "1X & Over 1.5 & BTTS", prob: m.dc1x_o15_btts },
+        { label: "X2 & Over 1.5 & BTTS", prob: m.dcx2_o15_btts },
       ];
       // Pick the safest combo for this match
       options.sort((a, b) => b.prob - a.prob);
