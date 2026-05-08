@@ -65,6 +65,20 @@ function pickOdds(p: Pred): number | null {
  */
 function safestProMarket(p: Pred): string {
   const original = (p.prediction || "").trim();
+  const lower = original.toLowerCase();
+  // Preserve diverse, safe markets the AI already chose: GG/BTTS, Over/Under, Double Chance
+  const isDiverseMarket =
+    lower.includes("btts") ||
+    lower.includes("gg") ||
+    lower.includes("ng") ||
+    lower.includes("over") ||
+    lower.includes("under") ||
+    lower.includes("1x") ||
+    lower.includes("x2") ||
+    lower.includes("12") ||
+    lower.includes("double chance");
+  if (isDiverseMarket) return original;
+
   const ps = (p.predicted_score || "").trim();
   const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
   if (!m) return original;
