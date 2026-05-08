@@ -44,8 +44,9 @@ function pickOdds(p: Pred): number | null {
 }
 
 function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
-  // Greedy: prefer highest-confidence safe picks, accumulate until total ∈ [2, 6] with 4–6 picks.
-  const sorted = [...pool].sort((a, b) => b.confidence - a.confidence);
+  // Greedy: iterate pool in caller-provided priority order.
+  // Caller must pre-sort (e.g. Free first, then Pro).
+  const sorted = pool;
   const usedMatchIds = new Set<string>();
   const chosen: Pred[] = [];
   let total = 1;
