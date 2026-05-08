@@ -819,6 +819,7 @@ serve(async (req: Request) => {
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
+        daily_skip_reason: dailySkipReason,
         pro_target: proTarget,
         pro_created_count: proCreated.length,
         pro_tickets: proCreated,
