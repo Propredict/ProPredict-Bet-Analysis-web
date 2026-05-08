@@ -125,7 +125,7 @@ export function BettingTickets() {
     switch (activeTab) {
       case "daily": return "See all Daily Ticket";
       case "exclusive": return "See all Pro Ticket";
-      case "premium": return "See all Premium Multi-Match";
+      case "premium": return "See all Premium Ticket";
     }
   };
 
@@ -150,7 +150,7 @@ export function BettingTickets() {
     // Stable key to dedupe the same ticket across sections
     const ticketKey = (t: any) => t.id;
 
-    // Reserve specialized tickets first (Multi Risk takes priority)
+    // Reserve specialized tickets first (Risk Tickets take priority)
     const multiRiskDb = todayDbTickets.filter((t: any) => t.category === "multi_risk");
     const reserved = new Set<string>();
     multiRiskDb.forEach((t: any) => reserved.add(ticketKey(t)));
@@ -174,7 +174,7 @@ export function BettingTickets() {
       <section className="space-y-5">
         {/* Section Header — centered bold title */}
         <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground text-center tracking-tight pt-2">
-          Daily Combos Multi Matches
+          Daily Combo Tickets
         </h2>
 
         {isLoading ? (

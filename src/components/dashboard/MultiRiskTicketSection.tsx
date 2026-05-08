@@ -36,7 +36,7 @@ export function MultiRiskTicketSection() {
     <section className="space-y-3">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Multi Risk Picks <Target className="h-5 w-5 text-red-500" />
+          Risk Tickets <Target className="h-5 w-5 text-red-500" />
         </h2>
         <p className="text-xs text-muted-foreground">High odds combo • High reward</p>
       </div>
@@ -86,7 +86,7 @@ export function MultiRiskTicketSection() {
               onClick={() => navigate("/multi-risk-matches")}
               className="block w-full text-center text-[11px] text-red-400/80 hover:text-red-400 font-semibold transition-colors"
             >
-              See all Multi Risk Picks →
+              See all Risk Tickets →
             </button>
           </div>
         ) : (
@@ -95,7 +95,7 @@ export function MultiRiskTicketSection() {
             className="w-full text-xs font-bold text-white rounded-lg border-0 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
             onClick={() => navigate("/multi-risk-matches")}
           >
-            <Eye className="h-3.5 w-3.5 mr-1" /> See all Multi Risk
+            <Eye className="h-3.5 w-3.5 mr-1" /> See all Risk Tickets
           </Button>
         )}
       </Card>

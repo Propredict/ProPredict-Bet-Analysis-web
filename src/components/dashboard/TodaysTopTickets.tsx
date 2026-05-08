@@ -26,7 +26,7 @@ export function TodaysTopTickets() {
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
 
-  // Exclude specialized categories (Multi Risk, etc.) from main 3 tiers
+  // Exclude specialized categories (Risk Tickets, etc.) from main 3 tiers
   const mainTickets = todayTickets.filter((t: any) => t.category !== "multi_risk");
 
   const freeTicket = mainTickets.find((t: any) => t.tier === "daily" || t.tier === "free");

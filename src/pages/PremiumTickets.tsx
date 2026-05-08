@@ -80,7 +80,7 @@ export default function PremiumTickets() {
       await Promise.all([refetch(), refetchPlan()]);
       toast({
         title: "Data refreshed",
-        description: "Premium Multi-Match Predictions have been updated.",
+        description: "Premium Ticket have been updated.",
       });
     } finally {
       setIsRefreshing(false);
@@ -90,7 +90,7 @@ export default function PremiumTickets() {
   return <>
     <FreeUserUpsellModal />
     <Helmet>
-      <title>Premium Multi-Match Predictions – ProPredict</title>
+      <title>Premium Ticket – ProPredict</title>
       <meta
         name="description"
         content="Premium AI-powered match combinations with highest confidence selections. For informational and entertainment purposes only."
@@ -104,7 +104,7 @@ export default function PremiumTickets() {
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Multi-Match Predictions</h1>
+            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Ticket</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest confidence predictions for subscribers</p>
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function PremiumTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Premium Multi-Match Predictions feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
+          Premium Ticket feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
         </p>
       </Card>
 
@@ -199,7 +199,7 @@ export default function PremiumTickets() {
           </Card> : premiumTickets.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-warning mb-1">No Premium Multi-Match Predictions available</p>
+              <p className="text-warning mb-1">No Premium Ticket available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />

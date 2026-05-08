@@ -49,7 +49,7 @@ export default function AllTickets() {
       refetchTickets();
     }
     refetchPlan();
-    toast.success(`${contentType === "tips" ? "Predictions" : "Multi-Match Predictions"} refreshed`);
+    toast.success(`${contentType === "tips" ? "Predictions" : "Tickets"} refreshed`);
   };
 
   // Filter to exclude today and sort by date descending (last 3 days first)
@@ -193,7 +193,7 @@ export default function AllTickets() {
             </div>
             <div>
                <h1 className="text-sm sm:text-base font-semibold text-foreground">Match History</h1>
-               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Last 30 days of Predictions & Multi-Match Predictions</p>
+               <p className="text-[9px] sm:text-[10px] text-muted-foreground">Last 30 days of Predictions & Tickets</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -277,7 +277,7 @@ export default function AllTickets() {
             )}
           >
             <Ticket className={cn("h-5 w-5", contentType === "tickets" && "drop-shadow-lg")} />
-            <span className="text-base">Multi-Match</span>
+            <span className="text-base">Ticket</span>
             <Badge 
               variant="outline" 
               className={cn(

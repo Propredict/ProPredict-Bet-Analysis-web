@@ -428,7 +428,7 @@ export default function ManageTickets() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="standard">Standard</SelectItem>
-                    <SelectItem value="multi_risk">🎯 Multi Risk</SelectItem>
+                    <SelectItem value="multi_risk">🎯 Risk Ticket</SelectItem>
                   </SelectContent>
                 </Select>
 
