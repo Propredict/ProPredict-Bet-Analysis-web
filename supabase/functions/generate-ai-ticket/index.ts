@@ -51,58 +51,93 @@ function pickOdds(p: Pred): number | null {
 }
 
 /**
- * Pick the SAFEST market for a Pro ticket pick based on predicted score and probabilities.
+ * Evaluate ALL safe markets for a pick and return the one with the highest
+ * probability above the safety threshold. Considers:
+ *   1X2: "Home Win" / "Draw" / "Away Win"
+ *   Double Chance: "1X" / "X2" / "12"
+ *   Goals: "Over 2.5" / "Under 2.5" / "Over 3.5"
+ *   BTTS: "GG" / "NG"
  *
- *  - Score margin ≥ 2 (e.g. 3-1, 3-0, 2-0) AND winner prob ≥ 55  → straight "1" or "2"
- *  - Score margin = 1 AND winner prob ≥ 60                       → straight "1" or "2"
- *  - Score margin = 1 (lower confidence)                         → double chance "1X" / "X2"
- *  - Equal goals AND draw prob ≥ 45                              → "X" (Draw)
- *  - Equal goals (lower draw conf)                               → keep original prediction
- *  - Otherwise                                                   → keep original prediction
- *
- * Always strips correct-score format (handled by caller via isCorrectScore filter,
- * but as a safety net we never return "X-Y" here).
+ * Probabilities for 1X2 come from predicted home_win/draw/away_win.
+ * Probabilities for goals/BTTS are estimated from predicted_score.
+ * Returns market label + computed odds (1/prob with safety cap).
  */
-function safestProMarket(p: Pred): string {
-  const original = (p.prediction || "").trim();
-  const lower = original.toLowerCase();
-  // Preserve diverse, safe markets the AI already chose: GG/BTTS, Over/Under, Double Chance
-  const isDiverseMarket =
-    lower.includes("btts") ||
-    lower.includes("gg") ||
-    lower.includes("ng") ||
-    lower.includes("over") ||
-    lower.includes("under") ||
-    lower.includes("1x") ||
-    lower.includes("x2") ||
-    lower.includes("12") ||
-    lower.includes("double chance");
-  if (isDiverseMarket) return original;
+type MarketChoice = { market: string; odds: number; prob: number };
 
-  const ps = (p.predicted_score || "").trim();
-  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-  if (!m) return original;
-  const hg = parseInt(m[1], 10);
-  const ag = parseInt(m[2], 10);
-  const margin = hg - ag;
+function clampOdds(prob: number): number {
+  // prob is in 0-100; convert to decimal odds with small bookmaker margin
+  const fair = 100 / Math.max(prob, 1);
+  const o = Math.max(1.15, Math.min(2.6, fair * 0.95));
+  return Math.round(o * 100) / 100;
+}
+
+function safestProPick(p: Pred): MarketChoice {
   const hw = p.home_win ?? 0;
   const dr = p.draw ?? 0;
   const aw = p.away_win ?? 0;
 
-  if (margin >= 2 && hw >= 55) return "Home Win";
-  if (margin <= -2 && aw >= 55) return "Away Win";
-  if (margin === 1 && hw >= 60) return "Home Win";
-  if (margin === -1 && aw >= 60) return "Away Win";
-  if (margin === 1) return "Home or Draw"; // 1X
-  if (margin === -1) return "Draw or Away"; // X2
-  if (margin === 0 && dr >= 45) return "Draw";
+  const ps = (p.predicted_score || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const hg = m ? parseInt(m[1], 10) : -1;
+  const ag = m ? parseInt(m[2], 10) : -1;
+  const total = hg >= 0 ? hg + ag : -1;
 
-  // Fallback: keep original prediction unless it's a correct score
-  if (/\b\d{1,2}\s*[-:]\s*\d{1,2}\b/.test(original)) {
-    // Shouldn't happen because isCorrectScore filters earlier, but be safe
-    return hw >= aw ? "Home or Draw" : "Draw or Away";
+  const candidates: { market: string; prob: number }[] = [];
+
+  // 1X2 (only when we have probabilities)
+  if (hw > 0 || dr > 0 || aw > 0) {
+    candidates.push({ market: "Home Win", prob: hw });
+    candidates.push({ market: "Draw", prob: dr });
+    candidates.push({ market: "Away Win", prob: aw });
+    candidates.push({ market: "Home or Draw", prob: hw + dr });
+    candidates.push({ market: "Draw or Away", prob: dr + aw });
+    candidates.push({ market: "Home or Away", prob: hw + aw });
   }
-  return original;
+
+  // Goals & BTTS estimated from predicted score
+  if (total >= 0) {
+    let over25 = 20, under25 = 20, over35 = 15, gg = 25, ng = 25;
+    if (total >= 4) { over25 = 82; under25 = 12; }
+    else if (total === 3) { over25 = 72; under25 = 28; }
+    else if (total === 2) { over25 = 38; under25 = 70; }
+    else { over25 = 18; under25 = 82; }
+
+    if (total >= 5) over35 = 80;
+    else if (total === 4) over35 = 65;
+    else if (total === 3) over35 = 32;
+    else over35 = 15;
+
+    if (hg >= 2 && ag >= 2) { gg = 82; ng = 18; }
+    else if (hg >= 1 && ag >= 1) { gg = 72; ng = 28; }
+    else { gg = 22; ng = 78; }
+
+    candidates.push({ market: "Over 2.5", prob: over25 });
+    candidates.push({ market: "Under 2.5", prob: under25 });
+    candidates.push({ market: "Over 3.5", prob: over35 });
+    candidates.push({ market: "GG", prob: gg });
+    candidates.push({ market: "NG", prob: ng });
+  }
+
+  // Choose highest probability above safety threshold (65%)
+  const safe = candidates.filter((c) => c.prob >= 65).sort((a, b) => b.prob - a.prob);
+  if (safe.length > 0) {
+    const best = safe[0];
+    return { market: best.market, odds: clampOdds(best.prob), prob: best.prob };
+  }
+
+  // Fallback: keep original AI prediction with its odds (unless correct score)
+  const original = (p.prediction || "").trim();
+  const fallbackOdds = pickOdds(p) ?? 1.5;
+  if (isCorrectScore(original)) {
+    // Pick the better double chance from probabilities
+    const dc = [
+      { market: "Home or Draw", prob: hw + dr },
+      { market: "Draw or Away", prob: dr + aw },
+      { market: "Home or Away", prob: hw + aw },
+    ].sort((a, b) => b.prob - a.prob)[0];
+    return { market: dc.market, odds: clampOdds(Math.max(dc.prob, 60)), prob: dc.prob };
+  }
+  return { market: original, odds: fallbackOdds, prob: 0 };
 }
 
 /** Detect "correct score"-style predictions like "2-1", "1:0", "Score 3-2". */
@@ -154,21 +189,22 @@ function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { p
 function buildProCombo(
   pool: Pred[],
   excludeMatchIds: Set<string> = new Set(),
-): { picks: Pred[]; total: number } | null {
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
   const usedMatchIds = new Set<string>();
-  const chosen: Pred[] = [];
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
   let total = 1;
 
   for (const p of pool) {
     if (chosen.length >= 7) break;
     if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
-    if (isCorrectScore(p.prediction)) continue;
-    const o = pickOdds(p);
-    if (!o) continue;
+    const choice = safestProPick(p);
+    // Skip if no safe market found (prob 0 fallback) and original is unsafe
+    if (choice.prob > 0 && choice.prob < 65) continue;
+    const o = choice.odds;
     if (o < 1.2 || o > 2.6) continue;
     const next = total * o;
     if (next > 10.0) continue;
-    chosen.push(p);
+    chosen.push({ p, choice });
     usedMatchIds.add(p.match_id);
     total = next;
     // Stop early once we are inside the safe sweet spot with enough picks
@@ -368,8 +404,8 @@ serve(async (req: Request) => {
             total_odds: proCombo.total,
             ticket_date: date,
             ai_analysis: `Auto-generated Pro combo from ${proCombo.picks.length} high-confidence picks. Avg confidence: ${Math.round(
-              proCombo.picks.reduce((s, p) => s + p.confidence, 0) / proCombo.picks.length,
-            )}%. Markets: 1/X/2, Double Chance, GG, Over/Under (no correct score).`,
+              proCombo.picks.reduce((s, x) => s + x.p.confidence, 0) / proCombo.picks.length,
+            )}%. Safest market chosen per pick (1/X/2, Double Chance, GG/NG, Over/Under 2.5/3.5 — no correct score).`,
           })
           .select()
           .single();
@@ -377,19 +413,19 @@ serve(async (req: Request) => {
 
         const proRows = proCombo.picks.map((p, k) => ({
           ticket_id: newProTicket.id,
-          match_name: `${p.home_team} vs ${p.away_team}`,
-          home_team: p.home_team,
-          away_team: p.away_team,
-          league: p.league,
-          prediction: safestProMarket(p),
-          odds: pickOdds(p)!,
-          match_date: p.match_date,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.choice.market,
+          odds: p.choice.odds,
+          match_date: p.p.match_date,
           sort_order: k,
         }));
         const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
         if (pmErr) throw pmErr;
 
-        proCombo.picks.forEach((p) => proUsed.add(p.match_id));
+        proCombo.picks.forEach((x) => proUsed.add(x.p.match_id));
         proCreated.push({
           id: newProTicket.id,
           picks: proCombo.picks.length,
