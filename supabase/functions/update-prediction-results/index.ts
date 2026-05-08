@@ -615,6 +615,128 @@ Deno.serve(async (req) => {
     }
     if (tipsResolved > 0) console.log(`Diamond tips pass: ${tipsResolved} resolved, ${tipsSkipped} skipped`);
 
+    // ── FOURTH PASS: resolve TICKETS (won/lost) ──
+    // A ticket is WON only if ALL legs win. If any leg can't be evaluated
+    // (e.g. unrecognized market label) or any match isn't finished yet, skip.
+    let ticketsResolved = 0;
+    let ticketsSkipped = 0;
+    try {
+      const todayStr = formatDate(today);
+      const { data: pendingTickets } = await supabase
+        .from("tickets")
+        .select("id, ticket_date, status, result, matches:ticket_matches(id, home_team, away_team, match_date, prediction)")
+        .eq("status", "published")
+        .eq("result", "pending")
+        .gte("ticket_date", formatDate(threeDaysAgo))
+        .lte("ticket_date", todayStr)
+        .limit(50);
+
+      if (pendingTickets && pendingTickets.length > 0) {
+        // Reuse leg evaluator (same as Diamond tips). Returns null if unrecognized.
+        const evalLegT = (leg: string, h: number, a: number): boolean | null => {
+          const t = h + a;
+          const btts = h > 0 && a > 0;
+          const s = leg.trim();
+          let m: RegExpMatchArray | null;
+          if ((m = s.match(/^Over\s+(\d+(?:\.\d+)?)/i))) return t > parseFloat(m[1]);
+          if ((m = s.match(/^Under\s+(\d+(?:\.\d+)?)/i))) return t < parseFloat(m[1]);
+          if (/^BTTS\s*No/i.test(s) || /^GG\s*No/i.test(s) || /^NG/i.test(s)) return !btts;
+          if (/^BTTS/i.test(s) || /^GG/i.test(s)) return btts;
+          if (/^1X/i.test(s)) return h >= a;
+          if (/^X2/i.test(s)) return a >= h;
+          if (/^12/i.test(s)) return h !== a;
+          if (/^Home/i.test(s) || /^\s*1\s*$/.test(s)) return h > a;
+          if (/^Away/i.test(s) || /^\s*2\s*$/.test(s)) return a > h;
+          if (/^Draw/i.test(s) || /^\s*X\s*$/.test(s)) return h === a;
+          return null;
+        };
+        const evalComboT = (label: string, h: number, a: number): boolean | null => {
+          const legs = label.split(/\s*&\s*/);
+          let allWon = true;
+          for (const l of legs) {
+            const r = evalLegT(l, h, a);
+            if (r === null) return null;
+            if (!r) allWon = false;
+          }
+          return allWon;
+        };
+
+        // Bulk lookup match_id by team+date from ai_predictions
+        const allMatchDates = new Set<string>();
+        for (const t of pendingTickets) {
+          for (const mm of (t as any).matches ?? []) {
+            if (mm.match_date) allMatchDates.add(mm.match_date);
+          }
+        }
+        const { data: aiRowsT } = await supabase
+          .from("ai_predictions")
+          .select("match_id, home_team, away_team, match_date")
+          .in("match_date", [...allMatchDates]);
+        const aiMapT = new Map<string, string>();
+        for (const r of aiRowsT ?? []) {
+          const k = `${(r.home_team ?? "").toLowerCase()}|${(r.away_team ?? "").toLowerCase()}|${r.match_date}`;
+          if (r.match_id) aiMapT.set(k, String(r.match_id));
+        }
+
+        // Fixture cache to avoid duplicate API calls within this run
+        const fixtureCache = new Map<string, { hg: number; ag: number; finished: boolean }>();
+        const getFixture = async (fid: string) => {
+          if (fixtureCache.has(fid)) return fixtureCache.get(fid)!;
+          const apiResp = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fid}`, {
+            headers: { "x-apisports-key": apiFootballKey },
+          });
+          if (!apiResp.ok) { const v = { hg: 0, ag: 0, finished: false }; fixtureCache.set(fid, v); return v; }
+          const j = await apiResp.json();
+          const f = j.response?.[0];
+          const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
+          const finished = !!f && finStatuses.includes(f.fixture?.status?.short);
+          const v = { hg: Number(f?.goals?.home ?? 0), ag: Number(f?.goals?.away ?? 0), finished: finished && f?.goals?.home != null && f?.goals?.away != null };
+          fixtureCache.set(fid, v);
+          await new Promise((r) => setTimeout(r, 100));
+          return v;
+        };
+
+        for (const ticket of pendingTickets as any[]) {
+          try {
+            const matches = ticket.matches ?? [];
+            if (matches.length === 0) { ticketsSkipped++; continue; }
+
+            let allFinished = true;
+            let unevaluable = false;
+            let allLegsWon = true;
+
+            for (const mm of matches) {
+              const k = `${(mm.home_team ?? "").toLowerCase()}|${(mm.away_team ?? "").toLowerCase()}|${mm.match_date}`;
+              const fid = aiMapT.get(k);
+              if (!fid || isNaN(Number(fid))) { allFinished = false; break; }
+              const fx = await getFixture(fid);
+              if (!fx.finished) { allFinished = false; break; }
+              const r = evalComboT(String(mm.prediction ?? ""), fx.hg, fx.ag);
+              if (r === null) { unevaluable = true; break; }
+              if (!r) allLegsWon = false;
+            }
+
+            if (!allFinished || unevaluable) { ticketsSkipped++; continue; }
+
+            const newResult = allLegsWon ? "won" : "lost";
+            const { error: tkUpdErr } = await supabase
+              .from("tickets")
+              .update({ result: newResult })
+              .eq("id", ticket.id);
+            if (!tkUpdErr) {
+              ticketsResolved++;
+              console.log(`✓ Ticket ${ticket.id} (${matches.length} legs) → ${newResult}`);
+            }
+          } catch (e) {
+            console.error(`Ticket resolve error ${ticket.id}:`, e);
+          }
+        }
+      }
+    } catch (tkErr) {
+      console.error("Tickets pass error:", tkErr);
+    }
+    if (ticketsResolved > 0) console.log(`Tickets pass: ${ticketsResolved} resolved, ${ticketsSkipped} skipped`);
+
     return new Response(
       JSON.stringify({
         message: "Prediction results updated",
@@ -626,6 +748,8 @@ Deno.serve(async (req) => {
         arena_orphan_diag: orphanDiag,
         diamond_tips_resolved: tipsResolved,
         diamond_tips_skipped: tipsSkipped,
+        tickets_resolved: ticketsResolved,
+        tickets_skipped: ticketsSkipped,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
