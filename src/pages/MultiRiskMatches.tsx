@@ -54,7 +54,7 @@ export default function MultiRiskMatches() {
 
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const multiRiskTickets = tickets?.filter((t: any) => t.category === "multi_risk" && t.ticket_date === today) || [];
-  const unlockedCount = multiRiskTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
+  const unlockedCount = multiRiskTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
   const handleRefresh = () => {
@@ -174,7 +174,7 @@ export default function MultiRiskMatches() {
             </Card>
           ) : (
             multiRiskTickets.map((ticket, idx) => {
-              const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
+              const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const isUnlocking = unlockingId === ticket.id;
               const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
@@ -198,7 +198,7 @@ export default function MultiRiskMatches() {
                       }}
                       isLocked={isLocked}
                       unlockMethod={unlockMethod}
-                      onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
+                      onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")}
                       onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
                       isUnlocking={isUnlocking}

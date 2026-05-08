@@ -29,7 +29,7 @@ export function MultiRiskTicketSection() {
 
   const matches = multiRisk.matches ?? [];
   const previewMatches = matches.slice(0, 3);
-  const isUnlocked = canAccess(multiRisk.tier as any, "ticket", multiRisk.id);
+  const isUnlocked = canAccess("premium", "ticket", multiRisk.id);
   const isUnlocking = unlockingId === multiRisk.id;
 
   return (
@@ -76,11 +76,11 @@ export function MultiRiskTicketSection() {
             <Button
               size="sm"
               className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
-              onClick={() => handleUnlock("ticket", multiRisk.id, multiRisk.tier as any)}
+              onClick={() => handleUnlock("ticket", multiRisk.id, "premium")}
               disabled={isUnlocking}
             >
-              {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
-              Watch Ad to Unlock
+              {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Lock className="h-3.5 w-3.5 mr-1" />}
+              Upgrade to Premium
             </Button>
             <button
               onClick={() => navigate("/multi-risk-matches")}
