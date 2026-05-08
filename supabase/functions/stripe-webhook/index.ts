@@ -230,14 +230,15 @@ serve(async (req) => {
       }
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      const priceId = subscription.items.data[0]?.price.id;
-      const plan = PRICE_TO_PLAN[priceId] || "basic";
-      const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-      const status = subscription.status;
+      const plan = getPlanFromSubscription(subscription);
+      const currentPeriodEnd = getPeriodEnd(subscription);
+      const status = getSupabaseStatus(subscription.status);
 
       console.log(`Processing checkout for ${customerEmail}: plan=${plan}, status=${status}, expires=${currentPeriodEnd.toISOString()}`);
 
-      const user = await findUserByEmail(customerEmail);
+      const user = session.metadata?.user_id
+        ? { id: session.metadata.user_id, email: customerEmail }
+        : await findUserByEmail(customerEmail);
       
       if (!user) {
         console.error(`No user found with email: ${customerEmail}`);
@@ -247,19 +248,7 @@ serve(async (req) => {
         );
       }
 
-      const { error: upsertError } = await supabase
-        .from("user_subscriptions")
-        .upsert(
-          {
-            user_id: user.id,
-            plan: plan,
-            status: status,
-            subscription_source: "stripe",
-            expires_at: currentPeriodEnd.toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
+      const upsertError = await syncSubscriptionToSupabase(supabase, user.id, subscription);
 
       if (upsertError) {
         console.error("Error upserting subscription:", upsertError);
