@@ -8,14 +8,17 @@ const corsHeaders = {
 };
 
 /**
- * AI Daily Ticket Generator
+ * AI Ticket Generator
  *
- * Generates 1 Daily ticket per day automatically based on ai_predictions:
- *  - Combo strategy (preferred): 4–6 safest picks, total odds in [2.0, 6.0]
- *  - Single strategy (fallback): 1 pick with odds in [3.0, 4.0]
+ * Daily tickets (tier='daily', category='ai_daily'):
+ *   - 1 ticket/day, or 2 if Free pool > 15
+ *   - Combo: 4–6 picks, total odds [2.0, 6.0] (Free first, Pro fallback, NO Premium)
+ *   - Single fallback: odds [2.5, 4.0]
  *
- * Inserted as: tier='daily', status='published', category='ai_daily'.
- * Skips if an AI daily ticket already exists for today.
+ * Pro ticket (tier='pro', category='ai_pro'):
+ *   - 1 ticket/day from Pro pool (confidence 65–77)
+ *   - Combo: 3–7 picks, total odds [3.0, 10.0]
+ *   - All prediction types allowed EXCEPT correct score (e.g. "2-1", "1:0")
  */
 
 type Pred = {
@@ -41,6 +44,14 @@ function pickOdds(p: Pred): number | null {
   // fallback from confidence
   if (p.confidence > 0) return Math.max(1.1, Math.round((100 / p.confidence) * 100) / 100);
   return null;
+}
+
+/** Detect "correct score"-style predictions like "2-1", "1:0", "Score 3-2". */
+function isCorrectScore(prediction: string): boolean {
+  const s = (prediction || "").toLowerCase();
+  if (/\b\d{1,2}\s*[-:]\s*\d{1,2}\b/.test(s)) return true;
+  if (s.includes("correct score") || s.includes("exact score")) return true;
+  return false;
 }
 
 function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
@@ -69,6 +80,43 @@ function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { p
   }
 
   if (chosen.length >= 4 && total >= 2.0 && total <= 6.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
+/**
+ * Pro combo builder.
+ *  - 3–7 picks, total odds in [3.0, 10.0]
+ *  - Per-pick odds capped at 2.6 to keep combo "safe"
+ *  - Excludes correct-score predictions
+ *  - Caller pre-sorts pool (confidence DESC) and may exclude match IDs
+ */
+function buildProCombo(
+  pool: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: Pred[]; total: number } | null {
+  const usedMatchIds = new Set<string>();
+  const chosen: Pred[] = [];
+  let total = 1;
+
+  for (const p of pool) {
+    if (chosen.length >= 7) break;
+    if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
+    if (isCorrectScore(p.prediction)) continue;
+    const o = pickOdds(p);
+    if (!o) continue;
+    if (o < 1.2 || o > 2.6) continue;
+    const next = total * o;
+    if (next > 10.0) continue;
+    chosen.push(p);
+    usedMatchIds.add(p.match_id);
+    total = next;
+    // Stop early once we are inside the safe sweet spot with enough picks
+    if (chosen.length >= 5 && total >= 4.0) break;
+  }
+
+  if (chosen.length >= 3 && total >= 3.0 && total <= 10.0) {
     return { picks: chosen, total: Math.round(total * 100) / 100 };
   }
   return null;
@@ -222,6 +270,7 @@ serve(async (req: Request) => {
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
+        pro_ticket: proResult,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
