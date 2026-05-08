@@ -79,7 +79,7 @@ export default function ExclusiveTickets() {
       // Manually-curated Pro/Exclusive tickets
       (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
       // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
-      || ticket.category === "ai_pro"
+      || (ticket.category as string) === "ai_pro"
     )
   );
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
