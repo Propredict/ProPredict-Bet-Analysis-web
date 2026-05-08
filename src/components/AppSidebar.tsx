@@ -54,10 +54,10 @@ const tipsItems = [
 ];
 
 const ticketsItems = [
-  { title: "Daily Multi-Match", url: "/daily-predictions", icon: Calendar },
-  { title: "Pro Multi-Match", url: "/pro-predictions", icon: Ticket },
+  { title: "Daily Ticket", url: "/daily-predictions", icon: Calendar },
+  { title: "Pro Ticket", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Multi-Match", url: "/premium-predictions", icon: Crown },
-  { title: "Multi Risk Matches", url: "/multi-risk-matches", icon: Target },
+  { title: "Risk Ticket", url: "/multi-risk-matches", icon: Target },
 ];
 
 const packagesItems = [

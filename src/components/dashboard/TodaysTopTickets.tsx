@@ -74,7 +74,7 @@ export function TodaysTopTickets() {
       {/* Header */}
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Daily Multi Matches <Ticket className="h-5 w-5 text-orange-500" />
+          Daily Tickets <Ticket className="h-5 w-5 text-orange-500" />
         </h2>
         <p className="text-xs text-muted-foreground">Multi-match combos • Higher returns</p>
       </div>
