@@ -26,9 +26,6 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
       <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
         <Zap className="w-3.5 md:w-4 h-3.5 md:h-4 text-amber-400" />
         <span className="text-xs md:text-sm font-medium text-foreground">Smart Combos</span>
-        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[9px] md:text-[10px] rounded-lg">
-          Max 2
-        </Badge>
       </div>
 
       <div className="space-y-1.5 md:space-y-2">
