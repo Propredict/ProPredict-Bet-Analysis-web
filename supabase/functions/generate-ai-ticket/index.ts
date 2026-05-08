@@ -262,6 +262,75 @@ serve(async (req: Request) => {
       });
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // PRO TICKET (1 per day) — only from Pro pool, excludes correct score
+    // ───────────────────────────────────────────────────────────────────
+    let proResult: { id?: string; skipped?: boolean; reason?: string; picks?: number; total_odds?: number } = {
+      skipped: true,
+      reason: "not_attempted",
+    };
+
+    const { data: existingPro } = await supabase
+      .from("tickets")
+      .select("id")
+      .eq("ticket_date", date)
+      .eq("category", "ai_pro");
+
+    if ((existingPro?.length ?? 0) >= 1) {
+      proResult = { skipped: true, reason: "Pro AI ticket already exists for today" };
+    } else if (proPool.length < 3) {
+      proResult = { skipped: true, reason: `Pro pool too small (${proPool.length} < 3)` };
+    } else {
+      // Pro pool sorted by confidence DESC; prefer variance_stable when we have ≥3 stable.
+      const stableProPool = proPool.filter((p) => p.variance_stable);
+      const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
+      const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
+
+      const proCombo = buildProCombo(proOrderedAll);
+      if (!proCombo) {
+        proResult = { skipped: true, reason: "No valid Pro combo (odds 3–10, 3–7 picks)" };
+      } else {
+        const proTitle = `🎯 AI Pro Combo • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
+        const { data: newProTicket, error: ptErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: proTitle,
+            tier: "pro",
+            status: "published",
+            category: "ai_pro",
+            total_odds: proCombo.total,
+            ticket_date: date,
+            ai_analysis: `Auto-generated Pro combo from ${proCombo.picks.length} high-confidence picks. Avg confidence: ${Math.round(
+              proCombo.picks.reduce((s, p) => s + p.confidence, 0) / proCombo.picks.length,
+            )}%. Markets: any (no correct score).`,
+          })
+          .select()
+          .single();
+
+        if (ptErr) throw ptErr;
+
+        const proRows = proCombo.picks.map((p, idx) => ({
+          ticket_id: newProTicket.id,
+          match_name: `${p.home_team} vs ${p.away_team}`,
+          home_team: p.home_team,
+          away_team: p.away_team,
+          league: p.league,
+          prediction: p.prediction,
+          odds: pickOdds(p)!,
+          match_date: p.match_date,
+          sort_order: idx,
+        }));
+        const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
+        if (pmErr) throw pmErr;
+
+        proResult = {
+          id: newProTicket.id,
+          picks: proCombo.picks.length,
+          total_odds: proCombo.total,
+        };
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
