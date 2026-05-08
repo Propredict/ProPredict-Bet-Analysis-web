@@ -383,11 +383,32 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
     return { market: best.market, odds: best.odds, prob: best.prob };
   }
 
-  // Correct-score fallback (only for high-confidence Premium with a clear score).
-  if ((p.confidence ?? 0) >= 78 && hg >= 0 && ag >= 0) {
-    const o = correctScoreOdds(ps);
-    if (o && o >= 2.5 && o <= 6.0) {
-      return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
+  // Correct-score fallback — STRICTLY for the safest possible scorelines.
+  // Requirements (ALL must be true):
+  //   • Premium-grade confidence (≥ 85)
+  //   • Variance is stable (model agrees across runs)
+  //   • Common, low-total scoreline only: 1-0, 0-1, 1-1, 2-1, 1-2, 2-0, 0-2, 0-0
+  //   • Total goals ≤ 3
+  //   • Heuristic market odds in [3.50, 8.00] (typical for safe correct-score picks)
+  //   • Predicted score aligns with the dominant 1X2 outcome (no contradictions)
+  if (
+    (p.confidence ?? 0) >= 85 &&
+    p.variance_stable === true &&
+    hg >= 0 && ag >= 0 &&
+    (hg + ag) <= 3
+  ) {
+    const safeScores = new Set(["0-0", "1-0", "0-1", "1-1", "2-1", "1-2", "2-0", "0-2"]);
+    const key = `${hg}-${ag}`;
+    if (safeScores.has(key)) {
+      // Score must agree with the strongest 1X2 probability
+      const dominant = hw >= dr && hw >= aw ? "H" : aw >= hw && aw >= dr ? "A" : "D";
+      const scoreSide = hg > ag ? "H" : ag > hg ? "A" : "D";
+      if (dominant === scoreSide) {
+        const o = correctScoreOdds(ps);
+        if (o && o >= 3.5 && o <= 8.0) {
+          return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
+        }
+      }
     }
   }
 
