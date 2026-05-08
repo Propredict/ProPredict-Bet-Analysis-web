@@ -728,11 +728,11 @@ serve(async (req: Request) => {
 
     // ───────────────────────────────────────────────────────────────────
     // RISK TICKETS (4–5 per day) — bold AI picks, high-payout single/combo
-    //   - 1, 2 or 3 picks per ticket
+    //   - 1, 2, 3 or 4 picks per ticket
     //   - Each individual pick odds ≥ 2.50
-    //   - Combined total odds in [4.00, 15.00]
+    //   - Combined total odds ≥ 4.00 (no upper cap)
     //   - Source: Pro + Premium pools (no Free)
-    //   - Page filter: tier='premium' (frontend), category='multi_risk'
+    //   - Tier: 'premium' — only Premium subscribers can access
     // ───────────────────────────────────────────────────────────────────
     const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
