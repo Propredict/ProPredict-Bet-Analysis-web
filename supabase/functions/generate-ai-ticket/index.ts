@@ -217,6 +217,75 @@ function buildProCombo(
   return null;
 }
 
+/**
+ * Premium combo builder.
+ *  - 4–6 picks, total odds in [5.0, 15.0]
+ *  - Composition: ~60% Premium picks + ~40% Pro picks (mix for higher payout)
+ *  - Per-pick odds in [1.25, 3.0]
+ *  - Excludes correct-score predictions; uses safestProPick for safe markets
+ *  - Allows higher individual odds than Pro tickets (e.g. "1 + Over 3.5")
+ */
+function buildPremiumCombo(
+  premiumOrdered: Pred[],
+  proOrdered: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
+  const used = new Set<string>();
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
+  let total = 1;
+  // Target ratio: 60% premium, 40% pro
+  const targetSize = 5;
+  const targetPremium = 3;
+  const targetPro = 2;
+  let premiumCount = 0;
+  let proCount = 0;
+
+  const tryAdd = (p: Pred): boolean => {
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
+    const choice = safestProPick(p);
+    if (choice.prob > 0 && choice.prob < 60) return false;
+    const o = choice.odds;
+    if (o < 1.25 || o > 3.0) return false;
+    const next = total * o;
+    if (next > 15.0) return false;
+    chosen.push({ p, choice });
+    used.add(p.match_id);
+    total = next;
+    return true;
+  };
+
+  // First pass: fill premium quota
+  for (const p of premiumOrdered) {
+    if (premiumCount >= targetPremium) break;
+    if (tryAdd(p)) premiumCount++;
+  }
+  // Second pass: fill pro quota
+  for (const p of proOrdered) {
+    if (proCount >= targetPro) break;
+    if (tryAdd(p)) proCount++;
+  }
+  // Top-up if we are below target size or below odds floor — prefer remaining premium first
+  if (chosen.length < targetSize || total < 5.0) {
+    for (const p of premiumOrdered) {
+      if (chosen.length >= 6) break;
+      if (total >= 8.0 && chosen.length >= 4) break;
+      tryAdd(p);
+    }
+  }
+  if (chosen.length < targetSize || total < 5.0) {
+    for (const p of proOrdered) {
+      if (chosen.length >= 6) break;
+      if (total >= 8.0 && chosen.length >= 4) break;
+      tryAdd(p);
+    }
+  }
+
+  if (chosen.length >= 4 && total >= 5.0 && total <= 15.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
