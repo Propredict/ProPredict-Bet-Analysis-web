@@ -461,12 +461,9 @@ serve(async (req: Request) => {
       .eq("category", "ai_daily");
 
     const existingCount = existing?.length ?? 0;
-    if (existingCount >= 2) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "Daily AI ticket cap (2) reached" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    // NOTE: daily cap (2) is enforced via targetTickets calculation below;
+    // we no longer early-return here so Pro/Premium/Risk sections still run
+    // even when Daily quota is already met.
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
@@ -502,16 +499,12 @@ serve(async (req: Request) => {
     const targetTickets = freePool.length > 15 ? 2 : 1;
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
-
-    if (ticketsToCreate === 0) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "Already at target ticket count for today" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     const usedMatchIds = new Set<string>();
     const created: Array<{ id: string; picks: number; total_odds: number; strategy: string }> = [];
+    let dailySkipReason: string | null = null;
+    if (ticketsToCreate === 0) {
+      dailySkipReason = "Daily AI ticket already at target for today";
+    }
 
     for (let i = 0; i < ticketsToCreate; i++) {
       // Try Free-only combo first, then supplement with Pro, then single fallback
@@ -826,6 +819,7 @@ serve(async (req: Request) => {
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
+        daily_skip_reason: dailySkipReason,
         pro_target: proTarget,
         pro_created_count: proCreated.length,
         pro_tickets: proCreated,
