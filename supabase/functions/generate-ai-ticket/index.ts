@@ -43,7 +43,7 @@ function pickOdds(p: Pred): number | null {
   return null;
 }
 
-function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
+function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   // Greedy: iterate pool in caller-provided priority order.
   // Caller must pre-sort (e.g. Free first, then Pro).
   const sorted = pool;
@@ -53,7 +53,7 @@ function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
 
   for (const p of sorted) {
     if (chosen.length >= 6) break;
-    if (usedMatchIds.has(p.match_id)) continue;
+    if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
     const o = pickOdds(p);
     if (!o) continue;
     // Avoid single-pick odds that are too high in a combo
@@ -74,8 +74,9 @@ function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
   return null;
 }
 
-function buildSingle(pool: Pred[]): { picks: Pred[]; total: number } | null {
+function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
+    .filter((p) => !excludeMatchIds.has(p.match_id))
     .map((p) => ({ p, o: pickOdds(p) }))
     .filter((x) => x.o !== null && x.o! >= 2.5 && x.o! <= 4.0)
     .sort((a, b) => b.p.confidence - a.p.confidence);
@@ -96,17 +97,17 @@ serve(async (req: Request) => {
 
     const date = todayBelgrade();
 
-    // Skip if AI daily ticket already exists for today
+    // Count existing AI daily tickets for today (max 2 per day)
     const { data: existing } = await supabase
       .from("tickets")
       .select("id")
       .eq("ticket_date", date)
-      .eq("category", "ai_daily")
-      .limit(1);
+      .eq("category", "ai_daily");
 
-    if (existing && existing.length > 0) {
+    const existingCount = existing?.length ?? 0;
+    if (existingCount >= 2) {
       return new Response(
-        JSON.stringify({ skipped: true, reason: "AI ticket already exists for today" }),
+        JSON.stringify({ skipped: true, reason: "Daily AI ticket cap (2) reached" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -139,66 +140,88 @@ serve(async (req: Request) => {
     const freeOrdered = stableOnly(freePool).slice().sort(byConfDesc);
     const proOrdered = stableOnly(proPool).slice().sort(byConfDesc);
 
-    // Try Free-only combo first
-    let combo = buildCombo(freeOrdered);
-    // Free insufficient → supplement with Pro (Free still iterated first)
-    if (!combo) combo = buildCombo([...freeOrdered, ...proOrdered]);
-    // Final fallback: single pick (Free preferred)
-    if (!combo) combo = buildSingle([...freeOrdered, ...proOrdered]);
+    // Decide how many tickets to create:
+    //  - Always at least 1
+    //  - 2 tickets only if Free pool has > 15 matches (so we have enough Free supply)
+    const targetTickets = freePool.length > 15 ? 2 : 1;
+    // Account for any tickets already created today
+    const ticketsToCreate = Math.max(0, targetTickets - existingCount);
 
-    if (!combo) {
+    if (ticketsToCreate === 0) {
       return new Response(
-        JSON.stringify({ skipped: true, reason: "No suitable picks available" }),
+        JSON.stringify({ skipped: true, reason: "Already at target ticket count for today" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const isCombo = combo.picks.length > 1;
-    const title = isCombo
-      ? `🤖 AI Daily Combo • ${combo.picks.length} Picks`
-      : `🤖 AI Daily Pick • ${combo.picks[0].home_team} vs ${combo.picks[0].away_team}`;
+    const usedMatchIds = new Set<string>();
+    const created: Array<{ id: string; picks: number; total_odds: number; strategy: string }> = [];
 
-    // Insert ticket
-    const { data: newTicket, error: tErr } = await supabase
-      .from("tickets")
-      .insert({
-        title,
-        tier: "daily",
-        status: "published",
-        category: "ai_daily",
+    for (let i = 0; i < ticketsToCreate; i++) {
+      // Try Free-only combo first, then supplement with Pro, then single fallback
+      let combo = buildCombo(freeOrdered, usedMatchIds);
+      if (!combo) combo = buildCombo([...freeOrdered, ...proOrdered], usedMatchIds);
+      if (!combo) combo = buildSingle([...freeOrdered, ...proOrdered], usedMatchIds);
+      if (!combo) break; // no more material
+
+      const isCombo = combo.picks.length > 1;
+      const ticketIdx = existingCount + i + 1;
+      const title = isCombo
+        ? `🤖 AI Daily Combo${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks.length} Picks`
+        : `🤖 AI Daily Pick${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks[0].home_team} vs ${combo.picks[0].away_team}`;
+
+      const { data: newTicket, error: tErr } = await supabase
+        .from("tickets")
+        .insert({
+          title,
+          tier: "daily",
+          status: "published",
+          category: "ai_daily",
+          total_odds: combo.total,
+          ticket_date: date,
+          ai_analysis: `Auto-generated by AI from ${combo.picks.length} prediction(s). Avg confidence: ${Math.round(
+            combo.picks.reduce((s, p) => s + p.confidence, 0) / combo.picks.length,
+          )}%.`,
+        })
+        .select()
+        .single();
+
+      if (tErr) throw tErr;
+
+      const matchRows = combo.picks.map((p, idx) => ({
+        ticket_id: newTicket.id,
+        match_name: `${p.home_team} vs ${p.away_team}`,
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league,
+        prediction: p.prediction,
+        odds: pickOdds(p)!,
+        match_date: p.match_date,
+        sort_order: idx,
+      }));
+
+      const { error: mErr } = await supabase.from("ticket_matches").insert(matchRows);
+      if (mErr) throw mErr;
+
+      // Mark these matches used so the second ticket cannot reuse them
+      combo.picks.forEach((p) => usedMatchIds.add(p.match_id));
+
+      created.push({
+        id: newTicket.id,
+        picks: combo.picks.length,
         total_odds: combo.total,
-        ticket_date: date,
-        ai_analysis: `Auto-generated by AI from ${combo.picks.length} prediction(s). Avg confidence: ${Math.round(
-          combo.picks.reduce((s, p) => s + p.confidence, 0) / combo.picks.length,
-        )}%.`,
-      })
-      .select()
-      .single();
-
-    if (tErr) throw tErr;
-
-    const matchRows = combo.picks.map((p, idx) => ({
-      ticket_id: newTicket.id,
-      match_name: `${p.home_team} vs ${p.away_team}`,
-      home_team: p.home_team,
-      away_team: p.away_team,
-      league: p.league,
-      prediction: p.prediction,
-      odds: pickOdds(p)!,
-      match_date: p.match_date,
-      sort_order: idx,
-    }));
-
-    const { error: mErr } = await supabase.from("ticket_matches").insert(matchRows);
-    if (mErr) throw mErr;
+        strategy: isCombo ? "combo" : "single",
+      });
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        ticket_id: newTicket.id,
-        strategy: isCombo ? "combo" : "single",
-        picks: combo.picks.length,
-        total_odds: combo.total,
+        free_pool_size: freePool.length,
+        pro_pool_size: proPool.length,
+        target_tickets: targetTickets,
+        created_count: created.length,
+        tickets: created,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
