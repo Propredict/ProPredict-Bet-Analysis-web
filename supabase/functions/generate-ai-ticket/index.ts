@@ -308,12 +308,11 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
-    // PRO TICKET (1 per day) — only from Pro pool, excludes correct score
+    // PRO TICKETS (1–2 per day) — only from Pro pool, excludes correct score
+    // 2 tickets if Pro pool > 12 (so we have enough material for variety)
     // ───────────────────────────────────────────────────────────────────
-    let proResult: { id?: string; skipped?: boolean; reason?: string; picks?: number; total_odds?: number } = {
-      skipped: true,
-      reason: "not_attempted",
-    };
+    const proCreated: Array<{ id: string; picks: number; total_odds: number }> = [];
+    let proSkipReason: string | null = null;
 
     const { data: existingPro } = await supabase
       .from("tickets")
@@ -321,21 +320,30 @@ serve(async (req: Request) => {
       .eq("ticket_date", date)
       .eq("category", "ai_pro");
 
-    if ((existingPro?.length ?? 0) >= 1) {
-      proResult = { skipped: true, reason: "Pro AI ticket already exists for today" };
+    const existingProCount = existingPro?.length ?? 0;
+    const proTarget = proPool.length > 12 ? 2 : 1;
+    const proToCreate = Math.max(0, proTarget - existingProCount);
+
+    if (proToCreate === 0) {
+      proSkipReason = existingProCount >= proTarget
+        ? "Pro AI ticket already at target for today"
+        : "not_attempted";
     } else if (proPool.length < 3) {
-      proResult = { skipped: true, reason: `Pro pool too small (${proPool.length} < 3)` };
+      proSkipReason = `Pro pool too small (${proPool.length} < 3)`;
     } else {
-      // Pro pool sorted by confidence DESC; prefer variance_stable when we have ≥3 stable.
       const stableProPool = proPool.filter((p) => p.variance_stable);
       const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
       const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
+      const proUsed = new Set<string>();
 
-      const proCombo = buildProCombo(proOrderedAll);
-      if (!proCombo) {
-        proResult = { skipped: true, reason: "No valid Pro combo (odds 3–10, 3–7 picks)" };
-      } else {
-        const proTitle = `🎯 AI Pro Combo • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
+      for (let i = 0; i < proToCreate; i++) {
+        const proCombo = buildProCombo(proOrderedAll, proUsed);
+        if (!proCombo) {
+          if (proCreated.length === 0) proSkipReason = "No valid Pro combo (odds 3–10, 3–7 picks)";
+          break;
+        }
+        const idx = existingProCount + i + 1;
+        const proTitle = `🎯 AI Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${combo_picks_label(proCombo.picks.length)} • ${proCombo.total.toFixed(2)}x`;
         const { data: newProTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
@@ -347,14 +355,13 @@ serve(async (req: Request) => {
             ticket_date: date,
             ai_analysis: `Auto-generated Pro combo from ${proCombo.picks.length} high-confidence picks. Avg confidence: ${Math.round(
               proCombo.picks.reduce((s, p) => s + p.confidence, 0) / proCombo.picks.length,
-            )}%. Markets: any (no correct score).`,
+            )}%. Markets: 1/X/2, Double Chance, GG, Over/Under (no correct score).`,
           })
           .select()
           .single();
-
         if (ptErr) throw ptErr;
 
-        const proRows = proCombo.picks.map((p, idx) => ({
+        const proRows = proCombo.picks.map((p, k) => ({
           ticket_id: newProTicket.id,
           match_name: `${p.home_team} vs ${p.away_team}`,
           home_team: p.home_team,
@@ -363,16 +370,17 @@ serve(async (req: Request) => {
           prediction: safestProMarket(p),
           odds: pickOdds(p)!,
           match_date: p.match_date,
-          sort_order: idx,
+          sort_order: k,
         }));
         const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
         if (pmErr) throw pmErr;
 
-        proResult = {
+        proCombo.picks.forEach((p) => proUsed.add(p.match_id));
+        proCreated.push({
           id: newProTicket.id,
           picks: proCombo.picks.length,
           total_odds: proCombo.total,
-        };
+        });
       }
     }
 
@@ -384,7 +392,10 @@ serve(async (req: Request) => {
         target_tickets: targetTickets,
         created_count: created.length,
         tickets: created,
-        pro_ticket: proResult,
+        pro_target: proTarget,
+        pro_created_count: proCreated.length,
+        pro_tickets: proCreated,
+        pro_skip_reason: proSkipReason,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
