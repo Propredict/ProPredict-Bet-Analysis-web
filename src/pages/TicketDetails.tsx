@@ -289,7 +289,7 @@ export default function TicketDetails() {
         size="lg"
         className={cn("w-full gap-2 h-12", config.className)}
         disabled={isUnlocking}
-        onClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
+        onClick={() => handleUnlock("ticket", ticket.id, effectiveTier)}
       >
         {isUnlocking ? (
           <>
