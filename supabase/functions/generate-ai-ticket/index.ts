@@ -343,7 +343,7 @@ serve(async (req: Request) => {
           break;
         }
         const idx = existingProCount + i + 1;
-        const proTitle = `🎯 AI Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${combo_picks_label(proCombo.picks.length)} • ${proCombo.total.toFixed(2)}x`;
+        const proTitle = `🎯 AI Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
         const { data: newProTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
