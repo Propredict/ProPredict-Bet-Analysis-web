@@ -517,6 +517,104 @@ Deno.serve(async (req) => {
       console.log(`Orphan arena pass: ${arenaOrphanResolved} resolved`);
     }
 
+    // ── THIRD PASS: resolve AI-generated Diamond Pick TIPS (won/lost) ──
+    // Tips with category='diamond_pick' and created_by=NULL are AI-published
+    // by the generate-ai-predictions STEP 7. Match them to fixtures via
+    // ai_predictions (home_team + away_team + tip_date) to get a fixture id,
+    // then evaluate the combo label against the actual score.
+    let tipsResolved = 0;
+    let tipsSkipped = 0;
+    try {
+      const todayStr = formatDate(today);
+      const { data: pendingTips } = await supabase
+        .from("tips")
+        .select("id, home_team, away_team, prediction, tip_date, result, status, category, created_by")
+        .eq("category", "diamond_pick")
+        .eq("status", "published")
+        .eq("result", "pending")
+        .is("created_by", null)
+        .gte("tip_date", formatDate(threeDaysAgo))
+        .lte("tip_date", todayStr)
+        .limit(50);
+
+      if (pendingTips && pendingTips.length > 0) {
+        // Lookup helper: combo leg evaluator
+        const evalLeg = (leg: string, h: number, a: number): boolean => {
+          const t = h + a;
+          const btts = h > 0 && a > 0;
+          const s = leg.trim();
+          let m: RegExpMatchArray | null;
+          if ((m = s.match(/^Over\s+(\d+(?:\.\d+)?)/i))) return t > parseFloat(m[1]);
+          if ((m = s.match(/^Under\s+(\d+(?:\.\d+)?)/i))) return t < parseFloat(m[1]);
+          if (/^BTTS\s*No/i.test(s)) return !btts;
+          if (/^BTTS/i.test(s)) return btts;
+          if (/^1X/i.test(s)) return h >= a;
+          if (/^X2/i.test(s)) return a >= h;
+          if (/^12/i.test(s)) return h !== a;
+          if (/^Home/i.test(s)) return h > a;
+          if (/^Away/i.test(s)) return a > h;
+          if (/^Draw/i.test(s)) return h === a;
+          return false;
+        };
+        const evalCombo = (label: string, h: number, a: number): boolean => {
+          const legs = label.split(/\s*&\s*/);
+          return legs.every((l) => evalLeg(l, h, a));
+        };
+
+        // Build (home_team|away_team|tip_date) -> match_id map from ai_predictions
+        const teamPairs = pendingTips.map((t: any) =>
+          `${(t.home_team ?? "").toLowerCase()}|${(t.away_team ?? "").toLowerCase()}|${t.tip_date}`
+        );
+        const dates = [...new Set(pendingTips.map((t: any) => t.tip_date))];
+        const { data: aiRows } = await supabase
+          .from("ai_predictions")
+          .select("match_id, home_team, away_team, match_date")
+          .in("match_date", dates);
+        const aiMap = new Map<string, string>();
+        for (const r of aiRows ?? []) {
+          const key = `${(r.home_team ?? "").toLowerCase()}|${(r.away_team ?? "").toLowerCase()}|${r.match_date}`;
+          if (r.match_id) aiMap.set(key, String(r.match_id));
+        }
+
+        for (const tip of pendingTips as any[]) {
+          try {
+            const key = `${(tip.home_team ?? "").toLowerCase()}|${(tip.away_team ?? "").toLowerCase()}|${tip.tip_date}`;
+            const fixtureId = aiMap.get(key);
+            if (!fixtureId || isNaN(Number(fixtureId))) { tipsSkipped++; continue; }
+
+            const apiResp = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
+              headers: { "x-apisports-key": apiFootballKey },
+            });
+            if (!apiResp.ok) { tipsSkipped++; continue; }
+            const apiJson = await apiResp.json();
+            const fix = apiJson.response?.[0] as FixtureResponse | undefined;
+            if (!fix) { tipsSkipped++; continue; }
+            const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
+            if (!finStatuses.includes(fix.fixture.status.short)) { tipsSkipped++; continue; }
+            const hg = fix.goals.home, ag = fix.goals.away;
+            if (hg === null || ag === null) { tipsSkipped++; continue; }
+
+            const won = evalCombo(String(tip.prediction ?? ""), hg, ag);
+            const newResult = won ? "won" : "lost";
+            const { error: tipUpdErr } = await supabase
+              .from("tips")
+              .update({ result: newResult })
+              .eq("id", tip.id);
+            if (!tipUpdErr) {
+              tipsResolved++;
+              console.log(`✓ Diamond tip ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → ${newResult}`);
+            }
+            await new Promise((r) => setTimeout(r, 100));
+          } catch (e) {
+            console.error(`Diamond tip resolve error ${tip.id}:`, e);
+          }
+        }
+      }
+    } catch (tipsErr) {
+      console.error("Diamond tips pass error:", tipsErr);
+    }
+    if (tipsResolved > 0) console.log(`Diamond tips pass: ${tipsResolved} resolved, ${tipsSkipped} skipped`);
+
     return new Response(
       JSON.stringify({
         message: "Prediction results updated",
@@ -526,6 +624,8 @@ Deno.serve(async (req) => {
         arena_orphans_found: arenaOrphanFound,
         arena_orphans_resolved: arenaOrphanResolved,
         arena_orphan_diag: orphanDiag,
+        diamond_tips_resolved: tipsResolved,
+        diamond_tips_skipped: tipsSkipped,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
