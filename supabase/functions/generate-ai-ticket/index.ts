@@ -413,19 +413,19 @@ serve(async (req: Request) => {
 
         const proRows = proCombo.picks.map((p, k) => ({
           ticket_id: newProTicket.id,
-          match_name: `${p.home_team} vs ${p.away_team}`,
-          home_team: p.home_team,
-          away_team: p.away_team,
-          league: p.league,
-          prediction: safestProMarket(p),
-          odds: pickOdds(p)!,
-          match_date: p.match_date,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.choice.market,
+          odds: p.choice.odds,
+          match_date: p.p.match_date,
           sort_order: k,
         }));
         const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
         if (pmErr) throw pmErr;
 
-        proCombo.picks.forEach((p) => proUsed.add(p.match_id));
+        proCombo.picks.forEach((x) => proUsed.add(x.p.match_id));
         proCreated.push({
           id: newProTicket.id,
           picks: proCombo.picks.length,
