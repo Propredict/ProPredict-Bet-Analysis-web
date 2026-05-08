@@ -461,12 +461,9 @@ serve(async (req: Request) => {
       .eq("category", "ai_daily");
 
     const existingCount = existing?.length ?? 0;
-    if (existingCount >= 2) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "Daily AI ticket cap (2) reached" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    // NOTE: daily cap (2) is enforced via targetTickets calculation below;
+    // we no longer early-return here so Pro/Premium/Risk sections still run
+    // even when Daily quota is already met.
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
