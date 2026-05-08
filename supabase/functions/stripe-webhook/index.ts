@@ -283,26 +283,28 @@ serve(async (req) => {
       // Ensure we have email (metadata lookup returns empty email)
       if (!user.email && customerUser?.email) user.email = customerUser.email;
 
-      const priceId = subscription.items.data[0]?.price.id;
-      const plan = PRICE_TO_PLAN[priceId] || "basic";
-      const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-      const status = subscription.status;
+      const staleHandled = await protectFromStaleFailedSubscription(
+        stripe,
+        supabase,
+        user.id,
+        user.email,
+        subscription.id,
+        event.type
+      );
+      if (staleHandled) {
+        return new Response(
+          JSON.stringify({ received: true, protected_active_subscription: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const plan = getPlanFromSubscription(subscription);
+      const currentPeriodEnd = getPeriodEnd(subscription);
+      const status = getSupabaseStatus(subscription.status);
 
       console.log(`Subscription updated for user ${user.id}: plan=${plan}, status=${status}, expires=${currentPeriodEnd.toISOString()}`);
 
-      const { error } = await supabase
-        .from("user_subscriptions")
-        .upsert(
-          {
-            user_id: user.id,
-            plan: plan,
-            status: status,
-            subscription_source: "stripe",
-            expires_at: currentPeriodEnd.toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
+      const error = await syncSubscriptionToSupabase(supabase, user.id, subscription);
 
       if (error) {
         console.error("Error updating subscription:", error);
