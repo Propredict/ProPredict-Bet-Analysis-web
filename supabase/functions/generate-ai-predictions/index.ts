@@ -5649,7 +5649,7 @@ async function assignTiers(
 ): Promise<{ free: number; pro: number; premium: number; diamond: number }> {
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
-    .select("id, confidence, is_locked, result_status, prediction, league, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, variance_stable, variance_score, xg_home, xg_away")
+    .select("id, home_team, away_team, confidence, is_locked, result_status, prediction, league, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, variance_stable, variance_score, xg_home, xg_away")
     .in("match_date", [todayStr, tomorrowStr])
     .in("result_status", ["pending", null])
     .eq("is_locked", false)
@@ -6448,6 +6448,157 @@ async function assignTiers(
     console.log(`[STEP 6] 💎 Diamond Pick: ${diamond.id} | conf=${diamond.confidence} | league=${diamond.league}`);
   } else {
     console.log(`[STEP 6] No Diamond Pick today — quality threshold not met.`);
+  }
+
+  // === STEP 7 — DIAMOND COMBO TIPS (always 3 per day, today only) ===
+  // Auto-publishes 3 high-confidence COMBO picks into the `tips` table with
+  // category='diamond_pick', tier='premium'. Each pick is a 2-leg combo
+  // (e.g. "BTTS & Over 2.5", "1X & Over 1.5"). Combined probability ≥ 70%.
+  // Idempotent: deletes prior AI-generated diamond_pick tips for today before insert.
+  try {
+    const factorial = (n: number): number => (n <= 1 ? 1 : n * factorial(n - 1));
+    const poissonPmf = (k: number, lambda: number): number =>
+      (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+
+    const computeMarketProbs = (p: any) => {
+      const xgH = Number(p.xg_home);
+      const xgA = Number(p.xg_away);
+      if (!Number.isFinite(xgH) || !Number.isFinite(xgA) || xgH <= 0 || xgA <= 0) return null;
+      const lH = Math.max(0.2, Math.min(4.5, xgH));
+      const lA = Math.max(0.2, Math.min(4.5, xgA));
+      const MAX = 8;
+      let pBttsYes = 0, pBttsNo = 0;
+      let pOver15 = 0, pOver25 = 0, pUnder35 = 0;
+      // Joint combos
+      let pBttsYesAndOver25 = 0;
+      let pBttsNoAndUnder35 = 0;
+      let pHomeWin = 0, pAwayWin = 0, pDraw = 0;
+      let pHomeAndOver15 = 0, pAwayAndOver15 = 0;
+      let p1xAndOver15 = 0, pX2AndOver15 = 0;
+      for (let h = 0; h <= MAX; h++) {
+        const ph = poissonPmf(h, lH);
+        for (let a = 0; a <= MAX; a++) {
+          const pa = poissonPmf(a, lA);
+          const j = ph * pa;
+          const total = h + a;
+          const btts = h > 0 && a > 0;
+          if (btts) pBttsYes += j; else pBttsNo += j;
+          if (total >= 2) pOver15 += j;
+          if (total >= 3) pOver25 += j;
+          if (total <= 3) pUnder35 += j;
+          if (h > a) pHomeWin += j;
+          else if (h < a) pAwayWin += j;
+          else pDraw += j;
+          if (btts && total >= 3) pBttsYesAndOver25 += j;
+          if (!btts && total <= 3) pBttsNoAndUnder35 += j;
+          if (h > a && total >= 2) pHomeAndOver15 += j;
+          if (h < a && total >= 2) pAwayAndOver15 += j;
+          if (h >= a && total >= 2) p1xAndOver15 += j;
+          if (h <= a && total >= 2) pX2AndOver15 += j;
+        }
+      }
+      return {
+        pBttsYesAndOver25,
+        pBttsNoAndUnder35,
+        pHomeAndOver15,
+        pAwayAndOver15,
+        p1xAndOver15,
+        pX2AndOver15,
+      };
+    };
+
+    type ComboPick = {
+      id: string;
+      label: string;
+      odds: number;
+      prob: number; // 0..1
+      pred: any;
+    };
+
+    const COMBO_MIN_PROB = 0.70;
+    const candidates: ComboPick[] = [];
+
+    // Use today's premiumPicks only, ranked by confidence desc, in tier-1/2 leagues with stable variance
+    const eligibleForCombo = premiumPicks
+      .filter((p: any) => p.match_date === todayStr)
+      .filter((p: any) => isTierAllowed(p.league))
+      .filter((p: any) => p.variance_stable === true)
+      .filter((p: any) => (p.confidence ?? 0) >= 75);
+
+    for (const p of eligibleForCombo) {
+      const probs = computeMarketProbs(p);
+      if (!probs) continue;
+      const options: Array<{ label: string; prob: number }> = [
+        { label: "BTTS & Over 2.5", prob: probs.pBttsYesAndOver25 },
+        { label: "BTTS No & Under 3.5", prob: probs.pBttsNoAndUnder35 },
+        { label: "1X & Over 1.5", prob: probs.p1xAndOver15 },
+        { label: "X2 & Over 1.5", prob: probs.pX2AndOver15 },
+        { label: "Home Win & Over 1.5", prob: probs.pHomeAndOver15 },
+        { label: "Away Win & Over 1.5", prob: probs.pAwayAndOver15 },
+      ];
+      // Pick the safest combo for this match
+      options.sort((a, b) => b.prob - a.prob);
+      const best = options[0];
+      if (!best || best.prob < COMBO_MIN_PROB) continue;
+      // Mathematically derived odds with 5% margin haircut
+      const odds = Math.max(1.30, Math.min(3.50, (1 / best.prob) * 0.95));
+      candidates.push({
+        id: p.id,
+        label: best.label,
+        odds: Number(odds.toFixed(2)),
+        prob: best.prob,
+        pred: p,
+      });
+    }
+
+    // Sort by probability desc, take top 3, ensure unique matches
+    candidates.sort((a, b) => b.prob - a.prob);
+    const top3: ComboPick[] = [];
+    const usedIds = new Set<string>();
+    for (const c of candidates) {
+      if (usedIds.has(c.id)) continue;
+      top3.push(c);
+      usedIds.add(c.id);
+      if (top3.length >= 3) break;
+    }
+
+    // Idempotent reset: delete prior AI-generated diamond_pick tips for today
+    await supabase
+      .from("tips")
+      .delete()
+      .eq("tip_date", todayStr)
+      .eq("category", "diamond_pick")
+      .is("created_by", null);
+
+    if (top3.length > 0) {
+      const rows = top3.map((c) => ({
+        home_team: c.pred.home_team ?? "",
+        away_team: c.pred.away_team ?? "",
+        league: c.pred.league ?? "",
+        prediction: c.label,
+        ai_prediction: c.label,
+        odds: c.odds,
+        confidence: Math.round(c.prob * 100),
+        tier: "premium",
+        category: "diamond_pick",
+        status: "published",
+        tip_date: todayStr,
+        created_by: null,
+      }));
+      const { error: insErr } = await supabase.from("tips").insert(rows);
+      if (insErr) {
+        console.error("[STEP 7] Diamond combo tips insert failed:", insErr);
+      } else {
+        console.log(
+          `[STEP 7] 💎 Diamond Combo Tips: ${top3.length} published — ` +
+          top3.map((c) => `${c.label}@${c.odds} (${Math.round(c.prob * 100)}%)`).join(" | ")
+        );
+      }
+    } else {
+      console.log(`[STEP 7] No Diamond Combo Tips qualified (≥70% combined) for today.`);
+    }
+  } catch (e) {
+    console.error("[STEP 7] Diamond combo tips error:", e);
   }
 
   return {
