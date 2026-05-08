@@ -189,21 +189,22 @@ function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { p
 function buildProCombo(
   pool: Pred[],
   excludeMatchIds: Set<string> = new Set(),
-): { picks: Pred[]; total: number } | null {
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
   const usedMatchIds = new Set<string>();
-  const chosen: Pred[] = [];
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
   let total = 1;
 
   for (const p of pool) {
     if (chosen.length >= 7) break;
     if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
-    if (isCorrectScore(p.prediction)) continue;
-    const o = pickOdds(p);
-    if (!o) continue;
+    const choice = safestProPick(p);
+    // Skip if no safe market found (prob 0 fallback) and original is unsafe
+    if (choice.prob > 0 && choice.prob < 65) continue;
+    const o = choice.odds;
     if (o < 1.2 || o > 2.6) continue;
     const next = total * o;
     if (next > 10.0) continue;
-    chosen.push(p);
+    chosen.push({ p, choice });
     usedMatchIds.add(p.match_id);
     total = next;
     // Stop early once we are inside the safe sweet spot with enough picks
