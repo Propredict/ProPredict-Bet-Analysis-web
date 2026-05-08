@@ -314,12 +314,32 @@ export default function AIPredictions() {
 
   // Filter predictions by search, league, favorites, and tier
   const filteredPredictions = useMemo(() => {
-    // Hide predictions below 50% confidence
-    let result = predictions.filter((p) => p.confidence != null ? p.confidence >= 50 : true);
+    // Helper: a match is considered "started" once kickoff time has passed.
+    // Once a match starts, we keep it visible even if its confidence drops below 50%
+    // or if it would otherwise be cut by tier caps — hiding a live match users were
+    // already tracking is confusing.
+    const nowMs = Date.now();
+    const hasStarted = (p: any): boolean => {
+      if (p?.is_live) return true;
+      if (p?.match_timestamp) {
+        const t = new Date(p.match_timestamp).getTime();
+        if (!isNaN(t)) return t <= nowMs;
+      }
+      if (p?.match_date && p?.match_time) {
+        const t = new Date(`${p.match_date}T${p.match_time}:00`).getTime();
+        if (!isNaN(t)) return t <= nowMs;
+      }
+      return false;
+    };
 
-    // Always drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 50 = 80 max).
-    // These have no tier assignment and would otherwise leak into the "All" view.
-    result = result.filter((p) => getPredictionTier(p) !== null);
+    // Hide predictions below 50% confidence — but keep matches that have already kicked off.
+    let result = predictions.filter(
+      (p) => hasStarted(p) || (p.confidence != null ? p.confidence >= 50 : true)
+    );
+
+    // Drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 50 = 80 max)
+    // — but keep already-started matches even if they'd be cut by the cap.
+    result = result.filter((p) => hasStarted(p) || getPredictionTier(p) !== null);
 
     // Filter by tier if not "all"
     if (tierFilter !== "all") {
