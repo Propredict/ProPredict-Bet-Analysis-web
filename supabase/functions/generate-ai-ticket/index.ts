@@ -727,9 +727,9 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
-    // RISK TICKETS (4–5 per day) — bold AI picks, high-payout single/combo
-    //   - 1, 2, 3 or 4 picks per ticket
-    //   - Each individual pick odds ≥ 2.50
+    // RISK TICKETS (4–5 per day) — bold AI picks, multi-match combos only
+    //   - 3 or 4 picks per ticket (no singles, no doubles)
+    //   - Each individual pick odds ≥ 2.50 (e.g. 2.50, 3.50, 4.00, 5.50)
     //   - Combined total odds ≥ 4.00 (no upper cap)
     //   - Source: Pro + Premium pools (no Free)
     //   - Tier: 'premium' — only Premium subscribers can access
