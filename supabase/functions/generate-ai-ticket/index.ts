@@ -44,8 +44,9 @@ function pickOdds(p: Pred): number | null {
 }
 
 function buildCombo(pool: Pred[]): { picks: Pred[]; total: number } | null {
-  // Greedy: prefer highest-confidence safe picks, accumulate until total ∈ [2, 6] with 4–6 picks.
-  const sorted = [...pool].sort((a, b) => b.confidence - a.confidence);
+  // Greedy: iterate pool in caller-provided priority order.
+  // Caller must pre-sort (e.g. Free first, then Pro).
+  const sorted = pool;
   const usedMatchIds = new Set<string>();
   const chosen: Pred[] = [];
   let total = 1;
@@ -110,23 +111,40 @@ serve(async (req: Request) => {
       );
     }
 
-    // Fetch today's predictions
+    // Fetch today's predictions, EXCLUDING Premium tier (confidence >= 78).
+    // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
       .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium")
       .eq("match_date", date)
-      .gte("confidence", 65)
+      .gte("confidence", 50)
+      .lt("confidence", 78) // never include Premium
       .order("confidence", { ascending: false })
-      .limit(40);
+      .limit(60);
 
     if (pErr) throw pErr;
-    const pool = (preds ?? []) as Pred[];
-    // Prefer variance_stable; if none stable, allow all
-    const stable = pool.filter((p) => p.variance_stable);
-    const workingPool = stable.length >= 4 ? stable : pool;
+    const all = (preds ?? []) as Pred[];
 
-    let combo = buildCombo(workingPool);
-    if (!combo) combo = buildSingle(workingPool);
+    // Split into Free (<65) and Pro (65–77). Premium already excluded by query.
+    const freePool = all.filter((p) => p.confidence < 65);
+    const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
+
+    // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
+    const stableOnly = (arr: Pred[]) => {
+      const stable = arr.filter((p) => p.variance_stable);
+      return stable.length >= 4 ? stable : arr;
+    };
+    // Sort each tier internally by confidence DESC, then concatenate (Free always first).
+    const byConfDesc = (a: Pred, b: Pred) => b.confidence - a.confidence;
+    const freeOrdered = stableOnly(freePool).slice().sort(byConfDesc);
+    const proOrdered = stableOnly(proPool).slice().sort(byConfDesc);
+
+    // Try Free-only combo first
+    let combo = buildCombo(freeOrdered);
+    // Free insufficient → supplement with Pro (Free still iterated first)
+    if (!combo) combo = buildCombo([...freeOrdered, ...proOrdered]);
+    // Final fallback: single pick (Free preferred)
+    if (!combo) combo = buildSingle([...freeOrdered, ...proOrdered]);
 
     if (!combo) {
       return new Response(
