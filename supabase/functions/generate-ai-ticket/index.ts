@@ -717,7 +717,7 @@ serve(async (req: Request) => {
     //   - Source: Pro + Premium pools (no Free)
     //   - Page filter: tier='exclusive', category='multi_risk'
     // ───────────────────────────────────────────────────────────────────
-    const riskCreated: Array<{ id: string; picks: number; total_odds: number; profile: string }> = [];
+    const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
 
     const { data: existingRisk } = await supabase
@@ -735,33 +735,27 @@ serve(async (req: Request) => {
       riskSkipReason = existingRiskCount >= riskTarget
         ? "Multi-Risk tickets already at target"
         : "not_attempted";
-    } else if (premiumPool.length + proPool.length < 4) {
-      riskSkipReason = `Pool too small (Pro+Premium ${premiumPool.length + proPool.length} < 4)`;
+    } else if (premiumPool.length + proPool.length < 1) {
+      riskSkipReason = `Pool empty (Pro+Premium = 0)`;
     } else {
       const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const riskUsed = new Set<string>();
-      // Rotate risk profiles for variety
-      const profiles: RiskProfile[] = ["score_heavy", "goals_heavy", "score_heavy", "underdog", "goals_heavy"];
+      // Rotate ticket sizes for variety: single, double, triple, double, single
+      const sizes: RiskSize[] = [1, 2, 3, 2, 1];
 
       for (let i = 0; i < riskToCreate; i++) {
-        const profile = profiles[(existingRiskCount + i) % profiles.length];
-        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, profile);
+        const size = sizes[(existingRiskCount + i) % sizes.length];
+        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, size);
         if (!riskCombo) {
           if (riskCreated.length === 0)
-            riskSkipReason = `No valid Multi-Risk combo (profile=${profile})`;
+            riskSkipReason = `No valid Multi-Risk combo (size=${size}) — not enough picks with odds ≥ 2.50`;
           continue;
         }
         const idx = existingRiskCount + i + 1;
-        const profileEmoji =
-          riskCombo.profile === "score_heavy" ? "🎯"
-          : riskCombo.profile === "goals_heavy" ? "⚡"
-          : "🔥";
-        const profileName =
-          riskCombo.profile === "score_heavy" ? "Score Hunter"
-          : riskCombo.profile === "goals_heavy" ? "Goals Rush"
-          : "Underdog Hunt";
-        const riskTitle = `${profileEmoji} Multi-Risk ${profileName}${riskTarget > 1 ? ` #${idx}` : ""} • ${riskCombo.picks.length} Picks • ${riskCombo.total.toFixed(2)}x`;
+        const sizeEmoji = riskCombo.size === 1 ? "🎯" : riskCombo.size === 2 ? "⚡" : "🔥";
+        const sizeName  = riskCombo.size === 1 ? "Solo Shot" : riskCombo.size === 2 ? "Double Up" : "Triple Threat";
+        const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""} • ${riskCombo.total.toFixed(2)}x`;
         const { data: newRiskTicket, error: rtErr } = await supabase
           .from("tickets")
           .insert({
@@ -772,7 +766,7 @@ serve(async (req: Request) => {
             category: "multi_risk",
             total_odds: riskCombo.total,
             ticket_date: date,
-            ai_analysis: `High-risk/high-reward combo (${profileName}). ${riskCombo.picks.length} picks, total odds ${riskCombo.total.toFixed(2)}x. Mix of safe Premium/Pro markets with ${riskCombo.profile === "score_heavy" ? "correct-score anchors" : riskCombo.profile === "goals_heavy" ? "goals markets (Over 3.5 / NG / Under 1.5)" : "an underdog Draw anchor"}.`,
+            ai_analysis: `${sizeName}: ${riskCombo.picks.length} safe AI prediction${riskCombo.picks.length > 1 ? "s" : ""} where each market price is ≥ 2.50. Total odds ${riskCombo.total.toFixed(2)}x. Source: Pro + Premium AI pools.`,
           })
           .select()
           .single();
@@ -797,7 +791,7 @@ serve(async (req: Request) => {
           id: newRiskTicket.id,
           picks: riskCombo.picks.length,
           total_odds: riskCombo.total,
-          profile: riskCombo.profile,
+          size: riskCombo.size,
         });
       }
     }
