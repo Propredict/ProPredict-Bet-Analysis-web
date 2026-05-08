@@ -37,7 +37,7 @@ function getRoute(type: "tip" | "ticket", tier: string, category?: string | null
 function getCategoryLabel(category: string | null): string | null {
   if (category === "diamond_pick") return "💎 Diamond Pick Just Dropped!";
   if (category === "risk_of_the_day") return "🔥 Risk of the Day is LIVE!";
-  if (category === "multi_risk") return "🎯 Multi Risk Matches are LIVE!";
+  if (category === "multi_risk") return "🎯 Risk Ticket are LIVE!";
   return null;
 }
 

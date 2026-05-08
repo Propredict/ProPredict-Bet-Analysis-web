@@ -93,9 +93,9 @@ export default function ExclusiveTickets() {
 
   return <>
     <Helmet>
-      <title>Pro Multi-Match Predictions – ProPredict</title>
+      <title>Pro Ticket – ProPredict</title>
       <meta name="description" content="Pro-level AI-powered match combinations with advanced analysis. For informational and entertainment purposes only." />
-      <meta property="og:title" content="Pro Multi-Match Predictions – ProPredict" />
+      <meta property="og:title" content="Pro Ticket – ProPredict" />
       <meta property="og:description" content="Pro-level AI-powered match combinations with advanced analysis." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
       <meta property="og:url" content="https://propredict.me/pro-predictions" />
@@ -109,7 +109,7 @@ export default function ExclusiveTickets() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro Multi-Match Predictions</h1>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro Ticket</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "Advanced match combinations with higher confidence selections"}
             </p>
@@ -129,7 +129,7 @@ export default function ExclusiveTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Pro Multi-Match Predictions include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
+          Pro Ticket include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
         </p>
       </Card>
 
@@ -201,7 +201,7 @@ export default function ExclusiveTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No Pro Multi-Match Predictions available</p>
+              <p className="text-primary mb-1">No Pro Ticket available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />

@@ -66,7 +66,7 @@ export default function MultiRiskMatches() {
   return (
     <>
       <Helmet>
-        <title>Multi Risk Matches 🎯 | ProPredict</title>
+        <title>Risk Ticket 🎯 | ProPredict</title>
         <meta name="description" content="High-risk multi-match combo tickets. Bold accumulators with maximum payout potential." />
       </Helmet>
       <div className="section-gap">
@@ -77,7 +77,7 @@ export default function MultiRiskMatches() {
               <Target className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
             </div>
             <div>
-              <h1 className="text-sm text-orange-400 sm:text-lg font-semibold">🎯 Multi Risk Matches</h1>
+              <h1 className="text-sm text-orange-400 sm:text-lg font-semibold">🎯 Risk Ticket</h1>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">
                 {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "High-risk multi-match combos • Pro access"}
               </p>
@@ -164,7 +164,7 @@ export default function MultiRiskMatches() {
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <Ticket className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-primary mb-1">No Multi Risk Matches available</p>
+                <p className="text-primary mb-1">No Risk Ticket available</p>
                 <p className="text-sm">Check back later for bold multi-match picks</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                   <RefreshCw className="h-4 w-4 mr-2" />

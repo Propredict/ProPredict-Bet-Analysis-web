@@ -123,9 +123,9 @@ export function BettingTickets() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily Multi-Match";
-      case "exclusive": return "See all Pro Multi-Match";
-      case "premium": return "See all Premium Multi-Match";
+      case "daily": return "See all Daily Ticket";
+      case "exclusive": return "See all Pro Ticket";
+      case "premium": return "See all Premium Ticket";
     }
   };
 
@@ -150,7 +150,7 @@ export function BettingTickets() {
     // Stable key to dedupe the same ticket across sections
     const ticketKey = (t: any) => t.id;
 
-    // Reserve specialized tickets first (Multi Risk takes priority)
+    // Reserve specialized tickets first (Risk Tickets take priority)
     const multiRiskDb = todayDbTickets.filter((t: any) => t.category === "multi_risk");
     const reserved = new Set<string>();
     multiRiskDb.forEach((t: any) => reserved.add(ticketKey(t)));
@@ -174,7 +174,7 @@ export function BettingTickets() {
       <section className="space-y-5">
         {/* Section Header — centered bold title */}
         <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground text-center tracking-tight pt-2">
-          Daily Combos Multi Matches
+          Daily Combo Tickets
         </h2>
 
         {isLoading ? (
@@ -215,7 +215,7 @@ export function BettingTickets() {
                 <div className="text-center space-y-1">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
                     <Target className="h-5 w-5 sm:h-6 sm:w-6 text-rose-400" />
-                    Multi Risk Matches
+                    Risk Ticket
                   </h3>
                   <p className="text-[11px] text-muted-foreground">
                     High-risk combos · biggest payouts
@@ -232,7 +232,7 @@ export function BettingTickets() {
                     className="px-5 group bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs border-0 rounded-full"
                     onClick={() => navigate("/multi-risk-matches")}
                   >
-                    <span>See Multi Risk Matches</span>
+                    <span>See Risk Ticket</span>
                     <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </div>
@@ -273,7 +273,7 @@ export function BettingTickets() {
             <Ticket className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Daily Multi-Match Predictions</h2>
+            <h2 className="text-sm font-semibold text-foreground">Daily Ticket</h2>
             <p className="text-[9px] text-muted-foreground">Multi-match combinations</p>
           </div>
         </div>

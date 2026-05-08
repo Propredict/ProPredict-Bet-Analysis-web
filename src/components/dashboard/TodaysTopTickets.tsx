@@ -26,7 +26,7 @@ export function TodaysTopTickets() {
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
 
-  // Exclude specialized categories (Multi Risk, etc.) from main 3 tiers
+  // Exclude specialized categories (Risk Tickets, etc.) from main 3 tiers
   const mainTickets = todayTickets.filter((t: any) => t.category !== "multi_risk");
 
   const freeTicket = mainTickets.find((t: any) => t.tier === "daily" || t.tier === "free");
@@ -74,7 +74,7 @@ export function TodaysTopTickets() {
       {/* Header */}
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Daily Multi Matches <Ticket className="h-5 w-5 text-orange-500" />
+          Daily Tickets <Ticket className="h-5 w-5 text-orange-500" />
         </h2>
         <p className="text-xs text-muted-foreground">Multi-match combos • Higher returns</p>
       </div>
