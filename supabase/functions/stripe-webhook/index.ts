@@ -35,6 +35,92 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1SpZ64L8E849h6yxd2Fnz1YP": "premium", // Premium yearly
 };
 
+const ACTIVE_STRIPE_STATUSES = new Set(["active", "trialing"]);
+
+function getPlanFromSubscription(subscription: Stripe.Subscription): string {
+  const priceId = subscription.items.data[0]?.price.id;
+  return PRICE_TO_PLAN[priceId] || "basic";
+}
+
+function getPeriodEnd(subscription: Stripe.Subscription): Date {
+  return new Date(subscription.current_period_end * 1000);
+}
+
+function getSupabaseStatus(stripeStatus: string): string {
+  return ACTIVE_STRIPE_STATUSES.has(stripeStatus) ? "active" : stripeStatus;
+}
+
+async function findActiveSubscriptionForEmail(stripe: Stripe, email?: string | null) {
+  if (!email) return null;
+
+  const customers = await stripe.customers.list({ email, limit: 100 });
+  let best: { subscription: Stripe.Subscription; plan: string; expiresAt: Date } | null = null;
+
+  for (const customer of customers.data) {
+    if ((customer as any).deleted) continue;
+
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "all",
+      limit: 100,
+    });
+
+    for (const subscription of subscriptions.data) {
+      if (!ACTIVE_STRIPE_STATUSES.has(subscription.status)) continue;
+
+      const expiresAt = getPeriodEnd(subscription);
+      if (expiresAt <= new Date()) continue;
+
+      const plan = getPlanFromSubscription(subscription);
+      const isBetterPlan = plan === "premium" && best?.plan !== "premium";
+      const isLaterExpiry = !best || expiresAt > best.expiresAt;
+      if (!best || isBetterPlan || (plan === best.plan && isLaterExpiry)) {
+        best = { subscription, plan, expiresAt };
+      }
+    }
+  }
+
+  return best;
+}
+
+async function syncSubscriptionToSupabase(supabase: any, userId: string, subscription: Stripe.Subscription) {
+  const { error } = await supabase
+    .from("user_subscriptions")
+    .upsert(
+      {
+        user_id: userId,
+        plan: getPlanFromSubscription(subscription),
+        status: getSupabaseStatus(subscription.status),
+        subscription_source: "stripe",
+        expires_at: getPeriodEnd(subscription).toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+
+  return error;
+}
+
+async function protectFromStaleFailedSubscription(
+  stripe: Stripe,
+  supabase: any,
+  userId: string,
+  email: string | null | undefined,
+  incomingSubscriptionId: string,
+  eventType: string
+): Promise<boolean> {
+  const active = await findActiveSubscriptionForEmail(stripe, email);
+  if (!active || active.subscription.id === incomingSubscriptionId) return false;
+
+  console.log(
+    `Ignoring stale ${eventType} from subscription ${incomingSubscriptionId}; syncing active subscription ${active.subscription.id} instead for user ${userId}`
+  );
+
+  const error = await syncSubscriptionToSupabase(supabase, userId, active.subscription);
+  if (error) console.error("Error syncing protected active subscription:", error);
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
