@@ -33,6 +33,10 @@ type Pred = {
   consensus_odds: number | null;
   variance_stable: boolean | null;
   is_premium: boolean | null;
+  predicted_score: string | null;
+  home_win: number | null;
+  draw: number | null;
+  away_win: number | null;
 };
 
 function todayBelgrade(): string {
@@ -44,6 +48,47 @@ function pickOdds(p: Pred): number | null {
   // fallback from confidence
   if (p.confidence > 0) return Math.max(1.1, Math.round((100 / p.confidence) * 100) / 100);
   return null;
+}
+
+/**
+ * Pick the SAFEST market for a Pro ticket pick based on predicted score and probabilities.
+ *
+ *  - Score margin ≥ 2 (e.g. 3-1, 3-0, 2-0) AND winner prob ≥ 55  → straight "1" or "2"
+ *  - Score margin = 1 AND winner prob ≥ 60                       → straight "1" or "2"
+ *  - Score margin = 1 (lower confidence)                         → double chance "1X" / "X2"
+ *  - Equal goals AND draw prob ≥ 45                              → "X" (Draw)
+ *  - Equal goals (lower draw conf)                               → keep original prediction
+ *  - Otherwise                                                   → keep original prediction
+ *
+ * Always strips correct-score format (handled by caller via isCorrectScore filter,
+ * but as a safety net we never return "X-Y" here).
+ */
+function safestProMarket(p: Pred): string {
+  const original = (p.prediction || "").trim();
+  const ps = (p.predicted_score || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (!m) return original;
+  const hg = parseInt(m[1], 10);
+  const ag = parseInt(m[2], 10);
+  const margin = hg - ag;
+  const hw = p.home_win ?? 0;
+  const dr = p.draw ?? 0;
+  const aw = p.away_win ?? 0;
+
+  if (margin >= 2 && hw >= 55) return "Home Win";
+  if (margin <= -2 && aw >= 55) return "Away Win";
+  if (margin === 1 && hw >= 60) return "Home Win";
+  if (margin === -1 && aw >= 60) return "Away Win";
+  if (margin === 1) return "Home or Draw"; // 1X
+  if (margin === -1) return "Draw or Away"; // X2
+  if (margin === 0 && dr >= 45) return "Draw";
+
+  // Fallback: keep original prediction unless it's a correct score
+  if (/\b\d{1,2}\s*[-:]\s*\d{1,2}\b/.test(original)) {
+    // Shouldn't happen because isCorrectScore filters earlier, but be safe
+    return hw >= aw ? "Home or Draw" : "Draw or Away";
+  }
+  return original;
 }
 
 /** Detect "correct score"-style predictions like "2-1", "1:0", "Score 3-2". */
@@ -164,7 +209,7 @@ serve(async (req: Request) => {
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
-      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium")
+      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win")
       .eq("match_date", date)
       .gte("confidence", 50)
       .lt("confidence", 78) // never include Premium
@@ -315,7 +360,7 @@ serve(async (req: Request) => {
           home_team: p.home_team,
           away_team: p.away_team,
           league: p.league,
-          prediction: p.prediction,
+          prediction: safestProMarket(p),
           odds: pickOdds(p)!,
           match_date: p.match_date,
           sort_order: idx,
