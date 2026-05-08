@@ -728,11 +728,11 @@ serve(async (req: Request) => {
 
     // ───────────────────────────────────────────────────────────────────
     // RISK TICKETS (4–5 per day) — bold AI picks, high-payout single/combo
-    //   - 1, 2 or 3 picks per ticket
+    //   - 1, 2, 3 or 4 picks per ticket
     //   - Each individual pick odds ≥ 2.50
-    //   - Combined total odds in [4.00, 15.00]
+    //   - Combined total odds ≥ 4.00 (no upper cap)
     //   - Source: Pro + Premium pools (no Free)
-    //   - Page filter: tier='premium' (frontend), category='multi_risk'
+    //   - Tier: 'premium' — only Premium subscribers can access
     // ───────────────────────────────────────────────────────────────────
     const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
@@ -774,17 +774,17 @@ serve(async (req: Request) => {
         const sizeName  = riskCombo.size === 1 ? "Solo Shot" : riskCombo.size === 2 ? "Double Up" : riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
         const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""} • ${riskCombo.total.toFixed(2)}x`;
         const { data: newRiskTicket, error: rtErr } = await supabase
-          .from("tickets")
-          .insert({
-            title: riskTitle,
-            // Use 'exclusive' so canAccess('exclusive') gates as Pro/Premium-only.
-            tier: "exclusive",
-            status: "published",
-            category: "multi_risk",
-            total_odds: riskCombo.total,
-            ticket_date: date,
-            ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI pick${riskCombo.picks.length > 1 ? "s" : ""}. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (min 4.00, up to 4 picks). Source: Pro + Premium AI pools.`,
-          })
+        .from("tickets")
+        .insert({
+          title: riskTitle,
+          // Use 'premium' tier so only Premium subscribers can access Risk tickets.
+          tier: "premium",
+          status: "published",
+          category: "multi_risk",
+          total_odds: riskCombo.total,
+          ticket_date: date,
+          ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI pick${riskCombo.picks.length > 1 ? "s" : ""}. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (min 4.00, up to 4 picks). Source: Pro + Premium AI pools.`,
+        })
           .select()
           .single();
         if (rtErr) throw rtErr;
