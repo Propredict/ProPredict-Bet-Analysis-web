@@ -729,11 +729,12 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
-    // MULTI-RISK TICKETS (4–5 per day) — high-risk/high-payout combos
-    //   - Mix of safe picks + risk picks (correct score, Over 3.5, NG, Draw)
-    //   - Total odds 10–100, 3–6 picks, varied risk profiles
+    // RISK TICKETS (4–5 per day) — bold AI picks, high-payout single/combo
+    //   - 1, 2 or 3 picks per ticket
+    //   - Each individual pick odds ≥ 2.50
+    //   - Combined total odds in [4.00, 15.00]
     //   - Source: Pro + Premium pools (no Free)
-    //   - Page filter: tier='exclusive', category='multi_risk'
+    //   - Page filter: tier='premium' (frontend), category='multi_risk'
     // ───────────────────────────────────────────────────────────────────
     const riskCreated: Array<{ id: string; picks: number; total_odds: number; size: number }> = [];
     let riskSkipReason: string | null = null;
@@ -767,7 +768,7 @@ serve(async (req: Request) => {
         const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, size);
         if (!riskCombo) {
           if (riskCreated.length === 0)
-            riskSkipReason = `No valid Multi-Risk combo (size=${size}) — not enough picks with odds ≥ 2.50`;
+            riskSkipReason = `No valid Risk combo (size=${size}) — needs picks ≥ 2.50 and total odds 4.00–15.00`;
           continue;
         }
         const idx = existingRiskCount + i + 1;
@@ -784,7 +785,7 @@ serve(async (req: Request) => {
             category: "multi_risk",
             total_odds: riskCombo.total,
             ticket_date: date,
-            ai_analysis: `${sizeName}: ${riskCombo.picks.length} safe AI prediction${riskCombo.picks.length > 1 ? "s" : ""} where each market price is ≥ 2.50. Total odds ${riskCombo.total.toFixed(2)}x. Source: Pro + Premium AI pools.`,
+            ai_analysis: `${sizeName}: ${riskCombo.picks.length} bold AI pick${riskCombo.picks.length > 1 ? "s" : ""}. Every single odds ≥ 2.50. Total combined odds ${riskCombo.total.toFixed(2)}x (window: 4.00–15.00). Source: Pro + Premium AI pools.`,
           })
           .select()
           .single();
