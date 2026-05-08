@@ -698,6 +698,98 @@ serve(async (req: Request) => {
       }
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // MULTI-RISK TICKETS (4–5 per day) — high-risk/high-payout combos
+    //   - Mix of safe picks + risk picks (correct score, Over 3.5, NG, Draw)
+    //   - Total odds 10–100, 3–6 picks, varied risk profiles
+    //   - Source: Pro + Premium pools (no Free)
+    //   - Page filter: tier='exclusive', category='multi_risk'
+    // ───────────────────────────────────────────────────────────────────
+    const riskCreated: Array<{ id: string; picks: number; total_odds: number; profile: string }> = [];
+    let riskSkipReason: string | null = null;
+
+    const { data: existingRisk } = await supabase
+      .from("tickets")
+      .select("id")
+      .eq("ticket_date", date)
+      .eq("category", "multi_risk");
+
+    const existingRiskCount = existingRisk?.length ?? 0;
+    // 4 default; 5 if combined Pro+Premium pool > 15
+    const riskTarget = (proPool.length + premiumPool.length) > 15 ? 5 : 4;
+    const riskToCreate = Math.max(0, riskTarget - existingRiskCount);
+
+    if (riskToCreate === 0) {
+      riskSkipReason = existingRiskCount >= riskTarget
+        ? "Multi-Risk tickets already at target"
+        : "not_attempted";
+    } else if (premiumPool.length + proPool.length < 4) {
+      riskSkipReason = `Pool too small (Pro+Premium ${premiumPool.length + proPool.length} < 4)`;
+    } else {
+      const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const riskUsed = new Set<string>();
+      // Rotate risk profiles for variety
+      const profiles: RiskProfile[] = ["score_heavy", "goals_heavy", "score_heavy", "underdog", "goals_heavy"];
+
+      for (let i = 0; i < riskToCreate; i++) {
+        const profile = profiles[(existingRiskCount + i) % profiles.length];
+        const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, profile);
+        if (!riskCombo) {
+          if (riskCreated.length === 0)
+            riskSkipReason = `No valid Multi-Risk combo (profile=${profile})`;
+          continue;
+        }
+        const idx = existingRiskCount + i + 1;
+        const profileEmoji =
+          riskCombo.profile === "score_heavy" ? "🎯"
+          : riskCombo.profile === "goals_heavy" ? "⚡"
+          : "🔥";
+        const profileName =
+          riskCombo.profile === "score_heavy" ? "Score Hunter"
+          : riskCombo.profile === "goals_heavy" ? "Goals Rush"
+          : "Underdog Hunt";
+        const riskTitle = `${profileEmoji} Multi-Risk ${profileName}${riskTarget > 1 ? ` #${idx}` : ""} • ${riskCombo.picks.length} Picks • ${riskCombo.total.toFixed(2)}x`;
+        const { data: newRiskTicket, error: rtErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: riskTitle,
+            // Use 'exclusive' so canAccess('exclusive') gates as Pro/Premium-only.
+            tier: "exclusive",
+            status: "published",
+            category: "multi_risk",
+            total_odds: riskCombo.total,
+            ticket_date: date,
+            ai_analysis: `High-risk/high-reward combo (${profileName}). ${riskCombo.picks.length} picks, total odds ${riskCombo.total.toFixed(2)}x. Mix of safe Premium/Pro markets with ${riskCombo.profile === "score_heavy" ? "correct-score anchors" : riskCombo.profile === "goals_heavy" ? "goals markets (Over 3.5 / NG / Under 1.5)" : "an underdog Draw anchor"}.`,
+          })
+          .select()
+          .single();
+        if (rtErr) throw rtErr;
+
+        const riskRows = riskCombo.picks.map((p, k) => ({
+          ticket_id: newRiskTicket.id,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.market,
+          odds: p.odds,
+          match_date: p.p.match_date,
+          sort_order: k,
+        }));
+        const { error: rmErr } = await supabase.from("ticket_matches").insert(riskRows);
+        if (rmErr) throw rmErr;
+
+        riskCombo.picks.forEach((x) => riskUsed.add(x.p.match_id));
+        riskCreated.push({
+          id: newRiskTicket.id,
+          picks: riskCombo.picks.length,
+          total_odds: riskCombo.total,
+          profile: riskCombo.profile,
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -715,6 +807,10 @@ serve(async (req: Request) => {
         premium_created_count: premiumCreated.length,
         premium_tickets: premiumCreated,
         premium_skip_reason: premiumSkipReason,
+        risk_target: riskTarget,
+        risk_created_count: riskCreated.length,
+        risk_tickets: riskCreated,
+        risk_skip_reason: riskSkipReason,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
