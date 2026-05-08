@@ -73,7 +73,15 @@ export default function ExclusiveTickets() {
     timeZone: "Europe/Belgrade",
   });
   
-  const exclusiveTickets = tickets.filter(ticket => ticket.tier === "exclusive" && ticket.ticket_date === todayBelgrade && (!ticket.category || ticket.category === "standard"));
+  const exclusiveTickets = tickets.filter(ticket =>
+    ticket.ticket_date === todayBelgrade &&
+    (
+      // Manually-curated Pro/Exclusive tickets
+      (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
+      // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
+      || (ticket.category as string) === "ai_pro"
+    )
+  );
   const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 

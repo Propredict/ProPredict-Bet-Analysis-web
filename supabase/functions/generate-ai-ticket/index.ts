@@ -398,7 +398,9 @@ serve(async (req: Request) => {
           .from("tickets")
           .insert({
             title: proTitle,
-            tier: "pro",
+            // Use 'exclusive' tier so the access layer (canAccess) treats it
+            // as Pro/Premium gated content. category 'ai_pro' marks the source.
+            tier: "exclusive",
             status: "published",
             category: "ai_pro",
             total_odds: proCombo.total,
