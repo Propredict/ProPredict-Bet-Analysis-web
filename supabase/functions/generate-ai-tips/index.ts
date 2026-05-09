@@ -209,13 +209,13 @@ serve(async (req) => {
     try { body = await req.json(); } catch (_) {}
     const date = todayBelgrade();
 
-    // Always wipe today's AI tips first (only category='ai_daily').
+    // Always wipe today's AI tips first (categories 'ai_daily' and 'ai_pro').
     // Admin tips ('standard' / 'risk_of_day' / 'diamond_pick') are NEVER touched.
     const { data: toDel } = await supabase
       .from("tips")
       .select("id")
       .eq("tip_date", date)
-      .eq("category", "ai_daily");
+      .in("category", ["ai_daily", "ai_pro"]);
     const delIds = (toDel ?? []).map((t: any) => t.id);
     if (delIds.length > 0) {
       await supabase.from("tips").delete().in("id", delIds);
@@ -252,20 +252,25 @@ serve(async (req) => {
 
     const usedMatchIds = new Set<string>();
     const usedMarketTypes = new Set<string>();
-    const created: Array<{ tier: string; pick: string; odds: number; confidence: number }> = [];
+    const created: Array<{ tier: string; category: string; pick: string; odds: number; confidence: number }> = [];
 
     // Targets:
-    //   - up to 3 Free picks (scaled to pool size)
-    //   - 1 Pro pick (sourced from Pro pool, gated as 'daily')
-    //   - 1 Premium pick (sourced from Premium pool, gated as 'daily')
-    // All tips land on /daily-predictions. tier='free' = always visible, tier='daily' = unlock/sub.
+    //   Daily Tips page (category='ai_daily'):
+    //     - up to 3 Free picks (tier='free', scaled to pool size)
+    //     - 1 Pro pick (tier='daily', sourced from Pro pool)
+    //     - 1 Premium pick (tier='daily', sourced from Premium pool)
+    //   Pro Insights page (category='ai_pro'):
+    //     - 3-4 Pro picks (tier='exclusive', sourced from Pro+Premium pools)
     const freeTarget = freePool.length >= 8 ? 3 : (freePool.length >= 4 ? 2 : 1);
+    const proInsightsPool = [...premiumPool, ...proPool];
+    const proInsightsTarget = proInsightsPool.length >= 6 ? 4 : (proInsightsPool.length >= 3 ? 3 : Math.min(2, proInsightsPool.length));
 
-    type TierJob = { name: string; pool: Pred[]; tier: string; count: number };
+    type TierJob = { name: string; pool: Pred[]; tier: string; count: number; category: string };
     const jobs: TierJob[] = [
-      { name: "Free",    pool: freePool,    tier: "free",  count: freeTarget },
-      { name: "Pro",     pool: proPool,     tier: "daily", count: 1 },
-      { name: "Premium", pool: premiumPool, tier: "daily", count: 1 },
+      { name: "Free",        pool: freePool,         tier: "free",      count: freeTarget,        category: "ai_daily" },
+      { name: "Pro",         pool: proPool,          tier: "daily",     count: 1,                 category: "ai_daily" },
+      { name: "Premium",     pool: premiumPool,      tier: "daily",     count: 1,                 category: "ai_daily" },
+      { name: "ProInsights", pool: proInsightsPool,  tier: "exclusive", count: proInsightsTarget, category: "ai_pro"   },
     ];
 
     for (const job of jobs) {
@@ -289,7 +294,7 @@ serve(async (req) => {
           confidence: p.confidence,
           tier: job.tier,
           status: "published",
-          category: "ai_daily",
+          category: job.category,
           tip_date: date,
         });
         if (insErr) throw insErr;
@@ -297,8 +302,10 @@ serve(async (req) => {
         usedMatchIds.add(p.match_id);
         const type = isGoalMarket(market.label) ? market.label.split(" ")[0].toLowerCase() : "1x2";
         usedMarketTypes.add(type);
-        created.push({ tier: job.tier, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
+        created.push({ tier: job.tier, category: job.category, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
       }
+      // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
+      if (job.category === "ai_daily" && job.name === "Premium") usedMarketTypes.clear();
     }
 
     return new Response(
