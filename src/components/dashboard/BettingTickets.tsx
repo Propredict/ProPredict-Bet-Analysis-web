@@ -53,14 +53,15 @@ export function BettingTickets() {
   // Dashboard shows ONLY today's tickets — older ones go to history pages
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
-  const tickets = todayDbTickets.map(mapDbTicket);
-  const filtered = tickets.filter((t) => t.tier === activeTab);
+  const filtered = todayDbTickets
+    .filter((t: any) => t.tier === activeTab && !(activeTab === "premium" && t.category === "multi_risk"))
+    .map(mapDbTicket);
   const displayedTickets = filtered.slice(0, 3);
   const hasMoreTickets = filtered.length > 3;
 
   // Count only today's tickets per tier (todayDate already defined above)
   const todayTicketCountByTier = (tierId: string) =>
-    todayDbTickets.filter((t: any) => t.tier === tierId).length;
+    todayDbTickets.filter((t: any) => t.tier === tierId && !(tierId === "premium" && t.category === "multi_risk")).length;
 
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
