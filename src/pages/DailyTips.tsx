@@ -206,8 +206,8 @@ export default function DailyTips() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-accent mb-1">No daily AI predictions available</p>
-              <p className="text-sm">Check back later for new predictions</p>
+              <p className="text-accent mb-1">Fresh picks drop daily</p>
+              <p className="text-sm">New AI predictions are generated every morning at 7:00 AM CET.</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
