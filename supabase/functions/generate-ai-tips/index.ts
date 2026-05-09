@@ -336,7 +336,8 @@ serve(async (req) => {
       if (candidatePool.length === 0) continue;
 
       for (let n = 0; n < job.count; n++) {
-        const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes);
+        const picker = job.category === "ai_pro" ? pickSafeMarketPro : pickSafeMarket;
+        const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes, picker);
         if (!choice) break;
 
         const { p, market } = choice;
@@ -356,8 +357,7 @@ serve(async (req) => {
         if (insErr) throw insErr;
 
         usedMatchIds.add(p.match_id);
-        const type = isGoalMarket(market.label) ? market.label.split(" ")[0].toLowerCase() : "1x2";
-        usedMarketTypes.add(type);
+        usedMarketTypes.add(marketDiversityKey(market.label));
         created.push({ tier: job.tier, category: job.category, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
       }
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
