@@ -1143,10 +1143,7 @@ serve(async (req: Request) => {
         const riskCombo = buildRiskCombo(premOrdered, proOrderedR, riskUsed, size);
         if (!riskCombo) {
           if (riskCreated.length === 0)
-            riskSkipReason = `No valid Risk combo (size=${size}). Pool: prem=${premOrdered.length} pro=${proOrderedR.length}. Sample picks evaluated: ${[...premOrdered, ...proOrderedR].slice(0, 8).map((p) => {
-              const pick = highOddsSafePick(p);
-              return `${p.match_id.slice(-4)}|conf=${p.confidence}|pred=${p.prediction}|cs=${p.predicted_score}|consOdds=${p.consensus_odds ?? "n"}|→${pick ? `${pick.market}@${pick.odds}` : "skip"}`;
-            }).join(" ; ")}`;
+            riskSkipReason = `No valid Risk combo (size=${size}) — needs picks ≥ 2.50 and total odds ≥ 4.00`;
           continue;
         }
         const idx = existingRiskCount + i + 1;
