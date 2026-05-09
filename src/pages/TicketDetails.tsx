@@ -417,7 +417,6 @@ export default function TicketDetails() {
                           <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-xs border border-primary/30">
                             {match.prediction}
                           </Badge>
-                          <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -443,7 +442,6 @@ export default function TicketDetails() {
                         <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-xs border border-primary/30">
                           {match.prediction}
                         </Badge>
-                        <span className="text-sm font-medium text-primary">{match.odds.toFixed(2)}</span>
                       </div>
                     </div>
                   );

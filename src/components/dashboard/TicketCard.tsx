@@ -227,7 +227,6 @@ function TicketCard({
                       <Lock className="h-2.5 w-2.5" />
                       Locked
                     </span>
-                    <span className="text-xs font-bold text-muted-foreground blur-[4px] select-none">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               );
@@ -318,7 +317,6 @@ function TicketCard({
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">{match.prediction}</Badge>
-                    <span className="text-xs font-bold text-primary">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               );
