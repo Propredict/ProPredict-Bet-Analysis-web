@@ -646,7 +646,9 @@ serve(async (req: Request) => {
     // Decide how many tickets to create:
     //  - Always at least 1
     //  - 2 tickets only if Free pool has > 15 matches (so we have enough Free supply)
-    const targetTickets = freePool.length > 15 ? 2 : 1;
+    const targetTickets: number = Number.isFinite(body?.daily_target)
+      ? Math.max(0, Number(body.daily_target))
+      : (freePool.length > 15 ? 2 : 1);
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
@@ -727,7 +729,9 @@ serve(async (req: Request) => {
       .eq("category", "ai_pro");
 
     const existingProCount = existingPro?.length ?? 0;
-    const proTarget = proPool.length > 12 ? 2 : 1;
+    const proTarget: number = Number.isFinite(body?.pro_target)
+      ? Math.max(0, Number(body.pro_target))
+      : (proPool.length > 12 ? 2 : 1);
     const proToCreate = Math.max(0, proTarget - existingProCount);
 
     if (proToCreate === 0) {
@@ -808,8 +812,9 @@ serve(async (req: Request) => {
       .eq("category", "ai_premium");
 
     const existingPremiumCount = existingPremium?.length ?? 0;
-    const premiumTarget: number =
-      premiumPool.length > 8 && proPool.length > 10 ? 3 : 2;
+    const premiumTarget: number = Number.isFinite(body?.premium_target)
+      ? Math.max(0, Number(body.premium_target))
+      : (premiumPool.length > 8 && proPool.length > 10 ? 3 : 2);
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
     if (premiumToCreate === 0) {
@@ -893,7 +898,9 @@ serve(async (req: Request) => {
 
     const existingRiskCount = existingRisk?.length ?? 0;
     // 4 default; 5 if combined Pro+Premium pool > 15
-    const riskTarget = (proPool.length + premiumPool.length) > 15 ? 5 : 4;
+    const riskTarget: number = Number.isFinite(body?.risk_target)
+      ? Math.max(0, Number(body.risk_target))
+      : ((proPool.length + premiumPool.length) > 15 ? 5 : 4);
     const riskToCreate = Math.max(0, riskTarget - existingRiskCount);
 
     if (riskToCreate === 0) {
