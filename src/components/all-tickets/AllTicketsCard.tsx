@@ -213,7 +213,6 @@ export function AllTicketsCard({
                     <Badge variant="secondary" className="text-[10px] px-1.5 bg-muted">
                       {match.prediction}
                     </Badge>
-                    <span className="text-xs font-medium text-primary">{match.odds.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -394,7 +393,6 @@ export function AllTicketsCard({
                   <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
                     {match.prediction}
                   </Badge>
-                  <span className="text-xs font-medium text-primary">{match.odds.toFixed(2)}</span>
                 </div>
               </div>
             );
