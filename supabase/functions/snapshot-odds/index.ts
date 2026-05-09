@@ -259,9 +259,11 @@ serve(async (req: Request) => {
     for (const p of predictions ?? []) {
       processed++;
       try {
-        const raw = await fetchOddsForFixture(apiKey, p.match_id);
-        const snap = buildSnapshot(p.match_id, p.match_date, raw);
+        // Fetch ALL markets once (1X2 + Over/Under + BTTS) to save API quota.
+        const rawAll = await fetchAllOddsForFixture(apiKey, p.match_id);
+        const snap = buildSnapshot(p.match_id, p.match_date, rawAll);
         if (!snap) continue;
+        const marketOdds = buildMarketOdds(rawAll);
 
         // Get most recent previous snapshot
         const { data: prevRows } = await supabase
@@ -359,6 +361,7 @@ serve(async (req: Request) => {
             value_draw: valueDraw,
             value_away: valueAway,
             is_value_bet: isValueBet,
+            market_odds: marketOdds,
             updated_at: new Date().toISOString(),
           })
           .eq("id", p.id);
