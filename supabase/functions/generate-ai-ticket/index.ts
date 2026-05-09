@@ -1150,8 +1150,8 @@ serve(async (req: Request) => {
           continue;
         }
         const idx = existingRiskCount + i + 1;
-        const sizeEmoji = riskCombo.size === 3 ? "🔥" : "💥";
-        const sizeName  = riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
+        const sizeEmoji = riskCombo.size === 2 ? "⚡" : riskCombo.size === 3 ? "🔥" : "💥";
+        const sizeName  = riskCombo.size === 2 ? "Double Risk" : riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
         const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""}`;
         const { data: newRiskTicket, error: rtErr } = await supabase
         .from("tickets")
