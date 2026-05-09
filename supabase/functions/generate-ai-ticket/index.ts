@@ -498,6 +498,84 @@ function buildPremiumCombo(
   return null;
 }
 
+/**
+ * Elite Top-Picks Combo (extra Premium ticket).
+ * Mirrors the "Top AI Picks Today" selection in the Premium AI tab:
+ *   - Only Tier 1 / Tier 2 leagues, confidence ≥ 78
+ *   - Variance must be stable
+ *   - Cherry-picks the 4–5 strongest predictions for one combined ticket
+ *   - Per-pick odds in [1.25, 3.5], total odds in [4.0, 18.0]
+ */
+const TIER1_LEAGUE_FRAGMENTS = [
+  "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+  "champions league", "europa league", "conference league",
+  "world cup", "euro championship", "copa america", "copa libertadores",
+];
+const TIER2_LEAGUE_FRAGMENTS = [
+  "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
+  "scottish premiership", "championship", "la liga 2",
+  "segunda división", "segunda division", "2. bundesliga", "serie b", "ligue 2",
+  "mls", "brasileirão", "brasileirao", "liga mx",
+];
+function eliteLeagueTier(league: string | null | undefined): 1 | 2 | 3 {
+  const l = (league ?? "").toLowerCase();
+  if (!l) return 3;
+  if (/\bu1[5-9]\b|\bu2[0-3]\b|reserve|youth/i.test(l)) return 3;
+  if (TIER1_LEAGUE_FRAGMENTS.some((n) => l.includes(n))) return 1;
+  if (TIER2_LEAGUE_FRAGMENTS.some((n) => l.includes(n))) return 2;
+  return 3;
+}
+
+function buildElitePremiumCombo(
+  premiumOrdered: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
+  // Cascading buckets — top leagues + highest confidence first.
+  const qualified = premiumOrdered.filter(
+    (p) => p.variance_stable === true && (p.confidence ?? 0) >= 78,
+  );
+  const buckets: Pred[][] = [
+    qualified.filter((p) => eliteLeagueTier(p.league) === 1 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 1 && (p.confidence ?? 0) >= 78 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 2 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 2 && (p.confidence ?? 0) >= 78 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 3 && (p.confidence ?? 0) >= 85),
+  ];
+
+  const used = new Set<string>(excludeMatchIds);
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
+  let total = 1;
+  const typeCount = new Map<string, number>();
+
+  for (const bucket of buckets) {
+    if (chosen.length >= 5) break;
+    const ranked = bucket.slice().sort((a, b) => b.confidence - a.confidence);
+    for (const p of ranked) {
+      if (chosen.length >= 5) break;
+      if (used.has(p.match_id)) continue;
+      const choice = premiumComboPick(p);
+      if (!choice) continue;
+      const o = choice.odds;
+      if (o < 1.25 || o > 3.5) continue;
+      // Diversity cap: max 2 of same market family
+      const family = choice.market.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+      if ((typeCount.get(family) ?? 0) >= 2) continue;
+      const next = total * o;
+      if (next > 18.0) continue;
+      chosen.push({ p, choice });
+      used.add(p.match_id);
+      total = next;
+      typeCount.set(family, (typeCount.get(family) ?? 0) + 1);
+      if (chosen.length >= 4 && total >= 6.0) break;
+    }
+  }
+
+  if (chosen.length >= 4 && total >= 4.0 && total <= 18.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
@@ -651,15 +729,31 @@ serve(async (req: Request) => {
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
-    const { data: preds, error: pErr } = await supabase
-      .from("ai_predictions")
-      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win,market_odds")
-      .eq("match_date", date)
-      .gte("confidence", 50)
-      .order("confidence", { ascending: false })
-      .limit(120);
-
-    if (pErr) throw pErr;
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win";
+    let preds: any[] | null = null;
+    {
+      const r1 = await supabase
+        .from("ai_predictions")
+        .select(`${baseCols},market_odds`)
+        .eq("match_date", date)
+        .gte("confidence", 50)
+        .order("confidence", { ascending: false })
+        .limit(120);
+      if (r1.error) {
+        // market_odds column not yet migrated — fall back to base columns.
+        const r2 = await supabase
+          .from("ai_predictions")
+          .select(baseCols)
+          .eq("match_date", date)
+          .gte("confidence", 50)
+          .order("confidence", { ascending: false })
+          .limit(120);
+        if (r2.error) throw r2.error;
+        preds = r2.data;
+      } else {
+        preds = r1.data;
+      }
+    }
     const all = (preds ?? []) as Pred[];
 
     // Split into Free (<65), Pro (65–77), Premium (≥78).
@@ -914,6 +1008,77 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
+    // ELITE TOP PICKS COMBO (extra Premium ticket, 1/day).
+    // Cherry-picked from the same pool that powers "Top AI Picks Today":
+    // Tier 1/2 leagues, confidence ≥ 78, variance stable.
+    // Runs independently of the standard Premium loop above.
+    // ───────────────────────────────────────────────────────────────────
+    let eliteSkipReason: string | null = null;
+    let eliteCreatedId: string | null = null;
+    {
+      const { data: existingElite } = await supabase
+        .from("tickets")
+        .select("id,title")
+        .eq("ticket_date", date)
+        .eq("category", "ai_premium")
+        .ilike("title", "%Elite Top Picks%");
+      if ((existingElite?.length ?? 0) > 0) {
+        eliteSkipReason = "Elite Top Picks Combo already exists today";
+      } else if (premiumPool.length < 4) {
+        eliteSkipReason = `Premium pool too small for Elite combo (${premiumPool.length} < 4)`;
+      } else {
+        const eliteSource = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
+        const elite = buildElitePremiumCombo(eliteSource, new Set());
+        if (!elite) {
+          eliteSkipReason = "No valid Elite combo (4–5 picks, Tier 1/2, conf ≥78, stable)";
+        } else {
+          const eliteTitle = `👑 Elite Top Picks Combo • ${elite.picks.length} Picks • ${elite.total.toFixed(2)}x`;
+          const { data: newEliteTicket, error: etErr } = await supabase
+            .from("tickets")
+            .insert({
+              title: eliteTitle,
+              tier: "premium",
+              status: "published",
+              category: "ai_premium",
+              total_odds: elite.total,
+              ticket_date: date,
+              ai_analysis: `Elite Top Picks Combo — cherry-picked from the highest-ranked AI predictions in top leagues (Tier 1/2, confidence ≥78, variance-stable). ${elite.picks.length} picks, total odds ${elite.total.toFixed(2)}x. Avg confidence: ${Math.round(
+                elite.picks.reduce((s, x) => s + x.p.confidence, 0) / elite.picks.length,
+              )}%.`,
+            })
+            .select()
+            .single();
+          if (etErr) {
+            eliteSkipReason = `Insert failed: ${etErr.message}`;
+          } else {
+            const eliteRows = elite.picks.map((p, k) => ({
+              ticket_id: newEliteTicket.id,
+              match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+              home_team: p.p.home_team,
+              away_team: p.p.away_team,
+              league: p.p.league,
+              prediction: p.choice.market,
+              odds: p.choice.odds,
+              match_date: p.p.match_date,
+              sort_order: k,
+            }));
+            const { error: emErr } = await supabase.from("ticket_matches").insert(eliteRows);
+            if (emErr) {
+              eliteSkipReason = `Match insert failed: ${emErr.message}`;
+            } else {
+              eliteCreatedId = newEliteTicket.id;
+              premiumCreated.push({
+                id: newEliteTicket.id,
+                picks: elite.picks.length,
+                total_odds: elite.total,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // ───────────────────────────────────────────────────────────────────
     // RISK TICKETS (4–5 per day) — bold AI picks, multi-match combos only
     //   - 3 or 4 picks per ticket (no singles, no doubles)
     //   - Each individual pick odds ≥ 2.50 (e.g. 2.50, 3.50, 4.00, 5.50)
@@ -1020,6 +1185,8 @@ serve(async (req: Request) => {
         premium_created_count: premiumCreated.length,
         premium_tickets: premiumCreated,
         premium_skip_reason: premiumSkipReason,
+        elite_ticket_id: eliteCreatedId,
+        elite_skip_reason: eliteSkipReason,
         risk_target: riskTarget,
         risk_created_count: riskCreated.length,
         risk_tickets: riskCreated,
