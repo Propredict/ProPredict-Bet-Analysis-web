@@ -776,7 +776,7 @@ serve(async (req: Request) => {
     //  - 2 tickets only if Free pool has > 15 matches (so we have enough Free supply)
     const targetTickets: number = Number.isFinite(body?.daily_target)
       ? Math.max(0, Number(body.daily_target))
-      : (freePool.length > 15 ? 2 : 1);
+      : (freePool.length > 12 ? 3 : (freePool.length > 4 ? 2 : 1));
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
@@ -859,7 +859,7 @@ serve(async (req: Request) => {
     const existingProCount = existingPro?.length ?? 0;
     const proTarget: number = Number.isFinite(body?.pro_target)
       ? Math.max(0, Number(body.pro_target))
-      : (proPool.length > 12 ? 2 : 1);
+      : 2;
     const proToCreate = Math.max(0, proTarget - existingProCount);
 
     if (proToCreate === 0) {
@@ -869,9 +869,16 @@ serve(async (req: Request) => {
     } else if (proPool.length < 3) {
       proSkipReason = `Pro pool too small (${proPool.length} < 3)`;
     } else {
+      // Pro tickets can mix Pro (65–77) AND Premium (≥78) picks for variety.
+      // Premium picks are placed first (higher confidence) but the gate
+      // (choice.prob ≥ 65) accepts both tiers.
       const stableProPool = proPool.filter((p) => p.variance_stable);
       const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
-      const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
+      const stablePremForPro = premiumPool.filter((p) => p.variance_stable);
+      const premForPro = stablePremForPro.length >= 1 ? stablePremForPro : premiumPool;
+      const proOrderedAll = [...premForPro, ...proSource]
+        .slice()
+        .sort((a, b) => b.confidence - a.confidence);
       const proUsed = new Set<string>();
 
       for (let i = 0; i < proToCreate; i++) {
@@ -942,7 +949,7 @@ serve(async (req: Request) => {
     const existingPremiumCount = existingPremium?.length ?? 0;
     const premiumTarget: number = Number.isFinite(body?.premium_target)
       ? Math.max(0, Number(body.premium_target))
-      : (premiumPool.length > 8 && proPool.length > 10 ? 3 : 2);
+      : 2;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
     if (premiumToCreate === 0) {
@@ -1013,9 +1020,9 @@ serve(async (req: Request) => {
     // Tier 1/2 leagues, confidence ≥ 78, variance stable.
     // Runs independently of the standard Premium loop above.
     // ───────────────────────────────────────────────────────────────────
-    let eliteSkipReason: string | null = null;
+    let eliteSkipReason: string | null = "Disabled — using fixed 2 Premium tickets per day";
     let eliteCreatedId: string | null = null;
-    {
+    if (false) {
       const { data: existingElite } = await supabase
         .from("tickets")
         .select("id,title")
@@ -1099,7 +1106,7 @@ serve(async (req: Request) => {
     // 4 default; 5 if combined Pro+Premium pool > 15
     const riskTarget: number = Number.isFinite(body?.risk_target)
       ? Math.max(0, Number(body.risk_target))
-      : ((proPool.length + premiumPool.length) > 15 ? 5 : 4);
+      : 2;
     const riskToCreate = Math.max(0, riskTarget - existingRiskCount);
 
     if (riskToCreate === 0) {
