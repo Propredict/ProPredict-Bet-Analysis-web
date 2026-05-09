@@ -51,6 +51,101 @@ function pickOdds(p: Pred): number | null {
 }
 
 /**
+ * Market odds calibration.
+ * `consensus_odds` in DB is ONLY the 1X2 (Match Winner) consensus — it must
+ * NOT be used as the price for Over/Under, GG/NG or BTTS markets.
+ *
+ * For non-1X2 markets we derive a realistic price from the predicted scoreline
+ * (total goals + per-team goals). Ranges mirror typical bookmaker pricing.
+ * Returns null when the prediction text doesn't map to a known market and
+ * a calibrated price cannot be produced.
+ */
+function calibratedMarketOdds(prediction: string, predictedScore: string | null): number | null {
+  const raw = (prediction || "").trim();
+  if (!raw) return null;
+  const s = raw.toLowerCase();
+
+  const ps = (predictedScore || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const hg = m ? parseInt(m[1], 10) : -1;
+  const ag = m ? parseInt(m[2], 10) : -1;
+  const total = hg >= 0 ? hg + ag : -1;
+
+  // Over X.5 family
+  if (/over\s*2\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total >= 5) return 1.25;
+    if (total === 4) return 1.42;
+    if (total === 3) return 1.65;
+    if (total === 2) return 2.50;
+    return 4.20; // total <= 1
+  }
+  if (/under\s*2\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total <= 1) return 1.28;
+    if (total === 2) return 1.55;
+    if (total === 3) return 2.40;
+    if (total === 4) return 4.20;
+    return 6.00;
+  }
+  if (/over\s*3\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total >= 5) return 1.55;
+    if (total === 4) return 2.10;
+    if (total === 3) return 3.40;
+    return 5.50;
+  }
+  if (/under\s*3\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total <= 2) return 1.25;
+    if (total === 3) return 1.45;
+    if (total === 4) return 2.10;
+    return 4.50;
+  }
+  if (/over\s*1\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total >= 3) return 1.20;
+    if (total === 2) return 1.45;
+    return 2.80;
+  }
+  if (/under\s*1\.?5/.test(s)) {
+    if (total < 0) return null;
+    if (total <= 1) return 1.55;
+    if (total === 2) return 2.80;
+    return 5.00;
+  }
+
+  // BTTS / GG / NG
+  if (/^gg\b/.test(s) || /btts\s*yes/.test(s) || /both\s*teams\s*(to\s*)?score/.test(s)) {
+    if (hg < 0 || ag < 0) return null;
+    if (hg >= 2 && ag >= 2) return 1.38;
+    if (hg >= 1 && ag >= 1) return 1.65;
+    return 3.20; // one team predicted to keep clean sheet
+  }
+  if (/^ng\b/.test(s) || /btts\s*no/.test(s)) {
+    if (hg < 0 || ag < 0) return null;
+    if (hg === 0 || ag === 0) return 1.50;
+    if (hg >= 2 && ag >= 2) return 3.50;
+    return 2.20;
+  }
+
+  // 1X2 / Double Chance / DNB → return null so caller falls back to consensus_odds.
+  return null;
+}
+
+/**
+ * Returns the BEST realistic price for `p.prediction`:
+ *  - For non-1X2 markets (Over/Under, GG/NG, BTTS) → calibrated from predicted_score.
+ *  - For 1X2 → consensus_odds (real bookmaker average for Match Winner).
+ * Falls back to legacy pickOdds() only if neither path yields a value.
+ */
+function realPickOdds(p: Pred): number | null {
+  const calibrated = calibratedMarketOdds(p.prediction, p.predicted_score);
+  if (calibrated !== null) return calibrated;
+  return pickOdds(p);
+}
+
+/**
  * Normalize an AI prediction label to a clean, user-friendly market name.
  * "1" -> "Home Win", "X" -> "Draw", "2" -> "Away Win", keeps everything else as-is.
  */
@@ -71,7 +166,7 @@ function originalProPick(p: Pred): MarketChoice | null {
   const raw = (p.prediction || "").trim();
   if (!raw) return null;
   if (isCorrectScore(raw)) return null;
-  const odds = pickOdds(p);
+  const odds = realPickOdds(p);
   if (odds === null) return null;
   return {
     market: normalizePredictionLabel(raw),
