@@ -354,9 +354,6 @@ export function AllTicketsCard({
               <CheckCircle2 className="h-2.5 w-2.5" />
               Available
             </Badge>
-            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-[10px] px-1.5">
-              {formatCombinedOdds(totalOdds)}
-            </Badge>
           </div>
         </div>
       </div>
@@ -400,14 +397,6 @@ export function AllTicketsCard({
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </p>
         )}
-      </div>
-
-      {/* Combined Value footer */}
-      <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
-            <span className="font-bold text-sm sm:text-base text-primary">{formatCombinedOdds(totalOdds)}</span>
-          </div>
       </div>
 
       {/* Unlocked badge footer */}
