@@ -426,6 +426,8 @@ serve(async (req) => {
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
       if (job.category === "ai_daily" && job.name === "Premium") usedMarketTypes.clear();
       if (job.category === "ai_pro" && job.name === "ProInsights") usedMarketTypes.clear();
+      // Premium combo lives on its own page — let it reuse top premium matches.
+      if (job.name === "ProInsights") usedMatchIds.clear();
     }
 
     return new Response(
