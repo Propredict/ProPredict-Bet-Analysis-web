@@ -675,8 +675,8 @@ serve(async (req: Request) => {
       const isCombo = combo.picks.length > 1;
       const ticketIdx = existingCount + i + 1;
       const title = isCombo
-        ? `🤖 AI Daily Combo${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks.length} Picks`
-        : `🤖 AI Daily Pick${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks[0].home_team} vs ${combo.picks[0].away_team}`;
+        ? `🤖 Daily Combo${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks.length} Picks`
+        : `🤖 Daily Pick${targetTickets > 1 ? ` #${ticketIdx}` : ""} • ${combo.picks[0].home_team} vs ${combo.picks[0].away_team}`;
 
       const { data: newTicket, error: tErr } = await supabase
         .from("tickets")
@@ -760,7 +760,7 @@ serve(async (req: Request) => {
           break;
         }
         const idx = existingProCount + i + 1;
-        const proTitle = `🎯 AI Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
+        const proTitle = `🎯 Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
         const { data: newProTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
@@ -845,7 +845,7 @@ serve(async (req: Request) => {
           break;
         }
         const idx = existingPremiumCount + i + 1;
-        const premTitle = `👑 AI Premium Combo${premiumTarget > 1 ? ` #${idx}` : ""} • ${premCombo.picks.length} Picks • ${premCombo.total.toFixed(2)}x`;
+        const premTitle = `👑 Premium Combo${premiumTarget > 1 ? ` #${idx}` : ""} • ${premCombo.picks.length} Picks • ${premCombo.total.toFixed(2)}x`;
         const { data: newPremTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
