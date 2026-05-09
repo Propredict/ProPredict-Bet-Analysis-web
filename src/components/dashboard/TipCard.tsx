@@ -167,6 +167,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">
             {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
           </h3>
+          {tip.kickoff && (
+            <div className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>{tip.kickoff}</span>
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -190,14 +196,6 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
               <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
                 <Lock className="h-3 w-3" />
                 {isPremium ? "Premium Pick" : "Pro Pick"}
-              </span>
-            </div>
-            <div className="h-px bg-border/30" />
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Value</span>
-              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-                <Lock className="h-3 w-3" />
-                Hidden Edge
               </span>
             </div>
           </div>

@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
+import { formatKickoff } from "@/lib/formatKickoff";
 
 export default function PremiumTips() {
   const navigate = useNavigate();
@@ -223,11 +224,7 @@ export default function PremiumTips() {
           prediction: tip.prediction,
           odds: tip.odds,
           confidence: tip.confidence ?? 0,
-          kickoff: tip.created_at_ts ? new Date(tip.created_at_ts).toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric"
-          }) : "",
+          kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts),
           tier: tip.tier,
           result: tip.result
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />

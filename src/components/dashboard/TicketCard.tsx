@@ -241,19 +241,6 @@ function TicketCard({
           )}
         </div>
 
-        {/* Combined score - locked */}
-        <div className="px-3.5 sm:px-4 pb-2">
-          <div className="rounded-lg bg-muted/20 border border-border/30 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-                <Lock className="h-3 w-3" />
-                Hidden Edge
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Social proof */}
         <div className="px-3.5 sm:px-4 pb-1">
           <div className="flex items-center justify-center gap-1.5 py-1.5">
@@ -332,16 +319,6 @@ function TicketCard({
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </p>
         )}
-      </div>
-
-      {/* Combined score */}
-      <div className="px-3.5 sm:px-4 pb-2">
-        <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-            <span className="font-bold text-lg text-primary">{formatCombinedOdds(ticket.totalOdds)}</span>
-          </div>
-        </div>
       </div>
 
       {/* AI Combo footer */}
