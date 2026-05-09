@@ -1,10 +1,15 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export type TipResult = "pending" | "won" | "lost";
 
@@ -78,10 +83,72 @@ function getLockedCTAText(unlockMethod: UnlockMethod): string {
 
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false }: TipCardProps) {
   const navigate = useNavigate();
+  const { isAdmin } = useAdminAccess();
+  const queryClient = useQueryClient();
+  const [adminBusy, setAdminBusy] = useState<null | "won" | "lost" | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
 
   const accent = TIER_ACCENT[tip.tier] || TIER_ACCENT.daily;
+
+  const adminMarkResult = async (result: "won" | "lost") => {
+    setAdminBusy(result);
+    const { error } = await (supabase as any).from("tips").update({ result }).eq("id", tip.id);
+    setAdminBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Tip marked as ${result}`);
+    queryClient.invalidateQueries({ queryKey: ["tips"] });
+  };
+
+  const adminDelete = async () => {
+    if (!confirm("Delete this tip?")) return;
+    setAdminBusy("delete");
+    const { error } = await (supabase as any).from("tips").delete().eq("id", tip.id);
+    setAdminBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tip deleted");
+    queryClient.invalidateQueries({ queryKey: ["tips"] });
+  };
+
+  const renderAdminBar = () => {
+    if (!isAdmin) return null;
+    return (
+      <div className="px-3.5 sm:px-4 pb-3 -mt-1">
+        <div className="flex items-center gap-1.5 pt-2 border-t border-dashed border-border/40">
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mr-1">Admin</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-[10px] gap-1 text-success border-success/30 hover:bg-success/10"
+            disabled={adminBusy !== null || tip.result === "won"}
+            onClick={(e) => { e.stopPropagation(); adminMarkResult("won"); }}
+          >
+            {adminBusy === "won" ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+            Won
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-[10px] gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+            disabled={adminBusy !== null || tip.result === "lost"}
+            onClick={(e) => { e.stopPropagation(); adminMarkResult("lost"); }}
+          >
+            {adminBusy === "lost" ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+            Lost
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-[10px] gap-1 text-destructive border-destructive/30 hover:bg-destructive/10 ml-auto"
+            disabled={adminBusy !== null}
+            onClick={(e) => { e.stopPropagation(); adminDelete(); }}
+          >
+            {adminBusy === "delete" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   const handleUnlockClick = () => {
     if (unlockMethod?.type === "android_premium_only") { navigate("/get-premium"); return; }
@@ -248,6 +315,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             )}
           </div>
         )}
+        {renderAdminBar()}
       </div>
     );
   }
@@ -286,6 +354,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <span className="text-[11px] font-semibold text-success tracking-wide">AI Pick Available</span>
         </div>
       </div>
+      {renderAdminBar()}
     </div>
   );
 }
