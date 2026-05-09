@@ -685,15 +685,15 @@ function buildRiskCombo(
     if (pick.odds < 2.5) continue;
     const next = total * pick.odds;
     // Combined cap: keep risk tickets within a believable range
-    if (next > 60) continue;
+    if (next > 120) continue;
     chosen.push({ p, market: pick.market, odds: pick.odds });
     used.add(p.match_id);
     total = next;
   }
 
   if (chosen.length !== size) return null;
-  // Risk Ticket: combined odds must be in [4.00, 60.00]
-  if (total < 4 || total > 60) return null;
+  // Risk Ticket: combined odds must be in [4.00, 120.00]
+  if (total < 4 || total > 120) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
