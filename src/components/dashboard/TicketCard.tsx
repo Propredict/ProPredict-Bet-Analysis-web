@@ -23,6 +23,7 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { parseMatchName } from "@/types/admin";
+import { formatCombinedOdds } from "@/lib/formatOdds";
 
 /* =======================
    Types
@@ -338,7 +339,7 @@ function TicketCard({
         <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-            <span className="font-bold text-lg text-primary">{ticket.totalOdds.toFixed(2)}</span>
+            <span className="font-bold text-lg text-primary">{formatCombinedOdds(ticket.totalOdds)}</span>
           </div>
         </div>
       </div>

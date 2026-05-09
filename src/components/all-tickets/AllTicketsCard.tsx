@@ -1,4 +1,5 @@
 import { Star, Crown, Loader2, Lock, Sparkles, Gift, CheckCircle2, LogIn, ChevronRight, Play } from "lucide-react";
+import { formatCombinedOdds } from "@/lib/formatOdds";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -231,7 +232,7 @@ export function AllTicketsCard({
         <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
-            <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">{totalOdds.toFixed(2)}</span>
+            <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">{formatCombinedOdds(totalOdds)}</span>
           </div>
         </div>
 
@@ -362,7 +363,7 @@ export function AllTicketsCard({
               Available
             </Badge>
             <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-[10px] px-1.5">
-              {totalOdds.toFixed(2)}
+              {formatCombinedOdds(totalOdds)}
             </Badge>
           </div>
         </div>
@@ -413,7 +414,7 @@ export function AllTicketsCard({
       <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
-            <span className="font-bold text-sm sm:text-base text-primary">{totalOdds.toFixed(2)}</span>
+            <span className="font-bold text-sm sm:text-base text-primary">{formatCombinedOdds(totalOdds)}</span>
           </div>
       </div>
 
