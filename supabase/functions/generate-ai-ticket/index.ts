@@ -237,9 +237,11 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   }
 
   // Fallback: original AI prediction
+  // Use realPickOdds so non-1X2 markets (Over/GG/BTTS) get calibrated price,
+  // not the 1X2 consensus_odds.
   return {
     market: norm,
-    odds: baseOdds,
+    odds: realPickOdds(p) ?? baseOdds,
     prob: p.confidence || 0,
   };
 }
