@@ -360,7 +360,7 @@ function buildCombo(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { p
   for (const p of sorted) {
     if (chosen.length >= 6) break;
     if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
-    const o = pickOdds(p);
+    const o = realPickOdds(p);
     if (!o) continue;
     // Avoid single-pick odds that are too high in a combo
     if (o > 2.2) continue;
