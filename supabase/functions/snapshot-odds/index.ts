@@ -57,6 +57,71 @@ async function fetchOddsForFixture(apiKey: string, fixtureId: string) {
   return json?.response?.[0] ?? null;
 }
 
+/**
+ * Fetch ALL markets for a fixture (no bet filter) so we can build consensus
+ * for Over/Under (bet=5) and Both Teams Score (bet=8) too.
+ */
+async function fetchAllOddsForFixture(apiKey: string, fixtureId: string) {
+  const res = await fetch(`${API_FOOTBALL_URL}/odds?fixture=${fixtureId}`, {
+    headers: { "x-apisports-key": apiKey },
+  });
+  if (!res.ok) return null;
+  const json = await res.json().catch(() => null);
+  return json?.response?.[0] ?? null;
+}
+
+/**
+ * Build consensus odds map for non-1X2 markets:
+ *   over_1_5, under_1_5, over_2_5, under_2_5, over_3_5, under_3_5,
+ *   btts_yes, btts_no
+ */
+function buildMarketOdds(raw: any): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!raw?.bookmakers) return out;
+
+  const buckets: Record<string, Array<{ odd: number; w: number }>> = {};
+
+  for (const bm of raw.bookmakers) {
+    const w = BOOKMAKER_WEIGHTS[bm.id] ?? DEFAULT_WEIGHT;
+    for (const bet of bm.bets || []) {
+      const id = bet.id;
+      const name = String(bet.name || "").toLowerCase();
+
+      // Goals Over/Under (bet id 5) — values like "Over 2.5" / "Under 2.5"
+      if (id === 5 || /goals\s*over\/under/.test(name) || /^over\/under$/.test(name)) {
+        for (const v of bet.values || []) {
+          const odd = parseFloat(v.odd);
+          if (!Number.isFinite(odd) || odd <= 1) continue;
+          const val = String(v.value).toLowerCase().replace(/\s+/g, " ").trim();
+          const m = val.match(/^(over|under)\s*(\d+\.?\d*)$/);
+          if (!m) continue;
+          const line = parseFloat(m[2]);
+          if (![1.5, 2.5, 3.5].includes(line)) continue;
+          const key = `${m[1]}_${String(line).replace(".", "_")}`; // e.g. over_2_5
+          (buckets[key] ||= []).push({ odd, w });
+        }
+      }
+
+      // Both Teams To Score (bet id 8)
+      if (id === 8 || /both\s*teams.*score/.test(name)) {
+        for (const v of bet.values || []) {
+          const odd = parseFloat(v.odd);
+          if (!Number.isFinite(odd) || odd <= 1) continue;
+          const val = String(v.value).toLowerCase().trim();
+          if (val === "yes") (buckets["btts_yes"] ||= []).push({ odd, w });
+          else if (val === "no") (buckets["btts_no"] ||= []).push({ odd, w });
+        }
+      }
+    }
+  }
+
+  for (const [k, arr] of Object.entries(buckets)) {
+    const avg = weightedAvg(arr);
+    if (avg && avg > 1) out[k] = +avg.toFixed(2);
+  }
+  return out;
+}
+
 function buildSnapshot(matchId: string, matchDate: string | null, raw: any): Snapshot | null {
   if (!raw) return null;
   const bookmakers = raw.bookmakers || [];
