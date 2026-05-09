@@ -273,8 +273,9 @@ function buildPremiumCombo(
 
   const tryAdd = (p: Pred): boolean => {
     if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
-    const choice = safestProPick(p);
-    if (choice.prob > 0 && choice.prob < 60) return false;
+    const choice = originalProPick(p);
+    if (!choice) return false; // skips correct-score predictions
+    if (choice.prob < 78) return false; // Premium-only confidence
     const o = choice.odds;
     if (o < 1.25 || o > 3.0) return false;
     const next = total * o;
@@ -285,30 +286,11 @@ function buildPremiumCombo(
     return true;
   };
 
-  // First pass: fill premium quota
+  // Premium-only: fill from Premium pool exclusively (no Pro/Risk picks)
   for (const p of premiumOrdered) {
-    if (premiumCount >= targetPremium) break;
+    if (chosen.length >= 6) break;
+    if (chosen.length >= 4 && total >= 8.0) break;
     if (tryAdd(p)) premiumCount++;
-  }
-  // Second pass: fill pro quota
-  for (const p of proOrdered) {
-    if (proCount >= targetPro) break;
-    if (tryAdd(p)) proCount++;
-  }
-  // Top-up if we are below target size or below odds floor — prefer remaining premium first
-  if (chosen.length < targetSize || total < 5.0) {
-    for (const p of premiumOrdered) {
-      if (chosen.length >= 6) break;
-      if (total >= 8.0 && chosen.length >= 4) break;
-      tryAdd(p);
-    }
-  }
-  if (chosen.length < targetSize || total < 5.0) {
-    for (const p of proOrdered) {
-      if (chosen.length >= 6) break;
-      if (total >= 8.0 && chosen.length >= 4) break;
-      tryAdd(p);
-    }
   }
 
   if (chosen.length >= 4 && total >= 5.0 && total <= 15.0) {
