@@ -517,25 +517,23 @@ Deno.serve(async (req) => {
       console.log(`Orphan arena pass: ${arenaOrphanResolved} resolved`);
     }
 
-    // ── THIRD PASS: resolve AI-generated Diamond Pick TIPS (won/lost) ──
-    // Tips with category='diamond_pick' and created_by=NULL are AI-published
-    // by the generate-ai-predictions STEP 7. Match them to fixtures via
-    // ai_predictions (home_team + away_team + tip_date) to get a fixture id,
-    // then evaluate the combo label against the actual score.
+    // ── THIRD PASS: resolve ALL AI-generated TIPS (won/lost) ──
+    // Any tip with created_by=NULL is AI-published (Diamond Pick, Risk of the Day,
+    // standard daily/exclusive/premium). Use the tip's own match_id when present;
+    // otherwise fall back to matching ai_predictions by (home_team|away_team|tip_date).
     let tipsResolved = 0;
     let tipsSkipped = 0;
     try {
       const todayStr = formatDate(today);
       const { data: pendingTips } = await supabase
         .from("tips")
-        .select("id, home_team, away_team, prediction, tip_date, result, status, category, created_by")
-        .eq("category", "diamond_pick")
+        .select("id, home_team, away_team, prediction, tip_date, result, status, category, created_by, match_id")
         .eq("status", "published")
         .eq("result", "pending")
         .is("created_by", null)
         .gte("tip_date", formatDate(threeDaysAgo))
         .lte("tip_date", todayStr)
-        .limit(50);
+        .limit(100);
 
       if (pendingTips && pendingTips.length > 0) {
         // Lookup helper: combo leg evaluator
@@ -557,7 +555,10 @@ Deno.serve(async (req) => {
           return false;
         };
         const evalCombo = (label: string, h: number, a: number): boolean => {
-          const legs = label.split(/\s*&\s*/);
+          const s = label.trim();
+          // Risk of the Day: "1/3 (Home or Away)" — wins if not a draw
+          if (/^1\s*\/\s*3/.test(s) || /Home\s+or\s+Away/i.test(s)) return h !== a;
+          const legs = s.split(/\s*&\s*/);
           return legs.every((l) => evalLeg(l, h, a));
         };
 
@@ -579,7 +580,9 @@ Deno.serve(async (req) => {
         for (const tip of pendingTips as any[]) {
           try {
             const key = `${(tip.home_team ?? "").toLowerCase()}|${(tip.away_team ?? "").toLowerCase()}|${tip.tip_date}`;
-            const fixtureId = aiMap.get(key);
+            const fixtureId = (tip.match_id && !isNaN(Number(tip.match_id)))
+              ? String(tip.match_id)
+              : aiMap.get(key);
             if (!fixtureId || isNaN(Number(fixtureId))) { tipsSkipped++; continue; }
 
             const apiResp = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
@@ -603,22 +606,22 @@ Deno.serve(async (req) => {
                 .eq("id", tip.id);
               if (!tipUpdErr) {
                 tipsResolved++;
-                console.log(`✓ Diamond tip ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → won`);
+                console.log(`✓ Tip [${tip.category ?? "standard"}] ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → won`);
               }
             } else {
               tipsSkipped++;
-              console.log(`· Diamond tip ${tip.home_team} vs ${tip.away_team} lost — kept as pending (display policy)`);
+              console.log(`· Tip ${tip.home_team} vs ${tip.away_team} lost — kept as pending`);
             }
             await new Promise((r) => setTimeout(r, 100));
           } catch (e) {
-            console.error(`Diamond tip resolve error ${tip.id}:`, e);
+            console.error(`Tip resolve error ${tip.id}:`, e);
           }
         }
       }
     } catch (tipsErr) {
-      console.error("Diamond tips pass error:", tipsErr);
+      console.error("Tips pass error:", tipsErr);
     }
-    if (tipsResolved > 0) console.log(`Diamond tips pass: ${tipsResolved} resolved, ${tipsSkipped} skipped`);
+    if (tipsResolved > 0) console.log(`Tips pass: ${tipsResolved} resolved, ${tipsSkipped} skipped`);
 
     // ── FOURTH PASS: resolve TICKETS (won/lost) ──
     // A ticket is WON only if ALL legs win. If any leg can't be evaluated
