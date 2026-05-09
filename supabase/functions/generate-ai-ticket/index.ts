@@ -653,7 +653,7 @@ serve(async (req: Request) => {
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
     const { data: preds, error: pErr } = await supabase
       .from("ai_predictions")
-      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win")
+      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win,market_odds")
       .eq("match_date", date)
       .gte("confidence", 50)
       .order("confidence", { ascending: false })
