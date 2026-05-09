@@ -166,7 +166,7 @@ export function BettingTickets() {
       .map(mapDbTicket)
       .slice(0, 2);
     const premiumTickets = todayDbTickets
-      .filter((t: any) => t.tier === "premium" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "premium" && t.category !== "multi_risk" && !reserved.has(ticketKey(t)))
       .map(mapDbTicket)
       .slice(0, 2);
 
