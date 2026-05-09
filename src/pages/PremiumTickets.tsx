@@ -70,7 +70,13 @@ export default function PremiumTickets() {
     timeZone: "Europe/Belgrade",
   });
   
-  const premiumTickets = tickets.filter(ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade);
+  const isRiskTicket = (ticket: any) =>
+    ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(ticket.category) ||
+    /risk/i.test(ticket.title ?? "");
+
+  const premiumTickets = tickets.filter(
+    ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRiskTicket(ticket)
+  );
   const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
   const showUpgradeBanner = plan !== "premium";
 
