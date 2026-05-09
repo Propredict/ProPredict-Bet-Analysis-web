@@ -228,14 +228,6 @@ export function AllTicketsCard({
           )}
         </div>
 
-        {/* Combined Value - Blurred */}
-        <div className="px-2.5 sm:px-3 py-2 bg-muted/20 border-t border-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Combined Confidence Score</span>
-            <span className="font-bold text-sm sm:text-base text-primary blur-sm opacity-50">{formatCombinedOdds(totalOdds)}</span>
-          </div>
-        </div>
-
         {/* Unlock Buttons - Android specific layout */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-2.5 sm:p-3 border-t border-border">
