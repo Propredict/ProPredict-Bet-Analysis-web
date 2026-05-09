@@ -267,21 +267,44 @@ function normalizePredictionLabel(prediction: string): string {
 }
 
 /**
+ * Compute realistic odds for an arbitrary market label (as shown on the
+ * AI Prediction card). Mirrors realPickOdds but uses the displayed label.
+ */
+function oddsForLabel(p: Pred, label: string): number | null {
+  const tmp: Pred = { ...p, prediction: label };
+  if (!predictionMatchesPredictedScore(label, p.predicted_score)) return null;
+  const key = marketOddsKey(label);
+  if (key && p.market_odds && typeof p.market_odds[key] === "number" && p.market_odds[key] > 1.05) {
+    return Number(p.market_odds[key]);
+  }
+  const calibrated = calibratedMarketOdds(label, p.predicted_score);
+  if (calibrated !== null) return calibrated;
+  // 1X2 / DC fallback uses match-winner consensus
+  return pickOdds(tmp);
+}
+
+/**
+ * Single source of truth for the ticket pick: use the SAME market that the
+ * AI Predictions card displays as "Best Pick" (displayedTicketPrediction),
+ * and compute the appropriate odds for that market.
+ */
+function aiDisplayedPick(p: Pred): MarketChoice | null {
+  const label = displayedTicketPrediction(p);
+  if (!label) return null;
+  if (isCorrectScore(label)) return null;
+  const odds = oddsForLabel(p, label);
+  if (odds === null) return null;
+  return { market: label, odds, prob: p.confidence || 0 };
+}
+
+/**
  * Pro pick: ALWAYS use the AI's original prediction with its real odds.
  * No derived "Double Chance" / "12 (No Draw)" markets — only what AI actually
  * predicted (1, X, 2, Over 2.5, GG, etc.). Correct scores are excluded.
  */
 function originalProPick(p: Pred): MarketChoice | null {
-  const raw = (p.prediction || "").trim();
-  if (!raw) return null;
-  if (isCorrectScore(raw)) return null;
-  const odds = realPickOdds(p);
-  if (odds === null) return null;
-  return {
-    market: normalizePredictionLabel(raw),
-    odds,
-    prob: p.confidence || 0,
-  };
+  // Use the AI Prediction "Best Pick" (same label shown on the card).
+  return aiDisplayedPick(p);
 }
 
 /**
@@ -293,66 +316,9 @@ function originalProPick(p: Pred): MarketChoice | null {
  * Falls back to the AI's original prediction when no combo can be built.
  */
 function premiumComboPick(p: Pred): MarketChoice | null {
-  const raw = (p.prediction || "").trim();
-  if (!raw || isCorrectScore(raw)) return null;
-
-  const baseOdds = pickOdds(p);
-  if (baseOdds === null) return null;
-
-  const ps = (p.predicted_score || "").trim();
-  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-  const hg = m ? parseInt(m[1], 10) : -1;
-  const ag = m ? parseInt(m[2], 10) : -1;
-  const total = hg >= 0 ? hg + ag : -1;
-
-  // Map main prediction to a 1X2 result label
-  const norm = normalizePredictionLabel(raw);
-  const is1X2 = norm === "Home Win" || norm === "Draw" || norm === "Away Win";
-
-  // Combo pricing: 1X2 (real consensus) × calibrated goal-market price.
-  // A small correlation discount (0.92) reflects the fact the two legs are
-  // not independent (a winning team usually contributes to goals/BTTS too).
-  const CORR = 0.92;
-  const round2 = (n: number) => Math.round(n * 100) / 100;
-
-  // Combo with 1X2 + Over 2.5 (preferred when predicted total >= 3)
-  if (is1X2 && total >= 3) {
-    const o25 = calibratedMarketOdds("Over 2.5", ps);
-    if (o25) return {
-      market: `${norm} & Over 2.5`,
-      odds: round2(baseOdds * o25 * CORR),
-      prob: p.confidence || 0,
-    };
-  }
-
-  // Combo with 1X2 + Over 1.5 (when predicted total == 2)
-  if (is1X2 && total === 2) {
-    const o15 = calibratedMarketOdds("Over 1.5", ps);
-    if (o15) return {
-      market: `${norm} & Over 1.5`,
-      odds: round2(baseOdds * o15 * CORR),
-      prob: p.confidence || 0,
-    };
-  }
-
-  // Combo with 1X2 + GG when both teams predicted to score
-  if (is1X2 && hg >= 1 && ag >= 1) {
-    const gg = calibratedMarketOdds("GG", ps);
-    if (gg) return {
-      market: `${norm} & GG`,
-      odds: round2(baseOdds * gg * CORR),
-      prob: p.confidence || 0,
-    };
-  }
-
-  // Fallback: original AI prediction
-  // Use realPickOdds so non-1X2 markets (Over/GG/BTTS) get calibrated price,
-  // not the 1X2 consensus_odds.
-  return {
-    market: norm,
-    odds: realPickOdds(p) ?? baseOdds,
-    prob: p.confidence || 0,
-  };
+  // Premium tickets must reflect the same Best Pick shown on the AI card —
+  // no derived combo markets like "Home Win & Over 2.5".
+  return aiDisplayedPick(p);
 }
 
 /**
@@ -712,31 +678,16 @@ function correctScoreOdds(predictedScore: string | null): number | null {
  *   3) Optionally allow a correct-score fallback if its heuristic odds fit.
  */
 function highOddsSafePick(p: Pred): MarketChoice | null {
-  // Risk ticket rules:
-  //  A) Use the AI's actual prediction (1, 2, X, Over 2.5, GG, …) when the real
-  //     market odds for THAT prediction are ≥ 2.50 — i.e. our AI backs an
-  //     underdog the market doesn't. This is the primary source.
-  //  B) For high-confidence Pro/Premium picks (≥ 75) we ALSO allow a derived
-  //     Correct Score market using `predicted_score`, which naturally lives at
-  //     2.50+ odds. This gives Risk tickets variety (combos of upset 1X2 picks
-  //     mixed with correct-score punts on the safest predictions).
-  const original = (p.prediction || "").trim();
-  if (!original) return null;
-
-  // --- Path A: AI's primary market at ≥ 2.50 ---
-  if (!isCorrectScore(original)) {
-    const odds = realPickOdds(p);
-    if (odds !== null && odds >= 2.5 && odds <= 6.0) {
-      return {
-        market: normalizePredictionLabel(original),
-        odds,
-        prob: p.confidence || 0,
-      };
-    }
+  // Risk picks must also follow the AI Prediction Best Pick.
+  // Path A: use displayed pick if its odds are ≥ 2.50 (AI backs underdog).
+  const displayed = aiDisplayedPick(p);
+  if (displayed && displayed.odds >= 2.5 && displayed.odds <= 6.0) {
+    return displayed;
   }
 
-  // --- Path B: Correct Score from a highest-confidence Pro/Premium pick ---
-  if ((p.confidence ?? 0) >= 68 && p.predicted_score) {
+  // Path B: high-confidence Correct Score punt (only when displayed pick
+  // doesn't qualify and AI score is reliable).
+  if ((p.confidence ?? 0) >= 75 && p.predicted_score) {
     const csOdds = correctScoreOdds(p.predicted_score);
     if (csOdds !== null && csOdds >= 2.5 && csOdds <= 14.0) {
       return {
