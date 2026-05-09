@@ -105,16 +105,26 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   const norm = normalizePredictionLabel(raw);
   const is1X2 = norm === "Home Win" || norm === "Draw" || norm === "Away Win";
 
-  // Approximate goals/BTTS odds factors (typical bookmaker pricing)
-  const OVER_15 = 1.30;
-  const OVER_25 = 1.85;
-  const GG_FACTOR = 1.75;
+  // Realistic bookmaker-style multipliers tied to the predicted scoreline.
+  // The higher the predicted total, the cheaper Over X.5 should be priced.
+  // Examples (real-world ranges):
+  //   Predicted 3-1 → Over 2.5 ≈ 1.35–1.45
+  //   Predicted 2-1 → Over 2.5 ≈ 1.55–1.70
+  //   Predicted 4-2 → Over 2.5 ≈ 1.20–1.30
+  //   Predicted 2-2 → Over 1.5 ≈ 1.18–1.25
+  //   GG when both teams ≥1 goal predicted → ≈ 1.45–1.65
+  const over25Factor =
+    total >= 5 ? 1.20 :
+    total === 4 ? 1.32 :
+    total === 3 ? 1.55 : 1.85;
+  const over15Factor = total >= 3 ? 1.15 : 1.25;
+  const ggFactor = (hg >= 2 && ag >= 2) ? 1.45 : (hg >= 1 && ag >= 1) ? 1.60 : 1.75;
 
   // Combo with 1X2 + Over 2.5 (preferred when predicted total >= 3)
   if (is1X2 && total >= 3) {
     return {
       market: `${norm} & Over 2.5`,
-      odds: Math.round(baseOdds * OVER_25 * 100) / 100,
+      odds: Math.round(baseOdds * over25Factor * 100) / 100,
       prob: p.confidence || 0,
     };
   }
@@ -123,7 +133,7 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   if (is1X2 && total === 2) {
     return {
       market: `${norm} & Over 1.5`,
-      odds: Math.round(baseOdds * OVER_15 * 100) / 100,
+      odds: Math.round(baseOdds * over15Factor * 100) / 100,
       prob: p.confidence || 0,
     };
   }
@@ -132,7 +142,7 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   if (is1X2 && hg >= 1 && ag >= 1) {
     return {
       market: `${norm} & GG`,
-      odds: Math.round(baseOdds * GG_FACTOR * 100) / 100,
+      odds: Math.round(baseOdds * ggFactor * 100) / 100,
       prob: p.confidence || 0,
     };
   }
@@ -479,6 +489,28 @@ serve(async (req: Request) => {
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
 
     const date = todayBelgrade();
+
+    // Optional admin flag: wipe today's AI ticket categories before regenerating.
+    let body: any = {};
+    try { body = await req.json(); } catch (_) { body = {}; }
+    const wipeCategories: string[] = [];
+    if (body?.wipe_premium) wipeCategories.push("ai_premium");
+    if (body?.wipe_pro) wipeCategories.push("ai_pro");
+    if (body?.wipe_daily) wipeCategories.push("ai_daily");
+    if (body?.wipe_risk) wipeCategories.push("multi_risk");
+    if (body?.wipe_all) wipeCategories.push("ai_premium", "ai_pro", "ai_daily", "multi_risk");
+    if (wipeCategories.length > 0) {
+      const { data: toDelete } = await supabase
+        .from("tickets")
+        .select("id")
+        .eq("ticket_date", date)
+        .in("category", wipeCategories);
+      const ids = (toDelete ?? []).map((t: any) => t.id);
+      if (ids.length > 0) {
+        await supabase.from("ticket_matches").delete().in("ticket_id", ids);
+        await supabase.from("tickets").delete().in("id", ids);
+      }
+    }
 
     // Count existing AI daily tickets for today (max 2 per day)
     const { data: existing } = await supabase
