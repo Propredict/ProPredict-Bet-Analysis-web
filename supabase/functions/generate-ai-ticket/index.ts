@@ -89,9 +89,9 @@ function safestProPick(p: Pred): MarketChoice {
     candidates.push({ market: "Home Win", prob: hw });
     candidates.push({ market: "Draw", prob: dr });
     candidates.push({ market: "Away Win", prob: aw });
-    candidates.push({ market: "Home or Draw", prob: hw + dr });
-    candidates.push({ market: "Draw or Away", prob: dr + aw });
-    candidates.push({ market: "Home or Away", prob: hw + aw });
+    candidates.push({ market: "1X (Home or Draw)", prob: hw + dr });
+    candidates.push({ market: "X2 (Draw or Away)", prob: dr + aw });
+    candidates.push({ market: "12 (No Draw)", prob: hw + aw });
   }
 
   // Goals & BTTS estimated from predicted score
@@ -131,9 +131,9 @@ function safestProPick(p: Pred): MarketChoice {
   if (isCorrectScore(original)) {
     // Pick the better double chance from probabilities
     const dc = [
-      { market: "Home or Draw", prob: hw + dr },
-      { market: "Draw or Away", prob: dr + aw },
-      { market: "Home or Away", prob: hw + aw },
+      { market: "1X (Home or Draw)", prob: hw + dr },
+      { market: "X2 (Draw or Away)", prob: dr + aw },
+      { market: "12 (No Draw)", prob: hw + aw },
     ].sort((a, b) => b.prob - a.prob)[0];
     return { market: dc.market, odds: clampOdds(Math.max(dc.prob, 60)), prob: dc.prob };
   }
