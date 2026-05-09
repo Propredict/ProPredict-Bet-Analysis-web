@@ -596,7 +596,7 @@ serve(async (req: Request) => {
     if (body?.wipe_pro) wipeCategories.push("ai_pro");
     if (body?.wipe_daily) wipeCategories.push("ai_daily");
     if (body?.wipe_risk) wipeCategories.push("multi_risk");
-    if (body?.wipe_all) wipeCategories.push("ai_premium", "ai_pro", "ai_daily", "multi_risk");
+    if (body?.wipe_all) wipeCategories.push("ai_premium", "ai_pro", "ai_daily", "multi_risk", "standard");
     if (wipeCategories.length > 0) {
       const { data: toDelete } = await supabase
         .from("tickets")
