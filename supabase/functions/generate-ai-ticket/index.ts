@@ -227,9 +227,10 @@ function buildProCombo(
   for (const p of pool) {
     if (chosen.length >= 7) break;
     if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
-    const choice = safestProPick(p);
-    // Skip if no safe market found (prob 0 fallback) and original is unsafe
-    if (choice.prob > 0 && choice.prob < 65) continue;
+    const choice = originalProPick(p);
+    if (!choice) continue; // skips correct-score predictions
+    // Require at least Pro-tier confidence on the AI's own prediction
+    if (choice.prob < 65) continue;
     const o = choice.odds;
     if (o < 1.2 || o > 2.6) continue;
     const next = total * o;
