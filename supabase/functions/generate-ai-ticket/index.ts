@@ -888,7 +888,7 @@ serve(async (req: Request) => {
           break;
         }
         const idx = existingProCount + i + 1;
-        const proTitle = `🎯 Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${proCombo.picks.length} Picks • ${proCombo.total.toFixed(2)}x`;
+        const proTitle = `🎯 Pro Combo${proTarget > 1 ? ` #${idx}` : ""} • ${proCombo.picks.length} Picks`;
         const { data: newProTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
@@ -973,7 +973,7 @@ serve(async (req: Request) => {
           break;
         }
         const idx = existingPremiumCount + i + 1;
-        const premTitle = `👑 Premium Combo${premiumTarget > 1 ? ` #${idx}` : ""} • ${premCombo.picks.length} Picks • ${premCombo.total.toFixed(2)}x`;
+        const premTitle = `👑 Premium Combo${premiumTarget > 1 ? ` #${idx}` : ""} • ${premCombo.picks.length} Picks`;
         const { data: newPremTicket, error: ptErr } = await supabase
           .from("tickets")
           .insert({
@@ -1039,7 +1039,7 @@ serve(async (req: Request) => {
         if (!elite) {
           eliteSkipReason = "No valid Top Picks combo (4–5 picks, Tier 1/2, conf ≥78, stable)";
         } else {
-          const eliteTitle = `👑 Top Picks Combo • ${elite.picks.length} Picks • ${elite.total.toFixed(2)}x`;
+          const eliteTitle = `👑 Top Picks Combo • ${elite.picks.length} Picks`;
           const { data: newEliteTicket, error: etErr } = await supabase
             .from("tickets")
             .insert({
@@ -1133,7 +1133,7 @@ serve(async (req: Request) => {
         const idx = existingRiskCount + i + 1;
         const sizeEmoji = riskCombo.size === 3 ? "🔥" : "💥";
         const sizeName  = riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
-        const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""} • ${riskCombo.total.toFixed(2)}x`;
+        const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""}`;
         const { data: newRiskTicket, error: rtErr } = await supabase
         .from("tickets")
         .insert({
