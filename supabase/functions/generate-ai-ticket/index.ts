@@ -596,7 +596,7 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
  *  - Excludes raw correct-score predictions (those go through Score Hunter logic
  *    inside `highOddsSafePick` if/when the underlying market odds cross 2.50).
  */
-type RiskSize = 3 | 4;
+type RiskSize = 2 | 3 | 4;
 
 function correctScoreOdds(predictedScore: string | null): number | null {
   // Approximate market odds for a correct-score bet from the predicted score.
@@ -628,26 +628,42 @@ function correctScoreOdds(predictedScore: string | null): number | null {
  *   3) Optionally allow a correct-score fallback if its heuristic odds fit.
  */
 function highOddsSafePick(p: Pred): MarketChoice | null {
-  // Risk ticket rule: ONLY use the AI's actual prediction (Over 3.5, GG, 1, 2, X,
-  // Over 2.5, ...) and only when the real market odds for THAT prediction are ≥ 2.50.
-  // No fabricated markets, no derived correct scores, no "GG & Over 2.5" mash-ups.
+  // Risk ticket rules:
+  //  A) Use the AI's actual prediction (1, 2, X, Over 2.5, GG, …) when the real
+  //     market odds for THAT prediction are ≥ 2.50 — i.e. our AI backs an
+  //     underdog the market doesn't. This is the primary source.
+  //  B) For high-confidence Pro/Premium picks (≥ 75) we ALSO allow a derived
+  //     Correct Score market using `predicted_score`, which naturally lives at
+  //     2.50+ odds. This gives Risk tickets variety (combos of upset 1X2 picks
+  //     mixed with correct-score punts on the safest predictions).
   const original = (p.prediction || "").trim();
-  if (!original || isCorrectScore(original)) return null;
+  if (!original) return null;
 
-  // Use the CALIBRATED price for the actual market predicted (Over 2.5, GG, …).
-  // For 1X2 predictions this falls back to consensus_odds.
-  const odds = realPickOdds(p);
-  if (odds === null) return null;
+  // --- Path A: AI's primary market at ≥ 2.50 ---
+  if (!isCorrectScore(original)) {
+    const odds = realPickOdds(p);
+    if (odds !== null && odds >= 2.5 && odds <= 6.0) {
+      return {
+        market: normalizePredictionLabel(original),
+        odds,
+        prob: p.confidence || 0,
+      };
+    }
+  }
 
-  // Sweet spot for Risk picks: high enough to feel like a real upside, but
-  // capped so a single longshot can't blow up the combined score.
-  if (odds < 2.5 || odds > 6.0) return null;
+  // --- Path B: Correct Score from a highest-confidence Pro/Premium pick ---
+  if ((p.confidence ?? 0) >= 68 && p.predicted_score) {
+    const csOdds = correctScoreOdds(p.predicted_score);
+    if (csOdds !== null && csOdds >= 2.5 && csOdds <= 14.0) {
+      return {
+        market: `Correct Score ${p.predicted_score.replace(/\s+/g, "")}`,
+        odds: csOdds,
+        prob: p.confidence || 0,
+      };
+    }
+  }
 
-  return {
-    market: normalizePredictionLabel(original),
-    odds,
-    prob: p.confidence || 0,
-  };
+  return null;
 }
 
 function buildRiskCombo(
@@ -669,15 +685,15 @@ function buildRiskCombo(
     if (pick.odds < 2.5) continue;
     const next = total * pick.odds;
     // Combined cap: keep risk tickets within a believable range
-    if (next > 60) continue;
+    if (next > 250) continue;
     chosen.push({ p, market: pick.market, odds: pick.odds });
     used.add(p.match_id);
     total = next;
   }
 
   if (chosen.length !== size) return null;
-  // Risk Ticket: combined odds must be in [4.00, 60.00]
-  if (total < 4 || total > 60) return null;
+  // Risk Ticket: combined odds must be in [4.00, 250.00]
+  if (total < 4 || total > 250) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
@@ -1120,7 +1136,7 @@ serve(async (req: Request) => {
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const riskUsed = new Set<string>();
       // Rotate ticket sizes for variety: single, double, triple, quadruple, double
-      const sizes: RiskSize[] = [3, 4, 3, 4, 3];
+      const sizes: RiskSize[] = [2, 3, 2, 3];
 
       for (let i = 0; i < riskToCreate; i++) {
         const size = sizes[(existingRiskCount + i) % sizes.length];
@@ -1131,8 +1147,8 @@ serve(async (req: Request) => {
           continue;
         }
         const idx = existingRiskCount + i + 1;
-        const sizeEmoji = riskCombo.size === 3 ? "🔥" : "💥";
-        const sizeName  = riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
+        const sizeEmoji = riskCombo.size === 2 ? "⚡" : riskCombo.size === 3 ? "🔥" : "💥";
+        const sizeName  = riskCombo.size === 2 ? "Double Risk" : riskCombo.size === 3 ? "Triple Threat" : "Quad Bomb";
         const riskTitle = `${sizeEmoji} Risk ${sizeName} #${idx} • ${riskCombo.picks.length} Pick${riskCombo.picks.length > 1 ? "s" : ""}`;
         const { data: newRiskTicket, error: rtErr } = await supabase
         .from("tickets")
