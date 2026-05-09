@@ -334,16 +334,6 @@ function TicketCard({
         )}
       </div>
 
-      {/* Combined score */}
-      <div className="px-3.5 sm:px-4 pb-2">
-        <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Combined Score</span>
-            <span className="font-bold text-lg text-primary">{formatCombinedOdds(ticket.totalOdds)}</span>
-          </div>
-        </div>
-      </div>
-
       {/* AI Combo footer */}
       <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
         <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-success/10 to-success/5 border border-success/20">
