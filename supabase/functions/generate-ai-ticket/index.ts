@@ -452,16 +452,19 @@ function buildRiskCombo(
     if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
     const pick = highOddsSafePick(p);
     if (!pick) continue;
-    // Per-match floor: every single odds must be ≥ 2.50
+    // Per-match floor: every single odds must be ≥ 2.50 (≤ 6.0 enforced upstream)
     if (pick.odds < 2.5) continue;
+    const next = total * pick.odds;
+    // Combined cap: keep risk tickets within a believable range
+    if (next > 60) continue;
     chosen.push({ p, market: pick.market, odds: pick.odds });
     used.add(p.match_id);
-    total *= pick.odds;
+    total = next;
   }
 
   if (chosen.length !== size) return null;
-  // Risk Ticket: combined odds must be ≥ 4.00 (no upper cap)
-  if (total < 4) return null;
+  // Risk Ticket: combined odds must be in [4.00, 60.00]
+  if (total < 4 || total > 60) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
