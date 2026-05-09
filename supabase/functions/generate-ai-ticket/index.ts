@@ -596,7 +596,7 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
  *  - Excludes raw correct-score predictions (those go through Score Hunter logic
  *    inside `highOddsSafePick` if/when the underlying market odds cross 2.50).
  */
-type RiskSize = 3 | 4;
+type RiskSize = 2 | 3 | 4;
 
 function correctScoreOdds(predictedScore: string | null): number | null {
   // Approximate market odds for a correct-score bet from the predicted score.
@@ -685,15 +685,15 @@ function buildRiskCombo(
     if (pick.odds < 2.5) continue;
     const next = total * pick.odds;
     // Combined cap: keep risk tickets within a believable range
-    if (next > 120) continue;
+    if (next > 250) continue;
     chosen.push({ p, market: pick.market, odds: pick.odds });
     used.add(p.match_id);
     total = next;
   }
 
   if (chosen.length !== size) return null;
-  // Risk Ticket: combined odds must be in [4.00, 120.00]
-  if (total < 4 || total > 120) return null;
+  // Risk Ticket: combined odds must be in [4.00, 250.00]
+  if (total < 4 || total > 250) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100, size };
 }
 
