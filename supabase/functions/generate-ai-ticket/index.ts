@@ -338,11 +338,12 @@ function buildPremiumCombo(
 
   const tryAdd = (p: Pred): boolean => {
     if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
-    const choice = originalProPick(p);
+    const choice = premiumComboPick(p);
     if (!choice) return false; // skips correct-score predictions
     if (choice.prob < 78) return false; // Premium-only confidence
     const o = choice.odds;
-    if (o < 1.25 || o > 3.0) return false;
+    // Allow slightly higher per-pick odds for combo markets (e.g. "1 & Over 2.5")
+    if (o < 1.25 || o > 4.0) return false;
     const next = total * o;
     if (next > 15.0) return false;
     chosen.push({ p, choice });
