@@ -203,8 +203,8 @@ export default function PremiumTips() {
           </Card> : premiumTips.length === 0 ? <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-warning mb-1">No Premium Predictions available</p>
-              <p className="text-sm">Check back later for new predictions</p>
+              <p className="text-warning mb-1">Fresh Premium picks drop daily</p>
+              <p className="text-sm">New Premium predictions are generated every morning at 7:00 AM CET.</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
