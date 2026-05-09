@@ -19,6 +19,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { cn } from "@/lib/utils";
 import { parseMatchName } from "@/types/admin";
+import { formatCombinedOdds } from "@/lib/formatOdds";
 import { toast } from "sonner";
 
 // Get tier-specific OG image
@@ -381,7 +382,7 @@ export default function TicketDetails() {
                 )}
                 {!isLocked && (
                   <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                    {ticket.total_odds?.toFixed(2) || "1.00"}
+                    {formatCombinedOdds(ticket.total_odds)}
                   </Badge>
                 )}
               </div>
@@ -458,7 +459,7 @@ export default function TicketDetails() {
                 "font-bold text-lg text-primary",
                 isLocked && "blur-sm opacity-50"
               )}>
-                {ticket.total_odds?.toFixed(2) || "1.00"}
+                {formatCombinedOdds(ticket.total_odds)}
               </span>
             </div>
           </div>
