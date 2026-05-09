@@ -1021,18 +1021,18 @@ serve(async (req: Request) => {
         .select("id,title")
         .eq("ticket_date", date)
         .eq("category", "ai_premium")
-        .ilike("title", "%Elite Top Picks%");
+        .ilike("title", "%Top Picks Combo%");
       if ((existingElite?.length ?? 0) > 0) {
-        eliteSkipReason = "Elite Top Picks Combo already exists today";
+        eliteSkipReason = "Top Picks Combo already exists today";
       } else if (premiumPool.length < 4) {
-        eliteSkipReason = `Premium pool too small for Elite combo (${premiumPool.length} < 4)`;
+        eliteSkipReason = `Premium pool too small for Top Picks combo (${premiumPool.length} < 4)`;
       } else {
         const eliteSource = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
         const elite = buildElitePremiumCombo(eliteSource, new Set());
         if (!elite) {
-          eliteSkipReason = "No valid Elite combo (4–5 picks, Tier 1/2, conf ≥78, stable)";
+          eliteSkipReason = "No valid Top Picks combo (4–5 picks, Tier 1/2, conf ≥78, stable)";
         } else {
-          const eliteTitle = `👑 Elite Top Picks Combo • ${elite.picks.length} Picks • ${elite.total.toFixed(2)}x`;
+          const eliteTitle = `👑 Top Picks Combo • ${elite.picks.length} Picks • ${elite.total.toFixed(2)}x`;
           const { data: newEliteTicket, error: etErr } = await supabase
             .from("tickets")
             .insert({
@@ -1042,7 +1042,7 @@ serve(async (req: Request) => {
               category: "ai_premium",
               total_odds: elite.total,
               ticket_date: date,
-              ai_analysis: `Elite Top Picks Combo — cherry-picked from the highest-ranked AI predictions in top leagues (Tier 1/2, confidence ≥78, variance-stable). ${elite.picks.length} picks, total odds ${elite.total.toFixed(2)}x. Avg confidence: ${Math.round(
+              ai_analysis: `Top Picks Combo — cherry-picked from the highest-ranked AI predictions in top leagues (Tier 1/2, confidence ≥78, variance-stable). ${elite.picks.length} picks, total odds ${elite.total.toFixed(2)}x. Avg confidence: ${Math.round(
                 elite.picks.reduce((s, x) => s + x.p.confidence, 0) / elite.picks.length,
               )}%.`,
             })
