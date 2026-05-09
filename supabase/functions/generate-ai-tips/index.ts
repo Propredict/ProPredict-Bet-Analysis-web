@@ -364,7 +364,7 @@ serve(async (req) => {
       .from("tips")
       .select("id")
       .eq("tip_date", date)
-      .in("category", ["ai_daily", "ai_pro", "ai_premium", "risk_of_day"]);
+      .in("category", ["ai_daily", "ai_pro", "ai_premium", "risk_of_day", "diamond_pick"]);
     const delIds = (toDel ?? []).map((t: any) => t.id);
     if (delIds.length > 0) {
       await supabase.from("tips").delete().in("id", delIds);
@@ -498,6 +498,46 @@ serve(async (req) => {
         category: "risk_of_day",
         pick: `${p.home_team} vs ${p.away_team} — 1/3 [${scores}]`,
         odds,
+        confidence: p.confidence,
+      });
+    }
+
+    // ---- Diamond Picks: up to 2 strongest signals (conf >= 88) with SAFE COMBO ----
+    const diamondPool = premiumPool
+      .filter((p) => (p.confidence ?? 0) >= 88)
+      .slice()
+      .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    const diamondAvoid = new Set<string>();
+    let diamondCount = 0;
+    for (const p of diamondPool) {
+      if (diamondCount >= 2) break;
+      const combo = pickSafeCombo(p, diamondAvoid);
+      if (!combo) continue;
+      const scores = topScores(p, 3).join(", ");
+      const { error: dErr } = await supabase.from("tips").insert({
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league ?? "",
+        prediction: combo.label,
+        ai_prediction: scores,
+        odds: Math.round(combo.odds * 100) / 100,
+        confidence: p.confidence,
+        tier: "premium",
+        status: "published",
+        category: "diamond_pick",
+        tip_date: date,
+        match_id: p.match_id,
+        match_time: p.match_time ?? null,
+        match_date: p.match_date ?? date,
+      });
+      if (dErr) throw dErr;
+      diamondAvoid.add(marketDiversityKey(combo.label));
+      diamondCount++;
+      created.push({
+        tier: "premium",
+        category: "diamond_pick",
+        pick: `${p.home_team} vs ${p.away_team} — ${combo.label} [${scores}]`,
+        odds: combo.odds,
         confidence: p.confidence,
       });
     }
