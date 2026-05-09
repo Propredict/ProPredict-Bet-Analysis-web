@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatKickoff } from "@/lib/formatKickoff";
+import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
@@ -100,7 +100,7 @@ export default function DailyTips() {
               prediction: tip.prediction,
               odds: tip.odds,
               confidence: tip.confidence ?? 0,
-              kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts),
+              kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts), kickoffDate: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).date, kickoffTime: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).time,
               tier: tip.tier,
               result: tip.result
             }}

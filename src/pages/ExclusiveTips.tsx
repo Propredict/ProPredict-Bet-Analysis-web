@@ -15,7 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { formatKickoff } from "@/lib/formatKickoff";
+import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 
 export default function ExclusiveTips() {
   const navigate = useNavigate();
@@ -212,7 +212,7 @@ export default function ExclusiveTips() {
                     prediction: tip.prediction,
                     odds: tip.odds,
                     confidence: tip.confidence ?? 0,
-                    kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts),
+                    kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts), kickoffDate: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).date, kickoffTime: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).time,
                     tier: tip.tier,
                     result: tip.result
                   }}
