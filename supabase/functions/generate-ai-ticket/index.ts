@@ -200,44 +200,38 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   const norm = normalizePredictionLabel(raw);
   const is1X2 = norm === "Home Win" || norm === "Draw" || norm === "Away Win";
 
-  // Realistic bookmaker-style multipliers tied to the predicted scoreline.
-  // The higher the predicted total, the cheaper Over X.5 should be priced.
-  // Examples (real-world ranges):
-  //   Predicted 3-1 → Over 2.5 ≈ 1.35–1.45
-  //   Predicted 2-1 → Over 2.5 ≈ 1.55–1.70
-  //   Predicted 4-2 → Over 2.5 ≈ 1.20–1.30
-  //   Predicted 2-2 → Over 1.5 ≈ 1.18–1.25
-  //   GG when both teams ≥1 goal predicted → ≈ 1.45–1.65
-  const over25Factor =
-    total >= 5 ? 1.20 :
-    total === 4 ? 1.32 :
-    total === 3 ? 1.55 : 1.85;
-  const over15Factor = total >= 3 ? 1.15 : 1.25;
-  const ggFactor = (hg >= 2 && ag >= 2) ? 1.45 : (hg >= 1 && ag >= 1) ? 1.60 : 1.75;
+  // Combo pricing: 1X2 (real consensus) × calibrated goal-market price.
+  // A small correlation discount (0.92) reflects the fact the two legs are
+  // not independent (a winning team usually contributes to goals/BTTS too).
+  const CORR = 0.92;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
 
   // Combo with 1X2 + Over 2.5 (preferred when predicted total >= 3)
   if (is1X2 && total >= 3) {
-    return {
+    const o25 = calibratedMarketOdds("Over 2.5", ps);
+    if (o25) return {
       market: `${norm} & Over 2.5`,
-      odds: Math.round(baseOdds * over25Factor * 100) / 100,
+      odds: round2(baseOdds * o25 * CORR),
       prob: p.confidence || 0,
     };
   }
 
   // Combo with 1X2 + Over 1.5 (when predicted total == 2)
   if (is1X2 && total === 2) {
-    return {
+    const o15 = calibratedMarketOdds("Over 1.5", ps);
+    if (o15) return {
       market: `${norm} & Over 1.5`,
-      odds: Math.round(baseOdds * over15Factor * 100) / 100,
+      odds: round2(baseOdds * o15 * CORR),
       prob: p.confidence || 0,
     };
   }
 
   // Combo with 1X2 + GG when both teams predicted to score
   if (is1X2 && hg >= 1 && ag >= 1) {
-    return {
+    const gg = calibratedMarketOdds("GG", ps);
+    if (gg) return {
       market: `${norm} & GG`,
-      odds: Math.round(baseOdds * ggFactor * 100) / 100,
+      odds: round2(baseOdds * gg * CORR),
       prob: p.confidence || 0,
     };
   }
@@ -528,7 +522,9 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
   const original = (p.prediction || "").trim();
   if (!original || isCorrectScore(original)) return null;
 
-  const odds = pickOdds(p);
+  // Use the CALIBRATED price for the actual market predicted (Over 2.5, GG, …).
+  // For 1X2 predictions this falls back to consensus_odds.
+  const odds = realPickOdds(p);
   if (odds === null) return null;
 
   // Sweet spot for Risk picks: high enough to feel like a real upside, but
