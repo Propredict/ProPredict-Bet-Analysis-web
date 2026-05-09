@@ -923,7 +923,7 @@ serve(async (req: Request) => {
         home_team: p.home_team,
         away_team: p.away_team,
         league: p.league,
-        prediction: p.prediction,
+        prediction: displayedTicketPrediction(p),
         odds: realPickOdds(p)!,
         match_date: p.match_date,
         sort_order: idx,
