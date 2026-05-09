@@ -652,9 +652,9 @@ function highOddsSafePick(p: Pred): MarketChoice | null {
   }
 
   // --- Path B: Correct Score from a highest-confidence Pro/Premium pick ---
-  if ((p.confidence ?? 0) >= 75 && p.predicted_score) {
+  if ((p.confidence ?? 0) >= 68 && p.predicted_score) {
     const csOdds = correctScoreOdds(p.predicted_score);
-    if (csOdds !== null && csOdds >= 2.5 && csOdds <= 9.0) {
+    if (csOdds !== null && csOdds >= 2.5 && csOdds <= 14.0) {
       return {
         market: `Correct Score ${p.predicted_score.replace(/\s+/g, "")}`,
         odds: csOdds,
