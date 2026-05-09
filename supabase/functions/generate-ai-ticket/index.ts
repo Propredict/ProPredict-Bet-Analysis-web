@@ -989,6 +989,52 @@ serve(async (req: Request) => {
           total_odds: premCombo.total,
         });
       }
+
+      // ─────────────────────────────────────────────────────────────────
+      // EXTRA: ELITE TOP PICKS COMBO — cherry-picked from Top AI Picks
+      // (Tier 1/2 leagues, conf ≥ 78, variance stable). Always one per day.
+      // ─────────────────────────────────────────────────────────────────
+      const elite = buildElitePremiumCombo(premiumOrderedAll, premiumUsed);
+      if (elite) {
+        const eliteTitle = `👑 Elite Top Picks Combo • ${elite.picks.length} Picks • ${elite.total.toFixed(2)}x`;
+        const { data: newEliteTicket, error: etErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: eliteTitle,
+            tier: "premium",
+            status: "published",
+            category: "ai_premium",
+            total_odds: elite.total,
+            ticket_date: date,
+            ai_analysis: `Elite Top Picks Combo — cherry-picked from the highest-ranked AI predictions in top leagues (Tier 1/2, confidence ≥78, variance-stable). ${elite.picks.length} picks, total odds ${elite.total.toFixed(2)}x. Avg confidence: ${Math.round(
+              elite.picks.reduce((s, x) => s + x.p.confidence, 0) / elite.picks.length,
+            )}%.`,
+          })
+          .select()
+          .single();
+        if (!etErr && newEliteTicket) {
+          const eliteRows = elite.picks.map((p, k) => ({
+            ticket_id: newEliteTicket.id,
+            match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+            home_team: p.p.home_team,
+            away_team: p.p.away_team,
+            league: p.p.league,
+            prediction: p.choice.market,
+            odds: p.choice.odds,
+            match_date: p.p.match_date,
+            sort_order: k,
+          }));
+          const { error: emErr } = await supabase.from("ticket_matches").insert(eliteRows);
+          if (!emErr) {
+            elite.picks.forEach((x) => premiumUsed.add(x.p.match_id));
+            premiumCreated.push({
+              id: newEliteTicket.id,
+              picks: elite.picks.length,
+              total_odds: elite.total,
+            });
+          }
+        }
+      }
     }
 
     // ───────────────────────────────────────────────────────────────────
