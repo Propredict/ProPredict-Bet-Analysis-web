@@ -21,6 +21,7 @@ export interface Tip {
   kickoffDate?: string;
   tier: ContentTier;
   result?: TipResult | null;
+  extraNote?: { label: string; value: string } | null;
 }
 
 interface TipCardProps {
@@ -265,6 +266,16 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
               {tip.prediction}
             </Badge>
           </div>
+          {tip.extraNote && (
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                {tip.extraNote.label}
+              </span>
+              <span className="text-xs font-semibold text-foreground">
+                {tip.extraNote.value}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

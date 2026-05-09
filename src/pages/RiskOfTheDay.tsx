@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 
 export default function RiskOfTheDay() {
   const navigate = useNavigate();
@@ -185,11 +186,14 @@ export default function RiskOfTheDay() {
                         prediction: tip.prediction,
                         odds: tip.odds,
                         confidence: tip.confidence ?? 0,
-                        kickoff: tip.created_at_ts
-                          ? new Date(tip.created_at_ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                          : "",
+                        kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts),
+                        kickoffDate: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).date,
+                        kickoffTime: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).time,
                         tier: tip.tier,
                         result: tip.result,
+                        extraNote: (tip as any).ai_prediction
+                          ? { label: "AI Top Scores", value: String((tip as any).ai_prediction) }
+                          : null,
                       }}
                       isLocked={isLocked}
                       unlockMethod={unlockMethod}

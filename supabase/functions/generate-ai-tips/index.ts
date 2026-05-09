@@ -309,6 +309,42 @@ function marketDiversityKey(label: string): string {
   return s;
 }
 
+/**
+ * Top-K most likely correct scores via Poisson, derived from predicted xG.
+ */
+function topScores(p: Pred, k = 3): string[] {
+  const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const homeXg = m ? Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2) : Math.max(0.5, (p.home_win ?? 40) / 30);
+  const awayXg = m ? Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15) : Math.max(0.4, (p.away_win ?? 30) / 30);
+  const scores: { s: string; pr: number }[] = [];
+  for (let h = 0; h <= 5; h++) for (let a = 0; a <= 5; a++) {
+    scores.push({ s: `${h}-${a}`, pr: poissonProb(homeXg, h) * poissonProb(awayXg, a) });
+  }
+  scores.sort((x, y) => y.pr - x.pr);
+  return scores.slice(0, k).map((x) => x.s);
+}
+
+/**
+ * Risk of the Day: choose up to 2 Premium-pool matches where Draw is unlikely
+ * (low draw %), so the safest "no-draw" combo "1/3 (Home or Away)" applies.
+ * Returns matches sorted by combined Home+Away win probability.
+ */
+function pickRiskMatches(pool: Pred[], limit = 2): Pred[] {
+  return pool
+    .filter((p) => {
+      const dr = p.draw ?? 33;
+      const hw = p.home_win ?? 33;
+      const aw = p.away_win ?? 33;
+      return dr <= 25 && (hw + aw) >= 70;
+    })
+    .sort((a, b) => {
+      const aSum = (a.home_win ?? 0) + (a.away_win ?? 0);
+      const bSum = (b.home_win ?? 0) + (b.away_win ?? 0);
+      return bSum - aSum;
+    })
+    .slice(0, limit);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -328,7 +364,7 @@ serve(async (req) => {
       .from("tips")
       .select("id")
       .eq("tip_date", date)
-      .in("category", ["ai_daily", "ai_pro", "ai_premium"]);
+      .in("category", ["ai_daily", "ai_pro", "ai_premium", "risk_of_day"]);
     const delIds = (toDel ?? []).map((t: any) => t.id);
     if (delIds.length > 0) {
       await supabase.from("tips").delete().in("id", delIds);
@@ -430,6 +466,40 @@ serve(async (req) => {
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
       if (job.name === "Free") usedMarketTypes.clear();
       if (job.name === "ProInsights") { usedMarketTypes.clear(); usedMatchIds.clear(); }
+    }
+
+    // ---- Risk of the Day: up to 2 safest "no-draw" Premium matches ----
+    const riskCandidates = pickRiskMatches(premiumPool, 2);
+    for (const p of riskCandidates) {
+      const hw = p.home_win ?? 33;
+      const aw = p.away_win ?? 33;
+      const prob = Math.min(95, hw + aw);
+      const odds = Math.max(1.20, Math.round((100 / prob) * 0.92 * 100) / 100);
+      const scores = topScores(p, 3).join(", ");
+      const { error: riskErr } = await supabase.from("tips").insert({
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league ?? "",
+        prediction: "1/3 (Home or Away)",
+        ai_prediction: scores,
+        odds: Math.round(odds * 100) / 100,
+        confidence: p.confidence,
+        tier: "exclusive",
+        status: "published",
+        category: "risk_of_day",
+        tip_date: date,
+        match_id: p.match_id,
+        match_time: p.match_time ?? null,
+        match_date: p.match_date ?? date,
+      });
+      if (riskErr) throw riskErr;
+      created.push({
+        tier: "exclusive",
+        category: "risk_of_day",
+        pick: `${p.home_team} vs ${p.away_team} — 1/3 [${scores}]`,
+        odds,
+        confidence: p.confidence,
+      });
     }
 
     return new Response(
