@@ -1169,6 +1169,8 @@ serve(async (req: Request) => {
         premium_created_count: premiumCreated.length,
         premium_tickets: premiumCreated,
         premium_skip_reason: premiumSkipReason,
+        elite_ticket_id: eliteCreatedId,
+        elite_skip_reason: eliteSkipReason,
         risk_target: riskTarget,
         risk_created_count: riskCreated.length,
         risk_tickets: riskCreated,
