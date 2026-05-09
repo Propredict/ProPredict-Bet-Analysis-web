@@ -26,6 +26,7 @@ type Pred = {
   away_team: string;
   league: string | null;
   match_date: string;
+  match_time: string | null;
   prediction: string;
   confidence: number;
   consensus_odds: number | null;
@@ -334,7 +335,7 @@ serve(async (req) => {
     }
 
     // Fetch today's AI predictions
-    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win";
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,match_time,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win";
     let preds: any = null;
     const r1 = await supabase
       .from("ai_predictions")
@@ -373,28 +374,26 @@ serve(async (req) => {
     //     - 1 Premium pick (tier='daily', sourced from Premium pool)
     //   Pro Insights page (category='ai_pro'):
     //     - 3-4 Pro picks (tier='exclusive', sourced from Pro+Premium pools)
+    // PREMIUM ISOLATION: matches in premiumPool (conf>=78) belong ONLY on /premium-analysis.
+    // Daily Free + Pro Insights must NOT include them.
     const freeTarget = freePool.length >= 8 ? 3 : (freePool.length >= 4 ? 2 : 1);
-    const proInsightsPool = [...premiumPool, ...proPool];
-    const proInsightsTarget = proInsightsPool.length >= 6 ? 4 : (proInsightsPool.length >= 3 ? 3 : Math.min(2, proInsightsPool.length));
-    // Premium combo pool: only the safest matches (Premium first, fallback to high-end Pro)
-    const premiumComboPool = premiumPool.length >= 4
-      ? premiumPool
-      : [...premiumPool, ...proPool.filter((p) => p.confidence >= 70)];
+    const proInsightsPool = proPool;
+    const proInsightsTarget = proInsightsPool.length >= 6 ? 5 : (proInsightsPool.length >= 3 ? 4 : Math.min(2, proInsightsPool.length));
+    const premiumComboPool = premiumPool;
     const premiumComboTarget = premiumComboPool.length >= 6 ? 6 : (premiumComboPool.length >= 4 ? 5 : Math.min(3, premiumComboPool.length));
 
     type TierJob = { name: string; pool: Pred[]; tier: string; count: number; category: string };
     const jobs: TierJob[] = [
-      { name: "Free",        pool: freePool,         tier: "free",      count: freeTarget,        category: "ai_daily" },
-      { name: "Pro",         pool: proPool,          tier: "daily",     count: 1,                 category: "ai_daily" },
-      { name: "Premium",     pool: premiumPool,      tier: "daily",     count: 1,                 category: "ai_daily" },
-      { name: "ProInsights", pool: proInsightsPool,  tier: "exclusive", count: proInsightsTarget, category: "ai_pro"   },
-      { name: "PremiumCombo",pool: premiumComboPool, tier: "premium",   count: premiumComboTarget,category: "ai_premium" },
+      // Daily page: only Free-tier teaser picks (3 free, no Pro/Premium leak)
+      { name: "Free",         pool: freePool,         tier: "free",      count: freeTarget,         category: "ai_daily" },
+      // Pro Insights: pro-only matches (no premium leak)
+      { name: "ProInsights",  pool: proInsightsPool,  tier: "exclusive", count: proInsightsTarget,  category: "ai_pro"   },
+      // Premium Insights: ONLY premium-pool matches with combo markets
+      { name: "PremiumCombo", pool: premiumComboPool, tier: "premium",   count: premiumComboTarget, category: "ai_premium" },
     ];
 
     for (const job of jobs) {
       let candidatePool = job.pool;
-      if (candidatePool.length === 0 && job.name === "Premium") candidatePool = proPool;
-      if (candidatePool.length === 0 && job.name === "Pro") candidatePool = freePool.filter((p) => p.confidence >= 60);
       if (candidatePool.length === 0) continue;
 
       for (let n = 0; n < job.count; n++) {
@@ -418,6 +417,9 @@ serve(async (req) => {
           status: "published",
           category: job.category,
           tip_date: date,
+          match_id: p.match_id,
+          match_time: p.match_time ?? null,
+          match_date: p.match_date ?? date,
         });
         if (insErr) throw insErr;
 
@@ -426,10 +428,8 @@ serve(async (req) => {
         created.push({ tier: job.tier, category: job.category, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
       }
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
-      if (job.category === "ai_daily" && job.name === "Premium") usedMarketTypes.clear();
-      if (job.category === "ai_pro" && job.name === "ProInsights") usedMarketTypes.clear();
-      // Premium combo lives on its own page — let it reuse top premium matches.
-      if (job.name === "ProInsights") usedMatchIds.clear();
+      if (job.name === "Free") usedMarketTypes.clear();
+      if (job.name === "ProInsights") { usedMarketTypes.clear(); usedMatchIds.clear(); }
     }
 
     return new Response(
