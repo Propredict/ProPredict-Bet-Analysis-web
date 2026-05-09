@@ -509,40 +509,52 @@ function buildPremiumCombo(
   proOrdered: Pred[],
   excludeMatchIds: Set<string> = new Set(),
 ): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
-  const used = new Set<string>();
+  // Target: 4–5 picks, mostly from the Top AI Premium picks; if Premium pool
+  // can't supply enough qualifying picks, top up with the strongest Pro picks
+  // (confidence ≥ 70) so the ticket still ships.
+  const used = new Set<string>(excludeMatchIds);
   const chosen: { p: Pred; choice: MarketChoice }[] = [];
   let total = 1;
-  // Target ratio: 60% premium, 40% pro
-  const targetSize = 5;
-  const targetPremium = 3;
-  const targetPro = 2;
-  let premiumCount = 0;
-  let proCount = 0;
 
-  const tryAdd = (p: Pred): boolean => {
-    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) return false;
-    const choice = premiumComboPick(p);
-    if (!choice) return false; // skips correct-score predictions
-    if (choice.prob < 78) return false; // Premium-only confidence
+  const tryAdd = (p: Pred, minConf: number): boolean => {
+    if (used.has(p.match_id)) return false;
+    if ((p.confidence ?? 0) < minConf) return false;
+    const choice = aiDisplayedPick(p);
+    if (!choice) return false;
     const o = choice.odds;
-    // Allow slightly higher per-pick odds for combo markets (e.g. "1 & Over 2.5")
-    if (o < 1.25 || o > 4.0) return false;
+    if (o < 1.18 || o > 3.5) return false;
     const next = total * o;
-    if (next > 15.0) return false;
+    if (next > 20.0) return false;
     chosen.push({ p, choice });
     used.add(p.match_id);
     total = next;
     return true;
   };
 
-  // Premium-only: fill from Premium pool exclusively (no Pro/Risk picks)
+  // Phase 1 — top Premium picks (≥78). Take up to 5.
   for (const p of premiumOrdered) {
-    if (chosen.length >= 6) break;
-    if (chosen.length >= 4 && total >= 8.0) break;
-    if (tryAdd(p)) premiumCount++;
+    if (chosen.length >= 5) break;
+    tryAdd(p, 78);
   }
 
-  if (chosen.length >= 4 && total >= 5.0 && total <= 15.0) {
+  // Phase 2 — fill missing slots from strong Pro picks (≥70).
+  if (chosen.length < 4) {
+    for (const p of proOrdered) {
+      if (chosen.length >= 5) break;
+      tryAdd(p, 70);
+    }
+  }
+
+  // Phase 3 — last-resort relax to ≥65 if still short.
+  if (chosen.length < 4) {
+    for (const p of proOrdered) {
+      if (chosen.length >= 4) break;
+      tryAdd(p, 65);
+    }
+  }
+
+  // Accept 4 or 5 picks; total odds in a generous [2.5, 20] range.
+  if (chosen.length >= 4 && chosen.length <= 5 && total >= 2.5 && total <= 20.0) {
     return { picks: chosen, total: Math.round(total * 100) / 100 };
   }
   return null;
