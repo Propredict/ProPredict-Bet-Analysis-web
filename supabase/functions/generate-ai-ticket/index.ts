@@ -81,6 +81,71 @@ function originalProPick(p: Pred): MarketChoice | null {
 }
 
 /**
+ * Premium Smart Combo pick: mirrors the "Smart Combos" tab in AI Predictions.
+ * Builds a real combo market like "Home Win & Over 1.5" / "Home Win & Over 2.5"
+ * / "Away Win & Over 2.5" / "GG & Over 2.5" using the AI's main 1X2 prediction
+ * and the predicted score from the Premium prediction itself.
+ *
+ * Falls back to the AI's original prediction when no combo can be built.
+ */
+function premiumComboPick(p: Pred): MarketChoice | null {
+  const raw = (p.prediction || "").trim();
+  if (!raw || isCorrectScore(raw)) return null;
+
+  const baseOdds = pickOdds(p);
+  if (baseOdds === null) return null;
+
+  const ps = (p.predicted_score || "").trim();
+  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const hg = m ? parseInt(m[1], 10) : -1;
+  const ag = m ? parseInt(m[2], 10) : -1;
+  const total = hg >= 0 ? hg + ag : -1;
+
+  // Map main prediction to a 1X2 result label
+  const norm = normalizePredictionLabel(raw);
+  const is1X2 = norm === "Home Win" || norm === "Draw" || norm === "Away Win";
+
+  // Approximate goals/BTTS odds factors (typical bookmaker pricing)
+  const OVER_15 = 1.30;
+  const OVER_25 = 1.85;
+  const GG_FACTOR = 1.75;
+
+  // Combo with 1X2 + Over 2.5 (preferred when predicted total >= 3)
+  if (is1X2 && total >= 3) {
+    return {
+      market: `${norm} & Over 2.5`,
+      odds: Math.round(baseOdds * OVER_25 * 100) / 100,
+      prob: p.confidence || 0,
+    };
+  }
+
+  // Combo with 1X2 + Over 1.5 (when predicted total == 2)
+  if (is1X2 && total === 2) {
+    return {
+      market: `${norm} & Over 1.5`,
+      odds: Math.round(baseOdds * OVER_15 * 100) / 100,
+      prob: p.confidence || 0,
+    };
+  }
+
+  // Combo with 1X2 + GG when both teams predicted to score
+  if (is1X2 && hg >= 1 && ag >= 1) {
+    return {
+      market: `${norm} & GG`,
+      odds: Math.round(baseOdds * GG_FACTOR * 100) / 100,
+      prob: p.confidence || 0,
+    };
+  }
+
+  // Fallback: original AI prediction
+  return {
+    market: norm,
+    odds: baseOdds,
+    prob: p.confidence || 0,
+  };
+}
+
+/**
  * Evaluate ALL safe markets for a pick and return the one with the highest
  * probability above the safety threshold. Considers:
  *   1X2: "Home Win" / "Draw" / "Away Win"
