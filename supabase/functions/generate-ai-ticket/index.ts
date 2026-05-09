@@ -202,6 +202,58 @@ function realPickOdds(p: Pred): number | null {
   return pickOdds(p);
 }
 
+function poissonProb(lambda: number, k: number): number {
+  let result = Math.exp(-lambda);
+  for (let i = 1; i <= k; i++) result *= lambda / i;
+  return result;
+}
+
+function clampProb(n: number, min = 5, max = 95): number {
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function displayGoalMarketProbs(p: Pred) {
+  const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  const homeXg = m ? Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2) : Math.max(0.5, (p.home_win ?? 40) / 30);
+  const awayXg = m ? Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15) : Math.max(0.4, (p.away_win ?? 30) / 30);
+  let over15 = 0, over25 = 0, over35 = 0, bttsYes = 0;
+  for (let h = 0; h <= 6; h++) for (let a = 0; a <= 6; a++) {
+    const prob = poissonProb(homeXg, h) * poissonProb(awayXg, a);
+    const total = h + a;
+    if (total > 1) over15 += prob;
+    if (total > 2) over25 += prob;
+    if (total > 3) over35 += prob;
+    if (h > 0 && a > 0) bttsYes += prob;
+  }
+  let o15 = clampProb(over15 * 100), o25 = clampProb(over25 * 100), o35 = clampProb(over35 * 100), by = clampProb(bttsYes * 100);
+  const totalXg = homeXg + awayXg;
+  if (totalXg >= 2.8 && homeXg >= 1.2 && awayXg >= 1.0) { o25 = Math.max(o25, 58); by = Math.max(by, 55); }
+  if (totalXg >= 3.2) { o25 = Math.max(o25, 65); o35 = Math.max(o35, 40); }
+  if (homeXg >= 1.3 && awayXg >= 1.1) by = Math.max(by, 55);
+  if (totalXg < 1.8) { o25 = Math.min(o25, 35); by = Math.min(by, 38); }
+  return { over15: o15, over25: o25, over35: o35, under25: clampProb(100 - o25), bttsYes: by, bttsNo: clampProb(100 - by) };
+}
+
+/** Mirror the AI Predictions "Best Pick" label so tickets don't show a stale/raw market like BTTS when the card shows another pick. */
+function displayedTicketPrediction(p: Pred): string {
+  let hw = Math.max(5, p.home_win ?? 33), aw = Math.max(5, p.away_win ?? 33), d = Math.max(5, p.draw ?? 34);
+  const total = hw + aw + d;
+  hw = Math.round((hw / total) * 100); aw = Math.round((aw / total) * 100); d = 100 - hw - aw;
+  const g = displayGoalMarketProbs(p);
+  const dcEligible = Math.max(hw, aw, d) < 60;
+  const candidates = [
+    { label: "Home Win", prob: hw + 8 }, { label: "Away Win", prob: aw + 8 }, { label: "Draw", prob: d + 8 },
+    { label: "1X", prob: dcEligible && hw + d >= 80 ? hw + d - 4 : 0 },
+    { label: "X2", prob: dcEligible && d + aw >= 80 ? d + aw - 4 : 0 },
+    { label: "12", prob: dcEligible && hw + aw >= 80 ? hw + aw - 4 : 0 },
+    { label: "Over 1.5", prob: g.over15 >= 80 ? g.over15 - 6 : 0 },
+    { label: "Over 2.5", prob: g.over25 }, { label: "Over 3.5", prob: g.over35 >= 60 ? g.over35 : 0 },
+    { label: "Under 2.5", prob: g.under25 }, { label: "BTTS Yes", prob: g.bttsYes }, { label: "BTTS No", prob: g.bttsNo },
+  ];
+  candidates.sort((a, b) => b.prob - a.prob);
+  return candidates[0]?.prob > 0 ? candidates[0].label : normalizePredictionLabel(p.prediction);
+}
+
 /**
  * Normalize an AI prediction label to a clean, user-friendly market name.
  * "1" -> "Home Win", "X" -> "Draw", "2" -> "Away Win", keeps everything else as-is.
