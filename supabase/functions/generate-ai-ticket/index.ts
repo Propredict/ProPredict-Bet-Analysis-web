@@ -237,9 +237,11 @@ function premiumComboPick(p: Pred): MarketChoice | null {
   }
 
   // Fallback: original AI prediction
+  // Use realPickOdds so non-1X2 markets (Over/GG/BTTS) get calibrated price,
+  // not the 1X2 consensus_odds.
   return {
     market: norm,
-    odds: baseOdds,
+    odds: realPickOdds(p) ?? baseOdds,
     prob: p.confidence || 0,
   };
 }
@@ -474,7 +476,7 @@ function buildPremiumCombo(
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
-    .map((p) => ({ p, o: pickOdds(p) }))
+    .map((p) => ({ p, o: realPickOdds(p) }))
     .filter((x) => x.o !== null && x.o! >= 2.5 && x.o! <= 4.0)
     .sort((a, b) => b.p.confidence - a.p.confidence);
   if (candidates.length === 0) return null;
