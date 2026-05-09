@@ -918,6 +918,9 @@ export type Database = {
           home_team: string
           id: string
           league: string
+          match_date: string | null
+          match_id: string | null
+          match_time: string | null
           odds: number
           prediction: string
           result: Database["public"]["Enums"]["ticket_result"] | null
@@ -936,6 +939,9 @@ export type Database = {
           home_team: string
           id?: string
           league: string
+          match_date?: string | null
+          match_id?: string | null
+          match_time?: string | null
           odds?: number
           prediction: string
           result?: Database["public"]["Enums"]["ticket_result"] | null
@@ -954,6 +960,9 @@ export type Database = {
           home_team?: string
           id?: string
           league?: string
+          match_date?: string | null
+          match_id?: string | null
+          match_time?: string | null
           odds?: number
           prediction?: string
           result?: Database["public"]["Enums"]["ticket_result"] | null
