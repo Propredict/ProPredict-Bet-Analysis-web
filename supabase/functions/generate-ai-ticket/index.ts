@@ -498,6 +498,84 @@ function buildPremiumCombo(
   return null;
 }
 
+/**
+ * Elite Top-Picks Combo (extra Premium ticket).
+ * Mirrors the "Top AI Picks Today" selection in the Premium AI tab:
+ *   - Only Tier 1 / Tier 2 leagues, confidence ≥ 78
+ *   - Variance must be stable
+ *   - Cherry-picks the 4–5 strongest predictions for one combined ticket
+ *   - Per-pick odds in [1.25, 3.5], total odds in [4.0, 18.0]
+ */
+const TIER1_LEAGUE_FRAGMENTS = [
+  "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+  "champions league", "europa league", "conference league",
+  "world cup", "euro championship", "copa america", "copa libertadores",
+];
+const TIER2_LEAGUE_FRAGMENTS = [
+  "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
+  "scottish premiership", "championship", "la liga 2",
+  "segunda división", "segunda division", "2. bundesliga", "serie b", "ligue 2",
+  "mls", "brasileirão", "brasileirao", "liga mx",
+];
+function eliteLeagueTier(league: string | null | undefined): 1 | 2 | 3 {
+  const l = (league ?? "").toLowerCase();
+  if (!l) return 3;
+  if (/\bu1[5-9]\b|\bu2[0-3]\b|reserve|youth/i.test(l)) return 3;
+  if (TIER1_LEAGUE_FRAGMENTS.some((n) => l.includes(n))) return 1;
+  if (TIER2_LEAGUE_FRAGMENTS.some((n) => l.includes(n))) return 2;
+  return 3;
+}
+
+function buildElitePremiumCombo(
+  premiumOrdered: Pred[],
+  excludeMatchIds: Set<string> = new Set(),
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
+  // Cascading buckets — top leagues + highest confidence first.
+  const qualified = premiumOrdered.filter(
+    (p) => p.variance_stable === true && (p.confidence ?? 0) >= 78,
+  );
+  const buckets: Pred[][] = [
+    qualified.filter((p) => eliteLeagueTier(p.league) === 1 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 1 && (p.confidence ?? 0) >= 78 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 2 && (p.confidence ?? 0) >= 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 2 && (p.confidence ?? 0) >= 78 && (p.confidence ?? 0) < 85),
+    qualified.filter((p) => eliteLeagueTier(p.league) === 3 && (p.confidence ?? 0) >= 85),
+  ];
+
+  const used = new Set<string>(excludeMatchIds);
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
+  let total = 1;
+  const typeCount = new Map<string, number>();
+
+  for (const bucket of buckets) {
+    if (chosen.length >= 5) break;
+    const ranked = bucket.slice().sort((a, b) => b.confidence - a.confidence);
+    for (const p of ranked) {
+      if (chosen.length >= 5) break;
+      if (used.has(p.match_id)) continue;
+      const choice = premiumComboPick(p);
+      if (!choice) continue;
+      const o = choice.odds;
+      if (o < 1.25 || o > 3.5) continue;
+      // Diversity cap: max 2 of same market family
+      const family = choice.market.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+      if ((typeCount.get(family) ?? 0) >= 2) continue;
+      const next = total * o;
+      if (next > 18.0) continue;
+      chosen.push({ p, choice });
+      used.add(p.match_id);
+      total = next;
+      typeCount.set(family, (typeCount.get(family) ?? 0) + 1);
+      if (chosen.length >= 4 && total >= 6.0) break;
+    }
+  }
+
+  if (chosen.length >= 4 && total >= 4.0 && total <= 18.0) {
+    return { picks: chosen, total: Math.round(total * 100) / 100 };
+  }
+  return null;
+}
+
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
