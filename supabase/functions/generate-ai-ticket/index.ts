@@ -37,6 +37,7 @@ type Pred = {
   home_win: number | null;
   draw: number | null;
   away_win: number | null;
+  market_odds?: Record<string, number> | null;
 };
 
 function todayBelgrade(): string {
@@ -134,14 +135,38 @@ function calibratedMarketOdds(prediction: string, predictedScore: string | null)
 }
 
 /**
+ * Map a prediction label to a key in the `market_odds` jsonb (real bookmaker
+ * consensus captured by snapshot-odds). Returns null for 1X2 (handled separately).
+ */
+function marketOddsKey(prediction: string): string | null {
+  const s = (prediction || "").toLowerCase().trim();
+  if (/over\s*1\.?5/.test(s)) return "over_1_5";
+  if (/under\s*1\.?5/.test(s)) return "under_1_5";
+  if (/over\s*2\.?5/.test(s)) return "over_2_5";
+  if (/under\s*2\.?5/.test(s)) return "under_2_5";
+  if (/over\s*3\.?5/.test(s)) return "over_3_5";
+  if (/under\s*3\.?5/.test(s)) return "under_3_5";
+  if (/^gg\b/.test(s) || /btts\s*yes/.test(s) || /both\s*teams\s*(to\s*)?score/.test(s)) return "btts_yes";
+  if (/^ng\b/.test(s) || /btts\s*no/.test(s)) return "btts_no";
+  return null;
+}
+
+/**
  * Returns the BEST realistic price for `p.prediction`:
  *  - For non-1X2 markets (Over/Under, GG/NG, BTTS) → calibrated from predicted_score.
  *  - For 1X2 → consensus_odds (real bookmaker average for Match Winner).
  * Falls back to legacy pickOdds() only if neither path yields a value.
  */
 function realPickOdds(p: Pred): number | null {
+  // 1) Prefer REAL bookmaker consensus from market_odds (snapshot-odds cron).
+  const key = marketOddsKey(p.prediction);
+  if (key && p.market_odds && typeof p.market_odds[key] === "number" && p.market_odds[key] > 1.05) {
+    return Number(p.market_odds[key]);
+  }
+  // 2) Otherwise calibrate non-1X2 markets from predicted score.
   const calibrated = calibratedMarketOdds(p.prediction, p.predicted_score);
   if (calibrated !== null) return calibrated;
+  // 3) Fallback to 1X2 consensus / confidence-derived odds.
   return pickOdds(p);
 }
 
