@@ -417,81 +417,24 @@ function correctScoreOdds(predictedScore: string | null): number | null {
  *   3) Optionally allow a correct-score fallback if its heuristic odds fit.
  */
 function highOddsSafePick(p: Pred): MarketChoice | null {
-  // 1) Primary AI prediction with high natural odds.
+  // Risk ticket rule: ONLY use the AI's actual prediction (Over 3.5, GG, 1, 2, X,
+  // Over 2.5, ...) and only when the real market odds for THAT prediction are ≥ 2.50.
+  // No fabricated markets, no derived correct scores, no "GG & Over 2.5" mash-ups.
   const original = (p.prediction || "").trim();
-  const oOrig = pickOdds(p) ?? 0;
-  if (original && !isCorrectScore(original) && oOrig >= 2.5 && oOrig <= 15) {
-    return { market: original, odds: oOrig, prob: 0 };
-  }
+  if (!original || isCorrectScore(original)) return null;
 
-  const hw = p.home_win ?? 0;
-  const dr = p.draw ?? 0;
-  const aw = p.away_win ?? 0;
+  const odds = pickOdds(p);
+  if (odds === null) return null;
 
-  const ps = (p.predicted_score || "").trim();
-  const m = ps.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-  const hg = m ? parseInt(m[1], 10) : -1;
-  const ag = m ? parseInt(m[2], 10) : -1;
-  const total = hg >= 0 ? hg + ag : -1;
+  // Sweet spot for Risk picks: high enough to feel like a real upside, but
+  // capped so a single longshot can't blow up the combined score.
+  if (odds < 2.5 || odds > 6.0) return null;
 
-  const candidates: { market: string; prob: number }[] = [];
-  if (hw > 0 || dr > 0 || aw > 0) {
-    candidates.push({ market: "Home Win", prob: hw });
-    candidates.push({ market: "Away Win", prob: aw });
-    candidates.push({ market: "Draw", prob: dr });
-  }
-  if (total >= 0) {
-    if (total >= 4) candidates.push({ market: "Over 3.5", prob: 60 });
-    if (total >= 5) candidates.push({ market: "Over 4.5", prob: 50 });
-    if (total <= 1) candidates.push({ market: "Under 1.5", prob: 50 });
-    if (hg >= 2 && ag >= 2) candidates.push({ market: "GG & Over 2.5", prob: 55 });
-  }
-
-  // odds = (100/prob)*0.95, accept only if ≥ 2.50 and ≤ 15.0
-  const eligible = candidates
-    .map((c) => ({
-      market: c.market,
-      prob: c.prob,
-      odds: Math.round((100 / Math.max(c.prob, 1)) * 0.95 * 100) / 100,
-    }))
-    .filter((c) => c.odds >= 2.5 && c.odds <= 15.0 && c.prob >= 12)
-    .sort((a, b) => b.prob - a.prob);
-
-  if (eligible.length > 0) {
-    const best = eligible[0];
-    return { market: best.market, odds: best.odds, prob: best.prob };
-  }
-
-  // Correct-score fallback — STRICTLY for the safest possible scorelines.
-  // Requirements (ALL must be true):
-  //   • Premium-grade confidence (≥ 85)
-  //   • Variance is stable (model agrees across runs)
-  //   • Common, low-total scoreline only: 1-0, 0-1, 1-1, 2-1, 1-2, 2-0, 0-2, 0-0
-  //   • Total goals ≤ 3
-  //   • Heuristic market odds in [3.50, 8.00] (typical for safe correct-score picks)
-  //   • Predicted score aligns with the dominant 1X2 outcome (no contradictions)
-  if (
-    (p.confidence ?? 0) >= 85 &&
-    p.variance_stable === true &&
-    hg >= 0 && ag >= 0 &&
-    (hg + ag) <= 3
-  ) {
-    const safeScores = new Set(["0-0", "1-0", "0-1", "1-1", "2-1", "1-2", "2-0", "0-2"]);
-    const key = `${hg}-${ag}`;
-    if (safeScores.has(key)) {
-      // Score must agree with the strongest 1X2 probability
-      const dominant = hw >= dr && hw >= aw ? "H" : aw >= hw && aw >= dr ? "A" : "D";
-      const scoreSide = hg > ag ? "H" : ag > hg ? "A" : "D";
-      if (dominant === scoreSide) {
-        const o = correctScoreOdds(ps);
-        if (o && o >= 2.5 && o <= 15.0) {
-          return { market: `Correct Score ${hg}-${ag}`, odds: o, prob: 0 };
-        }
-      }
-    }
-  }
-
-  return null;
+  return {
+    market: normalizePredictionLabel(original),
+    odds,
+    prob: p.confidence || 0,
+  };
 }
 
 function buildRiskCombo(
