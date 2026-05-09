@@ -135,6 +135,37 @@ function calibratedMarketOdds(prediction: string, predictedScore: string | null)
 }
 
 /**
+ * Reject ticket picks where the market label contradicts the predicted score.
+ * Example: "BTTS Yes" must never appear when the AI score is 0-2.
+ */
+function predictionMatchesPredictedScore(prediction: string, predictedScore: string | null): boolean {
+  const raw = (prediction || "").trim();
+  if (!raw || !predictedScore) return true;
+
+  const s = raw.toLowerCase();
+  const m = predictedScore.trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (!m) return true;
+
+  const hg = parseInt(m[1], 10);
+  const ag = parseInt(m[2], 10);
+  const total = hg + ag;
+
+  if ((/^gg\b/.test(s) || /btts\s*yes/.test(s) || /both\s*teams\s*(to\s*)?score/.test(s)) && (hg === 0 || ag === 0)) return false;
+  if ((/^ng\b/.test(s) || /btts\s*no/.test(s)) && hg > 0 && ag > 0) return false;
+  if (/over\s*1\.?5/.test(s) && total <= 1) return false;
+  if (/under\s*1\.?5/.test(s) && total >= 2) return false;
+  if (/over\s*2\.?5/.test(s) && total <= 2) return false;
+  if (/under\s*2\.?5/.test(s) && total >= 3) return false;
+  if (/over\s*3\.?5/.test(s) && total <= 3) return false;
+  if (/under\s*3\.?5/.test(s) && total >= 4) return false;
+  if ((s === "1" || s.includes("home win")) && hg <= ag) return false;
+  if ((s === "2" || s.includes("away win")) && ag <= hg) return false;
+  if ((s === "x" || s === "draw") && hg !== ag) return false;
+
+  return true;
+}
+
+/**
  * Map a prediction label to a key in the `market_odds` jsonb (real bookmaker
  * consensus captured by snapshot-odds). Returns null for 1X2 (handled separately).
  */
@@ -158,6 +189,7 @@ function marketOddsKey(prediction: string): string | null {
  * Falls back to legacy pickOdds() only if neither path yields a value.
  */
 function realPickOdds(p: Pred): number | null {
+  if (!predictionMatchesPredictedScore(p.prediction, p.predicted_score)) return null;
   // 1) Prefer REAL bookmaker consensus from market_odds (snapshot-odds cron).
   const key = marketOddsKey(p.prediction);
   if (key && p.market_odds && typeof p.market_odds[key] === "number" && p.market_odds[key] > 1.05) {
