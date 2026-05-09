@@ -161,8 +161,8 @@ export default function RiskOfTheDay() {
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <Target className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-warning mb-1">No risky picks available</p>
-                <p className="text-sm">Check back later for bold predictions</p>
+                <p className="text-warning mb-1">Today's Risk pick is loading up</p>
+                <p className="text-sm">A new Risk of the Day is generated every morning at 7:00 AM CET.</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again

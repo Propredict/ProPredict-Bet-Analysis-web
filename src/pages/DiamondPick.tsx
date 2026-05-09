@@ -156,8 +156,8 @@ export default function DiamondPick() {
             <Card className="p-8 bg-card border-border">
               <div className="flex flex-col items-center justify-center text-muted-foreground">
                 <Gem className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-warning mb-1">No diamond picks available</p>
-                <p className="text-sm">Check back later for top selections</p>
+                <p className="text-warning mb-1">Today's Diamond is being polished</p>
+                <p className="text-sm">A new Diamond Pick is generated every morning at 7:00 AM CET.</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
