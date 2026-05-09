@@ -316,7 +316,14 @@ function safestProPick(p: Pred): MarketChoice {
   const safe = candidates.filter((c) => c.prob >= 65).sort((a, b) => b.prob - a.prob);
   if (safe.length > 0) {
     const best = safe[0];
-    return { market: best.market, odds: clampOdds(best.prob), prob: best.prob };
+    // Prefer calibrated market odds (real bookmaker prices) over prob-based estimate.
+    const calibrated = calibratedMarketOdds(best.market, p.predicted_score);
+    const consensus = pickOdds(p);
+    let odds: number;
+    if (calibrated != null) odds = calibrated;
+    else if (/^(home win|away win|draw|1x|x2|12)/i.test(best.market) && consensus) odds = consensus;
+    else odds = clampOdds(best.prob);
+    return { market: best.market, odds, prob: best.prob };
   }
 
   // Fallback: keep original AI prediction with its odds (unless correct score)
