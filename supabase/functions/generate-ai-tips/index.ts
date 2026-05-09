@@ -210,6 +210,51 @@ function isGoalMarket(label: string): boolean {
 }
 
 /**
+ * Premium combo picker: returns a SAFE combination market like
+ * "1 & Over 2.5", "1X & Under 2.5", "X2 & Under 3.5", "12 & Over 1.5", etc.
+ * Combo prob = p1 * p2 (approx). Safe threshold >= 55%.
+ * Odds estimated as 1 / (prob/100) * 0.92 (margin), clamped to >= 1.40.
+ */
+function pickSafeCombo(p: Pred): { label: string; odds: number; prob: number } | null {
+  const hw = p.home_win ?? 33, dr = p.draw ?? 33, aw = p.away_win ?? 33;
+  const g = goalMarketProbs(p);
+
+  const oneX = Math.min(95, hw + dr);   // 1X
+  const xTwo = Math.min(95, dr + aw);   // X2
+  const twelve = Math.min(95, hw + aw); // 12
+
+  const candidates: { label: string; prob: number }[] = [
+    { label: "1 & Over 1.5",   prob: (hw * g.over15) / 100 },
+    { label: "1 & Over 2.5",   prob: (hw * g.over25) / 100 },
+    { label: "2 & Over 1.5",   prob: (aw * g.over15) / 100 },
+    { label: "2 & Over 2.5",   prob: (aw * g.over25) / 100 },
+    { label: "1X & Under 2.5", prob: (oneX * g.under25) / 100 },
+    { label: "1X & Under 3.5", prob: (oneX * g.under35) / 100 },
+    { label: "X2 & Under 2.5", prob: (xTwo * g.under25) / 100 },
+    { label: "X2 & Under 3.5", prob: (xTwo * g.under35) / 100 },
+    { label: "12 & Over 1.5",  prob: (twelve * g.over15) / 100 },
+    { label: "12 & Over 2.5",  prob: (twelve * g.over25) / 100 },
+    { label: "1 & BTTS Yes",   prob: (hw * g.bttsYes) / 100 },
+    { label: "2 & BTTS Yes",   prob: (aw * g.bttsYes) / 100 },
+  ];
+
+  const safe = candidates
+    .map((c) => ({ ...c, prob: clampProb(c.prob, 5, 95) }))
+    .filter((c) => c.prob >= 55)
+    .map((c) => {
+      const odds = Math.max(1.40, Math.round((100 / c.prob) * 0.92 * 100) / 100);
+      return { ...c, odds };
+    })
+    // Skip super tight combos with weak value
+    .filter((c) => c.odds >= 1.40 && c.odds <= 5.0)
+    // Best score: balance probability vs decent odds
+    .sort((a, b) => (b.prob * 0.5 + b.odds * 14) - (a.prob * 0.5 + a.odds * 14));
+
+  if (safe.length === 0) return null;
+  return safe[0];
+}
+
+/**
  * Pick one tip from `pool` with the highest-confidence safe market,
  * preferring matches whose chosen market type is NOT in `usedMarketTypes`
  * so the daily lineup stays diverse.
@@ -243,6 +288,15 @@ function pickBestForTier(
 
 function marketDiversityKey(label: string): string {
   const s = label.toLowerCase();
+  // For combos, key by the goal half so we don't repeat "& Over 2.5" every pick
+  if (/&/.test(s)) {
+    if (/over\s*2\.?5/.test(s)) return "combo_over25";
+    if (/over\s*1\.?5/.test(s)) return "combo_over15";
+    if (/under\s*2\.?5/.test(s)) return "combo_under25";
+    if (/under\s*3\.?5/.test(s)) return "combo_under35";
+    if (/btts/.test(s)) return "combo_btts";
+    return "combo";
+  }
   if (/home/.test(s)) return "home";
   if (/away/.test(s)) return "away";
   if (/draw/.test(s)) return "draw";
@@ -271,7 +325,7 @@ serve(async (req) => {
       .from("tips")
       .select("id")
       .eq("tip_date", date)
-      .in("category", ["ai_daily", "ai_pro"]);
+      .in("category", ["ai_daily", "ai_pro", "ai_premium"]);
     const delIds = (toDel ?? []).map((t: any) => t.id);
     if (delIds.length > 0) {
       await supabase.from("tips").delete().in("id", delIds);
@@ -320,6 +374,11 @@ serve(async (req) => {
     const freeTarget = freePool.length >= 8 ? 3 : (freePool.length >= 4 ? 2 : 1);
     const proInsightsPool = [...premiumPool, ...proPool];
     const proInsightsTarget = proInsightsPool.length >= 6 ? 4 : (proInsightsPool.length >= 3 ? 3 : Math.min(2, proInsightsPool.length));
+    // Premium combo pool: only the safest matches (Premium first, fallback to high-end Pro)
+    const premiumComboPool = premiumPool.length >= 4
+      ? premiumPool
+      : [...premiumPool, ...proPool.filter((p) => p.confidence >= 70)];
+    const premiumComboTarget = premiumComboPool.length >= 6 ? 6 : (premiumComboPool.length >= 4 ? 5 : Math.min(3, premiumComboPool.length));
 
     type TierJob = { name: string; pool: Pred[]; tier: string; count: number; category: string };
     const jobs: TierJob[] = [
@@ -327,6 +386,7 @@ serve(async (req) => {
       { name: "Pro",         pool: proPool,          tier: "daily",     count: 1,                 category: "ai_daily" },
       { name: "Premium",     pool: premiumPool,      tier: "daily",     count: 1,                 category: "ai_daily" },
       { name: "ProInsights", pool: proInsightsPool,  tier: "exclusive", count: proInsightsTarget, category: "ai_pro"   },
+      { name: "PremiumCombo",pool: premiumComboPool, tier: "premium",   count: premiumComboTarget,category: "ai_premium" },
     ];
 
     for (const job of jobs) {
@@ -336,7 +396,10 @@ serve(async (req) => {
       if (candidatePool.length === 0) continue;
 
       for (let n = 0; n < job.count; n++) {
-        const picker = job.category === "ai_pro" ? pickSafeMarketPro : pickSafeMarket;
+        const picker =
+          job.category === "ai_premium" ? pickSafeCombo :
+          job.category === "ai_pro" ? pickSafeMarketPro :
+          pickSafeMarket;
         const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes, picker);
         if (!choice) break;
 
@@ -362,6 +425,7 @@ serve(async (req) => {
       }
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
       if (job.category === "ai_daily" && job.name === "Premium") usedMarketTypes.clear();
+      if (job.category === "ai_pro" && job.name === "ProInsights") usedMarketTypes.clear();
     }
 
     return new Response(
