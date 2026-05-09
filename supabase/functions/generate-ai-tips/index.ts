@@ -65,6 +65,7 @@ function goalMarketProbs(p: Pred) {
     over25: clampProb(o25 * 100),
     over35: clampProb(o35 * 100),
     under25: clampProb(100 - o25 * 100),
+    under35: clampProb(100 - o35 * 100),
     bttsYes: clampProb(gg * 100),
     bttsNo: clampProb(100 - gg * 100),
   };
@@ -90,6 +91,13 @@ function calibratedOdds(label: string, predictedScore: string | null): number | 
     if (total === 2) return 1.55;
     if (total === 3) return 2.40;
     return 4.20;
+  }
+  if (/under\s*3\.?5/.test(s)) {
+    if (total < 0) return 1.45;
+    if (total <= 2) return 1.25;
+    if (total === 3) return 1.50;
+    if (total === 4) return 2.20;
+    return 4.50;
   }
   if (/over\s*1\.?5/.test(s)) {
     if (total < 0) return 1.30;
@@ -123,6 +131,7 @@ function marketKey(label: string): string | null {
   if (/over\s*2\.?5/.test(s)) return "over_2_5";
   if (/under\s*2\.?5/.test(s)) return "under_2_5";
   if (/over\s*3\.?5/.test(s)) return "over_3_5";
+  if (/under\s*3\.?5/.test(s)) return "under_3_5";
   if (/^gg\b/.test(s) || /btts\s*yes/.test(s)) return "btts_yes";
   if (/^ng\b/.test(s) || /btts\s*no/.test(s)) return "btts_no";
   return null;
@@ -161,6 +170,41 @@ function pickSafeMarket(p: Pred): { label: string; odds: number; prob: number } 
   return { label: best.label, odds: oddsForLabel(p, best.label), prob: best.prob };
 }
 
+/**
+ * Pro Insights variant: allow ALL market types (1X2, Over/Under 2.5/3.5, BTTS),
+ * still safe (>= 60% prob) but optimize for stronger odds (value pick).
+ * Score = prob * 0.6 + odds*10 (rewards higher odds while staying safe).
+ */
+function pickSafeMarketPro(p: Pred): { label: string; odds: number; prob: number } | null {
+  const hw = p.home_win ?? 33, dr = p.draw ?? 33, aw = p.away_win ?? 33;
+  const g = goalMarketProbs(p);
+
+  const candidates: { label: string; prob: number }[] = [
+    { label: "Over 2.5", prob: g.over25 },
+    { label: "Under 2.5", prob: g.under25 },
+    { label: "Under 3.5", prob: g.under35 },
+    { label: "BTTS Yes", prob: g.bttsYes },
+    { label: "BTTS No", prob: g.bttsNo },
+    { label: "Over 1.5", prob: g.over15 },
+    { label: "Home Win", prob: hw },
+    { label: "Away Win", prob: aw },
+  ];
+
+  const safe = candidates
+    .filter((c) => c.prob >= 60)
+    .map((c) => ({ ...c, odds: oddsForLabel(p, c.label) }))
+    // skip super-low value picks (< 1.30) — Pro should have decent odds
+    .filter((c) => c.odds >= 1.30)
+    .sort((a, b) => (b.prob * 0.55 + b.odds * 12) - (a.prob * 0.55 + a.odds * 12));
+
+  if (safe.length === 0) {
+    // fallback: any safe market regardless of odds
+    return pickSafeMarket(p);
+  }
+  const best = safe[0];
+  return { label: best.label, odds: best.odds, prob: best.prob };
+}
+
 function isGoalMarket(label: string): boolean {
   return /over|under|btts|gg|ng/i.test(label);
 }
@@ -174,6 +218,7 @@ function pickBestForTier(
   pool: Pred[],
   usedMatchIds: Set<string>,
   usedMarketTypes: Set<string>,
+  picker: (p: Pred) => { label: string; odds: number; prob: number } | null = pickSafeMarket,
 ): { p: Pred; market: { label: string; odds: number; prob: number } } | null {
   // Sort by confidence DESC, prefer variance_stable
   const sorted = pool
@@ -183,17 +228,28 @@ function pickBestForTier(
 
   // First pass: only allow markets NOT yet used (diversity)
   for (const p of sorted) {
-    const m = pickSafeMarket(p);
+    const m = picker(p);
     if (!m) continue;
-    const type = isGoalMarket(m.label) ? m.label.split(" ")[0].toLowerCase() : "1x2";
+    const type = marketDiversityKey(m.label);
     if (!usedMarketTypes.has(type)) return { p, market: m };
   }
   // Second pass: any safe market
   for (const p of sorted) {
-    const m = pickSafeMarket(p);
+    const m = picker(p);
     if (m) return { p, market: m };
   }
   return null;
+}
+
+function marketDiversityKey(label: string): string {
+  const s = label.toLowerCase();
+  if (/home/.test(s)) return "home";
+  if (/away/.test(s)) return "away";
+  if (/draw/.test(s)) return "draw";
+  if (/btts|gg|ng/.test(s)) return "btts";
+  if (/over/.test(s)) return "over";
+  if (/under/.test(s)) return "under";
+  return s;
 }
 
 serve(async (req) => {
@@ -280,7 +336,8 @@ serve(async (req) => {
       if (candidatePool.length === 0) continue;
 
       for (let n = 0; n < job.count; n++) {
-        const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes);
+        const picker = job.category === "ai_pro" ? pickSafeMarketPro : pickSafeMarket;
+        const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes, picker);
         if (!choice) break;
 
         const { p, market } = choice;
@@ -300,8 +357,7 @@ serve(async (req) => {
         if (insErr) throw insErr;
 
         usedMatchIds.add(p.match_id);
-        const type = isGoalMarket(market.label) ? market.label.split(" ")[0].toLowerCase() : "1x2";
-        usedMarketTypes.add(type);
+        usedMarketTypes.add(marketDiversityKey(market.label));
         created.push({ tier: job.tier, category: job.category, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
       }
       // Reset diversity tracker per page so Pro Insights doesn't inherit "used" market types from Daily.
