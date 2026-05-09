@@ -474,7 +474,7 @@ function buildPremiumCombo(
 function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { picks: Pred[]; total: number } | null {
   const candidates = pool
     .filter((p) => !excludeMatchIds.has(p.match_id))
-    .map((p) => ({ p, o: pickOdds(p) }))
+    .map((p) => ({ p, o: realPickOdds(p) }))
     .filter((x) => x.o !== null && x.o! >= 2.5 && x.o! <= 4.0)
     .sort((a, b) => b.p.confidence - a.p.confidence);
   if (candidates.length === 0) return null;
