@@ -729,15 +729,31 @@ serve(async (req: Request) => {
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
-    const { data: preds, error: pErr } = await supabase
-      .from("ai_predictions")
-      .select("id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win,market_odds")
-      .eq("match_date", date)
-      .gte("confidence", 50)
-      .order("confidence", { ascending: false })
-      .limit(120);
-
-    if (pErr) throw pErr;
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win";
+    let preds: any[] | null = null;
+    {
+      const r1 = await supabase
+        .from("ai_predictions")
+        .select(`${baseCols},market_odds`)
+        .eq("match_date", date)
+        .gte("confidence", 50)
+        .order("confidence", { ascending: false })
+        .limit(120);
+      if (r1.error) {
+        // market_odds column not yet migrated — fall back to base columns.
+        const r2 = await supabase
+          .from("ai_predictions")
+          .select(baseCols)
+          .eq("match_date", date)
+          .gte("confidence", 50)
+          .order("confidence", { ascending: false })
+          .limit(120);
+        if (r2.error) throw r2.error;
+        preds = r2.data;
+      } else {
+        preds = r1.data;
+      }
+    }
     const all = (preds ?? []) as Pred[];
 
     // Split into Free (<65), Pro (65–77), Premium (≥78).
