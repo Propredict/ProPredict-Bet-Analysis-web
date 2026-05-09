@@ -51,6 +51,36 @@ function pickOdds(p: Pred): number | null {
 }
 
 /**
+ * Normalize an AI prediction label to a clean, user-friendly market name.
+ * "1" -> "Home Win", "X" -> "Draw", "2" -> "Away Win", keeps everything else as-is.
+ */
+function normalizePredictionLabel(prediction: string): string {
+  const s = (prediction || "").trim();
+  if (s === "1") return "Home Win";
+  if (s === "X" || s.toLowerCase() === "x") return "Draw";
+  if (s === "2") return "Away Win";
+  return s;
+}
+
+/**
+ * Pro pick: ALWAYS use the AI's original prediction with its real odds.
+ * No derived "Double Chance" / "12 (No Draw)" markets — only what AI actually
+ * predicted (1, X, 2, Over 2.5, GG, etc.). Correct scores are excluded.
+ */
+function originalProPick(p: Pred): MarketChoice | null {
+  const raw = (p.prediction || "").trim();
+  if (!raw) return null;
+  if (isCorrectScore(raw)) return null;
+  const odds = pickOdds(p);
+  if (odds === null) return null;
+  return {
+    market: normalizePredictionLabel(raw),
+    odds,
+    prob: p.confidence || 0,
+  };
+}
+
+/**
  * Evaluate ALL safe markets for a pick and return the one with the highest
  * probability above the safety threshold. Considers:
  *   1X2: "Home Win" / "Draw" / "Away Win"
@@ -197,9 +227,10 @@ function buildProCombo(
   for (const p of pool) {
     if (chosen.length >= 7) break;
     if (usedMatchIds.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
-    const choice = safestProPick(p);
-    // Skip if no safe market found (prob 0 fallback) and original is unsafe
-    if (choice.prob > 0 && choice.prob < 65) continue;
+    const choice = originalProPick(p);
+    if (!choice) continue; // skips correct-score predictions
+    // Require at least Pro-tier confidence on the AI's own prediction
+    if (choice.prob < 65) continue;
     const o = choice.odds;
     if (o < 1.2 || o > 2.6) continue;
     const next = total * o;
