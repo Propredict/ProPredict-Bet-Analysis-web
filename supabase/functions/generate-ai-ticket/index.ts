@@ -1136,7 +1136,7 @@ serve(async (req: Request) => {
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const riskUsed = new Set<string>();
       // Rotate ticket sizes for variety: single, double, triple, quadruple, double
-      const sizes: RiskSize[] = [3, 4, 3, 4, 3];
+      const sizes: RiskSize[] = [2, 3, 2, 3];
 
       for (let i = 0; i < riskToCreate; i++) {
         const size = sizes[(existingRiskCount + i) % sizes.length];
