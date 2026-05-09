@@ -215,7 +215,7 @@ function isGoalMarket(label: string): boolean {
  * Combo prob = p1 * p2 (approx). Safe threshold >= 55%.
  * Odds estimated as 1 / (prob/100) * 0.92 (margin), clamped to >= 1.40.
  */
-function pickSafeCombo(p: Pred): { label: string; odds: number; prob: number } | null {
+function pickSafeCombo(p: Pred, avoidKeys: Set<string> = new Set()): { label: string; odds: number; prob: number } | null {
   const hw = p.home_win ?? 33, dr = p.draw ?? 33, aw = p.away_win ?? 33;
   const g = goalMarketProbs(p);
 
@@ -251,7 +251,9 @@ function pickSafeCombo(p: Pred): { label: string; odds: number; prob: number } |
     .sort((a, b) => (b.prob * 0.5 + b.odds * 14) - (a.prob * 0.5 + a.odds * 14));
 
   if (safe.length === 0) return null;
-  return safe[0];
+  // Prefer combos whose diversity key hasn't been used yet
+  const fresh = safe.find((c) => !avoidKeys.has(marketDiversityKey(c.label)));
+  return fresh ?? safe[0];
 }
 
 /**
@@ -263,7 +265,7 @@ function pickBestForTier(
   pool: Pred[],
   usedMatchIds: Set<string>,
   usedMarketTypes: Set<string>,
-  picker: (p: Pred) => { label: string; odds: number; prob: number } | null = pickSafeMarket,
+  picker: (p: Pred, avoid?: Set<string>) => { label: string; odds: number; prob: number } | null = pickSafeMarket,
 ): { p: Pred; market: { label: string; odds: number; prob: number } } | null {
   // Sort by confidence DESC, prefer variance_stable
   const sorted = pool
@@ -273,14 +275,14 @@ function pickBestForTier(
 
   // First pass: only allow markets NOT yet used (diversity)
   for (const p of sorted) {
-    const m = picker(p);
+    const m = picker(p, usedMarketTypes);
     if (!m) continue;
     const type = marketDiversityKey(m.label);
     if (!usedMarketTypes.has(type)) return { p, market: m };
   }
   // Second pass: any safe market
   for (const p of sorted) {
-    const m = picker(p);
+    const m = picker(p, usedMarketTypes);
     if (m) return { p, market: m };
   }
   return null;
