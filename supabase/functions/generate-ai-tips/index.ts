@@ -254,43 +254,51 @@ serve(async (req) => {
     const usedMarketTypes = new Set<string>();
     const created: Array<{ tier: string; pick: string; odds: number; confidence: number }> = [];
 
-    type TierJob = { name: string; pool: Pred[]; tier: string };
+    // Targets:
+    //   - up to 3 Free picks (scaled to pool size)
+    //   - 1 Pro pick (sourced from Pro pool, gated as 'daily')
+    //   - 1 Premium pick (sourced from Premium pool, gated as 'daily')
+    // All tips land on /daily-predictions. tier='free' = always visible, tier='daily' = unlock/sub.
+    const freeTarget = freePool.length >= 8 ? 3 : (freePool.length >= 4 ? 2 : 1);
+
+    type TierJob = { name: string; pool: Pred[]; tier: string; count: number };
     const jobs: TierJob[] = [
-      { name: "Free",    pool: freePool,    tier: "free" },
-      { name: "Pro",     pool: proPool,     tier: "exclusive" },
-      { name: "Premium", pool: premiumPool, tier: "premium" },
+      { name: "Free",    pool: freePool,    tier: "free",  count: freeTarget },
+      { name: "Pro",     pool: proPool,     tier: "daily", count: 1 },
+      { name: "Premium", pool: premiumPool, tier: "daily", count: 1 },
     ];
 
     for (const job of jobs) {
-      // Premium fallback: if Premium pool empty, try top of Pro pool
       let candidatePool = job.pool;
       if (candidatePool.length === 0 && job.name === "Premium") candidatePool = proPool;
       if (candidatePool.length === 0 && job.name === "Pro") candidatePool = freePool.filter((p) => p.confidence >= 60);
       if (candidatePool.length === 0) continue;
 
-      const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes);
-      if (!choice) continue;
+      for (let n = 0; n < job.count; n++) {
+        const choice = pickBestForTier(candidatePool, usedMatchIds, usedMarketTypes);
+        if (!choice) break;
 
-      const { p, market } = choice;
-      const { error: insErr } = await supabase.from("tips").insert({
-        home_team: p.home_team,
-        away_team: p.away_team,
-        league: p.league ?? "",
-        prediction: market.label,
-        ai_prediction: market.label,
-        odds: Math.round(market.odds * 100) / 100,
-        confidence: p.confidence,
-        tier: job.tier,
-        status: "published",
-        category: "ai_daily",
-        tip_date: date,
-      });
-      if (insErr) throw insErr;
+        const { p, market } = choice;
+        const { error: insErr } = await supabase.from("tips").insert({
+          home_team: p.home_team,
+          away_team: p.away_team,
+          league: p.league ?? "",
+          prediction: market.label,
+          ai_prediction: market.label,
+          odds: Math.round(market.odds * 100) / 100,
+          confidence: p.confidence,
+          tier: job.tier,
+          status: "published",
+          category: "ai_daily",
+          tip_date: date,
+        });
+        if (insErr) throw insErr;
 
-      usedMatchIds.add(p.match_id);
-      const type = isGoalMarket(market.label) ? market.label.split(" ")[0].toLowerCase() : "1x2";
-      usedMarketTypes.add(type);
-      created.push({ tier: job.tier, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
+        usedMatchIds.add(p.match_id);
+        const type = isGoalMarket(market.label) ? market.label.split(" ")[0].toLowerCase() : "1x2";
+        usedMarketTypes.add(type);
+        created.push({ tier: job.tier, pick: `${p.home_team} vs ${p.away_team} — ${market.label}`, odds: market.odds, confidence: p.confidence });
+      }
     }
 
     return new Response(
