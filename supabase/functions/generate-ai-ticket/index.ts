@@ -490,6 +490,28 @@ serve(async (req: Request) => {
 
     const date = todayBelgrade();
 
+    // Optional admin flag: wipe today's AI ticket categories before regenerating.
+    let body: any = {};
+    try { body = await req.json(); } catch (_) { body = {}; }
+    const wipeCategories: string[] = [];
+    if (body?.wipe_premium) wipeCategories.push("ai_premium");
+    if (body?.wipe_pro) wipeCategories.push("ai_pro");
+    if (body?.wipe_daily) wipeCategories.push("ai_daily");
+    if (body?.wipe_risk) wipeCategories.push("multi_risk");
+    if (body?.wipe_all) wipeCategories.push("ai_premium", "ai_pro", "ai_daily", "multi_risk");
+    if (wipeCategories.length > 0) {
+      const { data: toDelete } = await supabase
+        .from("tickets")
+        .select("id")
+        .eq("ticket_date", date)
+        .in("category", wipeCategories);
+      const ids = (toDelete ?? []).map((t: any) => t.id);
+      if (ids.length > 0) {
+        await supabase.from("ticket_matches").delete().in("ticket_id", ids);
+        await supabase.from("tickets").delete().in("id", ids);
+      }
+    }
+
     // Count existing AI daily tickets for today (max 2 per day)
     const { data: existing } = await supabase
       .from("tickets")
