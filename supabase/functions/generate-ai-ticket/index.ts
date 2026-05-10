@@ -852,10 +852,19 @@ serve(async (req: Request) => {
     }
     const all = (preds ?? []) as Pred[];
 
-    // Split into Free (<65), Pro (65–77), Premium (≥78).
-    const freePool = all.filter((p) => p.confidence < 65);
-    const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
-    const premiumPool = all.filter((p) => p.confidence >= 78);
+    // ── TOP-30 STRATEGY ──────────────────────────────────────────────
+    // Take the 30 most confident AI predictions of the day, then split by
+    // risk bucket:
+    //   - LOW RISK    (conf ≥ 78) → Premium listić (max 5 picks)
+    //   - MEDIUM RISK (conf 65–77) → Pro listić    (max 5 picks)
+    //   - REST        (conf < 65)  → Daily/Free listić (max 5 picks)
+    // Fewer than 30 picks total? We still ship at least 2 tickets of 5
+    // picks each by cascading material between tiers.
+    const top30 = all.slice().sort((a, b) => b.confidence - a.confidence).slice(0, 30);
+    const freePool = top30.filter((p) => p.confidence < 65);
+    const proPool = top30.filter((p) => p.confidence >= 65 && p.confidence < 78);
+    const premiumPool = top30.filter((p) => p.confidence >= 78);
+    const top30TotalCount = top30.length;
 
     // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
     const stableOnly = (arr: Pred[]) => {
@@ -867,12 +876,12 @@ serve(async (req: Request) => {
     const freeOrdered = stableOnly(freePool).slice().sort(byConfDesc);
     const proOrdered = stableOnly(proPool).slice().sort(byConfDesc);
 
-    // Decide how many tickets to create:
-    //  - Always at least 1
-    //  - 2 tickets only if Free pool has > 15 matches (so we have enough Free supply)
+    // Daily ticket: 1 listić of up to 5 picks from the Free bucket of the
+    // top 30. If Free is too small, top up with leftover Pro (lowest conf
+    // first, so Pro listić keeps the strongest Pro picks).
     const targetTickets: number = Number.isFinite(body?.daily_target)
       ? Math.max(0, Number(body.daily_target))
-      : (freePool.length > 12 ? 3 : (freePool.length > 4 ? 2 : 1));
+      : 1;
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
@@ -883,12 +892,23 @@ serve(async (req: Request) => {
     }
 
     for (let i = 0; i < ticketsToCreate; i++) {
-      // Try Free-only combo first, then supplement with Pro, then single fallback
-      let combo = buildCombo(freeOrdered, usedMatchIds);
-      if (!combo) combo = buildCombo([...freeOrdered, ...proOrdered], usedMatchIds);
-      if (!combo) combo = buildSingle([...freeOrdered, ...proOrdered], usedMatchIds);
-      if (!combo) break; // no more material
-
+      // Top-30 strategy: top 5 Free picks. Cascade from Pro (low→high) if
+      // Free bucket can't supply at least 3 picks.
+      const freeOrderedTop = freePool.slice().sort((a, b) => b.confidence - a.confidence);
+      const proLowFirst = proPool.slice().sort((a, b) => a.confidence - b.confidence);
+      let topNCombo = buildTopNCombo(freeOrderedTop, 5, usedMatchIds, aiDisplayedPick, 3);
+      if (!topNCombo)
+        topNCombo = buildTopNCombo([...freeOrderedTop, ...proLowFirst], 5, usedMatchIds, aiDisplayedPick, 3);
+      if (!topNCombo) {
+        // Final fallback: legacy single pick so the daily slot never goes empty
+        const single = buildSingle([...freeOrderedTop, ...proLowFirst], usedMatchIds);
+        if (!single) { dailySkipReason = dailySkipReason ?? "No material for Daily ticket"; break; }
+        topNCombo = {
+          picks: single.picks.map((p) => ({ p, choice: aiDisplayedPick(p) ?? { market: displayedTicketPrediction(p), odds: single.total, prob: p.confidence } })),
+          total: single.total,
+        };
+      }
+      const combo = { picks: topNCombo.picks.map((x) => x.p), total: topNCombo.total };
       const isCombo = combo.picks.length > 1;
       const ticketIdx = existingCount + i + 1;
       const title = isCombo
