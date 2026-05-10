@@ -1125,6 +1125,12 @@ serve(async (req: Request) => {
       : 1;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
+    // HYBRID dedup state shared across ALL Premium-tier ticket builders
+    // (Premium Combo loop, Safety-net backfill, and Smart Premium/Pro/Daily
+    // top-30 specs). Tracks (match_id::market) so the same match can appear
+    // in multiple tickets ONLY if it carries a DIFFERENT market label.
+    const premiumPickKeys = new Set<string>();
+
     if (premiumToCreate === 0) {
       premiumSkipReason = existingPremiumCount >= premiumTarget
         ? "Premium AI ticket already at target for today"
@@ -1139,7 +1145,6 @@ serve(async (req: Request) => {
       // HYBRID: same match may reappear with a DIFFERENT market across Premium
       // tickets. Track (match_id::market) pairs across ALL Premium blocks below.
       const premiumUsed = new Set<string>(proUsedMatchIds);
-      const premiumPickKeys = new Set<string>();
       const uniquePicker = makeUniquePickKeyPicker(premiumPickKeys);
       for (let i = 0; i < premiumToCreate; i++) {
         // 1st pass: prefer different MATCHES across tickets (fully unique).
