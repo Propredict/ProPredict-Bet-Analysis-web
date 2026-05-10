@@ -480,7 +480,7 @@ serve(async (req) => {
         home_team: p.home_team,
         away_team: p.away_team,
         league: p.league ?? "",
-        prediction: "1/3 (Home or Away)",
+        prediction: "1/3 Correct Scores",
         ai_prediction: scores,
         odds: Math.round(odds * 100) / 100,
         confidence: p.confidence,
