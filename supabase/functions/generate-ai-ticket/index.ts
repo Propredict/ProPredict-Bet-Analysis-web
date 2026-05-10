@@ -509,6 +509,7 @@ function buildPremiumCombo(
   premiumOrdered: Pred[],
   proOrdered: Pred[],
   excludeMatchIds: Set<string> = new Set(),
+  picker: (p: Pred) => MarketChoice | null = aiDisplayedPick,
 ): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
   // Target: 4–5 picks, mostly from the Top AI Premium picks; if Premium pool
   // can't supply enough qualifying picks, top up with the strongest Pro picks
@@ -520,7 +521,7 @@ function buildPremiumCombo(
   const tryAdd = (p: Pred, minConf: number): boolean => {
     if (used.has(p.match_id)) return false;
     if ((p.confidence ?? 0) < minConf) return false;
-    const choice = aiDisplayedPick(p);
+    const choice = picker(p);
     if (!choice) return false;
     const o = choice.odds;
     if (o < 1.18 || o > 3.5) return false;
