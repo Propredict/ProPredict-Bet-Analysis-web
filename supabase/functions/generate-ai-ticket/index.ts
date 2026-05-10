@@ -509,6 +509,7 @@ function buildPremiumCombo(
   premiumOrdered: Pred[],
   proOrdered: Pred[],
   excludeMatchIds: Set<string> = new Set(),
+  picker: (p: Pred) => MarketChoice | null = aiDisplayedPick,
 ): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
   // Target: 4–5 picks, mostly from the Top AI Premium picks; if Premium pool
   // can't supply enough qualifying picks, top up with the strongest Pro picks
@@ -520,7 +521,7 @@ function buildPremiumCombo(
   const tryAdd = (p: Pred, minConf: number): boolean => {
     if (used.has(p.match_id)) return false;
     if ((p.confidence ?? 0) < minConf) return false;
-    const choice = aiDisplayedPick(p);
+    const choice = picker(p);
     if (!choice) return false;
     const o = choice.odds;
     if (o < 1.18 || o > 3.5) return false;
@@ -680,6 +681,56 @@ function buildTopNCombo(
   }
   if (chosen.length < minPicks) return null;
   return { picks: chosen, total: Math.round(total * 100) / 100 };
+}
+
+/**
+ * Returns a picker that respects a global "match_id::market" used-set.
+ * If the AI's best displayed pick was already used for that match in another
+ * ticket, falls back to alternative markets in priority order so the SAME
+ * match can appear in multiple tickets but with a DIFFERENT prediction
+ * (e.g. Home Win → Over 2.5 → GG → 1X). Skips correct-score predictions.
+ */
+function makeUniquePickKeyPicker(usedPickKeys: Set<string>): (p: Pred) => MarketChoice | null {
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  return (p: Pred): MarketChoice | null => {
+    const primary = displayedTicketPrediction(p);
+    const alternatives = [
+      primary,
+      "Over 2.5", "Under 2.5",
+      "GG", "NG",
+      "Over 1.5",
+      "1X", "X2", "12",
+      "Home Win", "Away Win", "Draw",
+      "Over 3.5",
+    ];
+    const seen = new Set<string>();
+    for (const label of alternatives) {
+      if (!label) continue;
+      if (isCorrectScore(label)) continue;
+      const n = norm(label);
+      if (seen.has(n)) continue;
+      seen.add(n);
+      const key = `${p.match_id}::${n}`;
+      if (usedPickKeys.has(key)) continue;
+      const odds = oddsForLabel(p, label);
+      if (odds === null || odds < 1.15) continue;
+      // Sanity: drop very low-prob alternatives (don't ship a 30%-chance market).
+      // Use predicted-score check via predictionMatchesPredictedScore (already
+      // guarded inside oddsForLabel for non-1X2 markets).
+      return { market: label, odds, prob: p.confidence || 0 };
+    }
+    return null;
+  };
+}
+
+function registerPickKeys(
+  picks: { p: Pred; choice: MarketChoice }[],
+  usedPickKeys: Set<string>,
+) {
+  for (const x of picks) {
+    const n = x.choice.market.toLowerCase().replace(/\s+/g, " ").trim();
+    usedPickKeys.add(`${x.p.match_id}::${n}`);
+  }
 }
 
 /**
@@ -1074,6 +1125,12 @@ serve(async (req: Request) => {
       : 1;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
+    // HYBRID dedup state shared across ALL Premium-tier ticket builders
+    // (Premium Combo loop, Safety-net backfill, and Smart Premium/Pro/Daily
+    // top-30 specs). Tracks (match_id::market) so the same match can appear
+    // in multiple tickets ONLY if it carries a DIFFERENT market label.
+    const premiumPickKeys = new Set<string>();
+
     if (premiumToCreate === 0) {
       premiumSkipReason = existingPremiumCount >= premiumTarget
         ? "Premium AI ticket already at target for today"
@@ -1085,11 +1142,19 @@ serve(async (req: Request) => {
       const premiumOrderedTop = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
       const proHighFirst = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       // Exclude matches already placed in Pro tickets to avoid duplicates.
+      // HYBRID: same match may reappear with a DIFFERENT market across Premium
+      // tickets. Track (match_id::market) pairs across ALL Premium blocks below.
       const premiumUsed = new Set<string>(proUsedMatchIds);
+      const uniquePicker = makeUniquePickKeyPicker(premiumPickKeys);
       for (let i = 0; i < premiumToCreate; i++) {
-        let premCombo = buildTopNCombo(premiumOrderedTop, 5, premiumUsed, aiDisplayedPick, 3);
+        // 1st pass: prefer different MATCHES across tickets (fully unique).
+        let premCombo = buildTopNCombo(premiumOrderedTop, 5, premiumUsed, uniquePicker, 3);
         if (!premCombo)
-          premCombo = buildTopNCombo([...premiumOrderedTop, ...proHighFirst], 5, premiumUsed, aiDisplayedPick, 3);
+          premCombo = buildTopNCombo([...premiumOrderedTop, ...proHighFirst], 5, premiumUsed, uniquePicker, 3);
+        // 2nd pass: pool ran out of unused matches → allow same match but
+        // FORCE a different market via the unique-pick picker.
+        if (!premCombo)
+          premCombo = buildTopNCombo([...premiumOrderedTop, ...proHighFirst], 5, new Set<string>(), uniquePicker, 3);
         if (!premCombo) {
           if (premiumCreated.length === 0)
             premiumSkipReason = "Premium pool too small for a 3+ pick top-5 combo";
@@ -1129,6 +1194,7 @@ serve(async (req: Request) => {
         if (pmErr) throw pmErr;
 
         premCombo.picks.forEach((x) => premiumUsed.add(x.p.match_id));
+        registerPickKeys(premCombo.picks, premiumPickKeys);
         premiumCreated.push({
           id: newPremTicket.id,
           picks: premCombo.picks.length,
@@ -1150,11 +1216,15 @@ serve(async (req: Request) => {
         ...usedMatchIds,
         ...proUsedMatchIds,
       ]);
+      // Reuse global Premium pick-key set so backfill picks DIFFERENT markets
+      // when a match was already used in earlier Premium / Smart tickets.
+      const backfillPicker = makeUniquePickKeyPicker(premiumPickKeys);
       // Pull from any tier, highest confidence first.
       const cascade = top30.slice().sort((a, b) => b.confidence - a.confidence);
       const need = 2 - totalSoFar;
       for (let i = 0; i < need; i++) {
-        const extra = buildTopNCombo(cascade, 5, allUsed, aiDisplayedPick, 3);
+        let extra = buildTopNCombo(cascade, 5, allUsed, backfillPicker, 3);
+        if (!extra) extra = buildTopNCombo(cascade, 5, new Set<string>(), backfillPicker, 3);
         if (!extra) {
           backfillReason = backfillReason ?? "Not enough material to backfill 5-pick ticket";
           break;
@@ -1190,6 +1260,7 @@ serve(async (req: Request) => {
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
         extra.picks.forEach((x) => allUsed.add(x.p.match_id));
+        registerPickKeys(extra.picks, premiumPickKeys);
         premiumCreated.push({ id: newT.id, picks: extra.picks.length, total_odds: extra.total });
       }
     }
@@ -1434,8 +1505,11 @@ serve(async (req: Request) => {
 
       for (const spec of top30Specs) {
         if (existingTop30Titles.has(spec.title)) continue;
+        // HYBRID: respect global Premium pick-key set so Smart tickets don't
+        // duplicate the same (match, market) pair already used elsewhere.
+        const smartPicker = makeUniquePickKeyPicker(premiumPickKeys);
         const used = new Set<string>();
-        const combo = buildTopNCombo(spec.primary, spec.size, used, aiDisplayedPick, 3);
+        let combo = buildTopNCombo(spec.primary, spec.size, used, smartPicker, 3);
         if (!combo) {
           top30SkipReason = top30SkipReason ?? `Top-30 pool too small for ${spec.category}`;
           continue;
@@ -1469,6 +1543,7 @@ serve(async (req: Request) => {
         }));
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
+        registerPickKeys(combo.picks, premiumPickKeys);
         top30Created.push({ id: newT.id, tier: spec.tier, picks: combo.picks.length, total_odds: combo.total });
       }
     } catch (e) {
