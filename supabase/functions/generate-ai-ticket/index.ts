@@ -650,6 +650,38 @@ function buildSingle(pool: Pred[], excludeMatchIds: Set<string> = new Set()): { 
 }
 
 /**
+ * Top-N fixed combo builder.
+ * Selects up to N picks from `pool` (already sorted by priority/confidence),
+ * using the AI Best Pick for each match, multiplying odds. No upper odds cap,
+ * no per-pick odds cap — this is the "top 30 strategy" where we trust the
+ * AI's most confident selections.
+ * Requires at least `minPicks` qualifying matches to return a valid combo.
+ */
+function buildTopNCombo(
+  pool: Pred[],
+  n: number,
+  excludeMatchIds: Set<string>,
+  picker: (p: Pred) => MarketChoice | null = aiDisplayedPick,
+  minPicks = 3,
+): { picks: { p: Pred; choice: MarketChoice }[]; total: number } | null {
+  const used = new Set<string>();
+  const chosen: { p: Pred; choice: MarketChoice }[] = [];
+  let total = 1;
+  for (const p of pool) {
+    if (chosen.length >= n) break;
+    if (used.has(p.match_id) || excludeMatchIds.has(p.match_id)) continue;
+    const choice = picker(p);
+    if (!choice) continue;
+    if (choice.odds < 1.05) continue;
+    chosen.push({ p, choice });
+    used.add(p.match_id);
+    total *= choice.odds;
+  }
+  if (chosen.length < minPicks) return null;
+  return { picks: chosen, total: Math.round(total * 100) / 100 };
+}
+
+/**
  * Multi-Risk combo builder (v2).
  *  - 1, 2 or 3 picks per ticket (small-size, high-odds combos).
  *  - Uses SAFE AI predictions (AI's main prediction or safest market choice)
