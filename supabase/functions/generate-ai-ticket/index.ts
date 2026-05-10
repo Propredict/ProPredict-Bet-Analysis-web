@@ -1493,6 +1493,9 @@ serve(async (req: Request) => {
         risk_created_count: riskCreated.length,
         risk_tickets: riskCreated,
         risk_skip_reason: riskSkipReason,
+        top30_created_count: top30Created.length,
+        top30_tickets: top30Created,
+        top30_skip_reason: top30SkipReason,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
