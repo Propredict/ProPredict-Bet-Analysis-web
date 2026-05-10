@@ -1,0 +1,1 @@
+-- Skip per-row push notifications for AI-generated tips/tickets.
