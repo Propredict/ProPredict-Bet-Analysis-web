@@ -1368,17 +1368,25 @@ serve(async (req: Request) => {
         .from("tickets")
         .select("id,title")
         .eq("ticket_date", date)
-        .or("title.ilike.%Smart Pro Ticket%,title.ilike.%Smart Premium Ticket%,title.ilike.%Top-30%");
+        .or("title.ilike.%Smart Daily Ticket%,title.ilike.%Smart Pro Ticket%,title.ilike.%Smart Premium Ticket%,title.ilike.%Top-30%");
       const existingTop30Titles = new Set((existingTop30 ?? []).map((t: any) => t.title));
 
       const top30Specs: Array<{
         title: string;
-        tier: "exclusive" | "premium";
-        category: "ai_pro" | "ai_premium";
+        tier: "daily" | "exclusive" | "premium";
+        category: "ai_daily" | "ai_pro" | "ai_premium";
         primary: Pred[];
         cascade: Pred[];
         emoji: string;
       }> = [
+        {
+          title: `🤖 Smart Daily Ticket • 5 Picks`,
+          tier: "daily",
+          category: "ai_daily",
+          primary: top30FreePool.slice().sort((a, b) => b.confidence - a.confidence),
+          cascade: top30ProPool.slice().sort((a, b) => a.confidence - b.confidence),
+          emoji: "🤖",
+        },
         {
           title: `🎯 Smart Pro Ticket • 5 Picks`,
           tier: "exclusive",
@@ -1415,7 +1423,7 @@ serve(async (req: Request) => {
             category: spec.category,
             total_odds: combo.total,
             ticket_date: date,
-            ai_analysis: `Top-30 ${spec.category === "ai_pro" ? "Pro" : "Premium"} ticket — 5 picks selected from today's 30 most confident AI predictions. Avg confidence: ${Math.round(
+            ai_analysis: `Smart ${spec.category === "ai_daily" ? "Daily" : spec.category === "ai_pro" ? "Pro" : "Premium"} ticket — 5 picks selected from today's 30 most confident AI predictions. Avg confidence: ${Math.round(
               combo.picks.reduce((s, x) => s + x.p.confidence, 0) / combo.picks.length,
             )}%. Total odds ${combo.total.toFixed(2)}x.`,
           })
