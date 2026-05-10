@@ -1368,7 +1368,7 @@ serve(async (req: Request) => {
         .from("tickets")
         .select("id,title")
         .eq("ticket_date", date)
-        .ilike("title", "%Top-30%");
+        .or("title.ilike.%Smart Pro Ticket%,title.ilike.%Smart Premium Ticket%,title.ilike.%Top-30%");
       const existingTop30Titles = new Set((existingTop30 ?? []).map((t: any) => t.title));
 
       const top30Specs: Array<{
@@ -1380,7 +1380,7 @@ serve(async (req: Request) => {
         emoji: string;
       }> = [
         {
-          title: `🎯 Top-30 Pro Ticket • 5 Picks`,
+          title: `🎯 Smart Pro Ticket • 5 Picks`,
           tier: "exclusive",
           category: "ai_pro",
           primary: top30ProPool.slice().sort((a, b) => b.confidence - a.confidence),
@@ -1388,7 +1388,7 @@ serve(async (req: Request) => {
           emoji: "🎯",
         },
         {
-          title: `👑 Top-30 Premium Ticket • 5 Picks`,
+          title: `👑 Smart Premium Ticket • 5 Picks`,
           tier: "premium",
           category: "ai_premium",
           primary: top30PremiumPool.slice().sort((a, b) => b.confidence - a.confidence),
