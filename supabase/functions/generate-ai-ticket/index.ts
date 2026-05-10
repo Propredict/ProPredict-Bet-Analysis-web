@@ -1238,6 +1238,33 @@ serve(async (req: Request) => {
       }
     }
 
+    // ---- Single consolidated AI summary push for tickets ----
+    const totalCreated =
+      created.length + proCreated.length + premiumCreated.length + riskCreated.length + (eliteCreatedId ? 1 : 0);
+    if (totalCreated > 0) {
+      try {
+        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
+          },
+          body: JSON.stringify({
+            type: "summary",
+            summary: {
+              title: "🎟️ Today's AI Tickets Are Ready",
+              body: `${totalCreated} new AI ticket${totalCreated > 1 ? "s" : ""} live — Daily, Pro, Premium & Risk. Tap to view!`,
+              nav_path: "/daily-tickets",
+              collapse_id: `ai_tickets_summary_${date}`,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("[generate-ai-ticket] summary push failed:", e);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
