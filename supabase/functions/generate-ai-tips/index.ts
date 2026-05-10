@@ -224,6 +224,11 @@ function pickSafeCombo(p: Pred, avoidKeys: Set<string> = new Set()): { label: st
   const xTwo = Math.min(95, dr + aw);   // X2
   const twelve = Math.min(95, hw + aw); // 12
 
+  // 12 (Home or Away) only makes sense when there is NO clear favorite.
+  // If one side dominates, "12" is misleading — the straight "1 & ..." or
+  // "2 & ..." combo is far more accurate and aligned with the AI prediction.
+  const noClearFavorite = Math.abs(hw - aw) <= 12 && hw < 55 && aw < 55;
+
   const candidates: { label: string; prob: number }[] = [
     { label: "1 & Over 1.5",   prob: (hw * g.over15) / 100 },
     { label: "1 & Over 2.5",   prob: (hw * g.over25) / 100 },
@@ -233,8 +238,10 @@ function pickSafeCombo(p: Pred, avoidKeys: Set<string> = new Set()): { label: st
     { label: "1X & Under 3.5", prob: (oneX * g.under35) / 100 },
     { label: "X2 & Under 2.5", prob: (xTwo * g.under25) / 100 },
     { label: "X2 & Under 3.5", prob: (xTwo * g.under35) / 100 },
-    { label: "12 & Over 1.5",  prob: (twelve * g.over15) / 100 },
-    { label: "12 & Over 2.5",  prob: (twelve * g.over25) / 100 },
+    ...(noClearFavorite ? [
+      { label: "12 & Over 1.5",  prob: (twelve * g.over15) / 100 },
+      { label: "12 & Over 2.5",  prob: (twelve * g.over25) / 100 },
+    ] : []),
     { label: "1 & BTTS Yes",   prob: (hw * g.bttsYes) / 100 },
     { label: "2 & BTTS Yes",   prob: (aw * g.bttsYes) / 100 },
   ];
