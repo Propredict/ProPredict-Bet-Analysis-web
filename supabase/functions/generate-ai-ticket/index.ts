@@ -1130,6 +1130,63 @@ serve(async (req: Request) => {
     }
 
     // ───────────────────────────────────────────────────────────────────
+    // SAFETY NET — Top-30 strategy guarantees ≥ 2 tickets of 5 picks/day
+    // when fewer than 30 predictions exist. If Daily + Pro + Premium
+    // together produced < 2 tickets, build extra 5-pick listićs by mixing
+    // any remaining material from the top 30, billed as Premium.
+    // ───────────────────────────────────────────────────────────────────
+    let backfillReason: string | null = null;
+    const totalSoFar = created.length + proCreated.length + premiumCreated.length;
+    if (totalSoFar < 2 && top30TotalCount >= 5) {
+      const allUsed = new Set<string>([
+        ...usedMatchIds,
+        ...proUsedMatchIds,
+      ]);
+      // Pull from any tier, highest confidence first.
+      const cascade = top30.slice().sort((a, b) => b.confidence - a.confidence);
+      const need = 2 - totalSoFar;
+      for (let i = 0; i < need; i++) {
+        const extra = buildTopNCombo(cascade, 5, allUsed, aiDisplayedPick, 3);
+        if (!extra) {
+          backfillReason = backfillReason ?? "Not enough material to backfill 5-pick ticket";
+          break;
+        }
+        const title = `👑 Top-30 Combo #${premiumCreated.length + 1} • ${extra.picks.length} Picks`;
+        const { data: newT, error: tErr } = await supabase
+          .from("tickets")
+          .insert({
+            title,
+            tier: "premium",
+            status: "published",
+            category: "ai_premium",
+            total_odds: extra.total,
+            ticket_date: date,
+            ai_analysis: `Backfill ticket from top-30 AI predictions. ${extra.picks.length} picks. Avg confidence: ${Math.round(
+              extra.picks.reduce((s, x) => s + x.p.confidence, 0) / extra.picks.length,
+            )}%. Total odds ${extra.total.toFixed(2)}x.`,
+          })
+          .select()
+          .single();
+        if (tErr) throw tErr;
+        const rows = extra.picks.map((p, k) => ({
+          ticket_id: newT.id,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.choice.market,
+          odds: p.choice.odds,
+          match_date: p.p.match_date,
+          sort_order: k,
+        }));
+        const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
+        if (rErr) throw rErr;
+        extra.picks.forEach((x) => allUsed.add(x.p.match_id));
+        premiumCreated.push({ id: newT.id, picks: extra.picks.length, total_odds: extra.total });
+      }
+    }
+
+    // ───────────────────────────────────────────────────────────────────
     // ELITE TOP PICKS COMBO (extra Premium ticket, 1/day).
     // Cherry-picked from the same pool that powers "Top AI Picks Today":
     // Tier 1/2 leagues, confidence ≥ 78, variance stable.
