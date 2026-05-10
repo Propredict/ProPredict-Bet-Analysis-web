@@ -116,7 +116,7 @@ serve(async (req) => {
   }
 
   try {
-    const { type, record } = await req.json();
+    const { type, record, summary } = await req.json();
 
     const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
     const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
@@ -129,6 +129,44 @@ serve(async (req) => {
         JSON.stringify({ error: "OneSignal credentials not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    /* ── Daily AI summary push (one notification for all AI tips/tickets) ── */
+    if (type === "summary" && summary) {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: tokens } = await supabase
+        .from("users_push_tokens")
+        .select("onesignal_player_id");
+      const ids = (tokens ?? [])
+        .map((t: any) => t.onesignal_player_id)
+        .filter((x: string | null): x is string => !!x);
+      if (ids.length === 0) {
+        return new Response(JSON.stringify({ skipped: true, reason: "no tokens" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const payload = {
+        app_id: ONESIGNAL_APP_ID,
+        include_player_ids: ids,
+        headings: { en: summary.title ?? "🤖 New AI Picks Are In" },
+        contents: { en: summary.body ?? "Today's AI predictions are ready — tap to view!" },
+        android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
+        android_sound: "default",
+        priority: 10,
+        ttl: 600,
+        collapse_id: summary.collapse_id ?? "ai_daily_summary",
+        data: { type: "summary", nav_path: summary.nav_path ?? "/daily-tips" },
+      };
+      const osResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8", Authorization: `Basic ${ONESIGNAL_API_KEY}` },
+        body: JSON.stringify(payload),
+      });
+      const osResult = await osResponse.json();
+      console.log(`[send-push] Summary sent to ${ids.length} tokens:`, JSON.stringify(osResult));
+      return new Response(JSON.stringify({ success: true, count: ids.length, onesignal: osResult }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (record?.status !== "published") {
