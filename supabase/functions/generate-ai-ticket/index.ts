@@ -860,10 +860,17 @@ serve(async (req: Request) => {
     //   - REST        (conf < 65)  → Daily/Free listić (max 5 picks)
     // Fewer than 30 picks total? We still ship at least 2 tickets of 5
     // picks each by cascading material between tiers.
+    // FULL pools — Daily/Pro/Premium tickets draw from ALL eligible AI
+    // predictions of the day (original behavior). Top-30 dedicated tickets
+    // (added later, independently) use a separate top30 slice.
+    const freePool = all.filter((p) => p.confidence < 65);
+    const proPool = all.filter((p) => p.confidence >= 65 && p.confidence < 78);
+    const premiumPool = all.filter((p) => p.confidence >= 78);
+    // Independent top-30 slice used ONLY for the dedicated Top-30 section.
     const top30 = all.slice().sort((a, b) => b.confidence - a.confidence).slice(0, 30);
-    const freePool = top30.filter((p) => p.confidence < 65);
-    const proPool = top30.filter((p) => p.confidence >= 65 && p.confidence < 78);
-    const premiumPool = top30.filter((p) => p.confidence >= 78);
+    const top30FreePool = top30.filter((p) => p.confidence < 65);
+    const top30ProPool = top30.filter((p) => p.confidence >= 65 && p.confidence < 78);
+    const top30PremiumPool = top30.filter((p) => p.confidence >= 78);
     const top30TotalCount = top30.length;
 
     // Strategy: try Free-only first. If not enough for a valid combo, top up with Pro.
