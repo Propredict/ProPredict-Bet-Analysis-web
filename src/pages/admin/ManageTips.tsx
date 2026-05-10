@@ -119,6 +119,9 @@ const PREDICTIONS = [
   "X2 & Under 3.5",
   "1 & BTTS Yes",
   "2 & BTTS Yes",
+  "BTTS Yes & Over 2.5",
+  "BTTS Yes & Over 3.5",
+  "BTTS Yes & Under 2.5",
   "1/3 Correct Scores",
 ];
 
