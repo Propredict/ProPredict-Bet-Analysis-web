@@ -1353,9 +1353,98 @@ serve(async (req: Request) => {
       }
     }
 
+    // ───────────────────────────────────────────────────────────────────
+    // INDEPENDENT TOP-30 TICKETS — added on top of the standard AI tickets.
+    //   - Top-30 Pro Ticket    (5 picks, conf 65–77 from top-30 pool)
+    //   - Top-30 Premium Ticket (5 picks, conf ≥78 from top-30 pool)
+    // These run regardless of how many AI Pro/Premium tickets already
+    // exist for today. They're skipped only if the same Top-30 listić
+    // was already created today (idempotency).
+    // ───────────────────────────────────────────────────────────────────
+    const top30Created: Array<{ id: string; tier: string; picks: number; total_odds: number }> = [];
+    let top30SkipReason: string | null = null;
+    try {
+      const { data: existingTop30 } = await supabase
+        .from("tickets")
+        .select("id,title")
+        .eq("ticket_date", date)
+        .ilike("title", "%Top-30%");
+      const existingTop30Titles = new Set((existingTop30 ?? []).map((t: any) => t.title));
+
+      const top30Specs: Array<{
+        title: string;
+        tier: "exclusive" | "premium";
+        category: "ai_pro" | "ai_premium";
+        primary: Pred[];
+        cascade: Pred[];
+        emoji: string;
+      }> = [
+        {
+          title: `🎯 Top-30 Pro Ticket • 5 Picks`,
+          tier: "exclusive",
+          category: "ai_pro",
+          primary: top30ProPool.slice().sort((a, b) => b.confidence - a.confidence),
+          cascade: top30PremiumPool.slice().sort((a, b) => a.confidence - b.confidence),
+          emoji: "🎯",
+        },
+        {
+          title: `👑 Top-30 Premium Ticket • 5 Picks`,
+          tier: "premium",
+          category: "ai_premium",
+          primary: top30PremiumPool.slice().sort((a, b) => b.confidence - a.confidence),
+          cascade: top30ProPool.slice().sort((a, b) => b.confidence - a.confidence),
+          emoji: "👑",
+        },
+      ];
+
+      for (const spec of top30Specs) {
+        if (existingTop30Titles.has(spec.title)) continue;
+        const used = new Set<string>();
+        let combo = buildTopNCombo(spec.primary, 5, used, aiDisplayedPick, 3);
+        if (!combo) combo = buildTopNCombo([...spec.primary, ...spec.cascade], 5, used, aiDisplayedPick, 3);
+        if (!combo) {
+          top30SkipReason = top30SkipReason ?? `Top-30 pool too small for ${spec.category}`;
+          continue;
+        }
+        const { data: newT, error: tErr } = await supabase
+          .from("tickets")
+          .insert({
+            title: spec.title,
+            tier: spec.tier,
+            status: "published",
+            category: spec.category,
+            total_odds: combo.total,
+            ticket_date: date,
+            ai_analysis: `Top-30 ${spec.category === "ai_pro" ? "Pro" : "Premium"} ticket — 5 picks selected from today's 30 most confident AI predictions. Avg confidence: ${Math.round(
+              combo.picks.reduce((s, x) => s + x.p.confidence, 0) / combo.picks.length,
+            )}%. Total odds ${combo.total.toFixed(2)}x.`,
+          })
+          .select()
+          .single();
+        if (tErr) throw tErr;
+        const rows = combo.picks.map((p, k) => ({
+          ticket_id: newT.id,
+          match_name: `${p.p.home_team} vs ${p.p.away_team}`,
+          home_team: p.p.home_team,
+          away_team: p.p.away_team,
+          league: p.p.league,
+          prediction: p.choice.market,
+          odds: p.choice.odds,
+          match_date: p.p.match_date,
+          sort_order: k,
+        }));
+        const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
+        if (rErr) throw rErr;
+        top30Created.push({ id: newT.id, tier: spec.tier, picks: combo.picks.length, total_odds: combo.total });
+      }
+    } catch (e) {
+      console.error("[generate-ai-ticket] Top-30 section failed:", e);
+      top30SkipReason = (e as Error).message;
+    }
+
     // ---- Single consolidated AI summary push for tickets ----
     const totalCreated =
-      created.length + proCreated.length + premiumCreated.length + riskCreated.length + (eliteCreatedId ? 1 : 0);
+      created.length + proCreated.length + premiumCreated.length + riskCreated.length + top30Created.length + (eliteCreatedId ? 1 : 0);
     if (totalCreated > 0) {
       try {
         await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
