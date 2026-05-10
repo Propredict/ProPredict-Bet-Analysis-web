@@ -976,40 +976,26 @@ serve(async (req: Request) => {
     const existingProCount = existingPro?.length ?? 0;
     const proTarget: number = Number.isFinite(body?.pro_target)
       ? Math.max(0, Number(body.pro_target))
-      : 2;
+      : 1;
     const proToCreate = Math.max(0, proTarget - existingProCount);
 
     if (proToCreate === 0) {
       proSkipReason = existingProCount >= proTarget
         ? "Pro AI ticket already at target for today"
         : "not_attempted";
-    } else if (proPool.length < 3) {
-      proSkipReason = `Pro pool too small (${proPool.length} < 3)`;
     } else {
-      // Pro tickets must use the Pro pool ONLY (confidence 65–77).
-      // Premium picks are added as a fallback ONLY when the Pro pool can't
-      // form a valid combo — this prevents Pro and Premium tickets from
-      // sharing the same matches every day.
-      const stableProPool = proPool.filter((p) => p.variance_stable);
-      const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
-      const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
-      const stablePremForPro = premiumPool.filter((p) => p.variance_stable);
-      const premForProFallback = (stablePremForPro.length >= 1 ? stablePremForPro : premiumPool)
-        .slice()
-        .sort((a, b) => b.confidence - a.confidence);
+      // Top-30 strategy: top 5 Pro picks (medium risk). If Pro bucket can't
+      // supply at least 3 picks, cascade from Premium (lowest-conf premium
+      // first) so the strongest Premium picks remain reserved for Premium.
+      const proOrderedTop = proPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const premLowFirst = premiumPool.slice().sort((a, b) => a.confidence - b.confidence);
       const proUsed = new Set<string>();
-
       for (let i = 0; i < proToCreate; i++) {
-        // Try Pro-only first.
-        let proCombo = buildProCombo(proOrderedAll, proUsed);
-        // Fall back to Pro+Premium mix only if Pro-only failed.
+        let proCombo = buildTopNCombo(proOrderedTop, 5, proUsed, aiDisplayedPick, 3);
+        if (!proCombo)
+          proCombo = buildTopNCombo([...proOrderedTop, ...premLowFirst], 5, proUsed, aiDisplayedPick, 3);
         if (!proCombo) {
-          const fallbackOrdered = [...premForProFallback, ...proOrderedAll]
-            .sort((a, b) => b.confidence - a.confidence);
-          proCombo = buildProCombo(fallbackOrdered, proUsed);
-        }
-        if (!proCombo) {
-          if (proCreated.length === 0) proSkipReason = "No valid Pro combo (odds 3–10, 3–7 picks)";
+          if (proCreated.length === 0) proSkipReason = "Pro pool too small for a 3+ pick top-5 combo";
           break;
         }
         const idx = existingProCount + i + 1;
@@ -1077,29 +1063,28 @@ serve(async (req: Request) => {
     const existingPremiumCount = existingPremium?.length ?? 0;
     const premiumTarget: number = Number.isFinite(body?.premium_target)
       ? Math.max(0, Number(body.premium_target))
-      : 2;
+      : 1;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
     if (premiumToCreate === 0) {
       premiumSkipReason = existingPremiumCount >= premiumTarget
         ? "Premium AI ticket already at target for today"
         : "not_attempted";
-    } else if (premiumPool.length < 2) {
-      premiumSkipReason = `Premium pool too small (${premiumPool.length} < 2)`;
     } else {
-      const stablePremium = premiumPool.filter((p) => p.variance_stable);
-      const premiumSource = stablePremium.length >= 2 ? stablePremium : premiumPool;
-      const premiumOrderedAll = premiumSource.slice().sort((a, b) => b.confidence - a.confidence);
-      const proOrderedForPremium = proPool.slice().sort((a, b) => b.confidence - a.confidence);
-      // Exclude matches already placed in today's Pro tickets so Premium
-      // and Pro tickets do not show identical picks.
+      // Top-30 strategy: top 5 Premium picks (lowest risk = highest conf).
+      // If Premium bucket has fewer than 3 picks, cascade with strongest Pro
+      // picks (highest conf first) so we still ship a 5-pick listić.
+      const premiumOrderedTop = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
+      const proHighFirst = proPool.slice().sort((a, b) => b.confidence - a.confidence);
+      // Exclude matches already placed in Pro tickets to avoid duplicates.
       const premiumUsed = new Set<string>(proUsedMatchIds);
-
       for (let i = 0; i < premiumToCreate; i++) {
-        const premCombo = buildPremiumCombo(premiumOrderedAll, proOrderedForPremium, premiumUsed);
+        let premCombo = buildTopNCombo(premiumOrderedTop, 5, premiumUsed, aiDisplayedPick, 3);
+        if (!premCombo)
+          premCombo = buildTopNCombo([...premiumOrderedTop, ...proHighFirst], 5, premiumUsed, aiDisplayedPick, 3);
         if (!premCombo) {
           if (premiumCreated.length === 0)
-            premiumSkipReason = "No valid Premium combo (4–6 picks, odds 5–15)";
+            premiumSkipReason = "Premium pool too small for a 3+ pick top-5 combo";
           break;
         }
         const idx = existingPremiumCount + i + 1;
