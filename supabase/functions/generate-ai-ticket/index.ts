@@ -1151,7 +1151,7 @@ serve(async (req: Request) => {
           backfillReason = backfillReason ?? "Not enough material to backfill 5-pick ticket";
           break;
         }
-        const title = `👑 Top-30 Combo #${premiumCreated.length + 1} • ${extra.picks.length} Picks`;
+        const title = `👑 Premium Ticket #${premiumCreated.length + 1} • ${extra.picks.length} Picks`;
         const { data: newT, error: tErr } = await supabase
           .from("tickets")
           .insert({
