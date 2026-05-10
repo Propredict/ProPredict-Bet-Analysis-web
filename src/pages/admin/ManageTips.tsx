@@ -106,6 +106,20 @@ const PREDICTIONS = [
   "Under 3.5",
   "BTTS Yes",
   "BTTS No",
+  // Combo markets (used by AI Premium picks — must be selectable so admin can re-pick them)
+  "1 & Over 1.5",
+  "1 & Over 2.5",
+  "2 & Over 1.5",
+  "2 & Over 2.5",
+  "12 & Over 1.5",
+  "12 & Over 2.5",
+  "1X & Under 2.5",
+  "1X & Under 3.5",
+  "X2 & Under 2.5",
+  "X2 & Under 3.5",
+  "1 & BTTS Yes",
+  "2 & BTTS Yes",
+  "1/3 Correct Scores",
 ];
 
 /* =====================
