@@ -3,11 +3,24 @@ export type TipResult = "pending" | "won" | "lost";
 export type ContentTier = "free" | "daily" | "exclusive" | "premium";
 export type ContentStatus = "draft" | "published";
 
-export type TipCategory = "standard" | "risk_of_day" | "diamond_pick";
-export type TicketCategory = "standard" | "multi_risk";
+export type TipCategory =
+  | "standard"
+  | "risk_of_day"
+  | "diamond_pick"
+  | "ai_daily"
+  | "ai_pro"
+  | "ai_premium";
+export type TicketCategory = "standard" | "multi_risk" | "ai_daily" | "ai_pro" | "ai_premium";
 
-export const TIP_CATEGORIES = ["standard", "risk_of_day", "diamond_pick"] as const;
-export const TICKET_CATEGORIES = ["standard", "multi_risk"] as const;
+export const TIP_CATEGORIES = [
+  "standard",
+  "risk_of_day",
+  "diamond_pick",
+  "ai_daily",
+  "ai_pro",
+  "ai_premium",
+] as const;
+export const TICKET_CATEGORIES = ["standard", "multi_risk", "ai_daily", "ai_pro", "ai_premium"] as const;
 
 export function normalizeTipCategory(category?: string | null): TipCategory {
   const normalized = category === "risk" ? "risk_of_day" : category;
