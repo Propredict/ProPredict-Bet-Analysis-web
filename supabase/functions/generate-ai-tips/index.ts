@@ -423,14 +423,11 @@ serve(async (req) => {
     const proInsightsPool = proPool;
     const proInsightsTarget = proInsightsPool.length >= 6 ? 5 : (proInsightsPool.length >= 3 ? 4 : Math.min(2, proInsightsPool.length));
     const premiumComboPool = premiumPool;
-    // Premium picks scale with pool size — when many high-confidence matches exist
-    // (often 10+ on busy weekends), publish up to 10 Premium combo picks instead
-    // of capping at 6. Floor stays at 5 when at least 5 candidates are available.
+    // Premium picks: hard cap at 5 per day to keep the page focused on the
+    // very best signals (prevents overwhelming users when many matches qualify).
     const premiumComboTarget =
-      premiumComboPool.length >= 10 ? 10 :
-      premiumComboPool.length >= 7  ? 8  :
-      premiumComboPool.length >= 5  ? 5  :
-      Math.min(3, premiumComboPool.length);
+      premiumComboPool.length >= 5 ? 5 :
+      Math.min(premiumComboPool.length, 5);
 
     type TierJob = { name: string; pool: Pred[]; tier: string; count: number; category: string };
     const jobs: TierJob[] = [
