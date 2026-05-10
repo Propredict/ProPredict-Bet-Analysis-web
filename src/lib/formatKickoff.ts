@@ -29,7 +29,28 @@ export function formatKickoffParts(
     }
   }
   const t = matchTime?.trim();
-  if (t) time = `${t.slice(0, 5)} CET`;
+  if (t) {
+    // match_time is stored as UTC ("HH:mm[:ss]"). Convert to user's local time.
+    const hhmm = t.length >= 5 ? t.slice(0, 5) : t;
+    if (matchDate) {
+      const d = new Date(`${matchDate}T${hhmm}:00Z`);
+      if (!isNaN(d.getTime())) {
+        time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+    }
+    if (!time && fallbackTs) {
+      const d = new Date(fallbackTs);
+      if (!isNaN(d.getTime())) {
+        time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+    }
+    if (!time) time = hhmm;
+  } else if (fallbackTs) {
+    const d = new Date(fallbackTs);
+    if (!isNaN(d.getTime())) {
+      time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+  }
   if (!date && fallbackTs) {
     date = new Date(fallbackTs).toLocaleDateString("en-US", {
       weekday: "short",
