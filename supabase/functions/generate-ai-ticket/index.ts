@@ -913,6 +913,7 @@ serve(async (req: Request) => {
     // ───────────────────────────────────────────────────────────────────
     const proCreated: Array<{ id: string; picks: number; total_odds: number }> = [];
     let proSkipReason: string | null = null;
+    const proUsedMatchIds = new Set<string>();
 
     const { data: existingPro } = await supabase
       .from("tickets")
@@ -933,20 +934,28 @@ serve(async (req: Request) => {
     } else if (proPool.length < 3) {
       proSkipReason = `Pro pool too small (${proPool.length} < 3)`;
     } else {
-      // Pro tickets can mix Pro (65–77) AND Premium (≥78) picks for variety.
-      // Premium picks are placed first (higher confidence) but the gate
-      // (choice.prob ≥ 65) accepts both tiers.
+      // Pro tickets must use the Pro pool ONLY (confidence 65–77).
+      // Premium picks are added as a fallback ONLY when the Pro pool can't
+      // form a valid combo — this prevents Pro and Premium tickets from
+      // sharing the same matches every day.
       const stableProPool = proPool.filter((p) => p.variance_stable);
       const proSource = stableProPool.length >= 3 ? stableProPool : proPool;
+      const proOrderedAll = proSource.slice().sort((a, b) => b.confidence - a.confidence);
       const stablePremForPro = premiumPool.filter((p) => p.variance_stable);
-      const premForPro = stablePremForPro.length >= 1 ? stablePremForPro : premiumPool;
-      const proOrderedAll = [...premForPro, ...proSource]
+      const premForProFallback = (stablePremForPro.length >= 1 ? stablePremForPro : premiumPool)
         .slice()
         .sort((a, b) => b.confidence - a.confidence);
       const proUsed = new Set<string>();
 
       for (let i = 0; i < proToCreate; i++) {
-        const proCombo = buildProCombo(proOrderedAll, proUsed);
+        // Try Pro-only first.
+        let proCombo = buildProCombo(proOrderedAll, proUsed);
+        // Fall back to Pro+Premium mix only if Pro-only failed.
+        if (!proCombo) {
+          const fallbackOrdered = [...premForProFallback, ...proOrderedAll]
+            .sort((a, b) => b.confidence - a.confidence);
+          proCombo = buildProCombo(fallbackOrdered, proUsed);
+        }
         if (!proCombo) {
           if (proCreated.length === 0) proSkipReason = "No valid Pro combo (odds 3–10, 3–7 picks)";
           break;
@@ -986,7 +995,10 @@ serve(async (req: Request) => {
         const { error: pmErr } = await supabase.from("ticket_matches").insert(proRows);
         if (pmErr) throw pmErr;
 
-        proCombo.picks.forEach((x) => proUsed.add(x.p.match_id));
+        proCombo.picks.forEach((x) => {
+          proUsed.add(x.p.match_id);
+          proUsedMatchIds.add(x.p.match_id);
+        });
         proCreated.push({
           id: newProTicket.id,
           picks: proCombo.picks.length,
@@ -1027,7 +1039,9 @@ serve(async (req: Request) => {
       const premiumSource = stablePremium.length >= 2 ? stablePremium : premiumPool;
       const premiumOrderedAll = premiumSource.slice().sort((a, b) => b.confidence - a.confidence);
       const proOrderedForPremium = proPool.slice().sort((a, b) => b.confidence - a.confidence);
-      const premiumUsed = new Set<string>();
+      // Exclude matches already placed in today's Pro tickets so Premium
+      // and Pro tickets do not show identical picks.
+      const premiumUsed = new Set<string>(proUsedMatchIds);
 
       for (let i = 0; i < premiumToCreate; i++) {
         const premCombo = buildPremiumCombo(premiumOrderedAll, proOrderedForPremium, premiumUsed);
