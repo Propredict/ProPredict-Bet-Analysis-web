@@ -38,6 +38,7 @@ type Pred = {
   draw: number | null;
   away_win: number | null;
   market_odds?: Record<string, number> | null;
+  risk_level?: string | null;
 };
 
 function todayBelgrade(): string {
@@ -825,7 +826,7 @@ serve(async (req: Request) => {
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
-    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win";
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win,risk_level";
     let preds: any[] | null = null;
     {
       const r1 = await supabase
