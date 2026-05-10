@@ -684,6 +684,56 @@ function buildTopNCombo(
 }
 
 /**
+ * Returns a picker that respects a global "match_id::market" used-set.
+ * If the AI's best displayed pick was already used for that match in another
+ * ticket, falls back to alternative markets in priority order so the SAME
+ * match can appear in multiple tickets but with a DIFFERENT prediction
+ * (e.g. Home Win → Over 2.5 → GG → 1X). Skips correct-score predictions.
+ */
+function makeUniquePickKeyPicker(usedPickKeys: Set<string>): (p: Pred) => MarketChoice | null {
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  return (p: Pred): MarketChoice | null => {
+    const primary = displayedTicketPrediction(p);
+    const alternatives = [
+      primary,
+      "Over 2.5", "Under 2.5",
+      "GG", "NG",
+      "Over 1.5",
+      "1X", "X2", "12",
+      "Home Win", "Away Win", "Draw",
+      "Over 3.5",
+    ];
+    const seen = new Set<string>();
+    for (const label of alternatives) {
+      if (!label) continue;
+      if (isCorrectScore(label)) continue;
+      const n = norm(label);
+      if (seen.has(n)) continue;
+      seen.add(n);
+      const key = `${p.match_id}::${n}`;
+      if (usedPickKeys.has(key)) continue;
+      const odds = oddsForLabel(p, label);
+      if (odds === null || odds < 1.15) continue;
+      // Sanity: drop very low-prob alternatives (don't ship a 30%-chance market).
+      // Use predicted-score check via predictionMatchesPredictedScore (already
+      // guarded inside oddsForLabel for non-1X2 markets).
+      return { market: label, odds, prob: p.confidence || 0 };
+    }
+    return null;
+  };
+}
+
+function registerPickKeys(
+  picks: { p: Pred; choice: MarketChoice }[],
+  usedPickKeys: Set<string>,
+) {
+  for (const x of picks) {
+    const n = x.choice.market.toLowerCase().replace(/\s+/g, " ").trim();
+    usedPickKeys.add(`${x.p.match_id}::${n}`);
+  }
+}
+
+/**
  * Multi-Risk combo builder (v2).
  *  - 1, 2 or 3 picks per ticket (small-size, high-odds combos).
  *  - Uses SAFE AI predictions (AI's main prediction or safest market choice)
