@@ -38,6 +38,7 @@ type Pred = {
   draw: number | null;
   away_win: number | null;
   market_odds?: Record<string, number> | null;
+  risk_level?: string | null;
 };
 
 function todayBelgrade(): string {
@@ -825,7 +826,7 @@ serve(async (req: Request) => {
 
     // Fetch today's predictions across all tiers.
     // Tier mapping: Premium ≥ 78, Pro 65–77, Free < 65.
-    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win";
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,prediction,confidence,consensus_odds,variance_stable,is_premium,predicted_score,home_win,draw,away_win,risk_level";
     let preds: any[] | null = null;
     {
       const r1 = await supabase
@@ -1371,45 +1372,70 @@ serve(async (req: Request) => {
         .or("title.ilike.%Smart Daily Ticket%,title.ilike.%Smart Pro Ticket%,title.ilike.%Smart Premium Ticket%,title.ilike.%Top-30%");
       const existingTop30Titles = new Set((existingTop30 ?? []).map((t: any) => t.title));
 
+      // ── Risk-based grouping (top-30 dataset) ──────────────────────────
+      // Risk level on the prediction is the source of truth:
+      //   low    → Premium tickets (multiple, 5 picks each, last ≥3 allowed)
+      //   medium → Pro tickets (up to 2, 5 picks each, last ≥3 allowed)
+      //   high   → Daily ticket (1, up to 5 picks, ≥3 allowed)
+      // Falls back to confidence buckets if risk_level is missing.
+      const normalizeRisk = (p: Pred): "low" | "medium" | "high" => {
+        const r = (p.risk_level || "").toLowerCase();
+        if (r.includes("low")) return "low";
+        if (r.includes("med")) return "medium";
+        if (r.includes("high")) return "high";
+        if (p.confidence >= 78) return "low";
+        if (p.confidence >= 65) return "medium";
+        return "high";
+      };
+      const lowRisk = top30.filter((p) => normalizeRisk(p) === "low").sort((a, b) => b.confidence - a.confidence);
+      const medRisk = top30.filter((p) => normalizeRisk(p) === "medium").sort((a, b) => b.confidence - a.confidence);
+      const highRisk = top30.filter((p) => normalizeRisk(p) === "high").sort((a, b) => b.confidence - a.confidence);
+
+      type SpecBucket = {
+        tier: "daily" | "exclusive" | "premium";
+        category: "ai_daily" | "ai_pro" | "ai_premium";
+        emoji: string;
+        label: string;
+        pool: Pred[];
+        maxTickets: number;
+      };
+      const buckets: SpecBucket[] = [
+        { tier: "premium",   category: "ai_premium", emoji: "👑", label: "Smart Premium Ticket", pool: lowRisk,  maxTickets: 5 },
+        { tier: "exclusive", category: "ai_pro",     emoji: "🎯", label: "Smart Pro Ticket",     pool: medRisk,  maxTickets: 2 },
+        { tier: "daily",     category: "ai_daily",   emoji: "🤖", label: "Smart Daily Ticket",   pool: highRisk, maxTickets: 1 },
+      ];
+
       const top30Specs: Array<{
         title: string;
         tier: "daily" | "exclusive" | "premium";
         category: "ai_daily" | "ai_pro" | "ai_premium";
         primary: Pred[];
-        cascade: Pred[];
-        emoji: string;
-      }> = [
-        {
-          title: `🤖 Smart Daily Ticket • 5 Picks`,
-          tier: "daily",
-          category: "ai_daily",
-          primary: top30FreePool.slice().sort((a, b) => b.confidence - a.confidence),
-          cascade: top30ProPool.slice().sort((a, b) => a.confidence - b.confidence),
-          emoji: "🤖",
-        },
-        {
-          title: `🎯 Smart Pro Ticket • 5 Picks`,
-          tier: "exclusive",
-          category: "ai_pro",
-          primary: top30ProPool.slice().sort((a, b) => b.confidence - a.confidence),
-          cascade: top30PremiumPool.slice().sort((a, b) => a.confidence - b.confidence),
-          emoji: "🎯",
-        },
-        {
-          title: `👑 Smart Premium Ticket • 5 Picks`,
-          tier: "premium",
-          category: "ai_premium",
-          primary: top30PremiumPool.slice().sort((a, b) => b.confidence - a.confidence),
-          cascade: top30ProPool.slice().sort((a, b) => b.confidence - a.confidence),
-          emoji: "👑",
-        },
-      ];
+        size: number; // desired pick count for this ticket
+      }> = [];
+
+      for (const b of buckets) {
+        // Slice pool into chunks of 5; last chunk allowed if ≥3 picks.
+        const chunks: Pred[][] = [];
+        for (let i = 0; i < b.pool.length && chunks.length < b.maxTickets; i += 5) {
+          const chunk = b.pool.slice(i, i + 5);
+          if (chunk.length >= 3) chunks.push(chunk);
+        }
+        chunks.forEach((chunk, idx) => {
+          const suffix = chunks.length > 1 ? ` #${idx + 1}` : "";
+          top30Specs.push({
+            title: `${b.emoji} ${b.label}${suffix} • ${chunk.length} Picks`,
+            tier: b.tier,
+            category: b.category,
+            primary: chunk,
+            size: chunk.length,
+          });
+        });
+      }
 
       for (const spec of top30Specs) {
         if (existingTop30Titles.has(spec.title)) continue;
         const used = new Set<string>();
-        let combo = buildTopNCombo(spec.primary, 5, used, aiDisplayedPick, 3);
-        if (!combo) combo = buildTopNCombo([...spec.primary, ...spec.cascade], 5, used, aiDisplayedPick, 3);
+        const combo = buildTopNCombo(spec.primary, spec.size, used, aiDisplayedPick, 3);
         if (!combo) {
           top30SkipReason = top30SkipReason ?? `Top-30 pool too small for ${spec.category}`;
           continue;
@@ -1423,7 +1449,7 @@ serve(async (req: Request) => {
             category: spec.category,
             total_odds: combo.total,
             ticket_date: date,
-            ai_analysis: `Smart ${spec.category === "ai_daily" ? "Daily" : spec.category === "ai_pro" ? "Pro" : "Premium"} ticket — 5 picks selected from today's 30 most confident AI predictions. Avg confidence: ${Math.round(
+            ai_analysis: `Smart ${spec.category === "ai_daily" ? "Daily" : spec.category === "ai_pro" ? "Pro" : "Premium"} ticket — ${combo.picks.length} picks grouped by risk from today's top-30 AI predictions. Avg confidence: ${Math.round(
               combo.picks.reduce((s, x) => s + x.p.confidence, 0) / combo.picks.length,
             )}%. Total odds ${combo.total.toFixed(2)}x.`,
           })
