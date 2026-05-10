@@ -553,6 +553,31 @@ serve(async (req) => {
       });
     }
 
+    // ---- Single consolidated AI summary push ----
+    if (created.length > 0) {
+      try {
+        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
+          },
+          body: JSON.stringify({
+            type: "summary",
+            summary: {
+              title: "🤖 Today's AI Picks Are In",
+              body: `${created.length} new AI predictions ready — Daily, Pro, Premium & more. Tap to view!`,
+              nav_path: "/daily-tips",
+              collapse_id: `ai_tips_summary_${date}`,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("[generate-ai-tips] summary push failed:", e);
+      }
+    }
+
     return new Response(
       JSON.stringify({ ok: true, date, deleted: delIds.length, created_count: created.length, created }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
