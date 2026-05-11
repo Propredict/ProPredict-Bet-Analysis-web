@@ -944,6 +944,27 @@ serve(async (req: Request) => {
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
+
+    // ── GLOBAL DEDUP ACROSS TIERS ─────────────────────────────────────
+    // Tracks every match used in ANY ticket so far (Daily/Pro/Premium/
+    // Risk/Smart Top-30). Each section seeds its own exclude set from
+    // this so Free/Pro/Premium tickets don't recycle the same matches.
+    const globalUsedMatchIds = new Set<string>();
+
+    // RESERVATIONS — keep the strongest material for the higher tier:
+    //  • Top N Premium matches are reserved for Premium ticket only
+    //  • Top N Pro matches are reserved for Premium+Pro tickets only
+    //  Daily is built FIRST in this file, but it must NOT cannibalize
+    //  matches that Premium/Pro will need later. Targets default to
+    //  ~ ticket size (5).
+    const PREM_RESERVE_N = 5;
+    const PRO_RESERVE_N  = 5;
+    const reservedForPremium = new Set<string>(
+      premiumPool.slice().sort(byConfDesc).slice(0, PREM_RESERVE_N).map((p) => p.match_id),
+    );
+    const reservedForPro = new Set<string>(
+      proPool.slice().sort(byConfDesc).slice(0, PRO_RESERVE_N).map((p) => p.match_id),
+    );
     const created: Array<{ id: string; picks: number; total_odds: number; strategy: string }> = [];
     let dailySkipReason: string | null = null;
     if (ticketsToCreate === 0) {
@@ -955,12 +976,20 @@ serve(async (req: Request) => {
       // Free bucket can't supply at least 3 picks.
       const freeOrderedTop = freePool.slice().sort((a, b) => b.confidence - a.confidence);
       const proLowFirst = proPool.slice().sort((a, b) => a.confidence - b.confidence);
-      let topNCombo = buildTopNCombo(freeOrderedTop, 5, usedMatchIds, aiDisplayedPick, 3);
+      // Daily must avoid both global-used matches AND the top-N Pro/Premium
+      // matches that are reserved for the higher-tier tickets.
+      const dailyExclude = new Set<string>([
+        ...usedMatchIds,
+        ...globalUsedMatchIds,
+        ...reservedForPremium,
+        ...reservedForPro,
+      ]);
+      let topNCombo = buildTopNCombo(freeOrderedTop, 5, dailyExclude, aiDisplayedPick, 3);
       if (!topNCombo)
-        topNCombo = buildTopNCombo([...freeOrderedTop, ...proLowFirst], 5, usedMatchIds, aiDisplayedPick, 3);
+        topNCombo = buildTopNCombo([...freeOrderedTop, ...proLowFirst], 5, dailyExclude, aiDisplayedPick, 3);
       if (!topNCombo) {
         // Final fallback: legacy single pick so the daily slot never goes empty
-        const single = buildSingle([...freeOrderedTop, ...proLowFirst], usedMatchIds);
+        const single = buildSingle([...freeOrderedTop, ...proLowFirst], dailyExclude);
         if (!single) { dailySkipReason = dailySkipReason ?? "No material for Daily ticket"; break; }
         topNCombo = {
           picks: single.picks.map((p) => ({ p, choice: aiDisplayedPick(p) ?? { market: displayedTicketPrediction(p), odds: single.total, prob: p.confidence } })),
@@ -1008,7 +1037,10 @@ serve(async (req: Request) => {
       if (mErr) throw mErr;
 
       // Mark these matches used so the second ticket cannot reuse them
-      combo.picks.forEach((p) => usedMatchIds.add(p.match_id));
+      combo.picks.forEach((p) => {
+        usedMatchIds.add(p.match_id);
+        globalUsedMatchIds.add(p.match_id);
+      });
 
       created.push({
         id: newTicket.id,
@@ -1048,7 +1080,12 @@ serve(async (req: Request) => {
       // first) so the strongest Premium picks remain reserved for Premium.
       const proOrderedTop = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const premLowFirst = premiumPool.slice().sort((a, b) => a.confidence - b.confidence);
-      const proUsed = new Set<string>();
+      // Pro tickets must avoid matches already used by Daily and matches
+      // reserved for the Premium ticket (top-N premium picks).
+      const proUsed = new Set<string>([
+        ...globalUsedMatchIds,
+        ...reservedForPremium,
+      ]);
       for (let i = 0; i < proToCreate; i++) {
         let proCombo = buildTopNCombo(proOrderedTop, 5, proUsed, aiDisplayedPick, 3);
         if (!proCombo)
@@ -1095,6 +1132,7 @@ serve(async (req: Request) => {
         proCombo.picks.forEach((x) => {
           proUsed.add(x.p.match_id);
           proUsedMatchIds.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
         });
         proCreated.push({
           id: newProTicket.id,
@@ -1144,7 +1182,10 @@ serve(async (req: Request) => {
       // Exclude matches already placed in Pro tickets to avoid duplicates.
       // HYBRID: same match may reappear with a DIFFERENT market across Premium
       // tickets. Track (match_id::market) pairs across ALL Premium blocks below.
-      const premiumUsed = new Set<string>(proUsedMatchIds);
+      const premiumUsed = new Set<string>([
+        ...proUsedMatchIds,
+        ...globalUsedMatchIds,
+      ]);
       const uniquePicker = makeUniquePickKeyPicker(premiumPickKeys);
       for (let i = 0; i < premiumToCreate; i++) {
         // 1st pass: prefer different MATCHES across tickets (fully unique).
@@ -1193,7 +1234,10 @@ serve(async (req: Request) => {
         const { error: pmErr } = await supabase.from("ticket_matches").insert(premRows);
         if (pmErr) throw pmErr;
 
-        premCombo.picks.forEach((x) => premiumUsed.add(x.p.match_id));
+        premCombo.picks.forEach((x) => {
+          premiumUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         registerPickKeys(premCombo.picks, premiumPickKeys);
         premiumCreated.push({
           id: newPremTicket.id,
@@ -1215,6 +1259,7 @@ serve(async (req: Request) => {
       const allUsed = new Set<string>([
         ...usedMatchIds,
         ...proUsedMatchIds,
+        ...globalUsedMatchIds,
       ]);
       // Reuse global Premium pick-key set so backfill picks DIFFERENT markets
       // when a match was already used in earlier Premium / Smart tickets.
@@ -1259,7 +1304,10 @@ serve(async (req: Request) => {
         }));
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
-        extra.picks.forEach((x) => allUsed.add(x.p.match_id));
+        extra.picks.forEach((x) => {
+          allUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         registerPickKeys(extra.picks, premiumPickKeys);
         premiumCreated.push({ id: newT.id, picks: extra.picks.length, total_odds: extra.total });
       }
@@ -1369,7 +1417,8 @@ serve(async (req: Request) => {
     } else {
       const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
-      const riskUsed = new Set<string>();
+      // Risk tickets exclude matches already placed in any AI ticket today.
+      const riskUsed = new Set<string>(globalUsedMatchIds);
       // Rotate ticket sizes for variety: single, double, triple, quadruple, double
       const sizes: RiskSize[] = [2, 3, 2, 3];
 
@@ -1415,7 +1464,10 @@ serve(async (req: Request) => {
         const { error: rmErr } = await supabase.from("ticket_matches").insert(riskRows);
         if (rmErr) throw rmErr;
 
-        riskCombo.picks.forEach((x) => riskUsed.add(x.p.match_id));
+        riskCombo.picks.forEach((x) => {
+          riskUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         riskCreated.push({
           id: newRiskTicket.id,
           picks: riskCombo.picks.length,
@@ -1508,7 +1560,10 @@ serve(async (req: Request) => {
         // HYBRID: respect global Premium pick-key set so Smart tickets don't
         // duplicate the same (match, market) pair already used elsewhere.
         const smartPicker = makeUniquePickKeyPicker(premiumPickKeys);
-        const used = new Set<string>();
+        // Smart Top-30 tickets must also avoid matches already used in any
+        // earlier ticket section (Daily/Pro/Premium/Risk) to maximize
+        // match variety across tiers.
+        const used = new Set<string>(globalUsedMatchIds);
         let combo = buildTopNCombo(spec.primary, spec.size, used, smartPicker, 3);
         if (!combo) {
           top30SkipReason = top30SkipReason ?? `Top-30 pool too small for ${spec.category}`;
@@ -1544,6 +1599,7 @@ serve(async (req: Request) => {
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
         registerPickKeys(combo.picks, premiumPickKeys);
+        combo.picks.forEach((x) => globalUsedMatchIds.add(x.p.match_id));
         top30Created.push({ id: newT.id, tier: spec.tier, picks: combo.picks.length, total_odds: combo.total });
       }
     } catch (e) {
