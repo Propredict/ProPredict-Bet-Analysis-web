@@ -1259,6 +1259,7 @@ serve(async (req: Request) => {
       const allUsed = new Set<string>([
         ...usedMatchIds,
         ...proUsedMatchIds,
+        ...globalUsedMatchIds,
       ]);
       // Reuse global Premium pick-key set so backfill picks DIFFERENT markets
       // when a match was already used in earlier Premium / Smart tickets.
@@ -1303,7 +1304,10 @@ serve(async (req: Request) => {
         }));
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
-        extra.picks.forEach((x) => allUsed.add(x.p.match_id));
+        extra.picks.forEach((x) => {
+          allUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         registerPickKeys(extra.picks, premiumPickKeys);
         premiumCreated.push({ id: newT.id, picks: extra.picks.length, total_odds: extra.total });
       }
