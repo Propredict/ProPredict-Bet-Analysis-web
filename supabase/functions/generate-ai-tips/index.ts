@@ -36,6 +36,8 @@ type Pred = {
   draw: number | null;
   away_win: number | null;
   market_odds?: Record<string, number> | null;
+  last_home_goals?: number | null;
+  last_away_goals?: number | null;
 };
 
 function todayBelgrade(): string {
@@ -357,12 +359,42 @@ function marketDiversityKey(label: string): string {
 }
 
 /**
- * Top-K most likely correct scores via Poisson, derived from predicted xG.
+ * IMPORTANT: must mirror EXACTLY the frontend `getXgValues` in
+ * `src/components/ai-predictions/utils/marketDerivation.ts` so the Top
+ * Correct Scores shown on the AI Predictions page match the ones picked
+ * for Risk-of-the-Day / tips. Any divergence here causes user-visible
+ * inconsistency between the AI Prediction card and the tip/ticket pick.
  */
+function getXgValues(p: Pred): { homeXg: number; awayXg: number } {
+  const lastHomeGoals = p.last_home_goals;
+  const lastAwayGoals = p.last_away_goals;
+  let homeXg: number;
+  let awayXg: number;
+  if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
+    homeXg = Math.max(0.4, lastHomeGoals);
+    awayXg = Math.max(0.3, lastAwayGoals);
+  } else {
+    const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+    if (m) {
+      homeXg = Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2);
+      awayXg = Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15);
+    } else {
+      homeXg = Math.max(0.5, (p.home_win ?? 40) / 30);
+      awayXg = Math.max(0.4, (p.away_win ?? 30) / 30);
+    }
+  }
+  const hw = p.home_win ?? 0;
+  const aw = p.away_win ?? 0;
+  if (hw >= 55 && hw - aw >= 20 && homeXg <= awayXg) {
+    homeXg = Math.max(awayXg + 0.4, 1.6);
+  } else if (aw >= 55 && aw - hw >= 20 && awayXg <= homeXg) {
+    awayXg = Math.max(homeXg + 0.4, 1.6);
+  }
+  return { homeXg, awayXg };
+}
+
 function topScores(p: Pred, k = 3): string[] {
-  const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-  const homeXg = m ? Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2) : Math.max(0.5, (p.home_win ?? 40) / 30);
-  const awayXg = m ? Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15) : Math.max(0.4, (p.away_win ?? 30) / 30);
+  const { homeXg, awayXg } = getXgValues(p);
   const scores: { s: string; pr: number }[] = [];
   for (let h = 0; h <= 5; h++) for (let a = 0; a <= 5; a++) {
     scores.push({ s: `${h}-${a}`, pr: poissonProb(homeXg, h) * poissonProb(awayXg, a) });
@@ -418,7 +450,7 @@ serve(async (req) => {
     }
 
     // Fetch today's AI predictions
-    const baseCols = "id,match_id,home_team,away_team,league,match_date,match_time,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win";
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,match_time,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win,last_home_goals,last_away_goals";
     let preds: any = null;
     const r1 = await supabase
       .from("ai_predictions")
@@ -576,19 +608,12 @@ serve(async (req) => {
     for (const p of proRiskPool) {
       if (proRiskCount >= PRO_RISK_LIMIT) break;
       const top = topScores(p, 3);
-      // CONSISTENCY: always prefer the AI Prediction card's `predicted_score`
-      // as the Correct Score pick so the ticket matches what users see on the
-      // AI Prediction page. Only fall back to the Poisson top score when the
-      // prediction record has no predicted_score.
-      const predictedScoreNorm = (p.predicted_score || "").trim().replace(/\s+/g, "").replace(":", "-");
-      const orderedCandidates = predictedScoreNorm
-        ? [predictedScoreNorm, ...top.filter((s) => s !== predictedScoreNorm)]
-        : top;
-      // Ensure the chosen score is included in the AI top scores list shown to users.
-      const aiTopList = predictedScoreNorm && !top.includes(predictedScoreNorm)
-        ? [predictedScoreNorm, ...top].slice(0, 3)
-        : top;
-      const score = orderedCandidates.find((s) => !usedScores.has(s)) ?? orderedCandidates[0];
+      // CONSISTENCY: chosen Correct Score MUST be one of the top scores
+      // shown on the AI Prediction card (same Poisson model + xG inputs).
+      // We pick the highest-ranked one not yet used in this batch (diversity),
+      // and fall back to the #1 if all top-3 are taken.
+      const aiTopList = top;
+      const score = top.find((s) => !usedScores.has(s)) ?? top[0];
       if (!score) continue;
 
       // Approx probability: dampened share of top score vs full Poisson grid.
