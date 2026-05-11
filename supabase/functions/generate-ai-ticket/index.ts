@@ -1560,7 +1560,10 @@ serve(async (req: Request) => {
         // HYBRID: respect global Premium pick-key set so Smart tickets don't
         // duplicate the same (match, market) pair already used elsewhere.
         const smartPicker = makeUniquePickKeyPicker(premiumPickKeys);
-        const used = new Set<string>();
+        // Smart Top-30 tickets must also avoid matches already used in any
+        // earlier ticket section (Daily/Pro/Premium/Risk) to maximize
+        // match variety across tiers.
+        const used = new Set<string>(globalUsedMatchIds);
         let combo = buildTopNCombo(spec.primary, spec.size, used, smartPicker, 3);
         if (!combo) {
           top30SkipReason = top30SkipReason ?? `Top-30 pool too small for ${spec.category}`;
@@ -1596,6 +1599,7 @@ serve(async (req: Request) => {
         const { error: rErr } = await supabase.from("ticket_matches").insert(rows);
         if (rErr) throw rErr;
         registerPickKeys(combo.picks, premiumPickKeys);
+        combo.picks.forEach((x) => globalUsedMatchIds.add(x.p.match_id));
         top30Created.push({ id: newT.id, tier: spec.tier, picks: combo.picks.length, total_odds: combo.total });
       }
     } catch (e) {
