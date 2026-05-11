@@ -1628,7 +1628,7 @@ serve(async (req: Request) => {
     // ---- Single consolidated AI summary push for tickets ----
     const totalCreated =
       created.length + proCreated.length + premiumCreated.length + riskCreated.length + top30Created.length + (eliteCreatedId ? 1 : 0);
-    if (totalCreated > 0) {
+    if (totalCreated > 0 && !alreadyNotifiedToday) {
       try {
         await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
           method: "POST",
