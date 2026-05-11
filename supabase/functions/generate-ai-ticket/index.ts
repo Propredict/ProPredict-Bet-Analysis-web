@@ -840,16 +840,21 @@ serve(async (req: Request) => {
 
     const date = todayBelgrade();
 
-    // ALWAYS wipe today's AI ticket categories before regenerating to prevent
-    // duplicates when the function is invoked more than once per day (cron retry,
-    // manual trigger, etc). Only AI-generated categories (ai_*) are wiped here.
-    // Admin categories ('standard', 'multi_risk') are NEVER touched.
-    // Opt-out: pass { skip_wipe: true } to append instead (e.g. backfill jobs).
+    // OPT-IN wipe: by default we DO NOT delete today's AI tickets so users
+    // never see tickets disappear and re-appear mid-day. The function is
+    // idempotent — `existingCount` checks below ensure we don't exceed the
+    // daily target, and dedup prevents duplicates.
+    //
+    // Pass `force_regenerate: true` (or per-tier `wipe_daily/pro/premium/risk`)
+    // ONLY for explicit admin "regenerate" actions or after AI predictions
+    // have changed during the day.
     let body: any = {};
     try { body = await req.json(); } catch (_) { body = {}; }
-    const wipeCategories: string[] = body?.skip_wipe
-      ? []
-      : ["ai_premium", "ai_pro", "ai_daily"];
+    const forceAll = body?.force_regenerate === true;
+    const wipeCategories: string[] = [];
+    if (forceAll || body?.wipe_daily)   wipeCategories.push("ai_daily");
+    if (forceAll || body?.wipe_pro)     wipeCategories.push("ai_pro");
+    if (forceAll || body?.wipe_premium) wipeCategories.push("ai_premium");
     // Idempotent push: detect if today's AI tickets already existed before wipe.
     // If so, this is a regeneration → skip the summary push so users only get
     // ONE notification per day even when the cron runs multiple times.
@@ -866,6 +871,16 @@ serve(async (req: Request) => {
         await supabase.from("ticket_matches").delete().in("ticket_id", ids);
         await supabase.from("tickets").delete().in("id", ids);
       }
+    } else {
+      // No wipe → if any AI ticket exists for today, this is a no-op re-run,
+      // so we should NOT send the summary push again.
+      const { data: existingAny } = await supabase
+        .from("tickets")
+        .select("id")
+        .eq("ticket_date", date)
+        .in("category", ["ai_daily", "ai_pro", "ai_premium", "risk_of_day", "multi_risk"])
+        .limit(1);
+      if ((existingAny?.length ?? 0) > 0) alreadyNotifiedToday = true;
     }
 
     // Count existing AI daily tickets for today (max 2 per day)
