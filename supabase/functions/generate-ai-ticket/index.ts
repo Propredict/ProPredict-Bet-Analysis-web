@@ -938,9 +938,12 @@ serve(async (req: Request) => {
     // Daily ticket: 1 listić of up to 5 picks from the Free bucket of the
     // top 30. If Free is too small, top up with leftover Pro (lowest conf
     // first, so Pro listić keeps the strongest Pro picks).
+    // Daily Free tickets: dynamic 1–2 based on Free pool size.
+    //   freePool ≥ 8 → 2 tickets, otherwise 1.
+    const dailyAuto = freePool.length >= 8 ? 2 : 1;
     const targetTickets: number = Number.isFinite(body?.daily_target)
       ? Math.max(0, Number(body.daily_target))
-      : 1;
+      : dailyAuto;
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
