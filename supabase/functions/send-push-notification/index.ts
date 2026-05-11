@@ -184,6 +184,28 @@ serve(async (req) => {
       );
     }
 
+    /* ── Guard: skip per-row pushes for AI-generated content.
+       AI tips/tickets are announced via a single consolidated "summary" push
+       sent by generate-ai-tips / generate-ai-ticket. Any per-row call coming
+       from a DB trigger for these categories must be ignored to avoid spam. ── */
+    const AI_CATEGORIES = new Set([
+      "ai_daily",
+      "ai_pro",
+      "ai_premium",
+      "risk_of_day",
+      "risk_of_the_day",
+      "diamond_pick",
+      "multi_risk",
+    ]);
+    const recCategory = (record as any)?.category ?? null;
+    if (recCategory && AI_CATEGORIES.has(recCategory)) {
+      console.log(`[send-push] Skipping per-row push for AI category=${recCategory} (handled by summary push)`);
+      return new Response(
+        JSON.stringify({ skipped: true, reason: `ai category ${recCategory} handled by summary` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const contentTier = record.tier ?? "free";
     const body = getPublishBody(type, record);
 
