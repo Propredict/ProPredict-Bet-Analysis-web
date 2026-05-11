@@ -938,9 +938,12 @@ serve(async (req: Request) => {
     // Daily ticket: 1 listić of up to 5 picks from the Free bucket of the
     // top 30. If Free is too small, top up with leftover Pro (lowest conf
     // first, so Pro listić keeps the strongest Pro picks).
+    // Daily Free tickets: dynamic 1–2 based on Free pool size.
+    //   freePool ≥ 8 → 2 tickets, otherwise 1.
+    const dailyAuto = freePool.length >= 8 ? 2 : 1;
     const targetTickets: number = Number.isFinite(body?.daily_target)
       ? Math.max(0, Number(body.daily_target))
-      : 1;
+      : dailyAuto;
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
@@ -1065,9 +1068,12 @@ serve(async (req: Request) => {
       .eq("category", "ai_pro");
 
     const existingProCount = existingPro?.length ?? 0;
+    // Pro Combo tickets: dynamic 2–4 based on Pro pool size.
+    //   proPool ≥ 14 → 4, ≥ 10 → 3, otherwise 2.
+    const proAuto = proPool.length >= 14 ? 4 : proPool.length >= 10 ? 3 : 2;
     const proTarget: number = Number.isFinite(body?.pro_target)
       ? Math.max(0, Number(body.pro_target))
-      : 1;
+      : proAuto;
     const proToCreate = Math.max(0, proTarget - existingProCount);
 
     if (proToCreate === 0) {
@@ -1158,9 +1164,15 @@ serve(async (req: Request) => {
       .eq("category", "ai_premium");
 
     const existingPremiumCount = existingPremium?.length ?? 0;
+    // Premium Combo tickets: dynamic 2–5 based on Premium pool size.
+    //   premiumPool ≥ 18 → 5, ≥ 14 → 4, ≥ 10 → 3, otherwise 2.
+    const premiumAuto =
+      premiumPool.length >= 18 ? 5 :
+      premiumPool.length >= 14 ? 4 :
+      premiumPool.length >= 10 ? 3 : 2;
     const premiumTarget: number = Number.isFinite(body?.premium_target)
       ? Math.max(0, Number(body.premium_target))
-      : 1;
+      : premiumAuto;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
     // HYBRID dedup state shared across ALL Premium-tier ticket builders
@@ -1522,9 +1534,10 @@ serve(async (req: Request) => {
         pool: Pred[];
         maxTickets: number;
       };
+      // Smart Top-30 always ships exactly 1 ticket per tier (1 Daily, 1 Pro, 1 Premium).
       const buckets: SpecBucket[] = [
-        { tier: "premium",   category: "ai_premium", emoji: "👑", label: "Smart Premium Ticket", pool: lowRisk,  maxTickets: 5 },
-        { tier: "exclusive", category: "ai_pro",     emoji: "🎯", label: "Smart Pro Ticket",     pool: medRisk,  maxTickets: 2 },
+        { tier: "premium",   category: "ai_premium", emoji: "👑", label: "Smart Premium Ticket", pool: lowRisk,  maxTickets: 1 },
+        { tier: "exclusive", category: "ai_pro",     emoji: "🎯", label: "Smart Pro Ticket",     pool: medRisk,  maxTickets: 1 },
         { tier: "daily",     category: "ai_daily",   emoji: "🤖", label: "Smart Daily Ticket",   pool: highRisk, maxTickets: 1 },
       ];
 
