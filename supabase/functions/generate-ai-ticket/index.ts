@@ -976,12 +976,20 @@ serve(async (req: Request) => {
       // Free bucket can't supply at least 3 picks.
       const freeOrderedTop = freePool.slice().sort((a, b) => b.confidence - a.confidence);
       const proLowFirst = proPool.slice().sort((a, b) => a.confidence - b.confidence);
-      let topNCombo = buildTopNCombo(freeOrderedTop, 5, usedMatchIds, aiDisplayedPick, 3);
+      // Daily must avoid both global-used matches AND the top-N Pro/Premium
+      // matches that are reserved for the higher-tier tickets.
+      const dailyExclude = new Set<string>([
+        ...usedMatchIds,
+        ...globalUsedMatchIds,
+        ...reservedForPremium,
+        ...reservedForPro,
+      ]);
+      let topNCombo = buildTopNCombo(freeOrderedTop, 5, dailyExclude, aiDisplayedPick, 3);
       if (!topNCombo)
-        topNCombo = buildTopNCombo([...freeOrderedTop, ...proLowFirst], 5, usedMatchIds, aiDisplayedPick, 3);
+        topNCombo = buildTopNCombo([...freeOrderedTop, ...proLowFirst], 5, dailyExclude, aiDisplayedPick, 3);
       if (!topNCombo) {
         // Final fallback: legacy single pick so the daily slot never goes empty
-        const single = buildSingle([...freeOrderedTop, ...proLowFirst], usedMatchIds);
+        const single = buildSingle([...freeOrderedTop, ...proLowFirst], dailyExclude);
         if (!single) { dailySkipReason = dailySkipReason ?? "No material for Daily ticket"; break; }
         topNCombo = {
           picks: single.picks.map((p) => ({ p, choice: aiDisplayedPick(p) ?? { market: displayedTicketPrediction(p), odds: single.total, prob: p.confidence } })),
