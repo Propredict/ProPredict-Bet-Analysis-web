@@ -36,6 +36,8 @@ type Pred = {
   draw: number | null;
   away_win: number | null;
   market_odds?: Record<string, number> | null;
+  last_home_goals?: number | null;
+  last_away_goals?: number | null;
 };
 
 function todayBelgrade(): string {
