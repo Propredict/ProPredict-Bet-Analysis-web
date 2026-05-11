@@ -166,7 +166,7 @@ function pickSafeMarket(p: Pred): { label: string; odds: number; prob: number } 
     { label: "Draw", prob: dr, bonus: -10 },
   ];
   candidates.sort((a, b) => (b.prob + b.bonus) - (a.prob + a.bonus));
-  const best = candidates.find((c) => c.prob >= 60);
+  const best = candidates.find((c) => c.prob >= 60 && marketConsistentWithScore(c.label, p.predicted_score));
   if (!best) return null;
   return { label: best.label, odds: oddsForLabel(p, best.label), prob: best.prob };
 }
@@ -192,7 +192,7 @@ function pickSafeMarketPro(p: Pred): { label: string; odds: number; prob: number
   ];
 
   const safe = candidates
-    .filter((c) => c.prob >= 60)
+    .filter((c) => c.prob >= 60 && marketConsistentWithScore(c.label, p.predicted_score))
     .map((c) => ({ ...c, odds: oddsForLabel(p, c.label) }))
     // skip super-low value picks (< 1.30) — Pro should have decent odds
     .filter((c) => c.odds >= 1.30)
@@ -208,6 +208,46 @@ function pickSafeMarketPro(p: Pred): { label: string; odds: number; prob: number
 
 function isGoalMarket(label: string): boolean {
   return /over|under|btts|gg|ng/i.test(label);
+}
+
+/**
+ * Hard consistency guard: a chosen market label must NOT contradict the AI's
+ * predicted score. E.g. if predicted_score = "1-2" (total 3, both teams scored),
+ * we must reject "Under 2.5", "BTTS No", "Home Win", "Draw", etc.
+ * This prevents the situation where the tip says "Under 2.5" while the AI
+ * Prediction page shows score 2-1 / Over 2.5 / BTTS Yes.
+ */
+function marketConsistentWithScore(label: string, predictedScore: string | null): boolean {
+  const s = (label || "").toLowerCase().trim();
+  if (!s) return true;
+  const m = (predictedScore || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (!m) return true; // no score → cannot validate, allow
+  const hg = parseInt(m[1], 10);
+  const ag = parseInt(m[2], 10);
+  const total = hg + ag;
+
+  // Combo markets — split on '&' and validate each leg
+  if (s.includes("&")) {
+    return s.split("&").every((leg) => marketConsistentWithScore(leg.trim(), predictedScore));
+  }
+
+  if ((/^gg\b/.test(s) || /btts\s*yes/.test(s) || /both\s*teams/.test(s)) && (hg === 0 || ag === 0)) return false;
+  if ((/^ng\b/.test(s) || /btts\s*no/.test(s)) && hg > 0 && ag > 0) return false;
+  if (/over\s*1\.?5/.test(s) && total <= 1) return false;
+  if (/under\s*1\.?5/.test(s) && total >= 2) return false;
+  if (/over\s*2\.?5/.test(s) && total <= 2) return false;
+  if (/under\s*2\.?5/.test(s) && total >= 3) return false;
+  if (/over\s*3\.?5/.test(s) && total <= 3) return false;
+  if (/under\s*3\.?5/.test(s) && total >= 4) return false;
+  // 1X2 single legs
+  if ((s === "1" || /home\s*win/.test(s)) && hg <= ag) return false;
+  if ((s === "2" || /away\s*win/.test(s)) && ag <= hg) return false;
+  if ((s === "x" || /^draw$/.test(s)) && hg !== ag) return false;
+  // Double chance
+  if (s === "1x" && ag > hg) return false;        // 1X loses only when away wins
+  if (s === "x2" && hg > ag) return false;        // X2 loses only when home wins
+  if (s === "12" && hg === ag) return false;      // 12 loses on draw
+  return true;
 }
 
 /**
@@ -248,7 +288,7 @@ function pickSafeCombo(p: Pred, avoidKeys: Set<string> = new Set()): { label: st
 
   const safe = candidates
     .map((c) => ({ ...c, prob: clampProb(c.prob, 5, 95) }))
-    .filter((c) => c.prob >= 55)
+    .filter((c) => c.prob >= 55 && marketConsistentWithScore(c.label, p.predicted_score))
     .map((c) => {
       const odds = Math.max(1.40, Math.round((100 / c.prob) * 0.92 * 100) / 100);
       return { ...c, odds };
