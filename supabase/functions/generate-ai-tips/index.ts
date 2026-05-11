@@ -450,7 +450,7 @@ serve(async (req) => {
     }
 
     // Fetch today's AI predictions
-    const baseCols = "id,match_id,home_team,away_team,league,match_date,match_time,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win";
+    const baseCols = "id,match_id,home_team,away_team,league,match_date,match_time,prediction,confidence,consensus_odds,variance_stable,predicted_score,home_win,draw,away_win,last_home_goals,last_away_goals";
     let preds: any = null;
     const r1 = await supabase
       .from("ai_predictions")
