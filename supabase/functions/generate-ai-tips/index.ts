@@ -576,8 +576,19 @@ serve(async (req) => {
     for (const p of proRiskPool) {
       if (proRiskCount >= PRO_RISK_LIMIT) break;
       const top = topScores(p, 3);
-      // Pick the most likely score that hasn't been used yet (diversity across the section)
-      const score = top.find((s) => !usedScores.has(s)) ?? top[0];
+      // CONSISTENCY: always prefer the AI Prediction card's `predicted_score`
+      // as the Correct Score pick so the ticket matches what users see on the
+      // AI Prediction page. Only fall back to the Poisson top score when the
+      // prediction record has no predicted_score.
+      const predictedScoreNorm = (p.predicted_score || "").trim().replace(/\s+/g, "").replace(":", "-");
+      const orderedCandidates = predictedScoreNorm
+        ? [predictedScoreNorm, ...top.filter((s) => s !== predictedScoreNorm)]
+        : top;
+      // Ensure the chosen score is included in the AI top scores list shown to users.
+      const aiTopList = predictedScoreNorm && !top.includes(predictedScoreNorm)
+        ? [predictedScoreNorm, ...top].slice(0, 3)
+        : top;
+      const score = orderedCandidates.find((s) => !usedScores.has(s)) ?? orderedCandidates[0];
       if (!score) continue;
 
       // Approx probability: dampened share of top score vs full Poisson grid.
@@ -590,7 +601,7 @@ serve(async (req) => {
         away_team: p.away_team,
         league: p.league ?? "",
         prediction: `Correct Score ${score}`,
-        ai_prediction: top.join(", "),
+        ai_prediction: aiTopList.join(", "),
         odds,
         confidence: p.confidence,
         tier: "exclusive",
