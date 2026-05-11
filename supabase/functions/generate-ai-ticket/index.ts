@@ -840,16 +840,16 @@ serve(async (req: Request) => {
 
     const date = todayBelgrade();
 
-    // Optional admin flag: wipe today's AI ticket categories before regenerating.
-    // IMPORTANT: Only AI-generated categories (ai_*) are ever wiped.
-    // Admin categories ('standard', 'multi_risk') are NEVER touched by this function.
+    // ALWAYS wipe today's AI ticket categories before regenerating to prevent
+    // duplicates when the function is invoked more than once per day (cron retry,
+    // manual trigger, etc). Only AI-generated categories (ai_*) are wiped here.
+    // Admin categories ('standard', 'multi_risk') are NEVER touched.
+    // Opt-out: pass { skip_wipe: true } to append instead (e.g. backfill jobs).
     let body: any = {};
     try { body = await req.json(); } catch (_) { body = {}; }
-    const wipeCategories: string[] = [];
-    if (body?.wipe_premium) wipeCategories.push("ai_premium");
-    if (body?.wipe_pro) wipeCategories.push("ai_pro");
-    if (body?.wipe_daily) wipeCategories.push("ai_daily");
-    if (body?.wipe_all) wipeCategories.push("ai_premium", "ai_pro", "ai_daily");
+    const wipeCategories: string[] = body?.skip_wipe
+      ? []
+      : ["ai_premium", "ai_pro", "ai_daily"];
     if (wipeCategories.length > 0) {
       const { data: toDelete } = await supabase
         .from("tickets")
