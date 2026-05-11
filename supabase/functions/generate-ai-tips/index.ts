@@ -211,6 +211,46 @@ function isGoalMarket(label: string): boolean {
 }
 
 /**
+ * Hard consistency guard: a chosen market label must NOT contradict the AI's
+ * predicted score. E.g. if predicted_score = "1-2" (total 3, both teams scored),
+ * we must reject "Under 2.5", "BTTS No", "Home Win", "Draw", etc.
+ * This prevents the situation where the tip says "Under 2.5" while the AI
+ * Prediction page shows score 2-1 / Over 2.5 / BTTS Yes.
+ */
+function marketConsistentWithScore(label: string, predictedScore: string | null): boolean {
+  const s = (label || "").toLowerCase().trim();
+  if (!s) return true;
+  const m = (predictedScore || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (!m) return true; // no score → cannot validate, allow
+  const hg = parseInt(m[1], 10);
+  const ag = parseInt(m[2], 10);
+  const total = hg + ag;
+
+  // Combo markets — split on '&' and validate each leg
+  if (s.includes("&")) {
+    return s.split("&").every((leg) => marketConsistentWithScore(leg.trim(), predictedScore));
+  }
+
+  if ((/^gg\b/.test(s) || /btts\s*yes/.test(s) || /both\s*teams/.test(s)) && (hg === 0 || ag === 0)) return false;
+  if ((/^ng\b/.test(s) || /btts\s*no/.test(s)) && hg > 0 && ag > 0) return false;
+  if (/over\s*1\.?5/.test(s) && total <= 1) return false;
+  if (/under\s*1\.?5/.test(s) && total >= 2) return false;
+  if (/over\s*2\.?5/.test(s) && total <= 2) return false;
+  if (/under\s*2\.?5/.test(s) && total >= 3) return false;
+  if (/over\s*3\.?5/.test(s) && total <= 3) return false;
+  if (/under\s*3\.?5/.test(s) && total >= 4) return false;
+  // 1X2 single legs
+  if ((s === "1" || /home\s*win/.test(s)) && hg <= ag) return false;
+  if ((s === "2" || /away\s*win/.test(s)) && ag <= hg) return false;
+  if ((s === "x" || /^draw$/.test(s)) && hg !== ag) return false;
+  // Double chance
+  if (s === "1x" && ag > hg) return false;        // 1X loses only when away wins
+  if (s === "x2" && hg > ag) return false;        // X2 loses only when home wins
+  if (s === "12" && hg === ag) return false;      // 12 loses on draw
+  return true;
+}
+
+/**
  * Premium combo picker: returns a SAFE combination market like
  * "1 & Over 2.5", "1X & Under 2.5", "X2 & Under 3.5", "12 & Over 1.5", etc.
  * Combo prob = p1 * p2 (approx). Safe threshold >= 55%.
