@@ -1417,7 +1417,8 @@ serve(async (req: Request) => {
     } else {
       const premOrdered = premiumPool.slice().sort((a, b) => b.confidence - a.confidence);
       const proOrderedR = proPool.slice().sort((a, b) => b.confidence - a.confidence);
-      const riskUsed = new Set<string>();
+      // Risk tickets exclude matches already placed in any AI ticket today.
+      const riskUsed = new Set<string>(globalUsedMatchIds);
       // Rotate ticket sizes for variety: single, double, triple, quadruple, double
       const sizes: RiskSize[] = [2, 3, 2, 3];
 
@@ -1463,7 +1464,10 @@ serve(async (req: Request) => {
         const { error: rmErr } = await supabase.from("ticket_matches").insert(riskRows);
         if (rmErr) throw rmErr;
 
-        riskCombo.picks.forEach((x) => riskUsed.add(x.p.match_id));
+        riskCombo.picks.forEach((x) => {
+          riskUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         riskCreated.push({
           id: newRiskTicket.id,
           picks: riskCombo.picks.length,
