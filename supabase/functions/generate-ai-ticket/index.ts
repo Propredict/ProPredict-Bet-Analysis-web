@@ -1534,9 +1534,10 @@ serve(async (req: Request) => {
         pool: Pred[];
         maxTickets: number;
       };
+      // Smart Top-30 always ships exactly 1 ticket per tier (1 Daily, 1 Pro, 1 Premium).
       const buckets: SpecBucket[] = [
-        { tier: "premium",   category: "ai_premium", emoji: "👑", label: "Smart Premium Ticket", pool: lowRisk,  maxTickets: 5 },
-        { tier: "exclusive", category: "ai_pro",     emoji: "🎯", label: "Smart Pro Ticket",     pool: medRisk,  maxTickets: 2 },
+        { tier: "premium",   category: "ai_premium", emoji: "👑", label: "Smart Premium Ticket", pool: lowRisk,  maxTickets: 1 },
+        { tier: "exclusive", category: "ai_pro",     emoji: "🎯", label: "Smart Pro Ticket",     pool: medRisk,  maxTickets: 1 },
         { tier: "daily",     category: "ai_daily",   emoji: "🤖", label: "Smart Daily Ticket",   pool: highRisk, maxTickets: 1 },
       ];
 
