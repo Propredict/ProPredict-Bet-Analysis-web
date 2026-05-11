@@ -944,6 +944,27 @@ serve(async (req: Request) => {
     // Account for any tickets already created today
     const ticketsToCreate = Math.max(0, targetTickets - existingCount);
     const usedMatchIds = new Set<string>();
+
+    // ── GLOBAL DEDUP ACROSS TIERS ─────────────────────────────────────
+    // Tracks every match used in ANY ticket so far (Daily/Pro/Premium/
+    // Risk/Smart Top-30). Each section seeds its own exclude set from
+    // this so Free/Pro/Premium tickets don't recycle the same matches.
+    const globalUsedMatchIds = new Set<string>();
+
+    // RESERVATIONS — keep the strongest material for the higher tier:
+    //  • Top N Premium matches are reserved for Premium ticket only
+    //  • Top N Pro matches are reserved for Premium+Pro tickets only
+    //  Daily is built FIRST in this file, but it must NOT cannibalize
+    //  matches that Premium/Pro will need later. Targets default to
+    //  ~ ticket size (5).
+    const PREM_RESERVE_N = 5;
+    const PRO_RESERVE_N  = 5;
+    const reservedForPremium = new Set<string>(
+      premiumPool.slice().sort(byConfDesc).slice(0, PREM_RESERVE_N).map((p) => p.match_id),
+    );
+    const reservedForPro = new Set<string>(
+      proPool.slice().sort(byConfDesc).slice(0, PRO_RESERVE_N).map((p) => p.match_id),
+    );
     const created: Array<{ id: string; picks: number; total_odds: number; strategy: string }> = [];
     let dailySkipReason: string | null = null;
     if (ticketsToCreate === 0) {
