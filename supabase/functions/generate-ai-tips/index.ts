@@ -445,6 +445,9 @@ serve(async (req) => {
       .eq("tip_date", date)
       .in("category", ["ai_daily", "ai_pro", "ai_premium", "risk_of_day", "diamond_pick"]);
     const delIds = (toDel ?? []).map((t: any) => t.id);
+    // Idempotent push: if AI tips already existed today (this is a regeneration),
+    // do NOT send another summary push — first run of the day already notified users.
+    const alreadyNotifiedToday = delIds.length > 0;
     if (delIds.length > 0) {
       await supabase.from("tips").delete().in("id", delIds);
     }
@@ -737,7 +740,7 @@ serve(async (req) => {
     }
 
     // ---- Single consolidated AI summary push ----
-    if (created.length > 0) {
+    if (created.length > 0 && !alreadyNotifiedToday) {
       try {
         await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
           method: "POST",
