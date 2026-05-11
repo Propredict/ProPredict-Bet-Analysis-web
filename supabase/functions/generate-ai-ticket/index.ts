@@ -850,6 +850,10 @@ serve(async (req: Request) => {
     const wipeCategories: string[] = body?.skip_wipe
       ? []
       : ["ai_premium", "ai_pro", "ai_daily"];
+    // Idempotent push: detect if today's AI tickets already existed before wipe.
+    // If so, this is a regeneration → skip the summary push so users only get
+    // ONE notification per day even when the cron runs multiple times.
+    let alreadyNotifiedToday = false;
     if (wipeCategories.length > 0) {
       const { data: toDelete } = await supabase
         .from("tickets")
@@ -857,6 +861,7 @@ serve(async (req: Request) => {
         .eq("ticket_date", date)
         .in("category", wipeCategories);
       const ids = (toDelete ?? []).map((t: any) => t.id);
+      if (ids.length > 0) alreadyNotifiedToday = true;
       if (ids.length > 0) {
         await supabase.from("ticket_matches").delete().in("ticket_id", ids);
         await supabase.from("tickets").delete().in("id", ids);
