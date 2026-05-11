@@ -1068,9 +1068,12 @@ serve(async (req: Request) => {
       .eq("category", "ai_pro");
 
     const existingProCount = existingPro?.length ?? 0;
+    // Pro Combo tickets: dynamic 2–4 based on Pro pool size.
+    //   proPool ≥ 14 → 4, ≥ 10 → 3, otherwise 2.
+    const proAuto = proPool.length >= 14 ? 4 : proPool.length >= 10 ? 3 : 2;
     const proTarget: number = Number.isFinite(body?.pro_target)
       ? Math.max(0, Number(body.pro_target))
-      : 1;
+      : proAuto;
     const proToCreate = Math.max(0, proTarget - existingProCount);
 
     if (proToCreate === 0) {
