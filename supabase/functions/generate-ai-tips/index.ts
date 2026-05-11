@@ -359,12 +359,42 @@ function marketDiversityKey(label: string): string {
 }
 
 /**
- * Top-K most likely correct scores via Poisson, derived from predicted xG.
+ * IMPORTANT: must mirror EXACTLY the frontend `getXgValues` in
+ * `src/components/ai-predictions/utils/marketDerivation.ts` so the Top
+ * Correct Scores shown on the AI Predictions page match the ones picked
+ * for Risk-of-the-Day / tips. Any divergence here causes user-visible
+ * inconsistency between the AI Prediction card and the tip/ticket pick.
  */
+function getXgValues(p: Pred): { homeXg: number; awayXg: number } {
+  const lastHomeGoals = p.last_home_goals;
+  const lastAwayGoals = p.last_away_goals;
+  let homeXg: number;
+  let awayXg: number;
+  if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
+    homeXg = Math.max(0.4, lastHomeGoals);
+    awayXg = Math.max(0.3, lastAwayGoals);
+  } else {
+    const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+    if (m) {
+      homeXg = Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2);
+      awayXg = Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15);
+    } else {
+      homeXg = Math.max(0.5, (p.home_win ?? 40) / 30);
+      awayXg = Math.max(0.4, (p.away_win ?? 30) / 30);
+    }
+  }
+  const hw = p.home_win ?? 0;
+  const aw = p.away_win ?? 0;
+  if (hw >= 55 && hw - aw >= 20 && homeXg <= awayXg) {
+    homeXg = Math.max(awayXg + 0.4, 1.6);
+  } else if (aw >= 55 && aw - hw >= 20 && awayXg <= homeXg) {
+    awayXg = Math.max(homeXg + 0.4, 1.6);
+  }
+  return { homeXg, awayXg };
+}
+
 function topScores(p: Pred, k = 3): string[] {
-  const m = (p.predicted_score || "").trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-  const homeXg = m ? Math.max(0.4, parseInt(m[1], 10) * 0.85 + 0.2) : Math.max(0.5, (p.home_win ?? 40) / 30);
-  const awayXg = m ? Math.max(0.3, parseInt(m[2], 10) * 0.85 + 0.15) : Math.max(0.4, (p.away_win ?? 30) / 30);
+  const { homeXg, awayXg } = getXgValues(p);
   const scores: { s: string; pr: number }[] = [];
   for (let h = 0; h <= 5; h++) for (let a = 0; a <= 5; a++) {
     scores.push({ s: `${h}-${a}`, pr: poissonProb(homeXg, h) * poissonProb(awayXg, a) });
