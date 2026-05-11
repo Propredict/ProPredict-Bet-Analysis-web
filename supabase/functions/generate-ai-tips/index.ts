@@ -605,22 +605,35 @@ serve(async (req) => {
     const PRO_RISK_LIMIT = 4;
     const usedScores = new Set<string>();
     let proRiskCount = 0;
-    for (const p of proRiskPool) {
-      if (proRiskCount >= PRO_RISK_LIMIT) break;
-      const top = topScores(p, 3);
-      // CONSISTENCY: chosen Correct Score MUST be one of the top scores
-      // shown on the AI Prediction card (same Poisson model + xG inputs).
-      // We pick the highest-ranked one not yet used in this batch (diversity),
-      // and fall back to the #1 if all top-3 are taken.
-      const aiTopList = top;
-      const score = top.find((s) => !usedScores.has(s)) ?? top[0];
-      if (!score) continue;
 
-      // Approx probability: dampened share of top score vs full Poisson grid.
-      // We keep odds in a believable Correct Score range (5.50 – 12.00).
+    // Helper: keep only Correct Scores consistent with the AI Prediction's
+    // displayed main market (e.g., if Pro pick is "Under 2.5", only allow
+    // scores with total <= 2). Used in the fill-up pass so additional
+    // picks still respect the AI Prediction direction shown to users.
+    const filterScoresByMarket = (scores: string[], label: string | null): string[] => {
+      const s = (label || "").toLowerCase();
+      return scores.filter((sc) => {
+        const m = sc.match(/^(\d)-(\d)$/);
+        if (!m) return true;
+        const h = +m[1], a = +m[2], total = h + a;
+        if (/under\s*1\.?5/.test(s)) return total <= 1;
+        if (/under\s*2\.?5/.test(s)) return total <= 2;
+        if (/under\s*3\.?5/.test(s)) return total <= 3;
+        if (/over\s*1\.?5/.test(s)) return total >= 2;
+        if (/over\s*2\.?5/.test(s)) return total >= 3;
+        if (/over\s*3\.?5/.test(s)) return total >= 4;
+        if (/btts\s*yes|gg\b/.test(s)) return h > 0 && a > 0;
+        if (/btts\s*no|ng\b/.test(s)) return h === 0 || a === 0;
+        if (/home\s*win|^1\b|\b1\b/.test(s)) return h > a;
+        if (/away\s*win|^2\b|\b2\b/.test(s)) return a > h;
+        if (/draw|^x\b|\bx\b/.test(s)) return h === a;
+        return true;
+      });
+    };
+
+    const insertRiskScore = async (p: Pred, score: string, aiTopList: string[]) => {
       const baseProb = Math.max(8, Math.min(20, 14 - (p.confidence - 65) * 0.3));
       const odds = Math.max(5.50, Math.min(12.0, Math.round((100 / baseProb) * 100) / 100));
-
       const { error: proRiskErr } = await supabase.from("tips").insert({
         home_team: p.home_team,
         away_team: p.away_team,
@@ -639,7 +652,6 @@ serve(async (req) => {
       });
       if (proRiskErr) throw proRiskErr;
       usedScores.add(score);
-      riskUsedMatchIds.add(p.match_id);
       proRiskCount++;
       created.push({
         tier: "exclusive",
@@ -648,6 +660,40 @@ serve(async (req) => {
         odds,
         confidence: p.confidence,
       });
+    };
+
+    // Pass 1: one Correct Score per qualifying Pro match (diversity across matches).
+    for (const p of proRiskPool) {
+      if (proRiskCount >= PRO_RISK_LIMIT) break;
+      const top = topScores(p, 3);
+      // Filter top scores so they remain consistent with the displayed main
+      // market direction (Under 2.5 / Over 2.5 / BTTS / 1X2). Falls back to
+      // raw top scores if filter empties the list.
+      const filtered = filterScoresByMarket(top, p.prediction);
+      const candidates = filtered.length > 0 ? filtered : top;
+      const score = candidates.find((s) => !usedScores.has(s)) ?? candidates[0];
+      if (!score) continue;
+      await insertRiskScore(p, score, top);
+      riskUsedMatchIds.add(p.match_id);
+    }
+
+    // Pass 2 (fill-up): if pool was small, add additional Correct Scores
+    // from the SAME Pro matches' top-3 list, restricted to scores that
+    // align with the AI Prediction's main market (e.g., Under 2.5 →
+    // only total ≤ 2). This guarantees up to PRO_RISK_LIMIT picks while
+    // keeping every pick consistent with the AI Prediction page.
+    if (proRiskCount < PRO_RISK_LIMIT) {
+      for (const p of proRiskPool) {
+        if (proRiskCount >= PRO_RISK_LIMIT) break;
+        const top = topScores(p, 3);
+        const filtered = filterScoresByMarket(top, p.prediction);
+        const candidates = filtered.length > 0 ? filtered : top;
+        for (const score of candidates) {
+          if (proRiskCount >= PRO_RISK_LIMIT) break;
+          if (usedScores.has(score)) continue;
+          await insertRiskScore(p, score, top);
+        }
+      }
     }
 
     // ---- Diamond Picks: up to 2 strongest signals (conf >= 88) with SAFE COMBO ----
