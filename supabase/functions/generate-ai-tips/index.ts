@@ -166,7 +166,7 @@ function pickSafeMarket(p: Pred): { label: string; odds: number; prob: number } 
     { label: "Draw", prob: dr, bonus: -10 },
   ];
   candidates.sort((a, b) => (b.prob + b.bonus) - (a.prob + a.bonus));
-  const best = candidates.find((c) => c.prob >= 60);
+  const best = candidates.find((c) => c.prob >= 60 && marketConsistentWithScore(c.label, p.predicted_score));
   if (!best) return null;
   return { label: best.label, odds: oddsForLabel(p, best.label), prob: best.prob };
 }
@@ -192,7 +192,7 @@ function pickSafeMarketPro(p: Pred): { label: string; odds: number; prob: number
   ];
 
   const safe = candidates
-    .filter((c) => c.prob >= 60)
+    .filter((c) => c.prob >= 60 && marketConsistentWithScore(c.label, p.predicted_score))
     .map((c) => ({ ...c, odds: oddsForLabel(p, c.label) }))
     // skip super-low value picks (< 1.30) — Pro should have decent odds
     .filter((c) => c.odds >= 1.30)
@@ -288,7 +288,7 @@ function pickSafeCombo(p: Pred, avoidKeys: Set<string> = new Set()): { label: st
 
   const safe = candidates
     .map((c) => ({ ...c, prob: clampProb(c.prob, 5, 95) }))
-    .filter((c) => c.prob >= 55)
+    .filter((c) => c.prob >= 55 && marketConsistentWithScore(c.label, p.predicted_score))
     .map((c) => {
       const odds = Math.max(1.40, Math.round((100 / c.prob) * 0.92 * 100) / 100);
       return { ...c, odds };
