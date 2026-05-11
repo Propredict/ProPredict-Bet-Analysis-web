@@ -740,7 +740,7 @@ serve(async (req) => {
     }
 
     // ---- Single consolidated AI summary push ----
-    if (created.length > 0) {
+    if (created.length > 0 && !alreadyNotifiedToday) {
       try {
         await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
           method: "POST",
