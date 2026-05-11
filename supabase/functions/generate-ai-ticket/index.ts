@@ -1080,7 +1080,12 @@ serve(async (req: Request) => {
       // first) so the strongest Premium picks remain reserved for Premium.
       const proOrderedTop = proPool.slice().sort((a, b) => b.confidence - a.confidence);
       const premLowFirst = premiumPool.slice().sort((a, b) => a.confidence - b.confidence);
-      const proUsed = new Set<string>();
+      // Pro tickets must avoid matches already used by Daily and matches
+      // reserved for the Premium ticket (top-N premium picks).
+      const proUsed = new Set<string>([
+        ...globalUsedMatchIds,
+        ...reservedForPremium,
+      ]);
       for (let i = 0; i < proToCreate; i++) {
         let proCombo = buildTopNCombo(proOrderedTop, 5, proUsed, aiDisplayedPick, 3);
         if (!proCombo)
@@ -1127,6 +1132,7 @@ serve(async (req: Request) => {
         proCombo.picks.forEach((x) => {
           proUsed.add(x.p.match_id);
           proUsedMatchIds.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
         });
         proCreated.push({
           id: newProTicket.id,
