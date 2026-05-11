@@ -1037,7 +1037,10 @@ serve(async (req: Request) => {
       if (mErr) throw mErr;
 
       // Mark these matches used so the second ticket cannot reuse them
-      combo.picks.forEach((p) => usedMatchIds.add(p.match_id));
+      combo.picks.forEach((p) => {
+        usedMatchIds.add(p.match_id);
+        globalUsedMatchIds.add(p.match_id);
+      });
 
       created.push({
         id: newTicket.id,
