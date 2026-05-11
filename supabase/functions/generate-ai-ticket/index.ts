@@ -1164,9 +1164,15 @@ serve(async (req: Request) => {
       .eq("category", "ai_premium");
 
     const existingPremiumCount = existingPremium?.length ?? 0;
+    // Premium Combo tickets: dynamic 2–5 based on Premium pool size.
+    //   premiumPool ≥ 18 → 5, ≥ 14 → 4, ≥ 10 → 3, otherwise 2.
+    const premiumAuto =
+      premiumPool.length >= 18 ? 5 :
+      premiumPool.length >= 14 ? 4 :
+      premiumPool.length >= 10 ? 3 : 2;
     const premiumTarget: number = Number.isFinite(body?.premium_target)
       ? Math.max(0, Number(body.premium_target))
-      : 1;
+      : premiumAuto;
     const premiumToCreate = Math.max(0, premiumTarget - existingPremiumCount);
 
     // HYBRID dedup state shared across ALL Premium-tier ticket builders
