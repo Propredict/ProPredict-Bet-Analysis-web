@@ -1182,7 +1182,10 @@ serve(async (req: Request) => {
       // Exclude matches already placed in Pro tickets to avoid duplicates.
       // HYBRID: same match may reappear with a DIFFERENT market across Premium
       // tickets. Track (match_id::market) pairs across ALL Premium blocks below.
-      const premiumUsed = new Set<string>(proUsedMatchIds);
+      const premiumUsed = new Set<string>([
+        ...proUsedMatchIds,
+        ...globalUsedMatchIds,
+      ]);
       const uniquePicker = makeUniquePickKeyPicker(premiumPickKeys);
       for (let i = 0; i < premiumToCreate; i++) {
         // 1st pass: prefer different MATCHES across tickets (fully unique).
@@ -1231,7 +1234,10 @@ serve(async (req: Request) => {
         const { error: pmErr } = await supabase.from("ticket_matches").insert(premRows);
         if (pmErr) throw pmErr;
 
-        premCombo.picks.forEach((x) => premiumUsed.add(x.p.match_id));
+        premCombo.picks.forEach((x) => {
+          premiumUsed.add(x.p.match_id);
+          globalUsedMatchIds.add(x.p.match_id);
+        });
         registerPickKeys(premCombo.picks, premiumPickKeys);
         premiumCreated.push({
           id: newPremTicket.id,
