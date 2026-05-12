@@ -84,15 +84,22 @@ async function findActiveSubscriptionForEmail(stripe: Stripe, email?: string | n
 }
 
 async function syncSubscriptionToSupabase(supabase: any, userId: string, subscription: Stripe.Subscription) {
+  const isActive = ACTIVE_STRIPE_STATUSES.has(subscription.status);
+  // CRITICAL: only assign paid plan if subscription is actually active/trialing.
+  // Otherwise (incomplete, incomplete_expired, unpaid, past_due, canceled) keep user on free.
+  const plan = isActive ? getPlanFromSubscription(subscription) : "free";
+  const status = isActive ? "active" : subscription.status;
+  const expiresAt = isActive ? getPeriodEnd(subscription).toISOString() : null;
+
   const { error } = await supabase
     .from("user_subscriptions")
     .upsert(
       {
         user_id: userId,
-        plan: getPlanFromSubscription(subscription),
-        status: getSupabaseStatus(subscription.status),
-        subscription_source: "stripe",
-        expires_at: getPeriodEnd(subscription).toISOString(),
+        plan,
+        status,
+        subscription_source: isActive ? "stripe" : "free",
+        expires_at: expiresAt,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }
