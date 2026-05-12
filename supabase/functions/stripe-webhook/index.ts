@@ -267,8 +267,12 @@ serve(async (req) => {
 
       console.log(`Successfully updated subscription for user ${user.id}`);
 
-      // Notify admin about new sale (fire-and-forget)
-      notifyAdmin(plan, customerEmail, user.id, "Stripe");
+      // Notify admin only if subscription is actually active (payment succeeded)
+      if (ACTIVE_STRIPE_STATUSES.has(subscription.status)) {
+        notifyAdmin(plan, customerEmail, user.id, "Stripe");
+      } else {
+        console.log(`Skipping admin notification: subscription status is ${subscription.status}`);
+      }
     }
 
     // Handle customer.subscription.updated (renewals, plan changes)
@@ -315,8 +319,8 @@ serve(async (req) => {
 
       if (error) {
         console.error("Error updating subscription:", error);
-      } else {
-        // Notify admin about renewal/plan change (fire-and-forget)
+      } else if (ACTIVE_STRIPE_STATUSES.has(subscription.status)) {
+        // Notify admin only on successful renewal/plan change
         const customerEmail = user.email || "unknown";
         notifyAdmin(plan, customerEmail, user.id, "Stripe (renewal)");
       }
