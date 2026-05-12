@@ -96,8 +96,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     const tipDate = (tip as any).tip_date as string | null | undefined;
     const isFutureOrToday = !tipDate || tipDate >= today;
     const warn = isFutureOrToday
-      ? `⚠️ Match date is ${tipDate ?? "unknown"} (today or future). Are you SURE you want to mark "${tip.home_team} vs ${tip.away_team}" as ${result.toUpperCase()}?`
-      : `Mark "${tip.home_team} vs ${tip.away_team}" as ${result.toUpperCase()}?`;
+      ? `⚠️ Match date is ${tipDate ?? "unknown"} (today or future). Are you SURE you want to mark "${tip.homeTeam} vs ${tip.awayTeam}" as ${result.toUpperCase()}?`
+      : `Mark "${tip.homeTeam} vs ${tip.awayTeam}" as ${result.toUpperCase()}?`;
     if (!confirm(warn)) return;
     setAdminBusy(result);
     const { error } = await (supabase as any).from("tips").update({ result }).eq("id", tip.id);
