@@ -235,11 +235,6 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
                 {tip.league}
               </span>
-              {tip.kickoffTime && (
-                <span className="text-[10px] font-medium text-foreground/80">
-                  {tip.kickoffTime}
-                </span>
-              )}
             </div>
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
@@ -249,10 +244,14 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">
             {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
           </h3>
-          {(tip.kickoffDate || (!tip.kickoffTime && tip.kickoff)) && (
+          {(tip.kickoffDate || tip.kickoffTime || tip.kickoff) && (
             <div className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>{tip.kickoffDate || tip.kickoff}</span>
+              <span>
+                {[tip.kickoffDate || (!tip.kickoffTime ? tip.kickoff : ""), tip.kickoffTime]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
             </div>
           )}
         </div>
