@@ -233,7 +233,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             <div className="flex items-center gap-1.5">
               {getTierBadge(tip.tier)}
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
-                {tip.league}
+                {tip.league?.replace(/\s+\d{1,2}[:.]\d{2}\s*$/, "").trim()}
               </span>
             </div>
             {/* Status — hide when locked */}

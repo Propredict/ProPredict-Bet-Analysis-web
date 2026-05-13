@@ -38,25 +38,11 @@ export function formatKickoffParts(
         time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
       }
     }
-    if (!time && fallbackTs) {
-      const d = new Date(fallbackTs);
-      if (!isNaN(d.getTime())) {
-        time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-      }
-    }
     if (!time) time = hhmm;
-  } else if (fallbackTs) {
-    const d = new Date(fallbackTs);
-    if (!isNaN(d.getTime())) {
-      time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-    }
   }
-  if (!date && fallbackTs) {
-    date = new Date(fallbackTs).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  }
+  // NOTE: We intentionally do NOT fall back to created_at_ts (`fallbackTs`).
+  // That timestamp is when the tip row was created, not the actual match
+  // kickoff. Showing it produced wrong "kickoff" times for manually-created
+  // tips that have NULL match_date/match_time.
   return { date, time };
 }
