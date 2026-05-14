@@ -739,6 +739,50 @@ interface RealXGStats {
 
 const realXGMemoryCache = new Map<string, RealXGStats | null>();
 
+// ============================================================
+// PHASE 3: Opponent-Adjusted xG (Strength of Schedule)
+// ============================================================
+// Computes a per-opponent adjustment factor based on how strong
+// (or weak) the opponent's defense is vs the league average.
+// xG generated against a weak defense gets discounted; xG generated
+// against an elite defense gets boosted.
+// ============================================================
+function computeLeagueAvgGoalsAgainst(standings: StandingEntry[]): number | null {
+  if (!standings || standings.length === 0) return null;
+  let totalGA = 0, totalPlayed = 0;
+  for (const s of standings) {
+    if (s.played > 0) {
+      totalGA += s.goalsAgainst;
+      totalPlayed += s.played;
+    }
+  }
+  if (totalPlayed === 0) return null;
+  return totalGA / totalPlayed;
+}
+
+/**
+ * Returns multiplier to apply to a team's xG_for that was generated
+ * against `opponentId`. Clamped 0.7..1.4. Returns 1 (neutral) when
+ * standings data is missing or opponent isn't ranked.
+ *
+ * Logic: factor = league_avg_GA_per_game / opp_GA_per_game
+ *  - opp concedes MORE than league avg → factor < 1 → discount xG (easy match)
+ *  - opp concedes LESS than league avg → factor > 1 → boost xG (hard match)
+ */
+function getOpponentDefAdjustment(
+  standings: StandingEntry[],
+  opponentId: number,
+  leagueAvgGA: number | null
+): number {
+  if (!standings || standings.length === 0 || leagueAvgGA == null || leagueAvgGA <= 0) return 1;
+  const opp = standings.find(s => s.teamId === opponentId);
+  if (!opp || opp.played < 3) return 1; // need ≥3 matches for stable signal
+  const oppGAPerGame = opp.goalsAgainst / opp.played;
+  if (oppGAPerGame <= 0.1) return 1.4; // elite defense → cap at +40%
+  const factor = leagueAvgGA / oppGAPerGame;
+  return Math.max(0.7, Math.min(1.4, factor));
+}
+
 /**
  * Fetches last N completed matches for a team and extracts xG from statistics.
  * Returns null if API fails or no xG data available (lower leagues).
