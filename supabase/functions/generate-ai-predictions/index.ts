@@ -131,7 +131,40 @@ function decideStep2(
     };
   }
 
+  // === RULE 1b: DOUBLE CHANCE (moderate edge — safer than 1/2) ===
+  if (diff >= 0.35 && diff < 0.6) {
+    const conf = 66 + Math.round((diff - 0.35) * 16);
+    return {
+      market: "1X",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Home edge Δ ${diff.toFixed(2)} — double chance safer pick`,
+      baseConfidence: Math.min(78, conf),
+    };
+  }
+  if (diff <= -0.35 && diff > -0.6) {
+    const conf = 66 + Math.round((Math.abs(diff) - 0.35) * 16);
+    return {
+      market: "X2",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Away edge Δ ${Math.abs(diff).toFixed(2)} — double chance safer pick`,
+      baseConfidence: Math.min(78, conf),
+    };
+  }
+
   // === RULE 2: GOALS markets — diversified ladder ===
+  // PREMIUM COMBO — BTTS Yes & Over 2.5 (when both signals very strong)
+  if (expectedHome >= 1.4 && expectedAway >= 1.3 && totalGoals >= 2.7) {
+    const conf = 70 + Math.round(Math.min(expectedHome, expectedAway - 0.1) * 4);
+    return {
+      market: "BTTS Yes & Over 2.5",
+      predicted_score: `${Math.max(2, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
+      expectedHome, expectedAway, totalGoals,
+      reason: `Strong both-score + high total (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)}, total ${totalGoals.toFixed(2)})`,
+      baseConfidence: Math.min(80, conf),
+    };
+  }
   // Over 3.5 (very high-scoring profile)
   if (totalGoals >= 3.4) {
     const conf = Math.min(82, 64 + Math.round((totalGoals - 3.4) * 10));
@@ -255,6 +288,26 @@ function decideStep2Soft(
       expectedHome, expectedAway, totalGoals,
       reason: `[soft] Away edge Δ ${Math.abs(diff).toFixed(2)} (free tier)`,
       baseConfidence: 62,
+    };
+  }
+
+  // SOFT DOUBLE CHANCE — edge ≥ 0.22 (less strict than 1/2, safer)
+  if (diff >= 0.22) {
+    return {
+      market: "1X",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Home edge Δ ${diff.toFixed(2)} — double chance (free tier)`,
+      baseConfidence: 63,
+    };
+  }
+  if (diff <= -0.22) {
+    return {
+      market: "X2",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Away edge Δ ${Math.abs(diff).toFixed(2)} — double chance (free tier)`,
+      baseConfidence: 63,
     };
   }
 
