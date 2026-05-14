@@ -7919,34 +7919,75 @@ async function processBatch(
         if (!keyFactors.some((f) => f.startsWith("step2_xg:"))) {
           keyFactors.unshift(xgTag);
         }
-        // STEP 3 — variance stability flag (low/high goal variability across last 5).
-        // We approximate variance from `homeXg`/`awayXg` plus the spread vs the
-        // expected goals — small spread + balanced expectation = STABLE.
+        // STEP 3 — variance stability (PHASE 1 v2)
+        // Primary signal: real xG std-dev from team_xg_cache (per-team last-N matches).
+        // Fallback: balance/spread heuristic when real std is unavailable.
+        // STABLE → no confidence change. UNSTABLE → confidence capped at 70.
         // Tag format: variance:STABLE|UNSTABLE|score
         try {
           const homeAvg = homeXg;
           const awayAvg = awayXg;
           const spread = Math.abs(homeAvg - awayAvg);
           const totalGoals = homeAvg + awayAvg;
-          // STABLE when:
-          //   • neither team is at extreme attacking output (>3.5 / match)
-          //   • neither team is starved (<0.4 / match)
-          //   • spread between teams is moderate (≤ 2.0)
-          //   • total goals within sane band (1.2–4.5)
-          const stable =
-            homeAvg >= 0.4 && homeAvg <= 3.5 &&
-            awayAvg >= 0.4 && awayAvg <= 3.5 &&
-            spread <= 2.0 &&
-            totalGoals >= 1.2 && totalGoals <= 4.5;
-          // Variance score 0–100 (higher = more stable, easier for UI badge)
-          const balancePts = Math.max(0, 100 - spread * 25); // 0 spread = 100, 4 spread = 0
-          const totalPts = totalGoals < 1.2 || totalGoals > 4.5 ? 0 : 100 - Math.abs(totalGoals - 2.6) * 20;
-          const varianceScore = Math.round((balancePts + Math.max(0, totalPts)) / 2);
+
+          // Try real xG std-dev (memory-cached, no extra API call)
+          let realStdHome: number | null = null;
+          let realStdAway: number | null = null;
+          try {
+            if (leagueId && homeTeamId && awayTeamId) {
+              const [hRX, aRX] = await Promise.all([
+                getCachedRealXG(supabase, homeTeamId, leagueId, season, apiKey),
+                getCachedRealXG(supabase, awayTeamId, leagueId, season, apiKey),
+              ]);
+              realStdHome = hRX?.xg_for_std ?? null;
+              realStdAway = aRX?.xg_for_std ?? null;
+            }
+          } catch (_e) { /* best-effort */ }
+
+          let stable: boolean;
+          let varianceScore: number;
+
+          if (realStdHome != null && realStdAway != null) {
+            // Real std-dev based: stable teams have std 0.4–1.0 typically
+            // Unstable teams (boom/bust) have std > 1.4
+            const avgStd = (realStdHome + realStdAway) / 2;
+            stable =
+              avgStd <= 1.2 &&
+              homeAvg >= 0.4 && homeAvg <= 3.5 &&
+              awayAvg >= 0.4 && awayAvg <= 3.5 &&
+              totalGoals >= 1.2 && totalGoals <= 4.5;
+            // 100 at std=0.4, 0 at std=1.6
+            const stdPts = Math.max(0, Math.min(100, Math.round((1.6 - avgStd) / 1.2 * 100)));
+            const balancePts = Math.max(0, 100 - spread * 20);
+            varianceScore = Math.round((stdPts * 0.7 + balancePts * 0.3));
+          } else {
+            // Fallback heuristic
+            stable =
+              homeAvg >= 0.4 && homeAvg <= 3.5 &&
+              awayAvg >= 0.4 && awayAvg <= 3.5 &&
+              spread <= 2.0 &&
+              totalGoals >= 1.2 && totalGoals <= 4.5;
+            const balancePts = Math.max(0, 100 - spread * 25);
+            const totalPts = totalGoals < 1.2 || totalGoals > 4.5 ? 0 : 100 - Math.abs(totalGoals - 2.6) * 20;
+            varianceScore = Math.round((balancePts + Math.max(0, totalPts)) / 2);
+          }
+
           varianceStableDB = stable;
           varianceScoreDB = varianceScore;
           const varianceTag = `variance:${stable ? "STABLE" : "UNSTABLE"}|${varianceScore}`;
           if (!keyFactors.some((f) => f.startsWith("variance:"))) {
             keyFactors.unshift(varianceTag);
+          }
+
+          // PHASE 1 — Variance Confidence Cap
+          // Unstable teams → cap confidence at 70 (no Premium promotion)
+          // Stable teams → no change (can reach Premium ≥78)
+          if (!stable && newPrediction.confidence > 70) {
+            const before = newPrediction.confidence;
+            newPrediction.confidence = 70;
+            console.log(
+              `[VAR-CAP] ${fixtureIdStr}: UNSTABLE → confidence ${before}% → 70% (score=${varianceScore})`
+            );
           }
         } catch (_e) {
           /* best-effort */
