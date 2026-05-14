@@ -291,6 +291,26 @@ function decideStep2Soft(
     };
   }
 
+  // SOFT DOUBLE CHANCE — edge ≥ 0.22 (less strict than 1/2, safer)
+  if (diff >= 0.22) {
+    return {
+      market: "1X",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Home edge Δ ${diff.toFixed(2)} — double chance (free tier)`,
+      baseConfidence: 63,
+    };
+  }
+  if (diff <= -0.22) {
+    return {
+      market: "X2",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Away edge Δ ${Math.abs(diff).toFixed(2)} — double chance (free tier)`,
+      baseConfidence: 63,
+    };
+  }
+
   // SOFT BTTS — both teams ≥ 0.85 (promoted before Over 1.5 for variety)
   if (expectedHome >= 0.85 && expectedAway >= 0.85 && totalGoals >= 1.9) {
     return {
