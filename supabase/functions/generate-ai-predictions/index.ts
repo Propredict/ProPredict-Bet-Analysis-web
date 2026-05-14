@@ -1343,6 +1343,8 @@ async function fetchStandings(leagueId: number, season: number, apiKey: string):
           goalsDiff: team.goalsDiff || 0,
           form: team.form || "",
           totalTeams,
+          goalsFor: team.all?.goals?.for ?? 0,
+          goalsAgainst: team.all?.goals?.against ?? 0,
         });
       }
     }
