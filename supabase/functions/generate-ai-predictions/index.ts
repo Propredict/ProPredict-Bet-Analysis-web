@@ -7304,7 +7304,7 @@ async function processBatch(
 
       // === STEP 2 DETERMINISTIC DECIDER ===
       // Apply hard expected-goals rules. If NO strong signal → SKIP match (no spam predictions).
-      let step2 = decideStep2(homeStats, awayStats, homeForm, awayForm);
+      let step2 = decideStep2(homeStats, awayStats, homeForm, awayForm, odds);
       let step2IsSoftFallback = false;
 
       // SOFT FALLBACK: when strict Step 2 fails, try lenient thresholds.
