@@ -739,6 +739,50 @@ interface RealXGStats {
 
 const realXGMemoryCache = new Map<string, RealXGStats | null>();
 
+// ============================================================
+// PHASE 3: Opponent-Adjusted xG (Strength of Schedule)
+// ============================================================
+// Computes a per-opponent adjustment factor based on how strong
+// (or weak) the opponent's defense is vs the league average.
+// xG generated against a weak defense gets discounted; xG generated
+// against an elite defense gets boosted.
+// ============================================================
+function computeLeagueAvgGoalsAgainst(standings: StandingEntry[]): number | null {
+  if (!standings || standings.length === 0) return null;
+  let totalGA = 0, totalPlayed = 0;
+  for (const s of standings) {
+    if (s.played > 0) {
+      totalGA += s.goalsAgainst;
+      totalPlayed += s.played;
+    }
+  }
+  if (totalPlayed === 0) return null;
+  return totalGA / totalPlayed;
+}
+
+/**
+ * Returns multiplier to apply to a team's xG_for that was generated
+ * against `opponentId`. Clamped 0.7..1.4. Returns 1 (neutral) when
+ * standings data is missing or opponent isn't ranked.
+ *
+ * Logic: factor = league_avg_GA_per_game / opp_GA_per_game
+ *  - opp concedes MORE than league avg → factor < 1 → discount xG (easy match)
+ *  - opp concedes LESS than league avg → factor > 1 → boost xG (hard match)
+ */
+function getOpponentDefAdjustment(
+  standings: StandingEntry[],
+  opponentId: number,
+  leagueAvgGA: number | null
+): number {
+  if (!standings || standings.length === 0 || leagueAvgGA == null || leagueAvgGA <= 0) return 1;
+  const opp = standings.find(s => s.teamId === opponentId);
+  if (!opp || opp.played < 3) return 1; // need ≥3 matches for stable signal
+  const oppGAPerGame = opp.goalsAgainst / opp.played;
+  if (oppGAPerGame <= 0.1) return 1.4; // elite defense → cap at +40%
+  const factor = leagueAvgGA / oppGAPerGame;
+  return Math.max(0.7, Math.min(1.4, factor));
+}
+
 /**
  * Fetches last N completed matches for a team and extracts xG from statistics.
  * Returns null if API fails or no xG data available (lower leagues).
@@ -762,6 +806,15 @@ async function fetchTeamRealXGFromAPI(
     const fixtures = json?.response || [];
     if (fixtures.length === 0) return null;
 
+    // PHASE 3: Strength-of-Schedule — fetch standings (cached) once per league.
+    // Used to adjust xG by opponent's defensive strength.
+    let sosStandings: StandingEntry[] = [];
+    let leagueAvgGA: number | null = null;
+    try {
+      sosStandings = await fetchStandings(leagueId, season, apiKey);
+      leagueAvgGA = computeLeagueAvgGoalsAgainst(sosStandings);
+    } catch (_) { /* SoS is best-effort */ }
+
     const xgForAll: number[] = [];
     const xgAgainstAll: number[] = [];
     const xgForHome: number[] = [];
@@ -775,6 +828,9 @@ async function fetchTeamRealXGFromAPI(
         const fixtureId = fixture?.fixture?.id;
         const isHome = fixture?.teams?.home?.id === teamId;
         if (!fixtureId) continue;
+        const opponentId = isHome
+          ? fixture?.teams?.away?.id
+          : fixture?.teams?.home?.id;
 
         const statsUrl = `${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`;
         const statsRes = await fetch(statsUrl, {
@@ -797,10 +853,20 @@ async function fetchTeamRealXGFromAPI(
         const myXg = myXgRaw !== null && myXgRaw !== undefined ? parseFloat(String(myXgRaw)) : null;
         const oppXg = oppXgRaw !== null && oppXgRaw !== undefined ? parseFloat(String(oppXgRaw)) : null;
 
+        // PHASE 3: opponent-adjusted xG.
+        // Discount xG generated vs weak defenses, boost xG vs strong defenses.
+        const sosFactor = opponentId
+          ? getOpponentDefAdjustment(sosStandings, opponentId, leagueAvgGA)
+          : 1;
+        // Inverse adjustment for xG_against (we conceded vs an opponent — adjust
+        // by THEIR offensive strength, but we don't have it cheaply, so use
+        // symmetric factor on offense only and leave xg_against raw).
+
         if (myXg !== null && !isNaN(myXg) && myXg >= 0) {
-          xgForAll.push(myXg);
-          if (isHome) xgForHome.push(myXg);
-          else xgForAway.push(myXg);
+          const adjXg = myXg * sosFactor;
+          xgForAll.push(adjXg);
+          if (isHome) xgForHome.push(adjXg);
+          else xgForAway.push(adjXg);
         }
         if (oppXg !== null && !isNaN(oppXg) && oppXg >= 0) {
           xgAgainstAll.push(oppXg);
@@ -1123,6 +1189,9 @@ interface StandingEntry {
   goalsDiff: number;
   form: string;
   totalTeams: number;
+  // PHASE 3: per-team scoring/conceding rates from standings (Strength of Schedule)
+  goalsFor: number;       // total goals for in season
+  goalsAgainst: number;   // total goals against in season
 }
 
 interface OddsData {
@@ -1340,6 +1409,8 @@ async function fetchStandings(leagueId: number, season: number, apiKey: string):
           goalsDiff: team.goalsDiff || 0,
           form: team.form || "",
           totalTeams,
+          goalsFor: team.all?.goals?.for ?? 0,
+          goalsAgainst: team.all?.goals?.against ?? 0,
         });
       }
     }
