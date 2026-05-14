@@ -502,3 +502,144 @@ export function wcStrength(teamName: string): number {
   if (team) return Math.max(0, 100 - team.fifaRank);
   return 30;
 }
+
+// ==========================================
+// PHASE 2 — DURING-TOURNAMENT MODIFIERS
+// ==========================================
+
+export type WCResult = "W" | "D" | "L";
+
+/**
+ * Tournament momentum boost. Wins early in the tournament carry
+ * confidence into the next match. Capped to avoid runaway swings.
+ * +4 per W, +1 per D, -2 per L. Clamped to [-6, +8].
+ */
+export function wcMomentumBoost(results: WCResult[] | undefined | null): number {
+  if (!results || results.length === 0) return 0;
+  const raw = results.reduce((s, r) => s + (r === "W" ? 4 : r === "D" ? 1 : -2), 0);
+  return Math.max(-6, Math.min(8, raw));
+}
+
+/**
+ * Rest-days differential. +1.6 strength points per extra day of rest,
+ * capped at ±6. (e.g. 4 vs 3 days rest → +1.6 to the rested side.)
+ */
+export function wcRestAdvantage(homeRestDays: number | null, awayRestDays: number | null): number {
+  if (homeRestDays == null || awayRestDays == null) return 0;
+  const diff = homeRestDays - awayRestDays;
+  return Math.max(-6, Math.min(6, diff * 1.6));
+}
+
+/**
+ * Knockout-stage adjustment. Historical WC knockout games average
+ * ~22% fewer goals than group stage, and draws after 90' are common
+ * (go to ET / penalties). We compress the win shares slightly and
+ * push the draw share up.
+ */
+export function wcApplyKnockoutShape(
+  homeWin: number,
+  draw: number,
+  awayWin: number,
+): { homeWin: number; draw: number; awayWin: number; lowScoring: true } {
+  // Pull 6 pts from each win share, add 12 to draw → tighter, more cautious match
+  const hw = Math.max(8, homeWin - 6);
+  const aw = Math.max(8, awayWin - 6);
+  const d = Math.max(15, 100 - hw - aw);
+  return { homeWin: hw, draw: d, awayWin: aw, lowScoring: true };
+}
+
+/**
+ * Penalty-shootout probability for knockout matches.
+ * Strong-favorite matchups → low PK chance. Even matchups → up to ~30%.
+ * Returns null for non-knockout games.
+ */
+export function wcPenaltyShootoutProb(
+  homeStrength: number,
+  awayStrength: number,
+  isKnockout: boolean,
+): number | null {
+  if (!isKnockout) return null;
+  const gap = Math.abs(homeStrength - awayStrength);
+  // gap 0 → 30%, gap 25+ → 8%
+  return Math.round(Math.max(8, 30 - gap * 0.9));
+}
+
+/**
+ * Unified match projection that plugs in Phase 1 strength + Phase 2
+ * during-tournament modifiers. Pre-tournament, just pass strengths and
+ * leave the optional context empty.
+ */
+export interface WCProjectionContext {
+  homeIsHost?: boolean;
+  awayIsHost?: boolean;
+  homeMomentum?: WCResult[];
+  awayMomentum?: WCResult[];
+  homeRestDays?: number | null;
+  awayRestDays?: number | null;
+  isKnockout?: boolean;
+  // Group stage 3rd round "must-win" flag → boosts Over 2.5
+  isMustWin?: boolean;
+}
+
+export interface WCProjectionResult {
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+  confidence: number;
+  homeAdj: number;
+  awayAdj: number;
+  /** Probability the match goes to penalties (knockout only) */
+  penaltyProb: number | null;
+  /** True when the model expects a low-scoring affair (KO stage) */
+  lowScoring: boolean;
+  /** True when both teams need a win (group MD3) → expect Over 2.5 push */
+  highStakes: boolean;
+}
+
+export function wcMatchProjection(
+  homeTeam: string,
+  awayTeam: string,
+  ctx: WCProjectionContext = {},
+): WCProjectionResult {
+  const homeStr = wcStrength(homeTeam);
+  const awayStr = wcStrength(awayTeam);
+  const homeAdv = ctx.homeIsHost ? 10 : 6;
+  const awayAdv = ctx.awayIsHost ? 4 : 0;
+
+  const homeMo = wcMomentumBoost(ctx.homeMomentum);
+  const awayMo = wcMomentumBoost(ctx.awayMomentum);
+  const restAdj = wcRestAdvantage(ctx.homeRestDays ?? null, ctx.awayRestDays ?? null);
+
+  const homeAdj = homeStr + homeAdv + homeMo + Math.max(0, restAdj);
+  const awayAdj = awayStr + awayAdv + awayMo + Math.max(0, -restAdj);
+  const gap = homeAdj - awayAdj;
+  const absGap = Math.abs(gap);
+
+  const drawBase = 28 - Math.min(15, absGap * 0.6);
+  const winShare = (100 - drawBase) / 2;
+  const tilt = Math.max(-winShare * 0.85, Math.min(winShare * 0.85, gap * 1.1));
+  let homeWin = Math.max(6, Math.round(winShare + tilt));
+  let awayWin = Math.max(6, Math.round(winShare - tilt));
+  let draw = Math.max(8, 100 - homeWin - awayWin);
+
+  if (ctx.isKnockout) {
+    const ko = wcApplyKnockoutShape(homeWin, draw, awayWin);
+    homeWin = ko.homeWin;
+    draw = ko.draw;
+    awayWin = ko.awayWin;
+  }
+
+  const confidence = Math.min(90, Math.round(58 + absGap * 0.55 + (homeMo + awayMo) * 0.4));
+
+  return {
+    homeWin,
+    draw,
+    awayWin,
+    confidence,
+    homeAdj,
+    awayAdj,
+    penaltyProb: wcPenaltyShootoutProb(homeStr, awayStr, !!ctx.isKnockout),
+    lowScoring: !!ctx.isKnockout,
+    highStakes: !!ctx.isMustWin,
+  };
+}

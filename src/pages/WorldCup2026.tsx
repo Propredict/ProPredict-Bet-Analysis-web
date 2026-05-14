@@ -20,6 +20,7 @@ import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup, wcStrength,
+  wcMatchProjection,
 } from "@/data/worldCup2026";
 
 const ALL_TEAMS = Object.entries(GROUPS).flatMap(([group, teams]) =>
@@ -52,36 +53,27 @@ function parseAdEventPayload(event: Event) {
   return raw && typeof raw === "object" ? raw : null;
 }
 
-// Pre-tournament AI projections — Phase 1 model.
-// Uses composite strength (Elo 50% + Squad value 30% + Recent form 20%)
-// instead of raw FIFA rank. Host-nation home advantage applied to USA,
-// Mexico, Canada when they play on home soil. Replaced as soon as the
-// real `generate-ai-predictions` pipeline kicks in on match day.
+// Pre-tournament AI projections — Phase 1 + Phase 2 model.
+// Phase 1: composite strength (Elo 50% + Squad value 30% + Recent form 20%).
+// Phase 2 (during tournament): tournament momentum, rest-days differential,
+// knockout shape and penalty-shootout probability are applied via
+// `wcMatchProjection` once real results start flowing in. Replaced by the
+// real `generate-ai-predictions` pipeline on match day.
 const HOST_NATIONS = new Set(["United States", "Mexico", "Canada"]);
 const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
-  const homeStr = wcStrength(m.home);
-  const awayStr = wcStrength(m.away);
-  // Home advantage: +6 generic, +10 if host nation
-  const homeAdv = HOST_NATIONS.has(m.home) ? 10 : 6;
-  const homeAdj = homeStr + homeAdv;
-  const awayAdj = awayStr;
-  const gap = homeAdj - awayAdj;
-
-  // Logistic-ish probability mapping. Closer matches → higher draw share.
-  const absGap = Math.abs(gap);
-  const drawBase = 28 - Math.min(15, absGap * 0.6); // 13–28%
-  const winShare = (100 - drawBase) / 2;
-  const tilt = Math.max(-winShare * 0.85, Math.min(winShare * 0.85, gap * 1.1));
-  const homeWin = Math.round(winShare + tilt);
-  const awayWin = Math.round(winShare - tilt);
-  const draw = Math.max(8, 100 - homeWin - awayWin);
-
+  const proj = wcMatchProjection(m.home, m.away, {
+    homeIsHost: HOST_NATIONS.has(m.home),
+    awayIsHost: HOST_NATIONS.has(m.away),
+    // Pre-tournament: no momentum / rest data yet. Phase 2 helpers
+    // will pick these up automatically once results flow in.
+    isKnockout: false,
+  });
   return {
     home: m.home, away: m.away, date: m.date,
-    homeWin: Math.max(homeWin, 6),
-    draw,
-    awayWin: Math.max(awayWin, 6),
-    confidence: Math.min(88, Math.round(58 + absGap * 0.55)),
+    homeWin: proj.homeWin,
+    draw: proj.draw,
+    awayWin: proj.awayWin,
+    confidence: proj.confidence,
   };
 });
 
