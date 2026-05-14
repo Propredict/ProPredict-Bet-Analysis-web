@@ -142,9 +142,42 @@ Deno.serve(async (req) => {
           actualResult = "2";
         }
 
-        // Compare prediction with actual result
-        const isWon = prediction.prediction === actualResult;
-        const newStatus = isWon ? "won" : "lost";
+        // Universal market evaluator (Over/Under, BTTS, 1X2, Double Chance, combos)
+        const evalLegAI = (leg: string, h: number, a: number): boolean | null => {
+          const t = h + a;
+          const btts = h > 0 && a > 0;
+          const s = leg.trim();
+          let m: RegExpMatchArray | null;
+          if ((m = s.match(/^Over\s+(\d+(?:\.\d+)?)/i))) return t > parseFloat(m[1]);
+          if ((m = s.match(/^Under\s+(\d+(?:\.\d+)?)/i))) return t < parseFloat(m[1]);
+          if (/^BTTS\s*No/i.test(s) || /^GG\s*No/i.test(s) || /^NG/i.test(s)) return !btts;
+          if (/^BTTS/i.test(s) || /^GG/i.test(s)) return btts;
+          if (/^1X/i.test(s)) return h >= a;
+          if (/^X2/i.test(s)) return a >= h;
+          if (/^12/i.test(s)) return h !== a;
+          if (/^Home/i.test(s) || /^\s*1\s*$/.test(s)) return h > a;
+          if (/^Away/i.test(s) || /^\s*2\s*$/.test(s)) return a > h;
+          if (/^Draw/i.test(s) || /^\s*X\s*$/.test(s)) return h === a;
+          return null;
+        };
+        const evalComboAI = (label: string, h: number, a: number): boolean | null => {
+          const legs = label.split(/\s*&\s*/);
+          let allWon = true;
+          for (const l of legs) {
+            const r = evalLegAI(l, h, a);
+            if (r === null) return null;
+            if (!r) allWon = false;
+          }
+          return allWon;
+        };
+        const evalResult = evalComboAI(String(prediction.prediction ?? ""), homeGoals, awayGoals);
+        if (evalResult === null) {
+          // Unrecognized market — fall back to 1X2 comparison
+          const isWon = prediction.prediction === actualResult;
+          var newStatus = isWon ? "won" : "lost";
+        } else {
+          var newStatus = evalResult ? "won" : "lost";
+        }
 
         // Update the prediction
         const { error: updateError } = await supabase
