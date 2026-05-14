@@ -117,9 +117,6 @@ export default function AllTickets() {
     : 0;
   const globalWon = wonTipsCount + wonTicketsCount;
   const globalLost = lostTipsCount + lostTicketsCount;
-  const globalWinRate = globalWon + globalLost > 0 
-    ? Math.round((globalWon / (globalWon + globalLost)) * 100) 
-    : 0;
 
   // Get filtered and sorted content (already excludes today via archivedTips/archivedTickets)
   const filteredTips = filterAndSort(archivedTips.filter(tip => tip.tier === activeTab));
