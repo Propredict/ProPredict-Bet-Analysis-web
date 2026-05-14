@@ -850,7 +850,7 @@ export default function AIPredictions() {
                 )}
                 onClick={() => setTierFilter("all")}
               >
-                All ({predictions.length})
+                All ({tierCounts.free + tierCounts.pro + tierCounts.premium})
               </Button>
               <Button
                 variant="ghost"
