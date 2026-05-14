@@ -735,7 +735,9 @@ export function wcMatchProjection(
 
   const homeAdj = homeStr + homeAdv + homeMo + Math.max(0, restAdj);
   const awayAdj = awayStr + awayAdv + awayMo + Math.max(0, -restAdj);
-  const gap = homeAdj - awayAdj;
+  // Phase 3: confederation bias — small lift for UEFA/CONMEBOL vs AFC/CAF
+  const confBias = wcConfederationBias(homeTeam, awayTeam);
+  const gap = (homeAdj - awayAdj) + confBias;
   const absGap = Math.abs(gap);
 
   const drawBase = 28 - Math.min(15, absGap * 0.6);
