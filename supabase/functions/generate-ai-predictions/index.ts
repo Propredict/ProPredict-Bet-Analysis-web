@@ -897,6 +897,10 @@ async function getCachedRealXG(
           away_xg_against_avg: cached.away_xg_against_avg,
           xg_for_std: cached.xg_for_std,
           matches_count: cached.matches_count ?? 0,
+          // Weighted columns may not exist in cache (no DB schema change yet);
+          // fall back to null → blend formula uses non-weighted venue averages.
+          xg_for_weighted: (cached as any).xg_for_weighted ?? null,
+          xg_against_weighted: (cached as any).xg_against_weighted ?? null,
         };
         realXGMemoryCache.set(cacheKey, stats);
         return stats;
