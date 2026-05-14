@@ -7262,12 +7262,30 @@ async function processBatch(
               ? (awayRealXG.away_xg_for_avg + homeRealXG.home_xg_against_avg) / 2
               : null;
           if (realHomePred != null && realAwayPred != null) {
-            homeXg = clamp(0.7 * realHomePred + 0.3 * proxyHomeXg, 0.3, 3.0);
-            awayXg = clamp(0.7 * realAwayPred + 0.3 * proxyAwayXg, 0.3, 3.0);
+            // PHASE 2: Recency trend multiplier.
+            // Compare weighted (last-3 ×2) vs avg5 to detect form direction.
+            // Trend > 1 → team trending up; < 1 → trending down.
+            // Clamped 0.85..1.15 to avoid over-correction.
+            const trend = (w: number | null | undefined, a: number | null | undefined) => {
+              if (w == null || a == null || a < 0.2) return 1;
+              return Math.max(0.85, Math.min(1.15, w / a));
+            };
+            const homeTrendFor = trend(homeRealXG?.xg_for_weighted, homeRealXG?.xg_for_avg_last5);
+            const awayTrendAgainst = trend(awayRealXG?.xg_against_weighted, awayRealXG?.xg_against_avg_last5);
+            const awayTrendFor = trend(awayRealXG?.xg_for_weighted, awayRealXG?.xg_for_avg_last5);
+            const homeTrendAgainst = trend(homeRealXG?.xg_against_weighted, homeRealXG?.xg_against_avg_last5);
+            // Apply averaged attack/defense trend per side
+            const homeTrendMult = (homeTrendFor + awayTrendAgainst) / 2;
+            const awayTrendMult = (awayTrendFor + homeTrendAgainst) / 2;
+            const trendedHomePred = realHomePred * homeTrendMult;
+            const trendedAwayPred = realAwayPred * awayTrendMult;
+            homeXg = clamp(0.7 * trendedHomePred + 0.3 * proxyHomeXg, 0.3, 3.0);
+            awayXg = clamp(0.7 * trendedAwayPred + 0.3 * proxyAwayXg, 0.3, 3.0);
             xgSource = "real";
             console.log(
-              `[xG-PHASE1] ${homeTeamName} vs ${awayTeamName} | source=real | ` +
-              `proxy(${proxyHomeXg.toFixed(2)}/${proxyAwayXg.toFixed(2)}) → ` +
+              `[xG-PHASE2] ${homeTeamName} vs ${awayTeamName} | source=real | ` +
+              `proxy(${proxyHomeXg.toFixed(2)}/${proxyAwayXg.toFixed(2)}) | ` +
+              `trend(H=${homeTrendMult.toFixed(2)},A=${awayTrendMult.toFixed(2)}) → ` +
               `blended(${homeXg.toFixed(2)}/${awayXg.toFixed(2)})`
             );
           }
