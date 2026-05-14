@@ -19,7 +19,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
-  GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
+  GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup, wcStrength,
 } from "@/data/worldCup2026";
 
 const ALL_TEAMS = Object.entries(GROUPS).flatMap(([group, teams]) =>
@@ -52,18 +52,36 @@ function parseAdEventPayload(event: Event) {
   return raw && typeof raw === "object" ? raw : null;
 }
 
-// Mock AI predictions based on real matchups
+// Pre-tournament AI projections — Phase 1 model.
+// Uses composite strength (Elo 50% + Squad value 30% + Recent form 20%)
+// instead of raw FIFA rank. Host-nation home advantage applied to USA,
+// Mexico, Canada when they play on home soil. Replaced as soon as the
+// real `generate-ai-predictions` pipeline kicks in on match day.
+const HOST_NATIONS = new Set(["United States", "Mexico", "Canada"]);
 const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
-  const homeRank = TEAMS[m.home]?.fifaRank || 50;
-  const awayRank = TEAMS[m.away]?.fifaRank || 50;
-  const total = homeRank + awayRank;
-  const homeWin = Math.round((1 - homeRank / total) * 80 + 10);
-  const awayWin = Math.round((1 - awayRank / total) * 80 + 10);
-  const draw = 100 - homeWin - awayWin;
+  const homeStr = wcStrength(m.home);
+  const awayStr = wcStrength(m.away);
+  // Home advantage: +6 generic, +10 if host nation
+  const homeAdv = HOST_NATIONS.has(m.home) ? 10 : 6;
+  const homeAdj = homeStr + homeAdv;
+  const awayAdj = awayStr;
+  const gap = homeAdj - awayAdj;
+
+  // Logistic-ish probability mapping. Closer matches → higher draw share.
+  const absGap = Math.abs(gap);
+  const drawBase = 28 - Math.min(15, absGap * 0.6); // 13–28%
+  const winShare = (100 - drawBase) / 2;
+  const tilt = Math.max(-winShare * 0.85, Math.min(winShare * 0.85, gap * 1.1));
+  const homeWin = Math.round(winShare + tilt);
+  const awayWin = Math.round(winShare - tilt);
+  const draw = Math.max(8, 100 - homeWin - awayWin);
+
   return {
     home: m.home, away: m.away, date: m.date,
-    homeWin: Math.max(homeWin, 8), draw: Math.max(draw, 15), awayWin: Math.max(awayWin, 8),
-    confidence: Math.min(85, Math.round(60 + Math.abs(homeRank - awayRank) * 0.3)),
+    homeWin: Math.max(homeWin, 6),
+    draw,
+    awayWin: Math.max(awayWin, 6),
+    confidence: Math.min(88, Math.round(58 + absGap * 0.55)),
   };
 });
 
