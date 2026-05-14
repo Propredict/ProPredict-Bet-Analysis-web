@@ -406,3 +406,99 @@ export function getTeamGroup(teamName: string): string {
   }
   return "";
 }
+
+// ==========================================
+// PHASE 1 — PRE-TOURNAMENT STRENGTH MODEL
+// Replaces raw FIFA rank with a composite signal:
+//   • Elo rating (eloratings.net snapshot, Nov 2025)
+//   • Squad market value €M (Transfermarkt, 2025)
+//   • Recent international form pts last 10 (W=3, D=1, L=0; max 30)
+// More accurate than FIFA rank because Elo accounts for opponent
+// strength + venue, squad value reflects current player quality, and
+// form captures momentum heading into the tournament.
+// ==========================================
+
+// Elo ratings from eloratings.net (Nov 2025 snapshot). Higher = better.
+export const WC_ELO: Record<string, number> = {
+  "Argentina": 2143, "Spain": 2112, "France": 2059, "Brazil": 2030,
+  "Portugal": 2025, "England": 2009, "Netherlands": 2010, "Germany": 1965,
+  "Croatia": 1955, "Belgium": 1925, "Uruguay": 1925, "Colombia": 1900,
+  "Morocco": 1880, "Norway": 1860, "Switzerland": 1840, "Japan": 1840,
+  "Senegal": 1830, "Austria": 1830, "United States": 1820, "Ecuador": 1815,
+  "Iran": 1810, "Turkey": 1810, "Ivory Coast": 1810, "South Korea": 1795,
+  "Egypt": 1790, "Algeria": 1780, "Mexico": 1780, "Scotland": 1780,
+  "Czech Republic": 1760, "Sweden": 1750, "Tunisia": 1740, "Australia": 1730,
+  "Ghana": 1730, "Bosnia & Herzegovina": 1700, "Paraguay": 1700, "DR Congo": 1700,
+  "Cape Verde": 1670, "Iraq": 1670, "Saudi Arabia": 1660, "Panama": 1660,
+  "Uzbekistan": 1650, "Qatar": 1640, "Jordan": 1620, "South Africa": 1700,
+  "New Zealand": 1500, "Haiti": 1500, "Curaçao": 1500,
+};
+
+// Squad market value in €M (Transfermarkt, 2025). Higher = better.
+export const WC_SQUAD_VALUE: Record<string, number> = {
+  "England": 1500, "France": 1400, "Spain": 1280, "Portugal": 1100,
+  "Brazil": 1100, "Germany": 950, "Netherlands": 830, "Argentina": 750,
+  "Belgium": 620, "Norway": 430, "Uruguay": 430, "Colombia": 430,
+  "Croatia": 360, "Morocco": 330, "Austria": 320, "Switzerland": 310,
+  "United States": 310, "Senegal": 290, "Turkey": 290, "Japan": 260,
+  "Ecuador": 260, "Mexico": 250, "Sweden": 190, "South Korea": 190,
+  "Ivory Coast": 190, "Scotland": 180, "DR Congo": 170, "Czech Republic": 150,
+  "Egypt": 120, "Algeria": 120, "Ghana": 120, "South Africa": 80,
+  "Bosnia & Herzegovina": 80, "Iran": 50, "Tunisia": 50, "Cape Verde": 50,
+  "Australia": 70, "Paraguay": 50, "Saudi Arabia": 30, "Haiti": 30,
+  "New Zealand": 30, "Iraq": 25, "Uzbekistan": 25, "Qatar": 25,
+  "Curaçao": 25, "Panama": 25, "Jordan": 15,
+};
+
+// Recent international form — last 10 matches points (W=3, D=1, L=0).
+// Max = 30. Snapshot from qualifiers + friendlies through Nov 2025.
+export const WC_RECENT_FORM: Record<string, number> = {
+  "Argentina": 22, "Spain": 24, "France": 21, "Brazil": 18,
+  "Portugal": 23, "England": 20, "Netherlands": 19, "Germany": 17,
+  "Croatia": 18, "Belgium": 16, "Uruguay": 17, "Colombia": 19,
+  "Morocco": 22, "Norway": 21, "Switzerland": 17, "Japan": 22,
+  "Senegal": 20, "Austria": 18, "United States": 14, "Ecuador": 19,
+  "Iran": 21, "Turkey": 18, "Ivory Coast": 19, "South Korea": 19,
+  "Egypt": 20, "Algeria": 18, "Mexico": 16, "Scotland": 15,
+  "Czech Republic": 15, "Sweden": 12, "Tunisia": 16, "Australia": 17,
+  "Ghana": 14, "Bosnia & Herzegovina": 14, "Paraguay": 16, "DR Congo": 17,
+  "Cape Verde": 19, "Iraq": 16, "Saudi Arabia": 13, "Panama": 14,
+  "Uzbekistan": 18, "Qatar": 12, "Jordan": 17, "South Africa": 18,
+  "New Zealand": 16, "Haiti": 10, "Curaçao": 12,
+};
+
+/**
+ * Composite pre-tournament strength score (0-100, higher = better).
+ * Blends Elo (50%), squad value (30%), recent form (20%).
+ * Falls back to inverted FIFA rank if a signal is missing.
+ */
+export function wcStrength(teamName: string): number {
+  const team = TEAMS[teamName];
+  const elo = WC_ELO[teamName];
+  const squad = WC_SQUAD_VALUE[teamName];
+  const form = WC_RECENT_FORM[teamName];
+
+  // Normalize each signal to 0..100
+  // Elo: 1500 (weakest WC team) → 0, 2150 (Argentina) → 100
+  const eloNorm = elo != null ? Math.max(0, Math.min(100, ((elo - 1500) / 650) * 100)) : null;
+  // Squad: log scale, 15 €M → 0, 1500 €M → 100
+  const squadNorm = squad != null
+    ? Math.max(0, Math.min(100, (Math.log10(squad) - Math.log10(15)) / (Math.log10(1500) - Math.log10(15)) * 100))
+    : null;
+  // Form: 30 pts → 100
+  const formNorm = form != null ? Math.max(0, Math.min(100, (form / 30) * 100)) : null;
+
+  const parts: { v: number; w: number }[] = [];
+  if (eloNorm != null) parts.push({ v: eloNorm, w: 0.5 });
+  if (squadNorm != null) parts.push({ v: squadNorm, w: 0.3 });
+  if (formNorm != null) parts.push({ v: formNorm, w: 0.2 });
+
+  if (parts.length > 0) {
+    const totalW = parts.reduce((s, p) => s + p.w, 0);
+    return parts.reduce((s, p) => s + p.v * p.w, 0) / totalW;
+  }
+
+  // Fallback: inverted FIFA rank (rank 1 → 100, rank 100 → 0)
+  if (team) return Math.max(0, 100 - team.fifaRank);
+  return 30;
+}
