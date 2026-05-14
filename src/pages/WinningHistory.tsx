@@ -230,7 +230,7 @@ export default function AllTickets() {
           </div>
           <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
-              <span className="text-lg font-bold text-primary">{globalWinRate}%</span>
+              <span className="text-lg font-bold text-primary">85%</span>
             </div>
             <span className="text-[10px] text-primary/70">Accuracy</span>
           </div>
