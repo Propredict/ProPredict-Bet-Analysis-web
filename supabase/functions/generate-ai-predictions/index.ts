@@ -824,6 +824,18 @@ async function fetchTeamRealXGFromAPI(
       const variance = arr.reduce((s, x) => s + (x - m) ** 2, 0) / arr.length;
       return Math.sqrt(variance);
     };
+    // PHASE 2: Weighted recent xG. Fixtures are returned newest-first, so
+    // the first 3 entries are the most recent matches → 2x weight, rest 1x.
+    const weighted = (arr: number[]) => {
+      if (arr.length === 0) return null;
+      let sum = 0, w = 0;
+      for (let i = 0; i < arr.length; i++) {
+        const wt = i < 3 ? 2 : 1;
+        sum += arr[i] * wt;
+        w += wt;
+      }
+      return w === 0 ? null : sum / w;
+    };
 
     return {
       team_id: teamId,
@@ -837,6 +849,8 @@ async function fetchTeamRealXGFromAPI(
       away_xg_against_avg: avg(xgAgainstAway),
       xg_for_std: std(xgForAll),
       matches_count: xgForAll.length,
+      xg_for_weighted: weighted(xgForAll),
+      xg_against_weighted: weighted(xgAgainstAll),
     };
   } catch (e) {
     console.warn(`[xG-SAFE] fetchTeamRealXGFromAPI failed for team ${teamId}:`, (e as Error)?.message);
