@@ -91,7 +91,8 @@ function decideStep2(
   homeStats: TeamStats | null,
   awayStats: TeamStats | null,
   homeForm: FormMatch[],
-  awayForm: FormMatch[]
+  awayForm: FormMatch[],
+  odds?: OddsData | null
 ): Step2Decision | null {
   // Need at least one reliable source per team
   const homeFor = homeStats?.homeGoalsForAvg || calculateGoalRate(homeForm).scored;
@@ -108,6 +109,66 @@ function decideStep2(
   const diff = expectedHome - expectedAway;
 
   const score = `${Math.max(0, Math.round(expectedHome))}-${Math.max(0, Math.round(expectedAway))}`;
+
+  // === FAVORITE TRAP → BTTS YES ===
+  // Trigger BEFORE 1/2 winner rules so we can catch the "obvious favorite by
+  // odds, but underdog is in much better recent form" scenario. The bookmaker
+  // pick reflects squad quality, the form gap reflects current momentum —
+  // both teams are likely to score.
+  // Conditions:
+  //   • Clear bookie favorite: best odds ≤ 1.85
+  //   • Underdog form score ≥ favorite form score + 5 pts (per last-5)
+  //   • Both teams have meaningful attack (both expectedXg ≥ 0.7)
+  //   • Total goals ≥ 1.8 (not a defensive lockdown)
+  // Premium tier (baseConfidence ≥78) only when signal is very strong:
+  //   • Form gap ≥ 8 pts AND both expectedXg ≥ 0.95 AND total ≥ 2.2
+  if (odds) {
+    const favOdds = Math.min(odds.homeOdds, odds.awayOdds);
+    const homeIsFav = odds.homeOdds < odds.awayOdds;
+    if (favOdds > 0 && favOdds <= 1.85) {
+      const formScore = (form: FormMatch[]): number => {
+        if (!form || form.length === 0) return 0;
+        const sample = form.slice(0, 5);
+        let pts = 0;
+        for (const m of sample) {
+          if (m.result === "W") pts += 3;
+          else if (m.result === "D") pts += 1;
+        }
+        // Normalize to 0–15 scale (5 wins = 15)
+        return pts;
+      };
+      const homeFormPts = formScore(homeForm);
+      const awayFormPts = formScore(awayForm);
+      const favFormPts = homeIsFav ? homeFormPts : awayFormPts;
+      const dogFormPts = homeIsFav ? awayFormPts : homeFormPts;
+      const formGap = dogFormPts - favFormPts;
+
+      if (
+        formGap >= 5 &&
+        expectedHome >= 0.7 && expectedAway >= 0.7 &&
+        totalGoals >= 1.8
+      ) {
+        // Premium-grade signal?
+        const isPremium =
+          formGap >= 8 &&
+          expectedHome >= 0.95 && expectedAway >= 0.95 &&
+          totalGoals >= 2.2 &&
+          favOdds <= 1.70;
+        const conf = isPremium
+          ? 78 + Math.min(7, Math.round((formGap - 8) * 0.8))   // 78–85 Premium
+          : 68 + Math.min(8, Math.round((formGap - 5) * 1.2));  // 68–76 Pro
+        const sh = Math.max(1, Math.round(expectedHome));
+        const sa = Math.max(1, Math.round(expectedAway));
+        return {
+          market: "BTTS Yes",
+          predicted_score: `${sh}-${sa}`,
+          expectedHome, expectedAway, totalGoals,
+          reason: `Favorite trap: ${homeIsFav ? "home" : "away"} bookie fav (${favOdds.toFixed(2)}) but ${homeIsFav ? "away" : "home"} +${formGap}pts form last 5 — both score (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
+          baseConfidence: Math.min(85, conf),
+        };
+      }
+    }
+  }
 
   // === RULE 1: WINNER (strongest signal first — diff dominates) ===
   if (diff >= 0.6) {
