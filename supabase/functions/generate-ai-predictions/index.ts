@@ -145,36 +145,38 @@ function decideStep2(
       baseConfidence: conf,
     };
   }
-  // Over 2.5 (clear over signal)
-  if (totalGoals >= 2.5) {
+  // Over 2.5 (clear over signal — relaxed when both attacks fire)
+  if (totalGoals >= 2.5 || (totalGoals >= 2.35 && expectedHome >= 1.1 && expectedAway >= 1.1)) {
     const conf = Math.min(80, 62 + Math.round((totalGoals - 2.5) * 12));
     return {
       market: "Over 2.5",
       predicted_score: score,
       expectedHome, expectedAway, totalGoals,
-      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 2.5`,
+      reason: `Total expected goals ${totalGoals.toFixed(2)} (both attacks ≥1.1)`,
       baseConfidence: conf,
     };
   }
-  // BTTS YES — both attacks ≥ 1.0 (priority over Under to balance markets)
-  if (expectedHome >= 1.0 && expectedAway >= 1.0 && totalGoals >= 2.1) {
-    const conf = 65 + Math.round(Math.min(expectedHome, expectedAway) * 4);
+  // BTTS YES — promoted before Over 1.5 to diversify markets
+  // Trigger when both attacks ≥ 0.95 and total ≥ 2.0 (real both-score signal)
+  if (expectedHome >= 0.95 && expectedAway >= 0.95 && totalGoals >= 2.0) {
+    const conf = 64 + Math.round(Math.min(expectedHome, expectedAway) * 5);
     return {
       market: "BTTS Yes",
       predicted_score: `${Math.max(1, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
       expectedHome, expectedAway, totalGoals,
       reason: `Both attacks expected to score (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)})`,
-      baseConfidence: conf,
+      baseConfidence: Math.min(78, conf),
     };
   }
-  // Over 1.5 — moderate goals (replaces a lot of weak Under spam)
-  if (totalGoals >= 1.9) {
+  // Over 1.5 — only for one-sided games (favorit vs slab tim)
+  // Raised threshold: total ≥ 2.05 AND at least one attack ≥ 1.3 (clear scoring side)
+  if (totalGoals >= 2.05 && (expectedHome >= 1.3 || expectedAway >= 1.3)) {
     const conf = Math.min(74, 60 + Math.round((totalGoals - 1.9) * 14));
     return {
       market: "Over 1.5",
       predicted_score: score,
       expectedHome, expectedAway, totalGoals,
-      reason: `Total expected goals ${totalGoals.toFixed(2)} ≥ 1.9`,
+      reason: `One-sided scoring profile, total ${totalGoals.toFixed(2)}`,
       baseConfidence: conf,
     };
   }
