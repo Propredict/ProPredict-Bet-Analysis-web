@@ -1123,6 +1123,9 @@ interface StandingEntry {
   goalsDiff: number;
   form: string;
   totalTeams: number;
+  // PHASE 3: per-team scoring/conceding rates from standings (Strength of Schedule)
+  goalsFor: number;       // total goals for in season
+  goalsAgainst: number;   // total goals against in season
 }
 
 interface OddsData {
