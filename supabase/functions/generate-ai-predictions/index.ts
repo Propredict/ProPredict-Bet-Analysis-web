@@ -258,8 +258,30 @@ function decideStep2Soft(
     };
   }
 
-  // SOFT GOALS — Over 1.5 if total ≥ 1.7
-  if (totalGoals >= 1.7) {
+  // SOFT BTTS — both teams ≥ 0.85 (promoted before Over 1.5 for variety)
+  if (expectedHome >= 0.85 && expectedAway >= 0.85 && totalGoals >= 1.9) {
+    return {
+      market: "BTTS Yes",
+      predicted_score: `${Math.max(1, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Both score lean (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)}) (free tier)`,
+      baseConfidence: 62,
+    };
+  }
+
+  // SOFT OVER 2.5 — when total ≥ 2.2 and balanced scoring
+  if (totalGoals >= 2.2 && expectedHome >= 1.0 && expectedAway >= 1.0) {
+    return {
+      market: "Over 2.5",
+      predicted_score: score,
+      expectedHome, expectedAway, totalGoals,
+      reason: `[soft] Balanced over signal total ${totalGoals.toFixed(2)} (free tier)`,
+      baseConfidence: 61,
+    };
+  }
+
+  // SOFT GOALS — Over 1.5 only as last resort (one-sided)
+  if (totalGoals >= 1.85) {
     return {
       market: "Over 1.5",
       predicted_score: score,
@@ -269,25 +291,14 @@ function decideStep2Soft(
     };
   }
 
-  // SOFT UNDER — total ≤ 2.0 (less strict than 1.8)
-  if (totalGoals <= 2.0) {
+  // SOFT UNDER — total ≤ 1.9 (defensive game)
+  if (totalGoals <= 1.9) {
     return {
       market: "Under 2.5",
       predicted_score: totalGoals < 1.4 ? "0-0" : "1-1",
       expectedHome, expectedAway, totalGoals,
       reason: `[soft] Defensive lean total ${totalGoals.toFixed(2)} (free tier)`,
       baseConfidence: 60,
-    };
-  }
-
-  // SOFT BTTS — both teams ≥ 0.8
-  if (expectedHome >= 0.8 && expectedAway >= 0.8) {
-    return {
-      market: "BTTS Yes",
-      predicted_score: `${Math.max(1, Math.round(expectedHome))}-${Math.max(1, Math.round(expectedAway))}`,
-      expectedHome, expectedAway, totalGoals,
-      reason: `[soft] Both score lean (H ${expectedHome.toFixed(2)}, A ${expectedAway.toFixed(2)}) (free tier)`,
-      baseConfidence: 61,
     };
   }
 
