@@ -731,6 +731,10 @@ interface RealXGStats {
   away_xg_against_avg: number | null;
   xg_for_std: number | null;
   matches_count: number;
+  // PHASE 2: Weighted Recent xG (last-3 ×2, older ×1).
+  // Populated when fetched fresh from API; null when loaded from DB cache hit.
+  xg_for_weighted: number | null;
+  xg_against_weighted: number | null;
 }
 
 const realXGMemoryCache = new Map<string, RealXGStats | null>();
