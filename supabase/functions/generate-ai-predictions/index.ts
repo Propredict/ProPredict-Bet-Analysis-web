@@ -6945,6 +6945,33 @@ async function processBatch(
     }
   }
 
+  // === FREEZE GUARD: don't change `prediction` / `predicted_score` for matches
+  // a user has already unlocked (with an ad or paid access). Confidence,
+  // analysis, probabilities, etc. can still improve safely — only the
+  // user-facing pick stays locked to what they originally saw. ===
+  const unlockedPredictionIds = new Set<string>();
+  try {
+    const predIds = predictions.map((p: any) => p.id).filter(Boolean);
+    if (predIds.length > 0) {
+      const { data: unlockRows, error: unlockErr } = await supabase
+        .from("user_unlocks")
+        .select("content_id")
+        .in("content_id", predIds);
+      if (unlockErr) {
+        console.warn("[FREEZE] failed to load user_unlocks:", unlockErr.message);
+      } else if (unlockRows) {
+        for (const r of unlockRows) {
+          if (r.content_id) unlockedPredictionIds.add(String(r.content_id));
+        }
+        if (unlockedPredictionIds.size > 0) {
+          console.log(`[FREEZE] ${unlockedPredictionIds.size} prediction(s) frozen — pick + score will not change`);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[FREEZE] guard failed (non-fatal):", (e as any)?.message);
+  }
+
   for (const pred of predictions) {
     try {
       const fixtureIdStr = String(pred.match_id);
@@ -7885,11 +7912,8 @@ async function processBatch(
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
-      const { error: updateError } = await supabase
-        .from("ai_predictions")
-        .update({
-          prediction: newPrediction.prediction,
-          predicted_score: newPrediction.predicted_score,
+      const isFrozen = unlockedPredictionIds.has(String(pred.id));
+      const updatePayload: Record<string, any> = {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
           draw: newPrediction.draw,
@@ -7913,7 +7937,16 @@ async function processBatch(
           xg_source: xgSource,
           is_locked: false,
           updated_at: new Date().toISOString(),
-        })
+      };
+      if (!isFrozen) {
+        updatePayload.prediction = newPrediction.prediction;
+        updatePayload.predicted_score = newPrediction.predicted_score;
+      } else {
+        console.log(`[FREEZE] ${fixtureIdStr}: keeping original pick "${pred.prediction}" / score "${pred.predicted_score}" — already unlocked by user(s)`);
+      }
+      const { error: updateError } = await supabase
+        .from("ai_predictions")
+        .update(updatePayload)
         .eq("id", pred.id);
 
       if (updateError) {
