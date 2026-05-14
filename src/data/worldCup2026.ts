@@ -564,6 +564,129 @@ export function wcPenaltyShootoutProb(
   return Math.round(Math.max(8, 30 - gap * 0.9));
 }
 
+// ==========================================
+// PHASE 3 — WORLD CUP-SPECIFIC MARKETS
+// ==========================================
+
+/**
+ * Confederation of each WC 2026 team. Used for bias correction —
+ * historically UEFA + CONMEBOL teams over-perform vs the bookies'
+ * expectations on AFC/CAF opponents by ~10-12% in WC matches.
+ */
+export type WCConfederation = "UEFA" | "CONMEBOL" | "CONCACAF" | "AFC" | "CAF" | "OFC";
+
+export const WC_CONFEDERATION: Record<string, WCConfederation> = {
+  // UEFA
+  "Czech Republic": "UEFA", "Switzerland": "UEFA", "Scotland": "UEFA",
+  "Turkey": "UEFA", "Germany": "UEFA", "Netherlands": "UEFA", "Sweden": "UEFA",
+  "Belgium": "UEFA", "Spain": "UEFA", "France": "UEFA", "Norway": "UEFA",
+  "Austria": "UEFA", "Portugal": "UEFA", "England": "UEFA", "Croatia": "UEFA",
+  "Bosnia & Herzegovina": "UEFA", "Italy": "UEFA",
+  // CONMEBOL
+  "Brazil": "CONMEBOL", "Paraguay": "CONMEBOL", "Ecuador": "CONMEBOL",
+  "Uruguay": "CONMEBOL", "Argentina": "CONMEBOL", "Colombia": "CONMEBOL",
+  // CONCACAF
+  "Mexico": "CONCACAF", "Canada": "CONCACAF", "United States": "CONCACAF",
+  "Haiti": "CONCACAF", "Curaçao": "CONCACAF", "Panama": "CONCACAF",
+  // AFC
+  "South Korea": "AFC", "Qatar": "AFC", "Australia": "AFC", "Japan": "AFC",
+  "Iran": "AFC", "Saudi Arabia": "AFC", "Iraq": "AFC", "Jordan": "AFC",
+  "Uzbekistan": "AFC",
+  // CAF
+  "South Africa": "CAF", "Morocco": "CAF", "Ivory Coast": "CAF",
+  "Tunisia": "CAF", "Egypt": "CAF", "Cape Verde": "CAF", "Senegal": "CAF",
+  "Algeria": "CAF", "DR Congo": "CAF", "Ghana": "CAF",
+  // OFC
+  "New Zealand": "OFC",
+};
+
+/**
+ * Confederation bias correction. Historically, on neutral or US/Mex/Can soil:
+ *   UEFA + CONMEBOL outperform AFC by ~10pp and CAF by ~8pp.
+ * Returns a strength delta to ADD to homeStr - awayStr.
+ */
+export function wcConfederationBias(homeTeam: string, awayTeam: string): number {
+  const h = WC_CONFEDERATION[homeTeam];
+  const a = WC_CONFEDERATION[awayTeam];
+  if (!h || !a) return 0;
+  const TIER: Record<WCConfederation, number> = {
+    CONMEBOL: 4, UEFA: 4, CONCACAF: 1, AFC: -3, CAF: -2, OFC: -5,
+  };
+  return TIER[h] - TIER[a];
+}
+
+/**
+ * Top-scorer-team market — returns probability (%) that `team` will be
+ * the highest-scoring side of the match. Uses strength gap + a slight
+ * bias toward attacking sides (CONMEBOL/UEFA top tier).
+ */
+export function wcTopScorerTeamProb(homeTeam: string, awayTeam: string): {
+  home: number; away: number; tie: number;
+} {
+  const gap = wcStrength(homeTeam) - wcStrength(awayTeam) + wcConfederationBias(homeTeam, awayTeam) * 0.5;
+  const tieShare = 22; // both teams scoring same → ~22%
+  const winShare = (100 - tieShare) / 2;
+  const tilt = Math.max(-winShare * 0.9, Math.min(winShare * 0.9, gap * 1.2));
+  return {
+    home: Math.round(winShare + tilt),
+    away: Math.round(winShare - tilt),
+    tie: tieShare,
+  };
+}
+
+/**
+ * Group standing entry used by `wcGroupWinnerProbs`.
+ */
+export interface WCGroupEntry {
+  team: string;
+  points: number;
+  goalDiff: number;
+  played: number;
+}
+
+/**
+ * Returns probability (%) for each team in a 4-team group to FINISH 1st.
+ * Uses current points + remaining strength projection over remaining
+ * matches. Before MD1, falls back to pure strength-share.
+ */
+export function wcGroupWinnerProbs(
+  groupName: string,
+  standings?: WCGroupEntry[],
+): { team: string; pct: number }[] {
+  const teams = GROUPS[groupName] || [];
+  if (teams.length === 0) return [];
+
+  // Pure pre-tournament fallback
+  if (!standings || standings.length === 0) {
+    const strengths = teams.map(t => ({ team: t, s: wcStrength(t) }));
+    // Soft-max-ish weighting (exponential)
+    const weights = strengths.map(x => Math.exp(x.s / 18));
+    const total = weights.reduce((a, b) => a + b, 0);
+    return strengths.map((x, i) => ({
+      team: x.team,
+      pct: Math.round((weights[i] / total) * 100),
+    }));
+  }
+
+  // With live standings: combine current points with projected remaining
+  const MAX_MD = 3;
+  const projected = standings.map(s => {
+    const remaining = Math.max(0, MAX_MD - s.played);
+    // Each remaining match worth ~1.5 expected points scaled by strength
+    const strBoost = (wcStrength(s.team) / 100) * 3 * remaining;
+    return {
+      team: s.team,
+      score: s.points * 10 + strBoost * 6 + s.goalDiff * 0.8,
+    };
+  });
+  const weights = projected.map(p => Math.exp(p.score / 12));
+  const total = weights.reduce((a, b) => a + b, 0);
+  return projected.map((p, i) => ({
+    team: p.team,
+    pct: Math.round((weights[i] / total) * 100),
+  }));
+}
+
 /**
  * Unified match projection that plugs in Phase 1 strength + Phase 2
  * during-tournament modifiers. Pre-tournament, just pass strengths and
@@ -612,7 +735,9 @@ export function wcMatchProjection(
 
   const homeAdj = homeStr + homeAdv + homeMo + Math.max(0, restAdj);
   const awayAdj = awayStr + awayAdv + awayMo + Math.max(0, -restAdj);
-  const gap = homeAdj - awayAdj;
+  // Phase 3: confederation bias — small lift for UEFA/CONMEBOL vs AFC/CAF
+  const confBias = wcConfederationBias(homeTeam, awayTeam);
+  const gap = (homeAdj - awayAdj) + confBias;
   const absGap = Math.abs(gap);
 
   const drawBase = 28 - Math.min(15, absGap * 0.6);
