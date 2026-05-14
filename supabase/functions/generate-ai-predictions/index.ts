@@ -806,6 +806,15 @@ async function fetchTeamRealXGFromAPI(
     const fixtures = json?.response || [];
     if (fixtures.length === 0) return null;
 
+    // PHASE 3: Strength-of-Schedule — fetch standings (cached) once per league.
+    // Used to adjust xG by opponent's defensive strength.
+    let sosStandings: StandingEntry[] = [];
+    let leagueAvgGA: number | null = null;
+    try {
+      sosStandings = await fetchStandings(leagueId, season, apiKey);
+      leagueAvgGA = computeLeagueAvgGoalsAgainst(sosStandings);
+    } catch (_) { /* SoS is best-effort */ }
+
     const xgForAll: number[] = [];
     const xgAgainstAll: number[] = [];
     const xgForHome: number[] = [];
@@ -819,6 +828,9 @@ async function fetchTeamRealXGFromAPI(
         const fixtureId = fixture?.fixture?.id;
         const isHome = fixture?.teams?.home?.id === teamId;
         if (!fixtureId) continue;
+        const opponentId = isHome
+          ? fixture?.teams?.away?.id
+          : fixture?.teams?.home?.id;
 
         const statsUrl = `${API_FOOTBALL_URL}/fixtures/statistics?fixture=${fixtureId}`;
         const statsRes = await fetch(statsUrl, {
@@ -841,10 +853,20 @@ async function fetchTeamRealXGFromAPI(
         const myXg = myXgRaw !== null && myXgRaw !== undefined ? parseFloat(String(myXgRaw)) : null;
         const oppXg = oppXgRaw !== null && oppXgRaw !== undefined ? parseFloat(String(oppXgRaw)) : null;
 
+        // PHASE 3: opponent-adjusted xG.
+        // Discount xG generated vs weak defenses, boost xG vs strong defenses.
+        const sosFactor = opponentId
+          ? getOpponentDefAdjustment(sosStandings, opponentId, leagueAvgGA)
+          : 1;
+        // Inverse adjustment for xG_against (we conceded vs an opponent — adjust
+        // by THEIR offensive strength, but we don't have it cheaply, so use
+        // symmetric factor on offense only and leave xg_against raw).
+
         if (myXg !== null && !isNaN(myXg) && myXg >= 0) {
-          xgForAll.push(myXg);
-          if (isHome) xgForHome.push(myXg);
-          else xgForAway.push(myXg);
+          const adjXg = myXg * sosFactor;
+          xgForAll.push(adjXg);
+          if (isHome) xgForHome.push(adjXg);
+          else xgForAway.push(adjXg);
         }
         if (oppXg !== null && !isNaN(oppXg) && oppXg >= 0) {
           xgAgainstAll.push(oppXg);
