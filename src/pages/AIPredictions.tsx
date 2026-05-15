@@ -1428,13 +1428,13 @@ export default function AIPredictions() {
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
                   <Brain className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
                   <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent whitespace-nowrap">
-                    {day === "today" ? "Free Daily" : "Tomorrow"} ({regularPredictions.length})
+                    {day === "today" ? "Free Daily" : "Tomorrow"} ({regularPredictions.filter((p) => !allExcludedIds.has(p.id!)).length})
                   </h2>
                 </div>
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
               </div>
               {/* Smart Fallback notice — shown when Free tier is populated only via fallback */}
-              {safeFallbackIds.size > 0 && regularPredictions.some((p) => safeFallbackIds.has(p.id!)) && (
+              {safeFallbackIds.size > 0 && regularPredictions.some((p) => safeFallbackIds.has(p.id!) && !allExcludedIds.has(p.id!)) && (
                 <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 max-w-md mx-auto">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                   <p className="text-[10px] md:text-xs text-emerald-300/90 leading-tight text-left">
