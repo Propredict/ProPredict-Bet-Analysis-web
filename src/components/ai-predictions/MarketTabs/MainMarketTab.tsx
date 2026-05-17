@@ -416,7 +416,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           {parsedTags.safeCombo && displayTier === "premium" && hasAccess && (
             <div className="flex items-center gap-1.5 pt-1 pb-0.5">
               <Sparkles className="w-3 h-3 text-fuchsia-400" />
-              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400">SAFE COMBO:</span>
+              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400">RISK COMBO:</span>
               <span className="text-[9px] md:text-[10px] font-bold text-foreground">{parsedTags.safeCombo}</span>
             </div>
           )}
