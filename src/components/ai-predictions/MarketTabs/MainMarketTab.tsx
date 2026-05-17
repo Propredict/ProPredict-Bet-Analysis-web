@@ -461,8 +461,17 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           ].map((item) => {
             const predictedOutcome = (() => {
               const p = (prediction.prediction || "").toLowerCase();
-              if (p === "1" || p === "home") return "home";
-              if (p === "2" || p === "away") return "away";
+              const home = (prediction.home_team || "").toLowerCase();
+              const away = (prediction.away_team || "").toLowerCase();
+              if (p === "1" || p.includes("home") || (home && p.includes(home))) return "home";
+              if (p === "2" || p.includes("away") || (away && p.includes(away))) return "away";
+              if (p === "x" || p.includes("draw")) return "draw";
+              // Fallback: pick highest probability
+              const h = prediction.home_win ?? 0;
+              const d = prediction.draw ?? 0;
+              const a = prediction.away_win ?? 0;
+              if (h >= d && h >= a) return "home";
+              if (a >= d && a >= h) return "away";
               return "draw";
             })();
             const isSelected = predictedOutcome === item.outcome;
