@@ -433,22 +433,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — hidden on Free tier */}
-          {displayTier !== "free" && (() => {
-            const derivedScore = getDerivedPredictedScore(prediction, {
-              ...scoreConstraints,
-              marketType: pick.type,
-              safeCombo: displayTier === "premium" ? parsedTags.safeCombo : null,
-            });
-            return (
-              <p className="text-[10px] md:text-xs text-muted-foreground/80">
-                Predicted Score: <span className={cn(
-                  "font-semibold text-foreground",
-                  !hasAccess && "blur-[5px] select-none"
-                )}>{derivedScore}</span>
-              </p>
-            );
-          })()}
+          {/* Predicted Score removed — Top Correct Scores below already shows score predictions */}
         </div>
       )}
 
