@@ -433,8 +433,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* Predicted Score — aligned with Best Pick + Goals + BTTS + SAFE COMBO */}
-          {(() => {
+          {/* Predicted Score — hidden on Free tier */}
+          {displayTier !== "free" && (() => {
             const derivedScore = getDerivedPredictedScore(prediction, {
               ...scoreConstraints,
               marketType: pick.type,
