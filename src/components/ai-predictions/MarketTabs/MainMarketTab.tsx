@@ -504,9 +504,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <span className="text-[9px] md:text-[10px] text-muted-foreground font-medium">
               ({displayTier === "premium" ? "1 of 3" : "1 of 1"})
             </span>
-            {displayTier === "pro" && (
-              <span className="text-[8px] text-fuchsia-400/70 ml-auto">+2 more in Premium</span>
-            )}
           </div>
           <div className={cn("grid gap-1.5", topScores.length === 1 ? "grid-cols-1" : topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
             {topScores.map((s, i) => (
