@@ -407,7 +407,15 @@ const AIPredictionCardInner = ({
                    {prediction.key_factors && prediction.key_factors.length > 0 && (
                      <div className="flex flex-wrap gap-0.5">
                        {prediction.key_factors
-                         .filter((f) => !f.startsWith("[TAG]") && !f.startsWith("confidence_breakdown:") && !f.startsWith("__"))
+                         .filter((f) =>
+                           !f.startsWith("[TAG]") &&
+                           !f.startsWith("confidence_breakdown:") &&
+                           !f.startsWith("__") &&
+                           // Hide internal debug tags (variance:, step2_xg:, etc. — anything "key:value" with pipes)
+                           !/^[a-z_]+:\S*\|/i.test(f) &&
+                           !/^variance:/i.test(f) &&
+                           !/^step\d*_/i.test(f)
+                         )
                          .slice(0, displayTier === "premium" ? 5 : 3)
                          .map((factor, i) => (
                          <Badge 
@@ -420,21 +428,7 @@ const AIPredictionCardInner = ({
                        ))}
                      </div>
                    )}
-                   {(() => {
-                     const breakdownFactor = prediction.key_factors?.find((f) =>
-                       f.startsWith("confidence_breakdown:")
-                     );
-                     if (!breakdownFactor) return null;
-                     const reason = breakdownFactor.replace("confidence_breakdown:", "").trim();
-                     return (
-                       <div className="mt-1.5 p-1.5 rounded bg-primary/10 border border-primary/20">
-                         <p className="text-[8px] md:text-[9px] text-primary/90 font-medium leading-snug">
-                           <span className="opacity-70">Confidence breakdown: </span>
-                           {reason}
-                         </p>
-                       </div>
-                     );
-                   })()}
+                    {/* Confidence breakdown removed — internal scoring detail, not user-facing */}
                 </div>
               </CollapsibleContent>
             </Collapsible>
