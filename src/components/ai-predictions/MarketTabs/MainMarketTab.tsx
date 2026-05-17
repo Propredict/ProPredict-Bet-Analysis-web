@@ -508,7 +508,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               Top Correct Scores
             </span>
             <span className="text-[9px] md:text-[10px] text-muted-foreground font-medium">
-              ({topScores.length} of 3)
+              (1 of 3)
             </span>
             {displayTier === "pro" && (
               <span className="text-[8px] text-fuchsia-400/70 ml-auto">+2 more in Premium</span>
