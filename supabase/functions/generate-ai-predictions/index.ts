@@ -6968,8 +6968,23 @@ function generateSafeCombo(
   if (totalXg > 2.5 && goalMarkets.bttsYes > 60 && goalMarkets.over25 > 60) {
     return "BTTS Yes + Over 2.5";
   }
-  // Strong favorite + Under 3.5
-  if (Math.max(homeWin, awayWin) > 55 && goalMarkets.under35 > 70 && totalXg < 3.0) {
+  // Strong favorite + Over 2.5 — favorite expected to score in a high-tempo game
+  if (Math.max(homeWin, awayWin) > 55 && goalMarkets.over25 > 55 && totalXg >= 2.5) {
+    const fav = homeWin > awayWin ? "1" : "2";
+    return `${fav} + Over 2.5`;
+  }
+  // Strong favorite + Over 1.5 — safer variant when Over 2.5 isn't strong enough
+  if (Math.max(homeWin, awayWin) > 55 && goalMarkets.over15 > 75 && goalMarkets.over25 <= 55) {
+    const fav = homeWin > awayWin ? "1" : "2";
+    return `${fav} + Over 1.5`;
+  }
+  // Strong favorite + Under 3.5 — ONLY when Over 2.5 is unlikely (avoid contradicting an over-leaning game)
+  if (
+    Math.max(homeWin, awayWin) > 55 &&
+    goalMarkets.under35 > 70 &&
+    goalMarkets.over25 < 50 &&
+    totalXg < 2.6
+  ) {
     const fav = homeWin > awayWin ? "1" : "2";
     return `${fav} + Under 3.5`;
   }
