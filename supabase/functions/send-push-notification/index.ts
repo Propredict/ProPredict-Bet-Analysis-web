@@ -255,8 +255,8 @@ serve(async (req) => {
       }
     }
 
-    /* ── 15-minute marketing cooldown ── */
-    const COOLDOWN_MS = 15 * 60 * 1000;
+    /* ── 3-hour marketing cooldown (tips/tickets push) ── */
+    const COOLDOWN_MS = 3 * 60 * 60 * 1000;
     const now = new Date();
 
     // Group eligible tokens by user plan
