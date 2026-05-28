@@ -142,7 +142,7 @@ const TIER2_FRAGMENTS = [
   "segunda división", "segunda division", "2. bundesliga", "serie b", "ligue 2",
   "mls", "brasileirão", "brasileirao", "liga mx",
 ];
-function leagueTier(league: string | null | undefined): 1 | 2 | 3 {
+export function leagueTier(league: string | null | undefined): 1 | 2 | 3 {
   const l = (league ?? "").toLowerCase();
   if (!l) return 3;
   // Exclude Tier 1 matches if they're a youth/reserve competition
