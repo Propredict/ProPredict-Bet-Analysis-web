@@ -1640,30 +1640,50 @@ serve(async (req: Request) => {
       top30SkipReason = (e as Error).message;
     }
 
-    // ---- Single consolidated AI summary push for tickets ----
+    // ---- Per-category AI ticket pushes (one push per category, legacy style) ----
     const totalCreated =
       created.length + proCreated.length + premiumCreated.length + riskCreated.length + top30Created.length + (eliteCreatedId ? 1 : 0);
     if (totalCreated > 0 && !alreadyNotifiedToday) {
       try {
-        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
-          },
-          body: JSON.stringify({
-            type: "summary",
-            summary: {
-              title: "🎟️ Today's AI Tickets Are Ready",
-              body: `${totalCreated} new AI ticket${totalCreated > 1 ? "s" : ""} live — Daily, Pro, Premium & Risk. Tap to view!`,
-              nav_path: "/daily-tickets",
-              collapse_id: `ai_tickets_summary_${date}`,
-            },
-          }),
-        });
+        const { data: todays } = await supabase
+          .from("tickets")
+          .select("id,title,tier,category,status,created_at")
+          .eq("ticket_date", date)
+          .eq("status", "published")
+          .in("category", ["ai_daily", "ai_pro", "ai_premium", "multi_risk"])
+          .order("created_at", { ascending: false });
+
+        const seen = new Set<string>();
+        for (const row of todays ?? []) {
+          const cat = (row as any).category as string;
+          if (!cat || seen.has(cat)) continue;
+          seen.add(cat);
+          try {
+            await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+                Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
+              },
+              body: JSON.stringify({
+                type: "ticket",
+                bypass_cooldown: true,
+                record: {
+                  id: (row as any).id,
+                  status: "published",
+                  tier: (row as any).tier ?? "daily",
+                  category: cat,
+                  title: (row as any).title,
+                },
+              }),
+            });
+          } catch (e) {
+            console.error(`[generate-ai-ticket] per-category push failed (${cat}):`, e);
+          }
+        }
       } catch (e) {
-        console.error("[generate-ai-ticket] summary push failed:", e);
+        console.error("[generate-ai-ticket] per-category push lookup failed:", e);
       }
     }
 
