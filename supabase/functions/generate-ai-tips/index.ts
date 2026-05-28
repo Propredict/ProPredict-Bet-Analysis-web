@@ -739,28 +739,53 @@ serve(async (req) => {
       });
     }
 
-    // ---- Single consolidated AI summary push ----
+    // ---- Per-category AI tip pushes (one push per category, legacy style) ----
     if (created.length > 0 && !alreadyNotifiedToday) {
-      try {
-        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
-          },
-          body: JSON.stringify({
-            type: "summary",
-            summary: {
-              title: "🤖 Today's AI Picks Are In",
-              body: `${created.length} new AI predictions ready — Daily, Pro, Premium & more. Tap to view!`,
-              nav_path: "/daily-tips",
-              collapse_id: `ai_tips_summary_${date}`,
+      // Map each category → a representative tip with id from DB
+      const categoryToTier: Record<string, string> = {
+        ai_daily: "free",
+        ai_pro: "exclusive",
+        ai_premium: "premium",
+        risk_of_day: "exclusive",
+        diamond_pick: "premium",
+      };
+      const seenCats = Array.from(new Set(created.map((c) => c.category)));
+      for (const cat of seenCats) {
+        try {
+          const { data: row } = await supabase
+            .from("tips")
+            .select("id,home_team,away_team,league,tier,category,status")
+            .eq("tip_date", date)
+            .eq("category", cat)
+            .eq("status", "published")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!row) continue;
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY") ?? ""}`,
             },
-          }),
-        });
-      } catch (e) {
-        console.error("[generate-ai-tips] summary push failed:", e);
+            body: JSON.stringify({
+              type: "tip",
+              bypass_cooldown: true,
+              record: {
+                id: row.id,
+                status: "published",
+                tier: row.tier ?? categoryToTier[cat] ?? "free",
+                category: cat,
+                home_team: row.home_team,
+                away_team: row.away_team,
+                league: row.league,
+              },
+            }),
+          });
+        } catch (e) {
+          console.error(`[generate-ai-tips] per-category push failed (${cat}):`, e);
+        }
       }
     }
 

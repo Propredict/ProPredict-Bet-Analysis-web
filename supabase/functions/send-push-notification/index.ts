@@ -116,7 +116,7 @@ serve(async (req) => {
   }
 
   try {
-    const { type, record, summary } = await req.json();
+    const { type, record, summary, bypass_cooldown } = await req.json();
 
     const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
     const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
@@ -184,27 +184,9 @@ serve(async (req) => {
       );
     }
 
-    /* ── Guard: skip per-row pushes for AI-generated content.
-       AI tips/tickets are announced via a single consolidated "summary" push
-       sent by generate-ai-tips / generate-ai-ticket. Any per-row call coming
-       from a DB trigger for these categories must be ignored to avoid spam. ── */
-    const AI_CATEGORIES = new Set([
-      "ai_daily",
-      "ai_pro",
-      "ai_premium",
-      "risk_of_day",
-      "risk_of_the_day",
-      "diamond_pick",
-      "multi_risk",
-    ]);
-    const recCategory = (record as any)?.category ?? null;
-    if (recCategory && AI_CATEGORIES.has(recCategory)) {
-      console.log(`[send-push] Skipping per-row push for AI category=${recCategory} (handled by summary push)`);
-      return new Response(
-        JSON.stringify({ skipped: true, reason: `ai category ${recCategory} handled by summary` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    /* AI categories now send per-category pushes (matching legacy behavior).
+       No category-based guard here — callers control cadence via cooldown
+       or the bypass_cooldown flag. */
 
     const contentTier = record.tier ?? "free";
     const body = getPublishBody(type, record);
@@ -257,6 +239,7 @@ serve(async (req) => {
 
     /* ── 3-hour marketing cooldown (tips/tickets push) ── */
     const COOLDOWN_MS = 3 * 60 * 60 * 1000;
+    const skipCooldown = bypass_cooldown === true;
     const now = new Date();
 
     // Group eligible tokens by user plan
@@ -274,7 +257,7 @@ serve(async (req) => {
           supabase.from("user_subscriptions").select("plan, status, expires_at").eq("user_id", token.userId).eq("status", "active").maybeSingle(),
         ]);
 
-        if (profileRes.data?.last_marketing_push_at) {
+        if (!skipCooldown && profileRes.data?.last_marketing_push_at) {
           const diff = now.getTime() - new Date(profileRes.data.last_marketing_push_at).getTime();
           if (diff < COOLDOWN_MS) canSend = false;
         }
@@ -358,8 +341,9 @@ serve(async (req) => {
       }
     }
 
-    // Update cooldown timestamp
-    if (eligibleUserIds.length > 0) {
+    // Update cooldown timestamp (skip when bypassing so multiple category
+    // pushes in the same batch don't block each other)
+    if (!skipCooldown && eligibleUserIds.length > 0) {
       const { error: updateErr } = await supabase
         .from("profiles")
         .update({ last_marketing_push_at: now.toISOString() })
