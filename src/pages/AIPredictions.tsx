@@ -9,7 +9,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
 import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
 import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
-import { selectTopPicks } from "@/components/ai-predictions/utils/topPicksRanking";
+import { selectTopPicks, leagueTier } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -139,11 +139,17 @@ export default function AIPredictions() {
         prediction: p,
       };
     });
-    // 2. Sort by strength DESC and apply caps with cascade
-    const sorted = [...scored].sort((a, b) => b.strength - a.strength);
+    // 2. Sort by strength DESC, then by league importance (Tier 1 → 2 → 3),
+    // then apply caps with cascade. This ensures Free slots fill first with
+    // overflow from Pro (highest strength), then with top-league matches,
+    // then the rest.
+    const sorted = [...scored].sort((a, b) => {
+      if (b.strength !== a.strength) return b.strength - a.strength;
+      return leagueTier(a.prediction.league) - leagueTier(b.prediction.league);
+    });
     const PREMIUM_CAP = 10;
     const PRO_CAP = 20;
-    const FREE_CAP = 50;
+    const FREE_CAP = 20;
     let premiumCount = 0;
     let proCount = 0;
     let freeCount = 0;
