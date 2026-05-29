@@ -237,8 +237,8 @@ serve(async (req) => {
       }
     }
 
-    /* ── 3-hour marketing cooldown (tips/tickets push) ── */
-    const COOLDOWN_MS = 3 * 60 * 60 * 1000;
+    /* ── 1-hour marketing cooldown (tips/tickets push) ── */
+    const COOLDOWN_MS = 1 * 60 * 60 * 1000;
     const skipCooldown = bypass_cooldown === true;
     const now = new Date();
 
