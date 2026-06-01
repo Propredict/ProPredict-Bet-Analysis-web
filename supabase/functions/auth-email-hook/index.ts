@@ -186,6 +186,13 @@ async function handleWebhook(req: Request): Promise<Response> {
     payload?.action_link ??
     ''
 
+  if (emailType === 'recovery' && tokenHash) {
+    const recoveryUrl = new URL(redirectTo)
+    recoveryUrl.searchParams.set('token_hash', tokenHash)
+    recoveryUrl.searchParams.set('type', 'recovery')
+    confirmationUrl = recoveryUrl.toString()
+  }
+
   if (!confirmationUrl && tokenHash) {
     // Construct proper Supabase verification URL
     confirmationUrl = `${SUPABASE_URL}/auth/v1/verify?token=${tokenHash}&type=${emailType === 'email_change' ? 'email_change' : emailType}&redirect_to=${encodeURIComponent(redirectTo)}`
