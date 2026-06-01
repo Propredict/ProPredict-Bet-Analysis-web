@@ -14,5 +14,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: false,
+    // Use implicit flow so password recovery links work across browsers/devices
+    // (PKCE requires the original browser's code_verifier, which breaks when
+    // the email is opened in Gmail app / Chrome Custom Tab.)
+    flowType: 'implicit',
   }
 });
