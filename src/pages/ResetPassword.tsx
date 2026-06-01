@@ -90,27 +90,11 @@ const ResetPassword = () => {
         }
 
         // 4) Token hash flow: ?token_hash=...&type=recovery or legacy ?token=...
-        const tokenHash = searchParams.get("token_hash");
-        const legacyToken = searchParams.get("token");
+        const tokenHash = searchParams.get("token_hash") ?? searchParams.get("token");
         if (tokenHash && queryType === "recovery") {
           const { error } = await supabase.auth.verifyOtp({
             type: "recovery",
             token_hash: tokenHash,
-          });
-
-          if (!error) {
-            window.history.replaceState(null, "", window.location.pathname);
-            clearTimeout(timeout);
-            setIsValidSession(true);
-            return;
-          }
-        }
-
-        if (legacyToken && queryType === "recovery") {
-          const { error } = await supabase.auth.verifyOtp({
-            type: "recovery",
-            token: legacyToken,
-            email: searchParams.get("email") ?? undefined,
           });
 
           if (!error) {
