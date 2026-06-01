@@ -89,7 +89,7 @@ const ResetPassword = () => {
           }
         }
 
-        // 4) Token hash flow: ?token_hash=...&type=recovery
+        // 4) Token hash flow: ?token_hash=...&type=recovery or legacy ?token=...
         const tokenHash = searchParams.get("token_hash") ?? searchParams.get("token");
         if (tokenHash && queryType === "recovery") {
           const { error } = await supabase.auth.verifyOtp({
