@@ -71,3 +71,9 @@ verify_jwt = false
 
 [functions.send-rating-followup]
 verify_jwt = false
+
+[functions.send-worldcup-kickoff-push]
+verify_jwt = false
+
+[functions.send-worldcup-daily-push]
+verify_jwt = false
