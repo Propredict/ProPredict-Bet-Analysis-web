@@ -4974,10 +4974,15 @@ function calculatePrediction(
   if (adjustedOver25 >= 65 && adjustedBttsYes >= 60) {
     const sp = predictedScore.split("-").map(Number);
     if ((sp[0] ?? 0) === 0 || (sp[1] ?? 0) === 0 || (sp[0] + sp[1]) < 3) {
-      predictedScore = `${Math.max(1, Math.round(homeXg))}-${Math.max(1, Math.round(awayXg))}`;
-      // Ensure 3+ total
-      const newParts = predictedScore.split("-").map(Number);
-      if (newParts[0] + newParts[1] < 3) predictedScore = homeXg > awayXg ? "2-1" : "1-2";
+      // Prefer realistic asymmetric BTTS+Over scorelines (2-1 / 1-2 / 3-1 / 1-3)
+      // 2-2 is statistically rare (~3-4%), so avoid forcing it from rounding.
+      const diff = homeXg - awayXg;
+      const totalXg = homeXg + awayXg;
+      if (totalXg >= 3.6 && diff > 0.3) predictedScore = "3-1";
+      else if (totalXg >= 3.6 && diff < -0.3) predictedScore = "1-3";
+      else if (diff > 0.15) predictedScore = "2-1";
+      else if (diff < -0.15) predictedScore = "1-2";
+      else predictedScore = totalXg >= 3.8 ? "2-2" : (homeXg >= awayXg ? "2-1" : "1-2");
     }
   }
 
@@ -4994,8 +4999,12 @@ function calculatePrediction(
   if (prediction === "X") {
     const sp = predictedScore.split("-").map(Number);
     if (sp[0] !== sp[1]) {
-      const avgGoals = Math.round((homeXg + awayXg) / 2);
-      const g = clamp(avgGoals, 0, 3);
+      // Realistic draw distribution: 1-1 most common (~10%), 0-0 (~8%), 2-2 (~3-4%)
+      const totalXg = homeXg + awayXg;
+      let g = 1;
+      if (totalXg < 1.6) g = 0;
+      else if (totalXg >= 3.6) g = 2;
+      else g = 1;
       predictedScore = `${g}-${g}`;
     }
   }
@@ -5338,9 +5347,11 @@ function predictScoreV2(params: {
   } else if (prediction === "2" && awayGoals <= homeGoals) {
     awayGoals = Math.max(homeGoals + 1, 1);
   } else if (prediction === "X" && homeGoals !== awayGoals) {
-    const avg = clamp(Math.round((homeXg + awayXg) / 2), 0, 3);
-    homeGoals = avg;
-    awayGoals = avg;
+    // Realistic draw scoreline: 1-1 most common (~10%), 0-0 (~8%), 2-2 rare (~3-4%)
+    const totalXg = homeXg + awayXg;
+    const g = totalXg < 1.6 ? 0 : totalXg >= 3.6 ? 2 : 1;
+    homeGoals = g;
+    awayGoals = g;
   }
 
   homeGoals = clamp(homeGoals, 0, 4);
