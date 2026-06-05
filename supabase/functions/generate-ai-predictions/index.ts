@@ -5347,9 +5347,11 @@ function predictScoreV2(params: {
   } else if (prediction === "2" && awayGoals <= homeGoals) {
     awayGoals = Math.max(homeGoals + 1, 1);
   } else if (prediction === "X" && homeGoals !== awayGoals) {
-    const avg = clamp(Math.round((homeXg + awayXg) / 2), 0, 3);
-    homeGoals = avg;
-    awayGoals = avg;
+    // Realistic draw scoreline: 1-1 most common (~10%), 0-0 (~8%), 2-2 rare (~3-4%)
+    const totalXg = homeXg + awayXg;
+    const g = totalXg < 1.6 ? 0 : totalXg >= 3.6 ? 2 : 1;
+    homeGoals = g;
+    awayGoals = g;
   }
 
   homeGoals = clamp(homeGoals, 0, 4);
