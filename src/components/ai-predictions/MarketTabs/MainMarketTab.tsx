@@ -490,8 +490,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
         </div>
       )}
 
-      {/* ===== Top Correct Scores — Pro (top 1) & Premium (top 3) ===== */}
-      {displayTier !== "free" && topScores.length > 0 && (
+      {/* ===== Top Correct Scores — Premium only ===== */}
+      {displayTier === "premium" && topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
             <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
