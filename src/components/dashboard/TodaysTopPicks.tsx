@@ -160,7 +160,7 @@ export function TodaysTopPicks() {
 
                     {/* FOMO for Pro */}
                     {tier === "exclusive" && (
-                      <p className="text-[10px] text-amber-400/80">👀 78% of users unlocked this</p>
+                      <p className="text-[10px] text-amber-400/80">👀 85% of users unlocked this</p>
                     )}
 
                     {tier === "exclusive" ? (
