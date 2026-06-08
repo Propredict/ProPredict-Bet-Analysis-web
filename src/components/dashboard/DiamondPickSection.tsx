@@ -42,20 +42,22 @@ export function DiamondPickSection() {
         </Badge>
 
         <div className="space-y-2">
-          <p className="text-sm font-bold text-cyan-300">
+          <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{diamondPick.league}</p>
+          <p className="text-sm font-bold text-white text-center">
             {diamondPick.home_team} vs {diamondPick.away_team}
           </p>
-          <p className="text-[10px] text-muted-foreground">{diamondPick.league}</p>
 
           {!isUnlocked ? (
             <div className="space-y-2 pt-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Lock className="h-3.5 w-3.5" />
-                <span className="text-xs blur-sm select-none">Premium Pick</span>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span className="text-sm font-bold text-white blur-sm select-none">Premium Pick</span>
+                </div>
+                {diamondPick.confidence && (
+                  <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
+                )}
               </div>
-              {diamondPick.confidence && (
-                <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
-              )}
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
@@ -72,10 +74,12 @@ export function DiamondPickSection() {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <p className="text-xs font-semibold text-foreground">{diamondPick.prediction}</p>
-              {diamondPick.confidence && (
-                <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
-              )}
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-sm font-bold text-white text-center">{diamondPick.prediction}</p>
+                {diamondPick.confidence && (
+                  <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
+                )}
+              </div>
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)]"
