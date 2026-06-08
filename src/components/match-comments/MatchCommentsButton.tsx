@@ -10,6 +10,8 @@ interface Props {
   awayTeam: string;
   matchLabel?: string;
   className?: string;
+  /** "icon" (default) = compact square; "pill" = wider pill with label */
+  variant?: "icon" | "pill";
 }
 
 /**
@@ -22,6 +24,7 @@ export function MatchCommentsButton({
   awayTeam,
   matchLabel,
   className,
+  variant = "icon",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
@@ -63,6 +66,7 @@ export function MatchCommentsButton({
     };
   }, [matchId]);
 
+  const isPill = variant === "pill";
   return (
     <>
       <button
@@ -72,15 +76,23 @@ export function MatchCommentsButton({
         }}
         aria-label="Open match comments"
         className={cn(
-          "relative h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-md flex items-center justify-center transition-all",
+          "relative flex items-center justify-center transition-all rounded-md",
+          isPill
+            ? "h-7 px-2.5 gap-1.5 text-[11px] font-medium"
+            : "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px]",
           (count ?? 0) > 0
             ? "bg-primary/15 text-primary hover:bg-primary/25"
             : "bg-secondary text-muted-foreground hover:bg-secondary/80",
           className
         )}
       >
-        <MessageCircle className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-        {count != null && count > 0 && (
+        <MessageCircle className={cn(isPill ? "h-3.5 w-3.5" : "h-4 w-4 sm:h-[18px] sm:w-[18px]")} />
+        {isPill && (
+          <span>
+            {count != null && count > 0 ? `Comments · ${count > 99 ? "99+" : count}` : "Comments"}
+          </span>
+        )}
+        {!isPill && count != null && count > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border border-background">
             {count > 99 ? "99+" : count}
           </span>
