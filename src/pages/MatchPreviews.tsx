@@ -410,7 +410,7 @@ export default function MatchPreviews() {
                             <Lock className="h-3 w-3" /> AI Top Pick Locked
                           </Badge>
                         ) : (
-                          <Badge className="text-xs px-3 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                          <Badge className="text-sm px-4 py-1.5 bg-emerald-500/20 text-white border border-emerald-500/40 font-extrabold tracking-wide">
                             {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
                           </Badge>
                         )}
