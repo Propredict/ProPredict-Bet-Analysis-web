@@ -48,7 +48,7 @@ export function RiskOfTheDaySection() {
 
         <div className="space-y-2">
           <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{riskPick.league}</p>
-          <p className="text-sm font-bold text-white text-center">
+          <p className="text-lg font-extrabold text-white text-center leading-tight">
             {riskPick.home_team} vs {riskPick.away_team}
           </p>
 
