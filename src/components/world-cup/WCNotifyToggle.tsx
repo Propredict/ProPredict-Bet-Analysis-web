@@ -38,10 +38,10 @@ export default function WCNotifyToggle() {
       } else {
         window.Android?.requestPushPermission?.();
       }
-      logPushPreferenceChange("wc_alerts_enabled", "wc_portal");
+      logPushPreferenceChange("wc_alerts_enabled", "settings");
     } else {
       localStorage.setItem("wc_alerts_enabled", "false");
-      logPushPreferenceChange("wc_alerts_disabled", "wc_portal");
+      logPushPreferenceChange("wc_alerts_disabled", "settings");
     }
     setOneSignalTag("wc_alerts", checked ? "true" : "false");
   };
