@@ -182,6 +182,15 @@ export function MatchPredictions() {
       .map(mapDbTipToTip)
       .slice(0, 2);
 
+    const hasAnyWebTips =
+      dailyTips.length > 0 ||
+      proTips.length > 0 ||
+      riskTips.length > 0 ||
+      diamondTips.length > 0 ||
+      premiumTips.length > 0;
+
+    if (!isLoading && !hasAnyWebTips) return null;
+
     return (
       <section className="space-y-5">
         {/* Section Header — centered bold title */}
@@ -196,6 +205,7 @@ export function MatchPredictions() {
         ) : (
           <>
             {/* SECTION 1: FREE / Daily Tips */}
+            {dailyTips.length > 0 && (
             <TipTierSection
               title="Daily Tips"
               subtitle="Open access · everyday value"
@@ -207,9 +217,10 @@ export function MatchPredictions() {
               empty="No Daily predictions available"
               items={dailyTips}
               renderItem={renderTip}
-            />
+            />)}
 
             {/* SECTION 2: PRO — Exclusive only */}
+            {proTips.length > 0 && (
             <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
               <div className="text-center space-y-1">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
@@ -221,18 +232,9 @@ export function MatchPredictions() {
                 </p>
               </div>
 
-              {proTips.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {proTips.map(renderTip)}
-                </div>
-              ) : (
-                <Card className="empty-state-compact bg-card/40 border-border/40">
-                  <div className="flex flex-col items-center gap-1">
-                    <Star className="h-5 w-5 text-amber-500/50" />
-                    <p className="text-[10px] text-muted-foreground">No Pro predictions available</p>
-                  </div>
-                </Card>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {proTips.map(renderTip)}
+              </div>
 
               <div className="flex justify-center pt-1">
                 <Button
@@ -244,7 +246,7 @@ export function MatchPredictions() {
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>
-            </div>
+            </div>)}
 
             {/* SECTION 2b: RISK OF THE DAY — standalone */}
             {riskTips.length > 0 && (
@@ -307,6 +309,7 @@ export function MatchPredictions() {
             )}
 
             {/* SECTION 4: PREMIUM */}
+            {premiumTips.length > 0 && (
             <TipTierSection
               title="Premium Tips"
               subtitle="Best AI predictions · maximum edge"
@@ -318,7 +321,7 @@ export function MatchPredictions() {
               empty="No Premium predictions available"
               items={premiumTips}
               renderItem={renderTip}
-            />
+            />)}
           </>
         )}
 

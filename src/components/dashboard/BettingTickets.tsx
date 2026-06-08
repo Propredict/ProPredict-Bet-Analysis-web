@@ -171,6 +171,14 @@ export function BettingTickets() {
       .map(mapDbTicket)
       .slice(0, 2);
 
+    const hasAnyWebTickets =
+      dailyTickets.length > 0 ||
+      proTickets.length > 0 ||
+      premiumTickets.length > 0 ||
+      multiRiskTickets.length > 0;
+
+    if (!isLoading && !hasAnyWebTickets) return null;
+
     return (
       <section className="space-y-5">
         {/* Section Header — centered bold title */}
@@ -184,6 +192,7 @@ export function BettingTickets() {
           </div>
         ) : (
           <>
+            {dailyTickets.length > 0 && (
             <TicketTierSection
               title="Free Daily Picks"
               subtitle="Open access · everyday combos"
@@ -195,8 +204,9 @@ export function BettingTickets() {
               empty="No Daily AI Combos available"
               tickets={dailyTickets}
               renderTicket={renderTicket}
-            />
+            />)}
 
+            {proTickets.length > 0 && (
             <TicketTierSection
               title="Pro Picks"
               subtitle="Higher confidence · curated edge"
@@ -208,7 +218,7 @@ export function BettingTickets() {
               empty="No Pro AI Combos available"
               tickets={proTickets}
               renderTicket={renderTicket}
-            />
+            />)}
 
             {/* MULTI RISK MATCHES — standalone */}
             {multiRiskTickets.length > 0 && (
@@ -240,6 +250,7 @@ export function BettingTickets() {
               </div>
             )}
 
+            {premiumTickets.length > 0 && (
             <TicketTierSection
               title="Premium Picks"
               subtitle="Best AI predictions · maximum edge"
@@ -251,7 +262,7 @@ export function BettingTickets() {
               empty="No Premium AI Combos available"
               tickets={premiumTickets}
               renderTicket={renderTicket}
-            />
+            />)}
           </>
         )}
 
