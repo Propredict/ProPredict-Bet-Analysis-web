@@ -340,20 +340,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <Star className="h-3.5 w-3.5 text-success fill-success" />
         </div>
 
-        {/* Prediction + Odds row */}
-        <div className="flex items-stretch gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <TrendingUp className="h-4 w-4 text-white shrink-0" />
-            <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
-              {tip.prediction}
-            </span>
-          </div>
-          {tip.odds > 0 && (
-            <div className="flex flex-col items-center justify-center min-w-[52px] px-2 rounded-lg border border-success/40 bg-background/40">
-              <span className="text-xs font-black text-success leading-none">{tip.odds.toFixed(2)}</span>
-              <span className="text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">Odds</span>
-            </div>
-          )}
+        {/* Prediction row */}
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
+          <TrendingUp className="h-4 w-4 text-white shrink-0" />
+          <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
+            {tip.prediction}
+          </span>
         </div>
 
         {tip.extraNote && (
