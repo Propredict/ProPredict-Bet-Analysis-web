@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { useMatchComments } from "@/hooks/useMatchComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +44,11 @@ export function MatchCommentsSheet({
   const { user } = useAuth();
   const { isAdmin } = useUserPlan();
   const navigate = useNavigate();
-  const { comments, loading, post, edit, remove, report } = useMatchComments(matchId, open);
+  const isAndroidApp = getIsAndroidApp();
+  const { comments, loading, post, edit, remove, report } = useMatchComments(
+    matchId,
+    open && isAndroidApp
+  );
 
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -126,6 +132,30 @@ export function MatchCommentsSheet({
           </SheetTitle>
         </SheetHeader>
 
+        {!isAndroidApp ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-10 gap-3">
+            <div className="h-14 w-14 rounded-full bg-primary/15 flex items-center justify-center">
+              <Smartphone className="h-7 w-7 text-primary" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">App-only feature</h3>
+            <p className="text-xs text-muted-foreground max-w-[280px] leading-relaxed">
+              Download the app to see and post a comment on this match.
+            </p>
+            <Button
+              className="mt-2 h-9 px-5 text-xs font-semibold"
+              onClick={() => {
+                window.open(
+                  "https://play.google.com/store/apps/details?id=com.propredict.app&source=match_comments",
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
+            >
+              Download the App
+            </Button>
+          </div>
+        ) : (
+        <>
         <ScrollArea className="flex-1 px-3 py-3">
           {loading && comments.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground text-xs">
@@ -298,6 +328,8 @@ export function MatchCommentsSheet({
             {draft.length}/{MAX_LEN}
           </div>
         </div>
+        </>
+        )}
       </SheetContent>
     </Sheet>
   );
