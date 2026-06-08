@@ -35,6 +35,7 @@ const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m =
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
 const RiskOfTheDaySection = lazy(() => import("@/components/dashboard/RiskOfTheDaySection").then(m => ({ default: m.RiskOfTheDaySection })));
+const DashboardDailyTips = lazy(() => import("@/components/dashboard/DashboardDailyTips").then(m => ({ default: m.DashboardDailyTips })));
 const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
 const DiamondPickSection = lazy(() => import("@/components/dashboard/DiamondPickSection").then(m => ({ default: m.DiamondPickSection })));
 const TodaysTopTickets = lazy(() => import("@/components/dashboard/TodaysTopTickets").then(m => ({ default: m.TodaysTopTickets })));
@@ -165,6 +166,9 @@ const Index = () => {
           <>
             <Suspense fallback={<LazyFallback />}>
               <TodaysTopPicks />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <DashboardDailyTips />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
               <RiskOfTheDaySection />
