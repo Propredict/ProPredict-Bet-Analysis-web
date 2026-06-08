@@ -7,6 +7,7 @@ import { useWorldCupBracket, type BracketMatch, type BracketRound } from "@/hook
 import { useChampionPrediction } from "@/hooks/useChampionPrediction";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import type { Match, MatchStatus } from "@/hooks/useLiveScores";
+import { teamFlag } from "@/lib/wcTeamFlags";
 
 function statusToMatchStatus(s: string): MatchStatus {
   if (["1H", "2H", "ET", "P", "LIVE", "BT"].includes(s)) return "live";
@@ -140,6 +141,9 @@ function MatchCard({
             }`}
           >
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-[13px] leading-none shrink-0" aria-hidden>
+                {teamFlag(match!.home.name)}
+              </span>
               {match!.home.logo ? (
                 <img
                   src={match!.home.logo}
@@ -175,6 +179,9 @@ function MatchCard({
             }`}
           >
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-[13px] leading-none shrink-0" aria-hidden>
+                {teamFlag(match!.away.name)}
+              </span>
               {match!.away.logo ? (
                 <img
                   src={match!.away.logo}
