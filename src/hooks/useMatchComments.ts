@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+// Tables are new; types will regenerate after the migration runs.
+const db = supabase as any;
+
 export interface MatchComment {
   id: string;
   match_id: string;
@@ -33,7 +36,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
     setLoading(true);
     setError(null);
     try {
-      const { data: rows, error: err } = await supabase
+      const { data: rows, error: err } = await db
         .from("match_comments")
         .select("id, match_id, user_id, content, created_at, updated_at, edited")
         .eq("match_id", matchId)
@@ -41,7 +44,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
         .order("created_at", { ascending: true })
         .limit(500);
       if (err) throw err;
-      const userIds = Array.from(new Set((rows ?? []).map((r) => r.user_id)));
+      const userIds = Array.from(new Set((rows ?? []).map((r: any) => r.user_id as string)));
       let profiles: ProfileMini[] = [];
       if (userIds.length > 0) {
         const { data: profs } = await supabase
@@ -52,7 +55,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
       }
       const pmap = new Map(profiles.map((p) => [p.user_id, p]));
       setComments(
-        (rows ?? []).map((r) => ({
+        (rows ?? []).map((r: any) => ({
           ...r,
           username: pmap.get(r.user_id)?.username ?? null,
           full_name: pmap.get(r.user_id)?.full_name ?? null,
@@ -74,7 +77,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
   // Realtime — refetch on any insert/update/delete for this match
   useEffect(() => {
     if (!enabled || !matchId) return;
-    const channel = supabase
+      const channel = supabase
       .channel(`match-comments-${matchId}`)
       .on(
         "postgres_changes",
@@ -92,7 +95,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
       if (!user || !matchId) throw new Error("not_authenticated");
       const clean = content.trim().slice(0, 500);
       if (!clean) return;
-      const { error: err } = await supabase
+      const { error: err } = await db
         .from("match_comments")
         .insert({ match_id: matchId, user_id: user.id, content: clean });
       if (err) throw err;
@@ -105,7 +108,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
       if (!user) throw new Error("not_authenticated");
       const clean = content.trim().slice(0, 500);
       if (!clean) return;
-      const { error: err } = await supabase
+      const { error: err } = await db
         .from("match_comments")
         .update({ content: clean })
         .eq("id", id)
@@ -118,7 +121,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
   const remove = useCallback(
     async (id: string) => {
       if (!user) throw new Error("not_authenticated");
-      const { error: err } = await supabase.from("match_comments").delete().eq("id", id);
+      const { error: err } = await db.from("match_comments").delete().eq("id", id);
       if (err) throw err;
     },
     [user]
@@ -127,7 +130,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
   const report = useCallback(
     async (id: string, reason?: string) => {
       if (!user) throw new Error("not_authenticated");
-      const { error: err } = await supabase
+      const { error: err } = await db
         .from("match_comment_reports")
         .insert({ comment_id: id, reporter_id: user.id, reason: reason ?? null });
       if (err && !err.message.toLowerCase().includes("duplicate")) throw err;
