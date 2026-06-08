@@ -241,11 +241,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           </div>
 
           {/* Match name — always visible, even when locked */}
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">
+          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight text-center">
             {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
           </h3>
           {(tip.kickoffDate || tip.kickoffTime || tip.kickoff) && (
-            <div className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="mt-1.5 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
               <Clock className="h-3 w-3" />
               <span>
                 {[tip.kickoffDate || (!tip.kickoffTime ? tip.kickoff : ""), tip.kickoffTime]
@@ -334,11 +334,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       {/* Prediction area - revealed */}
       <div className="px-3.5 sm:px-4 pb-3.5 pt-1 space-y-2">
         {/* OUR PREDICTION section header */}
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center justify-center gap-2 pt-1">
           <Star className="h-3.5 w-3.5 text-success fill-success" />
           <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Prediction</span>
           <Star className="h-3.5 w-3.5 text-success fill-success" />
-          <div className="flex-1 h-px bg-gradient-to-r from-success/40 to-transparent" />
         </div>
 
         {/* Prediction + Odds row */}
