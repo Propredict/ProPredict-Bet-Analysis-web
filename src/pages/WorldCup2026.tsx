@@ -863,6 +863,11 @@ export default function WorldCup2026() {
           {(isApp || isPro) && <WCTopPlayersTab />}
         </TabsContent>
 
+        {/* ==================== TOURNAMENT STATS ==================== */}
+        <TabsContent value="stats" className="mt-0 px-3">
+          <WCTournamentStatsTab />
+        </TabsContent>
+
         <TabsContent value="teams" className="mt-0 px-3">
           <div className="mt-4">
             {/* App: Free users — locked */}
