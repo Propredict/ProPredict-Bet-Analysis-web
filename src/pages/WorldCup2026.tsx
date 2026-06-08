@@ -520,7 +520,7 @@ export default function WorldCup2026() {
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
             <p className="text-[10px] text-muted-foreground mb-2">
-              Matchday 1 · Group Stage{" "}
+              Round 1 · Group Stage{" "}
               {hasRealAI ? (
                 <span className="text-primary font-semibold">· Live AI active</span>
               ) : (
@@ -742,13 +742,13 @@ export default function WorldCup2026() {
           )}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" /> Match Schedule
+            <Calendar className="h-4 w-4 text-primary" /> Match Schedule (CET)
           </h2>
             <div className="flex gap-2 mb-3">
               {([
-                { key: "md1", label: "Matchday 1" },
-                { key: "md2", label: "Matchday 2" },
-                { key: "md3", label: "Matchday 3" },
+                { key: "md1", label: "Round 1" },
+                { key: "md2", label: "Round 2" },
+                { key: "md3", label: "Round 3" },
               ] as const).map(f => (
                 <Button key={f.key} size="sm" variant={matchesFilter === f.key ? "default" : "outline"}
                   className="text-[11px] h-7 px-3" onClick={() => setMatchesFilter(f.key)}>
