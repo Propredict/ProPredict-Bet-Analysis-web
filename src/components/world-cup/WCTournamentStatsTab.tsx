@@ -1,9 +1,14 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3, Calendar, Lock, Zap } from "lucide-react";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { useWCTopPlayers } from "@/hooks/useWCTopPlayers";
+import { usePlatform } from "@/hooks/usePlatform";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 
 interface StatTile {
   icon: any;
@@ -22,6 +27,10 @@ const toneClass: Record<StatTile["tone"], string> = {
 };
 
 export default function WCTournamentStatsTab() {
+  const navigate = useNavigate();
+  const { isAndroidApp } = usePlatform();
+  const { plan } = useUserPlan();
+
   const { data: standingsData, isLoading: standingsLoading } = useWCStandings();
   const { data: scorers } = useWCTopPlayers("scorers");
   const { data: assists } = useWCTopPlayers("assists");
@@ -78,6 +87,53 @@ export default function WCTournamentStatsTab() {
 
   const topScorer = scorers?.players?.[0];
   const topAssist = assists?.players?.[0];
+
+  /* =============== PLATFORM GATING =============== */
+  // Web: locked for everyone — drive to app
+  if (!isAndroidApp) {
+    return (
+      <div className="mt-4">
+        <AppLockOverlay
+          message="Tournament stats are exclusively available in the ProPredict app. Download now for full World Cup insights, live tracking, and arena points."
+          buttonText="Open ProPredict App"
+        />
+      </div>
+    );
+  }
+
+  // App: locked for free users — upgrade required
+  if (plan === "free") {
+    return (
+      <div className="mt-4">
+        <Card className="bg-card border-border p-6 text-center">
+          <div className="p-2 rounded-full bg-primary/10 mb-2 inline-flex">
+            <Lock className="h-5 w-5 text-primary" />
+          </div>
+          <p className="text-sm font-semibold text-foreground mb-1">Tournament Stats Locked</p>
+          <p className="text-xs text-muted-foreground mb-3 max-w-[280px] mx-auto">
+            Upgrade to Pro or Premium to unlock live tournament statistics, top scorers, group insights, and arena rewards.
+          </p>
+          <div className="flex flex-col gap-2 max-w-[260px] mx-auto">
+            <Button
+              size="sm"
+              onClick={() => navigate("/get-premium")}
+              className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs gap-1.5"
+            >
+              <Zap className="h-3.5 w-3.5" /> Get Pro — €3.99/mo
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate("/get-premium")}
+              className="text-xs border-fuchsia-500/40 text-fuchsia-400 hover:bg-fuchsia-500/10 hover:text-fuchsia-300 gap-1.5"
+            >
+              <Zap className="h-3.5 w-3.5" /> Get Premium — €5.99/mo
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (standingsLoading) {
     return (
