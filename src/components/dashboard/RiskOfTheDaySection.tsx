@@ -47,18 +47,20 @@ export function RiskOfTheDaySection() {
         </Badge>
 
         <div className="space-y-2">
-          <p className="text-sm font-bold text-red-400">
+          <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{riskPick.league}</p>
+          <p className="text-sm font-bold text-white text-center">
             {riskPick.home_team} vs {riskPick.away_team}
           </p>
-          <p className="text-[10px] text-muted-foreground">{riskPick.league}</p>
 
           {!isUnlocked ? (
             <div className="space-y-2 pt-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Lock className="h-3.5 w-3.5" />
-                <span className="text-xs blur-sm select-none">Correct Score 2-1</span>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span className="text-sm font-bold text-white blur-sm select-none">Correct Score 2-1</span>
+                </div>
+                <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds ? `${riskPick.odds}` : "3.50+"}</p>
               </div>
-              <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds ? `${riskPick.odds}` : "3.50+"}</p>
               <Button
                 size="sm"
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
@@ -77,10 +79,12 @@ export function RiskOfTheDaySection() {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <p className="text-xs font-semibold text-foreground">{riskPick.prediction}</p>
-              {riskPick.odds && (
-                <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds}</p>
-              )}
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-sm font-bold text-white text-center">{riskPick.prediction}</p>
+                {riskPick.odds && (
+                  <p className="text-xs text-red-400 font-bold">Odds: {riskPick.odds}</p>
+                )}
+              </div>
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.4)]"
