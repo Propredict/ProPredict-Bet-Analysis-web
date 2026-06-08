@@ -110,9 +110,6 @@ export function TodaysTopTickets() {
                 <Badge className={cn("text-[10px] font-bold border-0", badgeBg)}>
                   {label}
                 </Badge>
-                <span className={cn("text-xs font-bold", accent)}>
-                  Total Odds: {ticket.total_odds ?? "—"}
-                </span>
               </div>
 
               <p className="text-xs font-bold text-foreground mb-2">{ticket.title}</p>
