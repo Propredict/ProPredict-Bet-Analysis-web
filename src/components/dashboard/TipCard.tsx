@@ -102,23 +102,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   };
 
   const renderAdminBar = () => {
-    if (!isAdmin) return null;
-    return (
-      <div className="px-3.5 sm:px-4 pb-3 -mt-1">
-        <div className="flex items-center gap-1.5 pt-2 border-t border-dashed border-border/40">
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mr-1">Admin</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 px-2 text-[10px] gap-1 text-destructive border-destructive/30 hover:bg-destructive/10 ml-auto"
-            disabled={adminBusy !== null}
-            onClick={(e) => { e.stopPropagation(); adminDelete(); }}
-          >
-            {adminBusy === "delete" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-          </Button>
-        </div>
-      </div>
-    );
+    return null;
   };
 
   const handleUnlockClick = () => {
