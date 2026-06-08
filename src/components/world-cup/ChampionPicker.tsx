@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useChampionPrediction } from "@/hooks/useChampionPrediction";
 import { TEAMS } from "@/data/worldCup2026";
 import { toast } from "@/hooks/use-toast";
+import WCShareCard from "./WCShareCard";
 
 // Build pots from FIFA ranking (lowest = best). 48 teams → 4 pots × 12.
 function buildPots() {
@@ -151,6 +152,7 @@ export default function ChampionPicker() {
             </div>
           </div>
         </Card>
+        <WCShareCard teamName={myPick.team_name ?? ""} teamFlag={myPick.team_flag} />
         <Leaderboard rows={leaderboard} totalVotes={totalVotes} myTeam={myPick.team_name ?? undefined} />
       </div>
     );
