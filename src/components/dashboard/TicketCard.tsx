@@ -1,8 +1,6 @@
 import {
-  Ticket,
   Clock,
   Lock,
-  Unlock,
   Star,
   Crown,
   CheckCircle2,
@@ -12,9 +10,7 @@ import {
   Sparkles,
   Gift,
   ChevronRight,
-  TrendingUp,
   Eye,
-  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,10 +21,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useState } from "react";
 
 /* =======================
    Types
@@ -59,7 +51,6 @@ interface TicketCardProps {
   onSecondaryUnlock?: () => void;
   onViewTicket?: () => void;
   isUnlocking?: boolean;
-  onDeleted?: (ticketId: string) => void;
 }
 
 /* =======================
@@ -120,11 +111,8 @@ function TicketCard({
   onSecondaryUnlock,
   onViewTicket,
   isUnlocking = false,
-  onDeleted,
 }: TicketCardProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useAdminAccess();
-  const [isDeleting, setIsDeleting] = useState(false);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
   const accent = TIER_ACCENT[ticket.tier] || TIER_ACCENT.daily;
@@ -183,36 +171,6 @@ function TicketCard({
 
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm(`Delete ticket "${ticket.title}"? This cannot be undone.`)) return;
-    setIsDeleting(true);
-    try {
-      await (supabase as any).from("ticket_matches").delete().eq("ticket_id", ticket.id);
-      const { error } = await (supabase as any).from("tickets").delete().eq("id", ticket.id);
-      if (error) throw error;
-      toast.success("Ticket deleted");
-      if (onDeleted) onDeleted(ticket.id);
-      else window.dispatchEvent(new CustomEvent("tickets:refresh"));
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to delete ticket");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const renderAdminDelete = () =>
-    isAdmin ? (
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isDeleting}
-        title="Delete ticket (admin)"
-        className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive transition-colors disabled:opacity-50"
-      >
-        {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-      </button>
-    ) : null;
 
   const cardShell = cn(
     "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
@@ -263,7 +221,6 @@ function TicketCard({
 
     return (
       <div className={cardShell} onClick={handleCardClick}>
-        {renderAdminDelete()}
         {renderHeader()}
 
         {/* Match list - show names, blur predictions & odds */}
@@ -347,7 +304,6 @@ function TicketCard({
   // --- UNLOCKED ---
   return (
     <div className={cardShell} onClick={handleCardClick}>
-      {renderAdminDelete()}
       {renderHeader()}
 
       {/* Match list - revealed */}
@@ -391,14 +347,6 @@ function TicketCard({
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </p>
         )}
-      </div>
-
-      {/* AI Combo footer */}
-      <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
-        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-success/10 to-success/5 border border-success/20">
-          <TrendingUp className="h-3.5 w-3.5 text-success" />
-          <span className="text-[11px] font-semibold text-success tracking-wide">AI Combo Available</span>
-        </div>
       </div>
     </div>
   );
