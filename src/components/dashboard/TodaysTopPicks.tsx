@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame, Lock, Eye, Loader2, Play, Users } from "lucide-react";
+import { Flame, Lock, Eye, Loader2, Play, Users, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
