@@ -7,6 +7,7 @@ import { useWorldCupBracket, type BracketMatch, type BracketRound } from "@/hook
 import { useChampionPrediction } from "@/hooks/useChampionPrediction";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 import type { Match, MatchStatus } from "@/hooks/useLiveScores";
+import { teamFlag } from "@/lib/wcTeamFlags";
 
 function statusToMatchStatus(s: string): MatchStatus {
   if (["1H", "2H", "ET", "P", "LIVE", "BT"].includes(s)) return "live";
@@ -140,6 +141,9 @@ function MatchCard({
             }`}
           >
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-[13px] leading-none shrink-0" aria-hidden>
+                {teamFlag(match!.home.name)}
+              </span>
               {match!.home.logo ? (
                 <img
                   src={match!.home.logo}
@@ -175,6 +179,9 @@ function MatchCard({
             }`}
           >
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-[13px] leading-none shrink-0" aria-hidden>
+                {teamFlag(match!.away.name)}
+              </span>
               {match!.away.logo ? (
                 <img
                   src={match!.away.logo}
@@ -317,6 +324,58 @@ function ConnectorLine() {
   );
 }
 
+function BracketColumn({
+  title,
+  matches,
+  slots,
+  onMatchClick,
+  pickTeam,
+  highlight = false,
+}: {
+  title: string;
+  matches: BracketMatch[];
+  slots: number;
+  onMatchClick?: (m: BracketMatch) => void;
+  pickTeam?: string | null;
+  highlight?: boolean;
+}) {
+  const filled: (BracketMatch | null)[] = Array.from({ length: slots }, (_, i) => matches[i] || null);
+  const matchIsPick = (m: BracketMatch | null) => {
+    if (!m || !pickTeam) return false;
+    const p = pickTeam.toLowerCase();
+    return m.home.name?.toLowerCase() === p || m.away.name?.toLowerCase() === p;
+  };
+  // Each subsequent round doubles vertical gap so pairs visually feed into next round
+  const gapClass =
+    slots >= 16 ? "gap-2"
+    : slots === 8 ? "gap-8"
+    : slots === 4 ? "gap-20"
+    : slots === 2 ? "gap-44"
+    : "";
+
+  return (
+    <div className="flex flex-col w-[200px] shrink-0">
+      <div className={`text-[10px] font-bold uppercase tracking-wider px-1 mb-2 ${highlight ? "text-amber-400" : "text-muted-foreground"}`}>
+        {title} <span className="text-muted-foreground/60 font-normal">({matches.length}/{slots})</span>
+      </div>
+      <div className={`flex flex-col justify-around flex-1 ${gapClass} border-l border-border/20 pl-2 relative`}>
+        {filled.map((m, i) => (
+          <div key={i} className="relative">
+            {/* horizontal connector to next round */}
+            <div className="absolute right-0 top-1/2 -translate-y-px w-2 h-px bg-border/30 translate-x-full" />
+            <MatchCard
+              match={m}
+              size="sm"
+              isPick={matchIsPick(m)}
+              onClick={m && onMatchClick ? () => onMatchClick(m) : undefined}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () => void }) {
   const { bracket, hasData, totalMatches, loading } = useWorldCupBracket();
   const { myPick } = useChampionPrediction();
@@ -328,6 +387,50 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
     const m = bracketToMatch(b);
     if (m) setSelectedMatch(m);
   };
+
+  // Build "Path to Final" for user's champion pick
+  const pickPath = useMemo(() => {
+    if (!pickTeam || !hasData) return null;
+    const lower = pickTeam.toLowerCase();
+    const order: BracketRound[] = [
+      "Round of 32",
+      "Round of 16",
+      "Quarter-finals",
+      "Semi-finals",
+      "Final",
+    ];
+    const steps: {
+      round: BracketRound;
+      shortLabel: string;
+      match: BracketMatch | null;
+      result: "win" | "loss" | "live" | "upcoming" | "none";
+      opponent: string | null;
+    }[] = [];
+    let eliminated = false;
+    for (const r of order) {
+      const m = (bracket[r] ?? []).find(
+        (x) => x.home.name?.toLowerCase() === lower || x.away.name?.toLowerCase() === lower
+      );
+      const shortLabel = r === "Round of 32" ? "R32" : r === "Round of 16" ? "R16" : r === "Quarter-finals" ? "QF" : r === "Semi-finals" ? "SF" : "🏆";
+      if (!m) {
+        steps.push({ round: r, shortLabel, match: null, result: eliminated ? "none" : "upcoming", opponent: null });
+        continue;
+      }
+      const isHome = m.home.name?.toLowerCase() === lower;
+      const opponent = isHome ? m.away.name : m.home.name;
+      const finished = isFinished(m.status);
+      const live = isLive(m.status);
+      let result: "win" | "loss" | "live" | "upcoming" = "upcoming";
+      if (live) result = "live";
+      else if (finished) {
+        const won = (isHome && m.winner === "home") || (!isHome && m.winner === "away");
+        result = won ? "win" : "loss";
+        if (!won) eliminated = true;
+      }
+      steps.push({ round: r, shortLabel, match: m, result, opponent: opponent ?? "TBD" });
+    }
+    return steps;
+  }, [pickTeam, bracket, hasData]);
 
   if (loading) {
     return (
@@ -387,6 +490,95 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         </div>
       </Card>
 
+      {/* Path to Final — user's Champion Pick tracker */}
+      {pickPath && (
+        <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/8 via-card to-fuchsia-500/8 p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-[11px] font-bold text-foreground">
+              {teamFlag(pickTeam)} {pickTeam}'s Path to the Final
+            </span>
+          </div>
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin pb-1">
+            {pickPath.map((s, i) => {
+              const color =
+                s.result === "win" ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300"
+                : s.result === "loss" ? "border-red-500/50 bg-red-500/10 text-red-300 line-through"
+                : s.result === "live" ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-300 animate-pulse"
+                : s.result === "upcoming" ? "border-amber-500/40 bg-amber-500/5 text-amber-300"
+                : "border-border/40 bg-muted/10 text-muted-foreground/60";
+              const icon = s.result === "win" ? "✅" : s.result === "loss" ? "❌" : s.result === "live" ? "🔴" : "";
+              return (
+                <div key={i} className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => s.match && handleMatchClick(s.match)}
+                    disabled={!s.match}
+                    className={`px-2 py-1 rounded-md border text-[10px] font-medium ${color} ${s.match ? "cursor-pointer hover:opacity-80" : "cursor-default"} transition-opacity`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold">{s.shortLabel}</span>
+                      {s.opponent && (
+                        <span className="opacity-80">vs {teamFlag(s.opponent)} {s.opponent.length > 8 ? s.opponent.slice(0, 7) + "…" : s.opponent}</span>
+                      )}
+                      {icon && <span>{icon}</span>}
+                    </div>
+                  </button>
+                  {i < pickPath.length - 1 && <span className="text-muted-foreground/40 text-[10px]">→</span>}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* DESKTOP: horizontal bracket columns (md+) */}
+      {hasData && (
+        <div className="hidden md:block">
+          <div className="overflow-x-auto pb-2">
+            <div className="flex gap-3 min-w-max items-stretch">
+              <BracketColumn
+                title="Round of 32"
+                matches={bracket["Round of 32"]}
+                slots={16}
+                onMatchClick={handleMatchClick}
+                pickTeam={pickTeam}
+              />
+              <BracketColumn
+                title="Round of 16"
+                matches={bracket["Round of 16"]}
+                slots={8}
+                onMatchClick={handleMatchClick}
+                pickTeam={pickTeam}
+              />
+              <BracketColumn
+                title="Quarterfinals"
+                matches={bracket["Quarter-finals"]}
+                slots={4}
+                onMatchClick={handleMatchClick}
+                pickTeam={pickTeam}
+              />
+              <BracketColumn
+                title="Semifinals"
+                matches={bracket["Semi-finals"]}
+                slots={2}
+                onMatchClick={handleMatchClick}
+                pickTeam={pickTeam}
+              />
+              <BracketColumn
+                title="🏆 Final"
+                matches={bracket.Final}
+                slots={1}
+                onMatchClick={handleMatchClick}
+                pickTeam={pickTeam}
+                highlight
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE: reverse pyramid (existing) */}
+      <div className="md:hidden space-y-4">
       {/* Reverse pyramid: Final at top, R32 at bottom */}
       <RoundSection
         title="🏆 Final"
@@ -458,6 +650,7 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
           </div>
         </>
       )}
+      </div>
 
       <p className="text-center text-[9px] text-muted-foreground/70 pt-2 pb-4">
         Auto-updated from official FIFA fixtures · Refreshes every 5 minutes
