@@ -304,7 +304,6 @@ function TicketCard({
   // --- UNLOCKED ---
   return (
     <div className={cardShell} onClick={handleCardClick}>
-      {renderAdminDelete()}
       {renderHeader()}
 
       {/* Match list - revealed */}
@@ -348,14 +347,6 @@ function TicketCard({
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </p>
         )}
-      </div>
-
-      {/* AI Combo footer */}
-      <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
-        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-success/10 to-success/5 border border-success/20">
-          <TrendingUp className="h-3.5 w-3.5 text-success" />
-          <span className="text-[11px] font-semibold text-success tracking-wide">AI Combo Available</span>
-        </div>
       </div>
     </div>
   );
