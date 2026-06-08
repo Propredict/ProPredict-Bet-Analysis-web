@@ -437,6 +437,18 @@ export default function ManageTips() {
               />
             </div>
 
+            {/* FINAL RESULT */}
+            <div>
+              <Label>Final Result</Label>
+              <Input
+                placeholder="e.g. 3-1, 6-4 6-3, Over"
+                value={(formData as any).final_result ?? ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, final_result: e.target.value } as any)
+                }
+              />
+            </div>
+
             {/* TIER / STATUS / RESULT – SAME AS TICKET */}
             <div className="grid grid-cols-3 gap-4">
               <div>
