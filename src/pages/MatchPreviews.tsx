@@ -11,7 +11,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
-import { n as getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
+import { getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
