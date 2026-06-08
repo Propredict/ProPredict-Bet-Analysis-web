@@ -202,13 +202,6 @@ export function DashboardAIPredictions() {
     [dailyPickKey, tierMap, predictions],
   );
 
-  // Android: always show 1 Free + 1 Pro + 1 Premium (daily-stable, same as web sections).
-  const displayedPredictions = [
-    freePicks[0],
-    proPicks[0],
-    premiumPicks[0],
-  ].filter(Boolean);
-
   const renderCard = (prediction: any) => {
     // Lock based on the SAME tier classification as /ai-predictions.
     const tier = tierOf(prediction);
@@ -237,10 +230,9 @@ export function DashboardAIPredictions() {
     );
   };
 
-  // --- WEB: vertical sections (Free / Pro / Premium) ---
-  if (!isAndroidApp) {
-    return (
-      <section className="space-y-5">
+  // --- Unified layout (Web + Android): same Free / Pro / Premium sections, same picks ---
+  return (
+    <section className="space-y-5">
         {/* Section Header — centered bold title */}
         <div className="text-center space-y-1 pt-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
@@ -301,56 +293,6 @@ export function DashboardAIPredictions() {
             />
           </>
         )}
-      </section>
-    );
-  }
-
-  // --- ANDROID: keep existing combined layout ---
-  return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-primary/20">
-            <Brain className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground">AI Predictions</h2>
-            <p className="text-[10px] text-muted-foreground">AI-powered match analysis</p>
-          </div>
-        </div>
-        {predictions.length > 0 && (
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs font-semibold">
-            {predictions.length} matches
-          </Badge>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-        </div>
-      ) : displayedPredictions.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {displayedPredictions.map((prediction) => renderCard(prediction))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-2 py-8 rounded-xl border border-border/50 bg-card/50">
-          <Brain className="h-6 w-6 text-muted-foreground/40" />
-          <p className="text-xs text-muted-foreground">No AI predictions available today</p>
-        </div>
-      )}
-
-      {predictions.length > 0 && (
-        <div className="flex justify-center">
-          <Button
-            className="px-6 group bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white text-xs border-0 rounded-full"
-            onClick={() => navigate("/ai-predictions")}
-          >
-            <span>See all AI Predictions</span>
-            <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
-          </Button>
-        </div>
-      )}
     </section>
   );
 }
