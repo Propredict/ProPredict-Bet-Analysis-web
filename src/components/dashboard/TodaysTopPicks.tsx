@@ -140,10 +140,10 @@ export function TodaysTopPicks() {
               </Badge>
 
               <div className="space-y-2">
-                <p className={cn("text-sm font-bold", accent)}>
+                <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{pick.league}</p>
+                <p className="text-sm font-bold text-white text-center">
                   {pick.home_team} vs {pick.away_team}
                 </p>
-                <p className="text-[10px] text-muted-foreground">{pick.league}</p>
 
                 {isLocked ? (
                   <div className="space-y-2 pt-1">
@@ -209,10 +209,10 @@ export function TodaysTopPicks() {
                   <div className="space-y-2 pt-1">
                     {/* Free pick label */}
                     {tier === "free" && (
-                      <p className="text-[10px] text-green-400 font-semibold">🔥 High confidence pick</p>
+                      <p className="text-[10px] text-green-400 font-semibold text-center">🔥 High confidence pick</p>
                     )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">{pick.prediction}</span>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-sm font-bold text-white text-center">{pick.prediction}</span>
                       {pick.confidence && (
                         <span className={cn("text-xs font-bold", accent)}>{pick.confidence}%</span>
                       )}
