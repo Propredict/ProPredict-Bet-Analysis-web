@@ -244,24 +244,24 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
       ) : (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center gap-1.5 relative">
             {hasAccess ? (
               <>
-                <CheckCircle className="w-3.5 h-3.5 text-primary" />
-                <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">
+                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                <span className="text-sm md:text-base font-bold text-primary uppercase tracking-wider">
                   Best Pick
                 </span>
               </>
             ) : (
               <>
-                <Lock className="w-3.5 h-3.5 text-fuchsia-400" />
-                <span className="text-[10px] md:text-xs font-semibold text-fuchsia-400 uppercase tracking-wider">
+                <Lock className="w-4 h-4 md:w-5 md:h-5 text-fuchsia-400" />
+                <span className="text-sm md:text-base font-bold text-fuchsia-400 uppercase tracking-wider">
                   AI High Confidence Pick
                 </span>
               </>
             )}
             <Badge className={cn(
-              "ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
+              "absolute right-0 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
               displayTier === "premium" 
                 ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30" 
                 : displayTier === "pro" 
@@ -273,10 +273,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           </div>
 
           {/* Pick Name */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2 relative">
             {pick.icon}
             <span className={cn(
-              "text-base md:text-lg font-bold text-foreground",
+              "text-xl md:text-2xl font-extrabold text-foreground text-center",
               !hasAccess && "blur-[5px] select-none"
             )}>
               {pick.label}
@@ -288,7 +288,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               if (cat === "other" || cat === "1x2") return null;
               const tokens = getMarketColors(pick.label);
               return (
-                <Badge className={cn("ml-auto text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold border", tokens.chipClass)}>
+                <Badge className={cn("absolute right-0 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold border", tokens.chipClass)}>
                   {tokens.shortLabel}
                 </Badge>
               );
