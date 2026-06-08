@@ -1,8 +1,6 @@
 import {
-  Ticket,
   Clock,
   Lock,
-  Unlock,
   Star,
   Crown,
   CheckCircle2,
@@ -12,9 +10,7 @@ import {
   Sparkles,
   Gift,
   ChevronRight,
-  TrendingUp,
   Eye,
-  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,10 +21,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useState } from "react";
 
 /* =======================
    Types
