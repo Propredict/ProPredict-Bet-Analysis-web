@@ -169,7 +169,7 @@ export default function DailyTips() {
             <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
           </div>
           <div>
-            <p className="text-sm sm:text-base font-bold text-foreground">78%</p>
+            <p className="text-sm sm:text-base font-bold text-foreground">85%</p>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground">Accuracy</p>
           </div>
         </Card>

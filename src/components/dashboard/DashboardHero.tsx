@@ -101,7 +101,7 @@ export function DashboardHero() {
       <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
         <StatCard icon={TrendingUp} label="Win Rate" target={winRate?.accuracy ?? 0} suffix="%" delay={0} />
         <StatCard icon={Activity} label="Today's Matches" target={predictions.length} delay={100} />
-        <StatCard icon={Target} label="AI Accuracy" target={78} suffix="%" delay={200} />
+        <StatCard icon={Target} label="AI Accuracy" target={85} suffix="%" delay={200} />
         <StatCard icon={Zap} label="Won / Lost" target={winRate?.won ?? 0} suffix={`/${winRate?.lost ?? 0}`} delay={300} />
       </div>
 

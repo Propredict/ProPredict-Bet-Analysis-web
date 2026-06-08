@@ -78,7 +78,7 @@ export default function AIPredictions() {
   // Yesterday Premium stats for social proof
   const yesterdayPremiumStats = useMemo(() => {
     const rows = yesterdayQuery.data ?? [];
-    const premiumRows = rows.filter((r: any) => r.is_premium || (r.confidence ?? 0) >= 78);
+    const premiumRows = rows.filter((r: any) => r.is_premium || (r.confidence ?? 0) >= 85);
     const won = premiumRows.filter((r: any) => r.result_status === "won").length;
     const lost = premiumRows.filter((r: any) => r.result_status === "lost").length;
     const total = won + lost;
@@ -113,12 +113,12 @@ export default function AIPredictions() {
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
   // Tier assignment: based on the MAX of confidence and the best market probability
-  // (the % actually shown on the card). This ensures a card displaying e.g. "78% BTTS No"
+  // (the % actually shown on the card). This ensures a card displaying e.g. "85% BTTS No"
   // lands in Premium, not Pro — matching what the user sees.
   // Tier is determined by the STRONGEST market (Best Pick probability),
   // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
   // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
-  //   < 65 → Free, 65-77 → Pro, ≥ 78 → Premium
+  //   < 65 → Free, 65-84 → Pro, ≥ 85 → Premium
   // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 50.
   // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
   // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
@@ -210,7 +210,7 @@ export default function AIPredictions() {
   }, [predictions]);
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
-    // Tier is determined purely by displayed confidence (Premium ≥78%, Pro ≥65%, Free <65%)
+    // Tier is determined purely by displayed confidence (Premium ≥85%, Pro ≥65%, Free <65%)
     // Returns null for predictions that exceed the tier caps — these are filtered out below
     // so we never show 300+ Free predictions when FREE_CAP = 50.
     return tierAssignment.get(prediction.id!) ?? null;
@@ -1287,7 +1287,7 @@ export default function AIPredictions() {
                       ? featuredPredictions.filter(p => getPredictionTier(p) === "premium")
                       : featuredPredictions.filter(p => getPredictionTier(p) === "premium").slice(0, 3)
                     ).map((prediction) => {
-                      // Use the same probability used for tier assignment (≥78% for Premium)
+                      // Use the same probability used for tier assignment (≥85% for Premium)
                       const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
                       return (
                           <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-fuchsia-500/20 overflow-hidden rounded relative">

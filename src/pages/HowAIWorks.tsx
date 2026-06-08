@@ -407,7 +407,7 @@ const HowAIWorks = () => {
               <div className="flex items-center gap-1.5">
                 <Target className="h-3 w-3 text-primary" />
                 <span className="text-[10px] text-muted-foreground">
-                  Confidence: <span className="font-semibold text-primary">78%</span> — Based on 15 data factors analyzed
+                  Confidence: <span className="font-semibold text-primary">85%</span> — Based on 15 data factors analyzed
                 </span>
               </div>
             </div>

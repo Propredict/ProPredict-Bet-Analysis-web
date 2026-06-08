@@ -597,12 +597,12 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
 /**
  * Tier assignment based on confidence score (v3):
- *   78%+ → Premium
- *   65-77% → Pro
+ *   85%+ → Premium
+ *   65-84% → Pro
  *   0-64% → Free
  */
 export function getTierFromConfidence(confidence: number): "free" | "pro" | "premium" {
-  if (confidence >= 78) return "premium";
+  if (confidence >= 85) return "premium";
   if (confidence >= 65) return "pro";
   return "free";
 }
@@ -611,7 +611,7 @@ export function getTierFromConfidence(confidence: number): "free" | "pro" | "pre
  * Simple tier from market probability (fallback when confidence not available)
  */
 export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
-  if (bestProb >= 78) return "premium";
+  if (bestProb >= 85) return "premium";
   if (bestProb >= 65) return "pro";
   return "free";
 }
