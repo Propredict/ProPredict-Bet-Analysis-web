@@ -26,6 +26,7 @@ export interface Tip {
   kickoffDate?: string;
   tier: ContentTier;
   result?: TipResult | null;
+  finalResult?: string | null;
   extraNote?: { label: string; value: string } | null;
 }
 
