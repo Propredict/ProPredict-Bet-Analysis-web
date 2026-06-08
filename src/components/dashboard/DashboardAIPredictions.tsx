@@ -85,11 +85,13 @@ function PredictionCard({
           <span className="text-[10px] text-muted-foreground font-mono">{prediction.match_time}</span>
         </div>
 
-        <div className={`${locked ? "blur-md select-none pointer-events-none" : ""} space-y-2`}>
+        <div className="space-y-2">
+          {/* Teams — always visible, even when locked */}
           <p className="font-bold text-lg sm:text-xl text-foreground leading-tight text-center pt-1 pb-2">
             {prediction.home_team} vs {prediction.away_team}
           </p>
 
+          {/* AI Prediction label — always visible */}
           <div className="flex items-center justify-center gap-2 py-1 border-y border-primary/20">
             <Star className="h-3 w-3 text-primary fill-primary" />
             <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
@@ -98,18 +100,22 @@ function PredictionCard({
             <Star className="h-3 w-3 text-primary fill-primary" />
           </div>
 
-          <div className="flex items-center justify-center relative">
-            <span className="text-base sm:text-lg font-extrabold text-white tracking-wide text-center">
+          {/* Prediction value — blurred when locked (CTA renders on top) */}
+          <div className="flex items-center justify-center relative min-h-[2rem]">
+            <span
+              className={`text-base sm:text-lg font-extrabold text-white tracking-wide text-center ${
+                locked ? "blur-md select-none pointer-events-none" : ""
+              }`}
+            >
               {displayPrediction}
             </span>
-            {confidence >= 65 && (
+            {confidence >= 65 && !locked && (
               <div className={`absolute right-0 flex items-center gap-0.5 ${confidence >= 85 ? "text-fuchsia-400" : "text-amber-400"}`}>
                 {confidence >= 85 ? <Crown className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
                 <span className="text-[9px] font-semibold">{confidence >= 85 ? "PREMIUM" : "PRO"}</span>
               </div>
             )}
           </div>
-
         </div>
       </div>
 
