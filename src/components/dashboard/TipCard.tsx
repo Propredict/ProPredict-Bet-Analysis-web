@@ -126,26 +126,6 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <Button
             size="sm"
             variant="outline"
-            className="h-7 px-2 text-[10px] gap-1 text-success border-success/30 hover:bg-success/10"
-            disabled={adminBusy !== null || tip.result === "won"}
-            onClick={(e) => { e.stopPropagation(); adminMarkResult("won"); }}
-          >
-            {adminBusy === "won" ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
-            Won
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 px-2 text-[10px] gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-            disabled={adminBusy !== null || tip.result === "lost"}
-            onClick={(e) => { e.stopPropagation(); adminMarkResult("lost"); }}
-          >
-            {adminBusy === "lost" ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
-            Lost
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
             className="h-7 px-2 text-[10px] gap-1 text-destructive border-destructive/30 hover:bg-destructive/10 ml-auto"
             disabled={adminBusy !== null}
             onClick={(e) => { e.stopPropagation(); adminDelete(); }}
