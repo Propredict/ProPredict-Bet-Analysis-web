@@ -742,7 +742,6 @@ function MatchRow({
   toggleMatchAlert,
   hasRecentGoal: showGoalIndicator,
   soundActive,
-  commentsEnabled
 }: {
   match: Match;
   onSelect: (m: Match) => void;
