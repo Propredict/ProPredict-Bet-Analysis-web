@@ -63,7 +63,7 @@ function PredictionCard({
           <span className="text-[10px] text-muted-foreground font-mono">{prediction.match_time}</span>
         </div>
 
-        <p className="font-semibold text-sm text-foreground leading-tight line-clamp-1">
+        <p className="font-bold text-base sm:text-lg text-foreground leading-tight line-clamp-1">
           {prediction.home_team} vs {prediction.away_team}
         </p>
 
@@ -87,19 +87,18 @@ function PredictionCard({
           ))}
         </div>
 
-        <div className={`space-y-2 ${locked ? "blur-md select-none pointer-events-none" : ""}`}>
-          <div className="flex items-center justify-between">
-            <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/20 text-[10px] px-2">
+        <div className={`${locked ? "blur-md select-none pointer-events-none" : ""}`}>
+          <div className="flex items-center justify-center relative">
+            <span className="text-lg sm:text-xl font-extrabold text-white tracking-wide text-center">
               {prediction.prediction}
-            </Badge>
+            </span>
             {confidence >= 75 && (
-              <div className="flex items-center gap-0.5 text-accent">
+              <div className="absolute right-0 flex items-center gap-0.5 text-accent">
                 <Zap className="h-3 w-3" />
                 <span className="text-[9px] font-semibold">PREMIUM</span>
               </div>
             )}
           </div>
-          <ConfidenceBar value={confidence} />
         </div>
       </div>
 
