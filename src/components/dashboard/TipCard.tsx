@@ -291,18 +291,32 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
         {/* OUR PREDICTION section header */}
         <div className="flex items-center justify-center gap-2 pt-1">
           <Star className="h-3.5 w-3.5 text-success fill-success" />
-          <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">
-            {tip.finalResult ? "Final Result" : "Our Prediction"}
-          </span>
+          <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Prediction</span>
           <Star className="h-3.5 w-3.5 text-success fill-success" />
         </div>
 
         {/* Prediction row */}
         <div className="flex items-center justify-center gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
           <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
-            {tip.finalResult || tip.prediction}
+            {tip.prediction}
           </span>
         </div>
+
+        {/* FINAL RESULT */}
+        {tip.finalResult && (
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground">
+                Final Result
+              </span>
+            </div>
+            <div className="flex items-center justify-center rounded-xl border border-border/50 bg-muted/20 p-2">
+              <span className="text-sm font-extrabold text-foreground uppercase tracking-wide truncate">
+                {tip.finalResult}
+              </span>
+            </div>
+          </div>
+        )}
 
         {tip.extraNote && (
           <div className="flex items-center justify-between gap-2 px-1">

@@ -915,6 +915,7 @@ export type Database = {
           confidence: number | null
           created_at_ts: string
           created_by: string | null
+          final_result: string | null
           home_team: string
           id: string
           league: string
@@ -936,6 +937,7 @@ export type Database = {
           confidence?: number | null
           created_at_ts?: string
           created_by?: string | null
+          final_result?: string | null
           home_team: string
           id?: string
           league: string
@@ -957,6 +959,7 @@ export type Database = {
           confidence?: number | null
           created_at_ts?: string
           created_by?: string | null
+          final_result?: string | null
           home_team?: string
           id?: string
           league?: string
