@@ -13,6 +13,7 @@ import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
+import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -699,7 +700,14 @@ export default function WorldCup2026() {
           {/* App: matches tab is free for all users; Web: existing lock rules */}
           {!isApp && !isPro ? (
             <AppLockOverlay message="Live match tracking available in app only" buttonText="Open App to Unlock" />
-          ) : null}
+          ) : (
+            <section className="mb-5">
+              <h2 className="text-base font-bold text-foreground mb-2 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-destructive" /> Live & Today
+              </h2>
+              <WCLiveNowSection />
+            </section>
+          )}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" /> Match Schedule
