@@ -241,7 +241,7 @@ function TicketCard({
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-end gap-2">
+                <div className="mt-1.5 flex items-center justify-center gap-2">
                   <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
                     <Lock className="h-2.5 w-2.5" />
                     Locked
