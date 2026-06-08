@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.send-worldcup-daily-push]
 verify_jwt = false
+
+[functions.get-wc-today]
+verify_jwt = false
