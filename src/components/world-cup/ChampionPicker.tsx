@@ -99,6 +99,9 @@ export default function ChampionPicker() {
             )}
           </div>
         </Card>
+        {userWon && myPick.team_name && (
+          <WCShareCard teamName={myPick.team_name} teamFlag={myPick.team_flag} />
+        )}
         <Leaderboard rows={leaderboard} totalVotes={totalVotes} winnerTeam={myPick.winner_team} />
       </div>
     );
