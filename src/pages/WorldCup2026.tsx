@@ -13,6 +13,7 @@ import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
+import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
