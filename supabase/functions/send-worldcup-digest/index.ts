@@ -1,14 +1,10 @@
 /**
  * send-worldcup-digest
  *
- * Personalized daily WC 2026 digest pushed at 09:00 Europe/Belgrade (07:00 UTC).
- * Contents per user:
- *   - Yesterday's WC results
- *   - Today's WC fixtures (count + sample)
- *   - Status of THEIR Champion Pick (played yesterday? plays today? still alive?)
- *
- * Grouping strategy: users are bucketed by their picked team so we send one
- * OneSignal push per team (plus one generic push for users without a pick).
+ * Personalized Champion Pick digest at 09:00 Europe/Belgrade (07:00 UTC).
+ * Sends ONLY to users who have a champion pick — one push per team bucket.
+ * The general "all WC matches today" push is handled separately by
+ * send-worldcup-daily-push.
  */
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
@@ -141,8 +137,9 @@ serve(async (req) => {
     for (const t of tokens ?? []) {
       if (!t.onesignal_player_id) continue;
       const pick = t.user_id ? pickByUser.get(t.user_id) : null;
-      const key = pick?.team_name ?? "__none__";
-      const bucket = buckets.get(key) ?? { flag: pick?.team_flag ?? null, playerIds: [] };
+      if (!pick) continue; // skip users without a champion pick
+      const key = pick.team_name;
+      const bucket = buckets.get(key) ?? { flag: pick.team_flag ?? null, playerIds: [] };
       bucket.playerIds.push(t.onesignal_player_id);
       buckets.set(key, bucket);
     }
@@ -177,17 +174,7 @@ serve(async (req) => {
       let content: string;
       const flag = bucket.flag ?? "";
 
-      if (team === "__none__") {
-        if (todayCount > 0) {
-          heading = `⚽ ${todayCount} WC ${todayCount === 1 ? "match" : "matches"} today`;
-          content = yCount > 0
-            ? `Yesterday: ${yResults}. Today: ${todaySample}. Pick your champion 🏆`
-            : `${todaySample}. Tap for AI picks & live scores.`;
-        } else {
-          heading = `📊 WC ${yesterdayStr} results`;
-          content = `${yResults}. Check standings & make your champion pick 🏆`;
-        }
-      } else {
+      {
         const playedYesterday = teamSummary(yesterdayFx, team);
         const playsToday = teamSummary(todayFx, team);
 
