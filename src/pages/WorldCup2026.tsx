@@ -933,6 +933,18 @@ export default function WorldCup2026() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Team Profile — bottom sheet */}
+      <Sheet open={!!selectedTeam} onOpenChange={(o) => !o && setSelectedTeam(null)}>
+        <SheetContent
+          side="bottom"
+          className="h-[95vh] p-0 overflow-y-auto rounded-t-2xl border-t border-border bg-background"
+        >
+          {selectedTeam && (
+            <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
