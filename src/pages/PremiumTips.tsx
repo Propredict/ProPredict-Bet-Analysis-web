@@ -226,7 +226,8 @@ export default function PremiumTips() {
           confidence: tip.confidence ?? 0,
           kickoff: formatKickoff((tip as any).match_date, (tip as any).match_time, tip.created_at_ts), kickoffDate: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).date, kickoffTime: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).time,
           tier: tip.tier,
-          result: tip.result
+          result: tip.result,
+          finalResult: (tip as any).final_result ?? null,
         }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("tip", tip.id, "premium")} isUnlocking={isUnlocking} />
           </div>
           {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTips.length - 1 && (
