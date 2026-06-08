@@ -229,6 +229,9 @@ function TicketCard({
             const parsed = parseMatchName(match.name);
             return (
               <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                {parsed.league && (
+                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                )}
                 <div className="flex items-center justify-center gap-2">
                   <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                     {parsed.homeTeam}
@@ -238,10 +241,7 @@ function TicketCard({
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-between gap-2">
-                  {parsed.league ? (
-                    <span className="text-[9px] text-muted-foreground truncate">{parsed.league}</span>
-                  ) : <span />}
+                <div className="mt-1.5 flex items-center justify-end gap-2">
                   <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
                     <Lock className="h-2.5 w-2.5" />
                     Locked
@@ -318,6 +318,9 @@ function TicketCard({
             const parsed = parseMatchName(match.name);
             return (
               <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                {parsed.league && (
+                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                )}
                 <div className="flex items-center justify-center gap-2">
                   <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                     {parsed.homeTeam}
@@ -327,11 +330,8 @@ function TicketCard({
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-between gap-2">
-                  {parsed.league ? (
-                    <span className="text-[9px] text-muted-foreground truncate">{parsed.league}</span>
-                  ) : <span />}
-                  <Badge className="bg-success/15 text-success border-success/30 text-[10px] px-2 font-bold shrink-0">
+                <div className="mt-1.5 flex items-center justify-end gap-2">
+                  <Badge className="bg-white text-black border-white/40 text-[10px] px-2 font-bold shrink-0 hover:bg-white">
                     {match.prediction}
                   </Badge>
                 </div>
