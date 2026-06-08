@@ -323,7 +323,7 @@ export const TEAMS: Record<string, WCTeam> = {
 // ==========================================
 export const GROUP_MATCHES: WCMatch[] = [
   // Matchday 1
-  { home: "Mexico", away: "South Africa", date: "Jun 11", time: "18:00", venue: "Estadio Azteca", city: "Mexico City", group: "A" },
+  { home: "Mexico", away: "South Africa", date: "Jun 11", time: "21:00", venue: "Estadio Azteca", city: "Mexico City", group: "A" },
   { home: "South Korea", away: "Czech Republic", date: "Jun 11", time: "21:00", venue: "AT&T Stadium", city: "Dallas", group: "A" },
   { home: "Canada", away: "Bosnia & Herzegovina", date: "Jun 12", time: "15:00", venue: "BMO Field", city: "Toronto", group: "B" },
   { home: "Qatar", away: "Switzerland", date: "Jun 12", time: "18:00", venue: "GEHA Field", city: "Kansas City", group: "B" },
