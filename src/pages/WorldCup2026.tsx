@@ -14,6 +14,7 @@ import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
 import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
+import WCLiveTickerBanner from "@/components/world-cup/WCLiveTickerBanner";
 import WCTopPlayersTab from "@/components/world-cup/WCTopPlayersTab";
 import WCTournamentStatsTab from "@/components/world-cup/WCTournamentStatsTab";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -241,6 +242,11 @@ export default function WorldCup2026() {
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="px-3 sm:px-4 pt-3">
         <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599" />
+      </div>
+
+      {/* Sticky LIVE NOW ticker — visible across all tabs when WC matches are live */}
+      <div className="sticky top-0 z-30 mt-3">
+        <WCLiveTickerBanner onClick={() => setActiveTab("matches")} />
       </div>
 
       {/* Main Tabs */}
