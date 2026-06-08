@@ -263,7 +263,9 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=free")}
               empty="No free picks available today"
               picks={freePicks}
-              renderCard={renderCard}
+              renderCard={(p, idx) =>
+                renderCard(p, { forceWatchAd: idx === 1 })
+              }
             />
 
             {/* SECTION 2: PRO */}
@@ -277,7 +279,7 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=pro")}
               empty="No Pro picks available today"
               picks={proPicks}
-              renderCard={renderCard}
+              renderCard={(p) => renderCard(p)}
             />
 
             {/* SECTION 3: PREMIUM */}
@@ -291,7 +293,7 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=premium")}
               empty="No Premium picks available today"
               picks={premiumPicks}
-              renderCard={renderCard}
+              renderCard={(p) => renderCard(p)}
             />
           </>
         )}
@@ -356,7 +358,7 @@ function TierSection({
   onCta: () => void;
   empty: string;
   picks: any[];
-  renderCard: (p: any) => JSX.Element;
+  renderCard: (p: any, index: number) => JSX.Element;
 }) {
   const styles = TONE_STYLES[tone];
 
@@ -377,7 +379,7 @@ function TierSection({
 
       {picks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {picks.map(renderCard)}
+          {picks.map((p, i) => renderCard(p, i))}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-1.5 py-6 rounded-xl border border-border/40 bg-card/40">
