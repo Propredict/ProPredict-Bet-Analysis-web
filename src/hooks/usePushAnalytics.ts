@@ -5,7 +5,9 @@ type PushAction =
   | "goal_enabled"
   | "goal_disabled"
   | "tips_enabled"
-  | "tips_disabled";
+  | "tips_disabled"
+  | "wc_alerts_enabled"
+  | "wc_alerts_disabled";
 
 /**
  * Log a push preference change to Supabase for analytics.
