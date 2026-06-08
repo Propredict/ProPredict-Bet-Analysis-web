@@ -531,9 +531,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         </Card>
       )}
 
-      {/* DESKTOP: horizontal bracket columns (md+) */}
-      {hasData && (
-        <div className="hidden md:block">
+      {/* DESKTOP: horizontal bracket columns (md+) — always shown so structure is visible */}
+      <div className="hidden md:block">
           <div className="overflow-x-auto pb-2">
             <div className="flex gap-3 min-w-max items-stretch">
               <BracketColumn
@@ -574,8 +573,7 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
               />
             </div>
           </div>
-        </div>
-      )}
+      </div>
 
       {/* MOBILE: reverse pyramid (existing) */}
       <div className="md:hidden space-y-4">
