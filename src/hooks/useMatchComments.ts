@@ -50,7 +50,7 @@ export function useMatchComments(matchId: string | null, enabled: boolean) {
         const { data: profs } = await supabase
           .from("profiles")
           .select("user_id, username, full_name, avatar_url")
-          .in("user_id", userIds);
+          .in("user_id", userIds as string[]);
         profiles = profs ?? [];
       }
       const pmap = new Map(profiles.map((p) => [p.user_id, p]));
