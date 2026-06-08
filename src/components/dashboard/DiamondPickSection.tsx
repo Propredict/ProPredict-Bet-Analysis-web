@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gem, Lock, Eye, Crown } from "lucide-react";
+import { Gem, Lock, Eye, Crown, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,11 @@ export function DiamondPickSection() {
           <p className="text-lg font-extrabold text-white text-center leading-tight">
             {diamondPick.home_team} vs {diamondPick.away_team}
           </p>
+          <div className="flex items-center justify-center gap-2 py-1 border-y border-cyan-400/20">
+            <Star className="h-3 w-3 text-cyan-300 fill-cyan-300" />
+            <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-[0.2em]">Prediction</span>
+            <Star className="h-3 w-3 text-cyan-300 fill-cyan-300" />
+          </div>
 
           {!isUnlocked ? (
             <div className="space-y-2 pt-1">
