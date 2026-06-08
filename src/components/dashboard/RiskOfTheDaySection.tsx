@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Target, Lock, Loader2, Play, Eye } from "lucide-react";
+import { Target, Lock, Loader2, Play, Eye, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,11 @@ export function RiskOfTheDaySection() {
           <p className="text-lg font-extrabold text-white text-center leading-tight">
             {riskPick.home_team} vs {riskPick.away_team}
           </p>
+          <div className="flex items-center justify-center gap-2 py-1 border-y border-red-500/20">
+            <Star className="h-3 w-3 text-red-400 fill-red-400" />
+            <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.2em]">Prediction</span>
+            <Star className="h-3 w-3 text-red-400 fill-red-400" />
+          </div>
 
           {!isUnlocked ? (
             <div className="space-y-2 pt-1">
