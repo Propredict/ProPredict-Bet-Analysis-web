@@ -20,38 +20,37 @@ export function DashboardWorldCup() {
       aria-label="Open World Cup 2026 matches"
     >
       {/* Hero header */}
-      <div className="relative h-28 sm:h-32 overflow-hidden">
+      <div className="relative h-48 sm:h-56 overflow-hidden">
         <img
           src={heroImage}
           alt="FIFA World Cup 2026"
-          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
+          className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-background/30" />
-        <div className="relative h-full flex items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/20 border border-primary/40">
-              <Trophy className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-foreground tracking-tight">
-                FIFA World Cup 2026
-              </h2>
-              <p className="text-[11px] text-muted-foreground">
-                {live.length > 0
-                  ? `${live.length} live now · ${fixtures.length} matches today`
-                  : fixtures.length > 0
-                  ? `${fixtures.length} matches today`
-                  : "Live scores · brackets · AI predictions"}
-              </p>
-            </div>
-          </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/90" />
+        <div className="relative h-full flex flex-col items-center justify-center text-center px-4 gap-2">
           {live.length > 0 && (
             <Badge className="bg-destructive text-destructive-foreground border-0 text-[10px] px-2 py-0.5 gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              LIVE
+              {live.length} LIVE NOW
             </Badge>
           )}
+          <div className="flex items-center gap-2">
+            <Trophy className="h-6 w-6 sm:h-7 sm:w-7 text-primary drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]" />
+            <h2 className="text-2xl sm:text-4xl font-black text-foreground tracking-tight uppercase [text-shadow:_0_2px_12px_rgba(0,0,0,0.9)]">
+              FIFA World Cup
+            </h2>
+          </div>
+          <p className="text-3xl sm:text-5xl font-black bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent leading-none drop-shadow-[0_0_15px_rgba(15,155,142,0.5)]">
+            2026
+          </p>
+          <p className="text-[11px] sm:text-xs font-semibold text-foreground/90 uppercase tracking-[0.18em]">
+            {live.length > 0
+              ? `${live.length} live · ${fixtures.length} matches today`
+              : fixtures.length > 0
+              ? `${fixtures.length} matches today · brackets · AI picks`
+              : "Live scores · brackets · AI predictions"}
+          </p>
         </div>
       </div>
 
