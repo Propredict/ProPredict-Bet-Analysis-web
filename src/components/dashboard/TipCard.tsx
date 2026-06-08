@@ -342,7 +342,6 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
         {/* Prediction row */}
         <div className="flex items-center justify-center gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
-          <TrendingUp className="h-4 w-4 text-white shrink-0" />
           <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
             {tip.prediction}
           </span>
