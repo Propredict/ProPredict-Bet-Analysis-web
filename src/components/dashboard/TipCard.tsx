@@ -215,6 +215,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     const Icon = getUnlockButtonIcon();
     const isPro = tip.tier === "exclusive";
     const isPremium = tip.tier === "premium";
+    const isDaily = tip.tier === "daily" || tip.tier === "free";
 
     return (
       <div className={cardShell}>
@@ -225,10 +226,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Prediction</span>
-              <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-                <Lock className="h-3 w-3" />
-                {isPremium ? "Premium Pick" : "Pro Pick"}
-              </span>
+              {!isDaily && (
+                <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  {isPremium ? "Premium Pick" : "Pro Pick"}
+                </span>
+              )}
             </div>
           </div>
         </div>
