@@ -153,9 +153,6 @@ export function TodaysTopPicks() {
                         <Lock className="h-3.5 w-3.5" />
                         <span className="text-xs blur-sm select-none">Over 2.5 Goals</span>
                       </div>
-                      {pick.confidence && (
-                        <span className={cn("text-xs font-bold", accent)}>{pick.confidence}%</span>
-                      )}
                     </div>
 
                     {/* FOMO for Pro */}
@@ -213,9 +210,6 @@ export function TodaysTopPicks() {
                     )}
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-sm font-bold text-white text-center">{pick.prediction}</span>
-                      {pick.confidence && (
-                        <span className={cn("text-xs font-bold", accent)}>{pick.confidence}%</span>
-                      )}
                     </div>
                     <Button
                       size="sm"
