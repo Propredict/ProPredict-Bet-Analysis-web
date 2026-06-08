@@ -11,6 +11,23 @@ import { getBestMarketProbability } from "@/components/ai-predictions/utils/mark
 
 type LockTier = "pro" | "premium" | null;
 
+const getBelgradeDateKey = () =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Belgrade",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+const stableDailyScore = (value: string) => {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+};
+
 function ConfidenceBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2 w-full">
@@ -167,15 +184,18 @@ export function DashboardAIPredictions() {
     .filter((s) => s.strength >= 50)
     .sort((a, b) => b.strength - a.strength);
 
-  // Free Daily Picks on dashboard: pick 2 RANDOM from the safest Free picks
-  // (top 10 by strength) so users see variety on each visit, but always from
-  // the strongest end of the Free pool shown on /ai-predictions.
+  // Free Daily Picks on dashboard: pick 2 daily-stable random matches from the
+  // safest Free picks (top 10 by strength). They stay the same for the day.
   const freePool = sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 10);
+  const dailyPickKey = getBelgradeDateKey();
   const freePicks = useMemo(() => {
-    const shuffled = [...freePool].sort(() => Math.random() - 0.5);
+    const shuffled = [...freePool].sort((a, b) => {
+      const aScore = stableDailyScore(`${dailyPickKey}:${a.p.id}:${a.p.home_team}:${a.p.away_team}`);
+      const bScore = stableDailyScore(`${dailyPickKey}:${b.p.id}:${b.p.home_team}:${b.p.away_team}`);
+      return aScore - bScore;
+    });
     return shuffled.slice(0, 2).map((s) => s.p);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [freePool.map((s) => s.p.id).join(",")]);
+  }, [dailyPickKey, freePool]);
 
   const proPicks = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 2).map((s) => s.p);
   const premiumPicks = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 2).map((s) => s.p);
