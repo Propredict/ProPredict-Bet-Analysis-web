@@ -10,7 +10,8 @@ import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
-import { calculateGoalMarketProbs, getBestMarketPickWithLabel } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { n as getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
@@ -207,7 +208,8 @@ export default function MatchPreviews() {
 
     return pool.slice(0, MAX_MATCHES).map((p, i) => {
       const pv = previewMap.get(p.match_id);
-      const bestPick = getBestMarketPickWithLabel(p as any);
+      const top = getTopMatchPreviewPick(p as any);
+      const bestPick = { label: top.label, pct: top.confidence, emoji: top.emoji };
       return {
         id: p.id,
         match_id: p.match_id,
