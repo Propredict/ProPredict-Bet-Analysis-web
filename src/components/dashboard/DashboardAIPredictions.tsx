@@ -83,10 +83,10 @@ function PredictionCard({
             <span className="text-base sm:text-lg font-extrabold text-white tracking-wide text-center">
               {displayPrediction}
             </span>
-            {confidence >= 75 && (
-              <div className="absolute right-0 flex items-center gap-0.5 text-accent">
-                <Zap className="h-3 w-3" />
-                <span className="text-[9px] font-semibold">PREMIUM</span>
+            {confidence >= 65 && (
+              <div className={`absolute right-0 flex items-center gap-0.5 ${confidence >= 85 ? "text-fuchsia-400" : "text-amber-400"}`}>
+                {confidence >= 85 ? <Crown className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
+                <span className="text-[9px] font-semibold">{confidence >= 85 ? "PREMIUM" : "PRO"}</span>
               </div>
             )}
           </div>
