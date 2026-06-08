@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
@@ -84,11 +84,26 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
 
 export default function WorldCup2026() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { plan, isAdmin } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const interstitialFired = useRef(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const initialTab = searchParams.get("tab") || "overview";
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && t !== activeTab) setActiveTab(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleTabChange = (v: string) => {
+    setActiveTab(v);
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", v);
+    setSearchParams(next, { replace: true });
+  };
   const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
 
   useEffect(() => {
@@ -257,7 +272,7 @@ export default function WorldCup2026() {
       <WCNotifyToggle />
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-card border-b border-border h-11 px-1 gap-0 overflow-x-auto flex-nowrap">
           {[
             { value: "overview", label: "Overview", icon: Trophy },
