@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures, type WCTodayFixture } from "@/hooks/useWCTodayFixtures";
 import { formatMatchTime } from "@/utils/formatMatchTime";
+import { MatchCommentsButton } from "@/components/match-comments/MatchCommentsButton";
 
 interface Props {
   onMatchClick?: (fixtureId: string) => void;
@@ -14,14 +15,18 @@ function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
   const hasScore = f.homeScore !== null && f.awayScore !== null;
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left rounded-lg border p-2.5 transition-colors ${
+    <div
+      className={`relative w-full rounded-lg border p-2.5 transition-colors ${
         isLive
-          ? "border-destructive/40 bg-destructive/5 hover:bg-destructive/10"
-          : "border-border bg-card hover:bg-muted/40"
+          ? "border-destructive/40 bg-destructive/5"
+          : "border-border bg-card"
       }`}
     >
+      <button
+        onClick={onClick}
+        className="w-full text-left"
+        aria-label={`Open ${f.homeTeam} vs ${f.awayTeam}`}
+      >
       <div className="flex items-center justify-between mb-1">
         <span className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">
           {f.round?.replace("Group stage - ", "Group ") ?? "World Cup 2026"}
@@ -55,7 +60,18 @@ function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
           {f.awayLogo && <img src={f.awayLogo} alt="" className="h-4 w-4 shrink-0 object-contain" />}
         </div>
       </div>
-    </button>
+      </button>
+
+      <div className="mt-2 pt-2 border-t border-border/50 flex items-center justify-end">
+        <MatchCommentsButton
+          matchId={f.id}
+          homeTeam={f.homeTeam}
+          awayTeam={f.awayTeam}
+          matchLabel={isLive ? (f.status === "halftime" ? "HT" : `${f.minute ?? 0}'`) : isFinished ? "FT" : f.startTime ? formatMatchTime(f.startTime) : undefined}
+          variant="pill"
+        />
+      </div>
+    </div>
   );
 }
 
