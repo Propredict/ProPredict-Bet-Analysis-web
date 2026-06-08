@@ -111,11 +111,8 @@ function TicketCard({
   onSecondaryUnlock,
   onViewTicket,
   isUnlocking = false,
-  onDeleted,
 }: TicketCardProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useAdminAccess();
-  const [isDeleting, setIsDeleting] = useState(false);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
   const accent = TIER_ACCENT[ticket.tier] || TIER_ACCENT.daily;
