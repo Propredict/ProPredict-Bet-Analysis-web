@@ -71,6 +71,14 @@ function PredictionCard({
             {prediction.home_team} vs {prediction.away_team}
           </p>
 
+          <div className="flex items-center justify-center gap-2 py-1 border-y border-primary/20">
+            <Star className="h-3 w-3 text-primary fill-primary" />
+            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
+              AI Prediction
+            </span>
+            <Star className="h-3 w-3 text-primary fill-primary" />
+          </div>
+
           <div className="flex items-center justify-center relative">
             <span className="text-base sm:text-lg font-extrabold text-white tracking-wide text-center">
               {displayPrediction}
