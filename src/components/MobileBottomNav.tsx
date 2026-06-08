@@ -24,6 +24,12 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/ai-predictions"]
   },
   {
+    label: "World Cup",
+    icon: Trophy,
+    path: "/world-cup-2026",
+    matchPaths: ["/world-cup-2026"]
+  },
+  {
     label: "Premium",
     icon: Crown,
     path: "/get-premium",
@@ -34,12 +40,6 @@ const NAV_ITEMS: NavItem[] = [
     icon: Heart,
     path: "/favorites",
     matchPaths: ["/favorites"]
-  },
-  {
-    label: "World Cup",
-    icon: Trophy,
-    path: "/world-cup-2026",
-    matchPaths: ["/world-cup-2026"]
   },
 ];
 
