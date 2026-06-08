@@ -68,54 +68,33 @@ serve(async (req) => {
         ? `${sample}. Get AI predictions & live updates. Tap to follow!`
         : `${sample} + ${count - 2} more. AI picks & live scores inside!`;
 
-    // 3) Fetch tokens
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { data: tokens } = await supabase
-      .from("users_push_tokens")
-      .select("onesignal_player_id");
+    // 3) Send via tag filter — excludes users who opted out (wc_alerts = "false").
+    const payload = {
+      app_id: ONESIGNAL_APP_ID,
+      filters: [
+        { field: "tag", key: "wc_alerts", relation: "!=", value: "false" },
+      ],
+      headings: { en: heading },
+      contents: { en: content },
+      android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
+      android_sound: "default",
+      priority: 10,
+      ttl: 28800,
+      collapse_id: `worldcup_daily_${today}`,
+      data: { type: "worldcup", nav_path: "/world-cup-2026" },
+    };
 
-    const playerIds = (tokens ?? [])
-      .map((t: any) => t.onesignal_player_id)
-      .filter(Boolean);
-
-    if (playerIds.length === 0) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "no player IDs" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // 4) Send in batches
-    const BATCH_SIZE = 2000;
-    const results: unknown[] = [];
-
-    for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
-      const batch = playerIds.slice(i, i + BATCH_SIZE);
-      const payload = {
-        app_id: ONESIGNAL_APP_ID,
-        include_player_ids: batch,
-        headings: { en: heading },
-        contents: { en: content },
-        android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
-        android_sound: "default",
-        priority: 10,
-        ttl: 28800,
-        collapse_id: `worldcup_daily_${today}`,
-        data: { type: "worldcup", nav_path: "/world-cup-2026" },
-      };
-
-      const osRes = await fetch("https://onesignal.com/api/v1/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          Authorization: `Basic ${ONESIGNAL_API_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      const osResult = await osRes.json();
-      console.log(`[wc-daily] Batch ${i / BATCH_SIZE + 1}:`, JSON.stringify(osResult));
-      results.push(osResult);
-    }
+    const osRes = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        Authorization: `Basic ${ONESIGNAL_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const osResult = await osRes.json();
+    console.log("[wc-daily] sent (tag filter):", JSON.stringify(osResult));
+    const results = [osResult];
 
     return new Response(
       JSON.stringify({ success: true, matchesToday: count, sentTo: playerIds.length, results }),
