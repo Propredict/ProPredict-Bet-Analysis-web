@@ -144,8 +144,11 @@ export function MatchCommentsSheet({
             <Button
               className="mt-2 h-9 px-5 text-xs font-semibold"
               onClick={() => {
-                onOpenChange(false);
-                navigate("/download-app");
+                window.open(
+                  "https://play.google.com/store/apps/details?id=com.propredict.app&source=match_comments",
+                  "_blank",
+                  "noopener,noreferrer"
+                );
               }}
             >
               Download the App
