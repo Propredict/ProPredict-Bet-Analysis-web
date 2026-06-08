@@ -7,7 +7,7 @@ import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
-import { getBestMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
+import { assignTiers, type Tier } from "@/components/ai-predictions/utils/tierAssignment";
 
 type LockTier = "pro" | "premium" | null;
 
@@ -173,52 +173,34 @@ export function DashboardAIPredictions() {
     return null;
   };
 
-  // Tier classification — must mirror /ai-predictions page: use the MAX of
-  // 1X2 confidence and the best market probability (BTTS/Over/Under), so a
-  // match displayed as "BTTS Yes 80%" lands in Pro on both surfaces.
-  const effectiveStrength = (p: any) =>
-    Math.max(p.confidence ?? 0, getBestMarketProbability(p));
+  // Single source of truth: identical tier map as /ai-predictions.
+  // Pick 2 matches per tier, daily-stable, ONLY from that tier's pool.
+  const { tierMap } = useMemo(() => assignTiers(predictions), [predictions]);
+  const tierOf = (p: any): Tier | null => tierMap.get(p.id) ?? null;
 
-  const classifyTier = (strength: number): "free" | "pro" | "premium" => {
-    if (strength >= 85) return "premium";
-    if (strength >= 65) return "pro";
-    return "free";
-  };
-
-  const sorted = [...predictions]
-    .map((p) => ({ p, strength: effectiveStrength(p) }))
-    .filter((s) => s.strength >= 50)
-    .sort((a, b) => b.strength - a.strength);
-
-  // Free Daily Picks on dashboard: pick 2 daily-stable random matches from the
-  // safest Free picks (top 10 by strength). They stay the same for the day.
-  const freePool = sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 10);
   const dailyPickKey = getBelgradeDateKey();
-  const freePicks = useMemo(() => {
-    const shuffled = [...freePool].sort((a, b) => {
-      const aScore = stableDailyScore(`${dailyPickKey}:${a.p.id}:${a.p.home_team}:${a.p.away_team}`);
-      const bScore = stableDailyScore(`${dailyPickKey}:${b.p.id}:${b.p.home_team}:${b.p.away_team}`);
-      return aScore - bScore;
-    });
-    return shuffled.slice(0, 2).map((s) => s.p);
-  }, [dailyPickKey, freePool]);
 
-  // Pro/Premium pools — same daily-stable rotation among top 10 strongest of each tier.
-  const proPool = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 10);
-  const premiumPool = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 10);
-
-  const pickDaily = (pool: typeof sorted, count: number) =>
+  const pickDaily = (pool: any[], count: number) =>
     [...pool]
       .sort((a, b) => {
-        const aScore = stableDailyScore(`${dailyPickKey}:${a.p.id}:${a.p.home_team}:${a.p.away_team}`);
-        const bScore = stableDailyScore(`${dailyPickKey}:${b.p.id}:${b.p.home_team}:${b.p.away_team}`);
+        const aScore = stableDailyScore(`${dailyPickKey}:${a.id}:${a.home_team}:${a.away_team}`);
+        const bScore = stableDailyScore(`${dailyPickKey}:${b.id}:${b.home_team}:${b.away_team}`);
         return aScore - bScore;
       })
-      .slice(0, count)
-      .map((s) => s.p);
+      .slice(0, count);
 
-  const proPicks = useMemo(() => pickDaily(proPool, 2), [dailyPickKey, proPool]);
-  const premiumPicks = useMemo(() => pickDaily(premiumPool, 2), [dailyPickKey, premiumPool]);
+  const freePicks = useMemo(
+    () => pickDaily(predictions.filter((p) => tierOf(p) === "free"), 2),
+    [dailyPickKey, tierMap, predictions],
+  );
+  const proPicks = useMemo(
+    () => pickDaily(predictions.filter((p) => tierOf(p) === "pro"), 2),
+    [dailyPickKey, tierMap, predictions],
+  );
+  const premiumPicks = useMemo(
+    () => pickDaily(predictions.filter((p) => tierOf(p) === "premium"), 2),
+    [dailyPickKey, tierMap, predictions],
+  );
 
   // Android: always show 1 Free + 1 Pro + 1 Premium (daily-stable, same as web sections).
   const displayedPredictions = [
@@ -228,9 +210,9 @@ export function DashboardAIPredictions() {
   ].filter(Boolean);
 
   const renderCard = (prediction: any) => {
-    // Use the same effectiveStrength as the AI Predictions page so a match
-    // classified as Pro there is locked as Pro here too (e.g. BTTS 72%).
-    const strength = effectiveStrength(prediction);
+    // Lock based on the SAME tier classification as /ai-predictions.
+    const tier = tierOf(prediction);
+    const strength = tier === "premium" ? 90 : tier === "pro" ? 70 : 50;
     const baseTier = getLockTier(strength);
     const lockTier: LockTier = canAccess("exclusive", "tip", prediction.id)
       ? baseTier === "premium" && !canAccess("premium", "tip", prediction.id)
@@ -246,8 +228,8 @@ export function DashboardAIPredictions() {
         showWatchAd={isAndroidApp && isFree}
         isUnlocking={unlockingId === prediction.id}
         onWatchAd={() => {
-          const tier = getLockTier(strength);
-          if (tier === "pro") {
+          const lt = getLockTier(strength);
+          if (lt === "pro") {
             handleUnlock("tip", prediction.id, "exclusive");
           }
         }}
