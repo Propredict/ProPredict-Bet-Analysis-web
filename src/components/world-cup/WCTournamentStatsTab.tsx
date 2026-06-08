@@ -1,9 +1,14 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3, Calendar, Lock, Zap } from "lucide-react";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { useWCTopPlayers } from "@/hooks/useWCTopPlayers";
+import { usePlatform } from "@/hooks/usePlatform";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 
 interface StatTile {
   icon: any;
