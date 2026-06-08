@@ -6,6 +6,7 @@ import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
+import { getBestMarketProbability } from "@/components/ai-predictions/utils/marketDerivation";
 
 type LockTier = "pro" | "premium" | null;
 
@@ -148,29 +149,35 @@ export function DashboardAIPredictions() {
     return null;
   };
 
-  // Tier classification (independent of user plan) — used to bucket predictions
-  const classifyTier = (conf: number): "free" | "pro" | "premium" => {
-    if (conf >= 85) return "premium";
-    if (conf >= 65) return "pro";
+  // Tier classification — must mirror /ai-predictions page: use the MAX of
+  // 1X2 confidence and the best market probability (BTTS/Over/Under), so a
+  // match displayed as "BTTS Yes 80%" lands in Pro on both surfaces.
+  const effectiveStrength = (p: any) =>
+    Math.max(p.confidence ?? 0, getBestMarketProbability(p));
+
+  const classifyTier = (strength: number): "free" | "pro" | "premium" => {
+    if (strength >= 85) return "premium";
+    if (strength >= 65) return "pro";
     return "free";
   };
 
   const sorted = [...predictions]
-    .filter((p) => (p.confidence ?? 0) >= 50)
-    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    .map((p) => ({ p, strength: effectiveStrength(p) }))
+    .filter((s) => s.strength >= 50)
+    .sort((a, b) => b.strength - a.strength);
 
-  const freePicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "free").slice(0, 2);
-  const proPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "pro").slice(0, 2);
-  const premiumPicks = sorted.filter((p) => classifyTier(p.confidence ?? 0) === "premium").slice(0, 2);
+  const freePicks = sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 2).map((s) => s.p);
+  const proPicks = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 2).map((s) => s.p);
+  const premiumPicks = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 2).map((s) => s.p);
 
   // Android: free users see free picks first so they get immediate value,
   // followed by a teaser of higher-tier (locked) picks. Paid users see top confidence.
   const displayedPredictions = isAndroidApp && isFree
     ? [
-        ...sorted.filter((p) => classifyTier(p.confidence ?? 0) === "free").slice(0, 2),
-        ...sorted.filter((p) => classifyTier(p.confidence ?? 0) !== "free").slice(0, 1),
+        ...sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 2).map((s) => s.p),
+        ...sorted.filter((s) => classifyTier(s.strength) !== "free").slice(0, 1).map((s) => s.p),
       ].slice(0, 3)
-    : sorted.slice(0, 3);
+    : sorted.slice(0, 3).map((s) => s.p);
 
   const renderCard = (prediction: any) => {
     const conf = prediction.confidence ?? 0;
