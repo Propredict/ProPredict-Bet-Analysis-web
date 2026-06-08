@@ -14,7 +14,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
-import { MatchCommentsButton } from "@/components/match-comments/MatchCommentsButton";
 
 
 import { useFavorites } from "@/hooks/useFavorites";
