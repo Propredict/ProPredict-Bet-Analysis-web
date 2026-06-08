@@ -54,9 +54,6 @@ export function DiamondPickSection() {
                   <Lock className="h-3.5 w-3.5" />
                   <span className="text-sm font-bold text-white blur-sm select-none">Premium Pick</span>
                 </div>
-                {diamondPick.confidence && (
-                  <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
-                )}
               </div>
               <Button
                 size="sm"
@@ -76,9 +73,6 @@ export function DiamondPickSection() {
             <div className="space-y-2 pt-1">
               <div className="flex flex-col items-center gap-1">
                 <p className="text-sm font-bold text-white text-center">{diamondPick.prediction}</p>
-                {diamondPick.confidence && (
-                  <p className="text-xs text-cyan-300 font-bold">Confidence: {diamondPick.confidence}%</p>
-                )}
               </div>
               <Button
                 size="sm"
