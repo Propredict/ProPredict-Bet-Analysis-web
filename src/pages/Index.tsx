@@ -207,15 +207,10 @@ const Index = () => {
         {/* Live Scores — placed below Top 30 AI Picks */}
         {isAndroid && (
           <>
-            {/* Daily Predictions made by AI */}
-            <div className="space-y-2">
-              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
-                Daily Predictions made by AI
-              </h3>
-              <Suspense fallback={<LazyFallback />}>
-                <DashboardAIPredictions />
-              </Suspense>
-            </div>
+            {/* Daily Predictions made by AI (header rendered inside component) */}
+            <Suspense fallback={<LazyFallback />}>
+              <DashboardAIPredictions />
+            </Suspense>
 
             {/* Top 30 AI Picks */}
             <div className="space-y-2">

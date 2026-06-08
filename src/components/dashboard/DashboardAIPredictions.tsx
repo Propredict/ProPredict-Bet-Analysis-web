@@ -202,11 +202,16 @@ export function DashboardAIPredictions() {
     [dailyPickKey, tierMap, predictions],
   );
 
-  const renderCard = (prediction: any) => {
+  const renderCard = (prediction: any, opts?: { forceWatchAd?: boolean }) => {
     // Lock based on the SAME tier classification as /ai-predictions.
     const tier = tierOf(prediction);
     const strength = tier === "premium" ? 90 : tier === "pro" ? 70 : 50;
-    const baseTier = getLockTier(strength);
+    let baseTier = getLockTier(strength);
+    // Android Free users: force the SECOND free pick into "Watch Ad to Unlock" mode
+    // so they get a taste of one free pick and one ad-gated pick.
+    if (opts?.forceWatchAd && isAndroidApp && isFree && tier === "free") {
+      baseTier = "pro";
+    }
     const lockTier: LockTier = canAccess("exclusive", "tip", prediction.id)
       ? baseTier === "premium" && !canAccess("premium", "tip", prediction.id)
         ? "premium"
@@ -221,10 +226,7 @@ export function DashboardAIPredictions() {
         showWatchAd={isAndroidApp && isFree}
         isUnlocking={unlockingId === prediction.id}
         onWatchAd={() => {
-          const lt = getLockTier(strength);
-          if (lt === "pro") {
-            handleUnlock("tip", prediction.id, "exclusive");
-          }
+          handleUnlock("tip", prediction.id, "exclusive");
         }}
       />
     );
@@ -261,7 +263,9 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=free")}
               empty="No free picks available today"
               picks={freePicks}
-              renderCard={renderCard}
+              renderCard={(p, idx) =>
+                renderCard(p, { forceWatchAd: idx === 1 })
+              }
             />
 
             {/* SECTION 2: PRO */}
@@ -275,7 +279,7 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=pro")}
               empty="No Pro picks available today"
               picks={proPicks}
-              renderCard={renderCard}
+              renderCard={(p) => renderCard(p)}
             />
 
             {/* SECTION 3: PREMIUM */}
@@ -289,7 +293,7 @@ export function DashboardAIPredictions() {
               onCta={() => navigate("/ai-predictions?tier=premium")}
               empty="No Premium picks available today"
               picks={premiumPicks}
-              renderCard={renderCard}
+              renderCard={(p) => renderCard(p)}
             />
           </>
         )}
@@ -354,7 +358,7 @@ function TierSection({
   onCta: () => void;
   empty: string;
   picks: any[];
-  renderCard: (p: any) => JSX.Element;
+  renderCard: (p: any, index: number) => JSX.Element;
 }) {
   const styles = TONE_STYLES[tone];
 
@@ -375,7 +379,7 @@ function TierSection({
 
       {picks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {picks.map(renderCard)}
+          {picks.map((p, i) => renderCard(p, i))}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-1.5 py-6 rounded-xl border border-border/40 bg-card/40">
