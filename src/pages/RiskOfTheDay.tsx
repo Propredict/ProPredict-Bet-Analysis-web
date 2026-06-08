@@ -191,6 +191,7 @@ export default function RiskOfTheDay() {
                         kickoffTime: formatKickoffParts((tip as any).match_date, (tip as any).match_time, tip.created_at_ts).time,
                         tier: tip.tier,
                         result: tip.result,
+                        finalResult: (tip as any).final_result ?? null,
                         extraNote: (tip as any).ai_prediction
                           ? { label: "AI Top Scores", value: String((tip as any).ai_prediction) }
                           : null,

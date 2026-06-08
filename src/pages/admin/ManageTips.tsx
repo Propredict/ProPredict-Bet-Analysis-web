@@ -83,6 +83,7 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   result: "pending",
   tip_date: getTodayBelgradeDate(),
   category: "standard",
+  final_result: "",
 };
 
 /* =====================
@@ -164,6 +165,7 @@ export default function ManageTips() {
       result: tip.result ?? "pending",
       tip_date: tip.tip_date || getTodayBelgradeDate(),
       category: normalizeTipCategory((tip as any).category),
+      final_result: (tip as any).final_result ?? "",
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
@@ -431,6 +433,18 @@ export default function ManageTips() {
                     ...formData,
                     ai_prediction: e.target.value,
                   })
+                }
+              />
+            </div>
+
+            {/* FINAL RESULT */}
+            <div>
+              <Label>Final Result</Label>
+              <Input
+                placeholder="e.g. 3-1, 6-4 6-3, Over"
+                value={(formData as any).final_result ?? ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, final_result: e.target.value } as any)
                 }
               />
             </div>
