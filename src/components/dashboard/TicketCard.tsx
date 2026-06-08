@@ -225,7 +225,7 @@ function TicketCard({
       <div className={cn("h-1 w-full", accent.line)} />
       <div className={cn("bg-gradient-to-b", accent.gradient)}>
         <div className="p-3.5 sm:p-4">
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               {getTierBadge(ticket.tier)}
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
@@ -235,8 +235,23 @@ function TicketCard({
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
-          {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
+          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight text-center">
+            {ticket.title}
+          </h3>
+          <div className="mt-1.5 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+            {ticketDate && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {ticketDate}
+              </span>
+            )}
+            {ticket.totalOdds > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="opacity-60">Total odds</span>
+                <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </>
