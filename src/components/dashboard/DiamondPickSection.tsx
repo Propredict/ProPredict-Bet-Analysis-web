@@ -43,7 +43,7 @@ export function DiamondPickSection() {
 
         <div className="space-y-2">
           <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{diamondPick.league}</p>
-          <p className="text-sm font-bold text-white text-center">
+          <p className="text-lg font-extrabold text-white text-center leading-tight">
             {diamondPick.home_team} vs {diamondPick.away_team}
           </p>
 
