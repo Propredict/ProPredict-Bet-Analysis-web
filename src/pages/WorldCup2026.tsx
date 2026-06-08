@@ -272,7 +272,7 @@ export default function WorldCup2026() {
       <WCNotifyToggle />
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-card border-b border-border h-11 px-1 gap-0 overflow-x-auto flex-nowrap">
           {[
             { value: "overview", label: "Overview", icon: Trophy },
