@@ -156,14 +156,14 @@ export function DashboardAIPredictions() {
   const isFree = plan === "free";
   const isPro = plan === "basic";
 
-  const getLockTier = (conf: number): LockTier => {
+  const getLockTier = (strength: number): LockTier => {
     // Premium plan unlocks everything
     if (!isFree && !isPro) return null;
     // Pro plan: only Premium picks (≥85%) are locked
-    if (isPro) return conf >= 85 ? "premium" : null;
+    if (isPro) return strength >= 85 ? "premium" : null;
     // Free plan: Pro (65-84%) + Premium (≥85%) locked
-    if (conf >= 85) return "premium";
-    if (conf >= 65) return "pro";
+    if (strength >= 85) return "premium";
+    if (strength >= 65) return "pro";
     return null;
   };
 
@@ -222,8 +222,10 @@ export function DashboardAIPredictions() {
   ].filter(Boolean);
 
   const renderCard = (prediction: any) => {
-    const conf = prediction.confidence ?? 0;
-    const baseTier = getLockTier(conf);
+    // Use the same effectiveStrength as the AI Predictions page so a match
+    // classified as Pro there is locked as Pro here too (e.g. BTTS 72%).
+    const strength = effectiveStrength(prediction);
+    const baseTier = getLockTier(strength);
     const lockTier: LockTier = canAccess("exclusive", "tip", prediction.id)
       ? baseTier === "premium" && !canAccess("premium", "tip", prediction.id)
         ? "premium"
@@ -238,7 +240,7 @@ export function DashboardAIPredictions() {
         showWatchAd={isAndroidApp && isFree}
         isUnlocking={unlockingId === prediction.id}
         onWatchAd={() => {
-          const tier = getLockTier(conf);
+          const tier = getLockTier(strength);
           if (tier === "pro") {
             handleUnlock("tip", prediction.id, "exclusive");
           }
