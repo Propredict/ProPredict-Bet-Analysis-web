@@ -376,6 +376,29 @@ export const GROUP_MATCHES: WCMatch[] = [
 
   // Matchday 3 (kickoffs being added as confirmed)
   { home: "Bosnia & Herzegovina", away: "Qatar", date: "Jun 24", time: "21:00", venue: "TBD", city: "TBD", group: "B" },
+  { home: "Switzerland", away: "Canada", date: "Jun 24", time: "21:00", venue: "TBD", city: "TBD", group: "B" },
+  { home: "Morocco", away: "Haiti", date: "Jun 25", time: "00:00", venue: "TBD", city: "TBD", group: "C" },
+  { home: "Scotland", away: "Brazil", date: "Jun 25", time: "00:00", venue: "TBD", city: "TBD", group: "C" },
+  { home: "Czech Republic", away: "Mexico", date: "Jun 25", time: "03:00", venue: "TBD", city: "TBD", group: "A" },
+  { home: "South Africa", away: "South Korea", date: "Jun 25", time: "03:00", venue: "TBD", city: "TBD", group: "A" },
+  { home: "Curaçao", away: "Ivory Coast", date: "Jun 25", time: "22:00", venue: "TBD", city: "TBD", group: "E" },
+  { home: "Ecuador", away: "Germany", date: "Jun 25", time: "22:00", venue: "TBD", city: "TBD", group: "E" },
+  { home: "Japan", away: "Sweden", date: "Jun 26", time: "01:00", venue: "TBD", city: "TBD", group: "F" },
+  { home: "Tunisia", away: "Netherlands", date: "Jun 26", time: "01:00", venue: "TBD", city: "TBD", group: "F" },
+  { home: "Paraguay", away: "Australia", date: "Jun 26", time: "04:00", venue: "TBD", city: "TBD", group: "D" },
+  { home: "Turkey", away: "United States", date: "Jun 26", time: "04:00", venue: "TBD", city: "TBD", group: "D" },
+  { home: "Norway", away: "France", date: "Jun 26", time: "21:00", venue: "TBD", city: "TBD", group: "I" },
+  { home: "Senegal", away: "Iraq", date: "Jun 26", time: "21:00", venue: "TBD", city: "TBD", group: "I" },
+  { home: "Uruguay", away: "Spain", date: "Jun 27", time: "02:00", venue: "TBD", city: "TBD", group: "H" },
+  { home: "Cape Verde", away: "Saudi Arabia", date: "Jun 27", time: "02:00", venue: "TBD", city: "TBD", group: "H" },
+  { home: "Egypt", away: "Iran", date: "Jun 27", time: "05:00", venue: "TBD", city: "TBD", group: "G" },
+  { home: "New Zealand", away: "Belgium", date: "Jun 27", time: "05:00", venue: "TBD", city: "TBD", group: "G" },
+  { home: "Croatia", away: "Ghana", date: "Jun 27", time: "23:00", venue: "TBD", city: "TBD", group: "L" },
+  { home: "Panama", away: "England", date: "Jun 27", time: "23:00", venue: "TBD", city: "TBD", group: "L" },
+  { home: "DR Congo", away: "Uzbekistan", date: "Jun 28", time: "01:30", venue: "TBD", city: "TBD", group: "K" },
+  { home: "Colombia", away: "Portugal", date: "Jun 28", time: "01:30", venue: "TBD", city: "TBD", group: "K" },
+  { home: "Algeria", away: "Austria", date: "Jun 28", time: "04:00", venue: "TBD", city: "TBD", group: "J" },
+  { home: "Jordan", away: "Argentina", date: "Jun 28", time: "04:00", venue: "TBD", city: "TBD", group: "J" },
 ];
 
 // ==========================================
