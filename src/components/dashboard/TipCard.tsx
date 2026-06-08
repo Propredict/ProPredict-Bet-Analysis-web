@@ -332,30 +332,41 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       {renderHeader()}
 
       {/* Prediction area - revealed */}
-      <div className="px-3.5 sm:px-4 pb-2 pt-1">
-        <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
-          <div className="flex flex-col items-center justify-center text-center">
-            <span className="text-[11px] uppercase tracking-wider text-white/70 font-medium">Prediction</span>
+      <div className="px-3.5 sm:px-4 pb-3.5 pt-1 space-y-2">
+        {/* OUR PREDICTION section header */}
+        <div className="flex items-center gap-2 pt-1">
+          <Star className="h-3.5 w-3.5 text-success fill-success" />
+          <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Prediction</span>
+          <Star className="h-3.5 w-3.5 text-success fill-success" />
+          <div className="flex-1 h-px bg-gradient-to-r from-success/40 to-transparent" />
+        </div>
+
+        {/* Prediction + Odds row */}
+        <div className="flex items-stretch gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <TrendingUp className="h-4 w-4 text-white shrink-0" />
+            <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
+              {tip.prediction}
+            </span>
           </div>
-          {tip.extraNote && (
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                {tip.extraNote.label}
-              </span>
-              <span className="text-xs font-semibold text-foreground">
-                {tip.extraNote.value}
-              </span>
+          {tip.odds > 0 && (
+            <div className="flex flex-col items-center justify-center min-w-[64px] px-3 rounded-lg border border-success/40 bg-background/40">
+              <span className="text-base font-black text-success leading-none">{tip.odds.toFixed(2)}</span>
+              <span className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">Odds</span>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Prediction value footer */}
-      <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
-        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-success/10 to-success/5 border border-success/20">
-          <TrendingUp className="h-3.5 w-3.5 text-white" />
-          <span className="text-sm font-bold text-white tracking-wide">{tip.prediction}</span>
-        </div>
+        {tip.extraNote && (
+          <div className="flex items-center justify-between gap-2 px-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+              {tip.extraNote.label}
+            </span>
+            <span className="text-xs font-semibold text-foreground">
+              {tip.extraNote.value}
+            </span>
+          </div>
+        )}
       </div>
       {renderAdminBar()}
     </div>
