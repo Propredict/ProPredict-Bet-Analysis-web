@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { useMatchComments } from "@/hooks/useMatchComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +44,11 @@ export function MatchCommentsSheet({
   const { user } = useAuth();
   const { isAdmin } = useUserPlan();
   const navigate = useNavigate();
-  const { comments, loading, post, edit, remove, report } = useMatchComments(matchId, open);
+  const isAndroidApp = getIsAndroidApp();
+  const { comments, loading, post, edit, remove, report } = useMatchComments(
+    matchId,
+    open && isAndroidApp
+  );
 
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
