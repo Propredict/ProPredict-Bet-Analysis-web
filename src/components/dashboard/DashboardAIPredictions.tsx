@@ -38,6 +38,9 @@ function PredictionCard({
   const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
   const favored = prediction.home_win === maxProb ? "1" : prediction.draw === maxProb ? "X" : "2";
   const confidence = prediction.confidence ?? 0;
+  const labelMap: Record<string, string> = { "1": "Home Win", X: "Draw", "2": "Away Win" };
+  const rawPred = String(prediction.prediction ?? "").trim();
+  const displayPrediction = labelMap[rawPred] ?? rawPred;
   const locked = lockTier !== null;
   const isPremiumLock = lockTier === "premium";
   const ctaLabel = isPremiumLock ? "Premium · Tap to unlock" : "Pro · Tap to unlock";
@@ -67,30 +70,10 @@ function PredictionCard({
           {prediction.home_team} vs {prediction.away_team}
         </p>
 
-        <div className={`flex items-center gap-1 ${locked ? "blur-md select-none pointer-events-none" : ""}`}>
-          {[
-            { label: "1", value: prediction.home_win, active: favored === "1" },
-            { label: "X", value: prediction.draw, active: favored === "X" },
-            { label: "2", value: prediction.away_win, active: favored === "2" },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className={`flex-1 text-center py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                item.active
-                  ? "bg-primary/20 text-primary ring-1 ring-primary/30"
-                  : "bg-muted/20 text-muted-foreground"
-              }`}
-            >
-              <span className="block text-[9px] font-normal opacity-70">{item.label}</span>
-              {item.value}%
-            </div>
-          ))}
-        </div>
-
         <div className={`${locked ? "blur-md select-none pointer-events-none" : ""}`}>
           <div className="flex items-center justify-center relative">
             <span className="text-lg sm:text-xl font-extrabold text-white tracking-wide text-center">
-              {prediction.prediction}
+              {displayPrediction}
             </span>
             {confidence >= 75 && (
               <div className="absolute right-0 flex items-center gap-0.5 text-accent">
