@@ -49,6 +49,7 @@ export interface Tip {
   tier: ContentTier;
   status: ContentStatus;
   result?: TipResult | null;
+  final_result?: string | null;
   tip_date?: string | null;
   created_at?: string;
   created_at_ts?: string;
