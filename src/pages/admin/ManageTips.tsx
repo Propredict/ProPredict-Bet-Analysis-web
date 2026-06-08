@@ -83,6 +83,7 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   result: "pending",
   tip_date: getTodayBelgradeDate(),
   category: "standard",
+  final_result: "",
 };
 
 /* =====================
