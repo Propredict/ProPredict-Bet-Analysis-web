@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Crown, Brain, User } from "lucide-react";
+import { Zap, Heart, Crown, Brain, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -36,10 +36,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/favorites"]
   },
   {
-    label: "Profile",
-    icon: User,
-    path: "/profile",
-    matchPaths: ["/profile", "/settings"]
+    label: "World Cup",
+    icon: Trophy,
+    path: "/world-cup-2026",
+    matchPaths: ["/world-cup-2026"]
   },
 ];
 
