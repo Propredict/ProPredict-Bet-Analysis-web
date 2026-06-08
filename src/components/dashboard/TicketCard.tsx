@@ -51,7 +51,6 @@ interface TicketCardProps {
   onSecondaryUnlock?: () => void;
   onViewTicket?: () => void;
   isUnlocking?: boolean;
-  onDeleted?: (ticketId: string) => void;
 }
 
 /* =======================
