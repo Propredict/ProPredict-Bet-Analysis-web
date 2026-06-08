@@ -247,9 +247,9 @@ export default function WorldCup2026() {
           {[
             { value: "overview", label: "Overview", icon: Trophy },
             { value: "predictions", label: "AI Picks", icon: Brain },
+            { value: "matches", label: "Matches", icon: Calendar },
             { value: "bracket", label: "Bracket", icon: GitFork },
             { value: "champion", label: "Predict Champion", icon: Crown },
-            { value: "matches", label: "Matches", icon: Calendar },
             { value: "standings", label: "Standings", icon: BarChart3 },
             { value: "teams", label: "Teams", icon: Users },
           ].map(tab => (
