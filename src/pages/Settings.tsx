@@ -22,7 +22,8 @@ import {
   Cookie,
   Bell,
   Goal,
-  Lightbulb
+  Lightbulb,
+  Trophy
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
@@ -34,6 +35,10 @@ const Settings = () => {
 
   const [goalEnabled, setGoalEnabled] = useState(() => localStorage.getItem("goal_enabled") === "true");
   const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
+  // WC alerts default ON (opt-out model) — only disabled if user explicitly turned it off.
+  const [wcEnabled, setWcEnabled] = useState(
+    () => localStorage.getItem("wc_alerts_enabled") !== "false",
+  );
 
   // Show real native push status for banners — but DON'T override user preferences.
   // User toggles are the source of truth; native state is only used for info banners.
@@ -79,6 +84,25 @@ const Settings = () => {
       logPushPreferenceChange("tips_disabled", "settings");
     }
     setOneSignalTag("daily_tips", checked ? "true" : null);
+  };
+
+  const handleWcToggle = (checked: boolean) => {
+    setWcEnabled(checked);
+    if (checked) {
+      localStorage.setItem("wc_alerts_enabled", "true");
+      localStorage.removeItem("push_disabled_at");
+      if (pushState === "opted_out") {
+        enablePushViabridge();
+      } else {
+        window.Android?.requestPushPermission?.();
+      }
+      logPushPreferenceChange("wc_alerts_enabled", "settings");
+    } else {
+      localStorage.setItem("wc_alerts_enabled", "false");
+      logPushPreferenceChange("wc_alerts_disabled", "settings");
+    }
+    // Tag is "false" only when opted out — WC push functions filter out wc_alerts = "false".
+    setOneSignalTag("wc_alerts", checked ? "true" : "false");
   };
 
   const accountItems = [
