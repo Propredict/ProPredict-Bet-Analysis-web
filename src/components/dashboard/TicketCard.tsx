@@ -221,7 +221,6 @@ function TicketCard({
 
     return (
       <div className={cardShell} onClick={handleCardClick}>
-        {renderAdminDelete()}
         {renderHeader()}
 
         {/* Match list - show names, blur predictions & odds */}
