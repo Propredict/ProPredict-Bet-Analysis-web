@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
 type SortOption = "confidence" | "kickoff";
 type TierFilter = "all" | "free" | "pro" | "premium";
@@ -125,89 +126,10 @@ export default function AIPredictions() {
   // generated today), promote up to 3 of the safest "below threshold" matches
   // (effective strength 58–64 + variance_stable !== false) into Free so users
   // always see something. Promoted matches are tracked in safeFallbackIds.
-  const { tierMap: tierAssignment, safeFallbackIds } = useMemo(() => {
-    const map = new Map<string, "free" | "pro" | "premium">();
-    const fallbackIds = new Set<string>();
-    // 1. Compute effective strength per prediction
-    const scored = predictions.map((p) => {
-      const bestPickProb = getBestMarketProbability(p);
-      const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb);
-      return {
-        id: p.id!,
-        strength: effectiveStrength,
-        baseTier: getTierFromConfidence(effectiveStrength),
-        prediction: p,
-      };
-    });
-    // 2. Sort by strength DESC, then by league importance (Tier 1 → 2 → 3),
-    // then apply caps with cascade. This ensures Free slots fill first with
-    // overflow from Pro (highest strength), then with top-league matches,
-    // then the rest.
-    const sorted = [...scored].sort((a, b) => {
-      if (b.strength !== a.strength) return b.strength - a.strength;
-      return leagueTier(a.prediction.league) - leagueTier(b.prediction.league);
-    });
-    const PREMIUM_CAP = 10;
-    const PRO_CAP = 20;
-    const FREE_CAP = 20;
-    let premiumCount = 0;
-    let proCount = 0;
-    let freeCount = 0;
-    for (const s of sorted) {
-      let tier = s.baseTier;
-      // Cascade overflow down: Premium → Pro → Free
-      if (tier === "premium") {
-        if (premiumCount < PREMIUM_CAP) { premiumCount++; }
-        else if (proCount < PRO_CAP) { tier = "pro"; proCount++; }
-        else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
-        else { continue; } // skip — beyond all caps
-      } else if (tier === "pro") {
-        if (proCount < PRO_CAP) { proCount++; }
-        else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
-        else { continue; }
-      } else {
-        if (freeCount < FREE_CAP) { freeCount++; }
-        else { continue; }
-      }
-      map.set(s.id, tier);
-    }
-
-    // 3. SMART FALLBACK — only triggers if Free tier is empty after classification.
-    // Pick up to 3 safest matches from the 58–64% band that aren't already
-    // placed in any tier, requiring variance_stable !== false (model is consistent).
-    if (freeCount === 0) {
-      const fallbackCandidates = sorted
-        .filter((s) => !map.has(s.id))
-        .filter((s) => s.strength >= 58 && s.strength < 65)
-        .filter((s) => (s.prediction as any).variance_stable !== false)
-        .slice(0, 3);
-      for (const c of fallbackCandidates) {
-        map.set(c.id, "free");
-        fallbackIds.add(c.id);
-      }
-    }
-
-    // 3b. SECONDARY FALLBACK — when even the 58–64 band is empty (very strict
-    // data-quality day, e.g. only 8–10 high-quality matches generated), borrow
-    // the WEAKEST matches currently in Pro (closest to the 65% cutoff) and
-    // re-tag them as Free so the page never shows an empty Free tier. Pro
-    // keeps the strongest picks; users always see something.
-    if (freeCount === 0 && fallbackIds.size === 0) {
-      const proCandidates = sorted
-        .filter((s) => map.get(s.id) === "pro")
-        .filter((s) => (s.prediction as any).variance_stable !== false)
-        .sort((a, b) => a.strength - b.strength) // weakest Pro first
-        .slice(0, Math.min(3, Math.max(1, Math.floor(proCount / 3))));
-      for (const c of proCandidates) {
-        map.set(c.id, "free");
-        fallbackIds.add(c.id);
-        proCount--;
-        freeCount++;
-      }
-    }
-
-    return { tierMap: map, safeFallbackIds: fallbackIds };
-  }, [predictions]);
+  const { tierMap: tierAssignment, safeFallbackIds } = useMemo(
+    () => assignTiers(predictions),
+    [predictions],
+  );
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
     // Tier is determined purely by displayed confidence (Premium ≥85%, Pro ≥65%, Free <65%)
