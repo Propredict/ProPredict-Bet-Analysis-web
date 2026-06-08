@@ -149,17 +149,17 @@ export function DashboardAIPredictions() {
   const getLockTier = (conf: number): LockTier => {
     // Premium plan unlocks everything
     if (!isFree && !isPro) return null;
-    // Pro plan: only Premium picks (≥78%) are locked
-    if (isPro) return conf >= 78 ? "premium" : null;
-    // Free plan: Pro (65-77%) + Premium (≥78%) locked
-    if (conf >= 78) return "premium";
+    // Pro plan: only Premium picks (≥85%) are locked
+    if (isPro) return conf >= 85 ? "premium" : null;
+    // Free plan: Pro (65-84%) + Premium (≥85%) locked
+    if (conf >= 85) return "premium";
     if (conf >= 65) return "pro";
     return null;
   };
 
   // Tier classification (independent of user plan) — used to bucket predictions
   const classifyTier = (conf: number): "free" | "pro" | "premium" => {
-    if (conf >= 78) return "premium";
+    if (conf >= 85) return "premium";
     if (conf >= 65) return "pro";
     return "free";
   };
