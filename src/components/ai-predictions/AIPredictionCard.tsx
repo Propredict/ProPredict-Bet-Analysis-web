@@ -242,7 +242,7 @@ const AIPredictionCardInner = ({
 
         {/* Match Title */}
         <div className="px-2 md:px-3 pb-1.5 md:pb-2 space-y-1">
-          <h3 className="font-semibold text-xs md:text-sm text-white truncate">
+          <h3 className="font-bold text-base md:text-lg text-white text-center truncate">
             {prediction.home_team} vs {prediction.away_team}
           </h3>
           <div className="flex items-center gap-1.5 flex-wrap">
