@@ -217,8 +217,8 @@ export default function WorldCup2026() {
   // Split matches by matchday (8 matches each for 12 groups × 2 matches)
   const matchesByDay = {
     md1: GROUP_MATCHES.slice(0, 24),
-    md2: [] as typeof GROUP_MATCHES,  // Will be filled when schedule confirmed
-    md3: [] as typeof GROUP_MATCHES,
+    md2: GROUP_MATCHES.slice(24, 48),
+    md3: GROUP_MATCHES.slice(48),
   };
 
   if (selectedTeam) {
