@@ -85,27 +85,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
   const queryClient = useQueryClient();
-  const [adminBusy, setAdminBusy] = useState<null | "won" | "lost" | "delete">(null);
+  const [adminBusy, setAdminBusy] = useState<null | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
 
   const accent = TIER_ACCENT[tip.tier] || TIER_ACCENT.daily;
-
-  const adminMarkResult = async (result: "won" | "lost") => {
-    const today = new Date().toISOString().split("T")[0];
-    const tipDate = (tip as any).tip_date as string | null | undefined;
-    const isFutureOrToday = !tipDate || tipDate >= today;
-    const warn = isFutureOrToday
-      ? `⚠️ Match date is ${tipDate ?? "unknown"} (today or future). Are you SURE you want to mark "${tip.homeTeam} vs ${tip.awayTeam}" as ${result.toUpperCase()}?`
-      : `Mark "${tip.homeTeam} vs ${tip.awayTeam}" as ${result.toUpperCase()}?`;
-    if (!confirm(warn)) return;
-    setAdminBusy(result);
-    const { error } = await (supabase as any).from("tips").update({ result }).eq("id", tip.id);
-    setAdminBusy(null);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`Tip marked as ${result}`);
-    queryClient.invalidateQueries({ queryKey: ["tips"] });
-  };
 
   const adminDelete = async () => {
     if (!confirm("Delete this tip?")) return;
