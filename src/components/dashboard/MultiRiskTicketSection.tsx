@@ -46,9 +46,6 @@ export function MultiRiskTicketSection() {
           <Badge className="text-[10px] font-bold border-0 bg-red-500/20 text-red-400">
             HIGH RISK
           </Badge>
-          <span className="text-xs font-bold text-red-400">
-            Total Odds: {multiRisk.total_odds ?? "—"}
-          </span>
         </div>
 
         <p className="text-xs font-bold text-foreground mb-2">{multiRisk.title}</p>

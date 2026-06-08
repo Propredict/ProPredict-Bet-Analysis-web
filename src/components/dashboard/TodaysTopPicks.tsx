@@ -209,10 +209,6 @@ export function TodaysTopPicks() {
                   </div>
                 ) : (
                   <div className="space-y-2 pt-1">
-                    {/* Free pick label */}
-                    {tier === "free" && (
-                      <p className="text-[10px] text-green-400 font-semibold text-center">🔥 High confidence pick</p>
-                    )}
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-sm font-bold text-white text-center">{pick.prediction}</span>
                     </div>
