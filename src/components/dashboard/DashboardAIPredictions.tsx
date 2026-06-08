@@ -83,11 +83,6 @@ function PredictionCard({
             )}
           </div>
 
-          {prediction.predicted_score && (
-            <p className="text-center text-sm font-semibold text-muted-foreground">
-              Predicted Score: {prediction.predicted_score}
-            </p>
-          )}
         </div>
       </div>
 
