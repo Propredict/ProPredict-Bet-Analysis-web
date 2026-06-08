@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3 } from "lucide-react";
+import { Trophy, Target, Shield, TrendingUp, Goal, Flame, Users, BarChart3, Calendar } from "lucide-react";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { useWCTopPlayers } from "@/hooks/useWCTopPlayers";
 
@@ -102,7 +102,7 @@ export default function WCTournamentStatsTab() {
   }
 
   const tiles: StatTile[] = [
-    { icon: Calendar1, label: "Matches Played", value: String(stats.totalMatches), tone: "primary" },
+    { icon: Calendar, label: "Matches Played", value: String(stats.totalMatches), tone: "primary" },
     { icon: Goal, label: "Total Goals", value: String(stats.totalGoals), tone: "amber" },
     { icon: TrendingUp, label: "Goals / Match", value: stats.avgGoals.toFixed(2), tone: "fuchsia" },
     { icon: Users, label: "Draws", value: String(stats.totalDraws), tone: "sky" },
@@ -281,6 +281,3 @@ function PlayerCard({
     </Card>
   );
 }
-
-// Local alias to keep imports tidy (Calendar icon used for matches count)
-import { Calendar as Calendar1 } from "lucide-react";
