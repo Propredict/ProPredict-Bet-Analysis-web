@@ -334,11 +334,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       {/* Prediction area - revealed */}
       <div className="px-3.5 sm:px-4 pb-2 pt-1">
         <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Prediction</span>
-            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs font-semibold px-2.5 py-0.5">
-              {tip.prediction}
-            </Badge>
+          <div className="flex flex-col items-center justify-center text-center">
+            <span className="text-[11px] uppercase tracking-wider text-white/70 font-medium">Prediction</span>
           </div>
           {tip.extraNote && (
             <div className="flex items-center justify-between gap-2 pt-1">
@@ -353,11 +350,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
         </div>
       </div>
 
-      {/* AI Pick footer */}
+      {/* Prediction value footer */}
       <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
         <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-success/10 to-success/5 border border-success/20">
-          <TrendingUp className="h-3.5 w-3.5 text-success" />
-          <span className="text-[11px] font-semibold text-success tracking-wide">AI Pick Available</span>
+          <TrendingUp className="h-3.5 w-3.5 text-white" />
+          <span className="text-sm font-bold text-white tracking-wide">{tip.prediction}</span>
         </div>
       </div>
       {renderAdminBar()}
