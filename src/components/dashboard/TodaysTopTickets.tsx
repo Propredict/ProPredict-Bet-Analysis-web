@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Lock, Loader2, Play, Eye, Users, Flame } from "lucide-react";
+import { Ticket, Lock, Loader2, Play, Eye, Users, Flame, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { PricingModal } from "@/components/PricingModal";
+import { parseMatchName } from "@/types/admin";
 
 export function TodaysTopTickets() {
   const navigate = useNavigate();
@@ -116,18 +117,46 @@ export function TodaysTopTickets() {
 
               <p className="text-xs font-bold text-foreground mb-2">{ticket.title}</p>
 
-              {/* Match previews */}
-              <div className="space-y-2 mb-3">
-                {previewMatches.map((m: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-2 rounded-lg bg-background/40">
-                    <span className="text-foreground font-medium truncate flex-1">{m.match_name}</span>
-                    {isLocked ? (
-                      <span className="text-muted-foreground blur-sm select-none ml-2">Over 2.5</span>
-                    ) : (
-                      <span className={cn("font-semibold ml-2", accent)}>{m.prediction}</span>
-                    )}
-                  </div>
-                ))}
+              {/* Our Picks header */}
+              <div className="flex items-center justify-center gap-2 mb-2.5">
+                <Star className={cn("h-3.5 w-3.5 fill-current", accent)} />
+                <span className={cn("text-[11px] uppercase tracking-[0.18em] font-bold", accent)}>Our Picks</span>
+                <Star className={cn("h-3.5 w-3.5 fill-current", accent)} />
+              </div>
+
+              {/* Match previews — web-style cards */}
+              <div className="space-y-2.5 mb-3">
+                {previewMatches.map((m: any, i: number) => {
+                  const parsed = parseMatchName(m.match_name);
+                  return (
+                    <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-2.5 space-y-2">
+                      {parsed.league && (
+                        <p className="text-[9px] text-muted-foreground truncate text-center">{parsed.league}</p>
+                      )}
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="flex-1 text-right text-[12px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                          {parsed.homeTeam}
+                        </span>
+                        <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                        <span className="flex-1 text-left text-[12px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                          {parsed.awayTeam}
+                        </span>
+                      </div>
+                      {isLocked ? (
+                        <div className={cn("rounded-md border py-1.5 px-3 text-center flex items-center justify-center gap-1.5", border)}>
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[11px] text-muted-foreground blur-sm select-none">Over 2.5</span>
+                        </div>
+                      ) : (
+                        <div className={cn("rounded-md border py-1.5 px-3 text-center", border, bg)}>
+                          <span className={cn("text-[12px] font-bold tracking-wide", accent)}>
+                            {m.prediction}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 {matches.length > 3 && (
                   <p className="text-[10px] text-muted-foreground text-center">
                     +{matches.length - 3} more matches
