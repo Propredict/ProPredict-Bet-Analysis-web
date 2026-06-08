@@ -225,7 +225,7 @@ function TicketCard({
       <div className={cn("h-1 w-full", accent.line)} />
       <div className={cn("bg-gradient-to-b", accent.gradient)}>
         <div className="p-3.5 sm:p-4">
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               {getTierBadge(ticket.tier)}
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
@@ -235,8 +235,23 @@ function TicketCard({
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight">{ticket.title}</h3>
-          {ticketDate && <span className="text-[10px] text-muted-foreground mt-0.5 block">{ticketDate}</span>}
+          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight text-center">
+            {ticket.title}
+          </h3>
+          <div className="mt-1.5 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+            {ticketDate && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {ticketDate}
+              </span>
+            )}
+            {ticket.totalOdds > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="opacity-60">Total odds</span>
+                <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -252,28 +267,32 @@ function TicketCard({
         {renderHeader()}
 
         {/* Match list - show names, blur predictions & odds */}
-        <div className="px-3.5 sm:px-4 pb-2 pt-1">
-          <div className="rounded-lg bg-muted/20 border border-border/30 divide-y divide-border/20">
-            {displayedMatches.map((match, idx) => {
-              const parsed = parseMatchName(match.name);
-              return (
-                <div key={idx} className="flex items-center justify-between gap-2 p-2.5">
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs text-foreground truncate block font-medium">
-                      {parsed.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {parsed.awayTeam}
-                    </span>
-                    {parsed.league && <span className="text-[9px] text-muted-foreground">{parsed.league}</span>}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                      <Lock className="h-2.5 w-2.5" />
-                      Locked
-                    </span>
-                  </div>
+        <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
+          {displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.name);
+            return (
+              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.homeTeam}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.awayTeam}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="mt-1.5 flex items-center justify-between gap-2">
+                  {parsed.league ? (
+                    <span className="text-[9px] text-muted-foreground truncate">{parsed.league}</span>
+                  ) : <span />}
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                    <Lock className="h-2.5 w-2.5" />
+                    Locked
+                  </span>
+                </div>
+              </div>
+            );
+          })}
           {remainingCount > 0 && (
             <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
               +{remainingCount} more matches
@@ -332,29 +351,40 @@ function TicketCard({
       {renderHeader()}
 
       {/* Match list - revealed */}
-      <div className="px-3.5 sm:px-4 pb-2 pt-1">
-        <div className="rounded-lg bg-muted/20 border border-border/30 divide-y divide-border/20">
-          {displayedMatches.length > 0 ? (
-            displayedMatches.map((match, idx) => {
-              const parsed = parseMatchName(match.name);
-              return (
-                <div key={idx} className="flex items-center justify-between gap-2 p-2.5">
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs text-foreground truncate block font-medium">
-                      {parsed.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {parsed.awayTeam}
-                    </span>
-                    {parsed.league && <span className="text-[9px] text-muted-foreground">{parsed.league}</span>}
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5">{match.prediction}</Badge>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <p className="text-xs text-muted-foreground py-3 text-center">No matches</p>
-          )}
+      <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
+        <div className="flex items-center justify-center gap-2 pb-0.5">
+          <Star className="h-3.5 w-3.5 text-success fill-success" />
+          <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks</span>
+          <Star className="h-3.5 w-3.5 text-success fill-success" />
         </div>
+        {displayedMatches.length > 0 ? (
+          displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.name);
+            return (
+              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.homeTeam}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.awayTeam}
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-center justify-between gap-2">
+                  {parsed.league ? (
+                    <span className="text-[9px] text-muted-foreground truncate">{parsed.league}</span>
+                  ) : <span />}
+                  <Badge className="bg-success/15 text-success border-success/30 text-[10px] px-2 font-bold shrink-0">
+                    {match.prediction}
+                  </Badge>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-xs text-muted-foreground py-3 text-center">No matches</p>
+        )}
         {remainingCount > 0 && (
           <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
             +{remainingCount} more matches
