@@ -933,17 +933,28 @@ export default function WorldCup2026() {
         </TabsContent>
       </Tabs>
 
-      {/* Team Profile — bottom sheet */}
-      <Sheet open={!!selectedTeam} onOpenChange={(o) => !o && setSelectedTeam(null)}>
-        <SheetContent
-          side="bottom"
-          className="h-[92vh] max-h-[92vh] p-0 overflow-y-auto rounded-t-2xl border-t border-border bg-background"
-        >
-          {selectedTeam && (
+      {/* Team Profile — Android-safe fixed bottom modal */}
+      {selectedTeam && (
+        <div className="fixed inset-0 z-[9999] bg-black/70" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            aria-label="Close team profile"
+            className="absolute inset-0 h-full w-full cursor-default"
+            onClick={() => setSelectedTeam(null)}
+          />
+          <div className="absolute inset-x-0 bottom-0 z-[10000] h-[88dvh] max-h-[88dvh] overflow-y-auto rounded-t-2xl border-t border-border bg-background shadow-2xl pb-[env(safe-area-inset-bottom)]">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setSelectedTeam(null)}
+              className="absolute right-3 top-3 z-[10001] flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
             <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />
-          )}
-        </SheetContent>
-      </Sheet>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
