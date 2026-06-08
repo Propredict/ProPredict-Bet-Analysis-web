@@ -47,17 +47,17 @@ export default function WorldCupTeamPage({ team, onBack }: TeamPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="bg-card border-b border-border px-3 py-3">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8">
+    <div className="bg-background pb-[env(safe-area-inset-bottom)]">
+      {/* Header (sticky so Close stays reachable) */}
+      <div className="sticky top-0 z-10 bg-card border-b border-border px-3 py-3">
+        <div className="flex items-center gap-3 pr-10">
+          <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
               <TeamFlag code={teamData.code} size="md" />
-              {teamData.name}
+              <span className="truncate">{teamData.name}</span>
             </h1>
             <p className="text-[11px] text-muted-foreground">
               Group {group} · FIFA Rank #{teamData.fifaRank} · {teamData.confederation}
