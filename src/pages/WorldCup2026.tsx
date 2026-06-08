@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award } from "lucide-react";
+import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
 import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import WCTopPlayersTab from "@/components/world-cup/WCTopPlayersTab";
+import WCTournamentStatsTab from "@/components/world-cup/WCTournamentStatsTab";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -253,6 +254,7 @@ export default function WorldCup2026() {
             { value: "champion", label: "Predict Champion", icon: Crown },
             { value: "standings", label: "Standings", icon: BarChart3 },
             { value: "top-players", label: "Top Players", icon: Award },
+            { value: "stats", label: "Stats", icon: Activity },
             { value: "teams", label: "Teams", icon: Users },
           ].map(tab => (
             <TabsTrigger key={tab.value} value={tab.value} className="text-[11px] px-2.5 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1 whitespace-nowrap">
@@ -859,6 +861,11 @@ export default function WorldCup2026() {
             </div>
           )}
           {(isApp || isPro) && <WCTopPlayersTab />}
+        </TabsContent>
+
+        {/* ==================== TOURNAMENT STATS ==================== */}
+        <TabsContent value="stats" className="mt-0 px-3">
+          <WCTournamentStatsTab />
         </TabsContent>
 
         <TabsContent value="teams" className="mt-0 px-3">
