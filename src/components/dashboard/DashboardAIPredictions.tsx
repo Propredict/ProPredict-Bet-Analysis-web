@@ -197,17 +197,29 @@ export function DashboardAIPredictions() {
     return shuffled.slice(0, 2).map((s) => s.p);
   }, [dailyPickKey, freePool]);
 
-  const proPicks = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 2).map((s) => s.p);
-  const premiumPicks = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 2).map((s) => s.p);
+  // Pro/Premium pools — same daily-stable rotation among top 10 strongest of each tier.
+  const proPool = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 10);
+  const premiumPool = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 10);
 
-  // Android: free users see free picks first so they get immediate value,
-  // followed by a teaser of higher-tier (locked) picks. Paid users see top confidence.
-  const displayedPredictions = isAndroidApp && isFree
-    ? [
-        ...sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 2).map((s) => s.p),
-        ...sorted.filter((s) => classifyTier(s.strength) !== "free").slice(0, 1).map((s) => s.p),
-      ].slice(0, 3)
-    : sorted.slice(0, 3).map((s) => s.p);
+  const pickDaily = (pool: typeof sorted, count: number) =>
+    [...pool]
+      .sort((a, b) => {
+        const aScore = stableDailyScore(`${dailyPickKey}:${a.p.id}:${a.p.home_team}:${a.p.away_team}`);
+        const bScore = stableDailyScore(`${dailyPickKey}:${b.p.id}:${b.p.home_team}:${b.p.away_team}`);
+        return aScore - bScore;
+      })
+      .slice(0, count)
+      .map((s) => s.p);
+
+  const proPicks = useMemo(() => pickDaily(proPool, 2), [dailyPickKey, proPool]);
+  const premiumPicks = useMemo(() => pickDaily(premiumPool, 2), [dailyPickKey, premiumPool]);
+
+  // Android: always show 1 Free + 1 Pro + 1 Premium (daily-stable, same as web sections).
+  const displayedPredictions = [
+    freePicks[0],
+    proPicks[0],
+    premiumPicks[0],
+  ].filter(Boolean);
 
   const renderCard = (prediction: any) => {
     const conf = prediction.confidence ?? 0;
