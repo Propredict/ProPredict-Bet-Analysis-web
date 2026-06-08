@@ -187,7 +187,7 @@ export default function MatchPreviews() {
       .filter(p => (p.confidence ?? 0) >= 50)
       .map(p => ({
         p,
-        bestPct: getBestMarketPickWithLabel(p as any).pct,
+        bestPct: getTopMatchPreviewPick(p as any).confidence,
         tier: getLeagueTier(p.league),
       }))
       .sort((a, b) => {
