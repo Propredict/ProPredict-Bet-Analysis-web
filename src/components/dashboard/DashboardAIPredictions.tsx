@@ -202,11 +202,16 @@ export function DashboardAIPredictions() {
     [dailyPickKey, tierMap, predictions],
   );
 
-  const renderCard = (prediction: any) => {
+  const renderCard = (prediction: any, opts?: { forceWatchAd?: boolean }) => {
     // Lock based on the SAME tier classification as /ai-predictions.
     const tier = tierOf(prediction);
     const strength = tier === "premium" ? 90 : tier === "pro" ? 70 : 50;
-    const baseTier = getLockTier(strength);
+    let baseTier = getLockTier(strength);
+    // Android Free users: force the SECOND free pick into "Watch Ad to Unlock" mode
+    // so they get a taste of one free pick and one ad-gated pick.
+    if (opts?.forceWatchAd && isAndroidApp && isFree && tier === "free") {
+      baseTier = "pro";
+    }
     const lockTier: LockTier = canAccess("exclusive", "tip", prediction.id)
       ? baseTier === "premium" && !canAccess("premium", "tip", prediction.id)
         ? "premium"
@@ -221,10 +226,7 @@ export function DashboardAIPredictions() {
         showWatchAd={isAndroidApp && isFree}
         isUnlocking={unlockingId === prediction.id}
         onWatchAd={() => {
-          const lt = getLockTier(strength);
-          if (lt === "pro") {
-            handleUnlock("tip", prediction.id, "exclusive");
-          }
+          handleUnlock("tip", prediction.id, "exclusive");
         }}
       />
     );
