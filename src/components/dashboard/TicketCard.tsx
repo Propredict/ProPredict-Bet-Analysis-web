@@ -330,10 +330,10 @@ function TicketCard({
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-end gap-2">
-                  <Badge className="bg-white text-black border-white/40 text-[10px] px-2 font-bold shrink-0 hover:bg-white">
+                <div className="mt-2 rounded-lg border border-success/30 bg-success/5 py-2 px-3 text-center">
+                  <span className="text-[13px] font-bold text-foreground tracking-wide">
                     {match.prediction}
-                  </Badge>
+                  </span>
                 </div>
               </div>
             );
