@@ -87,5 +87,3 @@ verify_jwt = false
 [functions.get-wc-top-players]
 verify_jwt = false
 
-[functions.repair-wc-champion-system]
-verify_jwt = false
