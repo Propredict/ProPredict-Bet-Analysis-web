@@ -27,6 +27,10 @@ const toneClass: Record<StatTile["tone"], string> = {
 };
 
 export default function WCTournamentStatsTab() {
+  const navigate = useNavigate();
+  const { isAndroidApp } = usePlatform();
+  const { plan } = useUserPlan();
+
   const { data: standingsData, isLoading: standingsLoading } = useWCStandings();
   const { data: scorers } = useWCTopPlayers("scorers");
   const { data: assists } = useWCTopPlayers("assists");
