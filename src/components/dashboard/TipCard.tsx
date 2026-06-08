@@ -241,9 +241,15 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           </div>
 
           {/* Match name — always visible, even when locked */}
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight text-center">
-            {tip.homeTeam} <span className="text-muted-foreground font-normal text-xs mx-1">vs</span> {tip.awayTeam}
-          </h3>
+          <div className="flex items-center justify-center gap-2">
+            <span className="flex-1 text-right font-bold text-[15px] text-foreground leading-tight tracking-tight px-2.5 py-1 rounded-lg border border-border/50 bg-muted/20 truncate">
+              {tip.homeTeam}
+            </span>
+            <span className="shrink-0 text-muted-foreground font-normal text-xs">vs</span>
+            <span className="flex-1 text-left font-bold text-[15px] text-foreground leading-tight tracking-tight px-2.5 py-1 rounded-lg border border-border/50 bg-muted/20 truncate">
+              {tip.awayTeam}
+            </span>
+          </div>
           {(tip.kickoffDate || tip.kickoffTime || tip.kickoff) && (
             <div className="mt-1.5 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
               <Clock className="h-3 w-3" />
