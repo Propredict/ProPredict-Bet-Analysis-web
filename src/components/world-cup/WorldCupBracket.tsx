@@ -230,6 +230,8 @@ function RoundSection({
   size = "md",
   scrollable = false,
   highlight = false,
+  onMatchClick,
+  pickTeam,
 }: {
   title: string;
   matches: BracketMatch[];
@@ -237,9 +239,17 @@ function RoundSection({
   size?: "sm" | "md" | "lg";
   scrollable?: boolean;
   highlight?: boolean;
+  onMatchClick?: (m: BracketMatch) => void;
+  pickTeam?: string | null;
 }) {
   const filled: (BracketMatch | null)[] = Array.from({ length: slots }, (_, i) => matches[i] || null);
   const filledCount = matches.length;
+
+  const matchIsPick = (m: BracketMatch | null) => {
+    if (!m || !pickTeam) return false;
+    const p = pickTeam.toLowerCase();
+    return m.home.name?.toLowerCase() === p || m.away.name?.toLowerCase() === p;
+  };
 
   return (
     <div className="space-y-2">
@@ -261,21 +271,37 @@ function RoundSection({
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-fuchsia-500/10 to-amber-500/20 blur-xl rounded-2xl" />
           <div className="relative">
-            <MatchCard match={filled[0]} size="lg" />
+            <MatchCard
+              match={filled[0]}
+              size="lg"
+              isPick={matchIsPick(filled[0])}
+              onClick={filled[0] && onMatchClick ? () => onMatchClick(filled[0]!) : undefined}
+            />
           </div>
         </div>
       ) : scrollable ? (
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 scrollbar-thin">
           {filled.map((m, i) => (
             <div key={i} className="shrink-0 w-[160px]">
-              <MatchCard match={m} size={size} />
+              <MatchCard
+                match={m}
+                size={size}
+                isPick={matchIsPick(m)}
+                onClick={m && onMatchClick ? () => onMatchClick(m) : undefined}
+              />
             </div>
           ))}
         </div>
       ) : (
         <div className={`grid gap-2 ${slots === 2 ? "grid-cols-2" : slots <= 8 ? "grid-cols-2" : "grid-cols-2"}`}>
           {filled.map((m, i) => (
-            <MatchCard key={i} match={m} size={size} />
+            <MatchCard
+              key={i}
+              match={m}
+              size={size}
+              isPick={matchIsPick(m)}
+              onClick={m && onMatchClick ? () => onMatchClick(m) : undefined}
+            />
           ))}
         </div>
       )}
@@ -293,6 +319,15 @@ function ConnectorLine() {
 
 export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () => void }) {
   const { bracket, hasData, totalMatches, loading } = useWorldCupBracket();
+  const { myPick } = useChampionPrediction();
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+
+  const pickTeam = myPick?.has_vote ? myPick.team_name ?? null : null;
+
+  const handleMatchClick = (b: BracketMatch) => {
+    const m = bracketToMatch(b);
+    if (m) setSelectedMatch(m);
+  };
 
   if (loading) {
     return (
@@ -359,6 +394,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         slots={ROUND_SLOTS.Final}
         size="lg"
         highlight
+        onMatchClick={handleMatchClick}
+        pickTeam={pickTeam}
       />
 
       <ConnectorLine />
@@ -368,6 +405,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         matches={bracket["Semi-finals"]}
         slots={ROUND_SLOTS["Semi-finals"]}
         size="md"
+        onMatchClick={handleMatchClick}
+        pickTeam={pickTeam}
       />
 
       <ConnectorLine />
@@ -377,6 +416,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         matches={bracket["Quarter-finals"]}
         slots={ROUND_SLOTS["Quarter-finals"]}
         size="md"
+        onMatchClick={handleMatchClick}
+        pickTeam={pickTeam}
       />
 
       <ConnectorLine />
@@ -387,6 +428,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         slots={ROUND_SLOTS["Round of 16"]}
         size="sm"
         scrollable
+        onMatchClick={handleMatchClick}
+        pickTeam={pickTeam}
       />
 
       <ConnectorLine />
@@ -396,6 +439,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
         matches={bracket["Round of 32"]}
         slots={ROUND_SLOTS["Round of 32"]}
         size="sm"
+        onMatchClick={handleMatchClick}
+        pickTeam={pickTeam}
       />
 
       {/* Third Place (only if exists) */}
@@ -407,6 +452,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
               matches={bracket["3rd Place Final"]}
               slots={1}
               size="md"
+              onMatchClick={handleMatchClick}
+              pickTeam={pickTeam}
             />
           </div>
         </>
@@ -415,6 +462,8 @@ export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () =>
       <p className="text-center text-[9px] text-muted-foreground/70 pt-2 pb-4">
         Auto-updated from official FIFA fixtures · Refreshes every 5 minutes
       </p>
+
+      <MatchDetailModal match={selectedMatch} onClose={() => setSelectedMatch(null)} />
     </div>
   );
 }
