@@ -324,6 +324,58 @@ function ConnectorLine() {
   );
 }
 
+function BracketColumn({
+  title,
+  matches,
+  slots,
+  onMatchClick,
+  pickTeam,
+  highlight = false,
+}: {
+  title: string;
+  matches: BracketMatch[];
+  slots: number;
+  onMatchClick?: (m: BracketMatch) => void;
+  pickTeam?: string | null;
+  highlight?: boolean;
+}) {
+  const filled: (BracketMatch | null)[] = Array.from({ length: slots }, (_, i) => matches[i] || null);
+  const matchIsPick = (m: BracketMatch | null) => {
+    if (!m || !pickTeam) return false;
+    const p = pickTeam.toLowerCase();
+    return m.home.name?.toLowerCase() === p || m.away.name?.toLowerCase() === p;
+  };
+  // Each subsequent round doubles vertical gap so pairs visually feed into next round
+  const gapClass =
+    slots >= 16 ? "gap-2"
+    : slots === 8 ? "gap-8"
+    : slots === 4 ? "gap-20"
+    : slots === 2 ? "gap-44"
+    : "";
+
+  return (
+    <div className="flex flex-col w-[200px] shrink-0">
+      <div className={`text-[10px] font-bold uppercase tracking-wider px-1 mb-2 ${highlight ? "text-amber-400" : "text-muted-foreground"}`}>
+        {title} <span className="text-muted-foreground/60 font-normal">({matches.length}/{slots})</span>
+      </div>
+      <div className={`flex flex-col justify-around flex-1 ${gapClass} border-l border-border/20 pl-2 relative`}>
+        {filled.map((m, i) => (
+          <div key={i} className="relative">
+            {/* horizontal connector to next round */}
+            <div className="absolute right-0 top-1/2 -translate-y-px w-2 h-px bg-border/30 translate-x-full" />
+            <MatchCard
+              match={m}
+              size="sm"
+              isPick={matchIsPick(m)}
+              onClick={m && onMatchClick ? () => onMatchClick(m) : undefined}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function WorldCupBracket({ onGoToGroups }: { onGoToGroups?: () => void }) {
   const { bracket, hasData, totalMatches, loading } = useWorldCupBracket();
   const { myPick } = useChampionPrediction();
