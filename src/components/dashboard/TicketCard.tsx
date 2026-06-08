@@ -171,36 +171,6 @@ function TicketCard({
 
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm(`Delete ticket "${ticket.title}"? This cannot be undone.`)) return;
-    setIsDeleting(true);
-    try {
-      await (supabase as any).from("ticket_matches").delete().eq("ticket_id", ticket.id);
-      const { error } = await (supabase as any).from("tickets").delete().eq("id", ticket.id);
-      if (error) throw error;
-      toast.success("Ticket deleted");
-      if (onDeleted) onDeleted(ticket.id);
-      else window.dispatchEvent(new CustomEvent("tickets:refresh"));
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to delete ticket");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const renderAdminDelete = () =>
-    isAdmin ? (
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isDeleting}
-        title="Delete ticket (admin)"
-        className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive transition-colors disabled:opacity-50"
-      >
-        {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-      </button>
-    ) : null;
 
   const cardShell = cn(
     "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
