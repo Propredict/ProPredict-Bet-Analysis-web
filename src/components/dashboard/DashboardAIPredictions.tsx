@@ -66,13 +66,13 @@ function PredictionCard({
           <span className="text-[10px] text-muted-foreground font-mono">{prediction.match_time}</span>
         </div>
 
-        <p className="font-bold text-base sm:text-lg text-foreground leading-tight line-clamp-1">
-          {prediction.home_team} vs {prediction.away_team}
-        </p>
+        <div className={`${locked ? "blur-md select-none pointer-events-none" : ""} space-y-2`}>
+          <p className="font-bold text-lg sm:text-xl text-foreground leading-tight text-center pt-1 pb-2">
+            {prediction.home_team} vs {prediction.away_team}
+          </p>
 
-        <div className={`${locked ? "blur-md select-none pointer-events-none" : ""}`}>
           <div className="flex items-center justify-center relative">
-            <span className="text-lg sm:text-xl font-extrabold text-white tracking-wide text-center">
+            <span className="text-base sm:text-lg font-extrabold text-white tracking-wide text-center">
               {displayPrediction}
             </span>
             {confidence >= 75 && (
@@ -82,6 +82,12 @@ function PredictionCard({
               </div>
             )}
           </div>
+
+          {prediction.predicted_score && (
+            <p className="text-center text-sm font-semibold text-muted-foreground">
+              Predicted Score: {prediction.predicted_score}
+            </p>
+          )}
         </div>
       </div>
 
