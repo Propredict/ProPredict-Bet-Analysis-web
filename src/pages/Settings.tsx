@@ -284,6 +284,20 @@ const Settings = () => {
                 <Switch checked={tipsEnabled} onCheckedChange={handleTipsToggle} />
               </div>
 
+              {/* World Cup 2026 Alerts */}
+              <div className="flex items-center justify-between p-2 rounded-md">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    <Trophy className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-medium text-foreground">World Cup 2026 Alerts</p>
+                    <p className="text-[10px] text-muted-foreground">Daily match previews & kickoff reminders (June 11 – July 19)</p>
+                  </div>
+                </div>
+                <Switch checked={wcEnabled} onCheckedChange={handleWcToggle} />
+              </div>
+
               {/* System permission denied — direct user to system settings */}
               {pushState === "no_permission" && (
                 <div className="mx-2 mb-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2">
