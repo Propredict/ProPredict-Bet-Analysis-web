@@ -135,11 +135,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
           </Badge>
         );
       default:
-        return (
-          <Badge variant="outline" className="text-pending border-pending/30 bg-pending/10 text-[10px] px-2">
-            <Clock className="h-3 w-3 mr-1" />Pending
-          </Badge>
-        );
+        return null;
     }
   };
 
