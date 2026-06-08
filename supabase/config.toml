@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.get-wc-today]
 verify_jwt = false
+
+[functions.get-wc-top-players]
+verify_jwt = false
