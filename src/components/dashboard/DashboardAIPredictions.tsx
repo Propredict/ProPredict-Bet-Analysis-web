@@ -166,7 +166,16 @@ export function DashboardAIPredictions() {
     .filter((s) => s.strength >= 50)
     .sort((a, b) => b.strength - a.strength);
 
-  const freePicks = sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 2).map((s) => s.p);
+  // Free Daily Picks on dashboard: pick 2 RANDOM from the safest Free picks
+  // (top 10 by strength) so users see variety on each visit, but always from
+  // the strongest end of the Free pool shown on /ai-predictions.
+  const freePool = sorted.filter((s) => classifyTier(s.strength) === "free").slice(0, 10);
+  const freePicks = useMemo(() => {
+    const shuffled = [...freePool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 2).map((s) => s.p);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freePool.map((s) => s.p.id).join(",")]);
+
   const proPicks = sorted.filter((s) => classifyTier(s.strength) === "pro").slice(0, 2).map((s) => s.p);
   const premiumPicks = sorted.filter((s) => classifyTier(s.strength) === "premium").slice(0, 2).map((s) => s.p);
 
