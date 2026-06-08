@@ -752,11 +752,23 @@ function MatchRow({
   toggleMatchAlert: () => void;
   hasRecentGoal: boolean;
   soundActive?: boolean;
-  commentsEnabled?: boolean;
 }) {
   const isLive = m.status === "live" || m.status === "halftime";
   const isFinished = m.status === "finished";
   const isUpcoming = m.status === "upcoming";
+
+  // Comments window: live / halftime / finished always, upcoming within 2h of kickoff
+  const commentsEnabled = (() => {
+    if (isLive || isFinished) return true;
+    if (!isUpcoming || !m.startTime) return false;
+    const match = /^(\d{1,2}):(\d{2})/.exec(m.startTime);
+    if (!match) return false;
+    const now = new Date();
+    const kickoff = new Date();
+    kickoff.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
+    const diffMs = kickoff.getTime() - now.getTime();
+    return diffMs <= 2 * 60 * 60 * 1000 && diffMs > -3 * 60 * 60 * 1000;
+  })();
 
   return (
     <div 
