@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MatchAlertButton } from "@/components/live-scores/MatchAlertButton";
 import { KickoffCountdown } from "@/components/live-scores/KickoffCountdown";
 import { LiveScoresFallback } from "@/components/live-scores/LiveScoresFallback";
+import { MatchCommentsButton } from "@/components/match-comments/MatchCommentsButton";
 
 
 import { useFavorites } from "@/hooks/useFavorites";
@@ -740,7 +741,7 @@ function MatchRow({
   hasAlert,
   toggleMatchAlert,
   hasRecentGoal: showGoalIndicator,
-  soundActive
+  soundActive,
 }: {
   match: Match;
   onSelect: (m: Match) => void;
@@ -755,6 +756,19 @@ function MatchRow({
   const isFinished = m.status === "finished";
   const isUpcoming = m.status === "upcoming";
 
+  // Comments window: live / halftime / finished always, upcoming within 2h of kickoff
+  const commentsEnabled = (() => {
+    if (isLive || isFinished) return true;
+    if (!isUpcoming || !m.startTime) return false;
+    const match = /^(\d{1,2}):(\d{2})/.exec(m.startTime);
+    if (!match) return false;
+    const now = new Date();
+    const kickoff = new Date();
+    kickoff.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
+    const diffMs = kickoff.getTime() - now.getTime();
+    return diffMs <= 2 * 60 * 60 * 1000 && diffMs > -3 * 60 * 60 * 1000;
+  })();
+
   return (
     <div 
       onClick={() => onSelect(m)} 
@@ -763,7 +777,7 @@ function MatchRow({
         showGoalIndicator && "bg-success/10 border-l-2 border-success"
       )}
     >
-      <div className="grid grid-cols-[68px_1fr_52px_1fr_72px] sm:grid-cols-[80px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
+      <div className="grid grid-cols-[100px_1fr_52px_1fr_72px] sm:grid-cols-[116px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
         {/* Actions */}
         <div className="flex items-center gap-0.5">
           <button 
@@ -779,6 +793,14 @@ function MatchRow({
             hasAlert={hasAlert} 
             onClick={e => { e.stopPropagation(); toggleMatchAlert(); }} 
           />
+          {commentsEnabled && (
+            <MatchCommentsButton
+              matchId={m.id}
+              homeTeam={m.homeTeam}
+              awayTeam={m.awayTeam}
+              matchLabel={isLive ? `${m.minute ?? 0}'` : isFinished ? "FT" : m.startTime}
+            />
+          )}
         </div>
 
         {/* Home Team */}
