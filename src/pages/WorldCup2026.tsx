@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
@@ -205,11 +206,6 @@ export default function WorldCup2026() {
     md2: [] as typeof GROUP_MATCHES,  // Will be filled when schedule confirmed
     md3: [] as typeof GROUP_MATCHES,
   };
-
-  // If a team is selected, show the team page
-  if (selectedTeam) {
-    return <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -937,6 +933,18 @@ export default function WorldCup2026() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Team Profile — bottom sheet */}
+      <Sheet open={!!selectedTeam} onOpenChange={(o) => !o && setSelectedTeam(null)}>
+        <SheetContent
+          side="bottom"
+          className="h-[95vh] p-0 overflow-y-auto rounded-t-2xl border-t border-border bg-background"
+        >
+          {selectedTeam && (
+            <WorldCupTeamPage team={selectedTeam} onBack={() => setSelectedTeam(null)} />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
