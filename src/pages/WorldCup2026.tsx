@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import heroImage from "@/assets/world-cup-hero.jpg";
 import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
