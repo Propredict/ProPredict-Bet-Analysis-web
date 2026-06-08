@@ -350,9 +350,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             </span>
           </div>
           {tip.odds > 0 && (
-            <div className="flex flex-col items-center justify-center min-w-[64px] px-3 rounded-lg border border-success/40 bg-background/40">
-              <span className="text-base font-black text-success leading-none">{tip.odds.toFixed(2)}</span>
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">Odds</span>
+            <div className="flex flex-col items-center justify-center min-w-[52px] px-2 rounded-lg border border-success/40 bg-background/40">
+              <span className="text-xs font-black text-success leading-none">{tip.odds.toFixed(2)}</span>
+              <span className="text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">Odds</span>
             </div>
           )}
         </div>
