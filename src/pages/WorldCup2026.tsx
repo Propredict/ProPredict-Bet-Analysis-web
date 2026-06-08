@@ -850,6 +850,17 @@ export default function WorldCup2026() {
         </TabsContent>
 
         {/* ==================== TEAMS ==================== */}
+        {/* ==================== TOP PLAYERS ==================== */}
+        <TabsContent value="top-players" className="mt-0 px-3">
+          {/* Web Free: locked */}
+          {!isApp && !isPro && (
+            <div className="mt-4">
+              <AppLockOverlay message="Top Players stats available in app" />
+            </div>
+          )}
+          {(isApp || isPro) && <WCTopPlayersTab />}
+        </TabsContent>
+
         <TabsContent value="teams" className="mt-0 px-3">
           <div className="mt-4">
             {/* App: Free users — locked */}
