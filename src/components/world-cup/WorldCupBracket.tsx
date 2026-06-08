@@ -1,8 +1,44 @@
-import { Trophy, Lock, Calendar, MapPin, Zap } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Trophy, Lock, Calendar, MapPin, Zap, Target } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWorldCupBracket, type BracketMatch, type BracketRound } from "@/hooks/useWorldCupBracket";
+import { useChampionPrediction } from "@/hooks/useChampionPrediction";
+import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
+import type { Match, MatchStatus } from "@/hooks/useLiveScores";
+
+function statusToMatchStatus(s: string): MatchStatus {
+  if (["1H", "2H", "ET", "P", "LIVE", "BT"].includes(s)) return "live";
+  if (s === "HT") return "halftime";
+  if (["FT", "AET", "PEN"].includes(s)) return "finished";
+  return "upcoming";
+}
+
+function bracketToMatch(b: BracketMatch): Match | null {
+  if (!b.fixture_id) return null;
+  const status = statusToMatchStatus(b.status);
+  const startTime = b.date
+    ? new Date(b.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+    : "";
+  return {
+    id: String(b.fixture_id),
+    homeTeam: b.home.name ?? "TBD",
+    awayTeam: b.away.name ?? "TBD",
+    homeTeamId: b.home.id ?? 0,
+    awayTeamId: b.away.id ?? 0,
+    homeScore: b.home_score,
+    awayScore: b.away_score,
+    status,
+    minute: null,
+    startTime,
+    league: "FIFA World Cup 2026",
+    leagueCountry: "World",
+    leagueLogo: null,
+    homeLogo: b.home.logo,
+    awayLogo: b.away.logo,
+  };
+}
 
 const ROUND_LABEL: Record<BracketRound, string> = {
   Final: "Final",
@@ -49,10 +85,12 @@ function MatchCard({
   match,
   size = "md",
   onClick,
+  isPick = false,
 }: {
   match: BracketMatch | null;
   size?: "sm" | "md" | "lg";
   onClick?: () => void;
+  isPick?: boolean;
 }) {
   const empty = !match;
   const live = match ? isLive(match.status) : false;
@@ -75,7 +113,9 @@ function MatchCard({
           ? "border-dashed border-border/40 bg-muted/10"
           : live
             ? "border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_20px_-8px_rgba(16,185,129,0.4)]"
-            : "border-border/60 bg-card/80 hover:border-primary/40 hover:bg-primary/5"
+            : isPick
+              ? "border-amber-500/60 bg-amber-500/5 shadow-[0_0_24px_-8px_rgba(245,158,11,0.5)] hover:border-amber-400/80 hover:bg-amber-500/10"
+              : "border-border/60 bg-card/80 hover:border-primary/40 hover:bg-primary/5"
       } ${onClick && !empty ? "cursor-pointer" : "cursor-default"}`}
     >
       {empty ? (
@@ -85,6 +125,14 @@ function MatchCard({
         </div>
       ) : (
         <>
+          {isPick && (
+            <div className="flex items-center justify-end mb-1 -mt-0.5">
+              <Badge variant="outline" className="text-[8px] h-3.5 px-1 border-amber-500/60 text-amber-400 gap-0.5">
+                <Target className="h-2 w-2" />
+                Your Pick
+              </Badge>
+            </div>
+          )}
           {/* Home team */}
           <div
             className={`flex items-center justify-between gap-2 ${
