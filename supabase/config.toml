@@ -86,3 +86,4 @@ verify_jwt = false
 
 [functions.get-wc-top-players]
 verify_jwt = false
+
