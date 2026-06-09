@@ -414,10 +414,12 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               For locked Pro/Premium cards we replace it with a generic teaser
               so the actual combo (e.g. "DC 1X + Over 1.5") doesn't leak through the blur. */}
           {parsedTags.safeCombo && displayTier === "premium" && hasAccess && (
-            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
-              <Sparkles className="w-3 h-3 text-fuchsia-400" />
-              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400">RISK COMBO:</span>
-              <span className="text-[9px] md:text-[10px] font-bold text-foreground">{parsedTags.safeCombo}</span>
+            <div className="flex flex-col items-center justify-center gap-1 pt-2 pb-1">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-fuchsia-400" />
+                <span className="text-sm md:text-base font-semibold text-fuchsia-400 uppercase tracking-wider">Risk Combo</span>
+              </div>
+              <span className="text-lg md:text-xl font-bold text-foreground text-center">{parsedTags.safeCombo}</span>
             </div>
           )}
           {parsedTags.safeCombo && displayTier === "premium" && !hasAccess && (
