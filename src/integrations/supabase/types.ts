@@ -1102,6 +1102,84 @@ export type Database = {
         }
         Relationships: []
       }
+      wc_champion_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          reward_granted: boolean
+          reward_tier: string | null
+          team_code: string | null
+          team_flag: string | null
+          team_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          reward_granted?: boolean
+          reward_tier?: string | null
+          team_code?: string | null
+          team_flag?: string | null
+          team_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          reward_granted?: boolean
+          reward_tier?: string | null
+          team_code?: string | null
+          team_flag?: string | null
+          team_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wc_champion_settings: {
+        Row: {
+          created_at: string
+          finalist_team: string | null
+          fourth_place_team: string | null
+          id: string
+          resolved_at: string | null
+          status: string
+          third_place_team: string | null
+          updated_at: string
+          voting_deadline: string
+          winner_team: string | null
+        }
+        Insert: {
+          created_at?: string
+          finalist_team?: string | null
+          fourth_place_team?: string | null
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          third_place_team?: string | null
+          updated_at?: string
+          voting_deadline?: string
+          winner_team?: string | null
+        }
+        Update: {
+          created_at?: string
+          finalist_team?: string | null
+          fourth_place_team?: string | null
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          third_place_team?: string | null
+          updated_at?: string
+          voting_deadline?: string
+          winner_team?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       active_arena_season: {
@@ -1467,10 +1545,29 @@ export type Database = {
       }
     }
     Functions: {
+      cast_champion_vote: {
+        Args: {
+          p_team_code?: string
+          p_team_flag?: string
+          p_team_name: string
+        }
+        Returns: Json
+      }
       claim_daily_reward: { Args: never; Returns: Json }
       create_monthly_arena_season: { Args: never; Returns: undefined }
       ensure_arena_user_stats: { Args: never; Returns: undefined }
+      get_champion_leaderboard: {
+        Args: never
+        Returns: {
+          percentage: number
+          team_code: string
+          team_flag: string
+          team_name: string
+          votes: number
+        }[]
+      }
       get_daily_reward_status: { Args: never; Returns: Json }
+      get_my_champion_prediction: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
