@@ -222,7 +222,7 @@ const Index = () => {
                 Top 30 AI Picks
               </h3>
               <button
-                onClick={() => navigate("/ai-predictions?tab=top-picks")}
+                onClick={() => navigate("/match-previews")}
                 className="w-full rounded-2xl border-2 border-primary/50 bg-gradient-to-br from-primary/20 via-card to-card p-5 text-center shadow-[0_0_30px_rgba(15,155,142,0.35)] active:scale-[0.99] transition-transform"
               >
                 <div className="flex flex-col items-center gap-3">
