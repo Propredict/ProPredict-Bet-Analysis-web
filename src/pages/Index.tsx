@@ -217,24 +217,22 @@ const Index = () => {
             </Suspense>
 
             {/* Top 30 AI Picks */}
-            <div className="space-y-2">
-              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+            <div className="space-y-3">
+              <h3 className="text-2xl font-extrabold text-white text-center tracking-tight">
                 Top 30 AI Picks
               </h3>
               <button
                 onClick={() => navigate("/ai-predictions?tab=top-picks")}
-                className="w-full rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-4 text-left shadow-[0_0_20px_rgba(15,155,142,0.25)] active:scale-[0.99] transition-transform"
+                className="w-full rounded-2xl border-2 border-primary/50 bg-gradient-to-br from-primary/20 via-card to-card p-5 text-center shadow-[0_0_30px_rgba(15,155,142,0.35)] active:scale-[0.99] transition-transform"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-extrabold text-foreground">
-                      🏆 Top 30 AI Picks of the Day
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Highest-confidence picks ranked by our AI.
-                    </p>
-                  </div>
-                  <span className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold whitespace-nowrap shadow-md">
+                <div className="flex flex-col items-center gap-3">
+                  <p className="text-lg font-extrabold text-foreground">
+                    🏆 Top 30 AI Picks of the Day
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Highest-confidence picks ranked by our AI.
+                  </p>
+                  <span className="mt-1 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-base font-extrabold whitespace-nowrap shadow-lg">
                     See all →
                   </span>
                 </div>
