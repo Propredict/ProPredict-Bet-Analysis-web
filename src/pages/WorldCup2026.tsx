@@ -602,19 +602,28 @@ export default function WorldCup2026() {
                     </div>
                   </div>
 
-                  {/* === BASIC: Over/Under + BTTS (visible for pro/ad-unlocked) === */}
-                  {showBasic && (
-                    <div className="grid grid-cols-2 gap-2 text-center mb-2">
-                      <div className="bg-muted/20 rounded p-1.5">
-                        <p className="text-xs font-bold text-foreground">{pred.homeWin > 40 ? "Over" : "Under"} 2.5</p>
-                        <p className="text-[9px] text-muted-foreground">Goals</p>
+                  {/* === BASIC: Over/Under + BTTS (derived from predicted score for consistency) === */}
+                  {showBasic && (() => {
+                    const scoreStr = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
+                    const m = scoreStr.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                    const hg = m ? parseInt(m[1], 10) : 1;
+                    const ag = m ? parseInt(m[2], 10) : 1;
+                    const total = hg + ag;
+                    const overUnder = total >= 3 ? "Over" : "Under";
+                    const btts = hg >= 1 && ag >= 1 ? "Yes" : "No";
+                    return (
+                      <div className="grid grid-cols-2 gap-2 text-center mb-2">
+                        <div className="bg-muted/20 rounded p-1.5">
+                          <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
+                          <p className="text-[9px] text-muted-foreground">Goals</p>
+                        </div>
+                        <div className="bg-muted/20 rounded p-1.5">
+                          <p className="text-xs font-bold text-foreground">{btts}</p>
+                          <p className="text-[9px] text-muted-foreground">BTTS</p>
+                        </div>
                       </div>
-                      <div className="bg-muted/20 rounded p-1.5">
-                        <p className="text-xs font-bold text-foreground">{pred.draw > 25 ? "Yes" : "No"}</p>
-                        <p className="text-[9px] text-muted-foreground">BTTS</p>
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* === ADVANCED: Premium section (blurred for non-premium) === */}
                   {showBasic && (
