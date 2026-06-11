@@ -4,9 +4,68 @@ import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures, type WCTodayFixture } from "@/hooks/useWCTodayFixtures";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { MatchCommentsButton } from "@/components/match-comments/MatchCommentsButton";
+import { GROUP_MATCHES } from "@/data/worldCup2026";
 
 interface Props {
   onMatchClick?: (fixtureId: string) => void;
+}
+
+// ===== Fallback: derive today's WC fixtures from the static schedule
+// when the API-Football endpoint hasn't published WC 2026 fixtures yet.
+const MONTHS: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
+
+function parseCetToISO(dateStr: string, timeStr: string): string | null {
+  // dateStr e.g. "Jun 11", timeStr e.g. "21:00" (CET / CEST = UTC+2 in June)
+  const parts = dateStr.trim().split(/\s+/);
+  if (parts.length !== 2) return null;
+  const month = MONTHS[parts[0]];
+  const day = parseInt(parts[1], 10);
+  const [hh, mm] = timeStr.split(":").map((n) => parseInt(n, 10));
+  if (month === undefined || isNaN(day) || isNaN(hh)) return null;
+  // June is CEST (UTC+2). Build UTC by subtracting 2h.
+  const d = new Date(Date.UTC(2026, month, day, hh - 2, mm || 0, 0));
+  return d.toISOString();
+}
+
+function buildStaticTodayFallback(): WCTodayFixture[] {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = today.getMonth();
+  const d = today.getDate();
+
+  return GROUP_MATCHES
+    .map((gm, idx) => {
+      const iso = parseCetToISO(gm.date, gm.time);
+      if (!iso) return null;
+      const kickoff = new Date(iso);
+      // Use the LOCAL day in the user's timezone — matches "today" from their POV.
+      if (
+        kickoff.getFullYear() !== y ||
+        kickoff.getMonth() !== m ||
+        kickoff.getDate() !== d
+      ) return null;
+      const fixture: WCTodayFixture = {
+        id: `static-${idx}-${gm.home}-${gm.away}`,
+        homeTeam: gm.home,
+        awayTeam: gm.away,
+        homeLogo: null,
+        awayLogo: null,
+        homeScore: null,
+        awayScore: null,
+        status: "upcoming",
+        statusShort: "NS",
+        minute: null,
+        startTime: iso,
+        venue: gm.venue,
+        round: `Group ${gm.group}`,
+      };
+      return fixture;
+    })
+    .filter((f): f is WCTodayFixture => f !== null)
+    .sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""));
 }
 
 function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
@@ -77,7 +136,10 @@ function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
 
 export default function WCLiveNowSection({ onMatchClick }: Props) {
   const { data, isLoading } = useWCTodayFixtures();
-  const fixtures = data?.fixtures ?? [];
+  const apiFixtures = data?.fixtures ?? [];
+  // If API has no WC fixtures (e.g. tournament not yet indexed on API-Football),
+  // fall back to the static schedule so today's matches still appear.
+  const fixtures = apiFixtures.length > 0 ? apiFixtures : buildStaticTodayFallback();
 
   if (isLoading) {
     return (
