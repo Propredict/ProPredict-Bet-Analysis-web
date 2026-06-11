@@ -116,7 +116,7 @@ export function MatchCommentsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[85vh] max-h-[85vh] flex flex-col p-0 gap-0 border-t border-primary/20"
+        className="h-[85dvh] max-h-[85dvh] flex flex-col p-0 gap-0 border-t border-primary/20"
       >
         <SheetHeader className="px-4 py-3 border-b border-border/60 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <SheetTitle className="text-sm sm:text-base flex items-center gap-2">
