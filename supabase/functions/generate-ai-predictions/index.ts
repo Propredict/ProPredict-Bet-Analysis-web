@@ -8219,13 +8219,22 @@ async function processBatch(
       // SAVE IMMEDIATELY after each item (incremental saving)
       // FREEZE if: (a) user already unlocked this pick, OR
       // (b) kickoff is within 5 hours — protects users who saw the pick
-      // shortly before the match from a last-minute change.
+      //     shortly before the match from a last-minute change, OR
+      // (c) match is a World Cup fixture AND a pick already exists —
+      //     WC predictions are generated ONCE (day of match, accurate data)
+      //     and must never change so users get a stable pick all day long.
       const kickoffIso = fixture?.fixture?.date;
       const hoursToKickoffFreeze = kickoffIso
         ? (new Date(kickoffIso).getTime() - Date.now()) / 3600000
         : 999;
       const nearKickoff = hoursToKickoffFreeze <= 5;
-      const isFrozen = unlockedPredictionIds.has(String(pred.id)) || nearKickoff;
+      const leagueName = (fixture?.league?.name || pred.league || "").toLowerCase();
+      const isWorldCup = leagueName.includes("world cup");
+      const wcAlreadyPicked = isWorldCup && !!pred.prediction;
+      const isFrozen =
+        unlockedPredictionIds.has(String(pred.id)) ||
+        nearKickoff ||
+        wcAlreadyPicked;
       const updatePayload: Record<string, any> = {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
@@ -8255,9 +8264,11 @@ async function processBatch(
         updatePayload.prediction = newPrediction.prediction;
         updatePayload.predicted_score = newPrediction.predicted_score;
       } else {
-        const reason = nearKickoff
-          ? `kickoff in ${hoursToKickoffFreeze.toFixed(1)}h (<5h cutoff)`
-          : "already unlocked by user(s)";
+        const reason = wcAlreadyPicked
+          ? "World Cup match — pick locked for the day"
+          : nearKickoff
+            ? `kickoff in ${hoursToKickoffFreeze.toFixed(1)}h (<5h cutoff)`
+            : "already unlocked by user(s)";
         console.log(`[FREEZE] ${fixtureIdStr}: keeping original pick "${pred.prediction}" / score "${pred.predicted_score}" — ${reason}`);
       }
       const { error: updateError } = await supabase
