@@ -563,6 +563,17 @@ export default function WorldCup2026() {
                     <Smartphone className="h-3 w-3" /> Better live experience in app
                   </div>
                 )}
+                {appCanSeeBasic && (
+                  <Button
+                    onClick={() => {
+                      handleTabChange("predictions");
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-semibold text-xs h-9"
+                  >
+                    <Brain className="h-3.5 w-3.5 mr-1.5" /> Check Full AI Prediction
+                  </Button>
+                )}
               </div>
             </Card>
           </section>
