@@ -364,7 +364,6 @@ export default function WorldCup2026() {
             { value: "standings", label: "Standings", icon: BarChart3 },
             { value: "top-players", label: "Top Players", icon: Award },
             { value: "stats", label: "Stats", icon: Activity },
-            { value: "teams", label: "Teams", icon: Users },
           ].map(tab => (
             <TabsTrigger key={tab.value} value={tab.value} className="text-[11px] px-2.5 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1 whitespace-nowrap">
               <tab.icon className="h-3 w-3" />
