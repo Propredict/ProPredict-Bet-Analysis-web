@@ -1,10 +1,12 @@
 import { Lock, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface AppLockOverlayProps {
   message: string;
   buttonText?: string;
   compact?: boolean;
+  hidePremium?: boolean;
 }
 
 const openPlayStore = () => {
@@ -15,7 +17,7 @@ const openPlayStore = () => {
   }
 };
 
-export default function AppLockOverlay({ message, buttonText = "Open App to Unlock", compact = false }: AppLockOverlayProps) {
+export default function AppLockOverlay({ message, buttonText = "Open App to Unlock", compact = false, hidePremium = false }: AppLockOverlayProps) {
   return (
     <div className="relative rounded-lg border border-border bg-card/80 backdrop-blur-sm overflow-hidden">
       <div className={`flex flex-col items-center justify-center text-center ${compact ? "py-4 px-3" : "py-6 px-4"}`}>
@@ -27,6 +29,14 @@ export default function AppLockOverlay({ message, buttonText = "Open App to Unlo
           <Smartphone className="h-3.5 w-3.5" />
           {buttonText}
         </Button>
+        {!hidePremium && (
+          <Link
+            to="/get-premium"
+            className="mt-2 text-[11px] font-medium bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent hover:underline"
+          >
+            or Get Premium
+          </Link>
+        )}
         <p className="text-[9px] text-muted-foreground/60 mt-2">Free predictions + live tracking in app</p>
       </div>
     </div>
