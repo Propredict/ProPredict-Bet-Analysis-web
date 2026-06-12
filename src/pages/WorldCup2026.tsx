@@ -364,7 +364,6 @@ export default function WorldCup2026() {
             { value: "standings", label: "Standings", icon: BarChart3 },
             { value: "top-players", label: "Top Players", icon: Award },
             { value: "stats", label: "Stats", icon: Activity },
-            { value: "teams", label: "Teams", icon: Users },
           ].map(tab => (
             <TabsTrigger key={tab.value} value={tab.value} className="text-[11px] px-2.5 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1 whitespace-nowrap">
               <tab.icon className="h-3 w-3" />
@@ -1064,65 +1063,6 @@ export default function WorldCup2026() {
         {/* ==================== TOURNAMENT STATS ==================== */}
         <TabsContent value="stats" className="mt-0 px-3">
           <WCTournamentStatsTab />
-        </TabsContent>
-
-        <TabsContent value="teams" className="mt-0 px-3">
-          <div className="mt-4">
-            {/* App: Free users — locked */}
-            {isApp && !isPro && (
-              <Card className="bg-card border-border p-5 text-center">
-                <Lock className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-foreground mb-1">Teams Locked</p>
-                <p className="text-[10px] text-muted-foreground mb-3">Upgrade to Pro or Premium to unlock full team data</p>
-                <Button onClick={() => navigate("/get-premium")} size="sm" className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                  <Zap className="h-3.5 w-3.5 mr-1.5" /> Upgrade to Pro / Premium
-                </Button>
-              </Card>
-            )}
-            {/* Web: Free users — locked */}
-            {!isApp && !isPro && (
-              <Card className="bg-card border-border p-5 text-center">
-                <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm font-semibold text-foreground mb-1">Teams Locked</p>
-                <AppLockOverlay message="Full team data available in app" compact />
-              </Card>
-            )}
-            {/* Pro/Premium — show teams */}
-            {isPro && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Search teams..."
-                  value={teamsSearch}
-                  onChange={e => setTeamsSearch(e.target.value)}
-                  className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground mb-3 outline-none focus:border-primary/50"
-                />
-                <div className="space-y-1.5">
-                  {filteredTeams.map(({ team, group }) => {
-                    const td = TEAMS[team];
-                    return (
-                      <Card key={team} className="bg-card border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
-                        onClick={() => setSelectedTeam(team)}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            {td && <TeamFlag code={td.code} size="md" />}
-                            <div>
-                              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                {team}
-                                {td?.debut && <Badge className="bg-yellow-500/20 text-yellow-400 text-[8px] px-1 py-0 border-yellow-500/30">DEBUT</Badge>}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground">Group {group} · #{td?.fifaRank}</p>
-                            </div>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
         </TabsContent>
       </Tabs>
 
