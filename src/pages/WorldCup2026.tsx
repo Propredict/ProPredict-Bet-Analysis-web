@@ -557,7 +557,7 @@ export default function WorldCup2026() {
                       <Zap className="h-3.5 w-3.5 mr-1.5" /> See Prediction — Get Premium
                     </Button>
                     <button
-                      onClick={() => navigate("/ai-predictions")}
+                      onClick={() => navigate("/world-cup-2026?tab=predictions")}
                       className="w-full mt-2 text-[11px] text-fuchsia-400 hover:text-fuchsia-300 underline underline-offset-2 font-medium"
                     >
                       See All Picks →
