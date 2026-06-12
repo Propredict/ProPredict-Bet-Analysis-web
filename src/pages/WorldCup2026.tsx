@@ -552,8 +552,8 @@ export default function WorldCup2026() {
                 </div>
                 {/* App: Free user watch ad CTA */}
                 {isApp && !appCanSeeBasic && (
-                  <Button onClick={handleWatchAd} disabled={adLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs mt-2">
-                    <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading Ad…" : "Watch Ad to Unlock Predictions"}
+                  <Button onClick={() => navigate("/get-premium")} className="w-full bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold text-xs mt-2">
+                    <Zap className="h-3.5 w-3.5 mr-1.5" /> See Prediction — Get Premium
                   </Button>
                 )}
                 {/* Web: Free user lock overlay */}
