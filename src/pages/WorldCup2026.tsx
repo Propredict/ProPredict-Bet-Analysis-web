@@ -956,6 +956,22 @@ export default function WorldCup2026() {
                 )}
                 {Object.entries(GROUPS).map(([group, teams]) => {
                   const liveGroup = liveStandings?.standings?.[group];
+                  const sortedTeams = [...teams].sort((a, b) => {
+                    const la = liveGroup?.find(lt =>
+                      lt.team.toLowerCase().includes(a.toLowerCase()) ||
+                      a.toLowerCase().includes(lt.team.toLowerCase())
+                    );
+                    const lb = liveGroup?.find(lt =>
+                      lt.team.toLowerCase().includes(b.toLowerCase()) ||
+                      b.toLowerCase().includes(lt.team.toLowerCase())
+                    );
+                    const pa = la?.points ?? 0, pb = lb?.points ?? 0;
+                    if (pb !== pa) return pb - pa;
+                    const gda = la?.goalsDiff ?? 0, gdb = lb?.goalsDiff ?? 0;
+                    if (gdb !== gda) return gdb - gda;
+                    const wa = la?.win ?? 0, wb = lb?.win ?? 0;
+                    return wb - wa;
+                  });
                   return (
                     <Card key={group} className="bg-card border-border overflow-hidden">
                       <div className="px-3 py-2 bg-muted/30 border-b border-border">
@@ -969,7 +985,7 @@ export default function WorldCup2026() {
                           <span className="text-center">GD</span>
                           <span className="text-center">Pts</span>
                         </div>
-                        {teams.map((t, idx) => {
+                        {sortedTeams.map((t, idx) => {
                           const td = TEAMS[t];
                           const live = liveGroup?.find(lt => 
                             lt.team.toLowerCase().includes(t.toLowerCase()) || 
