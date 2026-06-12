@@ -565,6 +565,77 @@ export type Database = {
         }
         Relationships: []
       }
+      match_comment_reports: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          reporter_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reporter_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "match_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_comments: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          edited: boolean
+          id: string
+          match_id: string
+          reported_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited?: boolean
+          id?: string
+          match_id: string
+          reported_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited?: boolean
+          id?: string
+          match_id?: string
+          reported_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_previews: {
         Row: {
           away_form: string | null
