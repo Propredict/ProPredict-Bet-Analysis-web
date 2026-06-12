@@ -552,9 +552,17 @@ export default function WorldCup2026() {
                 </div>
                 {/* App: Free user watch ad CTA */}
                 {isApp && !appCanSeeBasic && (
-                  <Button onClick={() => navigate("/get-premium")} className="w-full bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold text-xs mt-2">
-                    <Zap className="h-3.5 w-3.5 mr-1.5" /> See Prediction — Get Premium
-                  </Button>
+                  <>
+                    <Button onClick={() => navigate("/get-premium")} className="w-full bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold text-xs mt-2">
+                      <Zap className="h-3.5 w-3.5 mr-1.5" /> See Prediction — Get Premium
+                    </Button>
+                    <button
+                      onClick={() => navigate("/ai-predictions")}
+                      className="w-full mt-2 text-[11px] text-fuchsia-400 hover:text-fuchsia-300 underline underline-offset-2 font-medium"
+                    >
+                      See All Picks →
+                    </button>
+                  </>
                 )}
                 {/* Web: Free user lock overlay */}
                 {!isApp && !isPro && <AppLockOverlay message="Full match details available in app" buttonText="Open App & Unlock" compact />}
