@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageCircle, Smartphone } from "lucide-react";
+import { MessageCircle, Smartphone, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCommentsSheet } from "./MatchCommentsSheet";
@@ -14,6 +14,9 @@ interface Props {
   className?: string;
   /** "icon" (default) = compact square; "pill" = wider pill with label */
   variant?: "icon" | "pill";
+  /** When provided, button becomes controlled and parent renders inline comments below. */
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
 /**
@@ -27,11 +30,14 @@ export function MatchCommentsButton({
   matchLabel,
   className,
   variant = "icon",
+  expanded,
+  onToggleExpanded,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
   const [webNoteOpen, setWebNoteOpen] = useState(false);
   const isAndroidApp = getIsAndroidApp();
+  const isControlled = typeof onToggleExpanded === "function";
 
   // Lightweight count fetch + realtime increment
   useEffect(() => {
@@ -91,6 +97,9 @@ export function MatchCommentsButton({
             {count != null && count > 0 ? `Comments · ${count > 99 ? "99+" : count}` : "Comments"}
           </span>
         )}
+        {isPill && isControlled && isAndroidApp && (
+          expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+        )}
         {!isPill && count != null && count > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border border-background">
             {count > 99 ? "99+" : count}
@@ -145,6 +154,23 @@ export function MatchCommentsButton({
           </div>
         </PopoverContent>
       </Popover>
+    );
+  }
+
+  // Android + controlled by parent: just toggle inline section, no sheet.
+  if (isControlled) {
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleExpanded!();
+        }}
+        aria-label="Toggle match comments"
+        aria-expanded={!!expanded}
+        className={triggerClass}
+      >
+        {inner}
+      </button>
     );
   }
 

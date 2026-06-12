@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Radio, Clock, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures, type WCTodayFixture } from "@/hooks/useWCTodayFixtures";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { MatchCommentsButton } from "@/components/match-comments/MatchCommentsButton";
+import { MatchCommentsInline } from "@/components/match-comments/MatchCommentsInline";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { GROUP_MATCHES } from "@/data/worldCup2026";
 
 interface Props {
@@ -72,6 +75,8 @@ function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
   const isLive = f.status === "live" || f.status === "halftime";
   const isFinished = f.status === "finished";
   const hasScore = f.homeScore !== null && f.awayScore !== null;
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const isAndroidApp = getIsAndroidApp();
 
   return (
     <div
@@ -128,8 +133,15 @@ function MatchRow({ f, onClick }: { f: WCTodayFixture; onClick?: () => void }) {
           awayTeam={f.awayTeam}
           matchLabel={isLive ? (f.status === "halftime" ? "HT" : `${f.minute ?? 0}'`) : isFinished ? "FT" : f.startTime ? formatMatchTime(f.startTime) : undefined}
           variant="pill"
+          expanded={isAndroidApp ? commentsOpen : undefined}
+          onToggleExpanded={isAndroidApp ? () => setCommentsOpen((v) => !v) : undefined}
         />
       </div>
+      {isAndroidApp && commentsOpen && (
+        <div className="-mx-2.5 -mb-2.5 mt-2 overflow-hidden rounded-b-lg">
+          <MatchCommentsInline matchId={f.id} enabled={commentsOpen} />
+        </div>
+      )}
     </div>
   );
 }
