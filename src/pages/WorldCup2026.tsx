@@ -755,6 +755,17 @@ export default function WorldCup2026() {
                     </div>
                   </div>
 
+                  {/* Premium upsell line under percentages */}
+                  {!appCanSeeAdvanced && (
+                    <button
+                      onClick={() => navigate("/get-premium")}
+                      className="w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-fuchsia-400 hover:text-fuchsia-300 mb-2"
+                    >
+                      <Lock className="h-2.5 w-2.5" />
+                      Full analysis available for Premium users
+                    </button>
+                  )}
+
                   {/* === BASIC: Over/Under + BTTS (derived from predicted score for consistency) === */}
                   {showBasic && (() => {
                     const scoreStr = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
