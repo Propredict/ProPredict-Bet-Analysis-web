@@ -437,24 +437,56 @@ export default function WorldCup2026() {
             </h2>
             <Card className="bg-card border-border overflow-hidden">
               <div className="p-4">
-                <div className="text-[10px] text-muted-foreground mb-1 text-center">{FEATURED_MATCH.league}</div>
+                <div className="text-[10px] text-muted-foreground mb-1 text-center flex items-center justify-center gap-1.5">
+                  {featured.isLive && (
+                    <Badge className="bg-destructive text-destructive-foreground border-0 text-[9px] px-1.5 py-0 h-4 gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                      {featured.statusShort === "HT" ? "HT" : `LIVE ${featured.minute ?? 0}'`}
+                    </Badge>
+                  )}
+                  <span>{featured.league}</span>
+                </div>
                 <div className="text-[10px] text-muted-foreground mb-2 text-center flex items-center justify-center gap-1">
-                  <MapPin className="h-3 w-3" /> {FEATURED_MATCH.venue}
+                  <MapPin className="h-3 w-3" /> {featured.venue}
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex-1 text-center">
-                    <div className="mb-1">{TEAMS[FEATURED_MATCH.homeTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.homeTeam].code} size="lg" />}</div>
-                    <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.homeTeam}</p>
-                    <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.homeTeam]?.fifaRank}</p>
+                    <div className="mb-1 flex justify-center">
+                      {TEAMS[featured.homeTeam] ? (
+                        <TeamFlag code={TEAMS[featured.homeTeam].code} size="lg" />
+                      ) : featured.homeLogo ? (
+                        <img src={featured.homeLogo} alt={featured.homeTeam} className="h-10 w-10 object-contain" loading="lazy" />
+                      ) : null}
+                    </div>
+                    <p className="text-sm font-bold text-foreground">{featured.homeTeam}</p>
+                    {TEAMS[featured.homeTeam] && (
+                      <p className="text-[10px] text-muted-foreground">#{TEAMS[featured.homeTeam]?.fifaRank}</p>
+                    )}
                   </div>
                   <div className="flex flex-col items-center px-4">
-                    <span className="text-xs text-muted-foreground">{FEATURED_MATCH.date}</span>
-                    <span className="text-lg font-bold text-primary">{FEATURED_MATCH.time}</span>
+                    {featured.isLive && featured.homeScore !== null && featured.awayScore !== null ? (
+                      <span className="text-2xl font-black tabular-nums text-destructive">
+                        {featured.homeScore} - {featured.awayScore}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-xs text-muted-foreground">{featured.dateLabel}</span>
+                        <span className="text-lg font-bold text-primary">{featured.timeLabel}</span>
+                      </>
+                    )}
                   </div>
                   <div className="flex-1 text-center">
-                    <div className="mb-1">{TEAMS[FEATURED_MATCH.awayTeam] && <TeamFlag code={TEAMS[FEATURED_MATCH.awayTeam].code} size="lg" />}</div>
-                    <p className="text-sm font-bold text-foreground">{FEATURED_MATCH.awayTeam}</p>
-                    <p className="text-[10px] text-muted-foreground">#{TEAMS[FEATURED_MATCH.awayTeam]?.fifaRank}</p>
+                    <div className="mb-1 flex justify-center">
+                      {TEAMS[featured.awayTeam] ? (
+                        <TeamFlag code={TEAMS[featured.awayTeam].code} size="lg" />
+                      ) : featured.awayLogo ? (
+                        <img src={featured.awayLogo} alt={featured.awayTeam} className="h-10 w-10 object-contain" loading="lazy" />
+                      ) : null}
+                    </div>
+                    <p className="text-sm font-bold text-foreground">{featured.awayTeam}</p>
+                    {TEAMS[featured.awayTeam] && (
+                      <p className="text-[10px] text-muted-foreground">#{TEAMS[featured.awayTeam]?.fifaRank}</p>
+                    )}
                   </div>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 mb-3">
