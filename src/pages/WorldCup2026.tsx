@@ -692,9 +692,15 @@ export default function WorldCup2026() {
             )}
 
             {AI_PREDICTIONS.filter((p) => {
-              // Hide matches that already finished (kickoff + 2h30m < now).
-              if (!p.kickoffTs) return true;
-              return p.kickoffTs + 2.5 * 60 * 60 * 1000 > Date.now();
+              // Show ONLY today's matches — predictions for future days aren't
+              // confirmed yet and get generated the night before kickoff.
+              if (!p.kickoffTs) return false;
+              const now = new Date();
+              const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+              const endOfToday = startOfToday + 24 * 60 * 60 * 1000;
+              // Hide already-finished matches (kickoff + 2h30m < now).
+              if (p.kickoffTs + 2.5 * 60 * 60 * 1000 < Date.now()) return false;
+              return p.kickoffTs >= startOfToday && p.kickoffTs < endOfToday;
             }).map((mockPred, i) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
