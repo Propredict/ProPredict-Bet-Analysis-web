@@ -851,7 +851,8 @@ export default function WorldCup2026() {
                   {!isApp && !showBasic && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
                 </Card>
               );
-            })}
+              });
+            })()}
           </div>
         </TabsContent>
 
