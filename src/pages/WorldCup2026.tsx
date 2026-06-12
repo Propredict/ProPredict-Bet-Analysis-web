@@ -383,6 +383,19 @@ export default function WorldCup2026() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {Object.entries(GROUPS).map(([group, teams]) => {
                 const isExpanded = expandedGroup === group;
+                const liveGroup = liveStandings?.standings?.[group];
+                const getLive = (t: string) => liveGroup?.find(lt =>
+                  lt.team.toLowerCase().includes(t.toLowerCase()) ||
+                  t.toLowerCase().includes(lt.team.toLowerCase())
+                );
+                const sortedTeams = [...teams].sort((a, b) => {
+                  const la = getLive(a), lb = getLive(b);
+                  const pa = la?.points ?? 0, pb = lb?.points ?? 0;
+                  if (pb !== pa) return pb - pa;
+                  const gda = la?.goalsDiff ?? 0, gdb = lb?.goalsDiff ?? 0;
+                  if (gdb !== gda) return gdb - gda;
+                  return (lb?.win ?? 0) - (la?.win ?? 0);
+                });
                 return (
                   <Card key={group} className="bg-card border-border cursor-pointer hover:border-primary/40 transition-colors overflow-hidden"
                     onClick={() => setExpandedGroup(isExpanded ? null : group)}>
@@ -392,8 +405,10 @@ export default function WorldCup2026() {
                         <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                       </div>
                       <div className="space-y-1">
-                        {teams.map((t, idx) => {
+                        {sortedTeams.map((t, idx) => {
                           const td = TEAMS[t];
+                          const live = getLive(t);
+                          const hasPlayed = (live?.played ?? 0) > 0;
                           return (
                             <div key={t} className={`flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded ${
                               idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === 3 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
@@ -401,7 +416,9 @@ export default function WorldCup2026() {
                               <span className="truncate flex items-center gap-1">
                                 {td && <TeamFlag code={td.code} size="sm" />} {t}
                               </span>
-                              <span className="text-[9px] font-mono">#{td?.fifaRank}</span>
+                              <span className="text-[9px] font-mono">
+                                {hasPlayed ? `${live?.points ?? 0} pts` : `#${td?.fifaRank}`}
+                              </span>
                             </div>
                           );
                         })}
