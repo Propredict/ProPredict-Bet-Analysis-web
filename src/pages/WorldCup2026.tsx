@@ -22,6 +22,8 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
+import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
+import { formatMatchTime } from "@/utils/formatMatchTime";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup, wcStrength,
