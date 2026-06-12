@@ -813,10 +813,6 @@ export default function WorldCup2026() {
                             ? real.analysis.slice(0, 180) + (real.analysis.length > 180 ? "…" : "")
                             : `Pre-tournament projection based on FIFA rankings. Live AI analysis (form, xG, odds) activates on match day. ${pred.homeWin > pred.awayWin ? pred.home : pred.away} currently holds the edge.`}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">
-                          <span className="font-medium text-foreground">Key Factors:</span>{" "}
-                          {real?.key_factors?.length ? real.key_factors.slice(0, 3).join(" • ") : "Home advantage, squad depth, tactical approach"}
-                        </div>
                       </div>
                       {/* Lock overlay for non-premium */}
                       {!appCanSeeAdvanced && (
