@@ -34,13 +34,18 @@ export function useWorldCupAIPredictions() {
     async function load() {
       setLoading(true);
       const today = new Date().toISOString().split("T")[0];
+      // Also include tomorrow's date so late-night/overnight WC matches
+      // (3-4 AM local time) can match with real AI data when stored in UTC.
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
       const { data, error } = await supabase
         .from("ai_predictions")
         .select(
           "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis, key_factors, risk_level"
         )
         .ilike("league", "%world cup%")
-        .eq("match_date", today)
+        .in("match_date", [today, tomorrow])
         .order("match_date", { ascending: true })
         .limit(64);
 
