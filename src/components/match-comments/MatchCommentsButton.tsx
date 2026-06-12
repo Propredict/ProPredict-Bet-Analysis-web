@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCommentsSheet } from "./MatchCommentsSheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 interface Props {
   matchId: string;
@@ -28,6 +30,8 @@ export function MatchCommentsButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
+  const [webNoteOpen, setWebNoteOpen] = useState(false);
+  const isAndroidApp = getIsAndroidApp();
 
   // Lightweight count fetch + realtime increment
   useEffect(() => {
@@ -67,15 +71,8 @@ export function MatchCommentsButton({
   }, [matchId]);
 
   const isPill = variant === "pill";
-  return (
-    <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        aria-label="Open match comments"
-        className={cn(
+
+  const triggerClass = cn(
           "relative flex items-center justify-center transition-all rounded-md",
           isPill
             ? "h-7 px-2.5 gap-1.5 text-[11px] font-medium"
@@ -84,9 +81,11 @@ export function MatchCommentsButton({
             ? "bg-primary/15 text-primary hover:bg-primary/25"
             : "bg-secondary text-muted-foreground hover:bg-secondary/80",
           className
-        )}
-      >
-        <MessageCircle className={cn(isPill ? "h-3.5 w-3.5" : "h-4 w-4 sm:h-[18px] sm:w-[18px]")} />
+  );
+
+  const inner = (
+    <>
+      <MessageCircle className={cn(isPill ? "h-3.5 w-3.5" : "h-4 w-4 sm:h-[18px] sm:w-[18px]")} />
         {isPill && (
           <span>
             {count != null && count > 0 ? `Comments · ${count > 99 ? "99+" : count}` : "Comments"}
@@ -97,6 +96,69 @@ export function MatchCommentsButton({
             {count > 99 ? "99+" : count}
           </span>
         )}
+    </>
+  );
+
+  if (!isAndroidApp) {
+    return (
+      <Popover open={webNoteOpen} onOpenChange={setWebNoteOpen}>
+        <PopoverTrigger asChild>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Match comments"
+            className={triggerClass}
+          >
+            {inner}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          side="bottom"
+          sideOffset={6}
+          className="w-[260px] p-3 text-xs"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start gap-2.5">
+            <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Smartphone className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="text-[12px] font-semibold text-foreground mb-0.5">
+                Available on the app
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-snug mb-2">
+                Comments are an app-only feature. Download to join the chat.
+              </p>
+              <button
+                onClick={() => {
+                  window.open(
+                    "https://play.google.com/store/apps/details?id=com.propredict.app&source=match_comments",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }}
+                className="inline-flex items-center justify-center h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-semibold hover:bg-primary/90"
+              >
+                Download the App
+              </button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  return (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        aria-label="Open match comments"
+        className={triggerClass}
+      >
+        {inner}
       </button>
       {open && (
         <MatchCommentsSheet
