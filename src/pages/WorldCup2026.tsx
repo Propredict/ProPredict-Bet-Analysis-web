@@ -206,7 +206,8 @@ export default function WorldCup2026() {
 
   // For app: free users need to watch ad, pro gets basic, premium gets all
   // For web: keep existing rules (isPro / isPremium)
-  const appCanSeeBasic = isApp ? (isPro || isPremium || adUnlockedToday) : isPro;
+  // App: only Pro/Premium see predictions (no more ad-unlock). Web: existing rules.
+  const appCanSeeBasic = isApp ? (isPro || isPremium) : isPro;
   const appCanSeeAdvanced = isPremium;
 
   useEffect(() => {
