@@ -417,7 +417,7 @@ export default function WorldCup2026() {
                                 {td && <TeamFlag code={td.code} size="sm" />} {t}
                               </span>
                               <span className="text-[9px] font-mono">
-                                {hasPlayed ? `${live?.points ?? 0} pts` : `#${td?.fifaRank}`}
+                                {hasPlayed ? `${live?.points ?? 0}` : `#${td?.fifaRank}`}
                               </span>
                             </div>
                           );
