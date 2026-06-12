@@ -8217,7 +8217,15 @@ async function processBatch(
       }
 
       // SAVE IMMEDIATELY after each item (incremental saving)
-      const isFrozen = unlockedPredictionIds.has(String(pred.id));
+      // FREEZE if: (a) user already unlocked this pick, OR
+      // (b) kickoff is within 5 hours — protects users who saw the pick
+      // shortly before the match from a last-minute change.
+      const kickoffIso = fixture?.fixture?.date;
+      const hoursToKickoffFreeze = kickoffIso
+        ? (new Date(kickoffIso).getTime() - Date.now()) / 3600000
+        : 999;
+      const nearKickoff = hoursToKickoffFreeze <= 5;
+      const isFrozen = unlockedPredictionIds.has(String(pred.id)) || nearKickoff;
       const updatePayload: Record<string, any> = {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
@@ -8247,7 +8255,10 @@ async function processBatch(
         updatePayload.prediction = newPrediction.prediction;
         updatePayload.predicted_score = newPrediction.predicted_score;
       } else {
-        console.log(`[FREEZE] ${fixtureIdStr}: keeping original pick "${pred.prediction}" / score "${pred.predicted_score}" — already unlocked by user(s)`);
+        const reason = nearKickoff
+          ? `kickoff in ${hoursToKickoffFreeze.toFixed(1)}h (<5h cutoff)`
+          : "already unlocked by user(s)";
+        console.log(`[FREEZE] ${fixtureIdStr}: keeping original pick "${pred.prediction}" / score "${pred.predicted_score}" — ${reason}`);
       }
       const { error: updateError } = await supabase
         .from("ai_predictions")
