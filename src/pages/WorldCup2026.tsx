@@ -691,11 +691,30 @@ export default function WorldCup2026() {
               </Card>
             )}
 
-            {AI_PREDICTIONS.filter((p) => {
-              // Hide matches that already finished (kickoff + 2h30m < now).
-              if (!p.kickoffTs) return true;
-              return p.kickoffTs + 2.5 * 60 * 60 * 1000 > Date.now();
-            }).map((mockPred, i) => {
+            {(() => {
+              const todayPreds = AI_PREDICTIONS.filter((p) => {
+              // Show ONLY today's matches — predictions for future days aren't
+              // confirmed yet and get generated the night before kickoff.
+              if (!p.kickoffTs) return false;
+              const now = new Date();
+              const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+              const endOfToday = startOfToday + 24 * 60 * 60 * 1000;
+              // Hide already-finished matches (kickoff + 2h30m < now).
+              if (p.kickoffTs + 2.5 * 60 * 60 * 1000 < Date.now()) return false;
+              return p.kickoffTs >= startOfToday && p.kickoffTs < endOfToday;
+              });
+              if (todayPreds.length === 0) {
+                return (
+                  <Card className="bg-card border-border p-6 text-center">
+                    <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-foreground mb-1">No matches today</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      AI predictions for tomorrow's World Cup matches are generated at 00:00. Check back then!
+                    </p>
+                  </Card>
+                );
+              }
+              return todayPreds.map((mockPred, i) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
@@ -832,7 +851,8 @@ export default function WorldCup2026() {
                   {!isApp && !showBasic && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
                 </Card>
               );
-            })}
+              });
+            })()}
           </div>
         </TabsContent>
 

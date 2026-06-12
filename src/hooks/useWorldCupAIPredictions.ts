@@ -33,13 +33,14 @@ export function useWorldCupAIPredictions() {
 
     async function load() {
       setLoading(true);
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("ai_predictions")
         .select(
           "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis, key_factors, risk_level"
         )
         .ilike("league", "%world cup%")
-        .gte("match_date", new Date().toISOString().split("T")[0])
+        .eq("match_date", today)
         .order("match_date", { ascending: true })
         .limit(64);
 
