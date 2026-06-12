@@ -646,7 +646,11 @@ export default function WorldCup2026() {
               </Card>
             )}
 
-            {AI_PREDICTIONS.map((mockPred, i) => {
+            {AI_PREDICTIONS.filter((p) => {
+              // Hide matches that already finished (kickoff + 2h30m < now).
+              if (!p.kickoffTs) return true;
+              return p.kickoffTs + 2.5 * 60 * 60 * 1000 > Date.now();
+            }).map((mockPred, i) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
