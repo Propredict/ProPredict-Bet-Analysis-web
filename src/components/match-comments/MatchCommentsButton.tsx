@@ -81,11 +81,13 @@ export function MatchCommentsButton({
   const triggerClass = cn(
           "relative flex items-center justify-center transition-all rounded-md",
           isPill
-            ? "h-7 px-2.5 gap-1.5 text-[11px] font-medium"
+            ? "h-7 px-2.5 gap-1.5 text-[11px] font-semibold"
             : "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px]",
-          (count ?? 0) > 0
-            ? "bg-primary/15 text-primary hover:bg-primary/25"
-            : "bg-secondary text-muted-foreground hover:bg-secondary/80",
+          isPill
+            ? "bg-primary text-white hover:bg-primary/90"
+            : (count ?? 0) > 0
+              ? "bg-primary/15 text-primary hover:bg-primary/25"
+              : "bg-secondary text-muted-foreground hover:bg-secondary/80",
           className
   );
 
