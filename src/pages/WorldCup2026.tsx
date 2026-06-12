@@ -703,7 +703,7 @@ export default function WorldCup2026() {
                 : mockPred;
               const isReal = !!real;
               // APP: free+ad or pro sees basic; web: existing rules
-              const showBasic = isApp ? appCanSeeBasic : (isPremium || (isPro && i === 0));
+              const showBasic = isApp ? appCanSeeBasic : isPro;
               return (
                 <Card key={i} className="bg-card border-border p-3">
                   <div className="flex items-center justify-between mb-2">
