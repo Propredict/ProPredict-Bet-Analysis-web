@@ -59,7 +59,10 @@ Deno.serve(async (req) => {
     for (const group of standings) {
       if (!Array.isArray(group)) continue;
       for (const entry of group) {
-        const groupName = (entry.group || "").replace("Group ", "");
+        const rawGroup = entry.group || "";
+        // API returns e.g. "Group Stage - Group A" — extract just "A"
+        const match = rawGroup.match(/Group\s+([A-Z0-9]+)\s*$/i);
+        const groupName = match ? match[1].toUpperCase() : rawGroup.replace(/^Group\s+/i, "");
         if (!groups[groupName]) groups[groupName] = [];
         groups[groupName].push({
           team: entry.team?.name || "",
