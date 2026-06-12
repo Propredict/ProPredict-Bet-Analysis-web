@@ -67,6 +67,28 @@ function parseAdEventPayload(event: Event) {
 // `wcMatchProjection` once real results start flowing in. Replaced by the
 // real `generate-ai-predictions` pipeline on match day.
 const HOST_NATIONS = new Set(["United States", "Mexico", "Canada"]);
+
+// Parse "Jun 11" + "21:00" (CET) as a 2026 timestamp. Best-effort: treats
+// the listed time as CET (UTC+2 during summer). Used only to skip matches
+// that have already finished (kickoff + 2h30m < now).
+function parseWCKickoff(dateStr: string, timeStr: string): number | null {
+  try {
+    const [hh, mm] = timeStr.split(":").map((x) => parseInt(x, 10));
+    const months: Record<string, number> = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+    };
+    const [monStr, dayStr] = dateStr.split(" ");
+    const m = months[monStr];
+    const d = parseInt(dayStr, 10);
+    if (m == null || isNaN(d) || isNaN(hh)) return null;
+    // CET in summer = UTC+2 → UTC hour = local - 2
+    return Date.UTC(2026, m, d, hh - 2, mm || 0);
+  } catch {
+    return null;
+  }
+}
+
 const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
   const proj = wcMatchProjection(m.home, m.away, {
     homeIsHost: HOST_NATIONS.has(m.home),
@@ -77,6 +99,8 @@ const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
   });
   return {
     home: m.home, away: m.away, date: m.date,
+    time: m.time,
+    kickoffTs: parseWCKickoff(m.date, m.time),
     homeWin: proj.homeWin,
     draw: proj.draw,
     awayWin: proj.awayWin,
@@ -622,7 +646,11 @@ export default function WorldCup2026() {
               </Card>
             )}
 
-            {AI_PREDICTIONS.map((mockPred, i) => {
+            {AI_PREDICTIONS.filter((p) => {
+              // Hide matches that already finished (kickoff + 2h30m < now).
+              if (!p.kickoffTs) return true;
+              return p.kickoffTs + 2.5 * 60 * 60 * 1000 > Date.now();
+            }).map((mockPred, i) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
