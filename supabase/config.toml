@@ -57,6 +57,9 @@ verify_jwt = false
 [functions.fix-category-schema]
 verify_jwt = true
 
+[functions.setup-match-comments]
+verify_jwt = false
+
 [functions.send-transactional-email]
 verify_jwt = true
 
