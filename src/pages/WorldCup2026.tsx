@@ -673,11 +673,11 @@ export default function WorldCup2026() {
             {isApp && !appCanSeeBasic && (
               <Card className="bg-amber-500/10 border-amber-500/30 p-3 mb-3">
                 <div className="text-center">
-                  <Lock className="h-5 w-5 text-amber-500 mx-auto mb-1.5" />
+                  <Lock className="h-5 w-5 text-fuchsia-400 mx-auto mb-1.5" />
                   <p className="text-xs font-semibold text-foreground mb-1">Predictions Locked</p>
-                  <p className="text-[10px] text-muted-foreground mb-2">Watch a short ad to unlock all predictions for today</p>
-                  <Button onClick={handleWatchAd} disabled={adLoading} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs w-full">
-                    <Play className="h-3.5 w-3.5 mr-1.5" /> {adLoading ? "Loading Ad…" : "Watch Ad to Unlock All"}
+                  <p className="text-[10px] text-muted-foreground mb-2">Unlock all World Cup AI predictions with Premium</p>
+                  <Button onClick={() => navigate("/get-premium")} className="bg-gradient-to-r from-fuchsia-500 to-violet-500 hover:from-fuchsia-600 hover:to-violet-600 text-white font-semibold text-xs w-full">
+                    <Zap className="h-3.5 w-3.5 mr-1.5" /> See Predictions — Get Premium
                   </Button>
                 </div>
               </Card>
