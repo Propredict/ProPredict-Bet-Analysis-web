@@ -151,14 +151,13 @@ export default function WCLiveNowSection({ onMatchClick }: Props) {
 
   const live = fixtures.filter((f) => f.status === "live" || f.status === "halftime");
   const upcoming = fixtures.filter((f) => f.status === "upcoming");
-  const finished = fixtures.filter((f) => f.status === "finished");
 
-  if (fixtures.length === 0) {
+  if (live.length === 0 && upcoming.length === 0) {
     return (
       <Card className="border-border bg-card">
         <div className="p-4 text-center">
           <Radio className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">No World Cup matches today</p>
+          <p className="text-xs text-muted-foreground">No upcoming World Cup matches today</p>
           <p className="text-[10px] text-muted-foreground/70 mt-1">Check the full schedule below</p>
         </div>
       </Card>
@@ -196,23 +195,6 @@ export default function WCLiveNowSection({ onMatchClick }: Props) {
           </div>
           <div className="space-y-1.5">
             {upcoming.map((f) => (
-              <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {finished.length > 0 && (
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-bold text-foreground">Today · Finished</h3>
-            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground">
-              {finished.length}
-            </Badge>
-          </div>
-          <div className="space-y-1.5">
-            {finished.map((f) => (
               <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
             ))}
           </div>
