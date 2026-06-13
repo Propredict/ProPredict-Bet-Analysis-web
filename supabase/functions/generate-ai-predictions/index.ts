@@ -8312,11 +8312,13 @@ async function processBatch(
       const leagueName = (fixture?.league?.name || pred.league || "").toLowerCase();
       const isWorldCup = leagueName.includes("world cup");
 
-      // === WORLD CUP — FIFA RANKING BOOST ===
-      // Adjust probabilities toward the higher-ranked nation. Reps play rarely
-      // so form/odds alone can let an underdog slip ahead.
+      // === WORLD CUP — REALISTIC NATIONAL-TEAM MODEL ===
+      // Anchor WC picks to API-Football fixture data + composite national-team
+      // strength (FIFA rank, Elo, squad value, recent form). This prevents sparse
+      // international samples from making Haiti favoured over Scotland or Morocco
+      // favoured over Brazil without a truly strong live signal.
       if (isWorldCup) {
-        const boosted = applyFifaRankBoost(
+        const boosted = applyWorldCupStrengthModel(
           {
             home_win: newPrediction.home_win,
             draw: newPrediction.draw,
@@ -8324,13 +8326,14 @@ async function processBatch(
             confidence: newPrediction.confidence,
             prediction: newPrediction.prediction,
             predicted_score: newPrediction.predicted_score,
+            analysis: newPrediction.analysis,
           },
           homeTeamName,
           awayTeamName,
         );
         if (boosted.prediction !== newPrediction.prediction) {
           console.log(
-            `[WC FIFA] ${homeTeamName} vs ${awayTeamName}: pick ${newPrediction.prediction} → ${boosted.prediction} (probs ${boosted.home_win}/${boosted.draw}/${boosted.away_win})`,
+            `[WC MODEL] ${homeTeamName} vs ${awayTeamName}: pick ${newPrediction.prediction} → ${boosted.prediction} (probs ${boosted.home_win}/${boosted.draw}/${boosted.away_win})`,
           );
         }
         newPrediction.home_win = boosted.home_win;
@@ -8338,17 +8341,22 @@ async function processBatch(
         newPrediction.away_win = boosted.away_win;
         newPrediction.prediction = boosted.prediction;
         newPrediction.predicted_score = boosted.predicted_score;
+        newPrediction.confidence = boosted.confidence;
+        newPrediction.analysis = boosted.analysis ?? newPrediction.analysis;
       }
 
-      // Freeze WC picks once they match the FIFA-adjusted call — but allow ONE
-      // overwrite when the previously stored pick contradicts FIFA ranking
-      // (e.g. older Brazil-vs-Morocco picked Morocco before the boost existed).
+      // Freeze WC picks once they match the WC model — but always allow a
+      // corrective overwrite when the stored row contradicts the model.
       const wcAlreadyPicked =
-        isWorldCup && !!pred.prediction && pred.prediction === newPrediction.prediction;
+        isWorldCup && !!pred.prediction && pred.prediction === newPrediction.prediction && pred.predicted_score === newPrediction.predicted_score;
+      const wcCorrectionNeeded =
+        isWorldCup && !!pred.prediction && !wcAlreadyPicked;
       const isFrozen =
-        unlockedPredictionIds.has(String(pred.id)) ||
-        nearKickoff ||
-        wcAlreadyPicked;
+        !wcCorrectionNeeded && (
+          unlockedPredictionIds.has(String(pred.id)) ||
+          nearKickoff ||
+          wcAlreadyPicked
+        );
       const updatePayload: Record<string, any> = {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
