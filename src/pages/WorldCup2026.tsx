@@ -942,16 +942,12 @@ export default function WorldCup2026() {
                               )}
                             </p>
                           </div>
-                          {r.pick && (
+                          {r.pick && r.isWin && (
                             <Badge
                               variant="outline"
-                              className={
-                                r.isWin
-                                  ? "text-[10px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
-                                  : "text-[10px] border-rose-500/50 text-rose-400 bg-rose-500/10"
-                              }
+                              className="text-[10px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
                             >
-                              {r.isWin ? "WIN" : "MISS"}
+                              WIN
                             </Badge>
                           )}
                         </div>
