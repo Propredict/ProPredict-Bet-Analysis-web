@@ -45,20 +45,26 @@ export function useWCYesterdayResults() {
     queryKey: ["wc-yesterday-results"],
     queryFn: async (): Promise<WCFinishedItem[]> => {
       const yesterday = yyyymmddBelgrade(-1);
+      const today = yyyymmddBelgrade(0);
 
-      const [fxRes, predRes] = await Promise.all([
+      const [fxYesterday, fxToday, predRes] = await Promise.all([
         supabase.functions.invoke("get-wc-today", { body: { date: yesterday } }),
+        supabase.functions.invoke("get-wc-today", { body: { date: today } }),
         supabase
           .from("ai_predictions")
           .select(
             "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis",
           )
           .ilike("league", "%world cup%")
-          .eq("match_date", yesterday)
+          .in("match_date", [yesterday, today])
           .limit(64),
       ]);
 
-      const fixtures: WCTodayFixture[] = (fxRes.data?.fixtures ?? []).filter(
+      const allFx: WCTodayFixture[] = [
+        ...(fxYesterday.data?.fixtures ?? []),
+        ...(fxToday.data?.fixtures ?? []),
+      ];
+      const fixtures: WCTodayFixture[] = allFx.filter(
         (f: WCTodayFixture) => f.status === "finished",
       );
       const picks = (predRes.data ?? []) as WCYesterdayAIPick[];
