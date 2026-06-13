@@ -33,7 +33,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    // Allow ?date=YYYY-MM-DD override (used by the "Finished — yesterday's results" section).
+    const reqUrl = new URL(req.url);
+    let dateParam = reqUrl.searchParams.get("date");
+    if (!dateParam && req.method === "POST") {
+      try {
+        const body = await req.json();
+        if (body?.date && typeof body.date === "string") dateParam = body.date;
+      } catch {/* ignore */}
+    }
+    const today = dateParam || new Date().toISOString().split("T")[0];
     const url = `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${today}`;
 
     const res = await fetch(url, {
