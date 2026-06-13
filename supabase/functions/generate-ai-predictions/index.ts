@@ -609,7 +609,6 @@ const QUALITY_LEAGUE_IDS = new Set([
   62,   // Ligue 2 (France)
 ]);
 
-// ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
 // ============ WORLD CUP FIFA RANKING BOOST ============
 // International friendlies/qualifiers are rare → recent-form signal is weak,
 // and bookmaker odds can over-favor underdogs. For World Cup matches we apply
