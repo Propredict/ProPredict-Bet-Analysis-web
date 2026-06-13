@@ -103,7 +103,12 @@ async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
     from += PAGE_SIZE;
   }
 
-  return allData;
+  // Exclude World Cup 2026 matches — they live on their dedicated WC AI Picks page
+  // to keep the main AI Predictions list focused on club football.
+  return allData.filter((p) => {
+    const league = (p.league || "").toLowerCase();
+    return !league.includes("world cup");
+  });
 }
 
 /**
