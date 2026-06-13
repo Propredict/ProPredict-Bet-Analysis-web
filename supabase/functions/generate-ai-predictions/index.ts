@@ -610,6 +610,69 @@ const QUALITY_LEAGUE_IDS = new Set([
 ]);
 
 // ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
+// ============ WORLD CUP FIFA RANKING BOOST ============
+// International friendlies/qualifiers are rare → recent-form signal is weak,
+// and bookmaker odds can over-favor underdogs. For World Cup matches we apply
+// an extra shift toward the higher FIFA-ranked nation so e.g. Brazil stays the
+// favorite vs Morocco even when limited form data is available.
+const FIFA_RANK: Record<string, number> = {
+  argentina: 1, france: 2, spain: 3, england: 4, brazil: 5, portugal: 6,
+  netherlands: 7, belgium: 8, italy: 9, germany: 10, croatia: 11, colombia: 12,
+  uruguay: 13, morocco: 14, switzerland: 15, japan: 16, "usa": 17,
+  "united states": 17, mexico: 18, denmark: 19, senegal: 20, iran: 21,
+  austria: 22, ukraine: 23, "korea republic": 24, "south korea": 24,
+  australia: 25, ecuador: 26, sweden: 27, peru: 28, poland: 29, wales: 30,
+  serbia: 31, tunisia: 32, scotland: 33, paraguay: 34, norway: 35, canada: 36,
+  "saudi arabia": 37, qatar: 38, ghana: 39, cameroon: 40, panama: 41,
+  "costa rica": 42, jamaica: 43, "ivory coast": 44, nigeria: 45, egypt: 46,
+  algeria: 47, "new zealand": 50, haiti: 88,
+};
+function _normNation(n: string): string {
+  return (n || "").toLowerCase().trim()
+    .replace(/\bnational team\b|\bfc\b|\bnt\b/g, "")
+    .replace(/\s+/g, " ").trim();
+}
+function applyFifaRankBoost(p: {
+  home_win: number; draw: number; away_win: number;
+  confidence: number; prediction: string; predicted_score: string;
+}, home: string, away: string) {
+  const hRank = FIFA_RANK[_normNation(home)] ?? 80;
+  const aRank = FIFA_RANK[_normNation(away)] ?? 80;
+  const diff = aRank - hRank; // positive ⇒ home is better ranked
+  if (Math.abs(diff) < 5) return p;
+  // Each rank-step ≈ 0.45% shift, capped at ±18%
+  const shift = Math.max(-18, Math.min(18, diff * 0.45));
+  let { home_win, draw, away_win } = p;
+  if (shift > 0) {
+    const fromAway = Math.min(Math.max(away_win - 5, 0), shift * 0.7);
+    const fromDraw = Math.min(Math.max(draw - 5, 0), shift * 0.3);
+    home_win += fromAway + fromDraw;
+    away_win -= fromAway;
+    draw -= fromDraw;
+  } else {
+    const s = -shift;
+    const fromHome = Math.min(Math.max(home_win - 5, 0), s * 0.7);
+    const fromDraw = Math.min(Math.max(draw - 5, 0), s * 0.3);
+    away_win += fromHome + fromDraw;
+    home_win -= fromHome;
+    draw -= fromDraw;
+  }
+  home_win = Math.round(home_win);
+  draw = Math.round(draw);
+  away_win = Math.round(away_win);
+  const sum = home_win + draw + away_win;
+  if (sum !== 100) away_win += 100 - sum;
+  // Recompute pick if the new top probability differs.
+  const max = Math.max(home_win, draw, away_win);
+  let prediction = p.prediction;
+  let predicted_score = p.predicted_score;
+  if (max === home_win && prediction !== "1") { prediction = "1"; predicted_score = "2-1"; }
+  else if (max === away_win && prediction !== "2") { prediction = "2"; predicted_score = "1-2"; }
+  else if (max === draw && prediction !== "X") { prediction = "X"; predicted_score = "1-1"; }
+  return { ...p, home_win, draw, away_win, prediction, predicted_score };
+}
+
+// ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
 // 1X2 Match Result weights:
 const WEIGHT_1X2_FORM = 0.60;      // 60% - Form composite (recent form + quality + squad + home + H2H + standings)
 const WEIGHT_1X2_ODDS = 0.25;      // 25% - Bookmaker implied probability
