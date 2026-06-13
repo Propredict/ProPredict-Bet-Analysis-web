@@ -721,7 +721,12 @@ export default function WorldCup2026() {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
-              const pred = real
+              const projected = wcMatchProjection(mockPred.home, mockPred.away, {
+                homeIsHost: HOST_NATIONS.has(mockPred.home),
+                awayIsHost: HOST_NATIONS.has(mockPred.away),
+                isKnockout: false,
+              });
+              const realMapped = real
                 ? {
                     home: mockPred.home,
                     away: mockPred.away,
@@ -731,14 +736,28 @@ export default function WorldCup2026() {
                     awayWin: real.swapped ? real.home_win : real.away_win,
                     confidence: real.confidence,
                   }
-                : mockPred;
-              const isReal = !!real;
+                : null;
+              const modelTop = projected.homeWin >= projected.awayWin && projected.homeWin >= projected.draw ? "home" : projected.awayWin >= projected.homeWin && projected.awayWin >= projected.draw ? "away" : "draw";
+              const realTop = realMapped ? (realMapped.homeWin >= realMapped.awayWin && realMapped.homeWin >= realMapped.draw ? "home" : realMapped.awayWin >= realMapped.homeWin && realMapped.awayWin >= realMapped.draw ? "away" : "draw") : null;
+              const modelGap = Math.abs(wcStrength(mockPred.home) - wcStrength(mockPred.away));
+              const realContradictsStrength = !!realMapped && modelGap >= 12 && realTop !== modelTop;
+              const safeReal = realContradictsStrength ? null : real;
+              const pred = realMapped && !realContradictsStrength
+                ? realMapped
+                : {
+                    ...mockPred,
+                    homeWin: projected.homeWin,
+                    draw: projected.draw,
+                    awayWin: projected.awayWin,
+                    confidence: projected.confidence,
+                  };
+              const isReal = !!safeReal;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : isPro;
               // Keep predicted score consistent with the Over/Under call in AI analysis.
-              const rawScore = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
+              const rawScore = safeReal?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "1-2" : "1-1");
               const displayedScore = (() => {
-                const analysis = (real?.analysis || "").toLowerCase();
+                const analysis = (safeReal?.analysis || "").toLowerCase();
                 const wantsOver = /over\s*2\.?5/.test(analysis);
                 const wantsUnder = /under\s*2\.?5/.test(analysis);
                 const m = rawScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
