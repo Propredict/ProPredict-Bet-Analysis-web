@@ -13,6 +13,7 @@ export interface WCYesterdayAIPick {
   confidence: number;
   predicted_score: string | null;
   prediction: string;
+  analysis: string | null;
 }
 
 export interface WCFinishedItem {
@@ -50,7 +51,7 @@ export function useWCYesterdayResults() {
         supabase
           .from("ai_predictions")
           .select(
-            "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction",
+            "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis",
           )
           .ilike("league", "%world cup%")
           .eq("match_date", yesterday)

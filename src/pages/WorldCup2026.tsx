@@ -916,41 +916,99 @@ export default function WorldCup2026() {
                     {yesterdayResults.filter((r) => r.isWin).length}/{yesterdayResults.filter((r) => r.pick).length} hit
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {yesterdayResults.map((r) => {
-                    const sideLabel = (s: "home" | "draw" | "away") =>
-                      s === "home" ? r.fixture.homeTeam : s === "away" ? r.fixture.awayTeam : "Draw";
+                    // Align UI Home/Away with the actual fixture, swapping DB pick probs if needed.
+                    const pickH = r.fixture.homeTeam;
+                    const pickA = r.fixture.awayTeam;
+                    const swapped = !!r.pick && (
+                      r.pick.home_team.toLowerCase().split(" ")[0] !==
+                      pickH.toLowerCase().split(" ")[0]
+                    );
+                    const hw = r.pick ? (swapped ? r.pick.away_win : r.pick.home_win) : 0;
+                    const dw = r.pick ? r.pick.draw : 0;
+                    const aw = r.pick ? (swapped ? r.pick.home_win : r.pick.away_win) : 0;
+                    const analysis = (r.pick?.analysis || "").toLowerCase();
+                    let overUnder: "Over" | "Under" = "Over";
+                    if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
+                    else if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
+                    else overUnder = (r.fixture.homeScore! + r.fixture.awayScore!) >= 3 ? "Over" : "Under";
+                    let btts: "Yes" | "No" = "No";
+                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
+                    else if (/btts[^.]*\bno\b/.test(analysis)) btts = "No";
+                    else btts = r.fixture.homeScore! >= 1 && r.fixture.awayScore! >= 1 ? "Yes" : "No";
+                    const tH = TEAMS[pickH];
+                    const tA = TEAMS[pickA];
                     return (
-                      <Card key={r.fixture.id} className="bg-card/60 border-border/60 p-2.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground truncate">
-                              <span className="truncate">{r.fixture.homeTeam}</span>
-                              <span className="text-foreground/90 px-1.5 py-0.5 rounded bg-muted/40 text-[11px] font-bold tabular-nums">
-                                {r.fixture.homeScore}–{r.fixture.awayScore}
-                              </span>
-                              <span className="truncate">{r.fixture.awayTeam}</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              {r.pick ? (
-                                <>
-                                  AI Pick: <span className="text-foreground font-medium">{sideLabel(r.pickedSide)}</span>
-                                  {r.pick.predicted_score ? ` · ${r.pick.predicted_score}` : ""}
-                                </>
-                              ) : (
-                                "No AI pick stored"
-                              )}
-                            </p>
-                          </div>
-                          {r.pick && r.isWin && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
-                            >
-                              WIN
+                      <Card key={r.fixture.id} className="bg-card border-border p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            {tH && <TeamFlag code={tH.code} size="sm" />} {pickH} vs {tA && <TeamFlag code={tA.code} size="sm" />} {pickA}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="outline" className="text-[9px] border-foreground/30 text-foreground bg-muted/40 tabular-nums font-bold">
+                              FT {r.fixture.homeScore}–{r.fixture.awayScore}
                             </Badge>
-                          )}
+                            {r.pick && r.isWin && (
+                              <Badge variant="outline" className="text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                WIN
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+
+                        {r.pick ? (
+                          <>
+                            <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                              <div className="bg-muted/30 rounded p-1.5">
+                                <p className="text-sm font-bold text-emerald-400">{hw}%</p>
+                                <p className="text-[9px] font-semibold text-foreground">Home</p>
+                              </div>
+                              <div className="bg-muted/30 rounded p-1.5">
+                                <p className="text-sm font-bold text-amber-400">{dw}%</p>
+                                <p className="text-[9px] font-semibold text-foreground">Draw</p>
+                              </div>
+                              <div className="bg-muted/30 rounded p-1.5">
+                                <p className="text-sm font-bold text-sky-400">{aw}%</p>
+                                <p className="text-[9px] font-semibold text-foreground">Away</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-center mb-2">
+                              <div className="bg-muted/20 rounded p-1.5">
+                                <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
+                                <p className="text-[9px] text-muted-foreground">Goals</p>
+                              </div>
+                              <div className="bg-muted/20 rounded p-1.5">
+                                <p className="text-xs font-bold text-foreground">{btts}</p>
+                                <p className="text-[9px] text-muted-foreground">BTTS</p>
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Brain className="h-3 w-3 text-primary" />
+                                <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                <div>
+                                  <span className="text-muted-foreground">Predicted Score</span>
+                                  <p className="font-bold text-foreground">{r.pick.predicted_score || "—"}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Confidence</span>
+                                  <p className="font-bold text-foreground">{r.pick.confidence}%</p>
+                                </div>
+                              </div>
+                              {r.pick.analysis && (
+                                <div className="text-[10px] text-muted-foreground">
+                                  <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                                  {r.pick.analysis.slice(0, 180) + (r.pick.analysis.length > 180 ? "…" : "")}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-[10px] text-muted-foreground">No AI pick stored for this match.</p>
+                        )}
                       </Card>
                     );
                   })}
