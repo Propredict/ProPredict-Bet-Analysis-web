@@ -905,7 +905,12 @@ export default function WorldCup2026() {
               );
               });
             })()}
-            {yesterdayResults.filter((r) => r.pick).length > 0 && (
+            {yesterdayResults.filter((r) => r.pick).length > 0 && (() => {
+              const finishedWithPick = yesterdayResults
+                .filter((r) => r.pick)
+                .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
+                .slice(0, 3);
+              return (
               <div className="mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -913,11 +918,11 @@ export default function WorldCup2026() {
                     Finished — Yesterday's Results
                   </h3>
                   <span className="text-[10px] text-muted-foreground">
-                    {yesterdayResults.filter((r) => r.isWin).length}/{yesterdayResults.filter((r) => r.pick).length} hit
+                    {finishedWithPick.filter((r) => r.isWin).length}/{finishedWithPick.length} hit
                   </span>
                 </div>
                 <div className="space-y-3">
-                  {yesterdayResults.filter((r) => r.pick).map((r) => {
+                  {finishedWithPick.map((r) => {
                     // Align UI Home/Away with the actual fixture, swapping DB pick probs if needed.
                     const pickH = r.fixture.homeTeam;
                     const pickA = r.fixture.awayTeam;
@@ -1014,7 +1019,8 @@ export default function WorldCup2026() {
                   })}
                 </div>
               </div>
-            )}
+              );
+            })()}
           </div>
         </TabsContent>
 
