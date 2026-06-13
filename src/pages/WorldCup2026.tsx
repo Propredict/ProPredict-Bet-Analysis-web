@@ -905,6 +905,62 @@ export default function WorldCup2026() {
               );
               });
             })()}
+            {yesterdayResults.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-border/40">
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Activity className="h-3.5 w-3.5 text-emerald-400" />
+                    Finished — Yesterday's Results
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    {yesterdayResults.filter((r) => r.isWin).length}/{yesterdayResults.filter((r) => r.pick).length} hit
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {yesterdayResults.map((r) => {
+                    const sideLabel = (s: "home" | "draw" | "away") =>
+                      s === "home" ? r.fixture.homeTeam : s === "away" ? r.fixture.awayTeam : "Draw";
+                    return (
+                      <Card key={r.fixture.id} className="bg-card/60 border-border/60 p-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground truncate">
+                              <span className="truncate">{r.fixture.homeTeam}</span>
+                              <span className="text-foreground/90 px-1.5 py-0.5 rounded bg-muted/40 text-[11px] font-bold tabular-nums">
+                                {r.fixture.homeScore}–{r.fixture.awayScore}
+                              </span>
+                              <span className="truncate">{r.fixture.awayTeam}</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {r.pick ? (
+                                <>
+                                  AI Pick: <span className="text-foreground font-medium">{sideLabel(r.pickedSide)}</span>
+                                  {r.pick.predicted_score ? ` · ${r.pick.predicted_score}` : ""}
+                                </>
+                              ) : (
+                                "No AI pick stored"
+                              )}
+                            </p>
+                          </div>
+                          {r.pick && (
+                            <Badge
+                              variant="outline"
+                              className={
+                                r.isWin
+                                  ? "text-[10px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
+                                  : "text-[10px] border-rose-500/50 text-rose-400 bg-rose-500/10"
+                              }
+                            >
+                              {r.isWin ? "WIN" : "MISS"}
+                            </Badge>
+                          )}
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
 
