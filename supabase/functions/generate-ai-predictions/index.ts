@@ -609,11 +609,11 @@ const QUALITY_LEAGUE_IDS = new Set([
   62,   // Ligue 2 (France)
 ]);
 
-// ============ WORLD CUP FIFA RANKING BOOST ============
-// International friendlies/qualifiers are rare → recent-form signal is weak,
-// and bookmaker odds can over-favor underdogs. For World Cup matches we apply
-// an extra shift toward the higher FIFA-ranked nation so e.g. Brazil stays the
-// favorite vs Morocco even when limited form data is available.
+// ============ WORLD CUP REALISTIC STRENGTH MODEL ============
+// Source stack: API-Football fixture feed + WC composite strength snapshot
+// (FIFA rank, Elo, squad value, recent international form). International
+// matches have sparse club-style stats, so WC predictions must be anchored to
+// national-team strength before any form/xG/odds adjustment is allowed.
 const FIFA_RANK: Record<string, number> = {
   argentina: 1, france: 2, spain: 3, england: 4, brazil: 5, portugal: 6,
   netherlands: 7, belgium: 8, italy: 9, germany: 10, croatia: 11, colombia: 12,
@@ -626,49 +626,68 @@ const FIFA_RANK: Record<string, number> = {
   "costa rica": 42, jamaica: 43, "ivory coast": 44, nigeria: 45, egypt: 46,
   algeria: 47, "new zealand": 50, haiti: 88,
 };
+type WCConfed = "UEFA" | "CONMEBOL" | "CONCACAF" | "AFC" | "CAF" | "OFC";
+interface WCStrengthInput { rank: number; elo: number; squad: number; form: number; confed: WCConfed; }
+const WC_STRENGTH: Record<string, WCStrengthInput> = {
+  argentina: { rank: 2, elo: 2143, squad: 750, form: 22, confed: "CONMEBOL" }, spain: { rank: 1, elo: 2112, squad: 1280, form: 24, confed: "UEFA" }, france: { rank: 3, elo: 2059, squad: 1400, form: 21, confed: "UEFA" }, brazil: { rank: 5, elo: 2030, squad: 1100, form: 18, confed: "CONMEBOL" }, portugal: { rank: 6, elo: 2025, squad: 1100, form: 23, confed: "UEFA" }, england: { rank: 4, elo: 2009, squad: 1500, form: 20, confed: "UEFA" }, netherlands: { rank: 7, elo: 2010, squad: 830, form: 19, confed: "UEFA" }, germany: { rank: 9, elo: 1965, squad: 950, form: 17, confed: "UEFA" },
+  croatia: { rank: 10, elo: 1955, squad: 360, form: 18, confed: "UEFA" }, belgium: { rank: 8, elo: 1925, squad: 620, form: 16, confed: "UEFA" }, uruguay: { rank: 16, elo: 1925, squad: 430, form: 17, confed: "CONMEBOL" }, colombia: { rank: 13, elo: 1900, squad: 430, form: 19, confed: "CONMEBOL" }, morocco: { rank: 11, elo: 1880, squad: 330, form: 22, confed: "CAF" }, norway: { rank: 29, elo: 1860, squad: 430, form: 21, confed: "UEFA" }, switzerland: { rank: 17, elo: 1840, squad: 310, form: 17, confed: "UEFA" }, japan: { rank: 18, elo: 1840, squad: 260, form: 22, confed: "AFC" },
+  senegal: { rank: 19, elo: 1830, squad: 290, form: 20, confed: "CAF" }, austria: { rank: 24, elo: 1830, squad: 320, form: 18, confed: "UEFA" }, "united states": { rank: 14, elo: 1820, squad: 310, form: 14, confed: "CONCACAF" }, usa: { rank: 14, elo: 1820, squad: 310, form: 14, confed: "CONCACAF" }, ecuador: { rank: 23, elo: 1815, squad: 260, form: 19, confed: "CONMEBOL" }, iran: { rank: 20, elo: 1810, squad: 50, form: 21, confed: "AFC" }, turkey: { rank: 38, elo: 1810, squad: 290, form: 18, confed: "UEFA" }, "ivory coast": { rank: 42, elo: 1810, squad: 190, form: 19, confed: "CAF" },
+  "south korea": { rank: 22, elo: 1795, squad: 190, form: 19, confed: "AFC" }, "korea republic": { rank: 22, elo: 1795, squad: 190, form: 19, confed: "AFC" }, egypt: { rank: 34, elo: 1790, squad: 120, form: 20, confed: "CAF" }, algeria: { rank: 35, elo: 1780, squad: 120, form: 18, confed: "CAF" }, mexico: { rank: 15, elo: 1780, squad: 250, form: 16, confed: "CONCACAF" }, scotland: { rank: 36, elo: 1780, squad: 180, form: 15, confed: "UEFA" }, "czech republic": { rank: 36, elo: 1760, squad: 150, form: 15, confed: "UEFA" }, sweden: { rank: 33, elo: 1750, squad: 190, form: 12, confed: "UEFA" },
+  tunisia: { rank: 40, elo: 1740, squad: 50, form: 16, confed: "CAF" }, australia: { rank: 26, elo: 1730, squad: 70, form: 17, confed: "AFC" }, ghana: { rank: 72, elo: 1730, squad: 120, form: 14, confed: "CAF" }, "bosnia & herzegovina": { rank: 56, elo: 1700, squad: 80, form: 14, confed: "UEFA" }, paraguay: { rank: 39, elo: 1700, squad: 50, form: 16, confed: "CONMEBOL" }, "dr congo": { rank: 55, elo: 1700, squad: 170, form: 17, confed: "CAF" }, "south africa": { rank: 61, elo: 1700, squad: 80, form: 18, confed: "CAF" },
+  "cape verde": { rank: 68, elo: 1670, squad: 50, form: 19, confed: "CAF" }, iraq: { rank: 63, elo: 1670, squad: 25, form: 16, confed: "AFC" }, "saudi arabia": { rank: 60, elo: 1660, squad: 30, form: 13, confed: "AFC" }, panama: { rank: 30, elo: 1660, squad: 25, form: 14, confed: "CONCACAF" }, uzbekistan: { rank: 50, elo: 1650, squad: 25, form: 18, confed: "AFC" }, qatar: { rank: 51, elo: 1640, squad: 25, form: 12, confed: "AFC" }, jordan: { rank: 66, elo: 1620, squad: 15, form: 17, confed: "AFC" }, "new zealand": { rank: 86, elo: 1500, squad: 30, form: 16, confed: "OFC" }, haiti: { rank: 84, elo: 1500, squad: 30, form: 10, confed: "CONCACAF" }, curacao: { rank: 82, elo: 1500, squad: 25, form: 12, confed: "CONCACAF" }, "curaçao": { rank: 82, elo: 1500, squad: 25, form: 12, confed: "CONCACAF" },
+};
 function _normNation(n: string): string {
   return (n || "").toLowerCase().trim()
     .replace(/\bnational team\b|\bfc\b|\bnt\b/g, "")
     .replace(/\s+/g, " ").trim();
 }
-function applyFifaRankBoost(p: {
+function wcCompositeStrength(nation: string): number {
+  const data = WC_STRENGTH[_normNation(nation)];
+  if (!data) return Math.max(0, 100 - (FIFA_RANK[_normNation(nation)] ?? 80));
+  const eloNorm = Math.max(0, Math.min(100, ((data.elo - 1500) / 650) * 100));
+  const squadNorm = Math.max(0, Math.min(100, (Math.log10(data.squad) - Math.log10(15)) / (Math.log10(1500) - Math.log10(15)) * 100));
+  const formNorm = Math.max(0, Math.min(100, (data.form / 30) * 100));
+  return eloNorm * 0.5 + squadNorm * 0.3 + formNorm * 0.2;
+}
+function wcConfedBias(home: string, away: string): number {
+  const tier: Record<WCConfed, number> = { CONMEBOL: 4, UEFA: 4, CONCACAF: 1, AFC: -3, CAF: -2, OFC: -5 };
+  const h = WC_STRENGTH[_normNation(home)]?.confed;
+  const a = WC_STRENGTH[_normNation(away)]?.confed;
+  return h && a ? tier[h] - tier[a] : 0;
+}
+function wcScoreForProjection(homeWin: number, draw: number, awayWin: number, gap: number): string {
+  const absGap = Math.abs(gap);
+  if (draw >= homeWin && draw >= awayWin) return "1-1";
+  if (homeWin > awayWin) return absGap >= 32 ? "3-0" : absGap >= 20 ? "2-0" : "2-1";
+  return absGap >= 32 ? "0-3" : absGap >= 20 ? "0-2" : "1-2";
+}
+function applyWorldCupStrengthModel(p: {
   home_win: number; draw: number; away_win: number;
-  confidence: number; prediction: string; predicted_score: string;
+  confidence: number; prediction: string; predicted_score: string; analysis?: string;
 }, home: string, away: string) {
-  const hRank = FIFA_RANK[_normNation(home)] ?? 80;
-  const aRank = FIFA_RANK[_normNation(away)] ?? 80;
-  const diff = aRank - hRank; // positive ⇒ home is better ranked
-  if (Math.abs(diff) < 5) return p;
-  // Each rank-step ≈ 0.45% shift, capped at ±18%
-  const shift = Math.max(-18, Math.min(18, diff * 0.45));
-  let { home_win, draw, away_win } = p;
-  if (shift > 0) {
-    const fromAway = Math.min(Math.max(away_win - 5, 0), shift * 0.7);
-    const fromDraw = Math.min(Math.max(draw - 5, 0), shift * 0.3);
-    home_win += fromAway + fromDraw;
-    away_win -= fromAway;
-    draw -= fromDraw;
-  } else {
-    const s = -shift;
-    const fromHome = Math.min(Math.max(home_win - 5, 0), s * 0.7);
-    const fromDraw = Math.min(Math.max(draw - 5, 0), s * 0.3);
-    away_win += fromHome + fromDraw;
-    home_win -= fromHome;
-    draw -= fromDraw;
-  }
-  home_win = Math.round(home_win);
-  draw = Math.round(draw);
-  away_win = Math.round(away_win);
+  const homeStrength = wcCompositeStrength(home);
+  const awayStrength = wcCompositeStrength(away);
+  const gap = (homeStrength - awayStrength) + wcConfedBias(home, away);
+  const absGap = Math.abs(gap);
+  const drawBase = Math.max(12, 28 - Math.min(15, absGap * 0.6));
+  const winShare = (100 - drawBase) / 2;
+  const tilt = Math.max(-winShare * 0.86, Math.min(winShare * 0.86, gap * 1.1));
+  let home_win = Math.max(6, Math.round(winShare + tilt));
+  let away_win = Math.max(6, Math.round(winShare - tilt));
+  let draw = Math.max(8, 100 - home_win - away_win);
   const sum = home_win + draw + away_win;
-  if (sum !== 100) away_win += 100 - sum;
-  // Recompute pick if the new top probability differs.
+  if (sum !== 100) {
+    const delta = 100 - sum;
+    if (home_win >= away_win && home_win >= draw) home_win += delta;
+    else if (away_win >= home_win && away_win >= draw) away_win += delta;
+    else draw += delta;
+  }
   const max = Math.max(home_win, draw, away_win);
-  let prediction = p.prediction;
-  let predicted_score = p.predicted_score;
-  if (max === home_win && prediction !== "1") { prediction = "1"; predicted_score = "2-1"; }
-  else if (max === away_win && prediction !== "2") { prediction = "2"; predicted_score = "1-2"; }
-  else if (max === draw && prediction !== "X") { prediction = "X"; predicted_score = "1-1"; }
-  return { ...p, home_win, draw, away_win, prediction, predicted_score };
+  const prediction = max === home_win ? "1" : max === away_win ? "2" : "X";
+  const predicted_score = wcScoreForProjection(home_win, draw, away_win, gap);
+  const confidence = Math.max(p.confidence, Math.min(90, Math.round(58 + absGap * 0.55)));
+  const source = `WC source: API-Football fixture + Elo/FIFA/squad/form model (strength ${home} ${homeStrength.toFixed(1)} vs ${away} ${awayStrength.toFixed(1)})`;
+  return { ...p, home_win, draw, away_win, prediction, predicted_score, confidence, analysis: `${source}. Pick: ${prediction}, probability ${max}%.` };
 }
 
 // ============ WEIGHTING CONSTANTS (v5 — Form/Odds/xG focused) ============
