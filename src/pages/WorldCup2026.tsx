@@ -825,7 +825,7 @@ export default function WorldCup2026() {
                     // Prefer the AI engine's own Over/Under + BTTS call (from analysis text)
                     // so the basic chips stay consistent with the Advanced AI Insight.
                     // Fall back to predicted-score math only when analysis is missing.
-                    const analysis = (real?.analysis || "").toLowerCase();
+                    const analysis = (safeReal?.analysis || "").toLowerCase();
                     let overUnder: "Over" | "Under" | null = null;
                     if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
                     else if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
@@ -878,9 +878,9 @@ export default function WorldCup2026() {
                         </div>
                         <div className="text-[10px] text-muted-foreground">
                           <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                          {real?.analysis
-                            ? real.analysis.slice(0, 180) + (real.analysis.length > 180 ? "…" : "")
-                            : `Pre-tournament projection based on FIFA rankings. Live AI analysis (form, xG, odds) activates on match day. ${pred.homeWin > pred.awayWin ? pred.home : pred.away} currently holds the edge.`}
+                          {safeReal?.analysis
+                            ? safeReal.analysis.slice(0, 180) + (safeReal.analysis.length > 180 ? "…" : "")
+                            : `Projection based on FIFA rank, Elo, squad value and recent international form. ${pred.homeWin > pred.awayWin ? pred.home : pred.awayWin > pred.homeWin ? pred.away : "Draw"} currently holds the edge.`}
                         </div>
                       </div>
                       {/* Lock overlay for non-premium */}
