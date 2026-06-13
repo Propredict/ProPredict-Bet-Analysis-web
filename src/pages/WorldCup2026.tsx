@@ -814,8 +814,7 @@ export default function WorldCup2026() {
                     if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
                     else if (/btts[^.]*\bno\b|over\/btts favored/.test(analysis)) btts = btts; // leave null, handled below
                     if (overUnder === null || btts === null) {
-                      const scoreStr = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
-                      const m = scoreStr.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                      const m = displayedScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                       const hg = m ? parseInt(m[1], 10) : 1;
                       const ag = m ? parseInt(m[2], 10) : 1;
                       const total = hg + ag;
@@ -851,7 +850,7 @@ export default function WorldCup2026() {
                         <div className="grid grid-cols-2 gap-2 text-[11px]">
                           <div>
                             <span className="text-muted-foreground">Predicted Score</span>
-                            <p className="font-bold text-foreground">{real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1")}</p>
+                            <p className="font-bold text-foreground">{displayedScore}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Confidence</span>
