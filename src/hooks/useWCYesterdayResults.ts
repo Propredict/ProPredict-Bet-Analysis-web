@@ -63,16 +63,39 @@ export function useWCYesterdayResults() {
       );
       const picks = (predRes.data ?? []) as WCYesterdayAIPick[];
 
-      const norm = (s: string) => s.toLowerCase().trim().split(" ")[0];
+      // Tolerant name normalizer — handles "Czechia" vs "Czech Republic",
+      // "Türkiye" vs "Turkey", "Korea Republic" vs "South Korea", "USA" vs
+      // "United States", "Bosnia & Herzegovina" vs "Bosnia and Herzegovina",
+      // accents, punctuation, and extra whitespace.
+      const ALIASES: Record<string, string> = {
+        czechia: "czech", "czech republic": "czech",
+        turkiye: "turkey", türkiye: "turkey",
+        "korea republic": "korea", "south korea": "korea", "republic of korea": "korea",
+        usa: "unitedstates", us: "unitedstates", "united states": "unitedstates",
+        "bosnia and herzegovina": "bosnia", "bosnia & herzegovina": "bosnia",
+        "ivory coast": "ivorycoast", "cote d ivoire": "ivorycoast", "côte d ivoire": "ivorycoast",
+      };
+      const norm = (s: string) => {
+        const base = (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9 ]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (ALIASES[base]) return ALIASES[base];
+        const first = base.split(" ")[0] ?? "";
+        return ALIASES[first] ?? first;
+      };
       const findPick = (home: string, away: string) => {
         const h = norm(home);
         const a = norm(away);
         const direct = picks.find(
-          (p) => norm(p.home_team).includes(h) && norm(p.away_team).includes(a),
+          (p) => norm(p.home_team) === h && norm(p.away_team) === a,
         );
         if (direct) return { p: direct, swapped: false };
         const rev = picks.find(
-          (p) => norm(p.home_team).includes(a) && norm(p.away_team).includes(h),
+          (p) => norm(p.home_team) === a && norm(p.away_team) === h,
         );
         if (rev) return { p: rev, swapped: true };
         return null;
