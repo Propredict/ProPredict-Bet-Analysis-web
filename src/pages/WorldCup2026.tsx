@@ -905,7 +905,7 @@ export default function WorldCup2026() {
               );
               });
             })()}
-            {yesterdayResults.length > 0 && (
+            {yesterdayResults.filter((r) => r.pick).length > 0 && (
               <div className="mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -917,7 +917,7 @@ export default function WorldCup2026() {
                   </span>
                 </div>
                 <div className="space-y-3">
-                  {yesterdayResults.map((r) => {
+                  {yesterdayResults.filter((r) => r.pick).map((r) => {
                     // Align UI Home/Away with the actual fixture, swapping DB pick probs if needed.
                     const pickH = r.fixture.homeTeam;
                     const pickA = r.fixture.awayTeam;
