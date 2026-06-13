@@ -65,6 +65,7 @@ export type Database = {
           value_home: number | null
           variance_score: number | null
           variance_stable: boolean | null
+          wc_pred_notified_at: string | null
           xg_away: number | null
           xg_diff: number | null
           xg_home: number | null
@@ -121,6 +122,7 @@ export type Database = {
           value_home?: number | null
           variance_score?: number | null
           variance_stable?: boolean | null
+          wc_pred_notified_at?: string | null
           xg_away?: number | null
           xg_diff?: number | null
           xg_home?: number | null
@@ -177,6 +179,7 @@ export type Database = {
           value_home?: number | null
           variance_score?: number | null
           variance_stable?: boolean | null
+          wc_pred_notified_at?: string | null
           xg_away?: number | null
           xg_diff?: number | null
           xg_home?: number | null

@@ -726,9 +726,9 @@ export default function WorldCup2026() {
                     home: mockPred.home,
                     away: mockPred.away,
                     date: mockPred.date,
-                    homeWin: real.home_win,
+                    homeWin: real.swapped ? real.away_win : real.home_win,
                     draw: real.draw,
-                    awayWin: real.away_win,
+                    awayWin: real.swapped ? real.home_win : real.away_win,
                     confidence: real.confidence,
                   }
                 : mockPred;

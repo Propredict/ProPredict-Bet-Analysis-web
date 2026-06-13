@@ -67,15 +67,25 @@ export function useWorldCupAIPredictions() {
   }, []);
 
   /** Try to find a real AI prediction matching the given team names */
-  const findFor = (home: string, away: string): WCAIPrediction | null => {
+  const findFor = (
+    home: string,
+    away: string,
+  ): (WCAIPrediction & { swapped: boolean }) | null => {
     const norm = (s: string) => s.toLowerCase().trim();
-    return (
-      predictions.find(
-        (p) =>
-          norm(p.home_team).includes(norm(home).split(" ")[0]) &&
-          norm(p.away_team).includes(norm(away).split(" ")[0])
-      ) || null
+    const h = norm(home).split(" ")[0];
+    const a = norm(away).split(" ")[0];
+    // 1. Direct match — UI home == DB home, UI away == DB away
+    const direct = predictions.find(
+      (p) => norm(p.home_team).includes(h) && norm(p.away_team).includes(a),
     );
+    if (direct) return { ...direct, swapped: false };
+    // 2. Reversed match — DB stored teams in opposite order; swap probabilities
+    //    so the UI label (Home/Away) stays aligned with the displayed team.
+    const reversed = predictions.find(
+      (p) => norm(p.home_team).includes(a) && norm(p.away_team).includes(h),
+    );
+    if (reversed) return { ...reversed, swapped: true };
+    return null;
   };
 
   return { predictions, loading, hasRealData: predictions.length > 0, findFor };
