@@ -735,6 +735,19 @@ export default function WorldCup2026() {
               const isReal = !!real;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : isPro;
+              // Keep predicted score consistent with the Over/Under call in AI analysis.
+              const rawScore = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
+              const displayedScore = (() => {
+                const analysis = (real?.analysis || "").toLowerCase();
+                const wantsOver = /over\s*2\.?5/.test(analysis);
+                const wantsUnder = /under\s*2\.?5/.test(analysis);
+                const m = rawScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                if (!m) return rawScore;
+                const total = parseInt(m[1], 10) + parseInt(m[2], 10);
+                if (wantsOver && total < 3) return pred.homeWin >= pred.awayWin ? "2-1" : "1-2";
+                if (wantsUnder && total > 2) return pred.homeWin >= pred.awayWin ? "1-0" : "0-1";
+                return rawScore;
+              })();
               return (
                 <Card key={i} className="bg-card border-border p-3">
                   <div className="flex items-center justify-between mb-2">
