@@ -132,6 +132,7 @@ export default function WorldCup2026() {
     setSearchParams(next, { replace: true });
   };
   const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
+  const { data: yesterdayResults = [] } = useWCYesterdayResults();
 
   useEffect(() => {
     if (!interstitialFired.current) {
