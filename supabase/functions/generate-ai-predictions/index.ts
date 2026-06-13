@@ -9000,6 +9000,52 @@ serve(async (req: Request) => {
       );
     }
 
+    // Fast WC correction — fixes existing World Cup rows without calling
+    // API-Football, useful when old sparse-data picks contradict team strength.
+    if (body.correctWorldCupOnly === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const today = new Date();
+      const tomorrow = new Date(today.getTime() + 86400000);
+      const dates = [today.toISOString().split("T")[0], tomorrow.toISOString().split("T")[0]];
+      const { data: rows, error } = await supabase
+        .from("ai_predictions")
+        .select("id, home_team, away_team, home_win, draw, away_win, confidence, prediction, predicted_score")
+        .ilike("league", "%world cup%")
+        .in("match_date", dates)
+        .limit(100);
+      if (error) throw error;
+      let updated = 0;
+      for (const row of rows ?? []) {
+        const fixed = applyWorldCupStrengthModel({
+          home_win: row.home_win ?? 34,
+          draw: row.draw ?? 28,
+          away_win: row.away_win ?? 38,
+          confidence: row.confidence ?? 55,
+          prediction: row.prediction ?? "X",
+          predicted_score: row.predicted_score ?? "1-1",
+        }, row.home_team, row.away_team);
+        const { error: updErr } = await supabase.from("ai_predictions").update({
+          home_win: fixed.home_win,
+          draw: fixed.draw,
+          away_win: fixed.away_win,
+          confidence: fixed.confidence,
+          prediction: fixed.prediction,
+          predicted_score: fixed.predicted_score,
+          analysis: fixed.analysis,
+          is_locked: false,
+          updated_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        if (!updErr) updated++;
+        else console.warn(`[WC CORRECT] failed ${row.home_team} vs ${row.away_team}:`, updErr.message);
+      }
+      return new Response(
+        JSON.stringify({ ok: true, mode: "correctWorldCupOnly", dates, scanned: rows?.length ?? 0, updated }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Full regenerate mode - triggers batch chains for today + tomorrow
     if (body.regenerate === true) {
       return handleRegenerate(apiKey);
