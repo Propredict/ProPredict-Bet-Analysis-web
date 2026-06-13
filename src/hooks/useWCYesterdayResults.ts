@@ -115,18 +115,53 @@ export function useWCYesterdayResults() {
             ? (f.homeScore! > f.awayScore! ? "home" : "draw")
             : f.awayScore! > f.homeScore! ? "away" : "draw";
           let pickedSide: "home" | "draw" | "away" = "draw";
+          let marketHit = false;
           if (found) {
             const { p, swapped } = found;
             const hw = swapped ? p.away_win : p.home_win;
             const aw = swapped ? p.home_win : p.away_win;
             pickedSide = side(hw, p.draw, aw);
+            const totalGoals = f.homeScore! + f.awayScore!;
+            const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
+            const analysis = (p.analysis || "").toLowerCase();
+            const pred = (p.prediction || "").toLowerCase();
+            // Goals market hit (Over/Under 1.5/2.5/3.5)
+            const goalsMatch = analysis.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+            if (goalsMatch) {
+              const dir = goalsMatch[1];
+              const line = parseFloat(goalsMatch[2].replace(/(\d)(\d)/, "$1.$2"));
+              if (dir === "over" && totalGoals > line) marketHit = true;
+              if (dir === "under" && totalGoals < line) marketHit = true;
+            }
+            // BTTS market hit
+            if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) {
+              if (bttsActual) marketHit = true;
+            } else if (/btts[^.]*\bno\b|both teams to score[^.]*no/.test(analysis)) {
+              if (!bttsActual) marketHit = true;
+            }
+            // Exact predicted score hit
+            if (p.predicted_score) {
+              const m = p.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
+              if (m) {
+                const ph = parseInt(m[1], 10);
+                const pa = parseInt(m[2], 10);
+                const ah = swapped ? f.awayScore! : f.homeScore!;
+                const aa = swapped ? f.homeScore! : f.awayScore!;
+                if (ph === ah && pa === aa) marketHit = true;
+              }
+            }
+            // Generic prediction string (over25, btts_yes, etc.)
+            if (/over.?2\.?5/.test(pred) && totalGoals >= 3) marketHit = true;
+            if (/under.?2\.?5/.test(pred) && totalGoals <= 2) marketHit = true;
+            if (/btts.?yes|gg/.test(pred) && bttsActual) marketHit = true;
+            if (/btts.?no|ng/.test(pred) && !bttsActual) marketHit = true;
           }
           return {
             fixture: f,
             pick: found?.p ?? null,
             pickedSide,
             actualSide,
-            isWin: !!found && pickedSide === actualSide,
+            isWin: !!found && (pickedSide === actualSide || marketHit),
           };
         });
     },
