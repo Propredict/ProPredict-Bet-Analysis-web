@@ -721,7 +721,12 @@ export default function WorldCup2026() {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
-              const pred = real
+              const projected = wcMatchProjection(mockPred.home, mockPred.away, {
+                homeIsHost: HOST_NATIONS.has(mockPred.home),
+                awayIsHost: HOST_NATIONS.has(mockPred.away),
+                isKnockout: false,
+              });
+              const realMapped = real
                 ? {
                     home: mockPred.home,
                     away: mockPred.away,
@@ -731,14 +736,28 @@ export default function WorldCup2026() {
                     awayWin: real.swapped ? real.home_win : real.away_win,
                     confidence: real.confidence,
                   }
-                : mockPred;
-              const isReal = !!real;
+                : null;
+              const modelTop = projected.homeWin >= projected.awayWin && projected.homeWin >= projected.draw ? "home" : projected.awayWin >= projected.homeWin && projected.awayWin >= projected.draw ? "away" : "draw";
+              const realTop = realMapped ? (realMapped.homeWin >= realMapped.awayWin && realMapped.homeWin >= realMapped.draw ? "home" : realMapped.awayWin >= realMapped.homeWin && realMapped.awayWin >= realMapped.draw ? "away" : "draw") : null;
+              const modelGap = Math.abs(wcStrength(mockPred.home) - wcStrength(mockPred.away));
+              const realContradictsStrength = !!realMapped && modelGap >= 12 && realTop !== modelTop;
+              const safeReal = realContradictsStrength ? null : real;
+              const pred = realMapped && !realContradictsStrength
+                ? realMapped
+                : {
+                    ...mockPred,
+                    homeWin: projected.homeWin,
+                    draw: projected.draw,
+                    awayWin: projected.awayWin,
+                    confidence: projected.confidence,
+                  };
+              const isReal = !!safeReal;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : isPro;
               // Keep predicted score consistent with the Over/Under call in AI analysis.
-              const rawScore = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
+              const rawScore = safeReal?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "1-2" : "1-1");
               const displayedScore = (() => {
-                const analysis = (real?.analysis || "").toLowerCase();
+                const analysis = (safeReal?.analysis || "").toLowerCase();
                 const wantsOver = /over\s*2\.?5/.test(analysis);
                 const wantsUnder = /under\s*2\.?5/.test(analysis);
                 const m = rawScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
@@ -806,7 +825,7 @@ export default function WorldCup2026() {
                     // Prefer the AI engine's own Over/Under + BTTS call (from analysis text)
                     // so the basic chips stay consistent with the Advanced AI Insight.
                     // Fall back to predicted-score math only when analysis is missing.
-                    const analysis = (real?.analysis || "").toLowerCase();
+                    const analysis = (safeReal?.analysis || "").toLowerCase();
                     let overUnder: "Over" | "Under" | null = null;
                     if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
                     else if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
@@ -859,9 +878,9 @@ export default function WorldCup2026() {
                         </div>
                         <div className="text-[10px] text-muted-foreground">
                           <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                          {real?.analysis
-                            ? real.analysis.slice(0, 180) + (real.analysis.length > 180 ? "…" : "")
-                            : `Pre-tournament projection based on FIFA rankings. Live AI analysis (form, xG, odds) activates on match day. ${pred.homeWin > pred.awayWin ? pred.home : pred.away} currently holds the edge.`}
+                          {safeReal?.analysis
+                            ? safeReal.analysis.slice(0, 180) + (safeReal.analysis.length > 180 ? "…" : "")
+                            : `Projection based on FIFA rank, Elo, squad value and recent international form. ${pred.homeWin > pred.awayWin ? pred.home : pred.awayWin > pred.homeWin ? pred.away : "Draw"} currently holds the edge.`}
                         </div>
                       </div>
                       {/* Lock overlay for non-premium */}
