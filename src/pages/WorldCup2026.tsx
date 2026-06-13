@@ -790,13 +790,29 @@ export default function WorldCup2026() {
 
                   {/* === BASIC: Over/Under + BTTS (derived from predicted score for consistency) === */}
                   {showBasic && (() => {
-                    const scoreStr = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
-                    const m = scoreStr.match(/^(\d+)\s*[-:]\s*(\d+)$/);
-                    const hg = m ? parseInt(m[1], 10) : 1;
-                    const ag = m ? parseInt(m[2], 10) : 1;
-                    const total = hg + ag;
-                    const overUnder = total >= 3 ? "Over" : "Under";
-                    const btts = hg >= 1 && ag >= 1 ? "Yes" : "No";
+                    // Prefer the AI engine's own Over/Under + BTTS call (from analysis text)
+                    // so the basic chips stay consistent with the Advanced AI Insight.
+                    // Fall back to predicted-score math only when analysis is missing.
+                    const analysis = (real?.analysis || "").toLowerCase();
+                    let overUnder: "Over" | "Under" | null = null;
+                    if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
+                    else if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
+                    let btts: "Yes" | "No" | null = null;
+                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
+                    else if (/btts[^.]*\bno\b|over\/btts favored/.test(analysis)) btts = btts; // leave null, handled below
+                    if (overUnder === null || btts === null) {
+                      const scoreStr = real?.predicted_score || (pred.homeWin > pred.awayWin ? "2-1" : pred.awayWin > pred.homeWin ? "0-1" : "1-1");
+                      const m = scoreStr.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                      const hg = m ? parseInt(m[1], 10) : 1;
+                      const ag = m ? parseInt(m[2], 10) : 1;
+                      const total = hg + ag;
+                      if (overUnder === null) overUnder = total >= 3 ? "Over" : "Under";
+                      if (btts === null) btts = hg >= 1 && ag >= 1 ? "Yes" : "No";
+                    }
+                    // If analysis explicitly favors Over/BTTS, force BTTS Yes for consistency.
+                    if (overUnder === "Over" && /over\/btts favored|btts favored/.test(analysis)) {
+                      btts = "Yes";
+                    }
                     return (
                       <div className="grid grid-cols-2 gap-2 text-center mb-2">
                         <div className="bg-muted/20 rounded p-1.5">
