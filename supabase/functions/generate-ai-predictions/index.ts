@@ -8292,7 +8292,40 @@ async function processBatch(
       const nearKickoff = hoursToKickoffFreeze <= 5;
       const leagueName = (fixture?.league?.name || pred.league || "").toLowerCase();
       const isWorldCup = leagueName.includes("world cup");
-      const wcAlreadyPicked = isWorldCup && !!pred.prediction;
+
+      // === WORLD CUP — FIFA RANKING BOOST ===
+      // Adjust probabilities toward the higher-ranked nation. Reps play rarely
+      // so form/odds alone can let an underdog slip ahead.
+      if (isWorldCup) {
+        const boosted = applyFifaRankBoost(
+          {
+            home_win: newPrediction.home_win,
+            draw: newPrediction.draw,
+            away_win: newPrediction.away_win,
+            confidence: newPrediction.confidence,
+            prediction: newPrediction.prediction,
+            predicted_score: newPrediction.predicted_score,
+          },
+          homeTeamName,
+          awayTeamName,
+        );
+        if (boosted.prediction !== newPrediction.prediction) {
+          console.log(
+            `[WC FIFA] ${homeTeamName} vs ${awayTeamName}: pick ${newPrediction.prediction} → ${boosted.prediction} (probs ${boosted.home_win}/${boosted.draw}/${boosted.away_win})`,
+          );
+        }
+        newPrediction.home_win = boosted.home_win;
+        newPrediction.draw = boosted.draw;
+        newPrediction.away_win = boosted.away_win;
+        newPrediction.prediction = boosted.prediction;
+        newPrediction.predicted_score = boosted.predicted_score;
+      }
+
+      // Freeze WC picks once they match the FIFA-adjusted call — but allow ONE
+      // overwrite when the previously stored pick contradicts FIFA ranking
+      // (e.g. older Brazil-vs-Morocco picked Morocco before the boost existed).
+      const wcAlreadyPicked =
+        isWorldCup && !!pred.prediction && pred.prediction === newPrediction.prediction;
       const isFrozen =
         unlockedPredictionIds.has(String(pred.id)) ||
         nearKickoff ||
