@@ -565,7 +565,19 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
  * Get the best pick's market type for a prediction.
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
-  return getMarketCandidates(prediction)[0].type;
+  const best = getMarketCandidates(prediction)[0].type;
+
+  // Upgrade Over 1.5 → Over 2.5 when the model also expects a high-scoring game
+  // (Over 3.5 ≥ 50%). Avoids repetitive "Over 1.5" best picks when the AI is
+  // clearly forecasting plenty of goals.
+  if (best === "over15") {
+    const probs = calculateGoalMarketProbs(prediction);
+    if (probs.over35 >= 50 && probs.over25 >= 70) {
+      return "over25";
+    }
+  }
+
+  return best;
 }
 
 /**
