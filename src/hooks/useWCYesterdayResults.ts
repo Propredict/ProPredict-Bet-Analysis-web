@@ -163,7 +163,8 @@ export function useWCYesterdayResults() {
             actualSide,
             isWin: !!found && (pickedSide === actualSide || marketHit),
           };
-        });
+        })
+        .filter((item) => item.isWin);
     },
     staleTime: 5 * 60_000,
     refetchInterval: 5 * 60_000,
