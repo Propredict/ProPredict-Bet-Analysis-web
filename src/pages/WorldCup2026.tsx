@@ -906,7 +906,7 @@ export default function WorldCup2026() {
               );
               });
             })()}
-            {yesterdayResults.filter((r) => r.pick).length > 0 && (() => {
+            {(() => {
               const finishedWithPick = yesterdayResults
                 .filter((r) => r.pick)
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
@@ -918,10 +918,21 @@ export default function WorldCup2026() {
                     <Activity className="h-3.5 w-3.5 text-emerald-400" />
                     Finished — Yesterday's Results
                   </h3>
-                  <span className="text-[10px] text-muted-foreground">
-                    {finishedWithPick.filter((r) => r.isWin).length}/{finishedWithPick.length} hit
-                  </span>
+                  {finishedWithPick.length > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {finishedWithPick.filter((r) => r.isWin).length}/{finishedWithPick.length} hit
+                    </span>
+                  )}
                 </div>
+                {finishedWithPick.length === 0 && (
+                  <Card className="bg-card border-border p-3 text-center">
+                    <p className="text-[11px] text-muted-foreground">
+                      {isLoadingYesterday
+                        ? "Loading yesterday's results…"
+                        : "No finished World Cup picks from yesterday yet. New finished matches will appear here automatically."}
+                    </p>
+                  </Card>
+                )}
                 <div className="space-y-3">
                   {finishedWithPick.map((r) => {
                     // Align UI Home/Away with the actual fixture, swapping DB pick probs if needed.
