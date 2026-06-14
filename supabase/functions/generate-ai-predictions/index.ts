@@ -8312,38 +8312,12 @@ async function processBatch(
       const leagueName = (fixture?.league?.name || pred.league || "").toLowerCase();
       const isWorldCup = leagueName.includes("world cup");
 
-      // === WORLD CUP — REALISTIC NATIONAL-TEAM MODEL ===
-      // Anchor WC picks to API-Football fixture data + composite national-team
-      // strength (FIFA rank, Elo, squad value, recent form). This prevents sparse
-      // international samples from making Haiti favoured over Scotland or Morocco
-      // favoured over Brazil without a truly strong live signal.
-      if (isWorldCup) {
-        const boosted = applyWorldCupStrengthModel(
-          {
-            home_win: newPrediction.home_win,
-            draw: newPrediction.draw,
-            away_win: newPrediction.away_win,
-            confidence: newPrediction.confidence,
-            prediction: newPrediction.prediction,
-            predicted_score: newPrediction.predicted_score,
-            analysis: newPrediction.analysis,
-          },
-          homeTeamName,
-          awayTeamName,
-        );
-        if (boosted.prediction !== newPrediction.prediction) {
-          console.log(
-            `[WC MODEL] ${homeTeamName} vs ${awayTeamName}: pick ${newPrediction.prediction} → ${boosted.prediction} (probs ${boosted.home_win}/${boosted.draw}/${boosted.away_win})`,
-          );
-        }
-        newPrediction.home_win = boosted.home_win;
-        newPrediction.draw = boosted.draw;
-        newPrediction.away_win = boosted.away_win;
-        newPrediction.prediction = boosted.prediction;
-        newPrediction.predicted_score = boosted.predicted_score;
-        newPrediction.confidence = boosted.confidence;
-        newPrediction.analysis = boosted.analysis ?? newPrediction.analysis;
-      }
+      // === WORLD CUP — FIFA-RANKING OVERRIDE DISABLED ===
+      // The unified Form/Odds/xG model produced sharper WC picks during the
+      // first 2 days of the tournament than the FIFA-rank/Elo strength override.
+      // Bookmaker odds already encode national-team strength fairly, so we
+      // let WC fixtures run through the same pipeline as club matches.
+      // (Keeping `applyWorldCupStrengthModel` defined for potential debug use.)
 
       // Freeze WC picks once they match the WC model — but always allow a
       // corrective overwrite when the stored row contradicts the model.
