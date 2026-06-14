@@ -876,6 +876,39 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          content: string
+          conversation_user_id: string
+          created_at: string
+          id: string
+          read_by_admin: boolean
+          read_by_user: boolean
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          content: string
+          conversation_user_id: string
+          created_at?: string
+          id?: string
+          read_by_admin?: boolean
+          read_by_user?: boolean
+          sender_id: string
+          sender_role: string
+        }
+        Update: {
+          content?: string
+          conversation_user_id?: string
+          created_at?: string
+          id?: string
+          read_by_admin?: boolean
+          read_by_user?: boolean
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: []
+      }
       ticket_matches: {
         Row: {
           away_team: string | null
