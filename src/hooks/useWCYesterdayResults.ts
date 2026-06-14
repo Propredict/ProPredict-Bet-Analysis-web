@@ -64,9 +64,6 @@ export function useWCYesterdayResults() {
         ...(fxYesterday.data?.fixtures ?? []),
         ...(fxToday.data?.fixtures ?? []),
       ];
-      const fixtures: WCTodayFixture[] = allFx.filter(
-        (f: WCTodayFixture) => f.status === "finished",
-      );
       const picks = (predRes.data ?? []) as WCYesterdayAIPick[];
 
       // Tolerant name normalizer — handles "Czechia" vs "Czech Republic",
@@ -106,6 +103,41 @@ export function useWCYesterdayResults() {
         if (rev) return { p: rev, swapped: true };
         return null;
       };
+
+      // Determine which picks didn't match an API WC fixture, then fall back
+      // to /fixtures?date=... (no league filter) to recover scores for
+      // friendlies/qualifiers (e.g. Australia vs Türkiye).
+      const fixtures: WCTodayFixture[] = allFx.filter(
+        (f: WCTodayFixture) => f.status === "finished",
+      );
+      const unmatchedPicks = picks.filter(
+        (p) =>
+          !fixtures.some(
+            (f) =>
+              (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+              (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+          ),
+      );
+      if (unmatchedPicks.length > 0) {
+        const dates = Array.from(new Set(unmatchedPicks.map((p) => p.match_date).filter(Boolean))) as string[];
+        const extraResults = await Promise.all(
+          dates.map((d) =>
+            supabase.functions.invoke("get-fixtures-by-date", { body: { date: d } }),
+          ),
+        );
+        const extras: WCTodayFixture[] = extraResults.flatMap(
+          (r) => (r.data?.fixtures ?? []) as WCTodayFixture[],
+        );
+        for (const p of unmatchedPicks) {
+          const match = extras.find(
+            (f) =>
+              f.status === "finished" &&
+              ((norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))),
+          );
+          if (match) fixtures.push(match);
+        }
+      }
 
       return fixtures
         .filter((f) => f.homeScore !== null && f.awayScore !== null)
