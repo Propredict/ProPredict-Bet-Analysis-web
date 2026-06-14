@@ -5131,6 +5131,43 @@ function calculatePrediction(
     }
   }
 
+  // Rule C11: Probability ↔ Score alignment.
+  // If one side has a clearly higher win probability than the other,
+  // the predicted score must NOT show that side losing. This protects
+  // against cases like homeWin=70 / awayWin=12 ending up with a 1-2
+  // predicted score (which contradicts the published probabilities the
+  // user sees on the card).
+  // Skip when the user-facing pick is a draw or away-friendly market
+  // (X, DC X2, away-side handicap) — those have their own rules above.
+  {
+    const probGap = homeWin - awayWin;
+    const sp = predictedScore.split("-").map(Number);
+    const h = sp[0] ?? 0, a = sp[1] ?? 0;
+    const isDrawPick = prediction === "X" || prediction === "DC X2";
+    const isAwayPick = prediction === "2";
+
+    // Home is the statistical favorite — score cannot show away winning.
+    if (probGap >= 20 && !isDrawPick && !isAwayPick && h < a) {
+      // Mirror the score so home is on top, preserving total goals + BTTS.
+      predictedScore = `${a}-${h}`;
+    }
+    // Away is the statistical favorite — score cannot show home winning.
+    if (probGap <= -20 && prediction !== "X" && prediction !== "DC 1X" && prediction !== "1" && h > a) {
+      predictedScore = `${a}-${h}`;
+    }
+
+    // Strong single-side dominance (>= 65%) and pick aligns with it:
+    // ensure score reflects a clear win margin (>= 1 goal difference).
+    const sp2 = predictedScore.split("-").map(Number);
+    const h2 = sp2[0] ?? 0, a2 = sp2[1] ?? 0;
+    if (homeWin >= 65 && prediction === "1" && h2 <= a2) {
+      predictedScore = `${Math.max(a2 + 1, Math.round(homeXg))}-${a2}`;
+    }
+    if (awayWin >= 65 && prediction === "2" && a2 <= h2) {
+      predictedScore = `${h2}-${Math.max(h2 + 1, Math.round(awayXg))}`;
+    }
+  }
+
   let bookmakerProb = 0;
   let aiProb = bestProb;
   let oddsAlignmentAdjust = 0;
