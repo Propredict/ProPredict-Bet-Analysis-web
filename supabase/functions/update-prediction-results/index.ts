@@ -14,6 +14,7 @@ interface AIPrediction {
   home_team: string;
   away_team: string;
   match_date: string | null;
+  league?: string | null;
 }
 
 interface FixtureResponse {
@@ -51,7 +52,7 @@ Deno.serve(async (req) => {
     // Fetch pending predictions with valid match_date in the last 3 days
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, prediction, result_status, home_team, away_team, match_date")
+      .select("id, match_id, prediction, result_status, home_team, away_team, match_date, league")
       .eq("result_status", "pending")
       .not("match_date", "is", null)
       .gte("match_date", formatDate(threeDaysAgo))
@@ -198,6 +199,32 @@ Deno.serve(async (req) => {
           console.log(
             `✓ ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
           );
+
+          // --- WC26 win push: notify all users when a World Cup AI pick WINS ---
+          try {
+            const leagueStr = (prediction.league ?? "").toLowerCase();
+            const isWorldCup = /world\s*cup/.test(leagueStr);
+            if (newStatus === "won" && isWorldCup) {
+              await supabase.functions.invoke("send-win-push", {
+                body: {
+                  type: "wc_pick",
+                  record: {
+                    id: prediction.id,
+                    result: "won",
+                    tier: "free",
+                    home_team: prediction.home_team,
+                    away_team: prediction.away_team,
+                    league: prediction.league,
+                    prediction: prediction.prediction,
+                    score: `${homeGoals}-${awayGoals}`,
+                  },
+                },
+              });
+              console.log(`📣 WC win push dispatched for ${prediction.home_team} vs ${prediction.away_team}`);
+            }
+          } catch (pushErr) {
+            console.error("WC win push error:", pushErr);
+          }
 
           // --- Arena: insert FT notifications + resolve predictions ---
           try {

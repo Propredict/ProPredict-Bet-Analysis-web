@@ -25,6 +25,12 @@ const categoryRouteMap: Record<string, string> = {
 
 /* ── Headline matrix ── */
 function getWinHeadline(contentTier: string, userPlan: string, category?: string): string {
+  // World Cup picks take top priority
+  if (category === "wc_pick" || contentTier === "wc_pick") {
+    if (userPlan === "premium" || userPlan === "pro") return "🏆 World Cup Pick WON!";
+    return "🏆 World Cup Pick WON — Don't Miss the Next One!";
+  }
+
   // Category-specific headlines take priority
   if (category === "diamond_pick") {
     if (userPlan === "premium") return "💎 Diamond Pick WON!";
@@ -58,6 +64,16 @@ function getWinHeadline(contentTier: string, userPlan: string, category?: string
 
 function getWinBody(type: string, record: Record<string, unknown>): string {
   const category = record.category as string | undefined;
+
+  if (type === "wc_pick") {
+    const home = record.home_team ?? "";
+    const away = record.away_team ?? "";
+    const score = record.score ?? "";
+    const matchLabel = home && away ? `${home} vs ${away}` : "Our World Cup pick";
+    return score
+      ? `${matchLabel} ended ${score} — our AI pick CASHED. Tap to see today's World Cup picks.`
+      : `${matchLabel} — our World Cup AI pick CASHED. Tap to see today's picks.`;
+  }
 
   if (type === "tip") {
     const home = record.home_team ?? "";
@@ -112,19 +128,23 @@ serve(async (req) => {
     }
 
     if (type !== "tip" && type !== "ticket") {
-      return new Response(JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (type !== "wc_pick") {
+        return new Response(JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    const contentTier = record.tier ?? "free";
-    const category = record.category as string | undefined;
+    const contentTier = type === "wc_pick" ? "wc_pick" : (record.tier ?? "free");
+    const category = type === "wc_pick" ? "wc_pick" : (record.category as string | undefined);
     const winBody = getWinBody(type, record);
     const bigPicture = "https://propredict.me/push-win.jpg";
 
     /* ── Build nav_path based on category first, then tier ── */
     let navPath: string;
-    if (category && categoryRouteMap[category]) {
+    if (type === "wc_pick") {
+      navPath = `/world-cup-2026?highlight=${record.id}&result=won`;
+    } else if (category && categoryRouteMap[category]) {
       navPath = `${categoryRouteMap[category]}?highlight=${record.id}&result=won`;
     } else {
       const tierRouteMap: Record<string, string> = {
