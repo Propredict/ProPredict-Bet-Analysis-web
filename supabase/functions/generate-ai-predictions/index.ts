@@ -9025,6 +9025,22 @@ serve(async (req: Request) => {
       return handleRegenerate(apiKey);
     }
 
+    // Manual admin override — set specific fields on an ai_predictions row by match_id.
+    if (body.adminOverride === true && body.match_id && body.fields) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data, error } = await supabase
+        .from("ai_predictions")
+        .update({ ...body.fields, updated_at: new Date().toISOString() })
+        .eq("match_id", String(body.match_id))
+        .select();
+      return new Response(
+        JSON.stringify({ ok: !error, error: error?.message, updated: data?.length ?? 0, rows: data }),
+        { status: error ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // WC-only forced regenerate — recomputes today's + tomorrow's World Cup
     // ai_predictions using the unified Form/Odds/xG pipeline and writes the
     // fresh pick straight to the DB (bypasses the WC/nearKickoff freeze).
