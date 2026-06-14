@@ -14,6 +14,7 @@ interface AIPrediction {
   home_team: string;
   away_team: string;
   match_date: string | null;
+  league?: string | null;
 }
 
 interface FixtureResponse {
@@ -51,7 +52,7 @@ Deno.serve(async (req) => {
     // Fetch pending predictions with valid match_date in the last 3 days
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, prediction, result_status, home_team, away_team, match_date")
+      .select("id, match_id, prediction, result_status, home_team, away_team, match_date, league")
       .eq("result_status", "pending")
       .not("match_date", "is", null)
       .gte("match_date", formatDate(threeDaysAgo))
