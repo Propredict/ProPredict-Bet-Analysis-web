@@ -9056,6 +9056,27 @@ serve(async (req: Request) => {
       );
     }
 
+    // Admin: upsert a row into match_scores_cache (used to record actual scores
+    // for synthetic WC entries whose fixture is not returned by API-Football).
+    if (body.adminScoreCache === true && body.match_id) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data, error } = await supabase
+        .from("match_scores_cache")
+        .upsert({
+          match_id: String(body.match_id),
+          home_score: body.home_score ?? null,
+          away_score: body.away_score ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .select();
+      return new Response(
+        JSON.stringify({ ok: !error, error: error?.message, rows: data }),
+        { status: error ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // WC-only forced regenerate — recomputes today's + tomorrow's World Cup
     // ai_predictions using the unified Form/Odds/xG pipeline and writes the
     // fresh pick straight to the DB (bypasses the WC/nearKickoff freeze).

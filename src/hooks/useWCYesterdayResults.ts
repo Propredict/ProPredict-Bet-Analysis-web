@@ -64,9 +64,6 @@ export function useWCYesterdayResults() {
         ...(fxYesterday.data?.fixtures ?? []),
         ...(fxToday.data?.fixtures ?? []),
       ];
-      const fixtures: WCTodayFixture[] = allFx.filter(
-        (f: WCTodayFixture) => f.status === "finished",
-      );
       const picks = (predRes.data ?? []) as WCYesterdayAIPick[];
 
       // Tolerant name normalizer — handles "Czechia" vs "Czech Republic",
@@ -106,6 +103,80 @@ export function useWCYesterdayResults() {
         if (rev) return { p: rev, swapped: true };
         return null;
       };
+
+      // Determine which picks didn't match an API WC fixture, then fall back
+      // to /fixtures?date=... (no league filter) to recover scores for
+      // friendlies/qualifiers (e.g. Australia vs Türkiye).
+      const fixtures: WCTodayFixture[] = allFx.filter(
+        (f: WCTodayFixture) => f.status === "finished",
+      );
+      const unmatchedPicks = picks.filter(
+        (p) =>
+          !fixtures.some(
+            (f) =>
+              (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+              (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+          ),
+      );
+      if (unmatchedPicks.length > 0) {
+        const dates = Array.from(new Set(unmatchedPicks.map((p) => p.match_date).filter(Boolean))) as string[];
+        const extraResults = await Promise.all(
+          dates.map((d) =>
+            supabase.functions.invoke("get-fixtures-by-date", { body: { date: d } }),
+          ),
+        );
+        const extras: WCTodayFixture[] = extraResults.flatMap(
+          (r) => (r.data?.fixtures ?? []) as WCTodayFixture[],
+        );
+        for (const p of unmatchedPicks) {
+          const match = extras.find(
+            (f) =>
+              f.status === "finished" &&
+              ((norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))),
+          );
+          if (match) fixtures.push(match);
+        }
+
+        // Final fallback: look up actual score in match_scores_cache by
+        // ai_predictions.match_id for picks still without a fixture (e.g.
+        // synthetic WC entries not present in the football API at all).
+        const stillUnmatched = unmatchedPicks.filter(
+          (p) =>
+            !fixtures.some(
+              (f) =>
+                (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+            ),
+        );
+        if (stillUnmatched.length > 0) {
+          const ids = stillUnmatched.map((p) => p.match_id);
+          const { data: cache } = await supabase
+            .from("match_scores_cache")
+            .select("match_id, home_score, away_score")
+            .in("match_id", ids);
+          for (const p of stillUnmatched) {
+            const c = (cache ?? []).find((r) => r.match_id === p.match_id);
+            if (c && c.home_score !== null && c.away_score !== null) {
+              fixtures.push({
+                id: p.match_id,
+                homeTeam: p.home_team,
+                awayTeam: p.away_team,
+                homeLogo: null,
+                awayLogo: null,
+                homeScore: c.home_score,
+                awayScore: c.away_score,
+                status: "finished",
+                statusShort: "FT",
+                minute: 90,
+                startTime: p.match_date,
+                venue: null,
+                round: null,
+              } as unknown as WCTodayFixture);
+            }
+          }
+        }
+      }
 
       return fixtures
         .filter((f) => f.homeScore !== null && f.awayScore !== null)
