@@ -5009,15 +5009,25 @@ function calculatePrediction(
   const predTotalGoals = predHomeGoals + predAwayGoals;
   const predBothScored = predHomeGoals > 0 && predAwayGoals > 0;
 
+  // Substring flags — also catches combo picks like "Under 2.5 & BTTS No"
+  // or "BTTS Yes & Over 2.5". Without this, combo predictions skip the
+  // consistency rules and a 1-2 predicted score could ship alongside an
+  // "Under 2.5" pick.
+  const predLower = prediction.toLowerCase();
+  const wantsOver25 = /over\s*2\.?5/.test(predLower) || /over\s*3\.?5/.test(predLower);
+  const wantsUnder25 = /under\s*2\.?5/.test(predLower) || /under\s*1\.?5/.test(predLower);
+  const wantsBttsYes = /btts\s*yes|both teams to score[^.]*yes|\bgg\b/.test(predLower);
+  const wantsBttsNo = /btts\s*no|both teams to score[^.]*no|\bng\b/.test(predLower);
+
   // Rule C1: Over 2.5 prediction → score must have 3+ goals
-  if ((prediction === "Over 2.5" || prediction === "Over 3.5") && predTotalGoals < 3) {
+  if (wantsOver25 && predTotalGoals < 3) {
     const hg = Math.max(1, Math.round(homeXg * 1.1));
     const ag = Math.max(1, Math.round(awayXg * 1.1));
     predictedScore = hg + ag >= 3 ? `${hg}-${ag}` : (homeXg > awayXg ? "2-1" : "1-2");
   }
 
-  // Rule C2: Under 2.5 prediction → score must have ≤2 goals  
-  if ((prediction === "Under 2.5" || prediction === "Under 1.5") && predTotalGoals > 2) {
+  // Rule C2: Under 2.5 prediction → score must have ≤2 goals
+  if (wantsUnder25 && predTotalGoals > 2) {
     const diff = homeXg - awayXg;
     const totalXg = homeXg + awayXg;
     if (totalXg < 1.4 && Math.abs(diff) < 0.3) predictedScore = "0-0";
@@ -5029,16 +5039,32 @@ function calculatePrediction(
   }
 
   // Rule C3: BTTS Yes → both teams must score in predicted score
-  if (prediction === "BTTS Yes" && !predBothScored) {
+  if (wantsBttsYes && !predBothScored) {
     const hg = Math.max(1, Math.round(homeXg));
     const ag = Math.max(1, Math.round(awayXg));
     predictedScore = `${hg}-${ag}`;
   }
 
   // Rule C4: BTTS No → at least one team must have 0 in predicted score
-  if (prediction === "BTTS No" && predBothScored) {
+  if (wantsBttsNo && predBothScored) {
     if (homeXg > awayXg) predictedScore = `${Math.max(1, Math.round(homeXg))}-0`;
     else predictedScore = `0-${Math.max(1, Math.round(awayXg))}`;
+  }
+
+  // Final cross-check: re-parse and ensure Under + BTTS-No combo still
+  // satisfies BOTH constraints (the Under-pass above could leave a 1-1
+  // which violates BTTS No; the BTTS-No-pass could push goals back up).
+  if (wantsUnder25 || wantsBttsNo) {
+    const sp = predictedScore.split("-").map(Number);
+    const h = sp[0] ?? 0, a = sp[1] ?? 0, tot = h + a, both = h > 0 && a > 0;
+    if ((wantsUnder25 && tot > 2) || (wantsBttsNo && both)) {
+      if (homeXg >= awayXg) predictedScore = wantsBttsNo ? (homeXg >= 1.2 ? "1-0" : "0-0") : (wantsUnder25 ? "1-1" : `${h}-${a}`);
+      else predictedScore = wantsBttsNo ? (awayXg >= 1.2 ? "0-1" : "0-0") : (wantsUnder25 ? "1-1" : `${h}-${a}`);
+      // If both Under AND BTTS-No required, always go to single-team score
+      if (wantsUnder25 && wantsBttsNo) {
+        predictedScore = homeXg >= awayXg ? "1-0" : "0-1";
+      }
+    }
   }
 
   // Rule C5: Strong favorite (homeWin ≥ 60 or awayWin ≥ 60) → score must reflect winner
