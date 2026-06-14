@@ -137,6 +137,45 @@ export function useWCYesterdayResults() {
           );
           if (match) fixtures.push(match);
         }
+
+        // Final fallback: look up actual score in match_scores_cache by
+        // ai_predictions.match_id for picks still without a fixture (e.g.
+        // synthetic WC entries not present in the football API at all).
+        const stillUnmatched = unmatchedPicks.filter(
+          (p) =>
+            !fixtures.some(
+              (f) =>
+                (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+            ),
+        );
+        if (stillUnmatched.length > 0) {
+          const ids = stillUnmatched.map((p) => p.match_id);
+          const { data: cache } = await supabase
+            .from("match_scores_cache")
+            .select("match_id, home_score, away_score")
+            .in("match_id", ids);
+          for (const p of stillUnmatched) {
+            const c = (cache ?? []).find((r) => r.match_id === p.match_id);
+            if (c && c.home_score !== null && c.away_score !== null) {
+              fixtures.push({
+                id: p.match_id,
+                homeTeam: p.home_team,
+                awayTeam: p.away_team,
+                homeLogo: null,
+                awayLogo: null,
+                homeScore: c.home_score,
+                awayScore: c.away_score,
+                status: "finished",
+                statusShort: "FT",
+                minute: 90,
+                startTime: p.match_date,
+                venue: null,
+                round: null,
+              } as unknown as WCTodayFixture);
+            }
+          }
+        }
       }
 
       return fixtures
