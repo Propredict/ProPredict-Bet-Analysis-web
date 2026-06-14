@@ -128,7 +128,7 @@ const Index = () => {
               Join us on Telegram
             </a>
             <Link
-              to="/subscription"
+              to="/get-premium"
               className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-fuchsia-600 via-violet-600 to-fuchsia-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-fuchsia-500/40 ring-2 ring-fuchsia-300/40 hover:opacity-95 hover:scale-[1.03] transition-all animate-blink"
               aria-label="Become Premium and unlock all tips and predictions for one month"
             >
