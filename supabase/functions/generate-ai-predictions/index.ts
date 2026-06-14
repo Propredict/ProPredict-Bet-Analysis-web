@@ -9025,6 +9025,85 @@ serve(async (req: Request) => {
       return handleRegenerate(apiKey);
     }
 
+    // WC-only forced regenerate — recomputes today's + tomorrow's World Cup
+    // ai_predictions using the unified Form/Odds/xG pipeline and writes the
+    // fresh pick straight to the DB (bypasses the WC/nearKickoff freeze).
+    if (body.wcRegenerateNow === true) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const today = new Date();
+      const tomorrow = new Date(today.getTime() + 86400000);
+      const dates = [today.toISOString().split("T")[0], tomorrow.toISOString().split("T")[0]];
+      const { data: rows, error } = await supabase
+        .from("ai_predictions")
+        .select("id, match_id, home_team, away_team")
+        .ilike("league", "%world cup%")
+        .in("match_date", dates)
+        .limit(200);
+      if (error) throw error;
+      const results: any[] = [];
+      for (const row of rows ?? []) {
+        try {
+          const fixtureRes = await fetch(`${API_FOOTBALL_URL}/fixtures?id=${row.match_id}`, {
+            headers: { "x-rapidapi-host": "v3.football.api-sports.io", "x-rapidapi-key": apiKey },
+          });
+          const fixtureData = await fixtureRes.json();
+          const fixture = fixtureData.response?.[0];
+          if (!fixture) { results.push({ match_id: row.match_id, skipped: "fixture_not_found" }); continue; }
+          const homeTeamId = fixture.teams?.home?.id;
+          const awayTeamId = fixture.teams?.away?.id;
+          const leagueId = fixture.league?.id;
+          const season = fixture.league?.season || new Date().getFullYear();
+          if (!homeTeamId || !awayTeamId) { results.push({ match_id: row.match_id, skipped: "no_teams" }); continue; }
+          const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+            fetchTeamForm(homeTeamId, apiKey, 10),
+            fetchTeamForm(awayTeamId, apiKey, 10),
+            fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
+            leagueId ? fetchTeamStats(homeTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+            leagueId ? fetchTeamStats(awayTeamId, leagueId, season, apiKey) : Promise.resolve(null),
+            leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
+            fetchOdds(String(row.match_id), apiKey),
+          ]);
+          const pred = calculatePrediction(
+            homeForm, awayForm, homeStats, awayStats, h2h,
+            homeTeamId, awayTeamId,
+            fixture.teams?.home?.name || row.home_team,
+            fixture.teams?.away?.name || row.away_team,
+            standings, odds, fixture.league?.name, leagueId,
+            fixture.league?.round, fixture.fixture?.date
+          );
+          const { error: updErr } = await supabase.from("ai_predictions").update({
+            prediction: pred.prediction,
+            predicted_score: pred.predicted_score,
+            confidence: pred.confidence,
+            home_win: pred.home_win,
+            draw: pred.draw,
+            away_win: pred.away_win,
+            risk_level: pred.risk_level,
+            analysis: pred.analysis,
+            is_locked: false,
+            updated_at: new Date().toISOString(),
+          }).eq("id", row.id);
+          results.push({
+            match_id: row.match_id,
+            teams: `${row.home_team} vs ${row.away_team}`,
+            prediction: pred.prediction,
+            score: pred.predicted_score,
+            confidence: pred.confidence,
+            updated: !updErr,
+            error: updErr?.message,
+          });
+        } catch (e) {
+          results.push({ match_id: row.match_id, error: String(e) });
+        }
+      }
+      return new Response(
+        JSON.stringify({ ok: true, mode: "wcRegenerateNow", dates, count: results.length, results }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Tier-only reassignment: re-runs assignTiers + Premium Edge logic
     // on existing rows WITHOUT calling API-Football (no rate-limit risk).
     if (body.tierAssignmentOnly === true) {
