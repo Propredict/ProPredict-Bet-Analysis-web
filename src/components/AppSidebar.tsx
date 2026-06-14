@@ -30,6 +30,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { useAdminSupportUnread } from "@/hooks/useAdminSupportUnread";
 import logoImage from "@/assets/logo.png";
 
 import {
@@ -88,6 +89,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { isAdmin } = useAdminAccess();
+  const supportUnread = useAdminSupportUnread();
 
   // Auto-close mobile menu on navigation
   useEffect(() => {
@@ -347,6 +349,11 @@ export function AppSidebar() {
                       >
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span>{item.title}</span>}
+                        {item.url === "/admin/support" && supportUnread > 0 && (
+                          <span className={`ml-auto h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse ${collapsed ? "absolute top-0 right-0" : ""}`}>
+                            {supportUnread > 9 ? "9+" : supportUnread}
+                          </span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
