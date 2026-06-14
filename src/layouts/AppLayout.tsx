@@ -38,6 +38,7 @@ import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
 import { RateAppPopup } from "@/components/RateAppPopup";
 import { useAppRating } from "@/hooks/useAppRating";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
+import { AdminSupportFloating } from "@/components/AdminSupportFloating";
 
 
 // Pages where footer should be hidden (header-only layout)
