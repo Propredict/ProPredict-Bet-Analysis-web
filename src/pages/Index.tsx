@@ -127,6 +127,16 @@ const Index = () => {
               </svg>
               Join us on Telegram
             </a>
+            <Link
+              to="/subscription"
+              className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-fuchsia-600 via-violet-600 to-fuchsia-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-fuchsia-500/40 ring-2 ring-fuchsia-300/40 hover:opacity-95 hover:scale-[1.03] transition-all"
+              aria-label="Become Premium and unlock all tips and predictions for one month"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
+                <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
+              </svg>
+              Be Premium — Unlock All Tips & Predictions for 1 Month
+            </Link>
           </div>
         </div>
 
