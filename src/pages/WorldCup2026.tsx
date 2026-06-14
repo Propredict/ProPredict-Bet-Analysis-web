@@ -416,9 +416,9 @@ export default function WorldCup2026() {
                             <div key={t} className={`flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded ${
                               idx < 2 ? "bg-emerald-500/10 text-emerald-400" : idx === 3 ? "bg-destructive/10 text-destructive" : "text-muted-foreground"
                             }`}>
-                              <span className="truncate flex items-center gap-1">
-                                {td && <TeamFlag code={td.code} size="sm" />} {t}
-                              </span>
+                               <span className="truncate flex items-center gap-1">
+                                 {td && <TeamFlag code={td.code} size="sm" />} {t === "United States" ? "USA" : t}
+                               </span>
                               <span className="text-[9px] font-mono">
                                 {hasPlayed ? `${live?.points ?? 0}` : `#${td?.fifaRank}`}
                               </span>
@@ -432,7 +432,7 @@ export default function WorldCup2026() {
                             const td = TEAMS[t];
                             return (
                               <div key={t} className="text-[10px] text-muted-foreground px-1">
-                                <span className="font-medium text-foreground flex items-center gap-1">{td && <TeamFlag code={td.code} size="sm" />} {t}</span>
+                                 <span className="font-medium text-foreground flex items-center gap-1">{td && <TeamFlag code={td.code} size="sm" />} {t === "United States" ? "USA" : t}</span>
                                 <span className="ml-1">· {td?.coach}</span>
                               </div>
                             );
@@ -1245,9 +1245,9 @@ export default function WorldCup2026() {
                               }`}
                               onClick={isPro ? () => setSelectedTeam(t) : undefined}
                             >
-                              <span className="col-span-4 truncate font-medium flex items-center gap-1">
-                                {td && <TeamFlag code={td.code} size="sm" />} {t}
-                              </span>
+                               <span className="col-span-4 truncate font-medium flex items-center gap-1">
+                                 {td && <TeamFlag code={td.code} size="sm" />} {t === "United States" ? "USA" : t}
+                               </span>
                               <span className="text-center">{played}</span>
                               <span className="text-center">{win}</span>
                               <span className="text-center">{gd}</span>
