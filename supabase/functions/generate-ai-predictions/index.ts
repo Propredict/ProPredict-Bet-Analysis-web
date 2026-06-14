@@ -9030,11 +9030,26 @@ serve(async (req: Request) => {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase
+      const matchId = String(body.match_id);
+      // Upsert: if no row exists for match_id, insert it (used for synthetic WC entries).
+      const { data: existing } = await supabase
         .from("ai_predictions")
-        .update({ ...body.fields, updated_at: new Date().toISOString() })
-        .eq("match_id", String(body.match_id))
-        .select();
+        .select("id")
+        .eq("match_id", matchId)
+        .maybeSingle();
+      let data, error;
+      if (existing) {
+        ({ data, error } = await supabase
+          .from("ai_predictions")
+          .update({ ...body.fields, updated_at: new Date().toISOString() })
+          .eq("match_id", matchId)
+          .select());
+      } else {
+        ({ data, error } = await supabase
+          .from("ai_predictions")
+          .insert({ match_id: matchId, ...body.fields })
+          .select());
+      }
       return new Response(
         JSON.stringify({ ok: !error, error: error?.message, updated: data?.length ?? 0, rows: data }),
         { status: error ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
