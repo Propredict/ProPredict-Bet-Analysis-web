@@ -200,6 +200,32 @@ Deno.serve(async (req) => {
             `✓ ${prediction.home_team} vs ${prediction.away_team}: ${newStatus} (predicted ${prediction.prediction}, actual ${actualResult})`
           );
 
+          // --- WC26 win push: notify all users when a World Cup AI pick WINS ---
+          try {
+            const leagueStr = (prediction.league ?? "").toLowerCase();
+            const isWorldCup = /world\s*cup/.test(leagueStr);
+            if (newStatus === "won" && isWorldCup) {
+              await supabase.functions.invoke("send-win-push", {
+                body: {
+                  type: "wc_pick",
+                  record: {
+                    id: prediction.id,
+                    result: "won",
+                    tier: "free",
+                    home_team: prediction.home_team,
+                    away_team: prediction.away_team,
+                    league: prediction.league,
+                    prediction: prediction.prediction,
+                    score: `${homeGoals}-${awayGoals}`,
+                  },
+                },
+              });
+              console.log(`📣 WC win push dispatched for ${prediction.home_team} vs ${prediction.away_team}`);
+            }
+          } catch (pushErr) {
+            console.error("WC win push error:", pushErr);
+          }
+
           // --- Arena: insert FT notifications + resolve predictions ---
           try {
             // Get all users who have arena predictions on this match
