@@ -122,24 +122,26 @@ export function DashboardWorldCup() {
       {nextMatch && (
         <Link
           to="/world-cup-2026?tab=predictions"
-          className="group/link block mx-3 mb-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-3 hover:border-primary/50 hover:from-primary/15 hover:to-primary/10 transition-all"
+          className="group/link block mx-3 mb-4 rounded-2xl border-2 border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 p-4 hover:border-primary/60 hover:from-primary/20 hover:to-primary/10 transition-all shadow-[0_0_20px_rgba(15,155,142,0.12)]"
         >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <Brain className="h-4 w-4 text-primary shrink-0" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/20 shrink-0">
+                <Brain className="h-5 w-5 text-primary" />
+              </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-bold text-primary uppercase tracking-wide">Our Tip</p>
-                <p className="text-xs font-semibold text-foreground truncate">
-                  {nextMatch.homeTeam} vs {nextMatch.awayTeam}
+                <p className="text-sm font-extrabold text-primary uppercase tracking-wide">Our Tip</p>
+                <p className="text-base font-bold text-foreground truncate">
+                  {nextMatch.homeTeam} <span className="text-muted-foreground font-semibold">vs</span> {nextMatch.awayTeam}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-5 border-primary/30 text-primary gap-1">
-                <Clock className="h-2.5 w-2.5" />
+              <Badge variant="outline" className="text-[11px] px-2.5 py-0.5 h-6 border-primary/40 text-primary gap-1.5 font-semibold">
+                <Clock className="h-3 w-3" />
                 {nextMatch.startTime ? formatMatchTime(nextMatch.startTime) : "TBD"}
               </Badge>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover/link:text-primary transition-colors" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover/link:text-primary transition-colors" />
             </div>
           </div>
         </Link>
