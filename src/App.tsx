@@ -289,6 +289,14 @@ const App = () => {
                         </AdminRoute>
                       }
                     />
+                    <Route
+                      path="/admin/support"
+                      element={
+                        <AdminRoute>
+                          <AdminSupportChat />
+                        </AdminRoute>
+                      }
+                    />
 
                     {/* Legal */}
                     <Route path="/settings" element={<Settings />} />
