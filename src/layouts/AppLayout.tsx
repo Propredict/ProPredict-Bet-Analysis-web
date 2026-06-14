@@ -310,6 +310,9 @@ export default function AppLayout() {
 
       {/* Floating support chat — logged-in non-admin users */}
       <SupportChatWidget />
+
+      {/* Floating support shortcut — admins only */}
+      <AdminSupportFloating />
     </SidebarProvider>
   );
 }
