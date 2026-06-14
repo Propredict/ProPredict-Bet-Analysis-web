@@ -25,6 +25,7 @@ import {
   Gem,
   Trophy,
   FlaskConical,
+  MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -78,6 +79,7 @@ const adminItems = [
   { title: "Manage Tips", url: "/admin/tips", icon: Lightbulb },
   { title: "Manage Tickets", url: "/admin/tickets", icon: Ticket },
   { title: "Dashboard A/B Testing", url: "/admin/email-ab-tests", icon: FlaskConical },
+  { title: "Support Inbox", url: "/admin/support", icon: MessageCircle },
 ];
 
 export function AppSidebar() {
