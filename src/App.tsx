@@ -71,6 +71,7 @@ const ManageTips = lazy(() => import("./pages/admin/ManageTips"));
 const ManageTickets = lazy(() => import("./pages/admin/ManageTickets"));
 const AdminEmailABTests = lazy(() => import("./pages/admin/EmailABTests"));
 const BacktestDashboard = lazy(() => import("./pages/admin/BacktestDashboard"));
+const AdminSupportChat = lazy(() => import("./pages/admin/SupportChat"));
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
@@ -285,6 +286,14 @@ const App = () => {
                       element={
                         <AdminRoute>
                           <BacktestDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/support"
+                      element={
+                        <AdminRoute>
+                          <AdminSupportChat />
                         </AdminRoute>
                       }
                     />

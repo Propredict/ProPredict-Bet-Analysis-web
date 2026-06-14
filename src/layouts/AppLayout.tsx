@@ -37,6 +37,7 @@ import { useAndroidNativeAd } from "@/hooks/useAndroidNativeAd";
 import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
 import { RateAppPopup } from "@/components/RateAppPopup";
 import { useAppRating } from "@/hooks/useAppRating";
+import { SupportChatWidget } from "@/components/SupportChatWidget";
 
 
 // Pages where footer should be hidden (header-only layout)
@@ -306,6 +307,9 @@ export default function AppLayout() {
         onSubmit={submitRating}
         submitting={rateSubmitting}
       />
+
+      {/* Floating support chat — logged-in non-admin users */}
+      <SupportChatWidget />
     </SidebarProvider>
   );
 }
