@@ -53,9 +53,9 @@ export function SupportChatWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Open support chat"
-          className="fixed bottom-44 right-4 md:bottom-16 md:right-4 z-50 h-9 w-9 md:h-11 md:w-11 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform"
+          className="fixed bottom-[9rem] right-4 md:bottom-[5.25rem] md:right-4 z-50 h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform"
         >
-          <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
+          <MessageCircle className="h-5 w-5" />
           {badgeCount > 0 && (
             <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
               {badgeCount > 9 ? "9+" : badgeCount}
