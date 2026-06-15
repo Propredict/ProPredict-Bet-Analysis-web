@@ -795,6 +795,11 @@ export default function WorldCup2026() {
                 const analysis = (safeReal?.analysis || "").toLowerCase();
                 const wantsOver = /over\s*2\.?5/.test(analysis);
                 const wantsUnder = /under\s*2\.?5/.test(analysis);
+                // Detect explicit BTTS call from analysis. Only enforce
+                // consistency when the model EXPLICITLY says BTTS Yes/No
+                // (it's the more reliable secondary market than the exact score).
+                const bttsYes = /btts[^.]*\byes\b|both teams to score[^.]*yes|over\/btts favored|btts favored/.test(analysis);
+                const bttsNo = /btts[^.]*\bno\b|both teams to score[^.]*no/.test(analysis);
                 const m = rawScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                 if (!m) return rawScore;
                 const total = parseInt(m[1], 10) + parseInt(m[2], 10);
@@ -804,6 +809,12 @@ export default function WorldCup2026() {
                 if (wantsOver && total < 3) {
                   const gap = Math.abs(pred.homeWin - pred.awayWin);
                   const homeFav = pred.homeWin >= pred.awayWin;
+                  // BTTS Yes forces both teams to score → skip 4-0/0-4 lines.
+                  if (bttsYes) {
+                    if (gap >= 30) return homeFav ? "3-1" : "1-3";
+                    if (gap >= 15) return homeFav ? "3-2" : "2-3";
+                    return "2-2";
+                  }
                   if (gap >= 40) return homeFav ? "4-0" : "0-4";
                   if (gap >= 25) return homeFav ? "3-1" : "1-3";
                   if (gap >= 12) return homeFav ? "3-2" : "2-3";
@@ -815,6 +826,8 @@ export default function WorldCup2026() {
                   const gap = Math.abs(pred.homeWin - pred.awayWin);
                   const homeFav = pred.homeWin >= pred.awayWin;
                   const drawStrong = pred.draw >= 32;
+                  // BTTS Yes + Under 2.5 → must be 1-1.
+                  if (bttsYes) return "1-1";
                   if (gap < 8) {
                     return drawStrong ? "1-1" : "0-0";
                   }
@@ -822,6 +835,22 @@ export default function WorldCup2026() {
                     return homeFav ? "2-0" : "0-2";
                   }
                   return homeFav ? "1-0" : "0-1";
+                }
+                // Raw score matched Over/Under call but may violate BTTS.
+                // Fix BTTS mismatches (BTTS is more reliable than exact score).
+                const hg = parseInt(m[1], 10);
+                const ag = parseInt(m[2], 10);
+                if (bttsYes && (hg === 0 || ag === 0)) {
+                  const homeFav = pred.homeWin >= pred.awayWin;
+                  // Convert e.g. 4-0 → 3-1, 0-3 → 1-2, keeping favorite ahead.
+                  if (total >= 4) return homeFav ? "3-1" : "1-3";
+                  if (total === 3) return homeFav ? "2-1" : "1-2";
+                  return "1-1";
+                }
+                if (bttsNo && hg >= 1 && ag >= 1) {
+                  const homeFav = pred.homeWin >= pred.awayWin;
+                  if (total >= 4) return homeFav ? "3-0" : "0-3";
+                  return homeFav ? "2-0" : "0-2";
                 }
                 return rawScore;
               })();
