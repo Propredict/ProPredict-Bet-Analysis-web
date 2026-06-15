@@ -1059,12 +1059,24 @@ export default function WorldCup2026() {
                                   <p className="font-bold text-foreground">{r.pick.confidence}%</p>
                                 </div>
                               </div>
-                              {r.pick.analysis && (
-                                <div className="text-[10px] text-muted-foreground">
-                                  <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                                  {r.pick.analysis.slice(0, 180) + (r.pick.analysis.length > 180 ? "…" : "")}
-                                </div>
-                              )}
+                              <div className="text-[10px] text-muted-foreground">
+                                <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                                {(() => {
+                                  const dbText = r.pick.analysis;
+                                  const text = isPlaceholderAnalysis(dbText)
+                                    ? buildWCAIInsight({
+                                        home: r.pick.home_team,
+                                        away: r.pick.away_team,
+                                        homeWin: r.pick.home_win ?? 0,
+                                        draw: r.pick.draw ?? 0,
+                                        awayWin: r.pick.away_win ?? 0,
+                                        predictedScore: r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score,
+                                        confidence: r.pick.confidence,
+                                      })
+                                    : dbText as string;
+                                  return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                                })()}
+                              </div>
                             </div>
                           </>
                         ) : (
