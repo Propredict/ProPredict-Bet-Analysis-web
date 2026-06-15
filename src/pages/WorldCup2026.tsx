@@ -809,12 +809,18 @@ export default function WorldCup2026() {
                   if (gap >= 12) return homeFav ? "3-2" : "2-3";
                   return homeFav ? "2-1" : "1-2";
                 }
-                // UNDER 2.5: low-scoring line; favorite still tends to win 1-0,
-                // very tight matches lean to 0-0.
+                // UNDER 2.5: any score with total < 3 is valid.
+                // Pick a realistic low-scoring line based on probabilities.
                 if (wantsUnder && total > 2) {
                   const gap = Math.abs(pred.homeWin - pred.awayWin);
                   const homeFav = pred.homeWin >= pred.awayWin;
-                  if (gap < 8) return "0-0";
+                  const drawStrong = pred.draw >= 32;
+                  if (gap < 8) {
+                    return drawStrong ? "1-1" : "0-0";
+                  }
+                  if (gap >= 20) {
+                    return homeFav ? "2-0" : "0-2";
+                  }
                   return homeFav ? "1-0" : "0-1";
                 }
                 return rawScore;
