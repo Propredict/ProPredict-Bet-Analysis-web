@@ -7415,21 +7415,23 @@ async function processBatch(
         continue;
       }
 
-      // === STAGGERED GUARD: skip enrichment when kickoff is > 3h15min away.
+      // === STAGGERED GUARD (WORLD CUP ONLY): skip enrichment when kickoff
+      // is > 3h15min away. Only applies to World Cup fixtures (league_id=1).
       // Such matches stay as "Pending regeneration…" placeholders and are
       // picked up by the `generate-due-predictions` cron exactly ~3h before
       // kickoff, when lineups + final odds give the most accurate signal.
-      // This is what prevents a "morning pick" from drifting into an
-      // "evening pick" — every match is generated exactly once, close to KO.
+      // Non-WC matches are generated normally (no stagger).
       try {
-        const koIso = fixture?.fixture?.date;
-        if (koIso) {
-          const koTs = new Date(koIso).getTime();
-          const msToKo = koTs - Date.now();
-          const STAGGER_WINDOW_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
-          if (msToKo > STAGGER_WINDOW_MS) {
-            console.log(`[STAGGER] ${fixtureIdStr}: kickoff ${Math.round(msToKo / 60000)}min away — keep placeholder, will enrich ~3h before KO`);
-            continue;
+        if (leagueId === 1) {
+          const koIso = fixture?.fixture?.date;
+          if (koIso) {
+            const koTs = new Date(koIso).getTime();
+            const msToKo = koTs - Date.now();
+            const STAGGER_WINDOW_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
+            if (msToKo > STAGGER_WINDOW_MS) {
+              console.log(`[STAGGER:WC] ${fixtureIdStr}: kickoff ${Math.round(msToKo / 60000)}min away — keep placeholder, will enrich ~3h before KO`);
+              continue;
+            }
           }
         }
       } catch (_) { /* non-fatal */ }
