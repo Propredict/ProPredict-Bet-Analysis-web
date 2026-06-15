@@ -10,11 +10,10 @@
  *
  * Key guarantees:
  *  - A prediction is enriched ONLY when kickoff is <= 3h15min away.
- *  - After enrichment, push_sent_at is stamped so we never re-notify.
+ *  - After enrichment, push_sent_at is stamped so we know when it became ready.
  *  - Placeholder rows (analysis ILIKE 'Pending regeneration%') are the
  *    only candidates; enriched rows are NEVER touched.
- *  - Push notification is sent as a single batched "summary" when 1+
- *    new predictions become ready in the same run.
+ *  - WC push is sent only for the exact prediction IDs enriched in this run.
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -132,6 +131,7 @@ serve(async (req: Request) => {
             injury_impact_away: pred.injury_impact_away ?? null,
             is_locked: false,
             push_sent_at: new Date().toISOString(),
+            wc_pred_notified_at: null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", row.id);
@@ -152,24 +152,12 @@ serve(async (req: Request) => {
       }
     }
 
-    // Send a single batched push if any predictions became ready.
+    // Send WC push ONLY for the exact predictions enriched in this run.
+    // This prevents the notifier from announcing a later match just because
+    // it was already ready and still inside a broad kickoff lookahead window.
     if (enriched.length > 0) {
-      let title: string;
-      let body: string;
-      if (enriched.length === 1) {
-        const m = enriched[0];
-        title = `🔮 ${m.home} vs ${m.away} — AI Pick Ready`;
-        body = `Our AI analysis is live. Tap to see the prediction.`;
-      } else {
-        title = `🔮 ${enriched.length} New AI Picks Ready`;
-        const preview = enriched.slice(0, 3).map((m) => `${m.home} vs ${m.away}`).join(", ");
-        body = enriched.length > 3
-          ? `${preview} +${enriched.length - 3} more — tap to view all`
-          : `${preview} — tap to view all`;
-      }
-
       try {
-        await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-wc-prediction-available`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -177,17 +165,12 @@ serve(async (req: Request) => {
             Authorization: `Bearer ${SERVICE_KEY}`,
           },
           body: JSON.stringify({
-            type: "summary",
-            summary: {
-              title,
-              body,
-              collapse_id: `ai_pick_ready_${Date.now()}`,
-              nav_path: "/ai-predictions",
-            },
+            source: "generate-due-predictions",
+            prediction_ids: enriched.map((m) => m.id),
           }),
         });
       } catch (e) {
-        console.warn("[due-preds] push send failed:", e);
+        console.warn("[due-preds] wc push send failed:", e);
       }
     }
 
