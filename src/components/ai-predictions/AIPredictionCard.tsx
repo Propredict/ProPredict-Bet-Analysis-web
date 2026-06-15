@@ -102,10 +102,12 @@ const AIPredictionCardInner = ({
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
-  // Staggered AI: if this row is still a placeholder (kickoff > 3h away),
-  // hide all pick numbers and show a "Unlocks at HH:MM" countdown card.
+  // Staggered AI (WORLD CUP ONLY): if this WC row is still a placeholder
+  // (kickoff > 3h away), hide all pick numbers and show a "Unlocks at HH:MM"
+  // countdown card. Non-WC matches never stagger.
   // Admins always see the underlying data for debugging.
-  if (!isAdmin && isPendingPlaceholder(prediction)) {
+  const isWorldCup = /world\s*cup/i.test(prediction.league ?? "");
+  if (!isAdmin && isWorldCup && isPendingPlaceholder(prediction)) {
     return (
       <PendingPickCard
         league={prediction.league ?? null}
