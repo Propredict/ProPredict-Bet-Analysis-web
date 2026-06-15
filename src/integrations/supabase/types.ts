@@ -57,6 +57,7 @@ export type Database = {
           odds_movement_pct: number | null
           predicted_score: string | null
           prediction: string
+          push_sent_at: string | null
           result_status: string | null
           risk_level: string | null
           updated_at: string | null
@@ -114,6 +115,7 @@ export type Database = {
           odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction: string
+          push_sent_at?: string | null
           result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction?: string
+          push_sent_at?: string | null
           result_status?: string | null
           risk_level?: string | null
           updated_at?: string | null
