@@ -131,6 +131,7 @@ serve(async (req: Request) => {
             injury_impact_away: pred.injury_impact_away ?? null,
             is_locked: false,
             push_sent_at: new Date().toISOString(),
+            wc_pred_notified_at: null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", row.id);
