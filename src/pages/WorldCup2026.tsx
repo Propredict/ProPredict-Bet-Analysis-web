@@ -90,7 +90,7 @@ function parseWCKickoff(dateStr: string, timeStr: string): number | null {
   }
 }
 
-const AI_PREDICTIONS = GROUP_MATCHES.slice(0, 12).map(m => {
+const AI_PREDICTIONS = GROUP_MATCHES.map(m => {
   const proj = wcMatchProjection(m.home, m.away, {
     homeIsHost: HOST_NATIONS.has(m.home),
     awayIsHost: HOST_NATIONS.has(m.away),
