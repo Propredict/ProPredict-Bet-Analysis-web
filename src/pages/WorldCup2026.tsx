@@ -798,8 +798,25 @@ export default function WorldCup2026() {
                 const m = rawScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                 if (!m) return rawScore;
                 const total = parseInt(m[1], 10) + parseInt(m[2], 10);
-                if (wantsOver && total < 3) return pred.homeWin >= pred.awayWin ? "2-1" : "1-2";
-                if (wantsUnder && total > 2) return pred.homeWin >= pred.awayWin ? "1-0" : "0-1";
+                // OVER 2.5: pick a realistic high-scoring line based on the
+                // win-probability gap. Wider gap → more lopsided scoreline
+                // (e.g. 3-0, 4-1). Closer match → 2-1 / 3-2.
+                if (wantsOver && total < 3) {
+                  const gap = Math.abs(pred.homeWin - pred.awayWin);
+                  const homeFav = pred.homeWin >= pred.awayWin;
+                  if (gap >= 40) return homeFav ? "4-0" : "0-4";
+                  if (gap >= 25) return homeFav ? "3-1" : "1-3";
+                  if (gap >= 12) return homeFav ? "3-2" : "2-3";
+                  return homeFav ? "2-1" : "1-2";
+                }
+                // UNDER 2.5: low-scoring line; favorite still tends to win 1-0,
+                // very tight matches lean to 0-0.
+                if (wantsUnder && total > 2) {
+                  const gap = Math.abs(pred.homeWin - pred.awayWin);
+                  const homeFav = pred.homeWin >= pred.awayWin;
+                  if (gap < 8) return "0-0";
+                  return homeFav ? "1-0" : "0-1";
+                }
                 return rawScore;
               })();
               // Reveal the full AI prediction only ~3h before kickoff.
