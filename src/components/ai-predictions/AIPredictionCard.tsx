@@ -62,6 +62,7 @@ import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
 import { MarketTrendBadge } from "./MarketTrendBadge";
 import { ValueBetBadge } from "./ValueBetBadge";
 import { DataQualityBadge } from "./DataQualityBadge";
+import { PendingPickCard, isPendingPlaceholder } from "./PendingPickCard";
 
 interface Props {
   prediction: AIPrediction;
@@ -100,6 +101,20 @@ const AIPredictionCardInner = ({
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const { getUnlockMethod, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
+
+  // Staggered AI: if this row is still a placeholder (kickoff > 3h away),
+  // hide all pick numbers and show a "Unlocks at HH:MM" countdown card.
+  // Admins always see the underlying data for debugging.
+  if (!isAdmin && isPendingPlaceholder(prediction)) {
+    return (
+      <PendingPickCard
+        league={prediction.league ?? null}
+        homeTeam={prediction.home_team ?? "Home"}
+        awayTeam={prediction.away_team ?? "Away"}
+        matchTimestamp={(prediction as any).match_timestamp ?? null}
+      />
+    );
+  }
 
   // Tier resolution priority:
   // 1) explicit overrideTier (used by Top AI Picks for locked teaser slots)
