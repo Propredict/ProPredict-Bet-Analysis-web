@@ -1,10 +1,8 @@
 /**
  * send-wc-prediction-available
  *
- * Hourly cron-triggered. Finds World Cup AI predictions that:
- *  - have `prediction` populated (frozen, ready to view)
- *  - kick off within the next ~6 hours
- *  - haven't been announced yet (wc_pred_notified_at IS NULL)
+ * Exact-match notifier. Called by `generate-due-predictions` only for the
+ * World Cup predictions that were enriched in that same run.
  *
  * Sends a OneSignal push per match and marks `wc_pred_notified_at`
  * so users only receive ONE notification per match.
@@ -18,8 +16,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-const LOOKAHEAD_HOURS = 6; // notify ~6h before kickoff
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,20 +37,29 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
-    const tomorrowStr = new Date(now.getTime() + 24 * 3600 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const body = await req.json().catch(() => ({}));
+    const predictionIds = Array.isArray(body?.prediction_ids)
+      ? body.prediction_ids.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
+      : Array.isArray(body?.predictionIds)
+        ? body.predictionIds.filter((id: unknown): id is string => typeof id === "string" && id.length > 0)
+        : [];
 
-    // Pull WC predictions for today + tomorrow that already have a pick.
+    if (predictionIds.length === 0) {
+      console.warn("[wc-pred-push] skipped: explicit prediction_ids required");
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, skipped: "explicit_prediction_ids_required" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Pull ONLY the predictions that were just enriched by generate-due-predictions.
     const { data: rows, error } = await supabase
       .from("ai_predictions")
       .select(
         "id, home_team, away_team, prediction, confidence, match_date, match_time, league, wc_pred_notified_at"
       )
+      .in("id", predictionIds)
       .ilike("league", "%world cup%")
-      .in("match_date", [todayStr, tomorrowStr])
       .not("prediction", "is", null)
       .not("analysis", "is", null)
       .not("analysis", "ilike", "Pending%")
@@ -73,13 +78,12 @@ serve(async (req) => {
       // match_time is "HH:MM:SS" UTC — stitch with date
       const koMs = new Date(`${r.match_date}T${r.match_time}Z`).getTime();
       if (Number.isNaN(koMs)) return false;
-      const hoursToKO = (koMs - Date.now()) / 3600000;
-      // Within next 6h, and not already kicked off
-      return hoursToKO > 0 && hoursToKO <= LOOKAHEAD_HOURS;
+      // Never announce a match after kickoff. The caller controls exact match IDs.
+      return koMs > Date.now();
     });
 
     console.log(
-      `[wc-pred-push] ${rows?.length ?? 0} candidates, ${candidates.length} within ${LOOKAHEAD_HOURS}h`
+      `[wc-pred-push] requested ${predictionIds.length}, loaded ${rows?.length ?? 0}, sending ${candidates.length}`
     );
 
     const results: Array<Record<string, unknown>> = [];
