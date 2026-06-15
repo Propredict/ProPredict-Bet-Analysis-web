@@ -802,6 +802,40 @@ export default function WorldCup2026() {
                 if (wantsUnder && total > 2) return pred.homeWin >= pred.awayWin ? "1-0" : "0-1";
                 return rawScore;
               })();
+              // Reveal the full AI prediction only ~3h before kickoff.
+              // Before that, show a "Coming Soon" placeholder so users know
+              // the model output isn't final yet.
+              const msToKickoff = (mockPred.kickoffTs ?? 0) - Date.now();
+              const isLockedUntilKickoff = msToKickoff > 3 * 60 * 60 * 1000;
+              if (isLockedUntilKickoff) {
+                const hours = Math.floor(msToKickoff / (60 * 60 * 1000));
+                const minutes = Math.floor((msToKickoff % (60 * 60 * 1000)) / (60 * 1000));
+                const kickoffLabel = mockPred.kickoffTs
+                  ? new Date(mockPred.kickoffTs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  : mockPred.time;
+                return (
+                  <Card key={i} className="bg-card border-border p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
+                      </span>
+                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary">
+                        Kickoff {kickoffLabel}
+                      </Badge>
+                    </div>
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center">
+                      <Brain className="h-6 w-6 text-primary mx-auto mb-1.5" />
+                      <p className="text-sm font-bold text-foreground mb-1">AI Prediction — Coming Soon</p>
+                      <p className="text-[11px] text-muted-foreground mb-2">
+                        Final pick unlocks <span className="text-primary font-semibold">3 hours before kickoff</span>, once lineups, odds & form are locked in.
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Available in <span className="text-foreground font-semibold">{hours}h {minutes}m</span>
+                      </p>
+                    </div>
+                  </Card>
+                );
+              }
               return (
                 <Card key={i} className="bg-card border-border p-3">
                   <div className="flex items-center justify-between mb-2">
