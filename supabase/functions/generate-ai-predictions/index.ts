@@ -5168,6 +5168,42 @@ function calculatePrediction(
     }
   }
 
+  // Rule C12: Goals-market pick (Under/Over/BTTS) with a heavy 1X2 favorite.
+  // If the user-facing pick is NOT a 1X2 pick but one side has >=65% win prob,
+  // the predicted score must reflect that favorite — not a draw. This prevents
+  // confusing cards where Away shows 74% but Predicted Score reads 1-1.
+  {
+    const sp = predictedScore.split("-").map(Number);
+    const h = sp[0] ?? 0, a = sp[1] ?? 0;
+    const is1x2Pick = prediction === "1" || prediction === "2" || prediction === "X"
+      || prediction === "DC 1X" || prediction === "DC X2" || prediction === "DC 12";
+    if (!is1x2Pick && h === a) {
+      const favoriteIsHome = homeWin >= 65 && homeWin > awayWin;
+      const favoriteIsAway = awayWin >= 65 && awayWin > homeWin;
+      if (favoriteIsHome || favoriteIsAway) {
+        const sp2 = predictedScore.split("-").map(Number);
+        const tot = (sp2[0] ?? 0) + (sp2[1] ?? 0);
+        // Respect Under 2.5 / BTTS No constraints we may have applied above.
+        if (wantsUnder25 && wantsBttsNo) {
+          predictedScore = favoriteIsHome ? "1-0" : "0-1";
+        } else if (wantsBttsNo) {
+          predictedScore = favoriteIsHome
+            ? `${Math.max(1, Math.round(homeXg))}-0`
+            : `0-${Math.max(1, Math.round(awayXg))}`;
+        } else if (wantsUnder25 || tot <= 2) {
+          // Keep total <= 2 — use 1-0 / 0-1.
+          predictedScore = favoriteIsHome ? "1-0" : "0-1";
+        } else if (wantsBttsYes) {
+          predictedScore = favoriteIsHome ? "2-1" : "1-2";
+        } else if (wantsOver25) {
+          predictedScore = favoriteIsHome ? "2-1" : "1-2";
+        } else {
+          predictedScore = favoriteIsHome ? "2-1" : "1-2";
+        }
+      }
+    }
+  }
+
   let bookmakerProb = 0;
   let aiProb = bestProb;
   let oddsAlignmentAdjust = 0;
