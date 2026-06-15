@@ -48,12 +48,14 @@ serve(async (req: Request) => {
     const windowEnd = new Date(now.getTime() + DUE_WINDOW_MS);
     const windowStart = new Date(now.getTime() - STALE_PAST_MS);
 
-    // Find placeholder predictions whose kickoff is within the due window.
-    // analysis ILIKE 'Pending regeneration%' is the canonical placeholder marker.
+    // Find WORLD CUP placeholder predictions whose kickoff is within the due window.
+    // Staggered enrichment applies ONLY to World Cup matches — other leagues
+    // are generated normally at batch time.
     const { data: candidates, error: queryErr } = await supabase
       .from("ai_predictions")
       .select("id, match_id, home_team, away_team, league, match_timestamp, match_date, match_time, push_sent_at, analysis")
       .ilike("analysis", "Pending regeneration%")
+      .ilike("league", "%World Cup%")
       .not("match_timestamp", "is", null)
       .gte("match_timestamp", windowStart.toISOString())
       .lte("match_timestamp", windowEnd.toISOString())
