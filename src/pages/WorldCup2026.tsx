@@ -808,8 +808,6 @@ export default function WorldCup2026() {
               const msToKickoff = (mockPred.kickoffTs ?? 0) - Date.now();
               const isLockedUntilKickoff = msToKickoff > 3 * 60 * 60 * 1000;
               if (isLockedUntilKickoff) {
-                const hours = Math.floor(msToKickoff / (60 * 60 * 1000));
-                const minutes = Math.floor((msToKickoff % (60 * 60 * 1000)) / (60 * 1000));
                 // Show the UNLOCK time (kickoff − 3h), not kickoff itself.
                 // That's when the final AI pick becomes visible.
                 const unlockLabel = mockPred.kickoffTs
@@ -832,7 +830,7 @@ export default function WorldCup2026() {
                         Final pick unlocks <span className="text-primary font-semibold">3 hours before kickoff</span>, once lineups, odds & form are locked in.
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        Available in <span className="text-foreground font-semibold">{hours}h {minutes}m</span> · at <span className="text-foreground font-semibold">{unlockLabel}</span>
+                        Available at <span className="text-foreground font-semibold">{unlockLabel}</span>
                       </p>
                     </div>
                   </Card>
