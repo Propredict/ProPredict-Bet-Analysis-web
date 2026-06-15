@@ -24,6 +24,9 @@ verify_jwt = false
 [functions.generate-ai-predictions]
 verify_jwt = false
 
+[functions.generate-due-predictions]
+verify_jwt = false
+
 [functions.revenuecat-webhook]
 verify_jwt = false
 
