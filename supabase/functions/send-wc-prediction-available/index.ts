@@ -56,6 +56,8 @@ serve(async (req) => {
       .ilike("league", "%world cup%")
       .in("match_date", [todayStr, tomorrowStr])
       .not("prediction", "is", null)
+      .not("analysis", "is", null)
+      .not("analysis", "ilike", "Pending%")
       .is("wc_pred_notified_at", null);
 
     if (error) {
