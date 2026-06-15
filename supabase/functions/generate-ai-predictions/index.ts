@@ -7436,6 +7436,26 @@ async function processBatch(
         }
       } catch (_) { /* non-fatal */ }
 
+      // === FREEZE GUARD #3 (HARD 3h LOCK): once a prediction is enriched
+      // (analysis is no longer the "Pending regeneration…" placeholder) AND
+      // kickoff is within 3h15min, we NEVER regenerate it again — pick,
+      // score, probabilities and analysis stay exactly what users saw.
+      // This blocks both the standard batch and `wcRegenerateNow` from
+      // overwriting a frozen pick in the final 3h window.
+      try {
+        const koIso = fixture?.fixture?.date;
+        const analysisStr = String((pred as any)?.analysis || "");
+        const isPlaceholder = /^pending regeneration/i.test(analysisStr);
+        if (koIso && !isPlaceholder) {
+          const msToKo = new Date(koIso).getTime() - Date.now();
+          const HARD_LOCK_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
+          if (msToKo <= HARD_LOCK_MS) {
+            console.log(`[FREEZE3] ${fixtureIdStr}: enriched + kickoff ${Math.round(msToKo / 60000)}min away — HARD LOCK, skip regenerate`);
+            continue;
+          }
+        }
+      } catch (_) { /* non-fatal */ }
+
       if (!homeTeamId || !awayTeamId || !leagueId) {
         // Truly invalid (no team IDs ever) — safe to delete
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
