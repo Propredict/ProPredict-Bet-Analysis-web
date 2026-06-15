@@ -913,9 +913,21 @@ export default function WorldCup2026() {
                         </div>
                         <div className="text-[10px] text-muted-foreground">
                           <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                          {safeReal?.analysis
-                            ? safeReal.analysis.slice(0, 180) + (safeReal.analysis.length > 180 ? "…" : "")
-                            : `Projection based on FIFA rank, Elo, squad value and recent international form. ${pred.homeWin > pred.awayWin ? pred.home : pred.awayWin > pred.homeWin ? pred.away : "Draw"} currently holds the edge.`}
+                          {(() => {
+                            const dbText = safeReal?.analysis;
+                            const text = isPlaceholderAnalysis(dbText)
+                              ? buildWCAIInsight({
+                                  home: pred.home,
+                                  away: pred.away,
+                                  homeWin: pred.homeWin,
+                                  draw: pred.draw,
+                                  awayWin: pred.awayWin,
+                                  predictedScore: displayedScore,
+                                  confidence: safeReal?.confidence ?? pred.confidence,
+                                })
+                              : dbText as string;
+                            return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                          })()}
                         </div>
                       </div>
                       {/* Lock overlay for non-premium */}
