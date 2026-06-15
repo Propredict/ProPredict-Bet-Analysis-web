@@ -25,10 +25,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Window: enrich matches starting in <= 3h15min from now (or already past kickoff
-// but still placeholder — late-arriving safety net). Don't grab matches further
-// out — we want generation as close to kickoff as possible for max accuracy.
-const DUE_WINDOW_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
+// Window: enrich matches starting in <= 3h30min from now. Combined with a
+// 30-min cron cadence this guarantees every WC match is generated in the
+// 3h00min–3h30min window before kickoff — as close to kickoff as possible
+// while still being shown to users ~3h ahead. Once written, the prediction
+// is FROZEN (placeholder rows are the only candidates; enriched rows are
+// never touched again).
+const DUE_WINDOW_MS = 3 * 60 * 60 * 1000 + 30 * 60 * 1000; // 3h30min
 // Don't bother enriching matches that have been live/finished for > 30 min
 // (the result update job will mark them, and lineup data is stale anyway).
 const STALE_PAST_MS = 30 * 60 * 1000;
