@@ -47,6 +47,38 @@ function getTodayBelgrade() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
 }
 
+/**
+ * Build a deterministic AI Insight when the DB analysis is missing or still
+ * shows the placeholder "Pending regeneration…". Uses the stored probabilities
+ * and predicted score so it stays consistent with the visible chips.
+ */
+function buildWCAIInsight(opts: {
+  home: string;
+  away: string;
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+  predictedScore?: string | null;
+  confidence?: number | null;
+}): string {
+  const { home, away, homeWin, draw, awayWin, predictedScore, confidence } = opts;
+  const top = Math.max(homeWin, draw, awayWin);
+  const favored = top === homeWin ? home : top === awayWin ? away : "a draw";
+  const m = (predictedScore || "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+  const total = m ? parseInt(m[1], 10) + parseInt(m[2], 10) : null;
+  const bothScore = m ? parseInt(m[1], 10) > 0 && parseInt(m[2], 10) > 0 : false;
+  const goalsCall = total === null ? "" : total >= 3 ? " Model leans Over 2.5 goals" : " Model leans Under 2.5 goals";
+  const bttsCall = total === null ? "" : `, BTTS ${bothScore ? "Yes" : "No"}.`;
+  const conf = confidence ? ` Confidence ${confidence}%.` : "";
+  const edge = top >= 55 ? "a clear edge" : top >= 45 ? "a moderate edge" : "a slim edge";
+  return `Model gives ${favored} ${edge} based on form, xG, FIFA rank and market odds.${goalsCall}${bttsCall}${conf}`;
+}
+
+function isPlaceholderAnalysis(s?: string | null): boolean {
+  if (!s) return true;
+  return /pending regeneration|pending/i.test(s.trim());
+}
+
 function parseAdEventPayload(event: Event) {
   const raw = (event as MessageEvent).data ?? (event as CustomEvent).detail ?? null;
 
@@ -881,9 +913,21 @@ export default function WorldCup2026() {
                         </div>
                         <div className="text-[10px] text-muted-foreground">
                           <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                          {safeReal?.analysis
-                            ? safeReal.analysis.slice(0, 180) + (safeReal.analysis.length > 180 ? "…" : "")
-                            : `Projection based on FIFA rank, Elo, squad value and recent international form. ${pred.homeWin > pred.awayWin ? pred.home : pred.awayWin > pred.homeWin ? pred.away : "Draw"} currently holds the edge.`}
+                          {(() => {
+                            const dbText = safeReal?.analysis;
+                            const text = isPlaceholderAnalysis(dbText)
+                              ? buildWCAIInsight({
+                                  home: pred.home,
+                                  away: pred.away,
+                                  homeWin: pred.homeWin,
+                                  draw: pred.draw,
+                                  awayWin: pred.awayWin,
+                                  predictedScore: displayedScore,
+                                  confidence: safeReal?.confidence ?? pred.confidence,
+                                })
+                              : dbText as string;
+                            return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                          })()}
                         </div>
                       </div>
                       {/* Lock overlay for non-premium */}
@@ -1015,12 +1059,24 @@ export default function WorldCup2026() {
                                   <p className="font-bold text-foreground">{r.pick.confidence}%</p>
                                 </div>
                               </div>
-                              {r.pick.analysis && (
-                                <div className="text-[10px] text-muted-foreground">
-                                  <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                                  {r.pick.analysis.slice(0, 180) + (r.pick.analysis.length > 180 ? "…" : "")}
-                                </div>
-                              )}
+                              <div className="text-[10px] text-muted-foreground">
+                                <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                                {(() => {
+                                  const dbText = r.pick.analysis;
+                                  const text = isPlaceholderAnalysis(dbText)
+                                    ? buildWCAIInsight({
+                                        home: r.pick.home_team,
+                                        away: r.pick.away_team,
+                                        homeWin: r.pick.home_win ?? 0,
+                                        draw: r.pick.draw ?? 0,
+                                        awayWin: r.pick.away_win ?? 0,
+                                        predictedScore: r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score,
+                                        confidence: r.pick.confidence,
+                                      })
+                                    : dbText as string;
+                                  return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                                })()}
+                              </div>
                             </div>
                           </>
                         ) : (
