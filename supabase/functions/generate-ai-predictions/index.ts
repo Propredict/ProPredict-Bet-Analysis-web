@@ -7401,6 +7401,20 @@ async function processBatch(
       const leagueId = fixture.league?.id;
       const season = fixture.league?.season || new Date().getFullYear();
 
+      // === FREEZE GUARD #2: never re-generate a prediction once the match has
+      // started or finished. Only `update-prediction-results` is allowed to touch
+      // these rows (and it only writes `result_status`, never `predicted_score`).
+      // This prevents the user-facing pick/score from changing after kickoff. ===
+      const fixtureStatus = String(fixture?.fixture?.status?.short || "").toUpperCase();
+      const LIVE_OR_FINISHED = new Set([
+        "1H","HT","2H","ET","BT","P","SUSP","INT", // live
+        "FT","AET","PEN","AWD","WO","LIVE",        // finished
+      ]);
+      if (LIVE_OR_FINISHED.has(fixtureStatus)) {
+        console.log(`[FREEZE2] ${fixtureIdStr}: status=${fixtureStatus} — SKIP regenerate (match live/finished)`);
+        continue;
+      }
+
       if (!homeTeamId || !awayTeamId || !leagueId) {
         // Truly invalid (no team IDs ever) — safe to delete
         await supabase.from("ai_predictions").delete().eq("id", pred.id);
