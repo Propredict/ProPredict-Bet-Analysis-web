@@ -38,7 +38,7 @@ function buildStaticTodayFallback(): WCTodayFixture[] {
   // so overnight kickoffs (e.g. 03:00 WC matches) are included.
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
-  const endOfWindow = startOfToday + (24 + 6) * 3600 * 1000;
+  const endOfWindow = startOfToday + (24 + 12) * 3600 * 1000;
 
   return GROUP_MATCHES
     .map((gm, idx) => {
