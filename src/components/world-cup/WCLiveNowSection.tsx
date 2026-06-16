@@ -34,22 +34,18 @@ function parseCetToISO(dateStr: string, timeStr: string): string | null {
 }
 
 function buildStaticTodayFallback(): WCTodayFixture[] {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = today.getMonth();
-  const d = today.getDate();
+  // Window: from start of LOCAL today through 06:00 LOCAL tomorrow,
+  // so overnight kickoffs (e.g. 03:00 WC matches) are included.
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+  const endOfWindow = startOfToday + (24 + 6) * 3600 * 1000;
 
   return GROUP_MATCHES
     .map((gm, idx) => {
       const iso = parseCetToISO(gm.date, gm.time);
       if (!iso) return null;
-      const kickoff = new Date(iso);
-      // Use the LOCAL day in the user's timezone — matches "today" from their POV.
-      if (
-        kickoff.getFullYear() !== y ||
-        kickoff.getMonth() !== m ||
-        kickoff.getDate() !== d
-      ) return null;
+      const koMs = new Date(iso).getTime();
+      if (koMs < startOfToday || koMs >= endOfWindow) return null;
       const fixture: WCTodayFixture = {
         id: `static-${idx}-${gm.home}-${gm.away}`,
         homeTeam: gm.home,

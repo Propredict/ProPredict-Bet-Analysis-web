@@ -42,25 +42,74 @@ Deno.serve(async (req) => {
         if (body?.date && typeof body.date === "string") dateParam = body.date;
       } catch {/* ignore */}
     }
+    const headers = {
+      "x-rapidapi-key": apiKey,
+      "x-rapidapi-host": "v3.football.api-sports.io",
+    };
+    const fetchDate = async (d: string) => {
+      const r = await fetch(
+        `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${d}`,
+        { headers },
+      );
+      const j = await r.json();
+      if (!r.ok) throw new Error(`api_failed:${r.status}:${JSON.stringify(j)}`);
+      return j?.response ?? [];
+    };
+
+    let rawItems: any[] = [];
+    let windowMs: { startMs: number; endMs: number } | null = null;
     const today = dateParam || new Date().toISOString().split("T")[0];
-    const url = `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${today}`;
 
-    const res = await fetch(url, {
-      headers: {
-        "x-rapidapi-key": apiKey,
-        "x-rapidapi-host": "v3.football.api-sports.io",
-      },
-    });
+    if (dateParam) {
+      rawItems = await fetchDate(dateParam);
+    } else {
+      // "Today" mode: include matches from tonight + overnight (Europe/Belgrade
+      // window 00:00 today → 06:00 tomorrow) so users see and can comment on
+      // late kickoffs like 03:00 WC matches.
+      const nowParts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Belgrade",
+        year: "numeric", month: "2-digit", day: "2-digit",
+      }).formatToParts(new Date());
+      const get = (t: string) => nowParts.find(p => p.type === t)?.value ?? "";
+      const todayLocal = `${get("year")}-${get("month")}-${get("day")}`;
+      const localMidnightAsUtc = new Date(`${todayLocal}T00:00:00Z`).getTime();
+      const probeHour = parseInt(
+        new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Europe/Belgrade", hour: "2-digit", hour12: false,
+        }).format(new Date(localMidnightAsUtc)),
+        10,
+      ) || 0;
+      const startMs = localMidnightAsUtc - probeHour * 3600 * 1000;
+      const endMs = startMs + (24 + 6) * 3600 * 1000;
+      windowMs = { startMs, endMs };
 
-    const data = await res.json();
-    if (!res.ok) {
-      return new Response(JSON.stringify({ error: "api_failed", details: data, fixtures: [] }), {
-        status: res.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const todayUtc = new Date().toISOString().split("T")[0];
+      const tomorrowUtc = new Date(Date.now() + 24 * 3600 * 1000).toISOString().split("T")[0];
+      const yesterdayUtc = new Date(Date.now() - 24 * 3600 * 1000).toISOString().split("T")[0];
+      const [a, b, c] = await Promise.all([
+        fetchDate(yesterdayUtc),
+        fetchDate(todayUtc),
+        fetchDate(tomorrowUtc),
+      ]);
+      const seen = new Set<number>();
+      for (const item of [...a, ...b, ...c]) {
+        const id = item?.fixture?.id;
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          rawItems.push(item);
+        }
+      }
+    }
+
+    if (windowMs) {
+      rawItems = rawItems.filter((f: any) => {
+        const ko = f?.fixture?.date ? new Date(f.fixture.date).getTime() : NaN;
+        if (!Number.isFinite(ko)) return false;
+        return ko >= windowMs!.startMs && ko < windowMs!.endMs;
       });
     }
 
-    const fixtures = (data?.response ?? []).map((f: any) => ({
+    const fixtures = rawItems.map((f: any) => ({
       id: String(f.fixture?.id),
       homeTeam: f.teams?.home?.name ?? "",
       awayTeam: f.teams?.away?.name ?? "",
