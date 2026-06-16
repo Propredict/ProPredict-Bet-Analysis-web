@@ -67,47 +67,103 @@ serve(async (req) => {
       // Fetch next fixture for a specific team
       params.append("team", teamId);
       params.append("next", "1");
-    } else if (mode === "live") {
+    // ---------------------------------------------------------------
+    // Date selection
+    // "today" mode now includes ALL matches that play today AND through
+    // the night into early morning local time (Europe/Belgrade), so users
+    // see and can comment on overnight games (e.g. WC kickoffs at 03:00).
+    // We achieve this by fetching BOTH UTC "today" and UTC "tomorrow" and
+    // filtering by a Belgrade-local window: [00:00 today, 06:00 tomorrow].
+    // ---------------------------------------------------------------
+
+    const headers = {
+      "x-rapidapi-host": "v3.football.api-sports.io",
+      "x-rapidapi-key": apiKey,
+    };
+
+    const fetchOne = async (qs: URLSearchParams) => {
+      const u = `${apiUrl}?${qs.toString()}`;
+      console.log("Fetching from API-Football:", u);
+      const r = await fetch(u, { headers });
+      if (!r.ok) throw new Error(`API-Football responded with status ${r.status}`);
+      const j = await r.json();
+      if (j.errors && Object.keys(j.errors).length > 0 && !Array.isArray(j.errors)) {
+        console.error("API-Football errors:", j.errors);
+      }
+      return j.response || [];
+    };
+
+    let rawItems: any[] = [];
+    let belgradeWindow: { startMs: number; endMs: number } | null = null;
+
+    if (mode === "live") {
       params.append("live", "all");
+      rawItems = await fetchOne(params);
     } else if (date) {
       params.append("date", date);
+      rawItems = await fetchOne(params);
+    } else if (mode === "today") {
+      // Belgrade local window
+      const nowBelgradeParts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Belgrade",
+        year: "numeric", month: "2-digit", day: "2-digit",
+      }).formatToParts(new Date());
+      const get = (t: string) => nowBelgradeParts.find(p => p.type === t)?.value ?? "";
+      const todayLocal = `${get("year")}-${get("month")}-${get("day")}`;
+      // Belgrade is UTC+1 (winter) / UTC+2 (summer). Compute offset by diffing
+      // a midnight-local interpretation against UTC midnight.
+      const localMidnightAsUtc = new Date(`${todayLocal}T00:00:00Z`).getTime();
+      // Get what UTC time corresponds to Belgrade 00:00 today via Intl trick:
+      // Format the same instant in Belgrade to know its local hour offset.
+      const probe = new Date(localMidnightAsUtc);
+      const belgradeHourStr = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Belgrade", hour: "2-digit", hour12: false,
+      }).format(probe);
+      const belgradeHour = parseInt(belgradeHourStr, 10) || 0;
+      // belgradeHour = how many hours ahead Belgrade is (1 or 2). Subtract to get true UTC start.
+      const startMs = localMidnightAsUtc - belgradeHour * 3600 * 1000;
+      const endMs = startMs + (24 + 6) * 3600 * 1000; // through 06:00 next-day local
+      belgradeWindow = { startMs, endMs };
+
+      // Fetch UTC today + UTC tomorrow so overnight matches are included.
+      const todayUtc = new Date().toISOString().split("T")[0];
+      const tomorrowUtc = new Date(Date.now() + 24 * 3600 * 1000).toISOString().split("T")[0];
+      const yesterdayUtc = new Date(Date.now() - 24 * 3600 * 1000).toISOString().split("T")[0];
+
+      const [a, b, c] = await Promise.all([
+        fetchOne(new URLSearchParams({ date: yesterdayUtc })),
+        fetchOne(new URLSearchParams({ date: todayUtc })),
+        fetchOne(new URLSearchParams({ date: tomorrowUtc })),
+      ]);
+      const seen = new Set<number>();
+      for (const item of [...a, ...b, ...c]) {
+        const id = item?.fixture?.id;
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          rawItems.push(item);
+        }
+      }
     } else {
       const today = new Date();
       let targetDate = new Date(today);
-
-      if (mode === "yesterday") {
-        targetDate.setDate(today.getDate() - 1);
-      } else if (mode === "tomorrow") {
-        targetDate.setDate(today.getDate() + 1);
-      }
-
+      if (mode === "yesterday") targetDate.setDate(today.getDate() - 1);
+      else if (mode === "tomorrow") targetDate.setDate(today.getDate() + 1);
       const dateStr = targetDate.toISOString().split("T")[0];
       params.append("date", dateStr);
+      rawItems = await fetchOne(params);
     }
 
-    const fullUrl = `${apiUrl}?${params.toString()}`;
-    console.log("Fetching from API-Football:", fullUrl);
-
-    const response = await fetch(fullUrl, {
-      headers: {
-        "x-rapidapi-host": "v3.football.api-sports.io",
-        "x-rapidapi-key": apiKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API-Football responded with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.errors && Object.keys(data.errors).length > 0) {
-      console.error("API-Football errors:", data.errors);
-      throw new Error(`API-Football error: ${JSON.stringify(data.errors)}`);
+    // Apply Belgrade window filter for "today" mode
+    if (belgradeWindow) {
+      rawItems = rawItems.filter((item: any) => {
+        const ko = item?.fixture?.date ? new Date(item.fixture.date).getTime() : NaN;
+        if (!Number.isFinite(ko)) return false;
+        return ko >= belgradeWindow!.startMs && ko < belgradeWindow!.endMs;
+      });
     }
 
     // Transform the response to our format
-    const fixtures: FixtureResponse[] = (data.response || []).map((item: any) => {
+    const fixtures: FixtureResponse[] = rawItems.map((item: any) => {
       const fixture = item.fixture;
       const teams = item.teams;
       const goals = item.goals;
