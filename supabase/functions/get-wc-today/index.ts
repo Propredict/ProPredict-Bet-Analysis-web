@@ -80,7 +80,9 @@ Deno.serve(async (req) => {
         10,
       ) || 0;
       const startMs = localMidnightAsUtc - probeHour * 3600 * 1000;
-      const endMs = startMs + (24 + 6) * 3600 * 1000;
+      // Extend window through tomorrow noon so all overnight + early-morning
+      // kickoffs (e.g. 03:00 and 06:00 CET WC matches) show under "Today".
+      const endMs = startMs + (24 + 12) * 3600 * 1000;
       windowMs = { startMs, endMs };
 
       const todayUtc = new Date().toISOString().split("T")[0];
