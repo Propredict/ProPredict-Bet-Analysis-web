@@ -46,12 +46,25 @@ serve(async (req) => {
       },
     );
     const fxData = await fxRes.json();
-    const fixtures = fxData?.response ?? [];
+    const allFixtures = fxData?.response ?? [];
+
+    // Only include matches that haven't started yet (exclude live & finished).
+    // API-Football status shorts: NS/TBD = upcoming, 1H/2H/HT/ET/P/LIVE/BT = live,
+    // FT/AET/PEN/PST/CANC/ABD/AWD/WO = finished.
+    const UPCOMING_STATUSES = new Set(["NS", "TBD"]);
+    const nowMs = Date.now();
+    const fixtures = allFixtures.filter((f: any) => {
+      const short = f?.fixture?.status?.short ?? "NS";
+      if (!UPCOMING_STATUSES.has(short)) return false;
+      const ko = f?.fixture?.date ? new Date(f.fixture.date).getTime() : NaN;
+      // Safety: drop anything whose kickoff is already in the past.
+      return Number.isFinite(ko) ? ko > nowMs : true;
+    });
 
     if (fixtures.length === 0) {
-      console.log("[wc-daily] No WC matches today, skipping");
+      console.log(`[wc-daily] No upcoming WC matches today (total=${allFixtures.length}), skipping`);
       return new Response(
-        JSON.stringify({ skipped: true, reason: "no matches today" }),
+        JSON.stringify({ skipped: true, reason: "no upcoming matches today", total: allFixtures.length }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -97,7 +110,7 @@ serve(async (req) => {
     const results = [osResult];
 
     return new Response(
-      JSON.stringify({ success: true, matchesToday: count, sentTo: playerIds.length, results }),
+      JSON.stringify({ success: true, matchesToday: count, results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
