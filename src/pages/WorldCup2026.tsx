@@ -987,11 +987,7 @@ export default function WorldCup2026() {
                           <Brain className="h-3 w-3 text-primary" />
                           <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-[11px]">
-                          <div>
-                            <span className="text-muted-foreground">Predicted Score</span>
-                            <p className="font-bold text-foreground">{displayedScore}</p>
-                          </div>
+                        <div className="grid grid-cols-1 gap-2 text-[11px]">
                           <div>
                             <span className="text-muted-foreground">Confidence</span>
                             <p className="font-bold text-foreground">{pred.confidence}%</p>
@@ -1135,11 +1131,7 @@ export default function WorldCup2026() {
                                 <Brain className="h-3 w-3 text-primary" />
                                 <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
                               </div>
-                              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                                <div>
-                                  <span className="text-muted-foreground">Predicted Score</span>
-                                  <p className="font-bold text-foreground">{(r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score) || "—"}</p>
-                                </div>
+                              <div className="grid grid-cols-1 gap-2 text-[11px]">
                                 <div>
                                   <span className="text-muted-foreground">Confidence</span>
                                   <p className="font-bold text-foreground">{r.pick.confidence}%</p>
