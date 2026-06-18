@@ -152,16 +152,20 @@ export function useWCYesterdayResults() {
       // Determine which picks didn't match an API WC fixture, then fall back
       // to /fixtures?date=... (no league filter) to recover scores for
       // friendlies/qualifiers (e.g. Australia vs Türkiye).
+      // A match only moves into the "Finished — Yesterday's Results" section
+      // AFTER it has been visible in the live/today section for the 3h grace
+      // window. That window is kickoff + 110min (match end) + 180min (grace) =
+      // ~290min. Before that, the match stays up top so users can see the
+      // original prediction next to the just-finished result.
+      const FINISHED_DELAY_MS = (110 + 180) * 60_000;
+      const isPastGrace = (startTime?: string | null) => {
+        if (!startTime) return true; // unknown kickoff → don't block
+        const ko = new Date(startTime).getTime();
+        if (!isFinite(ko)) return true;
+        return Date.now() >= ko + FINISHED_DELAY_MS;
+      };
       const fixtures: WCTodayFixture[] = allFx.filter(
-        (f: WCTodayFixture) => {
-          if (f.status !== "finished") return false;
-          // Guard: never treat a fixture as finished if its kickoff hasn't
-          // even passed yet (defensive against stale/incorrect status from
-          // upstream). Require kickoff + 100min to be in the past.
-          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
-          if (isFinite(ko) && Date.now() < ko + 100 * 60_000) return false;
-          return true;
-        },
+        (f: WCTodayFixture) => f.status === "finished" && isPastGrace(f.startTime),
       );
       const unmatchedPicks = picks.filter(
         (p) =>
@@ -185,8 +189,7 @@ export function useWCYesterdayResults() {
           const match = extras.find(
             (f) => {
               if (f.status !== "finished") return false;
-              const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
-              if (isFinite(ko) && Date.now() < ko + 100 * 60_000) return false;
+              if (!isPastGrace(f.startTime)) return false;
               return (
                 (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
                 (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))
