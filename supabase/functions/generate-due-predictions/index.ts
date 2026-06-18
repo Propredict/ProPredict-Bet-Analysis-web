@@ -67,12 +67,14 @@ serve(async (req: Request) => {
     // are generated normally at batch time. New rows use match_timestamp; legacy
     // placeholder rows may only have match_date + match_time, so we also load
     // those and filter them in code.
-    const baseSelect = "id, match_id, home_team, away_team, league, match_timestamp, match_date, match_time, push_sent_at, analysis";
+    const baseSelect = "id, match_id, home_team, away_team, league, match_timestamp, match_date, match_time, push_sent_at, wc_pred_notified_at, analysis";
     const { data: timestampRows, error: queryErr } = await supabase
       .from("ai_predictions")
       .select(baseSelect)
       .ilike("analysis", "Pending regeneration%")
       .ilike("league", "%World Cup%")
+      .is("push_sent_at", null)
+      .is("wc_pred_notified_at", null)
       .not("match_timestamp", "is", null)
       .gte("match_timestamp", windowStart.toISOString())
       .lte("match_timestamp", windowEnd.toISOString())
@@ -94,6 +96,8 @@ serve(async (req: Request) => {
       .select(baseSelect)
       .ilike("analysis", "Pending regeneration%")
       .ilike("league", "%World Cup%")
+      .is("push_sent_at", null)
+      .is("wc_pred_notified_at", null)
       .is("match_timestamp", null)
       .gte("match_date", startDate)
       .lte("match_date", endDate)
@@ -117,36 +121,6 @@ serve(async (req: Request) => {
       if (koMs != null && koMs >= windowStartMs && koMs <= windowEndMs) byId.set(row.id, row);
     }
     const candidates = [...byId.values()].sort((a, b) => (getKickoffMs(a) ?? 0) - (getKickoffMs(b) ?? 0));
-
-    const repairBosnia = byId.size > 0 && [...byId.values()].some((row) =>
-      String(row.home_team ?? "").toLowerCase().includes("switzerland") &&
-      String(row.away_team ?? "").toLowerCase().includes("bosnia")
-    );
-
-    if (repairBosnia) {
-      const { error: repairErr } = await supabase
-        .from("ai_predictions")
-        .update({
-          prediction: "Under 2.5",
-          predicted_score: "1-0",
-          confidence: 55,
-          home_win: 75,
-          draw: 15,
-          away_win: 10,
-          risk_level: "medium",
-          analysis:
-            "AI Insight: Prediction: Under 2.5. BTTS No. Confidence: 55%. Tight match profile with Switzerland edge, but goal expectation stays controlled.",
-          is_locked: false,
-          push_sent_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .ilike("league", "%World Cup%")
-        .ilike("home_team", "%Switzerland%")
-        .ilike("away_team", "%Bosnia%")
-        .ilike("analysis", "Pending regeneration%");
-
-      if (repairErr) console.warn("[due-preds] Bosnia repair failed:", repairErr.message);
-    }
 
     if (!candidates || candidates.length === 0) {
       return new Response(
