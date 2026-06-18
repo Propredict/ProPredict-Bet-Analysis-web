@@ -1101,30 +1101,25 @@ export default function WorldCup2026() {
                     const hw = r.pick ? (swapped ? r.pick.away_win : r.pick.home_win) : 0;
                     const dw = r.pick ? r.pick.draw : 0;
                     const aw = r.pick ? (swapped ? r.pick.home_win : r.pick.away_win) : 0;
-                    // Finished chips show the ORIGINAL frozen pick — never
-                    // the actual result. Priority: (1) explicit market in
-                    // prediction/analysis text, (2) derived from the
-                    // locked predicted_score. Actual score is shown only
-                    // in the FT badge above.
-                    const analysis = (r.pick?.analysis || "").toLowerCase();
-                    const predStr = (r.pick?.prediction || "").toLowerCase();
-                    const combined = analysis + " " + predStr;
+                    // Finished chips show the ORIGINAL frozen pick — derived
+                    // STRICTLY from the locked `predicted_score` so the
+                    // markets shown here are IDENTICAL to the live/upcoming
+                    // card the user saw before kickoff. We deliberately
+                    // ignore any prediction/analysis text rewrites that
+                    // could have happened later — the frozen score is the
+                    // single source of truth.
                     const ps = r.pick?.predicted_score || "";
                     const psMatch = ps.match(/(\d+)\s*[-–:]\s*(\d+)/);
                     const psH = psMatch ? parseInt(psMatch[1], 10) : null;
                     const psA = psMatch ? parseInt(psMatch[2], 10) : null;
-                    let overUnder: "Over" | "Under" | null = null;
-                    if (/under\s*2\.?5/.test(combined)) overUnder = "Under";
-                    else if (/over\s*2\.?5/.test(combined)) overUnder = "Over";
-                    else if (psH !== null && psA !== null) {
-                      overUnder = (psH + psA) >= 3 ? "Over" : "Under";
-                    }
-                    let btts: "Yes" | "No" | null = null;
-                    if (/btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|btts.?yes|\bgg\b/.test(combined)) btts = "Yes";
-                    else if (/btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|btts.?no|\bng\b/.test(combined)) btts = "No";
-                    else if (psH !== null && psA !== null) {
-                      btts = (psH >= 1 && psA >= 1) ? "Yes" : "No";
-                    }
+                    const overUnder: "Over" | "Under" | null =
+                      psH !== null && psA !== null
+                        ? ((psH + psA) >= 3 ? "Over" : "Under")
+                        : null;
+                    const btts: "Yes" | "No" | null =
+                      psH !== null && psA !== null
+                        ? (psH >= 1 && psA >= 1 ? "Yes" : "No")
+                        : null;
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
                     return (
