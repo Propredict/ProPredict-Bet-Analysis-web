@@ -951,8 +951,8 @@ export default function WorldCup2026() {
                     if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
                     else if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
                     let btts: "Yes" | "No" | null = null;
-                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
-                    else if (/btts[^.]*\bno\b|over\/btts favored/.test(analysis)) btts = btts; // leave null, handled below
+                    if (/btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
+                    else if (/btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no/.test(analysis)) btts = "No";
                     if (overUnder === null || btts === null) {
                       const m = displayedScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                       const hg = m ? parseInt(m[1], 10) : 1;
@@ -1091,8 +1091,8 @@ export default function WorldCup2026() {
                       if (m) overUnder = (parseInt(m[1], 10) + parseInt(m[2], 10)) >= 3 ? "Over" : "Under";
                     }
                     let btts: "Yes" | "No" | null = null;
-                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes|btts.?yes|\bgg\b/.test(analysis + " " + predStr)) btts = "Yes";
-                    else if (/btts[^.]*\bno\b|btts.?no|\bng\b/.test(analysis + " " + predStr)) btts = "No";
+                    if (/btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|btts.?yes|\bgg\b/.test(analysis + " " + predStr)) btts = "Yes";
+                    else if (/btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|btts.?no|\bng\b/.test(analysis + " " + predStr)) btts = "No";
                     else if (r.pick?.predicted_score) {
                       const m = r.pick.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
                       if (m) btts = (parseInt(m[1], 10) >= 1 && parseInt(m[2], 10) >= 1) ? "Yes" : "No";
