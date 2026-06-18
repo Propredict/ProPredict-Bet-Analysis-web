@@ -8478,10 +8478,15 @@ async function processBatch(
       // Placeholder rows are the only exception; they still need first enrichment.
       const isPlaceholderPick = /pending regeneration|pending analysis|awaiting data/i.test(pred.analysis || "");
       const wcAlreadyPicked = isWorldCup && !!pred.prediction && !isPlaceholderPick;
+      // GLOBAL FREEZE: once a prediction has been published (real pick, not a
+      // placeholder), it must NEVER change — for ANY league. Predictions are
+      // generated ~3h before kickoff and are final from that moment on.
+      const alreadyPublished = !!pred.prediction && !isPlaceholderPick;
       const isFrozen =
         unlockedPredictionIds.has(String(pred.id)) ||
         (nearKickoff && !isPlaceholderPick) ||
-        wcAlreadyPicked;
+        wcAlreadyPicked ||
+        alreadyPublished;
       const updatePayload: Record<string, any> = isFrozen ? {
           is_locked: false,
           updated_at: new Date().toISOString(),
@@ -8516,9 +8521,11 @@ async function processBatch(
       } else {
         const reason = wcAlreadyPicked
           ? "World Cup match — pick locked for the day"
-          : nearKickoff
-            ? `kickoff in ${hoursToKickoffFreeze.toFixed(1)}h (<5h cutoff)`
-            : "already unlocked by user(s)";
+          : alreadyPublished
+            ? "prediction already published — frozen permanently"
+            : nearKickoff
+              ? `kickoff in ${hoursToKickoffFreeze.toFixed(1)}h (<5h cutoff)`
+              : "already unlocked by user(s)";
         console.log(`[FREEZE] ${fixtureIdStr}: keeping original pick "${pred.prediction}" / score "${pred.predicted_score}" — ${reason}`);
       }
       const { error: updateError } = await supabase
