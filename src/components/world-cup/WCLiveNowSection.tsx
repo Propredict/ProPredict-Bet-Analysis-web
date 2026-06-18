@@ -203,34 +203,19 @@ export default function WCLiveNowSection({ onMatchClick }: Props) {
         </div>
       )}
 
-      {recentlyFinished.length > 0 && (
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-bold text-foreground">Just Finished</h3>
-            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground">
-              {recentlyFinished.length}
-            </Badge>
-            <span className="ml-auto text-[9px] text-muted-foreground">visible for 3h</span>
-          </div>
-          <div className="space-y-1.5">
-            {recentlyFinished.map((f) => (
-              <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {upcoming.length > 0 && (
+      {(upcoming.length > 0 || recentlyFinished.length > 0) && (
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Clock className="h-3.5 w-3.5 text-primary" />
             <h3 className="text-xs font-bold text-foreground">Today · Upcoming</h3>
             <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">
-              {upcoming.length}
+              {upcoming.length + recentlyFinished.length}
             </Badge>
           </div>
           <div className="space-y-1.5">
+            {recentlyFinished.map((f) => (
+              <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
+            ))}
             {upcoming.map((f) => (
               <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
             ))}
