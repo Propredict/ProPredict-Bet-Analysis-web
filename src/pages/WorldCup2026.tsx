@@ -1038,7 +1038,18 @@ export default function WorldCup2026() {
                 // that ended as a WIN. Losses are NOT listed here, and
                 // matches still inside the 3h grace stay in the "Live & Today"
                 // section above (rendered by WCLiveNowSection).
-                .filter((r) => r.pick && r.resultReady && r.isWin)
+                .filter((r) => {
+                  if (!r.pick || !r.resultReady || !r.isWin) return false;
+                  // Exclude placeholder/un-finalized predictions
+                  // (e.g. "Pending regeneration..." + generic "DC 1X").
+                  // Those were never real picks, so they must not appear
+                  // in the Finished — Yesterday's Results list.
+                  const analysis = (r.pick.analysis || "").toLowerCase();
+                  const pred = (r.pick.prediction || "").trim().toLowerCase();
+                  if (/pending regeneration|pending analysis/.test(analysis)) return false;
+                  if (pred.startsWith("dc ")) return false;
+                  return true;
+                })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
                 .slice(0, 3);
               return (
