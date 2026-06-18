@@ -152,20 +152,12 @@ export function useWCYesterdayResults() {
       // Determine which picks didn't match an API WC fixture, then fall back
       // to /fixtures?date=... (no league filter) to recover scores for
       // friendlies/qualifiers (e.g. Australia vs Türkiye).
-      // A match only moves into the "Finished — Yesterday's Results" section
-      // AFTER it has been visible in the live/today section for the 3h grace
-      // window. That window is kickoff + 110min (match end) + 180min (grace) =
-      // ~290min. Before that, the match stays up top so users can see the
-      // original prediction next to the just-finished result.
-      const FINISHED_DELAY_MS = (110 + 180) * 60_000;
-      const isPastGrace = (startTime?: string | null) => {
-        if (!startTime) return true; // unknown kickoff → don't block
-        const ko = new Date(startTime).getTime();
-        if (!isFinite(ko)) return true;
-        return Date.now() >= ko + FINISHED_DELAY_MS;
-      };
+      // Include every fixture whose API status is "finished". The page splits
+      // these into "Just Finished — Today" (still inside 3h grace, shows the
+      // original prediction next to the result) and "Finished — Yesterday's
+      // Results" (past the 3h grace, shows the WIN badge) using `resultReady`.
       const fixtures: WCTodayFixture[] = allFx.filter(
-        (f: WCTodayFixture) => f.status === "finished" && isPastGrace(f.startTime),
+        (f: WCTodayFixture) => f.status === "finished",
       );
       const unmatchedPicks = picks.filter(
         (p) =>
@@ -187,14 +179,10 @@ export function useWCYesterdayResults() {
         );
         for (const p of unmatchedPicks) {
           const match = extras.find(
-            (f) => {
-              if (f.status !== "finished") return false;
-              if (!isPastGrace(f.startTime)) return false;
-              return (
-                (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
-                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))
-              );
-            },
+            (f) =>
+              f.status === "finished" &&
+              ((norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))),
           );
           if (match) fixtures.push(match);
         }
