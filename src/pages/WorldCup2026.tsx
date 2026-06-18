@@ -1038,18 +1038,9 @@ export default function WorldCup2026() {
                 // that ended as a WIN. Losses are NOT listed here, and
                 // matches still inside the 3h grace stay in the "Live & Today"
                 // section above (rendered by WCLiveNowSection).
-                .filter((r) => {
-                  if (!r.pick || !r.resultReady || !r.isWin) return false;
-                  // Exclude only generic placeholder picks like "DC 1X"
-                  // (double-chance fallback that was never a real pick).
-                  // We keep entries whose analysis is "Pending regeneration"
-                  // as long as the prediction itself is a concrete 1/X/2.
-                  const pred = (r.pick.prediction || "").trim().toLowerCase();
-                  if (pred.startsWith("dc ")) return false;
-                  return true;
-                })
+                .filter((r) => !!r.pick && r.resultReady && r.isWin)
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
-                .slice(0, 3);
+                .slice(0, 6);
               return (
               <div className="mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2.5">
