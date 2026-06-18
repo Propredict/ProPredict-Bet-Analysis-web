@@ -1439,15 +1439,18 @@ export default function WorldCup2026() {
                 )}
                 {Object.entries(GROUPS).map(([group, teams]) => {
                   const liveGroup = liveStandings?.standings?.[group];
+                  const findLive = (t: string) => {
+                    const target = norm(t);
+                    return liveGroup?.find(lt => {
+                      const ln = norm(lt.team);
+                      return ln === target
+                        || lt.team.toLowerCase().includes(t.toLowerCase())
+                        || t.toLowerCase().includes(lt.team.toLowerCase());
+                    });
+                  };
                   const sortedTeams = [...teams].sort((a, b) => {
-                    const la = liveGroup?.find(lt =>
-                      lt.team.toLowerCase().includes(a.toLowerCase()) ||
-                      a.toLowerCase().includes(lt.team.toLowerCase())
-                    );
-                    const lb = liveGroup?.find(lt =>
-                      lt.team.toLowerCase().includes(b.toLowerCase()) ||
-                      b.toLowerCase().includes(lt.team.toLowerCase())
-                    );
+                    const la = findLive(a);
+                    const lb = findLive(b);
                     const pa = la?.points ?? 0, pb = lb?.points ?? 0;
                     if (pb !== pa) return pb - pa;
                     const gda = la?.goalsDiff ?? 0, gdb = lb?.goalsDiff ?? 0;
@@ -1470,10 +1473,7 @@ export default function WorldCup2026() {
                         </div>
                         {sortedTeams.map((t, idx) => {
                           const td = TEAMS[t];
-                          const live = liveGroup?.find(lt => 
-                            lt.team.toLowerCase().includes(t.toLowerCase()) || 
-                            t.toLowerCase().includes(lt.team.toLowerCase())
-                          );
+                          const live = findLive(t);
                           const played = live?.played ?? 0;
                           const win = live?.win ?? 0;
                           const gd = live?.goalsDiff ?? 0;
