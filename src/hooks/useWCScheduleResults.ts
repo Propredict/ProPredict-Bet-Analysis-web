@@ -54,12 +54,14 @@ export function useWCScheduleResults() {
     queryKey: ["wc-schedule-results"],
     queryFn: async (): Promise<Map<string, WCScheduleResult>> => {
       const now = Date.now();
-      // Pick unique YYYY-MM-DD for past matches only.
+      // Include past dates AND today (so live/HT scores show up in
+      // Matches tab as soon as the match kicks off, not only after FT).
+      const todayStr = new Date(now).toISOString().split("T")[0];
       const dates = new Set<string>();
       for (const m of GROUP_MATCHES) {
         const d = toUtcDate(m.date, m.time);
         if (!d) continue;
-        if (new Date(d + "T23:59:59Z").getTime() < now) dates.add(d);
+        if (d <= todayStr) dates.add(d);
       }
       if (dates.size === 0) return new Map();
 
@@ -97,8 +99,9 @@ export function useWCScheduleResults() {
       }
       return out;
     },
-    staleTime: 10 * 60_000,
-    refetchInterval: 10 * 60_000,
+    // Live matches: refresh every 60s so Matches tab scores update during games.
+    staleTime: 60_000,
+    refetchInterval: 60_000,
   });
 }
 
