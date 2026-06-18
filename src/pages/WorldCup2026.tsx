@@ -185,6 +185,17 @@ export default function WorldCup2026() {
   const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
   const { data: yesterdayResults = [], isLoading: isLoadingYesterday } =
     useWCYesterdayResults();
+  // Hide finished matches from AI Picks if the prediction missed both
+  // BTTS and Over/Under (isWin === false). Only wins stay visible.
+  const lostWCKeys = new Set(
+    yesterdayResults
+      .filter((r) => !r.isWin)
+      .map((r) => {
+        const h = norm(r.fixture.homeTeam);
+        const a = norm(r.fixture.awayTeam);
+        return `${h}|${a}`;
+      }),
+  );
 
   useEffect(() => {
     if (!interstitialFired.current) {
