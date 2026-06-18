@@ -817,6 +817,19 @@ export default function WorldCup2026() {
                     awayWin: projected.awayWin,
                     confidence: projected.confidence,
                   };
+              // Display confidence reflects the strongest call (1X2 top
+              // or Double Chance combo) rather than a raw model score,
+              // so cards don't show misleading 44% next to a 90% DC pick.
+              {
+                const top1x2 = Math.max(pred.homeWin, pred.draw, pred.awayWin);
+                const dc = Math.max(
+                  pred.homeWin + pred.draw,
+                  pred.draw + pred.awayWin,
+                  pred.homeWin + pred.awayWin,
+                );
+                const derived = Math.max(top1x2, Math.round(dc * 0.95));
+                pred.confidence = Math.min(95, Math.max(pred.confidence ?? 0, derived));
+              }
               const isReal = !!safeReal;
               // APP: free+ad or pro sees basic; web: existing rules
               const showBasic = isApp ? appCanSeeBasic : isPro;
