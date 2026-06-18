@@ -153,7 +153,15 @@ export function useWCYesterdayResults() {
       // to /fixtures?date=... (no league filter) to recover scores for
       // friendlies/qualifiers (e.g. Australia vs Türkiye).
       const fixtures: WCTodayFixture[] = allFx.filter(
-        (f: WCTodayFixture) => f.status === "finished",
+        (f: WCTodayFixture) => {
+          if (f.status !== "finished") return false;
+          // Guard: never treat a fixture as finished if its kickoff hasn't
+          // even passed yet (defensive against stale/incorrect status from
+          // upstream). Require kickoff + 100min to be in the past.
+          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
+          if (isFinite(ko) && Date.now() < ko + 100 * 60_000) return false;
+          return true;
+        },
       );
       const unmatchedPicks = picks.filter(
         (p) =>
@@ -175,10 +183,15 @@ export function useWCYesterdayResults() {
         );
         for (const p of unmatchedPicks) {
           const match = extras.find(
-            (f) =>
-              f.status === "finished" &&
-              ((norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
-                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))),
+            (f) => {
+              if (f.status !== "finished") return false;
+              const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
+              if (isFinite(ko) && Date.now() < ko + 100 * 60_000) return false;
+              return (
+                (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+                (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team))
+              );
+            },
           );
           if (match) fixtures.push(match);
         }
@@ -202,7 +215,13 @@ export function useWCYesterdayResults() {
             .in("match_id", ids);
           for (const p of stillUnmatched) {
             const c = (cache ?? []).find((r) => r.match_id === p.match_id);
-            if (c && c.home_score !== null && c.away_score !== null) {
+            // Only treat the cached score as a final result if the pick's
+            // kickoff date is strictly before today (Europe/Belgrade). This
+            // prevents today's not-yet-played matches (e.g. Switzerland vs
+            // Bosnia kicking off at 21:00) from being mis-rendered as
+            // FINISHED 0-0 just because a placeholder cache row exists.
+            const isPastDate = !!p.match_date && p.match_date < today;
+            if (isPastDate && c && c.home_score !== null && c.away_score !== null) {
               fixtures.push({
                 id: p.match_id,
                 homeTeam: p.home_team,
