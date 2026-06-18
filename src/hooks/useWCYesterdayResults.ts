@@ -207,12 +207,24 @@ export function useWCYesterdayResults() {
           for (const p of stillUnmatched) {
             const c = (cache ?? []).find((r) => r.match_id === p.match_id);
             // Only treat the cached score as a final result if the pick's
-            // kickoff date is strictly before today (Europe/Belgrade). This
-            // prevents today's not-yet-played matches (e.g. Switzerland vs
-            // Bosnia kicking off at 21:00) from being mis-rendered as
-            // FINISHED 0-0 just because a placeholder cache row exists.
+            // kickoff date is strictly before today (Europe/Belgrade) AND
+            // enough time has passed since kickoff that the match must be
+            // over (kickoff + 110 min). Without the time guard, a LIVE
+            // match (e.g. Canada vs Qatar 1-0 at 22') whose kickoff date
+            // is "yesterday" in Belgrade timezone would be rendered as
+            // FT WIN using its live score from match_scores_cache.
             const isPastDate = !!p.match_date && p.match_date < today;
-            if (isPastDate && c && c.home_score !== null && c.away_score !== null) {
+            const ko = p.match_date ? new Date(p.match_date).getTime() : NaN;
+            const likelyEnded = isFinite(ko)
+              ? Date.now() - ko >= 110 * 60_000
+              : true;
+            if (
+              isPastDate &&
+              likelyEnded &&
+              c &&
+              c.home_score !== null &&
+              c.away_score !== null
+            ) {
               fixtures.push({
                 id: p.match_id,
                 homeTeam: p.home_team,
