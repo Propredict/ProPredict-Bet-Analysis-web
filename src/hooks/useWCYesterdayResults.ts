@@ -44,8 +44,8 @@ function getStoredMarketPick(prediction?: string | null, analysis?: string | nul
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
   const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
-  const bttsYes = /btts[^.]*\byes\b|both teams to score[^.]*yes|\bgg\b/.test(text);
-  const bttsNo = /btts[^.]*\bno\b|both teams to score[^.]*no|\bng\b/.test(text);
+  const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
+  const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
   return {
     goals: goals ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) } : null,
     btts: bttsYes ? "yes" as const : bttsNo ? "no" as const : null,
