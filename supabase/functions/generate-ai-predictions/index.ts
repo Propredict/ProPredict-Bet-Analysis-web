@@ -1404,6 +1404,53 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5, 
 }
 
 /**
+ * WORLD CUP MEMORY: from Round 2 onward, every prior WC 2026 match a team
+ * has played (group stage + knockouts) is the strongest possible signal —
+ * same squad, same tournament, same conditions. We fetch the team's WC-only
+ * fixtures and PREPEND them to the general form array so the engine's
+ * recency weighting naturally treats them as most relevant.
+ *
+ * Falls back to the original `baseForm` when no WC history exists (Round 1).
+ */
+async function mergeWorldCupMemory(
+  teamId: number,
+  baseForm: FormMatch[],
+  apiKey: string,
+  maxOut: number = 10,
+): Promise<FormMatch[]> {
+  try {
+    const wcForm = await fetchTeamForm(teamId, apiKey, 10, 1); // league=1 → WC only
+    if (!wcForm || wcForm.length === 0) return baseForm;
+
+    const seen = new Set<string>();
+    const keyOf = (m: FormMatch) => `${m.matchDate || ""}|${m.opponentId || ""}`;
+    const merged: FormMatch[] = [];
+
+    // WC matches first (highest weight in recency-ordered engine)
+    for (const m of wcForm) {
+      const k = keyOf(m);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      merged.push(m);
+      if (merged.length >= maxOut) return merged;
+    }
+    // Then fill remaining slots with general recent form (club + reps)
+    for (const m of baseForm) {
+      const k = keyOf(m);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      merged.push(m);
+      if (merged.length >= maxOut) break;
+    }
+    console.log(`[WC-MEMORY] team=${teamId} wcMatches=${wcForm.length} merged=${merged.length}`);
+    return merged;
+  } catch (e) {
+    console.error("[WC-MEMORY] merge failed:", e);
+    return baseForm;
+  }
+}
+
+/**
  * Fetch head-to-head matches between two teams
  */
 async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 5): Promise<H2HMatch[]> {
