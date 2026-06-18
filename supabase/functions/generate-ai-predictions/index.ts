@@ -7576,8 +7576,19 @@ async function processBatch(
 
       // HARD REAL-DATA GATE: no pseudo/fallback form. If API does not provide
       // enough real recent history, we do not publish a prediction.
-      const homeForm = realHomeForm;
-      const awayForm = realAwayForm;
+      let homeForm = realHomeForm;
+      let awayForm = realAwayForm;
+
+      // === WORLD CUP MEMORY (Round 2+) ===
+      // For WC fixtures, prepend the team's prior WC 2026 matches so the
+      // engine weights them as most recent. This kicks in automatically
+      // once a team has played at least one WC game.
+      if (leagueId === 1) {
+        [homeForm, awayForm] = await Promise.all([
+          mergeWorldCupMemory(homeTeamId, realHomeForm, apiKey, 10),
+          mergeWorldCupMemory(awayTeamId, realAwayForm, apiKey, 10),
+        ]);
+      }
 
       if (homeForm.length === 0 || awayForm.length === 0) {
         // Form fetch returned empty — almost always API rate-limit (429).
