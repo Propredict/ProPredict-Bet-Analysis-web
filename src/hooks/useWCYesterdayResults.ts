@@ -22,6 +22,10 @@ export interface WCFinishedItem {
   pickedSide: "home" | "draw" | "away";
   actualSide: "home" | "draw" | "away";
   isWin: boolean;
+  /** Result evaluation only "locks in" 3h after match ended.
+   *  Until then the card shows the original prediction with a
+   *  "Result pending" badge — never a WIN/LOSS yet. */
+  resultReady: boolean;
 }
 
 function yyyymmddBelgrade(offsetDays: number): string {
@@ -232,15 +236,22 @@ export function useWCYesterdayResults() {
             if (/btts.?yes|gg/.test(pred) && bttsActual) marketHit = true;
             if (/btts.?no|ng/.test(pred) && !bttsActual) marketHit = true;
           }
+          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
+          // since match end. We approximate match end as kickoff + 110min.
+          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
+          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
+          const resultReady = isFinite(endedMs)
+            ? Date.now() - endedMs >= 3 * 60 * 60_000
+            : true; // unknown kickoff → treat as ready
           return {
             fixture: f,
             pick: found?.p ?? null,
             pickedSide,
             actualSide,
             isWin: !!found && (pickedSide === actualSide || marketHit),
+            resultReady,
           };
-        })
-        .filter((item) => item.isWin);
+        });
     },
     staleTime: 5 * 60_000,
     refetchInterval: 5 * 60_000,
