@@ -159,14 +159,17 @@ export function useWCYesterdayResults() {
       const fixtures: WCTodayFixture[] = allFx.filter(
         (f: WCTodayFixture) => f.status === "finished",
       );
-      const unmatchedPicks = picks.filter(
-        (p) =>
-          !fixtures.some(
-            (f) =>
-              (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
-              (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
-          ),
-      );
+      // A pick is "unmatched" only when NO fixture (live, scheduled, or
+      // finished) was found for it in the WC fetch. Picks whose match is
+      // live/scheduled MUST NOT fall through to the cache fallback, or a
+      // live score will be mis-rendered as a final FT result.
+      const hasAnyFixture = (p: WCYesterdayAIPick) =>
+        allFx.some(
+          (f) =>
+            (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+            (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+        );
+      const unmatchedPicks = picks.filter((p) => !hasAnyFixture(p));
       if (unmatchedPicks.length > 0) {
         const dates = Array.from(new Set(unmatchedPicks.map((p) => p.match_date).filter(Boolean))) as string[];
         const extraResults = await Promise.all(
@@ -207,12 +210,24 @@ export function useWCYesterdayResults() {
           for (const p of stillUnmatched) {
             const c = (cache ?? []).find((r) => r.match_id === p.match_id);
             // Only treat the cached score as a final result if the pick's
-            // kickoff date is strictly before today (Europe/Belgrade). This
-            // prevents today's not-yet-played matches (e.g. Switzerland vs
-            // Bosnia kicking off at 21:00) from being mis-rendered as
-            // FINISHED 0-0 just because a placeholder cache row exists.
+            // kickoff date is strictly before today (Europe/Belgrade) AND
+            // enough time has passed since kickoff that the match must be
+            // over (kickoff + 110 min). Without the time guard, a LIVE
+            // match (e.g. Canada vs Qatar 1-0 at 22') whose kickoff date
+            // is "yesterday" in Belgrade timezone would be rendered as
+            // FT WIN using its live score from match_scores_cache.
             const isPastDate = !!p.match_date && p.match_date < today;
-            if (isPastDate && c && c.home_score !== null && c.away_score !== null) {
+            const ko = p.match_date ? new Date(p.match_date).getTime() : NaN;
+            const likelyEnded = isFinite(ko)
+              ? Date.now() - ko >= 110 * 60_000
+              : true;
+            if (
+              isPastDate &&
+              likelyEnded &&
+              c &&
+              c.home_score !== null &&
+              c.away_score !== null
+            ) {
               fixtures.push({
                 id: p.match_id,
                 homeTeam: p.home_team,
