@@ -1404,6 +1404,53 @@ async function fetchTeamForm(teamId: number, apiKey: string, count: number = 5, 
 }
 
 /**
+ * WORLD CUP MEMORY: from Round 2 onward, every prior WC 2026 match a team
+ * has played (group stage + knockouts) is the strongest possible signal —
+ * same squad, same tournament, same conditions. We fetch the team's WC-only
+ * fixtures and PREPEND them to the general form array so the engine's
+ * recency weighting naturally treats them as most relevant.
+ *
+ * Falls back to the original `baseForm` when no WC history exists (Round 1).
+ */
+async function mergeWorldCupMemory(
+  teamId: number,
+  baseForm: FormMatch[],
+  apiKey: string,
+  maxOut: number = 10,
+): Promise<FormMatch[]> {
+  try {
+    const wcForm = await fetchTeamForm(teamId, apiKey, 10, 1); // league=1 → WC only
+    if (!wcForm || wcForm.length === 0) return baseForm;
+
+    const seen = new Set<string>();
+    const keyOf = (m: FormMatch) => `${m.matchDate || ""}|${m.opponentId || ""}`;
+    const merged: FormMatch[] = [];
+
+    // WC matches first (highest weight in recency-ordered engine)
+    for (const m of wcForm) {
+      const k = keyOf(m);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      merged.push(m);
+      if (merged.length >= maxOut) return merged;
+    }
+    // Then fill remaining slots with general recent form (club + reps)
+    for (const m of baseForm) {
+      const k = keyOf(m);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      merged.push(m);
+      if (merged.length >= maxOut) break;
+    }
+    console.log(`[WC-MEMORY] team=${teamId} wcMatches=${wcForm.length} merged=${merged.length}`);
+    return merged;
+  } catch (e) {
+    console.error("[WC-MEMORY] merge failed:", e);
+    return baseForm;
+  }
+}
+
+/**
  * Fetch head-to-head matches between two teams
  */
 async function fetchH2H(homeTeamId: number, awayTeamId: number, apiKey: string, count: number = 5): Promise<H2HMatch[]> {
@@ -7529,8 +7576,19 @@ async function processBatch(
 
       // HARD REAL-DATA GATE: no pseudo/fallback form. If API does not provide
       // enough real recent history, we do not publish a prediction.
-      const homeForm = realHomeForm;
-      const awayForm = realAwayForm;
+      let homeForm = realHomeForm;
+      let awayForm = realAwayForm;
+
+      // === WORLD CUP MEMORY (Round 2+) ===
+      // For WC fixtures, prepend the team's prior WC 2026 matches so the
+      // engine weights them as most recent. This kicks in automatically
+      // once a team has played at least one WC game.
+      if (leagueId === 1) {
+        [homeForm, awayForm] = await Promise.all([
+          mergeWorldCupMemory(homeTeamId, realHomeForm, apiKey, 10),
+          mergeWorldCupMemory(awayTeamId, realAwayForm, apiKey, 10),
+        ]);
+      }
 
       if (homeForm.length === 0 || awayForm.length === 0) {
         // Form fetch returned empty — almost always API rate-limit (429).
@@ -9270,7 +9328,7 @@ serve(async (req: Request) => {
           const leagueId = fixture.league?.id;
           const season = fixture.league?.season || new Date().getFullYear();
           if (!homeTeamId || !awayTeamId) { results.push({ match_id: row.match_id, skipped: "no_teams" }); continue; }
-          const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+          let [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
             fetchTeamForm(homeTeamId, apiKey, 10),
             fetchTeamForm(awayTeamId, apiKey, 10),
             fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -9279,6 +9337,13 @@ serve(async (req: Request) => {
             leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
             fetchOdds(String(row.match_id), apiKey),
           ]);
+          // WC MEMORY: prepend prior WC 2026 matches for WC fixtures
+          if (leagueId === 1) {
+            [homeForm, awayForm] = await Promise.all([
+              mergeWorldCupMemory(homeTeamId, homeForm, apiKey, 10),
+              mergeWorldCupMemory(awayTeamId, awayForm, apiKey, 10),
+            ]);
+          }
           const pred = calculatePrediction(
             homeForm, awayForm, homeStats, awayStats, h2h,
             homeTeamId, awayTeamId,
@@ -9410,7 +9475,7 @@ serve(async (req: Request) => {
     }
 
     // Fetch all data in parallel for efficiency (full analysis like batch mode)
-    const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+    let [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
       fetchTeamForm(homeTeamId, apiKey, 10),  // Real recent form, all competitions
       fetchTeamForm(awayTeamId, apiKey, 10),  // Real recent form, all competitions
       fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -9419,6 +9484,13 @@ serve(async (req: Request) => {
       leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
       fetchOdds(String(fixtureId), apiKey),
     ]);
+    // WC MEMORY: prepend prior WC 2026 matches when this is a WC fixture
+    if (leagueId === 1) {
+      [homeForm, awayForm] = await Promise.all([
+        mergeWorldCupMemory(homeTeamId, homeForm, apiKey, 10),
+        mergeWorldCupMemory(awayTeamId, awayForm, apiKey, 10),
+      ]);
+    }
 
     // Calculate prediction with full analysis
     const prediction = calculatePrediction(
