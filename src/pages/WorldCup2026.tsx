@@ -444,10 +444,15 @@ export default function WorldCup2026() {
               {Object.entries(GROUPS).map(([group, teams]) => {
                 const isExpanded = expandedGroup === group;
                 const liveGroup = liveStandings?.standings?.[group];
-                const getLive = (t: string) => liveGroup?.find(lt =>
-                  lt.team.toLowerCase().includes(t.toLowerCase()) ||
-                  t.toLowerCase().includes(lt.team.toLowerCase())
-                );
+                const getLive = (t: string) => {
+                  const target = norm(t);
+                  return liveGroup?.find(lt => {
+                    const ln = norm(lt.team);
+                    return ln === target
+                      || lt.team.toLowerCase().includes(t.toLowerCase())
+                      || t.toLowerCase().includes(lt.team.toLowerCase());
+                  });
+                };
                 const sortedTeams = [...teams].sort((a, b) => {
                   const la = getLive(a), lb = getLive(b);
                   const pa = la?.points ?? 0, pb = lb?.points ?? 0;
