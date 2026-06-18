@@ -1050,22 +1050,15 @@ export default function WorldCup2026() {
             })()}
             {(() => {
               const finishedWithPick = yesterdayResults
-                // Include both:
-                //   • JUST FINISHED today — still inside the 3h grace window
-                //     (resultReady=false). These show "Result in 3h" badge
-                //     so users see the original prediction next to the result.
-                //   • Yesterday's wins — past the grace, evaluated and won.
-                // Losses past the grace are hidden from the recap.
+                // Show ONLY wins from the last 2 days (yesterday + today).
+                // Lost picks are never shown in the Finished recap.
                 .filter((r) => {
                   if (!r.pick) return false;
-                  // Explicit blacklist for matches the user removed from
-                  // the Finished recap (e.g. England vs Croatia).
                   const home = (r.fixture.homeTeam || "").toLowerCase();
                   const away = (r.fixture.awayTeam || "").toLowerCase();
                   if (/england/.test(home) && /croatia/.test(away)) return false;
                   if (/croatia/.test(home) && /england/.test(away)) return false;
-                  if (!r.resultReady) return true; // just finished, inside grace
-                  return r.isWin;                  // past grace → only wins
+                  return r.isWin; // wins only
                 })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
                 .slice(0, 8);
