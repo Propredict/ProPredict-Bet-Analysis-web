@@ -159,8 +159,19 @@ export default function WCLiveNowSection({ onMatchClick }: Props) {
 
   const live = fixtures.filter((f) => f.status === "live" || f.status === "halftime");
   const upcoming = fixtures.filter((f) => f.status === "upcoming");
+  // Keep finished matches visible here for 3 hours after kickoff+110min,
+  // so users still see the just-finished game with its original prediction.
+  const nowMs = Date.now();
+  const recentlyFinished = fixtures.filter((f) => {
+    if (f.status !== "finished") return false;
+    if (!f.startTime) return false;
+    const ko = new Date(f.startTime).getTime();
+    if (!Number.isFinite(ko)) return false;
+    const graceEnd = ko + (110 + 180) * 60 * 1000; // 110min match + 3h
+    return nowMs < graceEnd;
+  });
 
-  if (live.length === 0 && upcoming.length === 0) {
+  if (live.length === 0 && upcoming.length === 0 && recentlyFinished.length === 0) {
     return (
       <Card className="border-border bg-card">
         <div className="p-4 text-center">
@@ -186,6 +197,24 @@ export default function WCLiveNowSection({ onMatchClick }: Props) {
           </div>
           <div className="space-y-1.5">
             {live.map((f) => (
+              <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {recentlyFinished.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <h3 className="text-xs font-bold text-foreground">Just Finished</h3>
+            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground">
+              {recentlyFinished.length}
+            </Badge>
+            <span className="ml-auto text-[9px] text-muted-foreground">visible for 3h</span>
+          </div>
+          <div className="space-y-1.5">
+            {recentlyFinished.map((f) => (
               <MatchRow key={f.id} f={f} onClick={() => onMatchClick?.(f.id)} />
             ))}
           </div>
