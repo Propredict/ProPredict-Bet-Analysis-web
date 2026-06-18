@@ -1044,11 +1044,16 @@ export default function WorldCup2026() {
                     <Activity className="h-3.5 w-3.5 text-emerald-400" />
                     Finished — Yesterday's Results
                   </h3>
-                  {finishedWithPick.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground">
-                      {finishedWithPick.filter((r) => r.isWin).length}/{finishedWithPick.length} hit
-                    </span>
-                  )}
+                  {finishedWithPick.length > 0 && (() => {
+                    const ready = finishedWithPick.filter((r) => r.resultReady);
+                    const pending = finishedWithPick.length - ready.length;
+                    return (
+                      <span className="text-[10px] text-muted-foreground">
+                        {ready.filter((r) => r.isWin).length}/{ready.length} hit
+                        {pending > 0 ? ` · ${pending} pending` : ""}
+                      </span>
+                    );
+                  })()}
                 </div>
                 {finishedWithPick.length === 0 && (
                   <Card className="bg-card border-border p-3 text-center">
@@ -1103,7 +1108,12 @@ export default function WorldCup2026() {
                             <Badge variant="outline" className="text-[9px] border-foreground/30 text-foreground bg-muted/40 tabular-nums font-bold">
                               FT {r.fixture.homeScore}–{r.fixture.awayScore}
                             </Badge>
-                            {r.pick && r.isWin && (
+                            {r.pick && !r.resultReady && (
+                              <Badge variant="outline" className="text-[9px] border-amber-500/40 text-amber-400 bg-amber-500/10">
+                                Result in 3h
+                              </Badge>
+                            )}
+                            {r.pick && r.resultReady && r.isWin && (
                               <Badge variant="outline" className="text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
                                 WIN
                               </Badge>
