@@ -22,6 +22,10 @@ export interface WCFinishedItem {
   pickedSide: "home" | "draw" | "away";
   actualSide: "home" | "draw" | "away";
   isWin: boolean;
+  /** Result evaluation only "locks in" 3h after match ended.
+   *  Until then the card shows the original prediction with a
+   *  "Result pending" badge — never a WIN/LOSS yet. */
+  resultReady: boolean;
 }
 
 function yyyymmddBelgrade(offsetDays: number): string {
