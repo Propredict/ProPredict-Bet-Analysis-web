@@ -3,8 +3,8 @@
  *
  * Per-match staggered AI prediction enrichment.
  * Runs every 30 minutes via pg_cron. Selects placeholder predictions
- * whose kickoff is within the next 3h window (or already started but
- * still placeholder — safety net) and enriches them ONE BY ONE by
+ * whose kickoff is within the next 3h window and has NOT started yet,
+ * then enriches them ONE BY ONE by
  * calling the existing generate-ai-predictions function in single-fixture
  * mode. Each successfully enriched match gets a "AI Pick Ready" push.
  *
@@ -24,14 +24,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Window: enrich matches starting in <= 3h from now. This means a 00:00
-// kickoff becomes due at 21:00, not 18:00. Once written, the prediction is
-// FROZEN (placeholder rows are the only candidates; enriched rows are never
-// touched again).
+// Window: enrich matches starting in <= 3h from now, but NEVER after kickoff.
+// This means a 00:00 kickoff becomes due at 21:00 and stops being eligible at
+// 00:00. Once written, the prediction is FROZEN (placeholder rows are the only
+// candidates; enriched rows are never touched again).
 const DUE_WINDOW_MS = 3 * 60 * 60 * 1000; // 3h before kickoff
-// Don't bother enriching matches that have been live/finished for > 30 min
-// (the result update job will mark them, and lineup data is stale anyway).
-const STALE_PAST_MS = 30 * 60 * 1000;
 
 function getKickoffMs(row: { match_timestamp?: string | null; match_date?: string | null; match_time?: string | null }): number | null {
   if (row.match_timestamp) {
@@ -60,7 +57,7 @@ serve(async (req: Request) => {
 
     const now = new Date();
     const windowEnd = new Date(now.getTime() + DUE_WINDOW_MS);
-    const windowStart = new Date(now.getTime() - STALE_PAST_MS);
+    const windowStart = now;
 
     // Find WORLD CUP placeholder predictions whose kickoff is within the due window.
     // Staggered enrichment applies ONLY to World Cup matches — other leagues
@@ -118,7 +115,7 @@ serve(async (req: Request) => {
     const byId = new Map<string, any>();
     for (const row of [...(timestampRows ?? []), ...(legacyRows ?? [])]) {
       const koMs = getKickoffMs(row);
-      if (koMs != null && koMs >= windowStartMs && koMs <= windowEndMs) byId.set(row.id, row);
+      if (koMs != null && koMs > windowStartMs && koMs <= windowEndMs) byId.set(row.id, row);
     }
     const candidates = [...byId.values()].sort((a, b) => (getKickoffMs(a) ?? 0) - (getKickoffMs(b) ?? 0));
 
