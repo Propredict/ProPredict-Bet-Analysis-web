@@ -159,14 +159,17 @@ export function useWCYesterdayResults() {
       const fixtures: WCTodayFixture[] = allFx.filter(
         (f: WCTodayFixture) => f.status === "finished",
       );
-      const unmatchedPicks = picks.filter(
-        (p) =>
-          !fixtures.some(
-            (f) =>
-              (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
-              (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
-          ),
-      );
+      // A pick is "unmatched" only when NO fixture (live, scheduled, or
+      // finished) was found for it in the WC fetch. Picks whose match is
+      // live/scheduled MUST NOT fall through to the cache fallback, or a
+      // live score will be mis-rendered as a final FT result.
+      const hasAnyFixture = (p: WCYesterdayAIPick) =>
+        allFx.some(
+          (f) =>
+            (norm(f.homeTeam) === norm(p.home_team) && norm(f.awayTeam) === norm(p.away_team)) ||
+            (norm(f.homeTeam) === norm(p.away_team) && norm(f.awayTeam) === norm(p.home_team)),
+        );
+      const unmatchedPicks = picks.filter((p) => !hasAnyFixture(p));
       if (unmatchedPicks.length > 0) {
         const dates = Array.from(new Set(unmatchedPicks.map((p) => p.match_date).filter(Boolean))) as string[];
         const extraResults = await Promise.all(
