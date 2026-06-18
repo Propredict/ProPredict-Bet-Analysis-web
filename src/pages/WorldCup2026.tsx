@@ -24,7 +24,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWCYesterdayResults } from "@/hooks/useWCYesterdayResults";
-import { useWCScheduleResults, lookupWCResult } from "@/hooks/useWCScheduleResults";
+import { useWCScheduleResults, lookupWCResult, norm } from "@/hooks/useWCScheduleResults";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
