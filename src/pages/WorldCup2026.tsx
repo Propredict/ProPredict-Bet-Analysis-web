@@ -1034,7 +1034,11 @@ export default function WorldCup2026() {
             })()}
             {(() => {
               const finishedWithPick = yesterdayResults
-                .filter((r) => r.pick)
+                // Only show matches whose 3h grace period has elapsed AND
+                // that ended as a WIN. Losses are NOT listed here, and
+                // matches still inside the 3h grace stay in the "Live & Today"
+                // section above (rendered by WCLiveNowSection).
+                .filter((r) => r.pick && r.resultReady && r.isWin)
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
                 .slice(0, 3);
               return (
@@ -1045,12 +1049,9 @@ export default function WorldCup2026() {
                     Finished — Yesterday's Results
                   </h3>
                   {finishedWithPick.length > 0 && (() => {
-                    const ready = finishedWithPick.filter((r) => r.resultReady);
-                    const pending = finishedWithPick.length - ready.length;
                     return (
                       <span className="text-[10px] text-muted-foreground">
-                        {ready.filter((r) => r.isWin).length}/{ready.length} hit
-                        {pending > 0 ? ` · ${pending} pending` : ""}
+                        {finishedWithPick.length} win{finishedWithPick.length === 1 ? "" : "s"}
                       </span>
                     );
                   })()}
