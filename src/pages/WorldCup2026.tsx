@@ -766,6 +766,10 @@ export default function WorldCup2026() {
               // the expected FT (kickoff + 110min + 3h), so users can still
               // see the original prediction before it moves to Finished.
               if (p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
+              // Hide matches where the prediction missed both BTTS and Over/Under.
+              const nh = norm(p.home);
+              const na = norm(p.away);
+              if (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`)) return false;
                 return p.kickoffTs >= startOfToday && p.kickoffTs < windowEnd;
               });
               if (todayPreds.length === 0) {
