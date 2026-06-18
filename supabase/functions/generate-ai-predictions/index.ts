@@ -7452,7 +7452,7 @@ async function processBatch(
       }
 
       // === STAGGERED GUARD (WORLD CUP ONLY): skip enrichment when kickoff
-      // is > 3h15min away. Only applies to World Cup fixtures (league_id=1).
+      // is > 3h away. Only applies to World Cup fixtures (league_id=1).
       // Such matches stay as "Pending regeneration…" placeholders and are
       // picked up by the `generate-due-predictions` cron exactly ~3h before
       // kickoff, when lineups + final odds give the most accurate signal.
@@ -7463,7 +7463,7 @@ async function processBatch(
           if (koIso) {
             const koTs = new Date(koIso).getTime();
             const msToKo = koTs - Date.now();
-            const STAGGER_WINDOW_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
+            const STAGGER_WINDOW_MS = 3 * 60 * 60 * 1000; // exactly 3h before kickoff
             if (msToKo > STAGGER_WINDOW_MS) {
               console.log(`[STAGGER:WC] ${fixtureIdStr}: kickoff ${Math.round(msToKo / 60000)}min away — keep placeholder, will enrich ~3h before KO`);
               continue;
@@ -7474,7 +7474,7 @@ async function processBatch(
 
       // === FREEZE GUARD #3 (HARD 3h LOCK): once a prediction is enriched
       // (analysis is no longer the "Pending regeneration…" placeholder) AND
-      // kickoff is within 3h15min, we NEVER regenerate it again — pick,
+      // kickoff is within 3h, we NEVER regenerate it again — pick,
       // score, probabilities and analysis stay exactly what users saw.
       // This blocks both the standard batch and `wcRegenerateNow` from
       // overwriting a frozen pick in the final 3h window.
@@ -7484,7 +7484,7 @@ async function processBatch(
         const isPlaceholder = /^pending regeneration/i.test(analysisStr);
         if (koIso && !isPlaceholder) {
           const msToKo = new Date(koIso).getTime() - Date.now();
-          const HARD_LOCK_MS = 3 * 60 * 60 * 1000 + 15 * 60 * 1000; // 3h15min
+            const HARD_LOCK_MS = 3 * 60 * 60 * 1000; // exactly 3h before kickoff
           if (msToKo <= HARD_LOCK_MS) {
             console.log(`[FREEZE3] ${fixtureIdStr}: enriched + kickoff ${Math.round(msToKo / 60000)}min away — HARD LOCK, skip regenerate`);
             continue;
