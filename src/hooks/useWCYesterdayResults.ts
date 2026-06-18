@@ -77,6 +77,11 @@ export function useWCYesterdayResults() {
         usa: "unitedstates", us: "unitedstates", "united states": "unitedstates",
         "bosnia and herzegovina": "bosnia", "bosnia & herzegovina": "bosnia",
         "ivory coast": "ivorycoast", "cote d ivoire": "ivorycoast", "côte d ivoire": "ivorycoast",
+        "dr congo": "drcongo", "congo dr": "drcongo",
+        "democratic republic of the congo": "drcongo",
+        "democratic republic of congo": "drcongo",
+        "congo democratic republic": "drcongo",
+        "congo kinshasa": "drcongo", "rd congo": "drcongo",
       };
       const norm = (s: string) => {
         const base = (s || "")
