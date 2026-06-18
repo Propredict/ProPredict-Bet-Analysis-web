@@ -78,8 +78,13 @@ serve(async (req) => {
       // match_time is "HH:MM:SS" UTC — stitch with date
       const koMs = new Date(`${r.match_date}T${r.match_time}Z`).getTime();
       if (Number.isNaN(koMs)) return false;
-      // Never announce a match after kickoff. The caller controls exact match IDs.
-      return koMs > Date.now();
+      // Allow a 20-minute grace window after kickoff. The cron tick that
+      // enriches a prediction can land a few seconds/minutes after kickoff
+      // (lineups confirm right before KO), and we still want to deliver the
+      // "AI Pick Ready" push for that match. The caller controls exact IDs,
+      // so we trust them — we only guard against very stale finished matches.
+      const GRACE_AFTER_KO_MS = 20 * 60 * 1000;
+      return koMs + GRACE_AFTER_KO_MS > Date.now();
     });
 
     console.log(
