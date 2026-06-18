@@ -50,12 +50,16 @@ function getStoredMarketPick(
   const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
   const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
   const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
-  // Fallback: derive markets from predicted_score when text has no explicit
-  // over/under or BTTS phrase. predicted_score is stored at lock-time so it
-  // still represents the original pick (never the actual final score).
+  // Track whether each market came from EXPLICIT text or was DERIVED from
+  // predicted_score. Explicit markets are the user-stated pick and DECIDE
+  // the result. Derived markets are bonus opportunities — ANY derived hit
+  // counts as a WIN (OR logic), since we don't know which one the user
+  // intended.
+  const goalsExplicit = !!goals;
   let goalsResolved = goals
     ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) }
     : null;
+  const bttsExplicit = bttsYes || bttsNo;
   let bttsResolved: "yes" | "no" | null = bttsYes ? "yes" : bttsNo ? "no" : null;
   if ((!goalsResolved || !bttsResolved) && predictedScore) {
     const m = predictedScore.match(/(\d+)\s*[-–:]\s*(\d+)/);
@@ -73,6 +77,8 @@ function getStoredMarketPick(
   return {
     goals: goalsResolved,
     btts: bttsResolved,
+    goalsExplicit,
+    bttsExplicit,
   };
 }
 
@@ -86,8 +92,10 @@ export function useWCYesterdayResults() {
     queryFn: async (): Promise<WCFinishedItem[]> => {
       const yesterday = yyyymmddBelgrade(-1);
       const today = yyyymmddBelgrade(0);
+      const twoDaysAgo = yyyymmddBelgrade(-2);
 
-      const [fxYesterday, fxToday, predRes] = await Promise.all([
+      const [fxTwo, fxYesterday, fxToday, predRes] = await Promise.all([
+        supabase.functions.invoke("get-wc-today", { body: { date: twoDaysAgo } }),
         supabase.functions.invoke("get-wc-today", { body: { date: yesterday } }),
         supabase.functions.invoke("get-wc-today", { body: { date: today } }),
         supabase
@@ -96,11 +104,12 @@ export function useWCYesterdayResults() {
             "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis",
           )
           .ilike("league", "%world cup%")
-          .in("match_date", [yesterday, today])
+          .in("match_date", [twoDaysAgo, yesterday, today])
           .limit(64),
       ]);
 
       const allFx: WCTodayFixture[] = [
+        ...(fxTwo.data?.fixtures ?? []),
         ...(fxYesterday.data?.fixtures ?? []),
         ...(fxToday.data?.fixtures ?? []),
       ];
@@ -272,24 +281,34 @@ export function useWCYesterdayResults() {
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
             const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
-            // Evaluation priority (per product rule):
-            //   1) Over/Under 2.5 (goals market) — if stored, this DECIDES the result.
-            //   2) BTTS Yes/No                   — used only if no goals market was stored.
-            //   3) 1X2 (home/draw/away)          — used only if neither market was stored.
-            // Exact-score is a bonus hit on top of (1)/(2).
+            // Evaluation rules:
+            //  - EXPLICIT market (over/under or BTTS written in the
+            //    prediction text) DECIDES the result.
+            //  - DERIVED markets (inferred from predicted_score when the
+            //    text didn't state a market) use OR logic — ANY hit
+            //    counts as WIN, since we don't know which market the
+            //    user intended.
+            //  - Exact-score bonus can also flip a miss into a win.
             let decided = false;
-            if (storedMarket.goals) {
-              const { dir, line } = storedMarket.goals;
-              const hit =
-                (dir === "over" && totalGoals > line) ||
-                (dir === "under" && totalGoals < line);
-              marketHit = hit;
+            const goalsHit = storedMarket.goals
+              ? (storedMarket.goals.dir === "over" && totalGoals > storedMarket.goals.line) ||
+                (storedMarket.goals.dir === "under" && totalGoals < storedMarket.goals.line)
+              : false;
+            const bttsHit =
+              storedMarket.btts === "yes"
+                ? bttsActual
+                : storedMarket.btts === "no"
+                  ? !bttsActual
+                  : false;
+            if (storedMarket.goalsExplicit) {
+              marketHit = goalsHit;
               decided = true;
-            } else if (storedMarket.btts === "yes" || storedMarket.btts === "no") {
-              const hit =
-                (storedMarket.btts === "yes" && bttsActual) ||
-                (storedMarket.btts === "no" && !bttsActual);
-              marketHit = hit;
+            } else if (storedMarket.bttsExplicit) {
+              marketHit = bttsHit;
+              decided = true;
+            } else if (storedMarket.goals || storedMarket.btts) {
+              // Both markets are derived → ANY hit wins.
+              marketHit = goalsHit || bttsHit;
               decided = true;
             }
             // Exact predicted score hit — bonus, can flip a market miss into a win.
