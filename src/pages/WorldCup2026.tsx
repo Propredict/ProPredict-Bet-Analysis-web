@@ -1293,12 +1293,22 @@ export default function WorldCup2026() {
 
             <div className="space-y-2">
               {(matchesByDay[matchesFilter] || []).length > 0 ? (
-                matchesByDay[matchesFilter].map((m, i) => (
+                matchesByDay[matchesFilter].map((m, i) => {
+                  const result = lookupWCResult(wcResults, m.home, m.away);
+                  const isFinished = !!result?.finished;
+                  return (
                   <Card key={i} className="bg-card border-border p-3">
                     <div className="flex items-center justify-between mb-1">
                       <Badge variant="outline" className="text-[9px]">Group {m.group}</Badge>
-                      <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> {m.city}
+                      <div className="flex items-center gap-2">
+                        {isFinished && (
+                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] px-1.5 py-0">
+                            FT
+                          </Badge>
+                        )}
+                        <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {m.city}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
@@ -1315,12 +1325,24 @@ export default function WorldCup2026() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground">{m.date}</p>
-                        <p className="text-sm font-bold text-primary">{m.time}</p>
+                        {result ? (
+                          <>
+                            <p className="text-[10px] text-muted-foreground">{m.date}</p>
+                            <p className="text-lg font-extrabold text-emerald-400 leading-none">
+                              {result.homeScore} - {result.awayScore}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[10px] text-muted-foreground">{m.date}</p>
+                            <p className="text-sm font-bold text-primary">{m.time}</p>
+                          </>
+                        )}
                       </div>
                     </div>
                   </Card>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8">
                   <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
