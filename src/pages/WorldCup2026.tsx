@@ -1048,37 +1048,42 @@ export default function WorldCup2026() {
             })()}
             {(() => {
               const finishedWithPick = yesterdayResults
-                // Only show matches whose 3h grace period has elapsed AND
-                // that ended as a WIN. Losses are NOT listed here, and
-                // matches still inside the 3h grace stay in the "Live & Today"
-                // section above (rendered by WCLiveNowSection).
+                // Include both:
+                //   • JUST FINISHED today — still inside the 3h grace window
+                //     (resultReady=false). These show "Result in 3h" badge
+                //     so users see the original prediction next to the result.
+                //   • Yesterday's wins — past the grace, evaluated and won.
+                // Losses past the grace are hidden from the recap.
                 .filter((r) => {
-                  if (!r.pick || !r.resultReady || !r.isWin) return false;
+                  if (!r.pick) return false;
                   // Explicit blacklist for matches the user removed from
                   // the Finished recap (e.g. England vs Croatia).
                   const home = (r.fixture.homeTeam || "").toLowerCase();
                   const away = (r.fixture.awayTeam || "").toLowerCase();
-                  const pair = `${home} vs ${away}`;
                   if (/england/.test(home) && /croatia/.test(away)) return false;
                   if (/croatia/.test(home) && /england/.test(away)) return false;
-                  return true;
+                  if (!r.resultReady) return true; // just finished, inside grace
+                  return r.isWin;                  // past grace → only wins
                 })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
-                .slice(0, 6);
+                .slice(0, 8);
+              const justFinishedCount = finishedWithPick.filter((r) => !r.resultReady).length;
+              const winCount = finishedWithPick.filter((r) => r.resultReady && r.isWin).length;
+              const headerLabel = justFinishedCount > 0 && winCount === 0
+                ? "Just Finished — Today"
+                : "Finished — Latest Results";
               return (
               <div className="mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <Activity className="h-3.5 w-3.5 text-emerald-400" />
-                    Finished — Yesterday's Results
+                    {headerLabel}
                   </h3>
-                  {finishedWithPick.length > 0 && (() => {
-                    return (
-                      <span className="text-[10px] text-muted-foreground">
-                        {finishedWithPick.length} win{finishedWithPick.length === 1 ? "" : "s"}
-                      </span>
-                    );
-                  })()}
+                  {winCount > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {winCount} win{winCount === 1 ? "" : "s"}
+                    </span>
+                  )}
                 </div>
                 {finishedWithPick.length === 0 && (
                   <Card className="bg-card border-border p-3 text-center">
