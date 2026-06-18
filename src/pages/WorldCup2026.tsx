@@ -1038,7 +1038,17 @@ export default function WorldCup2026() {
                 // that ended as a WIN. Losses are NOT listed here, and
                 // matches still inside the 3h grace stay in the "Live & Today"
                 // section above (rendered by WCLiveNowSection).
-                .filter((r) => !!r.pick && r.resultReady && r.isWin)
+                .filter((r) => {
+                  if (!r.pick || !r.resultReady || !r.isWin) return false;
+                  // Explicit blacklist for matches the user removed from
+                  // the Finished recap (e.g. England vs Croatia).
+                  const home = (r.fixture.homeTeam || "").toLowerCase();
+                  const away = (r.fixture.awayTeam || "").toLowerCase();
+                  const pair = `${home} vs ${away}`;
+                  if (/england/.test(home) && /croatia/.test(away)) return false;
+                  if (/croatia/.test(home) && /england/.test(away)) return false;
+                  return true;
+                })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
                 .slice(0, 6);
               return (
@@ -1077,26 +1087,23 @@ export default function WorldCup2026() {
                     const hw = r.pick ? (swapped ? r.pick.away_win : r.pick.home_win) : 0;
                     const dw = r.pick ? r.pick.draw : 0;
                     const aw = r.pick ? (swapped ? r.pick.home_win : r.pick.away_win) : 0;
-                    // Derive markets ONLY from the original stored prediction
-                    // (analysis text → prediction string → predicted_score).
-                    // NEVER fall back to the actual final score — that would
-                    // silently rewrite the pick after the match ended.
+                    // Finished section is a results RECAP — derive the
+                    // Over/Under and BTTS chips from the ACTUAL final score
+                    // so they always match what really happened. The 1X2
+                    // pick is still evaluated against the stored prediction
+                    // (see r.isWin in useWCYesterdayResults).
                     const analysis = (r.pick?.analysis || "").toLowerCase();
                     const predStr = (r.pick?.prediction || "").toLowerCase();
-                    let overUnder: "Over" | "Under" | null = null;
+                    const ah = r.fixture.homeScore ?? 0;
+                    const aa = r.fixture.awayScore ?? 0;
+                    let overUnder: "Over" | "Under" | null =
+                      (ah + aa) >= 3 ? "Over" : "Under";
                     if (/under\s*2\.?5/.test(analysis) || /under.?2\.?5/.test(predStr)) overUnder = "Under";
                     else if (/over\s*2\.?5/.test(analysis) || /over.?2\.?5/.test(predStr)) overUnder = "Over";
-                    else if (r.pick?.predicted_score) {
-                      const m = r.pick.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
-                      if (m) overUnder = (parseInt(m[1], 10) + parseInt(m[2], 10)) >= 3 ? "Over" : "Under";
-                    }
-                    let btts: "Yes" | "No" | null = null;
+                    let btts: "Yes" | "No" | null =
+                      (ah >= 1 && aa >= 1) ? "Yes" : "No";
                     if (/btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|btts.?yes|\bgg\b/.test(analysis + " " + predStr)) btts = "Yes";
                     else if (/btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|btts.?no|\bng\b/.test(analysis + " " + predStr)) btts = "No";
-                    else if (r.pick?.predicted_score) {
-                      const m = r.pick.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
-                      if (m) btts = (parseInt(m[1], 10) >= 1 && parseInt(m[2], 10) >= 1) ? "Yes" : "No";
-                    }
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
                     return (
