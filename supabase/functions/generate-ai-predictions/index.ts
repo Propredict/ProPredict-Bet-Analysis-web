@@ -9380,6 +9380,28 @@ serve(async (req: Request) => {
     const leagueId = fixture.league?.id;
     const season = fixture.league?.season || new Date().getFullYear();
 
+    // Single-fixture mode is used by World Cup staggered generation.
+    // Never create a pick from live/finished results: the only valid lock window
+    // is kickoff - 3h up to kickoff. After kickoff, stored picks remain frozen.
+    const fixtureStatus = String(fixture?.fixture?.status?.short || "").toUpperCase();
+    const startedStatuses = new Set(["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "FT", "AET", "PEN", "AWD", "WO", "LIVE"]);
+    if (startedStatuses.has(fixtureStatus)) {
+      return new Response(
+        JSON.stringify({ error: "Prediction frozen after kickoff", fixtureId, status: fixtureStatus }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const kickoffTs = fixture?.fixture?.date ? new Date(fixture.fixture.date).getTime() : NaN;
+    const msToKickoff = kickoffTs - Date.now();
+    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+    if (Number.isFinite(msToKickoff) && (msToKickoff <= 0 || msToKickoff > THREE_HOURS_MS)) {
+      return new Response(
+        JSON.stringify({ error: "Prediction not in 3h pre-kickoff lock window", fixtureId, msToKickoff }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!homeTeamId || !awayTeamId) {
       return new Response(
         JSON.stringify({ error: "Invalid team data" }),
