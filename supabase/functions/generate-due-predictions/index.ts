@@ -110,7 +110,8 @@ serve(async (req: Request) => {
           continue;
         }
 
-        // Write enrichment back to the placeholder row.
+        // Write enrichment back ONLY to a placeholder row. If anything already
+        // enriched this match, do not overwrite the pick users have seen.
         const { error: updErr } = await supabase
           .from("ai_predictions")
           .update({
@@ -134,7 +135,8 @@ serve(async (req: Request) => {
             wc_pred_notified_at: null,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", row.id);
+          .eq("id", row.id)
+          .ilike("analysis", "Pending regeneration%");
 
         if (updErr) {
           failed.push({ match_id: row.match_id, error: `update: ${updErr.message}` });
