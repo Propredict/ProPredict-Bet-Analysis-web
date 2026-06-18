@@ -8473,15 +8473,19 @@ async function processBatch(
       // let WC fixtures run through the same pipeline as club matches.
       // (Keeping `applyWorldCupStrengthModel` defined for potential debug use.)
 
-      // Freeze WC picks once they exist — World Cup predictions are generated
-      // ONCE on match day and must NEVER change so users see a stable pick all
-      // day long (no corrective overwrites, regardless of model drift).
-      const wcAlreadyPicked = isWorldCup && !!pred.prediction;
+      // Freeze WC picks once they are enriched — World Cup predictions become
+      // final ~3h before kickoff and must NEVER change after users have seen them.
+      // Placeholder rows are the only exception; they still need first enrichment.
+      const isPlaceholderPick = /pending regeneration|pending analysis|awaiting data/i.test(pred.analysis || "");
+      const wcAlreadyPicked = isWorldCup && !!pred.prediction && !isPlaceholderPick;
       const isFrozen =
         unlockedPredictionIds.has(String(pred.id)) ||
-        nearKickoff ||
+        (nearKickoff && !isPlaceholderPick) ||
         wcAlreadyPicked;
-      const updatePayload: Record<string, any> = {
+      const updatePayload: Record<string, any> = isFrozen ? {
+          is_locked: false,
+          updated_at: new Date().toISOString(),
+      } : {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
           draw: newPrediction.draw,
