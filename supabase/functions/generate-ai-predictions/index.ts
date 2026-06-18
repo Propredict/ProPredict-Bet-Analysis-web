@@ -8473,15 +8473,19 @@ async function processBatch(
       // let WC fixtures run through the same pipeline as club matches.
       // (Keeping `applyWorldCupStrengthModel` defined for potential debug use.)
 
-      // Freeze WC picks once they exist — World Cup predictions are generated
-      // ONCE on match day and must NEVER change so users see a stable pick all
-      // day long (no corrective overwrites, regardless of model drift).
-      const wcAlreadyPicked = isWorldCup && !!pred.prediction;
+      // Freeze WC picks once they are enriched — World Cup predictions become
+      // final ~3h before kickoff and must NEVER change after users have seen them.
+      // Placeholder rows are the only exception; they still need first enrichment.
+      const isPlaceholderPick = /pending regeneration|pending analysis|awaiting data/i.test(pred.analysis || "");
+      const wcAlreadyPicked = isWorldCup && !!pred.prediction && !isPlaceholderPick;
       const isFrozen =
         unlockedPredictionIds.has(String(pred.id)) ||
-        nearKickoff ||
+        (nearKickoff && !isPlaceholderPick) ||
         wcAlreadyPicked;
-      const updatePayload: Record<string, any> = {
+      const updatePayload: Record<string, any> = isFrozen ? {
+          is_locked: false,
+          updated_at: new Date().toISOString(),
+      } : {
           confidence: newPrediction.confidence,
           home_win: newPrediction.home_win,
           draw: newPrediction.draw,
@@ -9137,6 +9141,7 @@ serve(async (req: Request) => {
         .from("ai_predictions")
         .select("id, home_team, away_team, home_win, draw, away_win, confidence, prediction, predicted_score")
         .ilike("league", "%world cup%")
+        .ilike("analysis", "Pending regeneration%")
         .in("match_date", dates)
         .limit(100);
       if (error) throw error;
@@ -9227,9 +9232,8 @@ serve(async (req: Request) => {
       );
     }
 
-    // WC-only forced regenerate — recomputes today's + tomorrow's World Cup
-    // ai_predictions using the unified Form/Odds/xG pipeline and writes the
-    // fresh pick straight to the DB (bypasses the WC/nearKickoff freeze).
+    // WC-only regenerate — enriches today's + tomorrow's World Cup placeholders.
+    // It must NOT overwrite already-visible picks.
     if (body.wcRegenerateNow === true) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -9239,8 +9243,9 @@ serve(async (req: Request) => {
       const dates = [today.toISOString().split("T")[0], tomorrow.toISOString().split("T")[0]];
       const { data: rows, error } = await supabase
         .from("ai_predictions")
-        .select("id, match_id, home_team, away_team")
+        .select("id, match_id, home_team, away_team, analysis")
         .ilike("league", "%world cup%")
+        .ilike("analysis", "Pending regeneration%")
         .in("match_date", dates)
         .limit(200);
       if (error) throw error;
@@ -9286,7 +9291,7 @@ serve(async (req: Request) => {
             analysis: pred.analysis,
             is_locked: false,
             updated_at: new Date().toISOString(),
-          }).eq("id", row.id);
+          }).eq("id", row.id).ilike("analysis", "Pending regeneration%");
           results.push({
             match_id: row.match_id,
             teams: `${row.home_team} vs ${row.away_team}`,
