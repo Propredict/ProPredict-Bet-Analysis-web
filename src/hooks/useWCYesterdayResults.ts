@@ -40,15 +40,39 @@ function side(h: number, d: number, a: number): "home" | "draw" | "away" {
   return "draw";
 }
 
-function getStoredMarketPick(prediction?: string | null, analysis?: string | null) {
+function getStoredMarketPick(
+  prediction?: string | null,
+  analysis?: string | null,
+  predictedScore?: string | null,
+) {
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
   const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
   const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
   const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
+  // Fallback: derive markets from predicted_score when text has no explicit
+  // over/under or BTTS phrase. predicted_score is stored at lock-time so it
+  // still represents the original pick (never the actual final score).
+  let goalsResolved = goals
+    ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) }
+    : null;
+  let bttsResolved: "yes" | "no" | null = bttsYes ? "yes" : bttsNo ? "no" : null;
+  if ((!goalsResolved || !bttsResolved) && predictedScore) {
+    const m = predictedScore.match(/(\d+)\s*[-–:]\s*(\d+)/);
+    if (m) {
+      const ph = parseInt(m[1], 10);
+      const pa = parseInt(m[2], 10);
+      if (!goalsResolved) {
+        goalsResolved = { dir: ph + pa >= 3 ? "over" : "under", line: 2.5 };
+      }
+      if (!bttsResolved) {
+        bttsResolved = ph >= 1 && pa >= 1 ? "yes" : "no";
+      }
+    }
+  }
   return {
-    goals: goals ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) } : null,
-    btts: bttsYes ? "yes" as const : bttsNo ? "no" as const : null,
+    goals: goalsResolved,
+    btts: bttsResolved,
   };
 }
 
@@ -215,7 +239,7 @@ export function useWCYesterdayResults() {
             pickedSide = side(hw, p.draw, aw);
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
-            const storedMarket = getStoredMarketPick(p.prediction, p.analysis);
+            const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
             // Goals market hit from the stored pick only — never from final score.
             if (storedMarket.goals) {
               const { dir, line } = storedMarket.goals;

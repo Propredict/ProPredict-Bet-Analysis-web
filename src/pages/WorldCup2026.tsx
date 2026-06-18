@@ -1040,13 +1040,11 @@ export default function WorldCup2026() {
                 // section above (rendered by WCLiveNowSection).
                 .filter((r) => {
                   if (!r.pick || !r.resultReady || !r.isWin) return false;
-                  // Exclude placeholder/un-finalized predictions
-                  // (e.g. "Pending regeneration..." + generic "DC 1X").
-                  // Those were never real picks, so they must not appear
-                  // in the Finished — Yesterday's Results list.
-                  const analysis = (r.pick.analysis || "").toLowerCase();
+                  // Exclude only generic placeholder picks like "DC 1X"
+                  // (double-chance fallback that was never a real pick).
+                  // We keep entries whose analysis is "Pending regeneration"
+                  // as long as the prediction itself is a concrete 1/X/2.
                   const pred = (r.pick.prediction || "").trim().toLowerCase();
-                  if (/pending regeneration|pending analysis/.test(analysis)) return false;
                   if (pred.startsWith("dc ")) return false;
                   return true;
                 })
