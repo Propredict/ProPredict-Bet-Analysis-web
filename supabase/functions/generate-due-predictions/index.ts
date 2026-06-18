@@ -139,7 +139,7 @@ serve(async (req: Request) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: ANON_KEY,
+            apikey: SERVICE_KEY,
             Authorization: `Bearer ${SERVICE_KEY}`,
           },
           body: JSON.stringify({ fixtureId: row.match_id }),
@@ -210,7 +210,7 @@ serve(async (req: Request) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: ANON_KEY,
+            apikey: SERVICE_KEY,
             Authorization: `Bearer ${SERVICE_KEY}`,
           },
           body: JSON.stringify({
