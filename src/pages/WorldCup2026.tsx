@@ -751,8 +751,10 @@ export default function WorldCup2026() {
                 // Window: from start of today until 8 AM the day AFTER tomorrow's date
                 // (i.e. ~32h from start of today) — covers all overnight WC matches.
                 const windowEnd = startOfToday + 32 * 60 * 60 * 1000;
-              // Hide already-finished matches (kickoff + 2h30m < now).
-              if (p.kickoffTs + 2.5 * 60 * 60 * 1000 < Date.now()) return false;
+              // Keep finished matches in the main AI Picks list for 3h after
+              // the expected FT (kickoff + 110min + 3h), so users can still
+              // see the original prediction before it moves to Finished.
+              if (p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
                 return p.kickoffTs >= startOfToday && p.kickoffTs < windowEnd;
               });
               if (todayPreds.length === 0) {
