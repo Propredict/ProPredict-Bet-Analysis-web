@@ -9475,7 +9475,7 @@ serve(async (req: Request) => {
     }
 
     // Fetch all data in parallel for efficiency (full analysis like batch mode)
-    const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+    let [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
       fetchTeamForm(homeTeamId, apiKey, 10),  // Real recent form, all competitions
       fetchTeamForm(awayTeamId, apiKey, 10),  // Real recent form, all competitions
       fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -9484,6 +9484,13 @@ serve(async (req: Request) => {
       leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
       fetchOdds(String(fixtureId), apiKey),
     ]);
+    // WC MEMORY: prepend prior WC 2026 matches when this is a WC fixture
+    if (leagueId === 1) {
+      [homeForm, awayForm] = await Promise.all([
+        mergeWorldCupMemory(homeTeamId, homeForm, apiKey, 10),
+        mergeWorldCupMemory(awayTeamId, awayForm, apiKey, 10),
+      ]);
+    }
 
     // Calculate prediction with full analysis
     const prediction = calculatePrediction(
