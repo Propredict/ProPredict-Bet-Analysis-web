@@ -67,12 +67,14 @@ serve(async (req: Request) => {
     // are generated normally at batch time. New rows use match_timestamp; legacy
     // placeholder rows may only have match_date + match_time, so we also load
     // those and filter them in code.
-    const baseSelect = "id, match_id, home_team, away_team, league, match_timestamp, match_date, match_time, push_sent_at, analysis";
+    const baseSelect = "id, match_id, home_team, away_team, league, match_timestamp, match_date, match_time, push_sent_at, wc_pred_notified_at, analysis";
     const { data: timestampRows, error: queryErr } = await supabase
       .from("ai_predictions")
       .select(baseSelect)
       .ilike("analysis", "Pending regeneration%")
       .ilike("league", "%World Cup%")
+      .is("push_sent_at", null)
+      .is("wc_pred_notified_at", null)
       .not("match_timestamp", "is", null)
       .gte("match_timestamp", windowStart.toISOString())
       .lte("match_timestamp", windowEnd.toISOString())
@@ -94,6 +96,8 @@ serve(async (req: Request) => {
       .select(baseSelect)
       .ilike("analysis", "Pending regeneration%")
       .ilike("league", "%World Cup%")
+      .is("push_sent_at", null)
+      .is("wc_pred_notified_at", null)
       .is("match_timestamp", null)
       .gte("match_date", startDate)
       .lte("match_date", endDate)
