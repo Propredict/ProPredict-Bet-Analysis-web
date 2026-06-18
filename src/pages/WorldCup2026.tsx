@@ -325,19 +325,14 @@ export default function WorldCup2026() {
 
   // Split matches by matchday (8 matches each for 12 groups × 2 matches)
   const matchesByDay = (() => {
-    const now = Date.now();
-    const notFinished = (m: typeof GROUP_MATCHES[number]) => {
-      const ts = parseWCKickoff(m.date, m.time);
-      if (ts === null) return true;
-      // hide once match is ~2h30m past kickoff (i.e. finished)
-      return ts + 2.5 * 60 * 60 * 1000 > now;
-    };
     return {
-      md1: GROUP_MATCHES.slice(0, 24).filter(notFinished),
-      md2: GROUP_MATCHES.slice(24, 48).filter(notFinished),
-      md3: GROUP_MATCHES.slice(48).filter(notFinished),
+      md1: GROUP_MATCHES.slice(0, 24),
+      md2: GROUP_MATCHES.slice(24, 48),
+      md3: GROUP_MATCHES.slice(48),
     };
   })();
+
+  const { data: wcResults } = useWCScheduleResults();
 
   if (selectedTeam) {
     return (
