@@ -232,6 +232,13 @@ export function useWCYesterdayResults() {
             : f.awayScore! > f.homeScore! ? "away" : "draw";
           let pickedSide: "home" | "draw" | "away" = "draw";
           let marketHit = false;
+          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
+          // since match end. We approximate match end as kickoff + 110min.
+          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
+          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
+          const resultReady = isFinite(endedMs)
+            ? Date.now() - endedMs >= 3 * 60 * 60_000
+            : true; // unknown kickoff → treat as ready
           if (found) {
             const { p, swapped } = found;
             const hw = swapped ? p.away_win : p.home_win;
@@ -279,19 +286,10 @@ export function useWCYesterdayResults() {
                 pickedSide,
                 actualSide,
                 isWin: marketHit,
-                resultReady: isFinite(endedMs)
-                  ? Date.now() - endedMs >= 3 * 60 * 60_000
-                  : true,
+                resultReady,
               };
             }
           }
-          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
-          // since match end. We approximate match end as kickoff + 110min.
-          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
-          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
-          const resultReady = isFinite(endedMs)
-            ? Date.now() - endedMs >= 3 * 60 * 60_000
-            : true; // unknown kickoff → treat as ready
           return {
             fixture: f,
             pick: found?.p ?? null,
