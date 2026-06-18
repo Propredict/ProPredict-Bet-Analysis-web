@@ -158,6 +158,24 @@ export default function WorldCup2026() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // WebView fix: when the Android app is resumed from background, the
+  // AI Picks list sometimes stays empty until the user closes & reopens.
+  // Force a re-render on visibility / focus / pageshow so `Date.now()`-based
+  // filters re-evaluate and the cards re-mount.
+  const [, setResumeTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setResumeTick((n) => n + 1);
+    const onVis = () => { if (document.visibilityState === "visible") bump(); };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", bump);
+    window.addEventListener("pageshow", bump);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", bump);
+      window.removeEventListener("pageshow", bump);
+    };
+  }, []);
+
   const handleTabChange = (v: string) => {
     setActiveTab(v);
     const next = new URLSearchParams(searchParams);
