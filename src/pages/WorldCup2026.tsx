@@ -1071,15 +1071,26 @@ export default function WorldCup2026() {
                     const hw = r.pick ? (swapped ? r.pick.away_win : r.pick.home_win) : 0;
                     const dw = r.pick ? r.pick.draw : 0;
                     const aw = r.pick ? (swapped ? r.pick.home_win : r.pick.away_win) : 0;
+                    // Derive markets ONLY from the original stored prediction
+                    // (analysis text → prediction string → predicted_score).
+                    // NEVER fall back to the actual final score — that would
+                    // silently rewrite the pick after the match ended.
                     const analysis = (r.pick?.analysis || "").toLowerCase();
-                    let overUnder: "Over" | "Under" = "Over";
-                    if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
-                    else if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
-                    else overUnder = (r.fixture.homeScore! + r.fixture.awayScore!) >= 3 ? "Over" : "Under";
-                    let btts: "Yes" | "No" = "No";
-                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
-                    else if (/btts[^.]*\bno\b/.test(analysis)) btts = "No";
-                    else btts = r.fixture.homeScore! >= 1 && r.fixture.awayScore! >= 1 ? "Yes" : "No";
+                    const predStr = (r.pick?.prediction || "").toLowerCase();
+                    let overUnder: "Over" | "Under" | null = null;
+                    if (/under\s*2\.?5/.test(analysis) || /under.?2\.?5/.test(predStr)) overUnder = "Under";
+                    else if (/over\s*2\.?5/.test(analysis) || /over.?2\.?5/.test(predStr)) overUnder = "Over";
+                    else if (r.pick?.predicted_score) {
+                      const m = r.pick.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
+                      if (m) overUnder = (parseInt(m[1], 10) + parseInt(m[2], 10)) >= 3 ? "Over" : "Under";
+                    }
+                    let btts: "Yes" | "No" | null = null;
+                    if (/btts[^.]*\byes\b|both teams to score[^.]*yes|btts.?yes|\bgg\b/.test(analysis + " " + predStr)) btts = "Yes";
+                    else if (/btts[^.]*\bno\b|btts.?no|\bng\b/.test(analysis + " " + predStr)) btts = "No";
+                    else if (r.pick?.predicted_score) {
+                      const m = r.pick.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
+                      if (m) btts = (parseInt(m[1], 10) >= 1 && parseInt(m[2], 10) >= 1) ? "Yes" : "No";
+                    }
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
                     return (
@@ -1116,16 +1127,22 @@ export default function WorldCup2026() {
                                 <p className="text-[9px] font-semibold text-foreground">Away</p>
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 text-center mb-2">
-                              <div className="bg-muted/20 rounded p-1.5">
-                                <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
-                                <p className="text-[9px] text-muted-foreground">Goals</p>
+                            {(overUnder || btts) && (
+                              <div className="grid grid-cols-2 gap-2 text-center mb-2">
+                                {overUnder ? (
+                                  <div className="bg-muted/20 rounded p-1.5">
+                                    <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
+                                    <p className="text-[9px] text-muted-foreground">Goals</p>
+                                  </div>
+                                ) : <div />}
+                                {btts ? (
+                                  <div className="bg-muted/20 rounded p-1.5">
+                                    <p className="text-xs font-bold text-foreground">{btts}</p>
+                                    <p className="text-[9px] text-muted-foreground">BTTS</p>
+                                  </div>
+                                ) : <div />}
                               </div>
-                              <div className="bg-muted/20 rounded p-1.5">
-                                <p className="text-xs font-bold text-foreground">{btts}</p>
-                                <p className="text-[9px] text-muted-foreground">BTTS</p>
-                              </div>
-                            </div>
+                            )}
                             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <Brain className="h-3 w-3 text-primary" />
