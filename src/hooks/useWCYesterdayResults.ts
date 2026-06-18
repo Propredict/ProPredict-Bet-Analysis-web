@@ -232,6 +232,13 @@ export function useWCYesterdayResults() {
             : f.awayScore! > f.homeScore! ? "away" : "draw";
           let pickedSide: "home" | "draw" | "away" = "draw";
           let marketHit = false;
+          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
+          // since match end. We approximate match end as kickoff + 110min.
+          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
+          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
+          const resultReady = isFinite(endedMs)
+            ? Date.now() - endedMs >= 3 * 60 * 60_000
+            : true; // unknown kickoff → treat as ready
           if (found) {
             const { p, swapped } = found;
             const hw = swapped ? p.away_win : p.home_win;
@@ -240,20 +247,28 @@ export function useWCYesterdayResults() {
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
             const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
-            // Goals market hit from the stored pick only — never from final score.
+            // Evaluation priority (per product rule):
+            //   1) Over/Under 2.5 (goals market) — if stored, this DECIDES the result.
+            //   2) BTTS Yes/No                   — used only if no goals market was stored.
+            //   3) 1X2 (home/draw/away)          — used only if neither market was stored.
+            // Exact-score is a bonus hit on top of (1)/(2).
+            let decided = false;
             if (storedMarket.goals) {
               const { dir, line } = storedMarket.goals;
-              if (dir === "over" && totalGoals > line) marketHit = true;
-              if (dir === "under" && totalGoals < line) marketHit = true;
+              const hit =
+                (dir === "over" && totalGoals > line) ||
+                (dir === "under" && totalGoals < line);
+              marketHit = hit;
+              decided = true;
+            } else if (storedMarket.btts === "yes" || storedMarket.btts === "no") {
+              const hit =
+                (storedMarket.btts === "yes" && bttsActual) ||
+                (storedMarket.btts === "no" && !bttsActual);
+              marketHit = hit;
+              decided = true;
             }
-            // BTTS market hit from the stored pick only.
-            if (storedMarket.btts === "yes") {
-              if (bttsActual) marketHit = true;
-            } else if (storedMarket.btts === "no") {
-              if (!bttsActual) marketHit = true;
-            }
-            // Exact predicted score hit
-            if (p.predicted_score) {
+            // Exact predicted score hit — bonus, can flip a market miss into a win.
+            if (!marketHit && p.predicted_score) {
               const m = p.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
               if (m) {
                 const ph = parseInt(m[1], 10);
@@ -263,14 +278,18 @@ export function useWCYesterdayResults() {
                 if (ph === ah && pa === aa) marketHit = true;
               }
             }
+            // If a market was stored, 1X2 is IGNORED — store the decision in marketHit.
+            if (decided) {
+              return {
+                fixture: f,
+                pick: p,
+                pickedSide,
+                actualSide,
+                isWin: marketHit,
+                resultReady,
+              };
+            }
           }
-          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
-          // since match end. We approximate match end as kickoff + 110min.
-          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
-          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
-          const resultReady = isFinite(endedMs)
-            ? Date.now() - endedMs >= 3 * 60 * 60_000
-            : true; // unknown kickoff → treat as ready
           return {
             fixture: f,
             pick: found?.p ?? null,
