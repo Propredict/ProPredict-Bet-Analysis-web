@@ -24,7 +24,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWCYesterdayResults } from "@/hooks/useWCYesterdayResults";
-import { useWCScheduleResults, lookupWCResult } from "@/hooks/useWCScheduleResults";
+import { useWCScheduleResults, lookupWCResult, norm } from "@/hooks/useWCScheduleResults";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import {
@@ -185,6 +185,17 @@ export default function WorldCup2026() {
   const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
   const { data: yesterdayResults = [], isLoading: isLoadingYesterday } =
     useWCYesterdayResults();
+  // Hide finished matches from AI Picks if the prediction missed both
+  // BTTS and Over/Under (isWin === false). Only wins stay visible.
+  const lostWCKeys = new Set(
+    yesterdayResults
+      .filter((r) => !r.isWin)
+      .map((r) => {
+        const h = norm(r.fixture.homeTeam);
+        const a = norm(r.fixture.awayTeam);
+        return `${h}|${a}`;
+      }),
+  );
 
   useEffect(() => {
     if (!interstitialFired.current) {
@@ -755,6 +766,10 @@ export default function WorldCup2026() {
               // the expected FT (kickoff + 110min + 3h), so users can still
               // see the original prediction before it moves to Finished.
               if (p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
+              // Hide matches where the prediction missed both BTTS and Over/Under.
+              const nh = norm(p.home);
+              const na = norm(p.away);
+              if (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`)) return false;
                 return p.kickoffTs >= startOfToday && p.kickoffTs < windowEnd;
               });
               if (todayPreds.length === 0) {

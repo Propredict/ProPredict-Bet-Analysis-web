@@ -29,7 +29,7 @@ const ALIASES: Record<string, string> = {
   "ivory coast": "ivorycoast", "cote d ivoire": "ivorycoast",
   "dr congo": "drcongo", "congo dr": "drcongo",
 };
-function norm(s: string): string {
+export function norm(s: string): string {
   const base = (s || "")
     .toLowerCase()
     .normalize("NFD")
