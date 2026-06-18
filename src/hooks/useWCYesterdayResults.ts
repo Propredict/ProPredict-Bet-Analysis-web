@@ -40,6 +40,18 @@ function side(h: number, d: number, a: number): "home" | "draw" | "away" {
   return "draw";
 }
 
+function getStoredMarketPick(prediction?: string | null, analysis?: string | null) {
+  const pred = (prediction || "").toLowerCase();
+  const text = `${pred} ${analysis || ""}`.toLowerCase();
+  const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+  const bttsYes = /btts[^.]*\byes\b|both teams to score[^.]*yes|\bgg\b/.test(text);
+  const bttsNo = /btts[^.]*\bno\b|both teams to score[^.]*no|\bng\b/.test(text);
+  return {
+    goals: goals ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) } : null,
+    btts: bttsYes ? "yes" as const : bttsNo ? "no" as const : null,
+  };
+}
+
 /**
  * Loads yesterday's finished WC fixtures + the matching AI picks that were
  * stored on that date, and computes Win/Loss vs the actual result.
@@ -203,20 +215,17 @@ export function useWCYesterdayResults() {
             pickedSide = side(hw, p.draw, aw);
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
-            const analysis = (p.analysis || "").toLowerCase();
-            const pred = (p.prediction || "").toLowerCase();
-            // Goals market hit (Over/Under 1.5/2.5/3.5)
-            const goalsMatch = analysis.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
-            if (goalsMatch) {
-              const dir = goalsMatch[1];
-              const line = parseFloat(goalsMatch[2].replace(/(\d)(\d)/, "$1.$2"));
+            const storedMarket = getStoredMarketPick(p.prediction, p.analysis);
+            // Goals market hit from the stored pick only — never from final score.
+            if (storedMarket.goals) {
+              const { dir, line } = storedMarket.goals;
               if (dir === "over" && totalGoals > line) marketHit = true;
               if (dir === "under" && totalGoals < line) marketHit = true;
             }
-            // BTTS market hit
-            if (/btts[^.]*\byes\b|both teams to score[^.]*yes/.test(analysis)) {
+            // BTTS market hit from the stored pick only.
+            if (storedMarket.btts === "yes") {
               if (bttsActual) marketHit = true;
-            } else if (/btts[^.]*\bno\b|both teams to score[^.]*no/.test(analysis)) {
+            } else if (storedMarket.btts === "no") {
               if (!bttsActual) marketHit = true;
             }
             // Exact predicted score hit
@@ -230,11 +239,6 @@ export function useWCYesterdayResults() {
                 if (ph === ah && pa === aa) marketHit = true;
               }
             }
-            // Generic prediction string (over25, btts_yes, etc.)
-            if (/over.?2\.?5/.test(pred) && totalGoals >= 3) marketHit = true;
-            if (/under.?2\.?5/.test(pred) && totalGoals <= 2) marketHit = true;
-            if (/btts.?yes|gg/.test(pred) && bttsActual) marketHit = true;
-            if (/btts.?no|ng/.test(pred) && !bttsActual) marketHit = true;
           }
           // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
           // since match end. We approximate match end as kickoff + 110min.
