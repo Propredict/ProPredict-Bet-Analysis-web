@@ -2,14 +2,14 @@
  * generate-due-predictions
  *
  * Per-match staggered AI prediction enrichment.
- * Runs every 15 minutes via pg_cron. Selects placeholder predictions
- * whose kickoff is within the next ~3h window (or already started but
+ * Runs every 30 minutes via pg_cron. Selects placeholder predictions
+ * whose kickoff is within the next 3h window (or already started but
  * still placeholder — safety net) and enriches them ONE BY ONE by
  * calling the existing generate-ai-predictions function in single-fixture
  * mode. Each successfully enriched match gets a "AI Pick Ready" push.
  *
  * Key guarantees:
- *  - A prediction is enriched ONLY when kickoff is <= 3h15min away.
+ *  - A prediction is enriched ONLY when kickoff is <= 3h away.
  *  - After enrichment, push_sent_at is stamped so we know when it became ready.
  *  - Placeholder rows (analysis ILIKE 'Pending regeneration%') are the
  *    only candidates; enriched rows are NEVER touched.
@@ -24,13 +24,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Window: enrich matches starting in <= 3h30min from now. Combined with a
-// 30-min cron cadence this guarantees every WC match is generated in the
-// 3h00min–3h30min window before kickoff — as close to kickoff as possible
-// while still being shown to users ~3h ahead. Once written, the prediction
-// is FROZEN (placeholder rows are the only candidates; enriched rows are
-// never touched again).
-const DUE_WINDOW_MS = 3 * 60 * 60 * 1000 + 30 * 60 * 1000; // 3h30min
+// Window: enrich matches starting in <= 3h from now. This means a 00:00
+// kickoff becomes due at 21:00, not 18:00. Once written, the prediction is
+// FROZEN (placeholder rows are the only candidates; enriched rows are never
+// touched again).
+const DUE_WINDOW_MS = 3 * 60 * 60 * 1000; // 3h before kickoff
 // Don't bother enriching matches that have been live/finished for > 30 min
 // (the result update job will mark them, and lineup data is stale anyway).
 const STALE_PAST_MS = 30 * 60 * 1000;
