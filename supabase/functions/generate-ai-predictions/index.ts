@@ -9328,7 +9328,7 @@ serve(async (req: Request) => {
           const leagueId = fixture.league?.id;
           const season = fixture.league?.season || new Date().getFullYear();
           if (!homeTeamId || !awayTeamId) { results.push({ match_id: row.match_id, skipped: "no_teams" }); continue; }
-          const [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
+          let [homeForm, awayForm, h2h, homeStats, awayStats, standings, odds] = await Promise.all([
             fetchTeamForm(homeTeamId, apiKey, 10),
             fetchTeamForm(awayTeamId, apiKey, 10),
             fetchH2H(homeTeamId, awayTeamId, apiKey, 5),
@@ -9337,6 +9337,13 @@ serve(async (req: Request) => {
             leagueId ? fetchStandings(leagueId, season, apiKey) : Promise.resolve([]),
             fetchOdds(String(row.match_id), apiKey),
           ]);
+          // WC MEMORY: prepend prior WC 2026 matches for WC fixtures
+          if (leagueId === 1) {
+            [homeForm, awayForm] = await Promise.all([
+              mergeWorldCupMemory(homeTeamId, homeForm, apiKey, 10),
+              mergeWorldCupMemory(awayTeamId, awayForm, apiKey, 10),
+            ]);
+          }
           const pred = calculatePrediction(
             homeForm, awayForm, homeStats, awayStats, h2h,
             homeTeamId, awayTeamId,
