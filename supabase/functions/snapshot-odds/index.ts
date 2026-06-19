@@ -299,9 +299,14 @@ serve(async (req: Request) => {
         const { adjustment, trend, strength, movementPct, consensusOdds } =
           computeNudge(p.prediction || "", prev, snap);
 
-        // Apply subtle adjustment to confidence (clamped 1..99)
+        // === CONFIDENCE LOCK ===
+        // Confidence is set ONCE by generate-ai-predictions and must NEVER
+        // change afterwards — users see the same % from the moment the
+        // prediction is published through live and final result.
+        // We still track market_trend / value_bet for analytics, but the
+        // confidence column itself is no longer mutated here.
         const baseConfidence = Number(p.confidence ?? 0);
-        const newConfidence = Math.max(1, Math.min(99, Math.round(baseConfidence + adjustment)));
+        const newConfidence = baseConfidence;
 
         // ─── SAFE MODE: Sharp Money Signal Log (fire & forget) ────────────────
         // Logs every line-movement decision so we can later evaluate whether
@@ -364,8 +369,7 @@ serve(async (req: Request) => {
             odds_movement_pct: Number(movementPct.toFixed(2)),
             consensus_odds: consensusOdds,
             bookmakers_count: snap.bookmakers_count,
-            confidence_adjustment: adjustment,
-            confidence: newConfidence,
+            confidence_adjustment: 0,
             value_home: valueHome,
             value_draw: valueDraw,
             value_away: valueAway,
