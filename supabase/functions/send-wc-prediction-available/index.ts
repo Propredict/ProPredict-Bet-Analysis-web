@@ -17,6 +17,27 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function getDisplayConfidence(row: {
+  confidence?: number | null;
+  home_win?: number | null;
+  draw?: number | null;
+  away_win?: number | null;
+}): number | null {
+  const rawConfidence = Number(row.confidence ?? 0);
+  const homeWin = Number(row.home_win ?? 0);
+  const draw = Number(row.draw ?? 0);
+  const awayWin = Number(row.away_win ?? 0);
+
+  if (homeWin > 0 || draw > 0 || awayWin > 0) {
+    const top1x2 = Math.max(homeWin, draw, awayWin);
+    const doubleChance = Math.max(homeWin + draw, draw + awayWin, homeWin + awayWin);
+    const derived = Math.max(top1x2, Math.round(doubleChance * 0.95));
+    return Math.min(95, Math.max(rawConfidence, derived));
+  }
+
+  return rawConfidence > 0 ? rawConfidence : null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -56,7 +77,7 @@ serve(async (req) => {
     const { data: rows, error } = await supabase
       .from("ai_predictions")
       .select(
-        "id, home_team, away_team, prediction, confidence, match_date, match_time, league, wc_pred_notified_at"
+        "id, home_team, away_team, prediction, confidence, home_win, draw, away_win, match_date, match_time, league, wc_pred_notified_at"
       )
       .in("id", predictionIds)
       .ilike("league", "%world cup%")
@@ -97,8 +118,10 @@ serve(async (req) => {
 
     for (const r of candidates) {
       const heading = `🏆 WC Prediction Ready: ${r.home_team} vs ${r.away_team}`;
-      const conf = r.confidence ? `${r.confidence}% confidence` : "AI pick ready";
+      const displayConfidence = getDisplayConfidence(r);
+      const conf = displayConfidence ? `${displayConfidence}% confidence` : "AI pick ready";
       const body = `Our AI pick is locked in — ${conf}. Tap to see the full analysis before kickoff.`;
+      const navPath = `/world-cup-2026?tab=predictions&from=wc_prediction_push&prediction=${encodeURIComponent(r.id)}`;
 
       const payload = {
         app_id: ONESIGNAL_APP_ID,
@@ -112,10 +135,11 @@ serve(async (req) => {
         priority: 10,
         ttl: 6 * 3600,
         collapse_id: `wc_pred_${r.id}`,
+        url: `https://propredict.me${navPath}`,
         data: {
           type: "wc_prediction",
           prediction_id: r.id,
-          nav_path: "/world-cup-2026?tab=predictions",
+          nav_path: navPath,
         },
       };
 
