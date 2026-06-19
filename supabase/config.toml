@@ -103,5 +103,3 @@ verify_jwt = false
 [functions.get-fixtures-by-date]
 verify_jwt = false
 
-[functions.oneoff-fix-canada]
-verify_jwt = false
