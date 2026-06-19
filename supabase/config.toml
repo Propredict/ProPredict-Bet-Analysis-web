@@ -103,3 +103,4 @@ verify_jwt = false
 [functions.get-fixtures-by-date]
 verify_jwt = false
 
+
