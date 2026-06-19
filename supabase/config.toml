@@ -104,5 +104,3 @@ verify_jwt = false
 verify_jwt = false
 
 
-[functions.oneoff-fix-canada]
-verify_jwt = false
