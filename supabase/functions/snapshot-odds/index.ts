@@ -240,7 +240,7 @@ serve(async (req: Request) => {
 
     const { data: predictions, error: predErr } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, match_date, prediction, confidence, home_win, draw, away_win")
+      .select("id, match_id, match_date, match_timestamp, prediction, confidence, home_win, draw, away_win")
       .in("match_date", dates)
       .eq("result_status", "pending")
       .limit(500);
@@ -259,6 +259,15 @@ serve(async (req: Request) => {
     for (const p of predictions ?? []) {
       processed++;
       try {
+        // === HARD LOCK AT KICKOFF ===
+        // Once a match has kicked off, the prediction (pick, confidence,
+        // analysis, score) is frozen. Sharp-money / market-trend adjustments
+        // must NOT mutate confidence after kickoff — users see the same
+        // numbers live and post-FT as they did at kickoff.
+        const koMs = p.match_timestamp ? new Date(p.match_timestamp).getTime() : 0;
+        if (koMs && koMs <= Date.now()) {
+          continue;
+        }
         // Fetch ALL markets once (1X2 + Over/Under + BTTS) to save API quota.
         const rawAll = await fetchAllOddsForFixture(apiKey, p.match_id);
         const snap = buildSnapshot(p.match_id, p.match_date, rawAll);
