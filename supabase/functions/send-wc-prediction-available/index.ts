@@ -78,13 +78,15 @@ serve(async (req) => {
       // match_time is "HH:MM:SS" UTC — stitch with date
       const koMs = new Date(`${r.match_date}T${r.match_time}Z`).getTime();
       if (Number.isNaN(koMs)) return false;
-      // Allow a 20-minute grace window after kickoff. The cron tick that
-      // enriches a prediction can land a few seconds/minutes after kickoff
-      // (lineups confirm right before KO), and we still want to deliver the
-      // "AI Pick Ready" push for that match. The caller controls exact IDs,
-      // so we trust them — we only guard against very stale finished matches.
+      // Only send within the FREEZE3 window: from 3h before kickoff up to
+      // 20 min after kickoff. Outside this window the confidence value can
+      // still change in later regeneration cycles, which would cause the
+      // notification % to drift from what the user sees in the app. Inside
+      // FREEZE3 the prediction is locked, so push % == UI %.
+      const now = Date.now();
+      const FREEZE_BEFORE_KO_MS = 3 * 60 * 60 * 1000;
       const GRACE_AFTER_KO_MS = 20 * 60 * 1000;
-      return koMs + GRACE_AFTER_KO_MS > Date.now();
+      return koMs - FREEZE_BEFORE_KO_MS <= now && koMs + GRACE_AFTER_KO_MS > now;
     });
 
     console.log(
