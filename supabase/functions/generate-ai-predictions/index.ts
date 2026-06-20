@@ -6454,9 +6454,13 @@ async function assignTiers(
     tryPromote("btts", minBtts);
     tryPromote("1x2", min1x2);
 
-    // 3) SCORE REGENERATION — Premium with high xG must NOT be 0-0/1-0/0-1
+      // 3) SCORE REGENERATION — Only for matches that are still BEFORE the
+      // hard freeze window. Once a pick is published near kickoff, score and
+      // derived Over/Under/BTTS must never change after users have seen them.
     const scoreUpdates: { id: string; predicted_score: string }[] = [];
     for (const p of premiumPicks) {
+      const pickKickoffMs = p.match_date ? new Date(p.match_date).getTime() : NaN;
+      if (Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000) continue;
       const xgTag = (p.key_factors ?? []).find((f: any) =>
         typeof f === "string" && f.startsWith("step2_xg:")
       );
@@ -6544,7 +6548,9 @@ async function assignTiers(
       console.log(`[PREMIUM EDGE] Regenerated ${scoreUpdates.length} predicted scores (xG-aware)`);
     }
 
-    // 4) CONFIDENCE SPREAD — top 3 = 85-90, rest = 78-84
+    // 4) CONFIDENCE SPREAD — disabled for already-published picks.
+    // Confidence is set once by the prediction engine and is frozen from the
+    // first time users see it; tier assignment must not rewrite it later.
     // Sort by confidence DESC, then redistribute uniquely
     premiumPicks.sort((a: any, b: any) => (b.confidence ?? 0) - (a.confidence ?? 0));
     const confUpdates: { id: string; confidence: number }[] = [];
@@ -6572,7 +6578,9 @@ async function assignTiers(
         target = Math.max(78, Math.min(84, original));
       }
       const finalConf = takeUnique(target, 78, 90);
-      if (finalConf !== original) {
+      const pickKickoffMs = p.match_date ? new Date(p.match_date).getTime() : NaN;
+      const confidenceFrozen = Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000;
+      if (!confidenceFrozen && finalConf !== original) {
         confUpdates.push({ id: p.id, confidence: finalConf });
         p.confidence = finalConf;
       }
