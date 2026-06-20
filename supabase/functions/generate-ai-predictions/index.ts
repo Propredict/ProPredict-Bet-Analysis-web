@@ -6107,7 +6107,7 @@ async function assignTiers(
 ): Promise<{ free: number; pro: number; premium: number; diamond: number }> {
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
-    .select("id, home_team, away_team, confidence, is_locked, result_status, prediction, league, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, variance_stable, variance_score, xg_home, xg_away")
+    .select("id, home_team, away_team, confidence, is_locked, result_status, prediction, league, analysis, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away")
     .in("match_date", [todayStr, tomorrowStr])
     .in("result_status", ["pending", null])
     .eq("is_locked", false)
@@ -6459,8 +6459,9 @@ async function assignTiers(
       // derived Over/Under/BTTS must never change after users have seen them.
     const scoreUpdates: { id: string; predicted_score: string }[] = [];
     for (const p of premiumPicks) {
-      const pickKickoffMs = p.match_date ? new Date(p.match_date).getTime() : NaN;
-      if (Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000) continue;
+      const isPublishedPick = !!p.prediction && !/pending regeneration|pending analysis|awaiting data/i.test(String(p.analysis || ""));
+      const pickKickoffMs = p.match_timestamp ? new Date(p.match_timestamp).getTime() : NaN;
+      if (isPublishedPick || (Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000)) continue;
       const xgTag = (p.key_factors ?? []).find((f: any) =>
         typeof f === "string" && f.startsWith("step2_xg:")
       );
@@ -6578,8 +6579,9 @@ async function assignTiers(
         target = Math.max(78, Math.min(84, original));
       }
       const finalConf = takeUnique(target, 78, 90);
-      const pickKickoffMs = p.match_date ? new Date(p.match_date).getTime() : NaN;
-      const confidenceFrozen = Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000;
+      const isPublishedPick = !!p.prediction && !/pending regeneration|pending analysis|awaiting data/i.test(String(p.analysis || ""));
+      const pickKickoffMs = p.match_timestamp ? new Date(p.match_timestamp).getTime() : NaN;
+      const confidenceFrozen = isPublishedPick || (Number.isFinite(pickKickoffMs) && pickKickoffMs - Date.now() <= 3 * 60 * 60 * 1000);
       if (!confidenceFrozen && finalConf !== original) {
         confUpdates.push({ id: p.id, confidence: finalConf });
         p.confidence = finalConf;
