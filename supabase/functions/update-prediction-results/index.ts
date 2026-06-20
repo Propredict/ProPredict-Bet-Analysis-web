@@ -10,6 +10,8 @@ interface AIPrediction {
   id: string;
   match_id: string;
   prediction: string; // "1", "X", "2"
+  predicted_score?: string | null;
+  analysis?: string | null;
   result_status: string;
   home_team: string;
   away_team: string;
@@ -52,7 +54,7 @@ Deno.serve(async (req) => {
     // Fetch pending predictions with valid match_date in the last 3 days
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from("ai_predictions")
-      .select("id, match_id, prediction, result_status, home_team, away_team, match_date, league")
+      .select("id, match_id, prediction, predicted_score, analysis, result_status, home_team, away_team, match_date, league")
       .eq("result_status", "pending")
       .not("match_date", "is", null)
       .gte("match_date", formatDate(threeDaysAgo))
@@ -171,7 +173,37 @@ Deno.serve(async (req) => {
           }
           return allWon;
         };
-        const evalResult = evalComboAI(String(prediction.prediction ?? ""), homeGoals, awayGoals);
+        const isWorldCup = /world\s*cup/i.test(String(prediction.league ?? ""));
+        let evalResult = evalComboAI(String(prediction.prediction ?? ""), homeGoals, awayGoals);
+
+        // World Cup finished rule: moving Live → Finished must only evaluate
+        // the frozen displayed markets (Over/Under or BTTS). Correct 1X2/DC
+        // alone must never create a WIN, and no prediction fields are changed.
+        if (isWorldCup) {
+          const text = `${prediction.prediction || ""} ${prediction.analysis || ""}`.toLowerCase();
+          const goals = text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+          const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
+          const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
+          const marketHits: boolean[] = [];
+          const total = homeGoals + awayGoals;
+          const bttsActual = homeGoals > 0 && awayGoals > 0;
+          if (goals) {
+            const line = parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2"));
+            marketHits.push(goals[1] === "over" ? total > line : total < line);
+          }
+          if (bttsYes || bttsNo) marketHits.push(bttsYes ? bttsActual : !bttsActual);
+          if (marketHits.length === 0 && prediction.predicted_score) {
+            const score = prediction.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
+            if (score) {
+              const ph = parseInt(score[1], 10);
+              const pa = parseInt(score[2], 10);
+              marketHits.push(ph + pa >= 3 ? total > 2.5 : total < 2.5);
+              marketHits.push(ph >= 1 && pa >= 1 ? bttsActual : !bttsActual);
+            }
+          }
+          evalResult = marketHits.length > 0 ? marketHits.some(Boolean) : false;
+        }
+
         if (evalResult === null) {
           // Unrecognized market — fall back to 1X2 comparison
           const isWon = prediction.prediction === actualResult;
