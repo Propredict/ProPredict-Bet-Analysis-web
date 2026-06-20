@@ -50,11 +50,9 @@ function getStoredMarketPick(
   const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
   const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
   const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
-  // Track whether each market came from EXPLICIT text or was DERIVED from
-  // predicted_score. Explicit markets are the user-stated pick and DECIDE
-  // the result. Derived markets are bonus opportunities — ANY derived hit
-  // counts as a WIN (OR logic), since we don't know which one the user
-  // intended.
+  // Track whether each market came from explicit text or was derived from
+  // predicted_score. Finished results use the same two user-visible markets
+  // as the card: Over/Under and BTTS. 1X2 and exact score never decide WIN.
   const goalsExplicit = !!goals;
   let goalsResolved = goals
     ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) }
@@ -281,15 +279,9 @@ export function useWCYesterdayResults() {
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
             const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
-            // Evaluation rules:
-            //  - EXPLICIT market (over/under or BTTS written in the
-            //    prediction text) DECIDES the result.
-            //  - DERIVED markets (inferred from predicted_score when the
-            //    text didn't state a market) use OR logic — ANY hit
-            //    counts as WIN, since we don't know which market the
-            //    user intended.
-            //  - Exact-score bonus can also flip a miss into a win.
-            let decided = false;
+            // Evaluation rule: WIN only when at least one displayed market
+            // hits — Over/Under OR BTTS. Home/Away/Draw and exact score are
+            // ignored for the Finished WIN badge.
             const goalsHit = storedMarket.goals
               ? (storedMarket.goals.dir === "over" && totalGoals > storedMarket.goals.line) ||
                 (storedMarket.goals.dir === "under" && totalGoals < storedMarket.goals.line)
@@ -300,30 +292,9 @@ export function useWCYesterdayResults() {
                 : storedMarket.btts === "no"
                   ? !bttsActual
                   : false;
-            if (storedMarket.goalsExplicit) {
-              marketHit = goalsHit;
-              decided = true;
-            } else if (storedMarket.bttsExplicit) {
-              marketHit = bttsHit;
-              decided = true;
-            } else if (storedMarket.goals || storedMarket.btts) {
-              // Both markets are derived → ANY hit wins.
+            if (storedMarket.goals || storedMarket.btts) {
+              // Any displayed market hit wins; if both miss, it is not a WIN.
               marketHit = goalsHit || bttsHit;
-              decided = true;
-            }
-            // Exact predicted score hit — bonus, can flip a market miss into a win.
-            if (!marketHit && p.predicted_score) {
-              const m = p.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
-              if (m) {
-                const ph = parseInt(m[1], 10);
-                const pa = parseInt(m[2], 10);
-                const ah = swapped ? f.awayScore! : f.homeScore!;
-                const aa = swapped ? f.homeScore! : f.awayScore!;
-                if (ph === ah && pa === aa) marketHit = true;
-              }
-            }
-            // If a market was stored, 1X2 is IGNORED — store the decision in marketHit.
-            if (decided) {
               return {
                 fixture: f,
                 pick: p,
