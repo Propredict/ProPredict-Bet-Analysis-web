@@ -80,6 +80,30 @@ function isPlaceholderAnalysis(s?: string | null): boolean {
   return /pending regeneration|pending/i.test(s.trim());
 }
 
+function getFrozenDisplayMarkets(prediction?: string | null, analysis?: string | null, predictedScore?: string | null) {
+  const pred = (prediction || "").toLowerCase();
+  const text = `${pred} ${analysis || ""}`.toLowerCase();
+  const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+  const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|over\/btts favored|btts favored|\bgg\b/.test(text);
+  const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
+  let overUnder: "Over" | "Under" | null = goals
+    ? (goals[1].toLowerCase() === "over" ? "Over" : "Under")
+    : null;
+  let btts: "Yes" | "No" | null = bttsYes ? "Yes" : bttsNo ? "No" : null;
+
+  if ((overUnder === null || btts === null) && predictedScore) {
+    const m = predictedScore.match(/(\d+)\s*[-–:]\s*(\d+)/);
+    if (m) {
+      const h = parseInt(m[1], 10);
+      const a = parseInt(m[2], 10);
+      if (overUnder === null) overUnder = h + a >= 3 ? "Over" : "Under";
+      if (btts === null) btts = h >= 1 && a >= 1 ? "Yes" : "No";
+    }
+  }
+
+  return { overUnder, btts };
+}
+
 function parseAdEventPayload(event: Event) {
   const raw = (event as MessageEvent).data ?? (event as CustomEvent).detail ?? null;
 
@@ -992,36 +1016,19 @@ export default function WorldCup2026() {
 
                   {/* === BASIC: Over/Under + BTTS (derived from predicted score for consistency) === */}
                   {showBasic && (() => {
-                    // Prefer the AI engine's own Over/Under + BTTS call (from analysis text)
-                    // so the basic chips stay consistent with the Advanced AI Insight.
-                    // Fall back to predicted-score math only when analysis is missing.
-                    const analysis = (safeReal?.analysis || "").toLowerCase();
-                    let overUnder: "Over" | "Under" | null = null;
-                    if (/over\s*2\.?5/.test(analysis)) overUnder = "Over";
-                    else if (/under\s*2\.?5/.test(analysis)) overUnder = "Under";
-                    let btts: "Yes" | "No" | null = null;
-                    if (/btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes/.test(analysis)) btts = "Yes";
-                    else if (/btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no/.test(analysis)) btts = "No";
-                    if (overUnder === null || btts === null) {
-                      const m = displayedScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
-                      const hg = m ? parseInt(m[1], 10) : 1;
-                      const ag = m ? parseInt(m[2], 10) : 1;
-                      const total = hg + ag;
-                      if (overUnder === null) overUnder = total >= 3 ? "Over" : "Under";
-                      if (btts === null) btts = hg >= 1 && ag >= 1 ? "Yes" : "No";
-                    }
-                    // If analysis explicitly favors Over/BTTS, force BTTS Yes for consistency.
-                    if (overUnder === "Over" && /over\/btts favored|btts favored/.test(analysis)) {
-                      btts = "Yes";
-                    }
+                    const { overUnder, btts } = getFrozenDisplayMarkets(
+                      safeReal?.prediction,
+                      safeReal?.analysis,
+                      displayedScore,
+                    );
                     return (
                       <div className="grid grid-cols-2 gap-2 text-center mb-2">
                         <div className="bg-muted/20 rounded p-1.5">
-                          <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
+                          <p className="text-xs font-bold text-foreground">{overUnder ?? "Over"} 2.5</p>
                           <p className="text-[9px] text-muted-foreground">Goals</p>
                         </div>
                         <div className="bg-muted/20 rounded p-1.5">
-                          <p className="text-xs font-bold text-foreground">{btts}</p>
+                          <p className="text-xs font-bold text-foreground">{btts ?? "Yes"}</p>
                           <p className="text-[9px] text-muted-foreground">BTTS</p>
                         </div>
                       </div>
@@ -1134,25 +1141,14 @@ export default function WorldCup2026() {
                     const hw = r.pick ? (swapped ? r.pick.away_win : r.pick.home_win) : 0;
                     const dw = r.pick ? r.pick.draw : 0;
                     const aw = r.pick ? (swapped ? r.pick.home_win : r.pick.away_win) : 0;
-                    // Finished chips show the ORIGINAL frozen pick — derived
-                    // STRICTLY from the locked `predicted_score` so the
-                    // markets shown here are IDENTICAL to the live/upcoming
-                    // card the user saw before kickoff. We deliberately
-                    // ignore any prediction/analysis text rewrites that
-                    // could have happened later — the frozen score is the
-                    // single source of truth.
-                    const ps = r.pick?.predicted_score || "";
-                    const psMatch = ps.match(/(\d+)\s*[-–:]\s*(\d+)/);
-                    const psH = psMatch ? parseInt(psMatch[1], 10) : null;
-                    const psA = psMatch ? parseInt(psMatch[2], 10) : null;
-                    const overUnder: "Over" | "Under" | null =
-                      psH !== null && psA !== null
-                        ? ((psH + psA) >= 3 ? "Over" : "Under")
-                        : null;
-                    const btts: "Yes" | "No" | null =
-                      psH !== null && psA !== null
-                        ? (psH >= 1 && psA >= 1 ? "Yes" : "No")
-                        : null;
+                    // Finished chips must show the exact frozen market pick
+                    // users saw before kickoff: explicit prediction/analysis
+                    // first, predicted_score only as fallback.
+                    const { overUnder, btts } = getFrozenDisplayMarkets(
+                      r.pick?.prediction,
+                      r.pick?.analysis,
+                      r.pick?.predicted_score,
+                    );
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
                     return (
