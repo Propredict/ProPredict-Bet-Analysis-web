@@ -312,7 +312,7 @@ export function useWCYesterdayResults() {
             actualSide,
             // WIN rule: a correct 1X2 (home/away/draw) pick is NOT enough on
             // its own. The prediction only counts as WIN when at least one
-            // market — Over/Under or BTTS — hits (or exact score bonus).
+            // market — Over/Under or BTTS — hits.
             isWin: !!found && marketHit,
             resultReady,
           };
