@@ -80,6 +80,30 @@ function isPlaceholderAnalysis(s?: string | null): boolean {
   return /pending regeneration|pending/i.test(s.trim());
 }
 
+function getFrozenDisplayMarkets(prediction?: string | null, analysis?: string | null, predictedScore?: string | null) {
+  const pred = (prediction || "").toLowerCase();
+  const text = `${pred} ${analysis || ""}`.toLowerCase();
+  const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+  const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|over\/btts favored|btts favored|\bgg\b/.test(text);
+  const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
+  let overUnder: "Over" | "Under" | null = goals
+    ? (goals[1].toLowerCase() === "over" ? "Over" : "Under")
+    : null;
+  let btts: "Yes" | "No" | null = bttsYes ? "Yes" : bttsNo ? "No" : null;
+
+  if ((overUnder === null || btts === null) && predictedScore) {
+    const m = predictedScore.match(/(\d+)\s*[-–:]\s*(\d+)/);
+    if (m) {
+      const h = parseInt(m[1], 10);
+      const a = parseInt(m[2], 10);
+      if (overUnder === null) overUnder = h + a >= 3 ? "Over" : "Under";
+      if (btts === null) btts = h >= 1 && a >= 1 ? "Yes" : "No";
+    }
+  }
+
+  return { overUnder, btts };
+}
+
 function parseAdEventPayload(event: Event) {
   const raw = (event as MessageEvent).data ?? (event as CustomEvent).detail ?? null;
 
