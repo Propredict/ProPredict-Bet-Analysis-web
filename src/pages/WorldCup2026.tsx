@@ -832,12 +832,12 @@ export default function WorldCup2026() {
                     confidence: real.confidence,
                   }
                 : null;
-              const modelTop = projected.homeWin >= projected.awayWin && projected.homeWin >= projected.draw ? "home" : projected.awayWin >= projected.homeWin && projected.awayWin >= projected.draw ? "away" : "draw";
-              const realTop = realMapped ? (realMapped.homeWin >= realMapped.awayWin && realMapped.homeWin >= realMapped.draw ? "home" : realMapped.awayWin >= realMapped.homeWin && realMapped.awayWin >= realMapped.draw ? "away" : "draw") : null;
-              const modelGap = Math.abs(wcStrength(mockPred.home) - wcStrength(mockPred.away));
-              const realContradictsStrength = !!realMapped && modelGap >= 12 && realTop !== modelTop;
-              const safeReal = realContradictsStrength ? null : real;
-              const pred = realMapped && !realContradictsStrength
+              // Once the real DB prediction exists, it is the locked source of
+              // truth for Live and Finished. Do not swap back to ranking
+              // projections, otherwise the confidence can appear to change
+              // when the same match moves from Live → Finished.
+              const safeReal = real;
+              const pred = realMapped
                 ? realMapped
                 : {
                     ...mockPred,
