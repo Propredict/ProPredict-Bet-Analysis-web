@@ -157,10 +157,8 @@ export function useWCYesterdayResults() {
       // Determine which picks didn't match an API WC fixture, then fall back
       // to /fixtures?date=... (no league filter) to recover scores for
       // friendlies/qualifiers (e.g. Australia vs Türkiye).
-      // Include every fixture whose API status is "finished". The page splits
-      // these into "Just Finished — Today" (still inside 3h grace, shows the
-      // original prediction next to the result) and "Finished — Yesterday's
-      // Results" (past the 3h grace, shows the WIN badge) using `resultReady`.
+      // Include every fixture whose API status is "finished". Finished cards
+      // are evaluated immediately at FT: wins are shown, losses are hidden.
       const fixtures: WCTodayFixture[] = allFx.filter(
         (f: WCTodayFixture) => f.status === "finished",
       );
