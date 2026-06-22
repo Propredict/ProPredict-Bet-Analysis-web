@@ -1031,11 +1031,8 @@ export default function WorldCup2026() {
                 })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
                 .slice(0, 8);
-              const justFinishedCount = finishedWithPick.filter((r) => !r.resultReady).length;
-              const winCount = finishedWithPick.filter((r) => r.resultReady && r.isWin).length;
-              const headerLabel = justFinishedCount > 0 && winCount === 0
-                ? "Just Finished — Today"
-                : "Finished — Latest Results";
+              const winCount = finishedWithPick.filter((r) => r.isWin).length;
+              const headerLabel = "Finished — Latest Results";
               return (
               <div className="mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2.5">
@@ -1090,12 +1087,7 @@ export default function WorldCup2026() {
                             <Badge variant="outline" className="text-[9px] border-foreground/30 text-foreground bg-muted/40 tabular-nums font-bold">
                               FT {r.fixture.homeScore}–{r.fixture.awayScore}
                             </Badge>
-                            {r.pick && !r.resultReady && (
-                              <Badge variant="outline" className="text-[9px] border-amber-500/40 text-amber-400 bg-amber-500/10">
-                                Result in 3h
-                              </Badge>
-                            )}
-                            {r.pick && r.resultReady && r.isWin && (
+                            {r.pick && r.isWin && (
                               <Badge variant="outline" className="text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
                                 WIN
                               </Badge>

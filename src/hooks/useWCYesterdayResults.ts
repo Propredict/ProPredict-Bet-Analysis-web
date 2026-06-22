@@ -22,9 +22,7 @@ export interface WCFinishedItem {
   pickedSide: "home" | "draw" | "away";
   actualSide: "home" | "draw" | "away";
   isWin: boolean;
-  /** Result evaluation only "locks in" 3h after match ended.
-   *  Until then the card shows the original prediction with a
-   *  "Result pending" badge — never a WIN/LOSS yet. */
+  /** Finished fixtures are evaluated immediately at FT. */
   resultReady: boolean;
 }
 
@@ -159,10 +157,8 @@ export function useWCYesterdayResults() {
       // Determine which picks didn't match an API WC fixture, then fall back
       // to /fixtures?date=... (no league filter) to recover scores for
       // friendlies/qualifiers (e.g. Australia vs Türkiye).
-      // Include every fixture whose API status is "finished". The page splits
-      // these into "Just Finished — Today" (still inside 3h grace, shows the
-      // original prediction next to the result) and "Finished — Yesterday's
-      // Results" (past the 3h grace, shows the WIN badge) using `resultReady`.
+      // Include every fixture whose API status is "finished". Finished cards
+      // are evaluated immediately at FT: wins are shown, losses are hidden.
       const fixtures: WCTodayFixture[] = allFx.filter(
         (f: WCTodayFixture) => f.status === "finished",
       );
@@ -264,13 +260,10 @@ export function useWCYesterdayResults() {
             : f.awayScore! > f.homeScore! ? "away" : "draw";
           let pickedSide: "home" | "draw" | "away" = "draw";
           let marketHit = false;
-          // 3-hour grace: only lock in WIN/LOSS once ≥3h have passed
-          // since match end. We approximate match end as kickoff + 110min.
-          const ko = f.startTime ? new Date(f.startTime).getTime() : NaN;
-          const endedMs = isFinite(ko) ? ko + 110 * 60_000 : NaN;
-          const resultReady = isFinite(endedMs)
-            ? Date.now() - endedMs >= 3 * 60 * 60_000
-            : true; // unknown kickoff → treat as ready
+          // As soon as API marks FT, evaluate the locked pick immediately.
+          // The top AI Picks list can still keep the card for 3h, but the
+          // Finished section must show WIN immediately or hide losses.
+          const resultReady = true;
           if (found) {
             const { p, swapped } = found;
             const hw = swapped ? p.away_win : p.home_win;
