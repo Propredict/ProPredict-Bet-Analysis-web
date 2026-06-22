@@ -17,24 +17,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-function getDisplayConfidence(row: {
-  confidence?: number | null;
-  home_win?: number | null;
-  draw?: number | null;
-  away_win?: number | null;
-}): number | null {
+function getLockedConfidence(row: { confidence?: number | null }): number | null {
   const rawConfidence = Number(row.confidence ?? 0);
-  const homeWin = Number(row.home_win ?? 0);
-  const draw = Number(row.draw ?? 0);
-  const awayWin = Number(row.away_win ?? 0);
-
-  if (homeWin > 0 || draw > 0 || awayWin > 0) {
-    const top1x2 = Math.max(homeWin, draw, awayWin);
-    const doubleChance = Math.max(homeWin + draw, draw + awayWin, homeWin + awayWin);
-    const derived = Math.max(top1x2, Math.round(doubleChance * 0.95));
-    return Math.min(95, Math.max(rawConfidence, derived));
-  }
-
   return rawConfidence > 0 ? rawConfidence : null;
 }
 
@@ -118,7 +102,9 @@ serve(async (req) => {
 
     for (const r of candidates) {
       const heading = `🏆 WC Prediction Ready: ${r.home_team} vs ${r.away_team}`;
-      const displayConfidence = getDisplayConfidence(r);
+      // Notification must show the exact locked DB confidence used by the UI.
+      // Do not derive/inflate from 1X2 or double-chance probabilities.
+      const displayConfidence = getLockedConfidence(r);
       const conf = displayConfidence ? `${displayConfidence}% confidence` : "AI pick ready";
       const body = `Our AI pick is locked in — ${conf}. Tap to see the full analysis before kickoff.`;
       const navPath = `/world-cup-2026?tab=predictions&from=wc_prediction_push&prediction=${encodeURIComponent(r.id)}`;
