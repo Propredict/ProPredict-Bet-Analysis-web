@@ -80,6 +80,17 @@ function isPlaceholderAnalysis(s?: string | null): boolean {
   return /pending regeneration|pending/i.test(s.trim());
 }
 
+// Display floor for WC AI confidence.
+// Internal model values stay untouched (used for logic, notifications, results),
+// but the number shown to users is lifted to at least this threshold so the
+// "AI confidence" never looks weak (no more 40–50% on the card).
+const WC_CONF_DISPLAY_FLOOR = 70;
+function displayConfidence(c?: number | null): number {
+  const n = typeof c === "number" && isFinite(c) ? Math.round(c) : 0;
+  if (n <= 0) return WC_CONF_DISPLAY_FLOOR;
+  return Math.max(WC_CONF_DISPLAY_FLOOR, Math.min(99, n));
+}
+
 function getFrozenDisplayMarkets(prediction?: string | null, analysis?: string | null, predictedScore?: string | null) {
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
