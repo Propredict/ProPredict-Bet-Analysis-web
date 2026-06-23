@@ -916,7 +916,7 @@ export default function WorldCup2026() {
                             </Badge>
                           )}
                           <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
-                            {pred.confidence}% conf
+                            {displayConfidence(pred.confidence)}% conf
                           </Badge>
                         </div>
                       ) : (
@@ -986,7 +986,7 @@ export default function WorldCup2026() {
                         <div className="grid grid-cols-1 gap-2 text-[11px]">
                           <div>
                             <span className="text-muted-foreground">Confidence</span>
-                            <p className="font-bold text-foreground">{pred.confidence}%</p>
+                            <p className="font-bold text-foreground">{displayConfidence(pred.confidence)}%</p>
                           </div>
                         </div>
                         <div className="text-[10px] text-muted-foreground">
@@ -1001,7 +1001,7 @@ export default function WorldCup2026() {
                                   draw: pred.draw,
                                   awayWin: pred.awayWin,
                                   predictedScore: displayedScore,
-                                  confidence: safeReal?.confidence ?? pred.confidence,
+                                  confidence: displayConfidence(safeReal?.confidence ?? pred.confidence),
                                 })
                               : dbText as string;
                             return text.length > 220 ? text.slice(0, 220) + "…" : text;
@@ -1144,10 +1144,10 @@ export default function WorldCup2026() {
                                 <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
                               </div>
                               <div className="grid grid-cols-1 gap-2 text-[11px]">
-                                <div>
-                                  <span className="text-muted-foreground">Confidence</span>
-                                  <p className="font-bold text-foreground">{r.pick.confidence}%</p>
-                                </div>
+                              <div>
+                                <span className="text-muted-foreground">Confidence</span>
+                                <p className="font-bold text-foreground">{displayConfidence(r.pick.confidence)}%</p>
+                              </div>
                               </div>
                               <div className="text-[10px] text-muted-foreground">
                                 <span className="font-medium text-foreground">AI Insight:</span>{" "}
@@ -1161,7 +1161,7 @@ export default function WorldCup2026() {
                                         draw: r.pick.draw ?? 0,
                                         awayWin: r.pick.away_win ?? 0,
                                         predictedScore: r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score,
-                                        confidence: r.pick.confidence,
+                                        confidence: displayConfidence(r.pick.confidence),
                                       })
                                     : dbText as string;
                                   return text.length > 220 ? text.slice(0, 220) + "…" : text;
