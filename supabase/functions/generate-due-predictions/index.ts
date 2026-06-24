@@ -30,6 +30,39 @@ const corsHeaders = {
 // candidates; enriched rows are never touched again).
 const DUE_WINDOW_MS = 3 * 60 * 60 * 1000; // 3h before kickoff
 
+// ============ POISSON HELPERS (for safe-pick market scan) ============
+// Used to derive Over/Under 2.5 and BTTS probabilities from the xG that
+// generate-ai-predictions already returned for this match. Keeps this
+// function self-contained — no extra API calls.
+function _poissonPmf(k: number, lambda: number): number {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  let logP = -lambda + k * Math.log(lambda);
+  for (let i = 2; i <= k; i++) logP -= Math.log(i);
+  return Math.exp(logP);
+}
+function poissonMarkets(xgHome: number, xgAway: number): {
+  over25: number; under25: number; bttsYes: number; bttsNo: number;
+} {
+  const xh = Math.max(0.1, Math.min(5, xgHome));
+  const xa = Math.max(0.1, Math.min(5, xgAway));
+  const MAX = 7;
+  let over25 = 0;
+  let bttsYes = 0;
+  for (let h = 0; h <= MAX; h++) {
+    for (let a = 0; a <= MAX; a++) {
+      const p = _poissonPmf(h, xh) * _poissonPmf(a, xa);
+      if (h + a > 2) over25 += p;
+      if (h > 0 && a > 0) bttsYes += p;
+    }
+  }
+  return {
+    over25: Math.round(over25 * 100),
+    under25: Math.round((1 - over25) * 100),
+    bttsYes: Math.round(bttsYes * 100),
+    bttsNo: Math.round((1 - bttsYes) * 100),
+  };
+}
+
 function getKickoffMs(row: { match_timestamp?: string | null; match_date?: string | null; match_time?: string | null }): number | null {
   if (row.match_timestamp) {
     const ts = new Date(row.match_timestamp).getTime();
@@ -158,42 +191,50 @@ serve(async (req: Request) => {
         }
 
         // ============ WORLD CUP SAFE-PICK GUARD ============
-        // World Cup notifications must advertise a strong, safe tip.
-        // If the model's chosen 1X2 pick has confidence < 70, automatically
-        // promote it to a Double Chance market (1X / X2 / 12) — combine the
-        // two highest 1X2 outcomes so the advertised pick is genuinely safer.
-        // Only applies when we have valid 1X2 probabilities and the original
-        // pick is a single-team result ("1", "2") or a low-confidence Draw.
+        // World Cup notifications must advertise the SAFEST market available.
+        // If the model's chosen pick has confidence < 70, scan all common
+        // markets (Double Chance from 1X2, Over/Under 2.5 and BTTS from xG)
+        // and switch to whichever has the highest probability.
         const SAFE_CONF_FLOOR = 70;
-        const isSingle1X2 = pred.prediction === "1" || pred.prediction === "X" || pred.prediction === "2";
+        const currentConf = Number(pred.confidence ?? 0);
         const hw = Number(pred.home_win);
         const dw = Number(pred.draw);
         const aw = Number(pred.away_win);
         const has1X2 = [hw, dw, aw].every((v) => Number.isFinite(v) && v >= 0);
-        if (
-          isSingle1X2 &&
-          has1X2 &&
-          Number(pred.confidence ?? 0) < SAFE_CONF_FLOOR
-        ) {
-          // Find the two highest 1X2 outcomes.
-          const ordered = [
-            { key: "1", val: hw },
-            { key: "X", val: dw },
-            { key: "2", val: aw },
-          ].sort((a, b) => b.val - a.val);
-          const topTwo = [ordered[0].key, ordered[1].key].sort();
-          const dcMap: Record<string, string> = {
-            "1,X": "Double Chance 1X",
-            "X,2": "Double Chance X2",
-            "1,2": "Double Chance 12",
-          };
-          const dcKey = topTwo.join(",");
-          const dcPick = dcMap[dcKey];
-          if (dcPick) {
-            const dcProb = Math.min(95, Math.max(SAFE_CONF_FLOOR, Math.round(ordered[0].val + ordered[1].val)));
-            const safeNote = ` Safe-pick guard: promoted to ${dcPick} (combined ${dcProb}%) because single-result confidence was below ${SAFE_CONF_FLOOR}%.`;
-            pred.prediction = dcPick;
-            pred.confidence = dcProb;
+
+        if (has1X2 && currentConf < SAFE_CONF_FLOOR) {
+          type Candidate = { label: string; prob: number };
+          const candidates: Candidate[] = [];
+
+          // --- Double Chance from 1X2 ---
+          candidates.push(
+            { label: "Double Chance 1X", prob: hw + dw },
+            { label: "Double Chance X2", prob: dw + aw },
+            { label: "Double Chance 12", prob: hw + aw },
+          );
+
+          // --- Over/Under 2.5 + BTTS from xG (Poisson) ---
+          const xh = Number(pred.xg_home);
+          const xa = Number(pred.xg_away);
+          if (Number.isFinite(xh) && Number.isFinite(xa) && xh > 0 && xa > 0) {
+            const m = poissonMarkets(xh, xa);
+            candidates.push(
+              { label: "Over 2.5", prob: m.over25 },
+              { label: "Under 2.5", prob: m.under25 },
+              { label: "BTTS Yes", prob: m.bttsYes },
+              { label: "BTTS No", prob: m.bttsNo },
+            );
+          }
+
+          // Pick the strongest market overall, but only switch if it's
+          // genuinely safer than the current pick.
+          candidates.sort((a, b) => b.prob - a.prob);
+          const best = candidates[0];
+          if (best && best.prob >= SAFE_CONF_FLOOR && best.prob > currentConf) {
+            const newProb = Math.min(95, Math.round(best.prob));
+            const safeNote = ` Safe-pick guard: promoted to ${best.label} (${newProb}%) — strongest available market above ${SAFE_CONF_FLOOR}%.`;
+            pred.prediction = best.label;
+            pred.confidence = newProb;
             pred.risk_level = "low";
             pred.analysis = `${pred.analysis ?? ""}${safeNote}`;
           }
