@@ -157,6 +157,48 @@ serve(async (req: Request) => {
           continue;
         }
 
+        // ============ WORLD CUP SAFE-PICK GUARD ============
+        // World Cup notifications must advertise a strong, safe tip.
+        // If the model's chosen 1X2 pick has confidence < 70, automatically
+        // promote it to a Double Chance market (1X / X2 / 12) — combine the
+        // two highest 1X2 outcomes so the advertised pick is genuinely safer.
+        // Only applies when we have valid 1X2 probabilities and the original
+        // pick is a single-team result ("1", "2") or a low-confidence Draw.
+        const SAFE_CONF_FLOOR = 70;
+        const isSingle1X2 = pred.prediction === "1" || pred.prediction === "X" || pred.prediction === "2";
+        const hw = Number(pred.home_win);
+        const dw = Number(pred.draw);
+        const aw = Number(pred.away_win);
+        const has1X2 = [hw, dw, aw].every((v) => Number.isFinite(v) && v >= 0);
+        if (
+          isSingle1X2 &&
+          has1X2 &&
+          Number(pred.confidence ?? 0) < SAFE_CONF_FLOOR
+        ) {
+          // Find the two highest 1X2 outcomes.
+          const ordered = [
+            { key: "1", val: hw },
+            { key: "X", val: dw },
+            { key: "2", val: aw },
+          ].sort((a, b) => b.val - a.val);
+          const topTwo = [ordered[0].key, ordered[1].key].sort();
+          const dcMap: Record<string, string> = {
+            "1,X": "Double Chance 1X",
+            "X,2": "Double Chance X2",
+            "1,2": "Double Chance 12",
+          };
+          const dcKey = topTwo.join(",");
+          const dcPick = dcMap[dcKey];
+          if (dcPick) {
+            const dcProb = Math.min(95, Math.max(SAFE_CONF_FLOOR, Math.round(ordered[0].val + ordered[1].val)));
+            const safeNote = ` Safe-pick guard: promoted to ${dcPick} (combined ${dcProb}%) because single-result confidence was below ${SAFE_CONF_FLOOR}%.`;
+            pred.prediction = dcPick;
+            pred.confidence = dcProb;
+            pred.risk_level = "low";
+            pred.analysis = `${pred.analysis ?? ""}${safeNote}`;
+          }
+        }
+
         // Write enrichment back ONLY to a placeholder row. If anything already
         // enriched this match, do not overwrite the pick users have seen.
         const { error: updErr } = await supabase
