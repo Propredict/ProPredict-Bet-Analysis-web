@@ -19,7 +19,11 @@ const corsHeaders = {
 
 function getLockedConfidence(row: { confidence?: number | null }): number | null {
   const rawConfidence = Number(row.confidence ?? 0);
-  return rawConfidence > 0 ? rawConfidence : null;
+  if (!(rawConfidence > 0)) return null;
+  // Mirror the UI floor: never advertise a pick below 70% confidence in pushes.
+  // The DB value stays untouched; only the displayed % is clamped to [70, 99].
+  const WC_CONF_DISPLAY_FLOOR = 70;
+  return Math.max(WC_CONF_DISPLAY_FLOOR, Math.min(99, Math.round(rawConfidence)));
 }
 
 serve(async (req) => {
