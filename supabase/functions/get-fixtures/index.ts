@@ -157,6 +157,13 @@ serve(async (req) => {
     if (belgradeWindow) {
       rawItems = rawItems.filter((item: any) => {
         const ko = item?.fixture?.date ? new Date(item.fixture.date).getTime() : NaN;
+        // Always include matches that are currently in-play (live/halftime/ET),
+        // even if kickoff was before today's Belgrade window — a game that
+        // started yesterday at 23:00 and is still playing past midnight must
+        // appear under Today as well.
+        const short = item?.fixture?.status?.short ?? "";
+        const liveShort = ["1H", "2H", "ET", "P", "LIVE", "HT", "BT"];
+        if (liveShort.includes(short)) return true;
         if (!Number.isFinite(ko)) return false;
         return ko >= belgradeWindow!.startMs && ko < belgradeWindow!.endMs;
       });
