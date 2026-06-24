@@ -30,6 +30,39 @@ const corsHeaders = {
 // candidates; enriched rows are never touched again).
 const DUE_WINDOW_MS = 3 * 60 * 60 * 1000; // 3h before kickoff
 
+// ============ POISSON HELPERS (for safe-pick market scan) ============
+// Used to derive Over/Under 2.5 and BTTS probabilities from the xG that
+// generate-ai-predictions already returned for this match. Keeps this
+// function self-contained — no extra API calls.
+function _poissonPmf(k: number, lambda: number): number {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  let logP = -lambda + k * Math.log(lambda);
+  for (let i = 2; i <= k; i++) logP -= Math.log(i);
+  return Math.exp(logP);
+}
+function poissonMarkets(xgHome: number, xgAway: number): {
+  over25: number; under25: number; bttsYes: number; bttsNo: number;
+} {
+  const xh = Math.max(0.1, Math.min(5, xgHome));
+  const xa = Math.max(0.1, Math.min(5, xgAway));
+  const MAX = 7;
+  let over25 = 0;
+  let bttsYes = 0;
+  for (let h = 0; h <= MAX; h++) {
+    for (let a = 0; a <= MAX; a++) {
+      const p = _poissonPmf(h, xh) * _poissonPmf(a, xa);
+      if (h + a > 2) over25 += p;
+      if (h > 0 && a > 0) bttsYes += p;
+    }
+  }
+  return {
+    over25: Math.round(over25 * 100),
+    under25: Math.round((1 - over25) * 100),
+    bttsYes: Math.round(bttsYes * 100),
+    bttsNo: Math.round((1 - bttsYes) * 100),
+  };
+}
+
 function getKickoffMs(row: { match_timestamp?: string | null; match_date?: string | null; match_time?: string | null }): number | null {
   if (row.match_timestamp) {
     const ts = new Date(row.match_timestamp).getTime();
