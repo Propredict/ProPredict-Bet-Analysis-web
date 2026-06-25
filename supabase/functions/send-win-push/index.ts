@@ -199,7 +199,9 @@ serve(async (req) => {
           supabase.from("user_subscriptions").select("plan, status, expires_at").eq("user_id", token.userId).eq("status", "active").maybeSingle(),
         ]);
 
-        if (profileRes.data?.last_marketing_push_at) {
+        // World Cup WIN pushes bypass the 40-min marketing cooldown — these
+        // are high-value "your pick cashed" alerts and must always reach users.
+        if (type !== "wc_pick" && profileRes.data?.last_marketing_push_at) {
           const diff = now.getTime() - new Date(profileRes.data.last_marketing_push_at).getTime();
           if (diff < FORTY_MIN) canSend = false;
         }
