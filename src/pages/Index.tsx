@@ -125,11 +125,83 @@ const Index = () => {
               </svg>
               Be Premium — Unlock All Tips & Predictions for 1 Month
             </Link>
-          </div>
         </div>
 
-        {/* Sponsored: 1xBet affiliate banner – web only */}
-        <AffiliateBanner1xBet />
+        {/* Telegram banner — full-width, outside hero so it’s never clipped */}
+        <a
+          href="https://t.me/propredictxx"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] hover:bg-[#1c8bc1] text-white shadow-xl shadow-[#229ED9]/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
+          aria-label="Free Tips all day — Join us on Telegram"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-[#229ED9] via-[#2AABEE] to-[#229ED9] opacity-90" />
+          <div className="relative flex items-center justify-between px-5 sm:px-8 py-4 sm:py-5">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-sm shrink-0">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" aria-hidden="true">
+                  <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-base sm:text-lg font-extrabold leading-tight">Free Tips all day</p>
+                <p className="text-sm sm:text-base text-white/90 font-medium">Join us on Telegram</p>
+              </div>
+            </div>
+            <span className="text-2xl sm:text-3xl font-bold">→</span>
+          </div>
+        </a>
+
+        {/* Affiliate banner */}
+        <div className="relative overflow-hidden rounded-xl shadow-lg shadow-primary/10">
+          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-[22rem] sm:h-80 md:h-96 object-cover" width={1920} height={864} />
+          <div className="absolute inset-0 bg-background/70 sm:bg-transparent sm:bg-gradient-to-t sm:from-background sm:via-background/85 sm:to-background/60" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 py-4 space-y-2 sm:space-y-3">
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-foreground [text-shadow:_0_2px_12px_rgba(0,0,0,0.95),_0_0_4px_rgba(0,0,0,0.9)]">Welcome to ProPredict 👋</h1>
+            <p className="text-base sm:text-lg md:text-2xl font-extrabold text-primary drop-shadow leading-tight">Today's Best Football Predictions Are Ready ⚽</p>
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-lg leading-relaxed">
+              AI-powered picks, probabilities and match insights updated daily.
+            </p>
+            {!isAndroid && (
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
+                Get access to <span className="text-primary font-bold">PRO tips</span>, <span className="text-primary font-bold">combo tickets</span>, <span className="text-primary font-bold">Diamond Picks</span> and full match analysis.
+              </p>
+            )}
+            <div className="flex items-center gap-3 pt-1">
+              {isAndroid ? (
+                <button onClick={() => setShowCategoryModal(true)} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </button>
+              ) : (
+                <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
+                  Check Today's Matches
+                </Link>
+              )}
+              {!isAndroid && (
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-extrabold hover:opacity-90 transition-all shadow-lg shadow-amber-500/40 animate-pulse ring-2 ring-amber-300/50"
+                >
+                  ⬇️ Download App 🔓
+                </a>
+              )}
+            </div>
+            <p className="text-xs text-primary font-semibold">🔥 {(23000 + Math.floor(Math.random() * 4000)).toLocaleString()}+ users checked today • free picks available</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
+            <Link
+              to="/get-premium"
+              className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-fuchsia-600 via-violet-600 to-fuchsia-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-fuchsia-500/40 ring-2 ring-fuchsia-300/40 hover:opacity-95 hover:scale-[1.03] transition-all animate-blink"
+              aria-label="Become Premium and unlock all tips and predictions for one month"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
+                <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
+              </svg>
+              Be Premium — Unlock All Tips & Predictions for 1 Month
+            </Link>
+          </div>
+        </div>
 
         {/* Social Proof Section */}
         <Suspense fallback={<LazyFallback />}>
