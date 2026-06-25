@@ -119,13 +119,24 @@ const Index = () => {
               href="https://t.me/propredictxx"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 mt-1 rounded-full bg-[#229ED9] hover:bg-[#1c8bc1] text-white text-xs sm:text-sm font-bold shadow-lg shadow-[#229ED9]/30 transition-all hover:scale-[1.03]"
-              aria-label="Join us on Telegram"
+              className="relative w-full max-w-md mt-1 overflow-hidden rounded-xl bg-[#229ED9] hover:bg-[#1c8bc1] text-white shadow-lg shadow-[#229ED9]/30 transition-all hover:scale-[1.02] active:scale-[0.99]"
+              aria-label="Free Tips all day — Join us on Telegram"
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
-                <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
-              </svg>
-              Join us on Telegram
+              <div className="absolute inset-0 bg-gradient-to-r from-[#229ED9] via-[#2AABEE] to-[#229ED9] opacity-90" />
+              <div className="relative flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-sm">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" aria-hidden="true">
+                      <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm sm:text-base font-extrabold leading-tight">Free Tips all day</p>
+                    <p className="text-xs sm:text-sm text-white/90 font-medium">Join us on Telegram</p>
+                  </div>
+                </div>
+                <span className="text-lg sm:text-xl font-bold">→</span>
+              </div>
             </a>
             <Link
               to="/get-premium"
