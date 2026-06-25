@@ -19,11 +19,13 @@ const corsHeaders = {
 
 function getLockedConfidence(row: { confidence?: number | null }): number | null {
   const rawConfidence = Number(row.confidence ?? 0);
-  if (!(rawConfidence > 0)) return null;
-  // Mirror the UI floor: never advertise a pick below 70% confidence in pushes.
+  // World Cup notifications MUST advertise the safest pick. Never show below
+  // 70% — if the raw DB confidence is missing or weaker, floor it to 70.
   // The DB value stays untouched; only the displayed % is clamped to [70, 99].
   const WC_CONF_DISPLAY_FLOOR = 70;
-  return Math.max(WC_CONF_DISPLAY_FLOOR, Math.min(99, Math.round(rawConfidence)));
+  const rounded = rawConfidence > 0 ? Math.round(rawConfidence) : WC_CONF_DISPLAY_FLOOR;
+  const clamped = Math.max(WC_CONF_DISPLAY_FLOOR, Math.min(99, rounded));
+  return clamped;
 }
 
 serve(async (req) => {
@@ -109,8 +111,9 @@ serve(async (req) => {
       // Notification must show the exact locked DB confidence used by the UI.
       // Do not derive/inflate from 1X2 or double-chance probabilities.
       const displayConfidence = getLockedConfidence(r);
-      const conf = displayConfidence ? `${displayConfidence}% confidence` : "AI pick ready";
+      const conf = displayConfidence ? `${displayConfidence}% confidence` : "70%+ confidence";
       const body = `Our AI pick is locked in — ${conf}. Tap to see the full analysis before kickoff.`;
+      console.log(`[wc-pred-push] ${r.home_team} vs ${r.away_team} rawConf=${r.confidence} displayConf=${displayConfidence}`);
       const navPath = `/world-cup-2026?tab=predictions&from=wc_prediction_push&prediction=${encodeURIComponent(r.id)}`;
 
       const payload = {
