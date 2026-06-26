@@ -316,6 +316,7 @@ const Index = () => {
       <ExitIntentPopup />
       <DailyRewardPopup />
       <DailyRewardStickyBar />
+      <TelegramPromoPopup />
       {isAndroid && <PicksCategoryModal open={showCategoryModal} onOpenChange={setShowCategoryModal} />}
     </>
   );
