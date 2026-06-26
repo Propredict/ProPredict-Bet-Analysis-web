@@ -999,46 +999,55 @@ export default function WorldCup2026() {
 
                   {/* === ADVANCED: Premium section (blurred for non-premium) === */}
                   {showBasic && (
-                    <div className="relative mt-1">
-                      <div className={`rounded-lg border p-3 space-y-2 ${appCanSeeAdvanced ? "border-primary/20 bg-primary/5" : "border-border/30 bg-muted/10 blur-[3px] select-none pointer-events-none"}`}>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <Brain className="h-3 w-3 text-primary" />
-                          <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
-                        </div>
-                        <div className="grid grid-cols-1 gap-2 text-[11px]">
-                          <div>
-                            <span className="text-muted-foreground">Confidence</span>
-                            <p className="font-bold text-foreground">{displayConfidence(pred.confidence)}%</p>
+                    <div className="mt-1 border border-primary/10 rounded-lg overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={toggleAI}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-left hover:bg-primary/5 transition-colors"
+                      >
+                        <Brain className="h-4 w-4 text-primary" />
+                        <span className="text-xs md:text-sm font-bold text-primary uppercase tracking-wider">Advanced AI Analysis</span>
+                        <ChevronDown className={`h-4 w-4 text-primary transition-transform duration-200 ${isAIExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                      {isAIExpanded && (
+                        <div className="relative px-3 pb-3">
+                          <div className={`rounded-lg border p-3 space-y-2 ${appCanSeeAdvanced ? "border-primary/20 bg-primary/5" : "border-border/30 bg-muted/10 blur-[3px] select-none pointer-events-none"}`}>
+                            <div className="grid grid-cols-1 gap-2 text-[11px]">
+                              <div>
+                                <span className="text-muted-foreground">Confidence</span>
+                                <p className="font-bold text-foreground">{displayConfidence(pred.confidence)}%</p>
+                              </div>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
+                              <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                              {(() => {
+                                const dbText = safeReal?.analysis;
+                                const text = isPlaceholderAnalysis(dbText)
+                                  ? buildWCAIInsight({
+                                      home: pred.home,
+                                      away: pred.away,
+                                      homeWin: pred.homeWin,
+                                      draw: pred.draw,
+                                      awayWin: pred.awayWin,
+                                      predictedScore: displayedScore,
+                                      confidence: displayConfidence(safeReal?.confidence ?? pred.confidence),
+                                    })
+                                  : dbText as string;
+                                return text.length > 600 ? text.slice(0, 600) + "…" : text;
+                              })()}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
-                          <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                          {(() => {
-                            const dbText = safeReal?.analysis;
-                            const text = isPlaceholderAnalysis(dbText)
-                              ? buildWCAIInsight({
-                                  home: pred.home,
-                                  away: pred.away,
-                                  homeWin: pred.homeWin,
-                                  draw: pred.draw,
-                                  awayWin: pred.awayWin,
-                                  predictedScore: displayedScore,
-                                  confidence: displayConfidence(safeReal?.confidence ?? pred.confidence),
-                                })
-                              : dbText as string;
-                            return text.length > 600 ? text.slice(0, 600) + "…" : text;
-                          })()}
-                        </div>
-                      </div>
-                      {/* Lock overlay for non-premium */}
-                      {!appCanSeeAdvanced && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 rounded-lg">
-                          <Lock className="h-5 w-5 text-fuchsia-400 mb-1" />
-                          <p className="text-[11px] font-semibold text-foreground">Unlock Advanced AI Analysis</p>
-                          <p className="text-[9px] text-muted-foreground mb-2">Predicted score, insights & key factors</p>
-                          <Button size="sm" onClick={() => navigate("/get-premium")} className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white text-[10px] h-7 px-3">
-                            <Zap className="h-3 w-3 mr-1" /> Get Premium
-                          </Button>
+                          {/* Lock overlay for non-premium */}
+                          {!appCanSeeAdvanced && (
+                            <div className="absolute inset-0 px-3 flex flex-col items-center justify-center bg-card/60 rounded-lg">
+                              <Lock className="h-5 w-5 text-fuchsia-400 mb-1" />
+                              <p className="text-[11px] font-semibold text-foreground">Unlock Advanced AI Analysis</p>
+                              <p className="text-[9px] text-muted-foreground mb-2">Predicted score, insights & key factors</p>
+                              <Button size="sm" onClick={() => navigate("/get-premium")} className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white text-[10px] h-7 px-3">
+                                <Zap className="h-3 w-3 mr-1" /> Get Premium
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
