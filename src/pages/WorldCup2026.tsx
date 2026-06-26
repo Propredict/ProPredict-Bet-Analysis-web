@@ -461,8 +461,8 @@ export default function WorldCup2026() {
             { value: "top-players", label: "Top Players", icon: Award },
             { value: "stats", label: "Stats", icon: Activity },
           ].map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value} className="text-[11px] px-2.5 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1 whitespace-nowrap">
-              <tab.icon className="h-3 w-3" />
+            <TabsTrigger key={tab.value} value={tab.value} className="text-sm md:text-base font-semibold px-3 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1.5 whitespace-nowrap">
+              <tab.icon className="h-4 w-4" />
               {tab.label}
             </TabsTrigger>
           ))}
