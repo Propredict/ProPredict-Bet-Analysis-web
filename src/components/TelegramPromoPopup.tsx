@@ -4,7 +4,35 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const STORAGE_KEY = "propredict:telegram_popup_shown_date";
-const TELEGRAM_URL = "https://t.me/+vXa6oTwx5IM5MWU0";
+const CLICK_COUNT_KEY = "propredict:telegram_popup_click_count";
+const CLICK_LAST_KEY = "propredict:telegram_popup_last_click_at";
+const TELEGRAM_URL = "https://t.me/propredictxx";
+
+function logTelegramClick() {
+  try {
+    const next = (parseInt(localStorage.getItem(CLICK_COUNT_KEY) || "0", 10) || 0) + 1;
+    localStorage.setItem(CLICK_COUNT_KEY, String(next));
+    localStorage.setItem(CLICK_LAST_KEY, new Date().toISOString());
+  } catch { /* ignore */ }
+
+  // Forward to any analytics pipelines present on the page.
+  try {
+    const w = window as unknown as {
+      gtag?: (...args: unknown[]) => void;
+      dataLayer?: unknown[];
+      fbq?: (...args: unknown[]) => void;
+    };
+    w.gtag?.("event", "telegram_popup_click", {
+      event_category: "engagement",
+      event_label: "free_premium_tips_popup",
+    });
+    w.dataLayer?.push({ event: "telegram_popup_click", source: "free_premium_tips_popup" });
+    w.fbq?.("trackCustom", "TelegramPopupClick");
+  } catch { /* ignore */ }
+
+  // eslint-disable-next-line no-console
+  console.info("[telegram-popup] join clicked", { url: TELEGRAM_URL });
+}
 
 function wasShownToday(): boolean {
   try {
@@ -100,7 +128,10 @@ export function TelegramPromoPopup() {
             href={TELEGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              logTelegramClick();
+              setOpen(false);
+            }}
             className="mt-6 flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-white text-[#0c5d9e] font-extrabold text-base hover:bg-white/95 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.99]"
           >
             <Send className="h-4 w-4" />
