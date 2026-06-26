@@ -104,20 +104,59 @@ serve(async (req) => {
   }
 
   try {
-    // Require shared internal secret to prevent unauthenticated push spam
-    const INTERNAL_PUSH_SECRET = Deno.env.get("INTERNAL_PUSH_SECRET") ?? "";
-    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    // ── Authentication / anti-spam guard ───────────────────────────────
+    // Trusted callers (bearer = INTERNAL_PUSH_SECRET or service role key)
+    // may pass arbitrary `record` values. Untrusted callers are restricted
+    // to tip/ticket/wc_pick types where the referenced record MUST exist
+    // in the database with result='won'; all fields are then rebuilt
+    // from DB values so an attacker cannot craft fake "win" notifications.
+    const INTERNAL_PUSH_SECRET = (Deno.env.get("INTERNAL_PUSH_SECRET") ?? "").trim();
+    const SERVICE_ROLE_TOKEN = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "").trim();
     const authHeader = req.headers.get("Authorization") ?? "";
-    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-    if (!INTERNAL_PUSH_SECRET || (token !== INTERNAL_PUSH_SECRET && token !== SERVICE_ROLE)) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const isTrusted =
+      bearer.length > 0 &&
+      ((INTERNAL_PUSH_SECRET && bearer === INTERNAL_PUSH_SECRET) ||
+        (SERVICE_ROLE_TOKEN && bearer === SERVICE_ROLE_TOKEN));
 
     const body = await req.json();
-    const { type, record } = body;
+    let { type, record } = body;
+
+    if (!isTrusted) {
+      if (type !== "tip" && type !== "ticket" && type !== "wc_pick") {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const recordId = record?.id;
+      if (!recordId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const _supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      let tableName: string;
+      if (type === "tip") tableName = "tips";
+      else if (type === "ticket") tableName = "tickets";
+      else tableName = "ai_predictions"; // wc_pick
+      const query = _supabaseAuth.from(tableName).select("*").eq("id", recordId);
+      const { data: dbRecord, error: dbErr } =
+        type === "wc_pick"
+          ? await query.maybeSingle()
+          : await query.eq("result", "won").maybeSingle();
+      if (dbErr || !dbRecord) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      record = dbRecord;
+    }
 
     if (!type || !record) {
       return new Response(JSON.stringify({ error: "Invalid payload" }), {
