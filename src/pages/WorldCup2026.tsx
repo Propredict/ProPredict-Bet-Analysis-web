@@ -1081,7 +1081,7 @@ export default function WorldCup2026() {
                   return r.isWin; // wins only
                 })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
-                .slice(0, 8);
+                .slice(0, 4);
               const winCount = finishedWithPick.filter((r) => r.isWin).length;
               const headerLabel = "Finished — Latest Results";
               return (
