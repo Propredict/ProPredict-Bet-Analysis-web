@@ -452,20 +452,21 @@ export default function WorldCup2026() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-card border-b border-border h-14 px-1 gap-0 overflow-x-auto flex-nowrap scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <TabsList className="w-full rounded-none bg-card border-b border-border h-auto px-1 py-1 gap-1 sm:h-14 sm:px-1 sm:py-0 sm:gap-0 grid grid-cols-4 sm:inline-flex sm:items-center sm:justify-start sm:flex-nowrap sm:overflow-x-auto sm:scrollbar-none sm:[&::-webkit-scrollbar]:hidden sm:[-ms-overflow-style:none] sm:[scrollbar-width:none]">
           {[
-            { value: "overview", label: "Overview", icon: Trophy },
-            { value: "predictions", label: "AI Picks", icon: Brain },
-            { value: "matches", label: "Matches", icon: Calendar },
-            { value: "bracket", label: "Bracket", icon: GitFork },
-            { value: "champion", label: "Predict Champion", icon: Crown },
-            { value: "standings", label: "Standings", icon: BarChart3 },
-            { value: "top-players", label: "Top Players", icon: Award },
-            { value: "stats", label: "Stats", icon: Activity },
+            { value: "overview", label: "Overview", short: "Overview", icon: Trophy },
+            { value: "predictions", label: "AI Picks", short: "AI Picks", icon: Brain },
+            { value: "matches", label: "Matches", short: "Matches", icon: Calendar },
+            { value: "bracket", label: "Bracket", short: "Bracket", icon: GitFork },
+            { value: "champion", label: "Predict Champion", short: "Champion", icon: Crown },
+            { value: "standings", label: "Standings", short: "Standings", icon: BarChart3 },
+            { value: "top-players", label: "Top Players", short: "Players", icon: Award },
+            { value: "stats", label: "Stats", short: "Stats", icon: Activity },
           ].map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value} className="text-base md:text-lg font-bold px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-2 whitespace-nowrap">
-              <tab.icon className="h-5 w-5" />
-              {tab.label}
+            <TabsTrigger key={tab.value} value={tab.value} className="text-xs sm:text-sm md:text-base font-bold px-1 sm:px-3 md:px-4 py-2 sm:py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1 sm:gap-2 whitespace-nowrap justify-center">
+              <tab.icon className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+              <span className="sm:hidden">{tab.short}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
