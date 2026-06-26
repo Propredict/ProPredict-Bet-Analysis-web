@@ -972,14 +972,14 @@ export default function WorldCup2026() {
                       safeReal?.predicted_score || displayedScore,
                     );
                     return (
-                      <div className="grid grid-cols-2 gap-2 text-center mb-2">
-                        <div className="bg-muted/20 rounded p-1.5">
-                          <p className="text-xs font-bold text-foreground">{overUnder ?? "Over"} 2.5</p>
-                          <p className="text-[9px] text-muted-foreground">Goals</p>
+                      <div className="grid grid-cols-2 gap-3 text-center mb-2">
+                        <div className="bg-muted/20 rounded-lg p-2.5">
+                          <p className="text-sm md:text-base font-extrabold text-foreground">{overUnder ?? "Over"} 2.5</p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Goals</p>
                         </div>
-                        <div className="bg-muted/20 rounded p-1.5">
-                          <p className="text-xs font-bold text-foreground">{btts ?? "Yes"}</p>
-                          <p className="text-[9px] text-muted-foreground">BTTS</p>
+                        <div className="bg-muted/20 rounded-lg p-2.5">
+                          <p className="text-sm md:text-base font-extrabold text-foreground">{btts ?? "Yes"}</p>
+                          <p className="text-[10px] md:text-xs text-muted-foreground font-medium">BTTS</p>
                         </div>
                       </div>
                     );
@@ -1133,17 +1133,17 @@ export default function WorldCup2026() {
                               </div>
                             </div>
                             {(overUnder || btts) && (
-                              <div className="grid grid-cols-2 gap-2 text-center mb-2">
+                              <div className="grid grid-cols-2 gap-3 text-center mb-2">
                                 {overUnder ? (
-                                  <div className="bg-muted/20 rounded p-1.5">
-                                    <p className="text-xs font-bold text-foreground">{overUnder} 2.5</p>
-                                    <p className="text-[9px] text-muted-foreground">Goals</p>
+                                  <div className="bg-muted/20 rounded-lg p-2.5">
+                                    <p className="text-sm md:text-base font-extrabold text-foreground">{overUnder} 2.5</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Goals</p>
                                   </div>
                                 ) : <div />}
                                 {btts ? (
-                                  <div className="bg-muted/20 rounded p-1.5">
-                                    <p className="text-xs font-bold text-foreground">{btts}</p>
-                                    <p className="text-[9px] text-muted-foreground">BTTS</p>
+                                  <div className="bg-muted/20 rounded-lg p-2.5">
+                                    <p className="text-sm md:text-base font-extrabold text-foreground">{btts}</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium">BTTS</p>
                                   </div>
                                 ) : <div />}
                               </div>
