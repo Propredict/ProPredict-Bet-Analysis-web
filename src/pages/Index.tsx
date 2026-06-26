@@ -128,39 +128,53 @@ const Index = () => {
         </div>
         </div>
 
-        {/* Telegram banner — full-width, outside hero so it’s never clipped */}
+        {/* Telegram banner — 3D glossy bubble, high-impact CTA */}
         <a
           href="https://t.me/propredictxx"
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/40 transition-all hover:scale-[1.02] active:scale-[0.99] ring-1 ring-white/20"
+          className="group relative block w-full overflow-hidden rounded-3xl border-b-4 border-[#006699] bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/50 transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(34,158,217,0.55)] active:translate-y-0.5 active:border-b-2 active:shadow-lg"
           aria-label="FREE PREMIUM TIPS — Join us on Telegram"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1A8BCA] via-[#229ED9] to-[#2AABEE]" />
-          <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10 blur-3xl group-hover:bg-white/20 transition-all" />
-          <div className="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-[#1A8BCA]/50 blur-3xl group-hover:bg-[#1A8BCA]/70 transition-all" />
-          <div className="relative flex items-center justify-between px-5 sm:px-8 py-5 sm:py-6">
+          {/* base gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2AABEE] via-[#229ED9] to-[#0088CC]" />
+          {/* glossy top highlight */}
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 via-white/10 to-transparent" />
+          {/* specular shine streak */}
+          <div className="absolute -top-24 -left-10 w-40 h-64 rotate-12 bg-gradient-to-b from-white/20 via-white/5 to-transparent blur-2xl group-hover:translate-x-20 transition-transform duration-700" />
+          {/* floating bubbles */}
+          <div className="absolute top-3 right-10 w-3 h-3 rounded-full bg-white/40 blur-[1px] animate-pulse" />
+          <div className="absolute bottom-4 right-24 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
+          <div className="absolute top-5 left-1/2 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
+
+          <div className="relative flex items-center justify-between px-4 sm:px-8 py-5 sm:py-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-lg shadow-black/10 shrink-0 group-hover:scale-110 transition-transform">
-                <svg viewBox="0 0 32 32" className="w-9 h-9 sm:w-11 sm:h-11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              {/* 3D Telegram logo bubble */}
+              <div className="relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.25),inset_0_-4px_0_0_rgba(0,0,0,0.08)] shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <svg viewBox="0 0 32 32" className="w-10 h-10 sm:w-12 sm:h-12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <circle cx="16" cy="16" r="16" fill="#229ED9" />
-                  <path d="M8.4 16.5c3.8-1.7 6.3-2.8 7.6-3.3 3.6-1.5 4.3-1.8 4.8-1.8.1 0 .3 0 .4.1.1.1.1.2.1.3 0 .1 0 .2-.1.4-.2.6-1.6 5.5-2.3 7.3-.3.7-.5 1-.7 1.1-.3.1-.5-.1-.7-.2-.6-.4-2.3-1.5-3.2-2.1-.1-.1-.3-.1-.4.1-.1.1-.2.3-.2.5-.2.5-.4 1.4-.6 1.8-.1.3-.2.4-.4.5-.1 0-.3 0-.5-.1-.7-.3-2.5-1.1-3.9-1.8-1.1-.5-2.2-1.1-3-1.5-.5-.2-.8-.4-.9-.5-.1-.1-.1-.2 0-.3.1-.1.2-.2.4-.2.1 0 .3-.1.5-.1 2.1-.3 4.5-.7 6-1 .1 0 .2 0 .2.1 0 .1 0 .2-.1.3z" fill="white" />
+                  <path d="M7.8 15.8c4.5-2 7.5-3.3 9.1-3.9 4.2-1.8 5.1-2.1 5.7-2.1.1 0 .4 0 .5.1.1.1.2.3.1.5 0 .1-.1.3-.2.5-.3.7-1.9 6.5-2.8 8.7-.4.8-.6 1.2-.9 1.3-.4.1-.6-.1-.8-.3-.7-.5-2.8-1.8-3.8-2.5-.1-.1-.4-.1-.5.1-.1.1-.2.4-.3.6-.2.6-.5 1.6-.7 2.1-.1.3-.2.5-.5.6-.1 0-.4 0-.6-.1-.8-.4-3-1.3-4.7-2.1-1.3-.6-2.7-1.3-3.6-1.8-.6-.3-.9-.5-1.1-.6-.1-.1-.1-.3 0-.4.1-.1.2-.2.5-.3.2 0 .4-.1.6-.1 2.5-.4 5.3-.8 7.1-1.2.2 0 .3 0 .3.1 0 .1 0 .3-.1.4z" fill="white" />
                 </svg>
+                {/* small sparkle on logo */}
+                <span className="absolute -top-1 -right-1 text-lg">✨</span>
               </div>
               <div className="text-left">
-                <p className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight leading-none drop-shadow-sm">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
                   FREE PREMIUM TIPS
                 </p>
-                <p className="mt-1 text-sm sm:text-base text-white/90 font-semibold">
+                <p className="mt-1.5 text-sm sm:text-base text-white/95 font-semibold">
                   Join us on Telegram — exclusive tips & bonuses
                 </p>
               </div>
             </div>
-            <div className="hidden sm:flex flex-col items-center gap-0.5 text-white shrink-0">
-              <span className="text-lg font-black uppercase tracking-wide">Join Now</span>
-              <span className="text-3xl font-bold group-hover:translate-x-1 transition-transform">→</span>
+            {/* 3D Join Now button */}
+            <div className="hidden sm:flex flex-col items-center shrink-0">
+              <div className="relative px-5 py-3 rounded-xl bg-white text-[#0088CC] font-black uppercase tracking-wide shadow-[0_6px_0_0_#006699,0_10px_20px_-5px_rgba(0,0,0,0.25)] group-hover:shadow-[0_4px_0_0_#006699,0_8px_16px_-4px_rgba(0,0,0,0.25)] group-hover:-translate-y-0.5 transition-all duration-200">
+                Join Now
+                <span className="absolute -right-3 -top-3 text-xl">🚀</span>
+              </div>
             </div>
-            <span className="sm:hidden text-2xl font-bold group-hover:translate-x-1 transition-transform">→</span>
+            <span className="sm:hidden text-3xl font-black drop-shadow-md group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </a>
 
