@@ -880,11 +880,15 @@ export default function WorldCup2026() {
                   : mockPred.time;
                 return (
                   <Card key={i} className="bg-card border-border p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                        {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
-                      </span>
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary">
+                    <div className="mb-3 text-center">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="md" />}
+                        <span className="text-lg md:text-xl font-black uppercase tracking-wide text-foreground">{pred.home}</span>
+                        <span className="text-xs md:text-sm font-bold text-muted-foreground">vs</span>
+                        {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="md" />}
+                        <span className="text-lg md:text-xl font-black uppercase tracking-wide text-foreground">{pred.away}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary mt-2">
                         Unlocks {unlockLabel}
                       </Badge>
                     </div>
@@ -903,28 +907,34 @@ export default function WorldCup2026() {
               }
               return (
                 <Card key={i} className="bg-card border-border p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="sm" />} {pred.home} vs {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="sm" />} {pred.away}
-                    </span>
-                    {showBasic ? (
-                      appCanSeeAdvanced ? (
-                        <div className="flex items-center gap-1">
-                          {isReal && (
-                            <Badge variant="outline" className="text-[9px] border-primary/60 text-primary bg-primary/10">
-                              <Zap className="h-2.5 w-2.5 mr-0.5" />Live AI
+                  <div className="mb-3 text-center">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      {TEAMS[pred.home] && <TeamFlag code={TEAMS[pred.home].code} size="md" />}
+                      <span className="text-lg md:text-xl font-black uppercase tracking-wide text-foreground">{pred.home}</span>
+                      <span className="text-xs md:text-sm font-bold text-muted-foreground">vs</span>
+                      {TEAMS[pred.away] && <TeamFlag code={TEAMS[pred.away].code} size="md" />}
+                      <span className="text-lg md:text-xl font-black uppercase tracking-wide text-foreground">{pred.away}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 mt-2">
+                      {showBasic ? (
+                        appCanSeeAdvanced ? (
+                          <>
+                            {isReal && (
+                              <Badge variant="outline" className="text-[9px] border-primary/60 text-primary bg-primary/10">
+                                <Zap className="h-2.5 w-2.5 mr-0.5" />Live AI
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
+                              {displayConfidence(pred.confidence)}% conf
                             </Badge>
-                          )}
-                          <Badge variant="outline" className="text-[9px] flex items-center gap-0.5 border-emerald-500/50 text-emerald-400">
-                            {displayConfidence(pred.confidence)}% conf
-                          </Badge>
-                        </div>
+                          </>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] text-primary border-primary/30">Basic</Badge>
+                        )
                       ) : (
-                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30">Basic</Badge>
-                      )
-                    ) : (
-                      <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
-                    )}
+                        <Badge variant="outline" className="text-[9px] flex items-center gap-0.5"><Lock className="h-3 w-3" /> Locked</Badge>
+                      )}
+                    </div>
                   </div>
 
                   {/* === BASIC: Win probability === */}
