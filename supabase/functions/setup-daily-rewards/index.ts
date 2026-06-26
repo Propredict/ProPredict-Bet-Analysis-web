@@ -303,17 +303,18 @@ serve(async (req) => {
       await client.queryArray("begin");
     }
 
+    const SR_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     await client.queryArray(`
       SELECT cron.schedule(
         'daily-reward-push-reminder',
         '0 18 * * *',
-        $$
+        $cron$
         SELECT net.http_post(
           url := 'https://tczettddxmlcmhdhgebw.supabase.co/functions/v1/send-daily-reward-push',
-          headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjemV0dGRkeG1sY21oZGhnZWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMjI3MjEsImV4cCI6MjA4NDU5ODcyMX0.aMULmU_Lb7E6qFSHSK05JKJRlKXAz5_aXMUYjf_yXgA"}'::jsonb,
+          headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ${SR_KEY}'),
           body := '{}'::jsonb
         ) AS request_id;
-        $$
+        $cron$
       )
     `);
 
