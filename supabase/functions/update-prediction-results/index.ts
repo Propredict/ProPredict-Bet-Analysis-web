@@ -239,6 +239,9 @@ Deno.serve(async (req) => {
             const isWorldCup = /world\s*cup/.test(leagueStr);
             if (newStatus === "won" && isWorldCup) {
               await supabase.functions.invoke("send-win-push", {
+                headers: {
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""}`,
+                },
                 body: {
                   type: "wc_pick",
                   record: {
