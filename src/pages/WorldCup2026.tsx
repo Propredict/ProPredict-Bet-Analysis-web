@@ -240,6 +240,7 @@ export default function WorldCup2026() {
   }, [maybeShowInterstitial]);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [expandedFinished, setExpandedFinished] = useState<Set<string>>(new Set());
+  const [expandedAI, setExpandedAI] = useState<Set<string>>(new Set());
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
