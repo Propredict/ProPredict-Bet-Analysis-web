@@ -71,8 +71,8 @@ function getWinBody(type: string, record: Record<string, unknown>): string {
     const score = record.score ?? "";
     const matchLabel = home && away ? `${home} vs ${away}` : "Our World Cup pick";
     return score
-      ? `${matchLabel} ended ${score} — our AI pick CASHED. Tap to see today's World Cup picks.`
-      : `${matchLabel} — our World Cup AI pick CASHED. Tap to see today's picks.`;
+      ? `${matchLabel} ended ${score} — our AI pick WON. Tap to see today's World Cup picks.`
+      : `${matchLabel} — our World Cup AI pick WON. Tap to see today's picks.`;
   }
 
   if (type === "tip") {
@@ -143,7 +143,7 @@ serve(async (req) => {
     /* ── Build nav_path based on category first, then tier ── */
     let navPath: string;
     if (type === "wc_pick") {
-      navPath = `/world-cup-2026?highlight=${record.id}&result=won`;
+      navPath = `/world-cup-2026?tab=predictions&highlight=${record.id}&result=won`;
     } else if (category && categoryRouteMap[category]) {
       navPath = `${categoryRouteMap[category]}?highlight=${record.id}&result=won`;
     } else {
@@ -155,6 +155,59 @@ serve(async (req) => {
       };
       const route = tierRouteMap[contentTier] ?? tierRouteMap.daily;
       navPath = `/${route}?highlight=${record.id}&result=won`;
+    }
+
+    if (type === "wc_pick") {
+      // WC prediction-ready pushes use the OneSignal wc_alerts tag filter.
+      // WIN pushes must use the same targeting, otherwise users with a valid
+      // OneSignal subscription but stale/missing DB token row can miss wins.
+      const payload = {
+        app_id: ONESIGNAL_APP_ID,
+        filters: [
+          { field: "tag", key: "wc_alerts", relation: "!=", value: "false" },
+        ],
+        headings: { en: "🏆 World Cup Pick WON!" },
+        contents: { en: winBody },
+        big_picture: bigPicture,
+        android_channel_id: "d6331715-138b-4ef2-b281-543bf423c381",
+        android_sound: "default",
+        priority: 10,
+        ttl: 6 * 3600,
+        collapse_id: `win_wc_pick_${record.id}`,
+        url: `https://propredict.me${navPath}`,
+        data: {
+          type: "wc_pick_won",
+          id: record.id,
+          tier: contentTier,
+          category,
+          result: record.result,
+          nav_path: navPath,
+        },
+      };
+
+      const response = await fetch("https://onesignal.com/api/v1/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          Authorization: `Basic ${ONESIGNAL_API_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.error("[send-win-push] WC OneSignal error:", JSON.stringify(result));
+        return new Response(JSON.stringify({ success: false, error: result }), {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log("[send-win-push] WC win push sent via tag filter:", JSON.stringify(result));
+      return new Response(JSON.stringify({ success: true, type: "wc_pick", onesignal: result }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     /* ── Fetch tokens ── */

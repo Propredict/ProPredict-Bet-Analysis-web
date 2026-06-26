@@ -88,6 +88,23 @@ serve(async (req: Request) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
+    // Reliability guard: every WC cron pass also checks finished predictions.
+    // This is what flips WC picks from pending → won/lost and triggers WIN push.
+    // Fire before generation so missed FT updates are recovered automatically.
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/update-prediction-results`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SERVICE_KEY,
+          Authorization: `Bearer ${SERVICE_KEY}`,
+        },
+        body: JSON.stringify({ source: "generate-due-predictions-ft-guard" }),
+      });
+    } catch (e) {
+      console.warn("[due-preds] FT update guard failed:", e);
+    }
+
     const now = new Date();
     const windowEnd = new Date(now.getTime() + DUE_WINDOW_MS);
     const windowStart = now;

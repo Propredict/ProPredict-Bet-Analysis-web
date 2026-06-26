@@ -59,7 +59,8 @@ Deno.serve(async (req) => {
       .not("match_date", "is", null)
       .gte("match_date", formatDate(threeDaysAgo))
       .lte("match_date", formatDate(today))
-      .limit(50); // Process max 50 at a time to avoid timeout
+      .order("match_date", { ascending: false })
+      .limit(200); // Process enough rows so WC finished picks are not hidden behind old skipped rows
 
     if (fetchError) {
       console.error("Error fetching predictions:", fetchError);
