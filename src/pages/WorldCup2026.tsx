@@ -907,6 +907,16 @@ export default function WorldCup2026() {
                   </Card>
                 );
               }
+              const aiKey = `ai-${i}`;
+              const isAIExpanded = expandedAI.has(aiKey);
+              const toggleAI = () => {
+                setExpandedAI((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(aiKey)) next.delete(aiKey);
+                  else next.add(aiKey);
+                  return next;
+                });
+              };
               return (
                 <Card key={i} className="bg-card border-border p-3">
                   <div className="mb-3 text-center">
