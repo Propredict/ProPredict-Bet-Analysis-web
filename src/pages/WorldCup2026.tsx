@@ -779,7 +779,8 @@ export default function WorldCup2026() {
               <Brain className="h-4 w-4 text-primary" /> AI Match Predictions
             </h2>
             <p className="text-[10px] text-muted-foreground mb-2">
-              Round 1 · Group Stage{" "}
+              Round 3 · Group Stage{" "}
+
               {hasRealAI ? (
                 <span className="text-primary font-semibold">· Live AI active</span>
               ) : (
