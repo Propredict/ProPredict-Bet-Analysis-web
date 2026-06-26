@@ -153,6 +153,36 @@ serve(async (req) => {
       }
       // Force-disable cooldown bypass for untrusted callers
       bypass_cooldown = false;
+
+      // Verify the record exists in the DB with status='published' and
+      // rebuild it from DB values so an attacker cannot inject content.
+      const recordId = record?.id;
+      if (!recordId) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const _supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const tableName = type === "tip" ? "tips" : "tickets";
+      const { data: dbRecord, error: dbErr } = await _supabaseAuth
+        .from(tableName)
+        .select("*")
+        .eq("id", recordId)
+        .eq("status", "published")
+        .maybeSingle();
+      if (dbErr || !dbRecord) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      // Replace user-supplied record with trusted DB values
+      record = dbRecord;
+    }
     }
 
     const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
