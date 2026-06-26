@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Send, X, Check } from "lucide-react";
-import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const STORAGE_KEY = "propredict:telegram_popup_shown_date";
@@ -52,10 +51,8 @@ function markShownToday() {
 
 export function TelegramPromoPopup() {
   const [open, setOpen] = useState(false);
-  const isAndroid = getIsAndroidApp();
 
   useEffect(() => {
-    if (isAndroid) return; // web only
     if (wasShownToday()) return;
 
     let timer: ReturnType<typeof setTimeout>;
@@ -74,7 +71,7 @@ export function TelegramPromoPopup() {
     // Show ~45s after page load, after the earlier popups have had their moment.
     schedule(45_000);
     return () => clearTimeout(timer);
-  }, [isAndroid]);
+  }, []);
 
   if (!open) return null;
 
@@ -128,8 +125,14 @@ export function TelegramPromoPopup() {
             href={TELEGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => {
+            onClick={(e) => {
               logTelegramClick();
+              // Android WebView fallback — target=_blank ne otvara t.me
+              const w = window as unknown as { Android?: { openExternal?: (url: string) => void } };
+              if (w.Android?.openExternal) {
+                e.preventDefault();
+                w.Android.openExternal(TELEGRAM_URL);
+              }
               setOpen(false);
             }}
             className="mt-6 flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-white text-[#0c5d9e] font-extrabold text-base hover:bg-white/95 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.99]"
