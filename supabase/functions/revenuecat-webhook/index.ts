@@ -63,16 +63,23 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const webhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 
-    // Verify authorization header if webhook secret is configured
-    if (webhookSecret) {
-      const authHeader = req.headers.get("authorization");
-      if (!authHeader || authHeader !== `Bearer ${webhookSecret}`) {
-        console.error("RevenueCat webhook: Invalid authorization header");
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // MANDATORY authorization: refuse to process if the webhook secret is
+    // not configured. Without this, anyone could POST a forged event and
+    // grant arbitrary users premium subscriptions.
+    if (!webhookSecret) {
+      console.error("RevenueCat webhook: REVENUECAT_WEBHOOK_SECRET is not configured");
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || authHeader !== `Bearer ${webhookSecret}`) {
+      console.error("RevenueCat webhook: Invalid authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const body = await req.json();
