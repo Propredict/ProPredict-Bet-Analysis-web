@@ -134,6 +134,14 @@ const Index = () => {
           href="https://t.me/propredictxx"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => {
+            // Android WebView ignora target="_blank" — koristimo bridge da otvori spolja
+            const w = window as unknown as { Android?: { openExternal?: (url: string) => void } };
+            if (w.Android?.openExternal) {
+              e.preventDefault();
+              w.Android.openExternal("https://t.me/propredictxx");
+            }
+          }}
           className="group relative block w-full overflow-hidden rounded-3xl border-b-4 border-[#006699] bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/50 transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(34,158,217,0.55)] active:translate-y-0.5 active:border-b-2 active:shadow-lg"
           aria-label="FREE PREMIUM TIPS — Join us on Telegram"
         >
