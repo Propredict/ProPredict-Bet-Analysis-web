@@ -133,25 +133,34 @@ const Index = () => {
           href="https://t.me/propredictxx"
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] hover:bg-[#1c8bc1] text-white shadow-2xl shadow-[#229ED9]/40 transition-all hover:scale-[1.02] active:scale-[0.99] ring-1 ring-white/20"
-          aria-label="Free Tips Bonuses — Join us on Telegram"
+          className="group relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/40 transition-all hover:scale-[1.02] active:scale-[0.99] ring-1 ring-white/20"
+          aria-label="FREE PREMIUM TIPS — Join us on Telegram"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#229ED9] via-[#2AABEE] to-[#229ED9] opacity-95" />
-          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all" />
-          <div className="absolute -left-10 -bottom-10 w-32 h-32 rounded-full bg-[#1c8bc1]/40 blur-2xl group-hover:bg-[#1c8bc1]/60 transition-all" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1A8BCA] via-[#229ED9] to-[#2AABEE]" />
+          <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10 blur-3xl group-hover:bg-white/20 transition-all" />
+          <div className="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-[#1A8BCA]/50 blur-3xl group-hover:bg-[#1A8BCA]/70 transition-all" />
           <div className="relative flex items-center justify-between px-5 sm:px-8 py-5 sm:py-6">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-sm shrink-0 shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
-                <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8" fill="currentColor" aria-hidden="true">
-                  <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+            <div className="flex items-center gap-4 sm:gap-5">
+              <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-lg shadow-black/10 shrink-0 group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 32 32" className="w-9 h-9 sm:w-11 sm:h-11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="16" cy="16" r="16" fill="#229ED9" />
+                  <path d="M8.4 16.5c3.8-1.7 6.3-2.8 7.6-3.3 3.6-1.5 4.3-1.8 4.8-1.8.1 0 .3 0 .4.1.1.1.1.2.1.3 0 .1 0 .2-.1.4-.2.6-1.6 5.5-2.3 7.3-.3.7-.5 1-.7 1.1-.3.1-.5-.1-.7-.2-.6-.4-2.3-1.5-3.2-2.1-.1-.1-.3-.1-.4.1-.1.1-.2.3-.2.5-.2.5-.4 1.4-.6 1.8-.1.3-.2.4-.4.5-.1 0-.3 0-.5-.1-.7-.3-2.5-1.1-3.9-1.8-1.1-.5-2.2-1.1-3-1.5-.5-.2-.8-.4-.9-.5-.1-.1-.1-.2 0-.3.1-.1.2-.2.4-.2.1 0 .3-.1.5-.1 2.1-.3 4.5-.7 6-1 .1 0 .2 0 .2.1 0 .1 0 .2-.1.3z" fill="white" />
                 </svg>
               </div>
               <div className="text-left">
-                <p className="text-lg sm:text-xl font-extrabold leading-tight drop-shadow-sm">🎁 Free Tips Bonuses</p>
-                <p className="text-sm sm:text-base text-white/90 font-medium">Join us on Telegram — exclusive tips & bonuses</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight leading-none drop-shadow-sm">
+                  FREE PREMIUM TIPS
+                </p>
+                <p className="mt-1 text-sm sm:text-base text-white/90 font-semibold">
+                  Join us on Telegram — exclusive tips & bonuses
+                </p>
               </div>
             </div>
-            <span className="text-2xl sm:text-3xl font-bold group-hover:translate-x-1 transition-transform">→</span>
+            <div className="hidden sm:flex flex-col items-center gap-0.5 text-white shrink-0">
+              <span className="text-lg font-black uppercase tracking-wide">Join Now</span>
+              <span className="text-3xl font-bold group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+            <span className="sm:hidden text-2xl font-bold group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </a>
 
