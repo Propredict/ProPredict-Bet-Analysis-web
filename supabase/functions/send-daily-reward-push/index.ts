@@ -11,6 +11,18 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  // Auth guard: internal callers only (INTERNAL_PUSH_SECRET or service role key)
+  const __authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization") ?? "";
+  const __token = __authHeader.toLowerCase().startsWith("bearer ") ? __authHeader.slice(7).trim() : "";
+  const __internalSecret = (Deno.env.get("INTERNAL_PUSH_SECRET") ?? "").trim();
+  const __serviceKey = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "").trim();
+  const __ok = (__internalSecret && __token === __internalSecret) || (__serviceKey && __token === __serviceKey);
+  if (!__ok) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    });
+  }
 
   const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
   const ONESIGNAL_API_KEY = Deno.env.get("ONESIGNAL_API_KEY");
