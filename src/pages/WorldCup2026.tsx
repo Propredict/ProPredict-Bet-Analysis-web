@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
+import { Trophy, ChevronRight, ChevronDown, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -239,6 +239,7 @@ export default function WorldCup2026() {
     }
   }, [maybeShowInterstitial]);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [expandedFinished, setExpandedFinished] = useState<Set<string>>(new Set());
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
