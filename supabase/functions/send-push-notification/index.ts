@@ -116,7 +116,73 @@ serve(async (req) => {
   }
 
   try {
-    const { type, record, summary, bypass_cooldown } = await req.json();
+    // ── Authentication / anti-spam guard ───────────────────────────────
+    // Two trust levels:
+    //   TRUSTED  → request carries Bearer matching INTERNAL_PUSH_SECRET
+    //              or the project's service role key. Full control
+    //              (arbitrary summary, bypass_cooldown, etc.).
+    //   UNTRUSTED → no/invalid bearer. Only `tip` / `ticket` types are
+    //              allowed, the record MUST exist in the database with
+    //              status='published', and ALL push content is rebuilt
+    //              from database values (never from the request body).
+    //              bypass_cooldown is forced off.
+    const INTERNAL_PUSH_SECRET = (Deno.env.get("INTERNAL_PUSH_SECRET") ?? "").trim();
+    const SERVICE_ROLE_TOKEN = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "").trim();
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const isTrusted =
+      bearer.length > 0 &&
+      ((INTERNAL_PUSH_SECRET && bearer === INTERNAL_PUSH_SECRET) ||
+        (SERVICE_ROLE_TOKEN && bearer === SERVICE_ROLE_TOKEN));
+
+    let { type, record, summary, bypass_cooldown } = await req.json();
+
+    if (!isTrusted) {
+      // Arbitrary-content paths require a trusted caller
+      if (type === "summary") {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (type !== "tip" && type !== "ticket") {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      // Force-disable cooldown bypass for untrusted callers
+      bypass_cooldown = false;
+
+      // Verify the record exists in the DB with status='published' and
+      // rebuild it from DB values so an attacker cannot inject content.
+      const recordId = record?.id;
+      if (!recordId) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const _supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const tableName = type === "tip" ? "tips" : "tickets";
+      const { data: dbRecord, error: dbErr } = await _supabaseAuth
+        .from(tableName)
+        .select("*")
+        .eq("id", recordId)
+        .eq("status", "published")
+        .maybeSingle();
+      if (dbErr || !dbRecord) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      // Replace user-supplied record with trusted DB values
+      record = dbRecord;
+    }
 
     const ONESIGNAL_APP_ID = (Deno.env.get("ONESIGNAL_APP_ID") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
     const ONESIGNAL_API_KEY = (Deno.env.get("ONESIGNAL_API_KEY") ?? "").replace(/^["'\s]+|["'\s]+$/g, "").trim();
