@@ -1099,69 +1099,103 @@ export default function WorldCup2026() {
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
                     return (
-                      <Card key={r.fixture.id} className="bg-card border-border p-3">
-                        <div className="relative mb-3">
-                          <div className="flex items-center justify-center flex-wrap gap-2 md:gap-3">
-                            {tH && <TeamFlag code={tH.code} size="sm" />}
-                            <span className="uppercase font-black text-base md:text-lg text-foreground tracking-tight">{pickH}</span>
-                            <span className="text-[10px] text-muted-foreground font-semibold">vs</span>
-                            {tA && <TeamFlag code={tA.code} size="sm" />}
-                            <span className="uppercase font-black text-base md:text-lg text-foreground tracking-tight">{pickA}</span>
-                          </div>
-                          <div className="absolute right-0 top-0 flex items-center gap-1">
-                            <Badge variant="outline" className="text-[9px] border-foreground/30 text-foreground bg-muted/40 tabular-nums font-bold">
-                              FT {r.fixture.homeScore}–{r.fixture.awayScore}
-                            </Badge>
-                            {r.pick && r.isWin && (
-                              <Badge variant="outline" className="text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
-                                WIN
+                      <Card key={r.fixture.id} className="bg-card border-border overflow-hidden">
+                        {/* Match header: score in the center, teams left/right, no overlap */}
+                        <div className="px-4 pt-5 pb-4 border-b border-border/40">
+                          <div className="flex items-center justify-between gap-2">
+                            {/* Home team */}
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div className="mb-2">
+                                {tH && <TeamFlag code={tH.code} size="md" />}
+                              </div>
+                              <span className="text-[11px] md:text-xs font-bold text-foreground uppercase tracking-wider truncate w-full text-center leading-tight">
+                                {pickH}
+                              </span>
+                            </div>
+
+                            {/* Center score / FT */}
+                            <div className="flex flex-col items-center px-3 shrink-0">
+                              <Badge variant="outline" className="text-[9px] border-border/60 text-muted-foreground bg-muted/40 tabular-nums font-bold mb-1.5">
+                                FT
                               </Badge>
-                            )}
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl font-black text-foreground">{r.fixture.homeScore}</span>
+                                <span className="text-muted-foreground font-bold">-</span>
+                                <span className="text-2xl font-black text-foreground">{r.fixture.awayScore}</span>
+                              </div>
+                            </div>
+
+                            {/* Away team + WIN badge */}
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div className="mb-2">
+                                {tA && <TeamFlag code={tA.code} size="md" />}
+                              </div>
+                              <div className="flex flex-col items-center w-full">
+                                <span className="text-[11px] md:text-xs font-bold text-foreground uppercase tracking-wider truncate w-full text-center leading-tight">
+                                  {pickA}
+                                </span>
+                                {r.pick && r.isWin && (
+                                  <Badge variant="outline" className="mt-1.5 text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                    WIN
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Probabilities */}
+                          <div className="grid grid-cols-3 gap-2 mt-5">
+                            <div className="bg-muted/30 border border-border/40 rounded-xl p-2.5 flex flex-col items-center">
+                              <span className="text-emerald-400 font-extrabold text-sm">{hw}%</span>
+                              <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-tighter">Home</span>
+                            </div>
+                            <div className="bg-muted/30 border border-border/40 rounded-xl p-2.5 flex flex-col items-center">
+                              <span className="text-amber-400 font-extrabold text-sm">{dw}%</span>
+                              <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-tighter">Draw</span>
+                            </div>
+                            <div className="bg-muted/30 border border-border/40 rounded-xl p-2.5 flex flex-col items-center">
+                              <span className="text-sky-400 font-extrabold text-sm">{aw}%</span>
+                              <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-tighter">Away</span>
+                            </div>
                           </div>
                         </div>
 
+                        {/* Market predictions */}
+                        {(overUnder || btts) && (
+                          <div className="grid grid-cols-2 divide-x divide-border/40 p-4 text-center">
+                            {overUnder ? (
+                              <div className="flex flex-col items-center">
+                                <span className="text-foreground font-bold text-sm leading-tight">{overUnder} 2.5</span>
+                                <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Goals</span>
+                              </div>
+                            ) : <div />}
+                            {btts ? (
+                              <div className="flex flex-col items-center">
+                                <span className="text-foreground font-bold text-sm leading-tight">{btts}</span>
+                                <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">BTTS</span>
+                              </div>
+                            ) : <div />}
+                          </div>
+                        )}
+
                         {r.pick ? (
                           <>
-                            <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                              <div className="bg-muted/30 rounded p-1.5">
-                                <p className="text-sm font-bold text-emerald-400">{hw}%</p>
-                                <p className="text-[9px] font-semibold text-foreground">Home</p>
+                            {/* Confidence footer */}
+                            <div className="bg-emerald-500/5 px-4 py-3 flex items-center justify-between border-t border-emerald-500/10">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Algorithm Confidence</span>
                               </div>
-                              <div className="bg-muted/30 rounded p-1.5">
-                                <p className="text-sm font-bold text-amber-400">{dw}%</p>
-                                <p className="text-[9px] font-semibold text-foreground">Draw</p>
-                              </div>
-                              <div className="bg-muted/30 rounded p-1.5">
-                                <p className="text-sm font-bold text-sky-400">{aw}%</p>
-                                <p className="text-[9px] font-semibold text-foreground">Away</p>
-                              </div>
+                              <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">
+                                {displayConfidence(r.pick.confidence) >= 70 ? "High" : displayConfidence(r.pick.confidence) >= 50 ? "Medium" : "Low"}
+                              </span>
                             </div>
-                            {(overUnder || btts) && (
-                              <div className="grid grid-cols-2 gap-3 text-center mb-2">
-                                {overUnder ? (
-                                  <div className="bg-muted/20 rounded-lg p-2.5">
-                                    <p className="text-sm md:text-base font-extrabold text-foreground">{overUnder} 2.5</p>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Goals</p>
-                                  </div>
-                                ) : <div />}
-                                {btts ? (
-                                  <div className="bg-muted/20 rounded-lg p-2.5">
-                                    <p className="text-sm md:text-base font-extrabold text-foreground">{btts}</p>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium">BTTS</p>
-                                  </div>
-                                ) : <div />}
-                              </div>
-                            )}
-                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+
+                            {/* AI Insight */}
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2 m-3">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <Brain className="h-3 w-3 text-primary" />
                                 <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
-                              </div>
-                              <div className="grid grid-cols-1 gap-2 text-[11px]">
-                              <div>
-                                <span className="text-muted-foreground">Confidence</span>
-                                <p className="font-bold text-foreground">{displayConfidence(r.pick.confidence)}%</p>
-                              </div>
                               </div>
                               <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
                                 <span className="font-medium text-foreground">AI Insight:</span>{" "}
@@ -1184,7 +1218,7 @@ export default function WorldCup2026() {
                             </div>
                           </>
                         ) : (
-                          <p className="text-[10px] text-muted-foreground">No AI pick stored for this match.</p>
+                          <p className="text-[10px] text-muted-foreground p-4">No AI pick stored for this match.</p>
                         )}
                       </Card>
                     );
