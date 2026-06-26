@@ -247,7 +247,7 @@ export default function PremiumTickets() {
       </p>
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="mt-4">
-        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599" />
+        <AffiliateBanner1xBet />
       </div>
 
     </div>

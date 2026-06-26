@@ -437,7 +437,7 @@ export default function WorldCup2026() {
 
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="px-3 sm:px-4 pt-3">
-        <AffiliateBanner1xBet href="https://reffpa.com/L?tag=d_5489744m_1599c_&site=5489744&ad=1599" />
+        <AffiliateBanner1xBet />
       </div>
 
       {/* Sticky LIVE NOW ticker — visible across all tabs when WC matches are live */}
