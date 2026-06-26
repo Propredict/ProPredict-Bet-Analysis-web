@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:upsell_shown_session";
 const LAST_SHOWN_KEY = "propredict:upsell_last_shown_date";
@@ -29,16 +30,23 @@ export function FreeUserUpsellModal() {
       if (lastShown === new Date().toDateString()) return;
     } catch {}
 
-    // Delay 2-3 seconds
-    const delay = 2000 + Math.random() * 1000;
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-      try {
-        sessionStorage.setItem(SESSION_KEY, "1");
-        localStorage.setItem(LAST_SHOWN_KEY, new Date().toDateString());
-      } catch {}
-    }, delay);
-
+    // Delay so it doesn't collide with the "Choose Your Picks" popup.
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = (delay: number) => {
+      timer = setTimeout(() => {
+        if (!canShowPopup(45_000)) {
+          schedule(Math.max(5_000, msUntilNextPopup(45_000) + 1_000));
+          return;
+        }
+        setIsOpen(true);
+        markPopupShown();
+        try {
+          sessionStorage.setItem(SESSION_KEY, "1");
+          localStorage.setItem(LAST_SHOWN_KEY, new Date().toDateString());
+        } catch {}
+      }, delay);
+    };
+    schedule(15_000 + Math.random() * 2_000);
     return () => clearTimeout(timer);
   }, [plan, isLoading]);
 
@@ -55,7 +63,9 @@ export function FreeUserUpsellModal() {
     const handleScroll = () => {
       const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
       if (scrollPercent >= 0.3) {
+        if (!canShowPopup(45_000)) return;
         setIsOpen(true);
+        markPopupShown();
         try {
           sessionStorage.setItem(SESSION_KEY, "1");
           localStorage.setItem(LAST_SHOWN_KEY, new Date().toDateString());
