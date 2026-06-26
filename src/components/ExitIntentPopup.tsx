@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Smartphone } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { canShowPopup, markPopupShown } from "@/lib/popupCooldown";
 
 const STORAGE_KEY = "exit-intent-popup-dismissed";
 
@@ -21,8 +22,10 @@ export function ExitIntentPopup() {
 
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 0 && !triggered) {
+        if (!canShowPopup(30_000)) return;
         triggered = true;
         setShow(true);
+        markPopupShown();
       }
     };
 
