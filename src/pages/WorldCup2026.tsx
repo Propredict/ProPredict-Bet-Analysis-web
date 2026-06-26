@@ -1102,11 +1102,11 @@ export default function WorldCup2026() {
                       <Card key={r.fixture.id} className="bg-card border-border p-3">
                         <div className="relative mb-3">
                           <div className="flex items-center justify-center flex-wrap gap-2 md:gap-3">
-                            {tH && <TeamFlag code={tH.code} size="md" />}
-                            <span className="uppercase font-black text-lg md:text-xl text-foreground tracking-tight">{pickH}</span>
-                            <span className="text-xs text-muted-foreground font-semibold">vs</span>
-                            {tA && <TeamFlag code={tA.code} size="md" />}
-                            <span className="uppercase font-black text-lg md:text-xl text-foreground tracking-tight">{pickA}</span>
+                            {tH && <TeamFlag code={tH.code} size="sm" />}
+                            <span className="uppercase font-black text-base md:text-lg text-foreground tracking-tight">{pickH}</span>
+                            <span className="text-[10px] text-muted-foreground font-semibold">vs</span>
+                            {tA && <TeamFlag code={tA.code} size="sm" />}
+                            <span className="uppercase font-black text-base md:text-lg text-foreground tracking-tight">{pickA}</span>
                           </div>
                           <div className="absolute right-0 top-0 flex items-center gap-1">
                             <Badge variant="outline" className="text-[9px] border-foreground/30 text-foreground bg-muted/40 tabular-nums font-bold">
