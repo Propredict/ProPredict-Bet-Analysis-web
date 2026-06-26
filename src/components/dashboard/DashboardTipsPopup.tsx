@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:tips_popup_shown_v7";
 
@@ -30,22 +31,27 @@ export function DashboardTipsPopup() {
 
     // Android: delay to 55s so it appears AFTER Rating popup (~40s) finishes,
     // preventing the "Choose Your Picks" modal from overlapping the rating dialog.
-    const delay = isAndroid ? 55000 : 800;
-    const timer = setTimeout(() => {
-      // Skip if rating popup is currently open (avoid double-modal collision)
-      const ratingOpen = document.querySelector('[data-rating-popup-open="true"]');
-      if (ratingOpen) {
-        // Retry in 20s
-        const retry = setTimeout(() => {
-          setOpen(true);
-          try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
-        }, 20000);
-        return () => clearTimeout(retry);
-      }
-      setOpen(true);
-      try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
-    }, delay);
-
+    // Web: small delay so dashboard renders first.
+    const initialDelay = isAndroid ? 55000 : 1500;
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = (delay: number) => {
+      timer = setTimeout(() => {
+        // Skip if rating popup is currently open (avoid double-modal collision)
+        const ratingOpen = document.querySelector('[data-rating-popup-open="true"]');
+        if (ratingOpen) {
+          schedule(20000);
+          return;
+        }
+        if (!canShowPopup(45_000)) {
+          schedule(Math.max(5_000, msUntilNextPopup(45_000) + 1_000));
+          return;
+        }
+        setOpen(true);
+        markPopupShown();
+        try { sessionStorage.setItem(SESSION_KEY, "1"); } catch { /* ignore */ }
+      }, delay);
+    };
+    schedule(initialDelay);
     return () => clearTimeout(timer);
   }, [isAndroid]);
 
