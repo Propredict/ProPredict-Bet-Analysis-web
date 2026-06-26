@@ -1014,7 +1014,7 @@ export default function WorldCup2026() {
                                   confidence: displayConfidence(safeReal?.confidence ?? pred.confidence),
                                 })
                               : dbText as string;
-                            return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                            return text.length > 500 ? text.slice(0, 500) + "…" : text;
                           })()}
                         </div>
                       </div>
@@ -1174,7 +1174,7 @@ export default function WorldCup2026() {
                                         confidence: displayConfidence(r.pick.confidence),
                                       })
                                     : dbText as string;
-                                  return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                                  return text.length > 500 ? text.slice(0, 500) + "…" : text;
                                 })()}
                               </div>
                             </div>
