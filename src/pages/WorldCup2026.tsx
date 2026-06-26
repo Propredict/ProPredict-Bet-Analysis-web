@@ -1077,13 +1077,13 @@ export default function WorldCup2026() {
               const headerLabel = "Finished — Latest Results";
               return (
               <div className="mt-5 pt-4 border-t border-border/40">
-                <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <Activity className="h-3.5 w-3.5 text-emerald-400" />
+                <div className="flex flex-col items-center mb-2.5">
+                  <h3 className="text-sm md:text-base font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Activity className="h-4 w-4 text-emerald-400" />
                     {headerLabel}
                   </h3>
                   {winCount > 0 && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground mt-1">
                       {winCount} win{winCount === 1 ? "" : "s"}
                     </span>
                   )}
