@@ -452,7 +452,7 @@ export default function WorldCup2026() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-card border-b border-border h-11 px-1 gap-0 overflow-x-auto flex-nowrap">
+        <TabsList className="w-full justify-start rounded-none bg-card border-b border-border h-14 px-1 gap-0 overflow-x-auto flex-nowrap scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {[
             { value: "overview", label: "Overview", icon: Trophy },
             { value: "predictions", label: "AI Picks", icon: Brain },
@@ -463,8 +463,8 @@ export default function WorldCup2026() {
             { value: "top-players", label: "Top Players", icon: Award },
             { value: "stats", label: "Stats", icon: Activity },
           ].map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value} className="text-sm md:text-base font-semibold px-3 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1.5 whitespace-nowrap">
-              <tab.icon className="h-4 w-4" />
+            <TabsTrigger key={tab.value} value={tab.value} className="text-base md:text-lg font-bold px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-2 whitespace-nowrap">
+              <tab.icon className="h-5 w-5" />
               {tab.label}
             </TabsTrigger>
           ))}
