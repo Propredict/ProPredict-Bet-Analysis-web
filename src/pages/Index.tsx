@@ -133,23 +133,25 @@ const Index = () => {
           href="https://t.me/propredictxx"
           target="_blank"
           rel="noopener noreferrer"
-          className="relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] hover:bg-[#1c8bc1] text-white shadow-xl shadow-[#229ED9]/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
-          aria-label="Free Tips all day — Join us on Telegram"
+          className="group relative block w-full overflow-hidden rounded-2xl bg-[#229ED9] hover:bg-[#1c8bc1] text-white shadow-2xl shadow-[#229ED9]/40 transition-all hover:scale-[1.02] active:scale-[0.99] ring-1 ring-white/20"
+          aria-label="Free Tips Bonuses — Join us on Telegram"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#229ED9] via-[#2AABEE] to-[#229ED9] opacity-90" />
-          <div className="relative flex items-center justify-between px-5 sm:px-8 py-4 sm:py-5">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#229ED9] via-[#2AABEE] to-[#229ED9] opacity-95" />
+          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-all" />
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 rounded-full bg-[#1c8bc1]/40 blur-2xl group-hover:bg-[#1c8bc1]/60 transition-all" />
+          <div className="relative flex items-center justify-between px-5 sm:px-8 py-5 sm:py-6">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-sm shrink-0">
-                <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" aria-hidden="true">
+              <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-sm shrink-0 shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8" fill="currentColor" aria-hidden="true">
                   <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="text-base sm:text-lg font-extrabold leading-tight">Free Tips all day</p>
-                <p className="text-sm sm:text-base text-white/90 font-medium">Join us on Telegram</p>
+                <p className="text-lg sm:text-xl font-extrabold leading-tight drop-shadow-sm">🎁 Free Tips Bonuses</p>
+                <p className="text-sm sm:text-base text-white/90 font-medium">Join us on Telegram — exclusive tips & bonuses</p>
               </div>
             </div>
-            <span className="text-2xl sm:text-3xl font-bold">→</span>
+            <span className="text-2xl sm:text-3xl font-bold group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </a>
 
