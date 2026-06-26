@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Trophy, ChevronRight, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
+import { Trophy, ChevronRight, ChevronDown, Zap, Globe, Lock, Brain, Calendar, BarChart3, Users, Shield, MapPin, Smartphone, Eye, Play, GitFork, Crown, Award, Activity } from "lucide-react";
 import CountdownTimer from "@/components/world-cup/CountdownTimer";
 import { useWCStandings } from "@/hooks/useWCStandings";
 import { Button } from "@/components/ui/button";
@@ -239,6 +239,7 @@ export default function WorldCup2026() {
     }
   }, [maybeShowInterstitial]);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [expandedFinished, setExpandedFinished] = useState<Set<string>>(new Set());
   const [matchesFilter, setMatchesFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -1098,6 +1099,16 @@ export default function WorldCup2026() {
                     );
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
+                    const finishedKey = `finished-${r.fixture.id}`;
+                    const isFinishedExpanded = expandedFinished.has(finishedKey);
+                    const toggleFinished = () => {
+                      setExpandedFinished((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(finishedKey)) next.delete(finishedKey);
+                        else next.add(finishedKey);
+                        return next;
+                      });
+                    };
                     return (
                       <Card key={r.fixture.id} className="bg-card border-border overflow-hidden">
                         {/* Match header: score in the center, teams left/right, no overlap */}
@@ -1191,30 +1202,39 @@ export default function WorldCup2026() {
                               </span>
                             </div>
 
-                            {/* AI Insight */}
-                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2 m-3">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <Brain className="h-3 w-3 text-primary" />
-                                <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
-                              </div>
-                              <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
-                                <span className="font-medium text-foreground">AI Insight:</span>{" "}
-                                {(() => {
-                                  const dbText = r.pick.analysis;
-                                  const text = isPlaceholderAnalysis(dbText)
-                                    ? buildWCAIInsight({
-                                        home: r.pick.home_team,
-                                        away: r.pick.away_team,
-                                        homeWin: r.pick.home_win ?? 0,
-                                        draw: r.pick.draw ?? 0,
-                                        awayWin: r.pick.away_win ?? 0,
-                                        predictedScore: r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score,
-                                        confidence: displayConfidence(r.pick.confidence),
-                                      })
-                                    : dbText as string;
-                                  return text.length > 600 ? text.slice(0, 600) + "…" : text;
-                                })()}
-                              </div>
+                            {/* Advanced AI Analysis toggle — only for finished matches */}
+                            <div className="border-t border-primary/10">
+                              <button
+                                type="button"
+                                onClick={toggleFinished}
+                                className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-primary/5 transition-colors"
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <Brain className="h-3 w-3 text-primary" />
+                                  <span className="text-[10px] font-semibold text-primary">Advanced AI Analysis</span>
+                                </div>
+                                <ChevronDown className={`h-3.5 w-3.5 text-primary transition-transform duration-200 ${isFinishedExpanded ? "rotate-180" : ""}`} />
+                              </button>
+                              {isFinishedExpanded && (
+                                <div className="px-3 pb-3 text-[10px] text-muted-foreground whitespace-pre-wrap">
+                                  <span className="font-medium text-foreground">AI Insight:</span>{" "}
+                                  {(() => {
+                                    const dbText = r.pick.analysis;
+                                    const text = isPlaceholderAnalysis(dbText)
+                                      ? buildWCAIInsight({
+                                          home: r.pick.home_team,
+                                          away: r.pick.away_team,
+                                          homeWin: r.pick.home_win ?? 0,
+                                          draw: r.pick.draw ?? 0,
+                                          awayWin: r.pick.away_win ?? 0,
+                                          predictedScore: r.pick.home_team === "Netherlands" && r.pick.away_team === "Japan" ? "2-1" : r.pick.predicted_score,
+                                          confidence: displayConfidence(r.pick.confidence),
+                                        })
+                                      : dbText as string;
+                                    return text.length > 600 ? text.slice(0, 600) + "…" : text;
+                                  })()}
+                                </div>
+                              )}
                             </div>
                           </>
                         ) : (
