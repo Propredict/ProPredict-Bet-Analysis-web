@@ -999,7 +999,7 @@ export default function WorldCup2026() {
                             <p className="font-bold text-foreground">{displayConfidence(pred.confidence)}%</p>
                           </div>
                         </div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
                           <span className="font-medium text-foreground">AI Insight:</span>{" "}
                           {(() => {
                             const dbText = safeReal?.analysis;
@@ -1014,7 +1014,7 @@ export default function WorldCup2026() {
                                   confidence: displayConfidence(safeReal?.confidence ?? pred.confidence),
                                 })
                               : dbText as string;
-                            return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                            return text.length > 600 ? text.slice(0, 600) + "…" : text;
                           })()}
                         </div>
                       </div>
@@ -1159,7 +1159,7 @@ export default function WorldCup2026() {
                                 <p className="font-bold text-foreground">{displayConfidence(r.pick.confidence)}%</p>
                               </div>
                               </div>
-                              <div className="text-[10px] text-muted-foreground">
+                              <div className="text-[10px] text-muted-foreground whitespace-pre-wrap">
                                 <span className="font-medium text-foreground">AI Insight:</span>{" "}
                                 {(() => {
                                   const dbText = r.pick.analysis;
@@ -1174,7 +1174,7 @@ export default function WorldCup2026() {
                                         confidence: displayConfidence(r.pick.confidence),
                                       })
                                     : dbText as string;
-                                  return text.length > 220 ? text.slice(0, 220) + "…" : text;
+                                  return text.length > 600 ? text.slice(0, 600) + "…" : text;
                                 })()}
                               </div>
                             </div>
