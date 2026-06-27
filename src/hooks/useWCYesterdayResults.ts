@@ -42,6 +42,7 @@ function getStoredMarketPick(
   prediction?: string | null,
   analysis?: string | null,
   predictedScore?: string | null,
+  probs?: { home?: number | null; draw?: number | null; away?: number | null } | null,
 ) {
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
@@ -73,6 +74,22 @@ function getStoredMarketPick(
       if (!bttsResolved) {
         bttsResolved = ph >= 1 && pa >= 1 ? "yes" : "no";
       }
+    }
+  }
+  // Coherence pass — mirror the rule used in the UI card so the WIN check
+  // grades the exact line shown to the user.
+  if (bttsResolved === "no") {
+    goalsResolved = { dir: "under", line: 2.5 };
+  } else if (bttsResolved === "yes") {
+    const hp = Math.round(Number(probs?.home ?? 0));
+    const dp = Math.round(Number(probs?.draw ?? 0));
+    const ap = Math.round(Number(probs?.away ?? 0));
+    const sideMax = Math.max(hp, ap);
+    const drawIsTop = dp >= hp && dp >= ap;
+    if (drawIsTop || dp >= 40) {
+      goalsResolved = { dir: "under", line: 2.5 };
+    } else if (sideMax >= 50) {
+      goalsResolved = { dir: "over", line: 2.5 };
     }
   }
   return {
@@ -276,7 +293,11 @@ export function useWCYesterdayResults() {
             pickedSide = side(hw, p.draw, aw);
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
-            const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
+            const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score, {
+              home: hw,
+              draw: p.draw,
+              away: aw,
+            });
             // Evaluation rule: WIN only when at least one displayed market
             // hits — Over/Under OR BTTS. Home/Away/Draw and exact score are
             // ignored for the Finished WIN badge.
