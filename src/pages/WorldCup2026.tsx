@@ -91,7 +91,12 @@ function displayConfidence(c?: number | null): number {
   return Math.max(WC_CONF_DISPLAY_FLOOR, Math.min(99, n));
 }
 
-function getFrozenDisplayMarkets(prediction?: string | null, analysis?: string | null, predictedScore?: string | null) {
+function getFrozenDisplayMarkets(
+  prediction?: string | null,
+  analysis?: string | null,
+  predictedScore?: string | null,
+  probs?: { home?: number | null; draw?: number | null; away?: number | null } | null,
+) {
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
   const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
@@ -109,6 +114,26 @@ function getFrozenDisplayMarkets(prediction?: string | null, analysis?: string |
       const a = parseInt(m[2], 10);
       if (overUnder === null) overUnder = h + a >= 3 ? "Over" : "Under";
       if (btts === null) btts = h >= 1 && a >= 1 ? "Yes" : "No";
+    }
+  }
+
+  // Coherence pass: keep Over/Under consistent with BTTS and 1X2 probs so
+  // we never show contradictions like "Under 2.5 + BTTS Yes" while a side
+  // is a clear favorite (a favorite + BTTS Yes implies ≥2-1, i.e. Over 2.5).
+  if (btts === "No") {
+    overUnder = "Under";
+  } else if (btts === "Yes") {
+    const hp = Math.round(Number(probs?.home ?? 0));
+    const dp = Math.round(Number(probs?.draw ?? 0));
+    const ap = Math.round(Number(probs?.away ?? 0));
+    const sideMax = Math.max(hp, ap);
+    const drawIsTop = dp >= hp && dp >= ap;
+    if (drawIsTop || dp >= 40) {
+      // 1-1 is the natural BTTS Yes outcome when Draw leads.
+      overUnder = "Under";
+    } else if (sideMax >= 50) {
+      // Favorite + both score → minimum 2-1.
+      overUnder = "Over";
     }
   }
 
