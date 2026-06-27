@@ -1096,6 +1096,8 @@ export default function WorldCup2026() {
                   const away = (r.fixture.awayTeam || "").toLowerCase();
                   if (/england/.test(home) && /croatia/.test(away)) return false;
                   if (/croatia/.test(home) && /england/.test(away)) return false;
+                  if (/england/.test(home) && /panama/.test(away)) return false;
+                  if (/panama/.test(home) && /england/.test(away)) return false;
                   return r.isWin; // wins only
                 })
                 .sort((a, b) => (b.fixture.startTime ?? "").localeCompare(a.fixture.startTime ?? ""))
