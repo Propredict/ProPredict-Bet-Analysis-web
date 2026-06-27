@@ -1034,6 +1034,11 @@ export default function WorldCup2026() {
                       safeReal?.prediction,
                       safeReal?.analysis,
                       safeReal?.predicted_score || displayedScore,
+                      {
+                        home: safeReal?.home_win,
+                        draw: safeReal?.draw,
+                        away: safeReal?.away_win,
+                      },
                     );
                     return (
                       <div className="grid grid-cols-2 gap-3 text-center mb-2">
@@ -1170,6 +1175,7 @@ export default function WorldCup2026() {
                       r.pick?.prediction,
                       r.pick?.analysis,
                       r.pick?.predicted_score,
+                      { home: hw, draw: dw, away: aw },
                     );
                     const tH = TEAMS[pickH];
                     const tA = TEAMS[pickA];
