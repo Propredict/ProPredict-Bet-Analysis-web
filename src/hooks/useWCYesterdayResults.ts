@@ -80,17 +80,6 @@ function getStoredMarketPick(
   // grades the exact line shown to the user.
   if (bttsResolved === "no") {
     goalsResolved = { dir: "under", line: 2.5 };
-  } else if (bttsResolved === "yes") {
-    const hp = Math.round(Number(probs?.home ?? 0));
-    const dp = Math.round(Number(probs?.draw ?? 0));
-    const ap = Math.round(Number(probs?.away ?? 0));
-    const sideMax = Math.max(hp, ap);
-    const drawIsTop = dp >= hp && dp >= ap;
-    if (drawIsTop || dp >= 40) {
-      goalsResolved = { dir: "under", line: 2.5 };
-    } else if (sideMax >= 50) {
-      goalsResolved = { dir: "over", line: 2.5 };
-    }
   }
   return {
     goals: goalsResolved,
