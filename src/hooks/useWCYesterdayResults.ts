@@ -45,15 +45,20 @@ function getStoredMarketPick(
 ) {
   const pred = (prediction || "").toLowerCase();
   const text = `${pred} ${analysis || ""}`.toLowerCase();
-  const goals = pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) || text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
-  const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
+  // IMPORTANT: the Finished card hardcodes the goals line to 2.5 in the UI.
+  // So we MUST evaluate WIN against the 2.5 line only, regardless of which
+  // line is mentioned in the stored prediction/analysis text. Otherwise a
+  // stored "Over 1.5" pick would pass a 0-2 result while the card displays
+  // "Over 2.5" (which loses).
+  const goalsDirMatch = pred.match(/\b(over|under)\b/) || text.match(/\b(over|under)\b/);
+  const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|over\/btts favored|btts favored|\bgg\b/.test(text);
   const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
   // Track whether each market came from explicit text or was derived from
   // predicted_score. Finished results use the same two user-visible markets
   // as the card: Over/Under and BTTS. 1X2 and exact score never decide WIN.
-  const goalsExplicit = !!goals;
-  let goalsResolved = goals
-    ? { dir: goals[1] as "over" | "under", line: parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) }
+  const goalsExplicit = !!goalsDirMatch;
+  let goalsResolved: { dir: "over" | "under"; line: number } | null = goalsDirMatch
+    ? { dir: goalsDirMatch[1].toLowerCase() as "over" | "under", line: 2.5 }
     : null;
   const bttsExplicit = bttsYes || bttsNo;
   let bttsResolved: "yes" | "no" | null = bttsYes ? "yes" : bttsNo ? "no" : null;
