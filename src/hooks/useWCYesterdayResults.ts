@@ -293,7 +293,11 @@ export function useWCYesterdayResults() {
             pickedSide = side(hw, p.draw, aw);
             const totalGoals = f.homeScore! + f.awayScore!;
             const bttsActual = f.homeScore! >= 1 && f.awayScore! >= 1;
-            const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score);
+            const storedMarket = getStoredMarketPick(p.prediction, p.analysis, p.predicted_score, {
+              home: hw,
+              draw: p.draw,
+              away: aw,
+            });
             // Evaluation rule: WIN only when at least one displayed market
             // hits — Over/Under OR BTTS. Home/Away/Draw and exact score are
             // ignored for the Finished WIN badge.
