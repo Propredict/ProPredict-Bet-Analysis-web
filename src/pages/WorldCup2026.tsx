@@ -803,6 +803,17 @@ export default function WorldCup2026() {
             )}
 
             {(() => {
+              // Build a quick lookup of live/finished status by team-pair so
+              // we never drop a match that is still actually in play (extra
+              // time, long stoppage, kickoff delay). The 290min hard cutoff
+              // only applies when the API confirms the match is FINISHED.
+              const statusByKey = new Map<string, string>();
+              for (const f of (todayFixturesData?.fixtures ?? [])) {
+                const h = norm(f.homeTeam);
+                const a = norm(f.awayTeam);
+                statusByKey.set(`${h}|${a}`, f.status);
+                statusByKey.set(`${a}|${h}`, f.status);
+              }
               const todayPreds = AI_PREDICTIONS.filter((p) => {
                 // Show today's matches + late-night matches that kick off before
                 // 8 AM tomorrow (WC often has 3-4 AM US-timezone games). Future
@@ -813,13 +824,17 @@ export default function WorldCup2026() {
                 // Window: from start of today until 8 AM the day AFTER tomorrow's date
                 // (i.e. ~32h from start of today) — covers all overnight WC matches.
                 const windowEnd = startOfToday + 32 * 60 * 60 * 1000;
-              // Keep finished matches in the main AI Picks list for 3h after
-              // the expected FT (kickoff + 110min + 3h), so users can still
-              // see the original prediction before it moves to Finished.
-              if (p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
-              // Hide matches where the prediction missed both BTTS and Over/Under.
               const nh = norm(p.home);
               const na = norm(p.away);
+              const liveStatus = statusByKey.get(`${nh}|${na}`);
+              const isStillPlaying = liveStatus === "live" || liveStatus === "halftime";
+              // Keep finished matches in the main AI Picks list for 3h after
+              // the expected FT (kickoff + 110min + 3h). But NEVER drop a
+              // match that is still in play — extra time / stoppage / delay
+              // can push past the 290min mark while the game is ongoing.
+              if (!isStillPlaying && p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
+              // Hide matches where the prediction missed both BTTS and Over/Under
+              // (only applies to truly finished matches).
               if (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`)) return false;
                 return p.kickoffTs >= startOfToday && p.kickoffTs < windowEnd;
               });
