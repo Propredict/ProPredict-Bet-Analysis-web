@@ -8712,12 +8712,21 @@ async function handleBatchRegenerate(
   const fixtures = fixturesJson?.response ?? [];
 
   // === STEP 1 LEAGUE TIER FILTER ===
-  // Always include Tier 1+2. Allow Tier 3 ONLY when Tier 1+2 yields too few matches
-  // (e.g., midweek with no top leagues), so the page never goes empty.
+  // Always include Tier 1+2. Allow Tier 3 ONLY when club Tier 1+2 yields too few matches
+  // (e.g., midweek with no top leagues), so the main AI Predictions page never goes empty.
+  // IMPORTANT: World Cup is displayed on its own page and is excluded from the main
+  // AI Predictions UI. Therefore WC fixtures must NOT count as "well-stocked" for
+  // this fallback decision, otherwise a day with only WC Tier 1 fixtures leaves
+  // the club page empty.
   const allFixtures = fixtures as any[];
   const tier1Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) === 1).length;
   const tier12Count = allFixtures.filter((f) => getLeagueTier(f?.league?.id) <= 2).length;
-  const allowTier3 = tier12Count < TIER_FALLBACK_THRESHOLD;
+  const isWorldCupFixture = (f: any) =>
+    Number(f?.league?.id) === 1 || String(f?.league?.name || "").toLowerCase().includes("world cup");
+  const clubTier12Count = allFixtures.filter(
+    (f) => !isWorldCupFixture(f) && getLeagueTier(f?.league?.id) <= 2,
+  ).length;
+  const allowTier3 = clubTier12Count < TIER_FALLBACK_THRESHOLD;
 
   let filteredOut = 0;
   for (const f of allFixtures) {
@@ -8733,7 +8742,7 @@ async function handleBatchRegenerate(
 
   console.log(
     `[TIER FILTER] ${matchDate}: total=${allFixtures.length}, T1=${tier1Count}, T1+T2=${tier12Count}, ` +
-    `T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
+    `clubT1+T2=${clubTier12Count}, T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
   );
 
   if (offset === 0) {
