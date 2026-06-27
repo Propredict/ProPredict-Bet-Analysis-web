@@ -63,9 +63,9 @@ Deno.serve(async (req) => {
     if (dateParam) {
       rawItems = await fetchDate(dateParam);
     } else {
-      // "Today" mode: include matches from tonight + overnight (Europe/Belgrade
-      // window 00:00 today → 06:00 tomorrow) so users see and can comment on
-      // late kickoffs like 03:00 WC matches.
+      // "Today" mode: include matches from late yesterday + overnight
+      // (Europe/Belgrade window 18:00 yesterday → 12:00 tomorrow) so live
+      // matches that kicked off before midnight never disappear at 00:00.
       const nowParts = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Belgrade",
         year: "numeric", month: "2-digit", day: "2-digit",
@@ -79,10 +79,10 @@ Deno.serve(async (req) => {
         }).format(new Date(localMidnightAsUtc)),
         10,
       ) || 0;
-      const startMs = localMidnightAsUtc - probeHour * 3600 * 1000;
+      const startMs = localMidnightAsUtc - probeHour * 3600 * 1000 - 6 * 3600 * 1000;
       // Extend window through tomorrow noon so all overnight + early-morning
-      // kickoffs (e.g. 03:00 and 06:00 CET WC matches) show under "Today".
-      const endMs = startMs + (24 + 12) * 3600 * 1000;
+      // kickoffs show under "Today" while live previous-day matches stay visible.
+      const endMs = startMs + (6 + 24 + 12) * 3600 * 1000;
       windowMs = { startMs, endMs };
 
       const todayUtc = new Date().toISOString().split("T")[0];
