@@ -79,6 +79,16 @@ export function useWCScheduleResults() {
         }>;
         for (const f of fixtures) {
           if (f.homeScore == null || f.awayScore == null) continue;
+          // Skip youth / women / reserve / club fixtures that share country
+          // names with senior national teams (e.g. "Algeria U20", "Portuguesa",
+          // "Argentino de Merlo"). Without this they normalize to the same
+          // first-word key as the real WC fixture and override it.
+          const junkRegex = /\b(U1[5-9]|U2[0-3]|U-?17|U-?19|U-?20|U-?21|U-?23|Reserves?|Women|Wom|Youth|Olymp)\b|\sW\b|\sII\b/i;
+          if (junkRegex.test(f.homeTeam) || junkRegex.test(f.awayTeam)) continue;
+          // Drop obvious club names that share prefixes with countries
+          // (Portuguesa, Colombe, Argentino…, Austria Wien, Argentinos Jr.)
+          const clubRegex = /(Portuguesa|Colombe|Argentino|Argentinos|Austria Wien|Austria Klagenfurt|Austria Lustenau|Jordan FC|Congo Brazza)/i;
+          if (clubRegex.test(f.homeTeam) || clubRegex.test(f.awayTeam)) continue;
           const key = `${norm(f.homeTeam)}|${norm(f.awayTeam)}`;
           const keyRev = `${norm(f.awayTeam)}|${norm(f.homeTeam)}`;
           const val: WCScheduleResult = {
