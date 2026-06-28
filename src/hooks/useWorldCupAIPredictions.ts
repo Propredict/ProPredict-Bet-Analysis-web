@@ -33,10 +33,16 @@ export function useWorldCupAIPredictions() {
 
     async function load() {
       setLoading(true);
+      // Include yesterday/today/tomorrow so locked predictions stored under
+      // a different UTC date than the user's local "today" (e.g. a 23:30 UTC
+      // kickoff on 27 Jun shown in Belgrade as 01:30 on 28 Jun) are still
+      // matched. Without this, the UI falls back to placeholder defaults
+      // (Over 2.5 + BTTS Yes) and looks like the locked pick "changed".
       const today = new Date().toISOString().split("T")[0];
-      // Also include tomorrow's date so late-night/overnight WC matches
-      // (3-4 AM local time) can match with real AI data when stored in UTC.
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
         .toISOString()
         .split("T")[0];
       const { data, error } = await supabase
@@ -45,7 +51,7 @@ export function useWorldCupAIPredictions() {
           "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis, key_factors, risk_level"
         )
         .ilike("league", "%world cup%")
-        .in("match_date", [today, tomorrow])
+        .in("match_date", [yesterday, today, tomorrow])
         .order("match_date", { ascending: true })
         .limit(64);
 
