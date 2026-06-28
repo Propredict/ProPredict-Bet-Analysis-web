@@ -538,8 +538,8 @@ export default function WorldCup2026() {
                                <span className="truncate flex items-center gap-1">
                                  {td && <TeamFlag code={td.code} size="sm" />} {t === "United States" ? "USA" : t}
                                </span>
-                              <span className="text-[9px] font-mono">
-                                {hasPlayed ? `${live?.points ?? 0}` : `#${td?.fifaRank}`}
+                              <span className="text-[10px] font-mono font-bold">
+                                {live?.points ?? 0}
                               </span>
                             </div>
                           );
