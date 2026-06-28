@@ -826,7 +826,42 @@ export default function WorldCup2026() {
                 statusByKey.set(`${h}|${a}`, f.status);
                 statusByKey.set(`${a}|${h}`, f.status);
               }
-              const todayPreds = AI_PREDICTIONS.filter((p) => {
+              // Include any live/upcoming/finished WC fixture from the API
+              // that isn't in the static group-stage schedule (e.g. Round of
+              // 32 playoff matches). Without this, knockout fixtures like
+              // South Africa vs Canada never render an AI Pick card.
+              const staticKeys = new Set(
+                AI_PREDICTIONS.map((p) => `${norm(p.home)}|${norm(p.away)}`)
+                  .concat(AI_PREDICTIONS.map((p) => `${norm(p.away)}|${norm(p.home)}`)),
+              );
+              const extraPreds = (todayFixturesData?.fixtures ?? [])
+                .filter((f: any) => {
+                  const key = `${norm(f.homeTeam)}|${norm(f.awayTeam)}`;
+                  return !staticKeys.has(key) && f.homeTeam && f.awayTeam && f.startTime;
+                })
+                .map((f: any) => {
+                  const ko = new Date(f.startTime).getTime();
+                  const proj = wcMatchProjection(f.homeTeam, f.awayTeam, {
+                    homeIsHost: HOST_NATIONS.has(f.homeTeam),
+                    awayIsHost: HOST_NATIONS.has(f.awayTeam),
+                    isKnockout: true,
+                  });
+                  const d = new Date(ko);
+                  const monthShort = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
+                  return {
+                    home: f.homeTeam,
+                    away: f.awayTeam,
+                    date: `${monthShort} ${d.getUTCDate()}`,
+                    time: d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }),
+                    kickoffTs: ko,
+                    homeWin: proj.homeWin,
+                    draw: proj.draw,
+                    awayWin: proj.awayWin,
+                    confidence: proj.confidence,
+                  };
+                });
+              const basePreds = [...AI_PREDICTIONS, ...extraPreds];
+              const todayPreds = basePreds.filter((p) => {
                 // Show today's matches + overnight games. Important: when the
                 // clock passes midnight, matches that kicked off late yesterday
                 // (e.g. 23:00) can still be live or in the 3h post-FT grace
