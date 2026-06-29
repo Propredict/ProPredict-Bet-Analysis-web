@@ -1,10 +1,9 @@
 import melbetBanner from "@/assets/melbet-banner-hd.jpg";
-import { cn } from "@/lib/utils";
 
 const MELBET_URL =
   "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
 
-export function AffiliateBannerMelbet({ wide = false }: { wide?: boolean }) {
+export function AffiliateBannerMelbet() {
   return (
     <a
       href={MELBET_URL}
