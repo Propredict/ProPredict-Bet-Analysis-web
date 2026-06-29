@@ -1,10 +1,9 @@
 import melbetBanner from "@/assets/melbet-banner-hd.jpg";
-import { cn } from "@/lib/utils";
 
 const MELBET_URL =
   "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
 
-export function AffiliateBannerMelbet({ wide = false }: { wide?: boolean }) {
+export function AffiliateBannerMelbet() {
   return (
     <a
       href={MELBET_URL}
@@ -19,7 +18,7 @@ export function AffiliateBannerMelbet({ wide = false }: { wide?: boolean }) {
       <img
         src={melbetBanner}
         alt="Melbet Exclusive Bonus $100 on first deposit"
-        className={cn("h-auto block w-full", wide && "max-h-40 object-cover")}
+        className="block w-full h-auto"
         width={1600}
         height={544}
         loading="lazy"
