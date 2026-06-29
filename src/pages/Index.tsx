@@ -253,9 +253,12 @@ const Index = () => {
         
         {/* AI Predictions Section – web only */}
         {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <DashboardAIPredictions />
-          </Suspense>
+          <>
+            <AffiliateBannerMelbet />
+            <Suspense fallback={<LazyFallback />}>
+              <DashboardAIPredictions />
+            </Suspense>
+          </>
         )}
 
         {/* Match Previews Section – web only */}
