@@ -134,9 +134,9 @@ export default function DailyTickets() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
-      {/* Sponsored: Melbet affiliate banner at top — narrow */}
-      <div className="px-3 sm:px-0 mb-4">
-        <AffiliateBannerMelbet narrow />
+      {/* Sponsored: Melbet affiliate banner at top — full width */}
+      <div className="mb-4">
+        <AffiliateBannerMelbet wide />
       </div>
 
       {/* Header */}
