@@ -973,6 +973,13 @@ export default function AIPredictions() {
             getPredictionTier={getPredictionTier}
           />
 
+          {/* Melbet affiliate banner above Safe Pick */}
+          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <div className="mb-3 md:mb-4">
+              <AffiliateBannerMelbet />
+            </div>
+          )}
+
           {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
           {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
             <Card
