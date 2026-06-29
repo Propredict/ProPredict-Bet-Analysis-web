@@ -1,4 +1,4 @@
-import melbetBanner from "@/assets/melbet-banner.jpg.asset.json";
+import melbetBanner from "@/assets/melbet-banner-hd.jpg";
 
 const MELBET_URL =
   "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
@@ -13,9 +13,11 @@ export function AffiliateBannerMelbet() {
       aria-label="Melbet — Exclusive $100 bonus on first deposit"
     >
       <img
-        src={melbetBanner.url}
+        src={melbetBanner}
         alt="Melbet Exclusive Bonus $100 on first deposit"
         className="w-full h-auto block"
+        width={1600}
+        height={544}
         loading="lazy"
       />
     </a>
