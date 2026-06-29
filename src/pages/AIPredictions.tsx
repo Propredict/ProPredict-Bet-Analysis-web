@@ -27,6 +27,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
