@@ -10,10 +10,7 @@ export function AffiliateBannerMelbet({ wide = false }: { wide?: boolean }) {
       href={MELBET_URL}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className={cn(
-        "group block relative overflow-hidden rounded-xl border border-border/40 shadow-md hover:opacity-95 transition-opacity",
-        wide && "bg-black/60"
-      )}
+      className="group block relative overflow-hidden rounded-xl border border-border/40 shadow-md hover:opacity-95 transition-opacity"
       aria-label="Melbet — Exclusive $100 bonus on first deposit"
     >
       <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-bold uppercase tracking-wider text-white/70">
@@ -22,7 +19,7 @@ export function AffiliateBannerMelbet({ wide = false }: { wide?: boolean }) {
       <img
         src={melbetBanner}
         alt="Melbet Exclusive Bonus $100 on first deposit"
-        className={cn("block w-full h-auto", wide ? "max-h-44 object-contain" : "object-cover")}
+        className="block w-full h-auto"
         width={1600}
         height={544}
         loading="lazy"
