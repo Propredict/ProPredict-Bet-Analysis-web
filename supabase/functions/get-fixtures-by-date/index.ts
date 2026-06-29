@@ -30,14 +30,24 @@ Deno.serve(async (req) => {
       });
     }
     let date: string | null = null;
+    let leagueId: number | null = null;
     const u = new URL(req.url);
     date = u.searchParams.get("date");
+    const lq = u.searchParams.get("league");
+    if (lq) leagueId = parseInt(lq, 10);
     if (!date && req.method === "POST") {
-      try { const b = await req.json(); if (b?.date) date = b.date; } catch {/* */}
+      try {
+        const b = await req.json();
+        if (b?.date) date = b.date;
+        if (b?.league) leagueId = parseInt(String(b.league), 10);
+      } catch {/* */}
     }
     if (!date) date = new Date().toISOString().split("T")[0];
 
-    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, {
+    const apiUrl = leagueId
+      ? `https://v3.football.api-sports.io/fixtures?date=${date}&league=${leagueId}&season=2026`
+      : `https://v3.football.api-sports.io/fixtures?date=${date}`;
+    const res = await fetch(apiUrl, {
       headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "v3.football.api-sports.io" },
     });
     const data = await res.json();
