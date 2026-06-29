@@ -67,7 +67,7 @@ export function useWCScheduleResults() {
 
       const results = await Promise.all(
         Array.from(dates).map((d) =>
-          supabase.functions.invoke("get-fixtures-by-date", { body: { date: d } }),
+          supabase.functions.invoke("get-fixtures-by-date", { body: { date: d, league: 1 } }),
         ),
       );
       const out = new Map<string, WCScheduleResult>();
