@@ -49,6 +49,16 @@ export interface WCScheduleResult {
   finished: boolean;
 }
 
+interface FixturesByDateResponse {
+  fixtures?: Array<{
+    homeTeam: string; awayTeam: string;
+    homeScore: number | null; awayScore: number | null;
+    status: string; statusShort?: string;
+  }>;
+  count?: number;
+  error?: unknown;
+}
+
 export function useWCScheduleResults() {
   return useQuery({
     queryKey: ["wc-schedule-results"],
@@ -65,18 +75,36 @@ export function useWCScheduleResults() {
       }
       if (dates.size === 0) return new Map();
 
-      const results = await Promise.all(
-        Array.from(dates).map((d) =>
-          supabase.functions.invoke("get-fixtures-by-date", { body: { date: d, league: 1 } }),
-        ),
-      );
+      const dateList = Array.from(dates).sort();
+      const invokeDate = async (d: string) => {
+        let last: Awaited<ReturnType<typeof supabase.functions.invoke>> | null = null;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          if (attempt > 0) {
+            await new Promise((resolve) => window.setTimeout(resolve, attempt === 1 ? 450 : 1100));
+          }
+          last = await supabase.functions.invoke("get-fixtures-by-date", {
+            body: { date: d, league: 1, bust: attempt },
+          });
+          const payload = last.data as FixturesByDateResponse | null;
+          const count = Number(payload?.count ?? 0);
+          const hasError = !!last.error || !!payload?.error;
+          // API-Football intermittently returns an empty league=1 response when
+          // many dates are requested at once. Retry empty past dates so already
+          // played fixtures never show only kickoff time in Match Schedule.
+          if (!hasError && count > 0) return last;
+        }
+        return last;
+      };
+
+      const results: Awaited<ReturnType<typeof supabase.functions.invoke>>[] = [];
+      for (let i = 0; i < dateList.length; i += 3) {
+        const chunk = dateList.slice(i, i + 3);
+        const chunkResults = await Promise.all(chunk.map(invokeDate));
+        results.push(...chunkResults.filter((r): r is Awaited<ReturnType<typeof supabase.functions.invoke>> => !!r));
+      }
       const out = new Map<string, WCScheduleResult>();
       for (const r of results) {
-        const fixtures = (r.data?.fixtures ?? []) as Array<{
-          homeTeam: string; awayTeam: string;
-          homeScore: number | null; awayScore: number | null;
-          status: string; statusShort?: string;
-        }>;
+        const fixtures = ((r.data as FixturesByDateResponse | null)?.fixtures ?? []);
         for (const f of fixtures) {
           if (f.homeScore == null || f.awayScore == null) continue;
           // Skip youth / women / reserve / club fixtures that share country
