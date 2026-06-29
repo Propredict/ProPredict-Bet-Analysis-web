@@ -132,9 +132,9 @@ export default function DailyTips() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
-      {/* Sponsored: Melbet affiliate banner at top — full width */}
+      {/* Sponsored: Melbet affiliate banner at top */}
       <div className="mb-4">
-        <AffiliateBannerMelbet wide />
+        <AffiliateBannerMelbet />
       </div>
 
       {/* Header */}
