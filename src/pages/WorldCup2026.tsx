@@ -27,6 +27,7 @@ import { useWCYesterdayResults } from "@/hooks/useWCYesterdayResults";
 import { useWCScheduleResults, lookupWCResult, norm } from "@/hooks/useWCScheduleResults";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import {
   GROUPS, TEAMS, GROUP_MATCHES, FEATURED_MATCH, KNOCKOUT_ROUNDS, getTeamGroup,
   wcMatchProjection,
@@ -1625,6 +1626,9 @@ export default function WorldCup2026() {
         </TabsContent>
       </Tabs>
 
+      <div className="px-3 mt-6 mb-4">
+        <AffiliateBannerMelbet />
+      </div>
     </div>
   );
 }
