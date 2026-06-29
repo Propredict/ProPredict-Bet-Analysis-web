@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 
 export default function RiskOfTheDay() {
@@ -73,6 +74,11 @@ export default function RiskOfTheDay() {
         <meta name="description" content="Daily high-risk, high-reward football predictions. Bold picks with maximum payout potential." />
       </Helmet>
       <div className="section-gap">
+        {/* Sponsored: Melbet affiliate banner at top */}
+        <div className="mb-4">
+          <AffiliateBannerMelbet />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-red-500/20 via-orange-500/10 to-transparent border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
           <div className="flex items-center gap-1.5">

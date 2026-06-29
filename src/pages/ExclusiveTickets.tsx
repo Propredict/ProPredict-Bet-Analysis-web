@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
@@ -102,6 +103,11 @@ export default function ExclusiveTickets() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
+      {/* Sponsored: Melbet affiliate banner at top */}
+      <div className="mb-4">
+        <AffiliateBannerMelbet />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
         <div className="flex items-center gap-1.5 sm:gap-2">

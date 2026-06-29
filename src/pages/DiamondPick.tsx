@@ -14,6 +14,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 
@@ -68,6 +69,11 @@ export default function DiamondPick() {
         <meta name="description" content="Hand-picked diamond football predictions. Our most confident, highest-quality selections. Premium only." />
       </Helmet>
       <div className="section-gap">
+        {/* Sponsored: Melbet affiliate banner at top */}
+        <div className="mb-4">
+          <AffiliateBannerMelbet />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-cyan-500/20 via-blue-500/10 to-transparent border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
           <div className="flex items-center gap-1.5">
