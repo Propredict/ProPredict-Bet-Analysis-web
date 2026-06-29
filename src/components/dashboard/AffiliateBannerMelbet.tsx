@@ -18,7 +18,7 @@ export function AffiliateBannerMelbet() {
       <img
         src={melbetBanner}
         alt="Melbet Exclusive Bonus $100 on first deposit"
-        className="block w-full h-auto"
+        className="block w-full h-auto max-h-96 object-cover"
         width={1600}
         height={544}
         loading="lazy"
