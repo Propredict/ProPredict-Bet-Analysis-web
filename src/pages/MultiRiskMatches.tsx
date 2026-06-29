@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 
 export default function MultiRiskMatches() {
   const navigate = useNavigate();
@@ -70,6 +71,11 @@ export default function MultiRiskMatches() {
         <meta name="description" content="High-risk multi-match combo tickets. Bold accumulators with maximum payout potential." />
       </Helmet>
       <div className="section-gap">
+        {/* Sponsored: Melbet affiliate banner at top */}
+        <div className="mb-4">
+          <AffiliateBannerMelbet />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-orange-500/20 via-red-500/10 to-transparent border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]">
           <div className="flex items-center gap-1.5 sm:gap-2">

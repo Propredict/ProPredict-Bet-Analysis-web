@@ -31,6 +31,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { purchaseSubscription } from "@/hooks/useRevenueCat";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { useNavigate } from "react-router-dom";
 
 // Web-only: Stripe price IDs
@@ -516,6 +517,11 @@ export default function GetPremium() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap max-w-5xl mx-auto">
+      {/* Sponsored: Melbet affiliate banner at top */}
+      <div className="mb-4">
+        <AffiliateBannerMelbet />
+      </div>
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
