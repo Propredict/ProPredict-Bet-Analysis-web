@@ -49,6 +49,16 @@ export interface WCScheduleResult {
   finished: boolean;
 }
 
+interface FixturesByDateResponse {
+  fixtures?: Array<{
+    homeTeam: string; awayTeam: string;
+    homeScore: number | null; awayScore: number | null;
+    status: string; statusShort?: string;
+  }>;
+  count?: number;
+  error?: unknown;
+}
+
 export function useWCScheduleResults() {
   return useQuery({
     queryKey: ["wc-schedule-results"],
@@ -75,8 +85,9 @@ export function useWCScheduleResults() {
           last = await supabase.functions.invoke("get-fixtures-by-date", {
             body: { date: d, league: 1, bust: attempt },
           });
-          const count = Number((last.data as { count?: number } | null)?.count ?? 0);
-          const hasError = !!last.error || !!(last.data as { error?: unknown } | null)?.error;
+          const payload = last.data as FixturesByDateResponse | null;
+          const count = Number(payload?.count ?? 0);
+          const hasError = !!last.error || !!payload?.error;
           // API-Football intermittently returns an empty league=1 response when
           // many dates are requested at once. Retry empty past dates so already
           // played fixtures never show only kickoff time in Match Schedule.
@@ -93,11 +104,7 @@ export function useWCScheduleResults() {
       }
       const out = new Map<string, WCScheduleResult>();
       for (const r of results) {
-        const fixtures = (r.data?.fixtures ?? []) as Array<{
-          homeTeam: string; awayTeam: string;
-          homeScore: number | null; awayScore: number | null;
-          status: string; statusShort?: string;
-        }>;
+        const fixtures = ((r.data as FixturesByDateResponse | null)?.fixtures ?? []);
         for (const f of fixtures) {
           if (f.homeScore == null || f.awayScore == null) continue;
           // Skip youth / women / reserve / club fixtures that share country
