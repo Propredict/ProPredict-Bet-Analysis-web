@@ -15,6 +15,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 
 
 export default function DailyTips() {
@@ -131,6 +132,11 @@ export default function DailyTips() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
+      {/* Sponsored: Melbet affiliate banner at top — narrow */}
+      <div className="px-3 sm:px-0 mb-4">
+        <AffiliateBannerMelbet narrow />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
         <div className="flex items-center gap-1.5">
