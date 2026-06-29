@@ -18,6 +18,7 @@ import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -253,9 +254,12 @@ const Index = () => {
         
         {/* AI Predictions Section – web only */}
         {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <DashboardAIPredictions />
-          </Suspense>
+          <>
+            <AffiliateBannerMelbet />
+            <Suspense fallback={<LazyFallback />}>
+              <DashboardAIPredictions />
+            </Suspense>
+          </>
         )}
 
         {/* Match Previews Section – web only */}
