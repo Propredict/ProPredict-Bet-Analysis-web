@@ -27,6 +27,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
@@ -972,6 +973,13 @@ export default function AIPredictions() {
             unlockingId={unlockingId}
             getPredictionTier={getPredictionTier}
           />
+
+          {/* Melbet affiliate banner above Safe Pick */}
+          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <div className="mb-3 md:mb-4">
+              <AffiliateBannerMelbet />
+            </div>
+          )}
 
           {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
           {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
