@@ -948,7 +948,12 @@ export default function WorldCup2026() {
               // the model output isn't final yet.
               const msToKickoff = (mockPred.kickoffTs ?? 0) - Date.now();
               const isLockedUntilKickoff = msToKickoff > 3 * 60 * 60 * 1000;
-              if (isLockedUntilKickoff) {
+              // Never show fallback/ranking projection. Only the real, frozen
+              // DB prediction is allowed to render. Until it exists (or until
+              // we're inside the 3h pre-kickoff window), show the "Coming
+              // Soon" placeholder so users never see numbers that could
+              // appear to change later.
+              if (isLockedUntilKickoff || !isReal) {
                 // Show the UNLOCK time (kickoff − 3h), not kickoff itself.
                 // That's when the final AI pick becomes visible.
                 const unlockLabel = mockPred.kickoffTs
