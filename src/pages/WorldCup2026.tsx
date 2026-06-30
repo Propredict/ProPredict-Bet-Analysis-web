@@ -230,7 +230,7 @@ export default function WorldCup2026() {
     next.set("tab", v);
     setSearchParams(next, { replace: true });
   };
-  const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
+  const { findFor: findRealAI, hasRealData: hasRealAI, loading: aiPredsLoading } = useWorldCupAIPredictions();
   const { data: yesterdayResults = [], isLoading: isLoadingYesterday } =
     useWCYesterdayResults();
   // Hide finished matches from AI Picks if the prediction missed both
@@ -258,7 +258,7 @@ export default function WorldCup2026() {
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
-  const { data: todayFixturesData } = useWCTodayFixtures();
+  const { data: todayFixturesData, isLoading: todayFixturesLoading, isFetching: todayFixturesFetching } = useWCTodayFixtures();
 
   // Featured Match: prefer live, then next upcoming today; skip finished.
   // Falls back to hardcoded FEATURED_MATCH (opening match) when no live data.
