@@ -210,8 +210,7 @@ Deno.serve(async (req) => {
             }
           }
 
-          // Coherence pass (must match WorldCup2026.tsx getFrozenDisplayMarkets)
-          if (btts === "No") { overUnder = "Under"; line = 2.5; }
+          // No coherence forcing — grade Over/Under and BTTS independently.
 
           const marketHits: boolean[] = [];
           if (overUnder) marketHits.push(overUnder === "Over" ? total > line : total < line);

@@ -118,13 +118,8 @@ function getFrozenDisplayMarkets(
     }
   }
 
-  // Coherence pass: keep Over/Under consistent with BTTS and 1X2 probs so
-  // we never show contradictions like "Under 2.5 + BTTS Yes" while a side
-  // is a clear favorite (a favorite + BTTS Yes implies ≥2-1, i.e. Over 2.5).
-  if (btts === "No") {
-    overUnder = "Under";
-  }
-
+  // No coherence forcing — Over/Under and BTTS are independent realistic
+  // predictions. BTTS No can still coexist with Over 2.5 (e.g. 3-0).
   return { overUnder, btts };
 }
 
