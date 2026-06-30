@@ -230,7 +230,7 @@ export default function WorldCup2026() {
     next.set("tab", v);
     setSearchParams(next, { replace: true });
   };
-  const { findFor: findRealAI, hasRealData: hasRealAI } = useWorldCupAIPredictions();
+  const { findFor: findRealAI, hasRealData: hasRealAI, loading: aiPredsLoading } = useWorldCupAIPredictions();
   const { data: yesterdayResults = [], isLoading: isLoadingYesterday } =
     useWCYesterdayResults();
   // Hide finished matches from AI Picks if the prediction missed both
@@ -258,7 +258,7 @@ export default function WorldCup2026() {
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
-  const { data: todayFixturesData } = useWCTodayFixtures();
+  const { data: todayFixturesData, isLoading: todayFixturesLoading, isFetching: todayFixturesFetching } = useWCTodayFixtures();
 
   // Featured Match: prefer live, then next upcoming today; skip finished.
   // Falls back to hardcoded FEATURED_MATCH (opening match) when no live data.
@@ -890,6 +890,26 @@ export default function WorldCup2026() {
                 return p.kickoffTs >= windowStart && p.kickoffTs < windowEnd;
               });
               if (todayPreds.length === 0) {
+                // Avoid flashing the empty state while data is still loading
+                // (e.g. immediately after the app is opened from a push
+                // notification). Show a loading skeleton instead so users
+                // don't see "No matches today" only to have the prediction
+                // appear after a manual refresh.
+                const isInitialLoad =
+                  aiPredsLoading ||
+                  todayFixturesLoading ||
+                  (todayFixturesFetching && !todayFixturesData);
+                if (isInitialLoad) {
+                  return (
+                    <Card className="bg-card border-border p-6 text-center">
+                      <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2 animate-pulse" />
+                      <p className="text-sm font-semibold text-foreground mb-1">Loading AI predictions…</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Fetching today's World Cup matches.
+                      </p>
+                    </Card>
+                  );
+                }
                 return (
                   <Card className="bg-card border-border p-6 text-center">
                     <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2" />

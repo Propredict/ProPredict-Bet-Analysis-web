@@ -35,5 +35,12 @@ export function useWCTodayFixtures() {
     refetchInterval: 30_000,
     staleTime: 25_000,
     retry: 1,
+    // Critical for Android: when the app is resumed (e.g. from a push
+    // notification tap), force a fresh fetch instead of serving an empty
+    // cached result. Without this, the WC tab can briefly render
+    // "No matches today" until the user pulls/reopens the app.
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
