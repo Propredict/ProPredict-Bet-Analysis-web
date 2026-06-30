@@ -27,6 +27,7 @@ export interface WCAIPrediction {
 export function useWorldCupAIPredictions() {
   const [predictions, setPredictions] = useState<WCAIPrediction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +70,22 @@ export function useWorldCupAIPredictions() {
     load();
     return () => {
       cancelled = true;
+    };
+  }, [reloadTick]);
+
+  // Force refetch when the app resumes from background (e.g. user taps a
+  // push notification and Android brings the WebView back). Without this
+  // the cached empty state can render "no prediction" until manual refresh.
+  useEffect(() => {
+    const bump = () => setReloadTick((n) => n + 1);
+    const onVis = () => { if (document.visibilityState === "visible") bump(); };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", bump);
+    window.addEventListener("pageshow", bump);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", bump);
+      window.removeEventListener("pageshow", bump);
     };
   }, []);
 
