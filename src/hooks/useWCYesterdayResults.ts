@@ -76,11 +76,7 @@ function getStoredMarketPick(
       }
     }
   }
-  // Coherence pass — mirror the rule used in the UI card so the WIN check
-  // grades the exact line shown to the user.
-  if (bttsResolved === "no") {
-    goalsResolved = { dir: "under", line: 2.5 };
-  }
+  // No coherence forcing — Over/Under and BTTS are graded independently.
   return {
     goals: goalsResolved,
     btts: bttsResolved,
