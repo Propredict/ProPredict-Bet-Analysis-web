@@ -182,26 +182,40 @@ Deno.serve(async (req) => {
         // alone must never create a WIN, and no prediction fields are changed.
         if (isWorldCup) {
           const text = `${prediction.prediction || ""} ${prediction.analysis || ""}`.toLowerCase();
-          const goals = text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
-          const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|\bgg\b/.test(text);
-          const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
-          const marketHits: boolean[] = [];
           const total = homeGoals + awayGoals;
           const bttsActual = homeGoals > 0 && awayGoals > 0;
-          if (goals) {
-            const line = parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2"));
-            marketHits.push(goals[1] === "over" ? total > line : total < line);
-          }
-          if (bttsYes || bttsNo) marketHits.push(bttsYes ? bttsActual : !bttsActual);
-          if (marketHits.length === 0 && prediction.predicted_score) {
+
+          // Mirror frontend `getFrozenDisplayMarkets` EXACTLY so the WIN
+          // verdict always matches what the user sees on the card.
+          // 1) Try to read explicit Over/Under and BTTS from text.
+          // 2) Fall back to `predicted_score` for either market when missing.
+          // 3) Apply the SAME coherence rule: BTTS No → force Under 2.5.
+          const goals = text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
+          const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|over\/btts favored|btts favored|\bgg\b/.test(text);
+          const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
+
+          let overUnder: "Over" | "Under" | null = goals
+            ? (goals[1] === "over" ? "Over" : "Under")
+            : null;
+          let btts: "Yes" | "No" | null = bttsYes ? "Yes" : bttsNo ? "No" : null;
+          let line = goals ? parseFloat(goals[2].replace(/(\d)(\d)/, "$1.$2")) : 2.5;
+
+          if ((overUnder === null || btts === null) && prediction.predicted_score) {
             const score = prediction.predicted_score.match(/(\d+)\s*[-–:]\s*(\d+)/);
             if (score) {
               const ph = parseInt(score[1], 10);
               const pa = parseInt(score[2], 10);
-              marketHits.push(ph + pa >= 3 ? total > 2.5 : total < 2.5);
-              marketHits.push(ph >= 1 && pa >= 1 ? bttsActual : !bttsActual);
+              if (overUnder === null) { overUnder = ph + pa >= 3 ? "Over" : "Under"; line = 2.5; }
+              if (btts === null) btts = ph >= 1 && pa >= 1 ? "Yes" : "No";
             }
           }
+
+          // Coherence pass (must match WorldCup2026.tsx getFrozenDisplayMarkets)
+          if (btts === "No") { overUnder = "Under"; line = 2.5; }
+
+          const marketHits: boolean[] = [];
+          if (overUnder) marketHits.push(overUnder === "Over" ? total > line : total < line);
+          if (btts) marketHits.push(btts === "Yes" ? bttsActual : !bttsActual);
           evalResult = marketHits.length > 0 ? marketHits.some(Boolean) : false;
         }
 
