@@ -23,14 +23,58 @@ interface Resp {
   date: string;
 }
 
+const WC_TODAY_FIXTURES_CACHE_KEY = "propredict_wc_today_fixtures_cache_v1";
+const WC_TODAY_FIXTURES_CACHE_TTL = 18 * 60 * 60 * 1000;
+
+function readCachedFixtures(): Resp | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const raw = window.localStorage.getItem(WC_TODAY_FIXTURES_CACHE_KEY);
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as { savedAt?: number; data?: Resp };
+    if (!parsed?.data || !Array.isArray(parsed.data.fixtures)) return undefined;
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > WC_TODAY_FIXTURES_CACHE_TTL) return undefined;
+    return parsed.data;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCachedFixtures(data: Resp) {
+  if (typeof window === "undefined" || !data.fixtures?.length) return;
+  try {
+    window.localStorage.setItem(
+      WC_TODAY_FIXTURES_CACHE_KEY,
+      JSON.stringify({ savedAt: Date.now(), data }),
+    );
+  } catch {
+    // Ignore storage errors in Android WebView/private mode.
+  }
+}
+
 export function useWCTodayFixtures() {
   return useQuery({
     queryKey: ["wc-today-fixtures"],
     queryFn: async (): Promise<Resp> => {
-      const { data, error } = await supabase.functions.invoke("get-wc-today", { method: "GET" });
-      if (error) throw error;
-      return (data ?? { fixtures: [], count: 0, date: "" }) as Resp;
+      const cached = readCachedFixtures();
+      // Use POST with a tiny cache-buster so Android WebView/CDN never serves
+      // an old empty GET response on first app open.
+      const { data, error } = await supabase.functions.invoke("get-wc-today", {
+        method: "POST",
+        body: { _ts: Date.now() },
+      });
+      if (error) {
+        if (cached?.fixtures?.length) return cached;
+        throw error;
+      }
+      const fresh = (data ?? { fixtures: [], count: 0, date: "" }) as Resp;
+      if (fresh.fixtures?.length) {
+        writeCachedFixtures(fresh);
+        return fresh;
+      }
+      return cached ?? fresh;
     },
+    initialData: readCachedFixtures,
     // Auto-refresh every 30s — picks up live score changes.
     refetchInterval: 30_000,
     staleTime: 25_000,
