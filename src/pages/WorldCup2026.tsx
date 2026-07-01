@@ -918,7 +918,7 @@ export default function WorldCup2026() {
                 if (!isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))) return false;
                 return p.kickoffTs >= windowStart && p.kickoffTs < windowEnd;
               });
-              const renderAIPickCard = (mockPred: (typeof todayPreds)[number], i: number) => {
+              const renderAIPickCard = (mockPred: (typeof basePreds)[number], i: number) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
