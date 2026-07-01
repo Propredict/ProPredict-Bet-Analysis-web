@@ -869,7 +869,7 @@ export default function WorldCup2026() {
               const dbExtraPreds = realAIPredictions
                 .filter((p) => {
                   const key = `${norm(p.home_team)}|${norm(p.away_team)}`;
-                  return !staticKeys.has(key) && !fixtureKeys.has(key) && p.home_team && p.away_team;
+                  return !fixtureKeys.has(key) && p.home_team && p.away_team;
                 })
                 .map((p) => {
                   const kickoffTs = p.match_timestamp
@@ -892,7 +892,13 @@ export default function WorldCup2026() {
                     confidence: p.confidence,
                   };
                 });
-              const basePreds = [...AI_PREDICTIONS, ...extraPreds, ...dbExtraPreds];
+              const seenPredKeys = new Set<string>();
+              const basePreds = [...extraPreds, ...dbExtraPreds, ...AI_PREDICTIONS].filter((p) => {
+                const key = `${norm(p.home)}|${norm(p.away)}`;
+                if (seenPredKeys.has(key)) return false;
+                seenPredKeys.add(key);
+                return true;
+              });
               const todayPreds = basePreds.filter((p) => {
                 // Show today's matches + overnight games. Important: when the
                 // clock passes midnight, matches that kicked off late yesterday
