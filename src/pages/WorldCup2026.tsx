@@ -856,21 +856,13 @@ export default function WorldCup2026() {
                     confidence: proj.confidence,
                   };
                 });
-              const fixtureKeys = new Set(
-                (todayFixturesData?.fixtures ?? []).flatMap((f: any) => [
-                  `${norm(f.homeTeam)}|${norm(f.awayTeam)}`,
-                  `${norm(f.awayTeam)}|${norm(f.homeTeam)}`,
-                ]),
-              );
-              // If the fixture API returns an empty/stale payload on first app
-              // open, still render cards from the locked DB predictions. This
-              // prevents the Android WebView from showing "No matches today"
-              // until the user manually refreshes.
-              const dbExtraPreds = realAIPredictions
-                .filter((p) => {
-                  const key = `${norm(p.home_team)}|${norm(p.away_team)}`;
-                  return !fixtureKeys.has(key) && p.home_team && p.away_team;
-                })
+              // Locked DB predictions must be the FIRST source, even when the
+              // fixture API already knows the same match. On Android first-open,
+              // fixtures can arrive before the DB mapping; excluding DB rows by
+              // fixture key makes the list fall back to stale static schedule
+              // dates and briefly render "No matches today" until refresh.
+              const dbPreds = realAIPredictions
+                .filter((p) => p.home_team && p.away_team)
                 .map((p) => {
                   const kickoffTs = p.match_timestamp
                     ? new Date(p.match_timestamp).getTime()
@@ -893,7 +885,7 @@ export default function WorldCup2026() {
                   };
                 });
               const seenPredKeys = new Set<string>();
-              const basePreds = [...extraPreds, ...dbExtraPreds, ...AI_PREDICTIONS].filter((p) => {
+              const basePreds = [...dbPreds, ...extraPreds, ...AI_PREDICTIONS].filter((p) => {
                 const key = `${norm(p.home)}|${norm(p.away)}`;
                 if (seenPredKeys.has(key)) return false;
                 seenPredKeys.add(key);
