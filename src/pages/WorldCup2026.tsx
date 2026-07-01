@@ -918,36 +918,6 @@ export default function WorldCup2026() {
                 if (!isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))) return false;
                 return p.kickoffTs >= windowStart && p.kickoffTs < windowEnd;
               });
-              if (todayPreds.length === 0) {
-                // Never show an empty "No matches" card on first open. If the
-                // fixture API is late/empty, keep real match cards visible by
-                // selecting the nearest scheduled static cards and rendering them
-                // as "Coming Soon" placeholders until live data arrives.
-                const nowMs = Date.now();
-                const fallbackPreds = basePreds
-                  .filter((p) => {
-                    if (!p.kickoffTs) return false;
-                    const nh = norm(p.home);
-                    const na = norm(p.away);
-                    return !isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))
-                      ? false
-                      : p.kickoffTs + (110 + 180) * 60 * 1000 >= nowMs;
-                  })
-                  .sort((a, b) => Math.abs((a.kickoffTs ?? 0) - nowMs) - Math.abs((b.kickoffTs ?? 0) - nowMs))
-                  .slice(0, 4);
-
-                if (fallbackPreds.length === 0) {
-                  return (
-                    <Card className="bg-card border-border p-6 text-center">
-                      <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2 animate-pulse" />
-                      <p className="text-sm font-semibold text-foreground mb-1">Loading AI predictions…</p>
-                      <p className="text-[11px] text-muted-foreground">Fetching today's World Cup matches.</p>
-                    </Card>
-                  );
-                }
-
-                return fallbackPreds.map((mockPred, i) => renderAIPickCard(mockPred, i));
-              }
               const renderAIPickCard = (mockPred: (typeof todayPreds)[number], i: number) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
@@ -1191,6 +1161,37 @@ export default function WorldCup2026() {
                 </Card>
               );
               };
+              if (todayPreds.length === 0) {
+                // Never show an empty "No matches" card on first open. If the
+                // fixture API is late/empty, keep real match cards visible by
+                // selecting the nearest scheduled static cards and rendering them
+                // as "Coming Soon" placeholders until live data arrives.
+                const nowMs = Date.now();
+                const fallbackPreds = basePreds
+                  .filter((p) => {
+                    if (!p.kickoffTs) return false;
+                    const nh = norm(p.home);
+                    const na = norm(p.away);
+                    return !isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))
+                      ? false
+                      : p.kickoffTs + (110 + 180) * 60 * 1000 >= nowMs;
+                  })
+                  .sort((a, b) => Math.abs((a.kickoffTs ?? 0) - nowMs) - Math.abs((b.kickoffTs ?? 0) - nowMs))
+                  .slice(0, 4);
+
+                if (fallbackPreds.length === 0) {
+                  return (
+                    <Card className="bg-card border-border p-6 text-center">
+                      <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2 animate-pulse" />
+                      <p className="text-sm font-semibold text-foreground mb-1">Loading AI predictions…</p>
+                      <p className="text-[11px] text-muted-foreground">Fetching today's World Cup matches.</p>
+                    </Card>
+                  );
+                }
+
+                return fallbackPreds.map((mockPred, i) => renderAIPickCard(mockPred, i));
+              }
+
               return todayPreds.map((mockPred, i) => renderAIPickCard(mockPred, i));
             })()}
             {(() => {
