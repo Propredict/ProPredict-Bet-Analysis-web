@@ -109,6 +109,80 @@ serve(async (req: Request) => {
     const windowEnd = new Date(now.getTime() + DUE_WINDOW_MS);
     const windowStart = now;
 
+    // ─── SAFETY NET: seed missing World Cup placeholders ─────────────
+    // The daily 00:30 UTC morning batch is the ONLY job that inserts
+    // placeholder rows. If it missed a WC fixture (API-Football didn't
+    // return it in that early call, rate-limit, etc.), the match would
+    // silently have no prediction — user sees "Coming Soon" forever.
+    // Every 30-min tick we scan WC fixtures in the next 3h window and
+    // insert a placeholder for anything not already in ai_predictions,
+    // so the enrichment loop below can pick it up on the same tick.
+    try {
+      const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
+      const apiKey = Deno.env.get("API_FOOTBALL_KEY");
+      if (apiKey) {
+        const startDate = windowStart.toISOString().slice(0, 10);
+        const endDate = windowEnd.toISOString().slice(0, 10);
+        const dates = startDate === endDate ? [startDate] : [startDate, endDate];
+        const fixtures: any[] = [];
+        for (const d of dates) {
+          const r = await fetch(`${API_FOOTBALL_URL}/fixtures?league=1&season=2026&date=${d}`, {
+            headers: { "x-apisports-key": apiKey },
+          });
+          if (r.ok) {
+            const j = await r.json().catch(() => null);
+            for (const f of (j?.response ?? [])) fixtures.push(f);
+          }
+        }
+        const dueFixtures = fixtures.filter((f) => {
+          const ts = new Date(f?.fixture?.date ?? 0).getTime();
+          return ts > windowStart.getTime() && ts <= windowEnd.getTime();
+        });
+        if (dueFixtures.length > 0) {
+          const ids = dueFixtures.map((f) => String(f.fixture.id));
+          const { data: existing } = await supabase
+            .from("ai_predictions")
+            .select("match_id")
+            .in("match_id", ids);
+          const have = new Set((existing ?? []).map((r: any) => String(r.match_id)));
+          const missing = dueFixtures.filter((f) => !have.has(String(f.fixture.id)));
+          if (missing.length > 0) {
+            const inserts = missing.map((f) => {
+              const iso = f.fixture.date;
+              const matchDate = String(iso).slice(0, 10);
+              const matchTime = String(iso).split("T")[1]?.slice(0, 5) ?? null;
+              return {
+                match_id: String(f.fixture.id),
+                league: f.league?.name ?? "World Cup",
+                home_team: f.teams?.home?.name ?? "Home",
+                away_team: f.teams?.away?.name ?? "Away",
+                match_date: matchDate,
+                match_time: matchTime,
+                match_timestamp: iso,
+                result_status: "pending",
+                is_premium: false,
+                is_locked: true,
+                prediction: "Over 2.5",
+                predicted_score: "2-1",
+                confidence: 55,
+                home_win: 40,
+                draw: 25,
+                away_win: 35,
+                risk_level: "high",
+                analysis: "Pending regeneration...",
+              };
+            });
+            const { error: seedErr } = await supabase.from("ai_predictions").insert(inserts);
+            if (seedErr) console.warn("[due-preds] seed insert failed:", seedErr.message);
+            else console.log(`[due-preds] seeded ${inserts.length} missing WC placeholder(s)`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[due-preds] safety-net seed failed:", e);
+    }
+    // ─── END SAFETY NET ──────────────────────────────────────────────
+
     // Find WORLD CUP placeholder predictions whose kickoff is within the due window.
     // Staggered enrichment applies ONLY to World Cup matches — other leagues
     // are generated normally at batch time. New rows use match_timestamp; legacy
