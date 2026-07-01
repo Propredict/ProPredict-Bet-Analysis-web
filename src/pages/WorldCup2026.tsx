@@ -895,60 +895,60 @@ export default function WorldCup2026() {
                 // clock passes midnight, matches that kicked off late yesterday
                 // (e.g. 23:00) can still be live or in the 3h post-FT grace
                 // window, so the visible window starts yesterday evening.
-              if (!p.kickoffTs) return false;
-              const now = new Date();
-              const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                if (!p.kickoffTs) return false;
+                const now = new Date();
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 // Window: yesterday 18:00 → tomorrow 08:00. This keeps late
                 // previous-day live matches visible after midnight, while still
                 // avoiding future matchdays.
                 const windowStart = startOfToday - 6 * 60 * 60 * 1000;
                 const windowEnd = startOfToday + 32 * 60 * 60 * 1000;
-              const nh = norm(p.home);
-              const na = norm(p.away);
-              const liveStatus = statusByKey.get(`${nh}|${na}`);
-              const isStillPlaying = liveStatus === "live" || liveStatus === "halftime";
-              // Keep finished matches in the main AI Picks list for 3h after
-              // the expected FT (kickoff + 110min + 3h). But NEVER drop a
-              // match that is still in play — extra time / stoppage / delay
-              // can push past the 290min mark while the game is ongoing.
-              if (!isStillPlaying && p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
-              // Hide matches where the prediction missed both BTTS and Over/Under
-              // (only applies to truly finished matches).
-              if (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`)) return false;
+                const nh = norm(p.home);
+                const na = norm(p.away);
+                const liveStatus = statusByKey.get(`${nh}|${na}`);
+                const isStillPlaying = liveStatus === "live" || liveStatus === "halftime";
+                // Keep finished matches in the main AI Picks list for 3h after
+                // the expected FT (kickoff + 110min + 3h). But NEVER drop a
+                // match that is still in play — extra time / stoppage / delay
+                // can push past the 290min mark while the game is ongoing.
+                if (!isStillPlaying && p.kickoffTs + (110 + 180) * 60 * 1000 < Date.now()) return false;
+                // Hide matches where the prediction missed both BTTS and Over/Under
+                // (only applies after finished results have loaded, otherwise a
+                // first-open stale empty/partial response could hide every card).
+                if (!isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))) return false;
                 return p.kickoffTs >= windowStart && p.kickoffTs < windowEnd;
               });
               if (todayPreds.length === 0) {
-                // Avoid flashing the empty state while data is still loading
-                // (e.g. immediately after the app is opened from a push
-                // notification). Show a loading skeleton instead so users
-                // don't see "No matches today" only to have the prediction
-                // appear after a manual refresh.
-                const isInitialLoad =
-                  aiPredsLoading ||
-                  todayFixturesLoading ||
-                  todayFixturesFetching;
-                if (isInitialLoad) {
+                // Never show an empty "No matches" card on first open. If the
+                // fixture API is late/empty, keep real match cards visible by
+                // selecting the nearest scheduled static cards and rendering them
+                // as "Coming Soon" placeholders until live data arrives.
+                const nowMs = Date.now();
+                const fallbackPreds = basePreds
+                  .filter((p) => {
+                    if (!p.kickoffTs) return false;
+                    const nh = norm(p.home);
+                    const na = norm(p.away);
+                    return !isLoadingYesterday && (lostWCKeys.has(`${nh}|${na}`) || lostWCKeys.has(`${na}|${nh}`))
+                      ? false
+                      : p.kickoffTs + (110 + 180) * 60 * 1000 >= nowMs;
+                  })
+                  .sort((a, b) => Math.abs((a.kickoffTs ?? 0) - nowMs) - Math.abs((b.kickoffTs ?? 0) - nowMs))
+                  .slice(0, 4);
+
+                if (fallbackPreds.length === 0) {
                   return (
                     <Card className="bg-card border-border p-6 text-center">
                       <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2 animate-pulse" />
                       <p className="text-sm font-semibold text-foreground mb-1">Loading AI predictions…</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Fetching today's World Cup matches.
-                      </p>
+                      <p className="text-[11px] text-muted-foreground">Fetching today's World Cup matches.</p>
                     </Card>
                   );
                 }
-                return (
-                  <Card className="bg-card border-border p-6 text-center">
-                    <Brain className="h-8 w-8 text-primary/60 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-foreground mb-1">No matches today</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      AI predictions for tomorrow's World Cup matches are generated at 00:00. Check back then!
-                    </p>
-                  </Card>
-                );
+
+                return fallbackPreds.map((mockPred, i) => renderAIPickCard(mockPred, i));
               }
-              return todayPreds.map((mockPred, i) => {
+              const renderAIPickCard = (mockPred: (typeof todayPreds)[number], i: number) => {
               // Try to use REAL AI prediction (Poisson + xG + odds + form) when available.
               // Falls back to FIFA-ranking projection until WC kicks off and pipeline generates real data.
               const real = findRealAI(mockPred.home, mockPred.away);
@@ -1190,7 +1190,8 @@ export default function WorldCup2026() {
                   {!isApp && !showBasic && <AppLockOverlay message="Full AI analysis available in app" buttonText="Open App to Unlock" compact />}
                 </Card>
               );
-              });
+              };
+              return todayPreds.map((mockPred, i) => renderAIPickCard(mockPred, i));
             })()}
             {(() => {
               const finishedWithPick = yesterdayResults
