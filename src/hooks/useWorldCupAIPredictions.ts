@@ -6,6 +6,8 @@ export interface WCAIPrediction {
   home_team: string;
   away_team: string;
   match_date: string | null;
+  match_time: string | null;
+  match_timestamp: string | null;
   home_win: number;
   draw: number;
   away_win: number;
@@ -49,7 +51,7 @@ export function useWorldCupAIPredictions() {
       const { data, error } = await supabase
         .from("ai_predictions")
         .select(
-          "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis, key_factors, risk_level"
+          "match_id, home_team, away_team, match_date, match_time, match_timestamp, home_win, draw, away_win, confidence, predicted_score, prediction, analysis, key_factors, risk_level"
         )
         .ilike("league", "%world cup%")
         .in("match_date", [yesterday, today, tomorrow])

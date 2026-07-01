@@ -225,7 +225,7 @@ export default function WorldCup2026() {
     next.set("tab", v);
     setSearchParams(next, { replace: true });
   };
-  const { findFor: findRealAI, hasRealData: hasRealAI, loading: aiPredsLoading } = useWorldCupAIPredictions();
+  const { predictions: realAIPredictions, findFor: findRealAI, hasRealData: hasRealAI, loading: aiPredsLoading } = useWorldCupAIPredictions();
   const { data: yesterdayResults = [], isLoading: isLoadingYesterday } =
     useWCYesterdayResults();
   // Hide finished matches from AI Picks if the prediction missed both
@@ -856,7 +856,49 @@ export default function WorldCup2026() {
                     confidence: proj.confidence,
                   };
                 });
-              const basePreds = [...AI_PREDICTIONS, ...extraPreds];
+              const fixtureKeys = new Set(
+                (todayFixturesData?.fixtures ?? []).flatMap((f: any) => [
+                  `${norm(f.homeTeam)}|${norm(f.awayTeam)}`,
+                  `${norm(f.awayTeam)}|${norm(f.homeTeam)}`,
+                ]),
+              );
+              // If the fixture API returns an empty/stale payload on first app
+              // open, still render cards from the locked DB predictions. This
+              // prevents the Android WebView from showing "No matches today"
+              // until the user manually refreshes.
+              const dbExtraPreds = realAIPredictions
+                .filter((p) => {
+                  const key = `${norm(p.home_team)}|${norm(p.away_team)}`;
+                  return !fixtureKeys.has(key) && p.home_team && p.away_team;
+                })
+                .map((p) => {
+                  const kickoffTs = p.match_timestamp
+                    ? new Date(p.match_timestamp).getTime()
+                    : p.match_date && p.match_time
+                      ? new Date(`${p.match_date}T${p.match_time.slice(0, 5)}:00Z`).getTime()
+                      : null;
+                  const safeKickoffTs = kickoffTs && Number.isFinite(kickoffTs) ? kickoffTs : null;
+                  const d = safeKickoffTs ? new Date(safeKickoffTs) : null;
+                  const monthShort = d ? ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()] : "";
+                  return {
+                    home: p.home_team,
+                    away: p.away_team,
+                    date: d ? `${monthShort} ${d.getUTCDate()}` : (p.match_date ?? ""),
+                    time: d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : (p.match_time?.slice(0, 5) ?? "TBD"),
+                    kickoffTs: safeKickoffTs,
+                    homeWin: p.home_win,
+                    draw: p.draw,
+                    awayWin: p.away_win,
+                    confidence: p.confidence,
+                  };
+                });
+              const seenPredKeys = new Set<string>();
+              const basePreds = [...extraPreds, ...dbExtraPreds, ...AI_PREDICTIONS].filter((p) => {
+                const key = `${norm(p.home)}|${norm(p.away)}`;
+                if (seenPredKeys.has(key)) return false;
+                seenPredKeys.add(key);
+                return true;
+              });
               const todayPreds = basePreds.filter((p) => {
                 // Show today's matches + overnight games. Important: when the
                 // clock passes midnight, matches that kicked off late yesterday
@@ -893,7 +935,7 @@ export default function WorldCup2026() {
                 const isInitialLoad =
                   aiPredsLoading ||
                   todayFixturesLoading ||
-                  (todayFixturesFetching && !todayFixturesData);
+                  todayFixturesFetching;
                 if (isInitialLoad) {
                   return (
                     <Card className="bg-card border-border p-6 text-center">
