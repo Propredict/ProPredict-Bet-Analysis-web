@@ -856,11 +856,10 @@ export default function WorldCup2026() {
                     confidence: proj.confidence,
                   };
                 });
-              // Locked DB predictions must be the FIRST source, even when the
-              // fixture API already knows the same match. On Android first-open,
-              // fixtures can arrive before the DB mapping; excluding DB rows by
-              // fixture key makes the list fall back to stale static schedule
-              // dates and briefly render "No matches today" until refresh.
+              // DB locked predictions are only used to fill in matches that the
+              // fixture API hasn't returned yet. Fixtures are the primary source
+              // so cards render normally with correct kickoff / "Coming Soon"
+              // placeholder behavior.
               const dbPreds = realAIPredictions
                 .filter((p) => p.home_team && p.away_team)
                 .map((p) => {
@@ -885,7 +884,7 @@ export default function WorldCup2026() {
                   };
                 });
               const seenPredKeys = new Set<string>();
-              const basePreds = [...dbPreds, ...extraPreds, ...AI_PREDICTIONS].filter((p) => {
+              const basePreds = [...extraPreds, ...AI_PREDICTIONS, ...dbPreds].filter((p) => {
                 const key = `${norm(p.home)}|${norm(p.away)}`;
                 if (seenPredKeys.has(key)) return false;
                 seenPredKeys.add(key);
