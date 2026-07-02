@@ -51,7 +51,15 @@ function getStoredMarketPick(
   // line is mentioned in the stored prediction/analysis text. Otherwise a
   // stored "Over 1.5" pick would pass a 0-2 result while the card displays
   // "Over 2.5" (which loses).
-  const goalsDirMatch = pred.match(/\b(over|under)\b/) || text.match(/\b(over|under)\b/);
+  // IMPORTANT: mirror `getFrozenDisplayMarkets` in WorldCup2026.tsx exactly.
+  // Only pick up over/under from text when the 2.5 (or 1.5/3.5) line is
+  // explicitly mentioned. Otherwise a stray phrase like "Under/BTTS No
+  // favored" in the analysis would evaluate as Under 2.5 while the card
+  // actually displays Over 2.5 (derived from predicted_score) — causing
+  // the Finished section to hide a real WIN.
+  const goalsDirMatch =
+    pred.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/) ||
+    text.match(/(over|under)\s*(1\.?5|2\.?5|3\.?5)/);
   const bttsYes = /btts[^.]*\byes\b|\byes\s+btts\b|both teams to score[^.]*yes|over\/btts favored|btts favored|\bgg\b/.test(text);
   const bttsNo = /btts[^.]*\bno\b|\bno\s+btts\b|both teams to score[^.]*no|\bng\b/.test(text);
   // Track whether each market came from explicit text or was derived from
