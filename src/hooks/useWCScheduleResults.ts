@@ -106,6 +106,39 @@ export function useWCScheduleResults() {
       if (dates.size === 0) return new Map();
 
       const dateList = Array.from(dates).sort();
+      const out = new Map<string, WCScheduleResult>();
+
+      // Fast path: when check-goals/update jobs already stored scores in
+      // Supabase, render those immediately instead of waiting on API-Football
+      // retries/quotas. This is what keeps Overview from staying at 0-0-0.
+      const { data: wcPreds } = await supabase
+        .from("ai_predictions")
+        .select("match_id, home_team, away_team, match_date, match_time, match_timestamp")
+        .ilike("league", "%world cup%")
+        .in("match_date", dateList)
+        .limit(96);
+
+      if ((wcPreds ?? []).length > 0) {
+        const { data: cachedScores } = await supabase
+          .from("match_scores_cache")
+          .select("match_id, home_score, away_score")
+          .in("match_id", (wcPreds ?? []).map((p) => p.match_id));
+
+        for (const p of wcPreds ?? []) {
+          const score = (cachedScores ?? []).find((s) => s.match_id === p.match_id);
+          if (score?.home_score == null || score.away_score == null) continue;
+          const finished = matchLooksFinished(p.match_date, p.match_time, p.match_timestamp);
+          writeResult(out, p.home_team, p.away_team, {
+            homeScore: score.home_score,
+            awayScore: score.away_score,
+            status: finished ? "FT" : "LIVE",
+            finished,
+          });
+        }
+
+        if (out.size > 0) return out;
+      }
+
       const invokeDate = async (d: string) => {
         let last: Awaited<ReturnType<typeof supabase.functions.invoke>> | null = null;
         for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -132,7 +165,6 @@ export function useWCScheduleResults() {
         const chunkResults = await Promise.all(chunk.map(invokeDate));
         results.push(...chunkResults.filter((r): r is Awaited<ReturnType<typeof supabase.functions.invoke>> => !!r));
       }
-      const out = new Map<string, WCScheduleResult>();
       for (const r of results) {
         const fixtures = ((r.data as FixturesByDateResponse | null)?.fixtures ?? []);
         for (const f of fixtures) {
@@ -156,16 +188,6 @@ export function useWCScheduleResults() {
           writeResult(out, f.homeTeam, f.awayTeam, val);
         }
       }
-
-      // Fallback when API-Football quota/standings returns empty: use the
-      // scores already cached by check-goals/update jobs. This keeps Overview
-      // and Match Schedule from freezing at 0 points / kickoff times.
-      const { data: wcPreds } = await supabase
-        .from("ai_predictions")
-        .select("match_id, home_team, away_team, match_date, match_time, match_timestamp")
-        .ilike("league", "%world cup%")
-        .in("match_date", dateList)
-        .limit(96);
 
       const missingPreds = (wcPreds ?? []).filter((p) => !out.has(`${norm(p.home_team)}|${norm(p.away_team)}`));
       if (missingPreds.length > 0) {
