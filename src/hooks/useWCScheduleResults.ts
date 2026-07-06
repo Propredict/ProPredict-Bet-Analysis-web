@@ -59,6 +59,36 @@ interface FixturesByDateResponse {
   error?: unknown;
 }
 
+function matchLooksFinished(matchDate?: string | null, matchTime?: string | null, matchTimestamp?: string | null): boolean {
+  const kickoffMs = matchTimestamp
+    ? new Date(matchTimestamp).getTime()
+    : matchDate && matchTime
+      ? new Date(`${matchDate}T${matchTime.slice(0, 5)}:00Z`).getTime()
+      : matchDate
+        ? new Date(matchDate).getTime()
+        : NaN;
+  if (!Number.isFinite(kickoffMs)) return true;
+  return Date.now() - kickoffMs >= 110 * 60_000;
+}
+
+function writeResult(
+  out: Map<string, WCScheduleResult>,
+  home: string,
+  away: string,
+  val: WCScheduleResult,
+) {
+  const key = `${norm(home)}|${norm(away)}`;
+  const keyRev = `${norm(away)}|${norm(home)}`;
+  if (!out.has(key)) out.set(key, val);
+  if (!out.has(keyRev)) {
+    out.set(keyRev, {
+      ...val,
+      homeScore: val.awayScore,
+      awayScore: val.homeScore,
+    });
+  }
+}
+
 export function useWCScheduleResults() {
   return useQuery({
     queryKey: ["wc-schedule-results"],
@@ -117,22 +147,43 @@ export function useWCScheduleResults() {
           // (Portuguesa, Colombe, Argentino…, Austria Wien, Argentinos Jr.)
           const clubRegex = /(Portuguesa|Colombe|Argentino|Argentinos|Austria Wien|Austria Klagenfurt|Austria Lustenau|Jordan FC|Congo Brazza)/i;
           if (clubRegex.test(f.homeTeam) || clubRegex.test(f.awayTeam)) continue;
-          const key = `${norm(f.homeTeam)}|${norm(f.awayTeam)}`;
-          const keyRev = `${norm(f.awayTeam)}|${norm(f.homeTeam)}`;
           const val: WCScheduleResult = {
             homeScore: f.homeScore,
             awayScore: f.awayScore,
             status: f.statusShort || f.status,
             finished: f.status === "finished" || f.statusShort === "FT",
           };
-          if (!out.has(key)) out.set(key, val);
-          if (!out.has(keyRev)) {
-            out.set(keyRev, {
-              ...val,
-              homeScore: f.awayScore,
-              awayScore: f.homeScore,
-            });
-          }
+          writeResult(out, f.homeTeam, f.awayTeam, val);
+        }
+      }
+
+      // Fallback when API-Football quota/standings returns empty: use the
+      // scores already cached by check-goals/update jobs. This keeps Overview
+      // and Match Schedule from freezing at 0 points / kickoff times.
+      const { data: wcPreds } = await supabase
+        .from("ai_predictions")
+        .select("match_id, home_team, away_team, match_date, match_time, match_timestamp")
+        .ilike("league", "%world cup%")
+        .in("match_date", dateList)
+        .limit(96);
+
+      const missingPreds = (wcPreds ?? []).filter((p) => !out.has(`${norm(p.home_team)}|${norm(p.away_team)}`));
+      if (missingPreds.length > 0) {
+        const { data: cachedScores } = await supabase
+          .from("match_scores_cache")
+          .select("match_id, home_score, away_score")
+          .in("match_id", missingPreds.map((p) => p.match_id));
+
+        for (const p of missingPreds) {
+          const score = (cachedScores ?? []).find((s) => s.match_id === p.match_id);
+          if (score?.home_score == null || score.away_score == null) continue;
+          const finished = matchLooksFinished(p.match_date, p.match_time, p.match_timestamp);
+          writeResult(out, p.home_team, p.away_team, {
+            homeScore: score.home_score,
+            awayScore: score.away_score,
+            status: finished ? "FT" : "LIVE",
+            finished,
+          });
         }
       }
       return out;
