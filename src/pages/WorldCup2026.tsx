@@ -25,7 +25,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { useWorldCupAIPredictions } from "@/hooks/useWorldCupAIPredictions";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWCYesterdayResults } from "@/hooks/useWCYesterdayResults";
-import { useWCScheduleResults, lookupWCResult, norm } from "@/hooks/useWCScheduleResults";
+import { useWCScheduleResults, lookupWCResult, norm, type WCScheduleResult } from "@/hooks/useWCScheduleResults";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
@@ -203,7 +203,7 @@ function isBracketFinished(status: string): boolean {
   return ["FT", "AET", "PEN", "AWD", "WO"].includes(status);
 }
 
-function buildFallbackGroupStandings(group: string, teams: string[], wcResults: Map<string, { homeScore: number; awayScore: number; finished: boolean }> | undefined) {
+function buildFallbackGroupStandings(group: string, teams: string[], wcResults: Map<string, WCScheduleResult> | undefined) {
   const rows = new Map(teams.map((team) => [team, { team, points: 0, played: 0, win: 0, draw: 0, loss: 0, goalsFor: 0, goalsAgainst: 0, goalsDiff: 0 }]));
   for (const match of GROUP_MATCHES.filter((m) => m.group === group)) {
     const result = lookupWCResult(wcResults, match.home, match.away);
