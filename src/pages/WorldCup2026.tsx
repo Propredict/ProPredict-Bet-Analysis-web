@@ -203,6 +203,44 @@ function isBracketFinished(status: string): boolean {
   return ["FT", "AET", "PEN", "AWD", "WO"].includes(status);
 }
 
+function buildFallbackGroupStandings(group: string, teams: string[], wcResults: Map<string, { homeScore: number; awayScore: number; finished: boolean }> | undefined) {
+  const rows = new Map(teams.map((team) => [team, { team, points: 0, played: 0, win: 0, draw: 0, loss: 0, goalsFor: 0, goalsAgainst: 0, goalsDiff: 0 }]));
+  for (const match of GROUP_MATCHES.filter((m) => m.group === group)) {
+    const result = lookupWCResult(wcResults, match.home, match.away);
+    if (!result?.finished) continue;
+    const home = rows.get(match.home);
+    const away = rows.get(match.away);
+    if (!home || !away) continue;
+
+    home.played += 1;
+    away.played += 1;
+    home.goalsFor += result.homeScore;
+    home.goalsAgainst += result.awayScore;
+    away.goalsFor += result.awayScore;
+    away.goalsAgainst += result.homeScore;
+
+    if (result.homeScore > result.awayScore) {
+      home.win += 1;
+      home.points += 3;
+      away.loss += 1;
+    } else if (result.homeScore < result.awayScore) {
+      away.win += 1;
+      away.points += 3;
+      home.loss += 1;
+    } else {
+      home.draw += 1;
+      away.draw += 1;
+      home.points += 1;
+      away.points += 1;
+    }
+  }
+
+  return Array.from(rows.values()).map((row) => ({
+    ...row,
+    goalsDiff: row.goalsFor - row.goalsAgainst,
+  }));
+}
+
 export default function WorldCup2026() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -528,14 +566,17 @@ export default function WorldCup2026() {
               {Object.entries(GROUPS).map(([group, teams]) => {
                 const isExpanded = expandedGroup === group;
                 const liveGroup = liveStandings?.standings?.[group];
+                const fallbackGroup = buildFallbackGroupStandings(group, teams, wcResults);
                 const getLive = (t: string) => {
                   const target = norm(t);
-                  return liveGroup?.find(lt => {
+                  const official = liveGroup?.find(lt => {
                     const ln = norm(lt.team);
                     return ln === target
                       || lt.team.toLowerCase().includes(t.toLowerCase())
                       || t.toLowerCase().includes(lt.team.toLowerCase());
                   });
+                  if (official && official.played > 0) return official;
+                  return fallbackGroup.find(lt => norm(lt.team) === target);
                 };
                 const sortedTeams = [...teams].sort((a, b) => {
                   const la = getLive(a), lb = getLive(b);
