@@ -12,6 +12,7 @@ import WorldCupTeamPage from "@/components/world-cup/WorldCupTeamPage";
 import TeamFlag from "@/components/world-cup/TeamFlag";
 import AppLockOverlay from "@/components/world-cup/AppLockOverlay";
 import WorldCupBracket from "@/components/world-cup/WorldCupBracket";
+import { useWorldCupBracket, type BracketRound } from "@/hooks/useWorldCupBracket";
 import ChampionPicker from "@/components/world-cup/ChampionPicker";
 import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import WCLiveTickerBanner from "@/components/world-cup/WCLiveTickerBanner";
@@ -184,6 +185,23 @@ const AI_PREDICTIONS = GROUP_MATCHES.map(m => {
     confidence: proj.confidence,
   };
 });
+
+const BRACKET_ROUND_LABELS: Record<string, BracketRound> = {
+  "Round of 32": "Round of 32",
+  "Round of 16": "Round of 16",
+  "Quarter-finals": "Quarter-finals",
+  "Semi-finals": "Semi-finals",
+  "Third-place": "3rd Place Final",
+  Final: "Final",
+};
+
+function isBracketLive(status: string): boolean {
+  return ["1H", "2H", "ET", "P", "LIVE", "HT", "BT"].includes(status);
+}
+
+function isBracketFinished(status: string): boolean {
+  return ["FT", "AET", "PEN", "AWD", "WO"].includes(status);
+}
 
 export default function WorldCup2026() {
   const navigate = useNavigate();
@@ -407,6 +425,19 @@ export default function WorldCup2026() {
   })();
 
   const { data: wcResults } = useWCScheduleResults();
+  const {
+    bracket: overviewBracket,
+    hasData: hasBracketData,
+    totalMatches: bracketTotalMatches,
+    loading: bracketLoading,
+  } = useWorldCupBracket();
+  const progressRows = KNOCKOUT_ROUNDS.map((round) => {
+    const key = BRACKET_ROUND_LABELS[round.name];
+    const matches = key ? overviewBracket[key] ?? [] : [];
+    const live = matches.filter((m) => isBracketLive(m.status)).length;
+    const finished = matches.filter((m) => isBracketFinished(m.status)).length;
+    return { ...round, matches: matches.length, live, finished };
+  });
 
   if (selectedTeam) {
     return (
@@ -568,7 +599,7 @@ export default function WorldCup2026() {
             </h2>
             <Card className="bg-card border-border overflow-hidden">
               <div className="divide-y divide-border">
-                {KNOCKOUT_ROUNDS.map(round => (
+                {progressRows.map(round => (
                   <div key={round.name} className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <span className="text-base">{round.emoji}</span>
@@ -578,8 +609,18 @@ export default function WorldCup2026() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      {isPremium ? (
-                        <span className="text-[10px] text-muted-foreground">Coming soon</span>
+                      {bracketLoading ? (
+                        <span className="text-[10px] text-muted-foreground">Updating…</span>
+                      ) : hasBracketData && round.matches > 0 ? (
+                        <span className="text-[10px] font-semibold text-primary">
+                          {round.live > 0
+                            ? `${round.live} live`
+                            : round.finished > 0
+                              ? `${round.finished}/${round.matches} FT`
+                              : `${round.matches} scheduled`}
+                        </span>
+                      ) : isPremium ? (
+                        <span className="text-[10px] text-muted-foreground">Awaiting fixtures</span>
                       ) : (
                         <>
                           <Lock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -592,7 +633,11 @@ export default function WorldCup2026() {
               </div>
               <div className="px-4 py-3 bg-muted/30 border-t border-border">
                 <p className="text-[11px] text-muted-foreground text-center">
-                  {isPremium ? "Full bracket & predictions available when knockout stage begins" : "Follow the full tournament in the app"}
+                  {hasBracketData
+                    ? `${bracketTotalMatches} knockout fixtures loaded · Auto-updated from official data`
+                    : isPremium
+                      ? "Knockout fixtures will appear here as soon as official data is available"
+                      : "Follow the full tournament in the app"}
                 </p>
               </div>
             </Card>
