@@ -330,7 +330,9 @@ export function useWCYesterdayResults() {
           };
         });
     },
-    staleTime: 5 * 60_000,
-    refetchInterval: 5 * 60_000,
+    // Yesterday's results almost never change after morning. Poll every 30min
+    // to conserve API-Football quota.
+    staleTime: 30 * 60_000,
+    refetchInterval: 30 * 60_000,
   });
 }
