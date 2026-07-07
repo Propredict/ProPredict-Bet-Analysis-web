@@ -28,8 +28,10 @@ export function useWCStandings() {
       if (error) throw error;
       return data as WCStandingsResponse;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 5 * 60 * 1000,
+    // Standings only update after full-time. 30min polling is more than enough
+    // and saves ~5x API-Football requests per user.
+    staleTime: 30 * 60 * 1000,
+    refetchInterval: 30 * 60 * 1000,
     retry: 1,
   });
 }

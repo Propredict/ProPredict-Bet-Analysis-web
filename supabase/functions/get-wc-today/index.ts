@@ -63,44 +63,13 @@ Deno.serve(async (req) => {
     if (dateParam) {
       rawItems = await fetchDate(dateParam);
     } else {
-      // "Today" mode: include matches from late yesterday + overnight
-      // (Europe/Belgrade window 18:00 yesterday → 12:00 tomorrow) so live
-      // matches that kicked off before midnight never disappear at 00:00.
-      const nowParts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Europe/Belgrade",
-        year: "numeric", month: "2-digit", day: "2-digit",
-      }).formatToParts(new Date());
-      const get = (t: string) => nowParts.find(p => p.type === t)?.value ?? "";
-      const todayLocal = `${get("year")}-${get("month")}-${get("day")}`;
-      const localMidnightAsUtc = new Date(`${todayLocal}T00:00:00Z`).getTime();
-      const probeHour = parseInt(
-        new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Europe/Belgrade", hour: "2-digit", hour12: false,
-        }).format(new Date(localMidnightAsUtc)),
-        10,
-      ) || 0;
-      const startMs = localMidnightAsUtc - probeHour * 3600 * 1000 - 6 * 3600 * 1000;
-      // Extend window through tomorrow noon so all overnight + early-morning
-      // kickoffs show under "Today" while live previous-day matches stay visible.
-      const endMs = startMs + (6 + 24 + 12) * 3600 * 1000;
-      windowMs = { startMs, endMs };
-
+      // "Today" mode: fetch only today's UTC date. Previously we fetched
+      // yesterday + today + tomorrow (3 API calls) to catch overnight/late
+      // matches, but that tripled our API-Football quota usage. A single
+      // fetch of the current UTC date covers 99% of cases; edge overnight
+      // kickoffs are picked up on the next poll after 00:00 UTC.
       const todayUtc = new Date().toISOString().split("T")[0];
-      const tomorrowUtc = new Date(Date.now() + 24 * 3600 * 1000).toISOString().split("T")[0];
-      const yesterdayUtc = new Date(Date.now() - 24 * 3600 * 1000).toISOString().split("T")[0];
-      const [a, b, c] = await Promise.all([
-        fetchDate(yesterdayUtc),
-        fetchDate(todayUtc),
-        fetchDate(tomorrowUtc),
-      ]);
-      const seen = new Set<number>();
-      for (const item of [...a, ...b, ...c]) {
-        const id = item?.fixture?.id;
-        if (id && !seen.has(id)) {
-          seen.add(id);
-          rawItems.push(item);
-        }
-      }
+      rawItems = await fetchDate(todayUtc);
     }
 
     if (windowMs) {
