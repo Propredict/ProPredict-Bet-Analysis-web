@@ -210,9 +210,20 @@ export function useWCScheduleResults() {
       }
       return out;
     },
-    // Live matches: refresh every 60s so Matches tab scores update during games.
+    // Only poll aggressively when a live/HT match is present. Otherwise the
+    // scores are already resolved (in match_scores_cache) and we don't need
+    // to burn API-Football quota — 10 minutes is plenty for FT corrections.
     staleTime: 60_000,
-    refetchInterval: 60_000,
+    refetchInterval: (query) => {
+      const map = query.state.data as Map<string, WCScheduleResult> | undefined;
+      if (!map || map.size === 0) return 2 * 60_000;
+      let hasLive = false;
+      for (const v of map.values()) {
+        if (!v.finished) { hasLive = true; break; }
+      }
+      return hasLive ? 60_000 : 10 * 60_000;
+    },
+    refetchOnWindowFocus: false,
   });
 }
 
