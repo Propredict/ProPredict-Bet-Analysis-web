@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
-import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { toast } from "sonner";
 import { setOneSignalTag } from "@/components/AndroidPushModal";
 
@@ -552,19 +551,11 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             : "Subscription activated!"
         );
 
-        // Send order confirmation email (fire-and-forget, once per session)
-        if (user && user.email && !purchaseEmailSentRef.current) {
-          purchaseEmailSentRef.current = true;
-
-          // Determine plan from RevenueCat or message data
-          const purchasedPlan = revenueCat.plan; // "basic" or "premium" after entitlements refresh
-          const planNameMap: Record<string, string> = { basic: "Pro", premium: "Premium" };
-          const priceMap: Record<string, string> = { basic: "€3.99", premium: "€5.99" };
-          const planName = planNameMap[purchasedPlan] || "Pro";
-          const price = priceMap[purchasedPlan] || "€3.99";
-
-          sendOrderConfirmationEmail({ email: user.email, planName, totalPrice: price });
-        }
+        // NOTE: purchase confirmation email is sent server-side by the
+        // RevenueCat webhook AFTER the entitlement is actually granted and
+        // user_subscriptions is updated. Do NOT send from the client —
+        // otherwise users get "thank you" emails even when the purchase
+        // fails, is refunded, or the Play Store rejects it.
 
         // Small delay to let the RevenueCat webhook write to Supabase
         setTimeout(() => {

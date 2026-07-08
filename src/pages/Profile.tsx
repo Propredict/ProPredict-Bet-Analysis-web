@@ -6,7 +6,6 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useArenaStats } from "@/hooks/useArenaStats";
 import { restorePurchases } from "@/hooks/useRevenueCat";
-import { sendOrderConfirmationEmail } from "@/lib/sendPurchaseEmail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,21 +66,10 @@ const Profile = () => {
       searchParams.delete("billing");
       setSearchParams(searchParams, { replace: true });
 
-      // Send order confirmation email (once)
-      if (!purchaseEmailSent.current && user?.email && purchasedPlan) {
-        purchaseEmailSent.current = true;
-
-        const priceMap: Record<string, Record<string, string>> = {
-          basic: { monthly: "€3.99", annual: "€39.99" },
-          premium: { monthly: "€5.99", annual: "€59.99" },
-        };
-        const planNameMap: Record<string, string> = { basic: "Pro", premium: "Premium" };
-
-        const planName = planNameMap[purchasedPlan] || "Pro";
-        const price = priceMap[purchasedPlan]?.[billing || "monthly"] || "€3.99";
-
-        sendOrderConfirmationEmail({ email: user.email, planName, totalPrice: price });
-      }
+      // NOTE: purchase confirmation email is sent server-side by the Stripe webhook
+      // AFTER the payment is actually confirmed and user_subscriptions is updated.
+      // Do NOT send from the client — otherwise users get "thank you" emails even
+      // when payment fails or is canceled.
     }
   }, [searchParams, setSearchParams, user]);
 
