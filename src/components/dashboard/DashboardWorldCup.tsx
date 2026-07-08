@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Radio, Clock, CheckCircle2, Brain, MapPin, Calendar } from "lucide-react";
+import { Trophy, ChevronRight, Radio, Clock, CheckCircle2, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWorldCupBracket } from "@/hooks/useWorldCupBracket";
