@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Radio, Clock, CheckCircle2, Calendar } from "lucide-react";
+import { Trophy, Radio, Clock, CheckCircle2, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWorldCupBracket } from "@/hooks/useWorldCupBracket";
 import { formatMatchTime } from "@/utils/formatMatchTime";
+import TeamFlag from "@/components/world-cup/TeamFlag";
+import { TEAMS } from "@/data/worldCup2026";
 import heroImage from "@/assets/world-cup-hero.jpg";
 
 export function DashboardWorldCup() {
@@ -65,14 +67,24 @@ export function DashboardWorldCup() {
                 : "Live scores · brackets · AI predictions"}
             </p>
             {nextBracketMatch && (
-              <p className="text-sm sm:text-base font-bold text-primary drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]">
-                {nextBracketMatch.home.name || "TBD"} <span className="text-foreground/70">vs</span> {nextBracketMatch.away.name || "TBD"}
-                {nextBracketMatch.date && (
-                  <span className="block text-[11px] sm:text-xs font-semibold text-foreground/80 uppercase tracking-wider mt-0.5">
-                    {new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(nextBracketMatch.date)} CET
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-xl font-black text-foreground drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]">
+                  <span className="flex items-center gap-1.5">
+                    {TEAMS[nextBracketMatch.home.name || ""] && <TeamFlag code={TEAMS[nextBracketMatch.home.name || ""].code} size="sm" />}
+                    {nextBracketMatch.home.name || "TBD"}
                   </span>
+                  <span className="text-primary">vs</span>
+                  <span className="flex items-center gap-1.5">
+                    {nextBracketMatch.away.name || "TBD"}
+                    {TEAMS[nextBracketMatch.away.name || ""] && <TeamFlag code={TEAMS[nextBracketMatch.away.name || ""].code} size="sm" />}
+                  </span>
+                </div>
+                {nextBracketMatch.date && (
+                  <p className="text-[11px] sm:text-xs font-semibold text-foreground/80 uppercase tracking-wider">
+                    {new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(nextBracketMatch.date)} CET
+                  </p>
                 )}
-              </p>
+              </div>
             )}
           </div>
         </div>
@@ -122,18 +134,7 @@ export function DashboardWorldCup() {
                 </div>
               );
             })
-          ) : (
-            <p className="text-[11px] text-muted-foreground text-center py-2">
-              Tap to view full schedule, brackets and AI predictions.
-            </p>
-          )}
-
-          <div className="flex items-center justify-center pt-1">
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground text-[11px] font-bold uppercase tracking-wider group-hover:translate-x-0.5 transition-transform">
-              View all matches
-              <ChevronRight className="h-3.5 w-3.5" />
-            </span>
-          </div>
+          ) : null}
         </div>
       </Link>
 
