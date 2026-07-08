@@ -49,7 +49,9 @@ export function useTopPlayers(type: TopPlayerType) {
   return useQuery({
     queryKey: ["top-players", type],
     queryFn: () => fetchTopPlayers(type),
-    staleTime: 30 * 60 * 1000, // 30 min cache
-    gcTime: 60 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000, // 24h cache — refresh once per day
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
