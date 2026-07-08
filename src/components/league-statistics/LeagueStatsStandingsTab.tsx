@@ -70,9 +70,6 @@ const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
   { value: "major", label: "Major" },
-  { value: "international", label: "International" },
-  { value: "americas", label: "Americas" },
-  { value: "asia", label: "Asia" },
 ];
 
 function getFormColor(result: string) {
@@ -431,9 +428,11 @@ function LeagueCardsGrid() {
   const normalizedQuery = query.trim().toLowerCase();
   const hasQuery = normalizedQuery.length > 0;
 
-  // Default view: show only featured top leagues
-  // Search view: search through the full extended list
-  const baseLeagues = hasQuery ? allLeagues : topLeagues;
+  const isDefaultView = !hasQuery && category === "all";
+
+  // Default "All" view: show only featured top leagues
+  // Any filter or search: use the full extended list
+  const baseLeagues = isDefaultView ? topLeagues : allLeagues;
 
   const filteredLeagues = baseLeagues.filter((league) => {
     const matchesCategory = category === "all" || league.category === category;
