@@ -26,6 +26,79 @@ async function notifyAdmin(plan: string, email: string, userId: string, source: 
   }
 }
 
+// Send "Thank you for your purchase" email to the customer — ONLY after
+// the subscription has been successfully written as active in Supabase.
+// Idempotent via user_subscriptions.purchase_email_sent_at, so RENEWAL
+// events (which fire every billing cycle) do NOT re-send the email.
+async function sendPurchaseEmailIfNeeded(
+  supabase: any,
+  userId: string,
+  email: string,
+  plan: string
+) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey || !email) return;
+
+  try {
+    const { data: existing } = await supabase
+      .from("user_subscriptions")
+      .select("purchase_email_sent_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing?.purchase_email_sent_at) {
+      console.log(`Purchase email already sent for user ${userId} — skipping`);
+      return;
+    }
+
+    const planLabel = plan === "premium" ? "Premium" : "Pro";
+    const price = plan === "premium" ? "€5.99" : "€3.99";
+    const orderId = `PP-${Date.now().toString(36).toUpperCase()}`;
+    const html = `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#ffffff;padding:32px 28px;max-width:560px;margin:0 auto;">
+        <h2 style="color:#0F9B8E;letter-spacing:0.5px;text-transform:uppercase;font-size:18px;margin:0 0 24px;">ProPredict</h2>
+        <h1 style="color:#0d1a15;font-size:24px;margin:0 0 16px;">Thank you for your purchase! 🎉</h1>
+        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 24px;">
+          Your <strong>${planLabel}</strong> subscription is now active. Enjoy AI predictions, live scores, and daily picks.
+        </p>
+        <table style="width:100%;background:#f0fdfa;border-radius:10px;padding:16px 20px;margin:0 0 24px;color:#0d1a15;font-size:14px;">
+          <tr><td><strong>Order:</strong></td><td style="text-align:right;">${orderId}</td></tr>
+          <tr><td><strong>Plan:</strong></td><td style="text-align:right;">${planLabel}</td></tr>
+          <tr><td><strong>Total:</strong></td><td style="text-align:right;">${price}</td></tr>
+        </table>
+        <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
+          Manage your subscription any time in Profile → Subscription.
+        </p>
+      </div>
+    `;
+
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendKey}` },
+      body: JSON.stringify({
+        from: "ProPredict <noreply@propredict.me>",
+        to: [email],
+        subject: `Thank you for your ProPredict ${planLabel} purchase`,
+        html,
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error(`Resend failed [${resp.status}]:`, await resp.text());
+      return;
+    }
+
+    await supabase
+      .from("user_subscriptions")
+      .update({ purchase_email_sent_at: new Date().toISOString() })
+      .eq("user_id", userId);
+
+    console.log(`Purchase email sent to ${email} for user ${userId}`);
+  } catch (e) {
+    console.error("sendPurchaseEmailIfNeeded failed:", e);
+  }
+}
+
 /**
  * RevenueCat Webhook Handler
  * 
@@ -200,6 +273,15 @@ serve(async (req) => {
 
       // Notify admin about new sale (fire-and-forget)
       notifyAdmin(plan, userData.user.email || "unknown", userId, "Google Play");
+
+      // Send purchase confirmation to CUSTOMER — only on the first purchase
+      // (idempotent via purchase_email_sent_at, so RENEWAL won't re-send).
+      await sendPurchaseEmailIfNeeded(
+        supabase,
+        userId,
+        userData.user.email || "",
+        plan
+      );
     } else if (deactivateEvents.includes(eventType)) {
       console.log(`RevenueCat webhook: Expiring subscription for user ${userId}`);
 
