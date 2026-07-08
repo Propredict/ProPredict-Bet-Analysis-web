@@ -379,12 +379,14 @@ function StandingsRowMobile({
   );
 }
 
-// Grid of league cards (shown at bottom or standalone) with search + filter
+// Grid of league cards (shown only after search) with search + filter
 function LeagueCardsGrid() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<LeagueCategory>("all");
 
   const normalizedQuery = query.trim().toLowerCase();
+  const hasQuery = normalizedQuery.length > 0;
+
   const filteredLeagues = topLeagues.filter((league) => {
     const matchesCategory = category === "all" || league.category === category;
     const matchesSearch =
@@ -429,7 +431,11 @@ function LeagueCardsGrid() {
         </ToggleGroup>
       </div>
 
-      {filteredLeagues.length === 0 ? (
+      {!hasQuery ? (
+        <div className="text-center py-12 text-sm text-muted-foreground">
+          Type a league name above to see standings.
+        </div>
+      ) : filteredLeagues.length === 0 ? (
         <div className="text-center py-8 text-sm text-muted-foreground">
           No leagues found.
         </div>
