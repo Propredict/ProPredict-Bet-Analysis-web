@@ -12,23 +12,67 @@ interface LeagueStatsStandingsTabProps {
   leagueName: string;
 }
 
-// Top leagues for grid view
-const topLeagues = [
-  { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "top5" as const },
-  { id: "140", name: "La Liga", flag: "🇪🇸", category: "top5" as const },
-  { id: "78", name: "Bundesliga", flag: "🇩🇪", category: "top5" as const },
-  { id: "135", name: "Serie A", flag: "🇮🇹", category: "top5" as const },
-  { id: "61", name: "Ligue 1", flag: "🇫🇷", category: "top5" as const },
-  { id: "88", name: "Eredivisie", flag: "🇳🇱", category: "major" as const },
-  { id: "94", name: "Primeira Liga", flag: "🇵🇹", category: "major" as const },
-  { id: "203", name: "Süper Lig", flag: "🇹🇷", category: "major" as const },
+interface LeagueInfo {
+  id: string;
+  name: string;
+  flag: string;
+  category: LeagueCategory;
+  keywords?: string[];
+}
+
+// Top leagues shown by default
+const topLeagues: LeagueInfo[] = [
+  { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "top5", keywords: ["premier", "epl", "england"] },
+  { id: "140", name: "La Liga", flag: "🇪🇸", category: "top5", keywords: ["la liga", "spain", "espana"] },
+  { id: "78", name: "Bundesliga", flag: "🇩🇪", category: "top5", keywords: ["bundesliga", "germany"] },
+  { id: "135", name: "Serie A", flag: "🇮🇹", category: "top5", keywords: ["serie a", "italy"] },
+  { id: "61", name: "Ligue 1", flag: "🇫🇷", category: "top5", keywords: ["ligue 1", "france"] },
+  { id: "88", name: "Eredivisie", flag: "🇳🇱", category: "major", keywords: ["eredivisie", "netherlands", "holland"] },
+  { id: "94", name: "Primeira Liga", flag: "🇵🇹", category: "major", keywords: ["primeira", "portugal", "liga portugal"] },
+  { id: "203", name: "Süper Lig", flag: "🇹🇷", category: "major", keywords: ["super lig", "turkey", "turkiye"] },
 ];
 
-type LeagueCategory = "all" | "top5" | "major";
+// Extended searchable league list (available via search/filter)
+const allLeagues: LeagueInfo[] = [
+  ...topLeagues,
+  // Major European
+  { id: "144", name: "Belgian Pro League", flag: "🇧🇪", category: "major", keywords: ["belgium", "jupiler"] },
+  { id: "179", name: "Scottish Premiership", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", category: "major", keywords: ["scotland", "spl", "premiership"] },
+  { id: "218", name: "Austrian Bundesliga", flag: "🇦🇹", category: "major", keywords: ["austria", "bundesliga"] },
+  { id: "207", name: "Swiss Super League", flag: "🇨🇭", category: "major", keywords: ["switzerland", "swiss"] },
+  { id: "113", name: "Allsvenskan", flag: "🇸🇪", category: "major", keywords: ["sweden", "allsvenskan"] },
+  { id: "103", name: "Eliteserien", flag: "🇳🇴", category: "major", keywords: ["norway", "eliteserien"] },
+  { id: "119", name: "Danish Superliga", flag: "🇩🇰", category: "major", keywords: ["denmark", "superliga"] },
+  { id: "106", name: "Ekstraklasa", flag: "🇵🇱", category: "major", keywords: ["poland", "ekstraklasa"] },
+  { id: "235", name: "Russian Premier League", flag: "🇷🇺", category: "major", keywords: ["russia", "rpl"] },
+  { id: "333", name: "Ukrainian Premier League", flag: "🇺🇦", category: "major", keywords: ["ukraine", "upl"] },
+  // International club competitions
+  { id: "2", name: "Champions League", flag: "🇪🇺", category: "international", keywords: ["ucl", "champions league", "cl"] },
+  { id: "3", name: "Europa League", flag: "🇪🇺", category: "international", keywords: ["uel", "europa league"] },
+  { id: "848", name: "Conference League", flag: "🇪🇺", category: "international", keywords: ["conference", "uecl"] },
+  // Americas
+  { id: "71", name: "Brasileirão", flag: "🇧🇷", category: "americas", keywords: ["brazil", "brasileirao", "serie a"] },
+  { id: "253", name: "Major League Soccer", flag: "🇺🇸", category: "americas", keywords: ["mls", "usa", "united states"] },
+  { id: "262", name: "Liga MX", flag: "🇲🇽", category: "americas", keywords: ["mexico", "liga mx", "mx"] },
+  { id: "128", name: "Argentine Primera División", flag: "🇦🇷", category: "americas", keywords: ["argentina", "primera"] },
+  { id: "130", name: "Chilean Primera División", flag: "🇨🇱", category: "americas", keywords: ["chile", "primera"] },
+  // Asia
+  { id: "98", name: "J1 League", flag: "🇯🇵", category: "asia", keywords: ["japan", "j1", "j league"] },
+  { id: "292", name: "K League 1", flag: "🇰🇷", category: "asia", keywords: ["korea", "k league", "k1"] },
+  { id: "188", name: "A-League", flag: "🇦🇺", category: "asia", keywords: ["australia", "a league"] },
+  { id: "169", name: "Chinese Super League", flag: "🇨🇳", category: "asia", keywords: ["china", "csl", "super league"] },
+  { id: "307", name: "Saudi Pro League", flag: "🇸🇦", category: "asia", keywords: ["saudi", "pro league", "spl"] },
+  { id: "305", name: "UAE Pro League", flag: "🇦🇪", category: "asia", keywords: ["uae", "dubai", "pro league"] },
+];
+
+type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia";
 const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
   { value: "major", label: "Major" },
+  { value: "international", label: "International" },
+  { value: "americas", label: "Americas" },
+  { value: "asia", label: "Asia" },
 ];
 
 function getFormColor(result: string) {
@@ -379,7 +423,7 @@ function StandingsRowMobile({
   );
 }
 
-// Grid of league cards (shown only after search) with search + filter
+// Grid of league cards with search + filter (default: 8 featured leagues)
 function LeagueCardsGrid() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<LeagueCategory>("all");
@@ -387,12 +431,17 @@ function LeagueCardsGrid() {
   const normalizedQuery = query.trim().toLowerCase();
   const hasQuery = normalizedQuery.length > 0;
 
-  const filteredLeagues = topLeagues.filter((league) => {
+  // Default view: show only featured top leagues
+  // Search view: search through the full extended list
+  const baseLeagues = hasQuery ? allLeagues : topLeagues;
+
+  const filteredLeagues = baseLeagues.filter((league) => {
     const matchesCategory = category === "all" || league.category === category;
     const matchesSearch =
       !normalizedQuery ||
       league.name.toLowerCase().includes(normalizedQuery) ||
-      league.flag === normalizedQuery;
+      league.flag === normalizedQuery ||
+      league.keywords?.some((kw) => kw.toLowerCase().includes(normalizedQuery));
     return matchesCategory && matchesSearch;
   });
 
@@ -415,7 +464,7 @@ function LeagueCardsGrid() {
           type="single"
           value={category}
           onValueChange={(value) => value && setCategory(value as LeagueCategory)}
-          className="bg-card border border-primary/20 p-1 rounded-lg"
+          className="bg-card border border-primary/20 p-1 rounded-lg flex-wrap justify-start sm:justify-end"
         >
           {filters.map((f) => (
             <ToggleGroupItem
@@ -431,12 +480,8 @@ function LeagueCardsGrid() {
         </ToggleGroup>
       </div>
 
-      {!hasQuery ? (
+      {filteredLeagues.length === 0 ? (
         <div className="text-center py-12 text-sm text-muted-foreground">
-          Type a league name above to see standings.
-        </div>
-      ) : filteredLeagues.length === 0 ? (
-        <div className="text-center py-8 text-sm text-muted-foreground">
           No leagues found.
         </div>
       ) : (
