@@ -4,7 +4,6 @@ import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, Us
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
-import { LeagueStatsLiveTab } from "@/components/league-statistics/LeagueStatsLiveTab";
 import { LeagueStatsEmptyState } from "@/components/league-statistics/LeagueStatsEmptyState";
 import { LeagueStatsStandingsTab } from "@/components/league-statistics/LeagueStatsStandingsTab";
 import { LeagueStatsScorersTab } from "@/components/league-statistics/LeagueStatsScorersTab";
@@ -183,7 +182,6 @@ export default function LeagueStatistics() {
           <div className="w-full p-2 sm:p-3 rounded-xl bg-card/80 border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
             <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
               {[
-                { value: "live", icon: Play, label: "Live" },
                 { value: "standings", icon: Trophy, label: "Standings" },
                 { value: "players", icon: UserCheck, label: "Players" },
                 { value: "squads", icon: UsersRound, label: "Squads" },
@@ -213,11 +211,6 @@ export default function LeagueStatistics() {
               ))}
             </div>
           </div>
-
-          {/* Live Tab - always shows content */}
-          <TabsContent value="live" className="mt-4">
-            <LeagueStatsLiveTab matches={filteredMatches} isLoading={isLoading} error={error} isAllLeagues={isAllLeagues} leagueName={selectedLeague?.name} />
-          </TabsContent>
 
           {/* Standings tab - shows grid for All Leagues, detailed view for specific league */}
           <TabsContent value="standings" className="mt-4">
