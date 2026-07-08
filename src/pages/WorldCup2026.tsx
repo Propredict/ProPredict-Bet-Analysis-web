@@ -18,7 +18,6 @@ import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import WCLiveTickerBanner from "@/components/world-cup/WCLiveTickerBanner";
 import WCNotifyToggle from "@/components/world-cup/WCNotifyToggle";
 import WCTopPlayersTab from "@/components/world-cup/WCTopPlayersTab";
-import WCTournamentStatsTab from "@/components/world-cup/WCTournamentStatsTab";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
