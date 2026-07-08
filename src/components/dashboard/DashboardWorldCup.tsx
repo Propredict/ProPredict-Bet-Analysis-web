@@ -134,18 +134,7 @@ export function DashboardWorldCup() {
                 </div>
               );
             })
-          ) : (
-            <p className="text-[11px] text-muted-foreground text-center py-2">
-              Tap to view full schedule, brackets and AI predictions.
-            </p>
-          )}
-
-          <div className="flex items-center justify-center pt-1">
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground text-[11px] font-bold uppercase tracking-wider group-hover:translate-x-0.5 transition-transform">
-              View all matches
-              <ChevronRight className="h-3.5 w-3.5" />
-            </span>
-          </div>
+          ) : null}
         </div>
       </Link>
 
