@@ -4,7 +4,6 @@ import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, Us
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLiveScores } from "@/hooks/useLiveScores";
-import { LeagueStatsLiveTab } from "@/components/league-statistics/LeagueStatsLiveTab";
 import { LeagueStatsEmptyState } from "@/components/league-statistics/LeagueStatsEmptyState";
 import { LeagueStatsStandingsTab } from "@/components/league-statistics/LeagueStatsStandingsTab";
 import { LeagueStatsScorersTab } from "@/components/league-statistics/LeagueStatsScorersTab";
