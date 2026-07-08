@@ -28,10 +28,10 @@ export function useWCStandings() {
       if (error) throw error;
       return data as WCStandingsResponse;
     },
-    // Group stage is nearly done and KO matches don't change group tables.
-    // With only 1-2 matches per day, 3h polling is plenty and saves API quota.
-    staleTime: 3 * 60 * 60 * 1000,
-    refetchInterval: 3 * 60 * 60 * 1000,
+    // Group stage is over and tables no longer change. Keep the last fetched
+    // data cached without any automatic refetch to save API quota.
+    staleTime: Infinity,
+    refetchInterval: false,
     retry: 1,
   });
 }
