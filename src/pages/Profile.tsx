@@ -41,9 +41,6 @@ const Profile = () => {
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
-  // Track whether we already sent the purchase email this mount
-  const purchaseEmailSent = useRef(false);
-
   useEffect(() => {
     if (location.state?.openDeleteDialog) {
       setShowDeleteDialog(true);
