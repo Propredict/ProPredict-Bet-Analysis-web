@@ -379,13 +379,72 @@ function StandingsRowMobile({
   );
 }
 
-// Grid of league cards (shown at bottom or standalone)
+// Grid of league cards (shown at bottom or standalone) with search + filter
 function LeagueCardsGrid() {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<LeagueCategory>("all");
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredLeagues = topLeagues.filter((league) => {
+    const matchesCategory = category === "all" || league.category === category;
+    const matchesSearch =
+      !normalizedQuery ||
+      league.name.toLowerCase().includes(normalizedQuery) ||
+      league.flag === normalizedQuery;
+    return matchesCategory && matchesSearch;
+  });
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {topLeagues.map((league) => (
-        <LeagueStandingsCard key={league.id} leagueId={league.id} leagueName={league.name} flag={league.flag} />
-      ))}
+    <div className="space-y-4">
+      {/* Search + filter */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search leagues..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-9 bg-card border-primary/20 focus-visible:ring-primary/50"
+          />
+        </div>
+
+        <ToggleGroup
+          type="single"
+          value={category}
+          onValueChange={(value) => value && setCategory(value as LeagueCategory)}
+          className="bg-card border border-primary/20 p-1 rounded-lg"
+        >
+          {filters.map((f) => (
+            <ToggleGroupItem
+              key={f.value}
+              value={f.value}
+              className={cn(
+                "text-xs px-3 py-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              )}
+            >
+              {f.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
+      {filteredLeagues.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          No leagues found.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredLeagues.map((league) => (
+            <LeagueStandingsCard
+              key={league.id}
+              leagueId={league.id}
+              leagueName={league.name}
+              flag={league.flag}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
