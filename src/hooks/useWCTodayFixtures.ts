@@ -75,9 +75,15 @@ export function useWCTodayFixtures() {
       return cached ?? fresh;
     },
     initialData: readCachedFixtures,
-    // Auto-refresh every 30s — picks up live score changes.
-    refetchInterval: 30_000,
-    staleTime: 25_000,
+    // Keep 30s only while a WC match is actually live. Outside live windows,
+    // polling every 5min protects the API-Football daily quota without hiding
+    // current data because we keep the local/DB fallback cached.
+    refetchInterval: (query) => {
+      const fixtures = ((query.state.data as Resp | undefined)?.fixtures ?? []);
+      const hasLive = fixtures.some((f) => f.status === "live" || f.status === "halftime");
+      return hasLive ? 30_000 : 5 * 60_000;
+    },
+    staleTime: 60_000,
     retry: 1,
     // Critical for Android: when the app is resumed (e.g. from a push
     // notification tap), force a fresh fetch instead of serving an empty

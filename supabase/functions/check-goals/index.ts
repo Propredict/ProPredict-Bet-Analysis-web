@@ -51,34 +51,6 @@ serve(async (req) => {
   };
 
   try {
-    // Reliability guard: this function is already polled frequently for live
-    // alerts, so use it to resolve finished AI/WC picks too. This prevents WIN
-    // pushes from waiting on the slower due-prediction cron.
-    let resultUpdate: { ok: boolean; status?: number; updated?: number; skipped?: number; error?: string } = { ok: false };
-    try {
-      const updateRes = await fetch(`${SUPABASE_URL}/functions/v1/update-prediction-results`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-        body: JSON.stringify({ source: "check-goals-ft-guard" }),
-      });
-      const updateJson = await updateRes.json().catch(() => ({}));
-      resultUpdate = {
-        ok: updateRes.ok,
-        status: updateRes.status,
-        updated: typeof updateJson?.updated === "number" ? updateJson.updated : undefined,
-        skipped: typeof updateJson?.skipped === "number" ? updateJson.skipped : undefined,
-        error: updateRes.ok ? undefined : JSON.stringify(updateJson),
-      };
-      console.log(`[check-goals] FT guard: ok=${resultUpdate.ok}, updated=${resultUpdate.updated ?? 0}, skipped=${resultUpdate.skipped ?? 0}`);
-    } catch (guardErr) {
-      resultUpdate = { ok: false, error: guardErr instanceof Error ? guardErr.message : String(guardErr) };
-      console.warn("[check-goals] FT guard failed:", resultUpdate.error);
-    }
-
     // ================= FETCH LIVE MATCHES =================
     const apiRes = await fetch(
       "https://v3.football.api-sports.io/fixtures?live=all",
@@ -100,7 +72,7 @@ serve(async (req) => {
 
     if (fixtures.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, goals_detected: 0, message: "No live fixtures", result_update: resultUpdate }),
+          JSON.stringify({ success: true, goals_detected: 0, message: "No live fixtures" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -313,7 +285,6 @@ serve(async (req) => {
         success: true,
         goals_detected: totalGoals,
         notifications_sent: totalNotifications,
-        result_update: resultUpdate,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
