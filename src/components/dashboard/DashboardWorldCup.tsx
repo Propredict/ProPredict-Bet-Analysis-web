@@ -8,6 +8,7 @@ import heroImage from "@/assets/world-cup-hero.jpg";
 
 export function DashboardWorldCup() {
   const { data } = useWCTodayFixtures();
+  const { bracket } = useWorldCupBracket();
   const fixtures = data?.fixtures ?? [];
   const live = fixtures.filter((f) => f.status === "live" || f.status === "halftime");
   const upcoming = fixtures.filter((f) => f.status === "upcoming");
@@ -16,6 +17,16 @@ export function DashboardWorldCup() {
 
   // First upcoming match for "Our Tip"
   const nextMatch = upcoming[0] ?? preview.find((f) => f.status !== "finished") ?? null;
+
+  // Next upcoming knockout match across the whole bracket (not just today)
+  const nextBracketMatch = (() => {
+    const finishedStatuses = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
+    const all = Object.values(bracket ?? {})
+      .flat()
+      .filter((m) => m.date && !finishedStatuses.has(m.status))
+      .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+    return all[0] ?? null;
+  })();
 
   return (
     <div className="rounded-2xl overflow-hidden border border-primary/30 bg-card shadow-[0_0_25px_rgba(15,155,142,0.18)]">
