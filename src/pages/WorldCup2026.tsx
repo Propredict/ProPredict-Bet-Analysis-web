@@ -1602,81 +1602,65 @@ export default function WorldCup2026() {
           )}
 
           <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" /> Match Schedule (CET)
+            <Calendar className="h-4 w-4 text-primary" /> Upcoming Knockout Matches (CET)
           </h2>
-            <div className="flex gap-2 mb-3">
-              {([
-                { key: "md1", label: "Round 1" },
-                { key: "md2", label: "Round 2" },
-                { key: "md3", label: "Round 3" },
-              ] as const).map(f => (
-                <Button key={f.key} size="sm" variant={matchesFilter === f.key ? "default" : "outline"}
-                  className="text-[11px] h-7 px-3" onClick={() => setMatchesFilter(f.key)}>
-                  {f.label}
-                </Button>
-              ))}
-            </div>
 
-            <div className="space-y-2">
-              {(matchesByDay[matchesFilter] || []).length > 0 ? (
-                matchesByDay[matchesFilter].map((m, i) => {
-                  const result = lookupWCResult(wcResults, m.home, m.away);
-                  const isFinished = !!result?.finished;
+          <div className="space-y-2">
+            {(() => {
+              const upcoming = Object.entries(overviewBracket)
+                .flatMap(([round, matches]) => matches.map((m) => ({ ...m, roundLabel: round })))
+                .filter((m) => !isBracketFinished(m.status))
+                .sort((a, b) => {
+                  const da = a.date ? new Date(a.date).getTime() : Infinity;
+                  const db = b.date ? new Date(b.date).getTime() : Infinity;
+                  return da - db;
+                });
+
+              return upcoming.length > 0 ? (
+                upcoming.map((m, i) => {
+                  const dt = m.date ? new Date(m.date) : null;
+                  const dateStr = dt
+                    ? dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })
+                    : "TBD";
+                  const timeStr = formatMatchTime(m.date);
+                  const homeName = m.home.name || "TBD";
+                  const awayName = m.away.name || "TBD";
                   return (
-                  <Card key={i} className="bg-card border-border p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <Badge variant="outline" className="text-[9px]">Group {m.group}</Badge>
-                      <div className="flex items-center gap-2">
-                        {isFinished && (
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] px-1.5 py-0">
-                            FT
-                          </Badge>
-                        )}
+                    <Card key={i} className="bg-card border-border p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <Badge variant="outline" className="text-[9px]">{m.roundLabel}</Badge>
                         <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {m.city}
+                          <MapPin className="h-3 w-3" /> {m.venue || "TBD"}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          {TEAMS[m.home] && <TeamFlag code={TEAMS[m.home].code} size="sm" />}
-                          <span className="text-xs font-semibold text-foreground">{m.home}</span>
-                          <span className="text-[9px] text-muted-foreground">#{TEAMS[m.home]?.fifaRank}</span>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            {TEAMS[homeName] && <TeamFlag code={TEAMS[homeName].code} size="sm" />}
+                            <span className="text-xs font-semibold text-foreground">{homeName}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {TEAMS[awayName] && <TeamFlag code={TEAMS[awayName].code} size="sm" />}
+                            <span className="text-xs font-semibold text-foreground">{awayName}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          {TEAMS[m.away] && <TeamFlag code={TEAMS[m.away].code} size="sm" />}
-                          <span className="text-xs font-semibold text-foreground">{m.away}</span>
-                          <span className="text-[9px] text-muted-foreground">#{TEAMS[m.away]?.fifaRank}</span>
+                        <div className="text-right">
+                          <p className="text-[10px] text-muted-foreground">{dateStr}</p>
+                          <p className="text-sm font-bold text-primary">{timeStr}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        {result ? (
-                          <>
-                            <p className="text-[10px] text-muted-foreground">{m.date}</p>
-                            <p className="text-lg font-extrabold text-emerald-400 leading-none">
-                              {result.homeScore} - {result.awayScore}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[10px] text-muted-foreground">{m.date}</p>
-                            <p className="text-sm font-bold text-primary">{m.time}</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
+                    </Card>
                   );
                 })
               ) : (
                 <div className="text-center py-8">
-                  <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">Schedule will be available soon</p>
+                  <Calendar className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">No upcoming knockout matches</p>
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
+        </div>
         </TabsContent>
 
         {/* ==================== TEAMS ==================== */}
