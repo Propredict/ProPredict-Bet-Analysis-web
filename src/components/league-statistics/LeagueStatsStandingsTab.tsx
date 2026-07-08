@@ -38,19 +38,16 @@ const allLeagues = [
   { id: "106", name: "Ekstraklasa", flag: "🇵🇱", category: "major" as const },
   { id: "235", name: "Russian Premier League", flag: "🇷🇺", category: "major" as const },
   { id: "333", name: "Ukrainian Premier League", flag: "🇺🇦", category: "major" as const },
-  // International
+  // International club competitions
   { id: "2", name: "Champions League", flag: "🇪🇺", category: "international" as const },
   { id: "3", name: "Europa League", flag: "🇪🇺", category: "international" as const },
   { id: "848", name: "Conference League", flag: "🇪🇺", category: "international" as const },
-  { id: "1", name: "World Cup", flag: "🌍", category: "international" as const },
-  { id: "4", name: "Euro Championship", flag: "🇪🇺", category: "international" as const },
-  { id: "9", name: "Copa America", flag: "🌎", category: "international" as const },
   // Americas
   { id: "71", name: "Brasileirão", flag: "🇧🇷", category: "americas" as const },
   { id: "253", name: "Major League Soccer", flag: "🇺🇸", category: "americas" as const },
   { id: "262", name: "Liga MX", flag: "🇲🇽", category: "americas" as const },
-  { id: "128", name: "Primera División", flag: "🇦🇷", category: "americas" as const },
-  { id: "130", name: "Primera División", flag: "🇨🇱", category: "americas" as const },
+  { id: "128", name: "Argentine Primera División", flag: "🇦🇷", category: "americas" as const },
+  { id: "130", name: "Chilean Primera División", flag: "🇨🇱", category: "americas" as const },
   // Asia
   { id: "98", name: "J1 League", flag: "🇯🇵", category: "asia" as const },
   { id: "292", name: "K League 1", flag: "🇰🇷", category: "asia" as const },
@@ -58,15 +55,9 @@ const allLeagues = [
   { id: "169", name: "Chinese Super League", flag: "🇨🇳", category: "asia" as const },
   { id: "307", name: "Saudi Pro League", flag: "🇸🇦", category: "asia" as const },
   { id: "305", name: "UAE Pro League", flag: "🇦🇪", category: "asia" as const },
-  // Domestic Cups
-  { id: "21", name: "FA Cup", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "cups" as const },
-  { id: "143", name: "Copa del Rey", flag: "🇪🇸", category: "cups" as const },
-  { id: "81", name: "DFB-Pokal", flag: "🇩🇪", category: "cups" as const },
-  { id: "384", name: "Coppa Italia", flag: "🇮🇹", category: "cups" as const },
-  { id: "65", name: "Coupe de France", flag: "🇫🇷", category: "cups" as const },
 ];
 
-type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia" | "cups";
+type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia";
 const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
@@ -74,7 +65,6 @@ const filters: { value: LeagueCategory; label: string }[] = [
   { value: "international", label: "International" },
   { value: "americas", label: "Americas" },
   { value: "asia", label: "Asia" },
-  { value: "cups", label: "Cups" },
 ];
 
 function getFormColor(result: string) {
