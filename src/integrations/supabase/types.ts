@@ -1134,6 +1134,7 @@ export type Database = {
           expires_at: string | null
           id: string
           plan: string
+          purchase_email_sent_at: string | null
           status: string | null
           subscription_source: string | null
           updated_at: string
@@ -1144,6 +1145,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           plan?: string
+          purchase_email_sent_at?: string | null
           status?: string | null
           subscription_source?: string | null
           updated_at?: string
@@ -1154,6 +1156,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           plan?: string
+          purchase_email_sent_at?: string | null
           status?: string | null
           subscription_source?: string | null
           updated_at?: string
