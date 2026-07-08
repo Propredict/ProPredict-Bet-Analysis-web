@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Trophy, Radio, Clock, CheckCircle2, Calendar } from "lucide-react";
+import { Trophy, Radio, Clock, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWorldCupBracket } from "@/hooks/useWorldCupBracket";
@@ -138,38 +138,6 @@ export function DashboardWorldCup() {
         </div>
       </Link>
 
-      {/* Upcoming Match — always shows the next knockout fixture from the bracket */}
-      {nextBracketMatch && (
-        <Link
-          to="/world-cup-2026?tab=matches"
-          className="group/link block mx-3 mb-4 rounded-2xl border-2 border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 p-4 hover:border-primary/60 hover:from-primary/20 hover:to-primary/10 transition-all shadow-[0_0_20px_rgba(15,155,142,0.12)]"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/20 shrink-0">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-extrabold text-primary uppercase tracking-wide">Upcoming Match</p>
-                <p className="text-base font-bold text-foreground truncate">
-                  {nextBracketMatch.home.name || "TBD"} <span className="text-muted-foreground font-semibold">vs</span> {nextBracketMatch.away.name || "TBD"}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <Badge variant="outline" className="text-[11px] px-2.5 py-0.5 h-6 border-primary/40 text-primary gap-1.5 font-semibold">
-                <Clock className="h-3 w-3" />
-                {nextBracketMatch.date ? formatMatchTime(nextBracketMatch.date) : "TBD"}
-              </Badge>
-              <p className="text-[10px] text-muted-foreground">
-                {nextBracketMatch.date
-                  ? new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })
-                  : "TBD"}
-              </p>
-            </div>
-          </div>
-        </Link>
-      )}
     </div>
   );
 }
