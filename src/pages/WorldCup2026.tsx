@@ -304,6 +304,7 @@ export default function WorldCup2026() {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [expandedFinished, setExpandedFinished] = useState<Set<string>>(new Set());
   const [expandedAI, setExpandedAI] = useState<Set<string>>(new Set());
+  const [groupResultsFilter, setGroupResultsFilter] = useState<"md1" | "md2" | "md3">("md1");
   const [teamsSearch, setTeamsSearch] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const { data: liveStandings } = useWCStandings();
@@ -406,6 +407,15 @@ export default function WorldCup2026() {
   }, [adLoading]);
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
+
+  // Split group matches by matchday for the finished-results archive below upcoming knockouts.
+  const groupMatchesByDay = (() => {
+    return {
+      md1: GROUP_MATCHES.slice(0, 24),
+      md2: GROUP_MATCHES.slice(24, 48),
+      md3: GROUP_MATCHES.slice(48),
+    };
+  })();
 
   const { data: wcResults } = useWCScheduleResults();
   const {
@@ -1714,6 +1724,82 @@ export default function WorldCup2026() {
                 </div>
               );
             })()}
+          </div>
+
+          <h2 className="text-base font-bold text-foreground mb-3 mt-5 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-yellow-400" /> Group Stage Results
+          </h2>
+          <div className="flex gap-2 mb-3">
+            {([
+              { key: "md1", label: "Round 1" },
+              { key: "md2", label: "Round 2" },
+              { key: "md3", label: "Round 3" },
+            ] as const).map(f => (
+              <Button key={f.key} size="sm" variant={groupResultsFilter === f.key ? "default" : "outline"}
+                className="text-[11px] h-7 px-3" onClick={() => setGroupResultsFilter(f.key)}>
+                {f.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="space-y-2">
+            {(groupMatchesByDay[groupResultsFilter] || []).length > 0 ? (
+              groupMatchesByDay[groupResultsFilter].map((m, i) => {
+                const result = lookupWCResult(wcResults, m.home, m.away);
+                const isFinished = !!result?.finished;
+                return (
+                <Card key={i} className="bg-card border-border p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <Badge variant="outline" className="text-[9px]">Group {m.group}</Badge>
+                    <div className="flex items-center gap-2">
+                      {isFinished && (
+                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] px-1.5 py-0">
+                          FT
+                        </Badge>
+                      )}
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {m.city}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        {TEAMS[m.home] && <TeamFlag code={TEAMS[m.home].code} size="sm" />}
+                        <span className="text-xs font-semibold text-foreground">{m.home}</span>
+                        <span className="text-[9px] text-muted-foreground">#{TEAMS[m.home]?.fifaRank}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {TEAMS[m.away] && <TeamFlag code={TEAMS[m.away].code} size="sm" />}
+                        <span className="text-xs font-semibold text-foreground">{m.away}</span>
+                        <span className="text-[9px] text-muted-foreground">#{TEAMS[m.away]?.fifaRank}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {result ? (
+                        <>
+                          <p className="text-[10px] text-muted-foreground">{m.date}</p>
+                          <p className="text-lg font-extrabold text-emerald-400 leading-none">
+                            {result.homeScore} - {result.awayScore}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[10px] text-muted-foreground">{m.date}</p>
+                          <p className="text-sm font-bold text-primary">{m.time}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+                );
+              })
+            ) : (
+              <div className="text-center py-8">
+                <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Schedule will be available soon</p>
+              </div>
+            )}
           </div>
         </div>
         </TabsContent>
