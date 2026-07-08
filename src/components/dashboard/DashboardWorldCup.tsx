@@ -64,6 +64,16 @@ export function DashboardWorldCup() {
                 ? `${fixtures.length} matches today · brackets · AI picks`
                 : "Live scores · brackets · AI predictions"}
             </p>
+            {nextBracketMatch && (
+              <p className="text-sm sm:text-base font-bold text-primary drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]">
+                {nextBracketMatch.home.name || "TBD"} <span className="text-foreground/70">vs</span> {nextBracketMatch.away.name || "TBD"}
+                {nextBracketMatch.date && (
+                  <span className="block text-[11px] sm:text-xs font-semibold text-foreground/80 uppercase tracking-wider mt-0.5">
+                    {new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(nextBracketMatch.date)} CET
+                  </span>
+                )}
+              </p>
+            )}
           </div>
         </div>
 
