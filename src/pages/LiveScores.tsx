@@ -507,33 +507,10 @@ export default function LiveScores() {
             </div>
           </div>
           
-          {/* Date selector - Enhanced with prominent borders */}
-          <div className="relative">
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/40 via-accent/20 to-primary/40 rounded-xl opacity-80" />
-            <div className="relative bg-card/90 backdrop-blur-sm rounded-xl p-1.5 border border-border/50 shadow-lg">
-              <div className="flex gap-1.5 sm:gap-2">
-                {(["yesterday", "today", "tomorrow"] as DateMode[]).map(d => (
-                  <Button 
-                    key={d} 
-                    onClick={() => setDateMode(d)} 
-                    size="sm" 
-                    className={cn(
-                      "flex-1 flex-col px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg min-w-0 h-auto transition-all duration-200",
-                      dateMode === d 
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-0" 
-                        : "bg-secondary/60 text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground hover:border-primary/30"
-                    )}
-                  >
-                    <span className="capitalize text-[11px] sm:text-xs font-semibold">{d}</span>
-                    <span className={cn(
-                      "text-[10px] sm:text-[11px]",
-                      dateMode === d ? "opacity-80" : "opacity-60"
-                    )}>{getDateLabel(d)}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Date selector removed — Live Scores shows Today only.
+              Yesterday/Tomorrow removed to reduce API-Football quota usage
+              (each mode switch triggered a fresh multi-date fetch). The list
+              automatically rolls over to the new day at 00:00 UTC. */}
         </div>
 
         {/* STATUS TABS - Individual bordered tabs with hover glow */}
