@@ -433,6 +433,94 @@ export default function WorldCup2026() {
     return { ...round, matches: matches.length, live, finished };
   });
 
+  // Featured Match: prefer live/upcoming from TODAY's fixtures,
+  // otherwise fall back to the NEXT upcoming knockout match from the bracket
+  // (Quarter-finals → Semi-finals → Final). Only fall back to the hardcoded
+  // opening match if we truly have nothing at all.
+  const featured = (() => {
+    const fixtures = todayFixturesData?.fixtures ?? [];
+    const live = fixtures.find((f) => f.status === "live" || f.status === "halftime");
+    const upcoming = fixtures.find((f) => f.status === "upcoming");
+    const pick = live ?? upcoming;
+    if (pick) {
+      const isLive = pick.status === "live" || pick.status === "halftime";
+      const dateLabel = pick.startTime
+        ? new Date(pick.startTime).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
+        : "";
+      return {
+        homeTeam: pick.homeTeam,
+        awayTeam: pick.awayTeam,
+        dateLabel,
+        timeLabel: formatMatchTime(pick.startTime),
+        league: `World Cup 2026${pick.round ? ` · ${pick.round}` : ""}`,
+        venue: pick.venue || "TBD",
+        homeLogo: pick.homeLogo,
+        awayLogo: pick.awayLogo,
+        isLive,
+        statusShort: pick.statusShort,
+        minute: pick.minute,
+        homeScore: pick.homeScore,
+        awayScore: pick.awayScore,
+      };
+    }
+
+    // No fixtures today → find the earliest NOT-STARTED knockout match.
+    const nowMs = Date.now();
+    const roundOrder: BracketRound[] = [
+      "Round of 32",
+      "Round of 16",
+      "Quarter-finals",
+      "Semi-finals",
+      "3rd Place Final",
+      "Final",
+    ];
+    const upcomingBracket = roundOrder
+      .flatMap((r) => overviewBracket[r] ?? [])
+      .filter((m) => {
+        if (!m.date) return false;
+        const ts = new Date(m.date).getTime();
+        if (!Number.isFinite(ts) || ts <= nowMs) return false;
+        const s = (m.status || "").toUpperCase();
+        return s === "NS" || s === "TBD" || s === "";
+      })
+      .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+    const next = upcomingBracket[0];
+    if (next) {
+      const d = new Date(next.date!);
+      return {
+        homeTeam: next.home.name ?? "TBD",
+        awayTeam: next.away.name ?? "TBD",
+        dateLabel: d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }),
+        timeLabel: formatMatchTime(next.date!),
+        league: `World Cup 2026 · ${next.round}`,
+        venue: next.venue || "TBD",
+        homeLogo: next.home.logo,
+        awayLogo: next.away.logo,
+        isLive: false,
+        statusShort: "NS",
+        minute: null as number | null,
+        homeScore: null as number | null,
+        awayScore: null as number | null,
+      };
+    }
+
+    return {
+      homeTeam: FEATURED_MATCH.homeTeam,
+      awayTeam: FEATURED_MATCH.awayTeam,
+      dateLabel: FEATURED_MATCH.date,
+      timeLabel: FEATURED_MATCH.time,
+      league: FEATURED_MATCH.league,
+      venue: FEATURED_MATCH.venue,
+      homeLogo: null as string | null,
+      awayLogo: null as string | null,
+      isLive: false,
+      statusShort: "NS",
+      minute: null as number | null,
+      homeScore: null as number | null,
+      awayScore: null as number | null,
+    };
+  })();
+
   if (selectedTeam) {
     return (
       <div className="min-h-screen bg-background pb-20">
