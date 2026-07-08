@@ -65,7 +65,7 @@ const allLeagues: LeagueInfo[] = [
   { id: "305", name: "UAE Pro League", flag: "🇦🇪", category: "asia", keywords: ["uae", "dubai", "pro league"] },
 ];
 
-type LeagueCategory = "all" | "top5" | "major";
+type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia";
 const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
