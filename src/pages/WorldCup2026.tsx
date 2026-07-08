@@ -1674,9 +1674,7 @@ export default function WorldCup2026() {
         </TabsContent>
 
         {/* ==================== TOURNAMENT STATS ==================== */}
-        <TabsContent value="stats" className="mt-0 px-3">
-          <WCTournamentStatsTab />
-        </TabsContent>
+        {/* Stats tab removed to save API calls; team/group stats live in Overview and player stats in Top Players */}
       </Tabs>
 
       <div className="px-3 mt-6 mb-4">
