@@ -440,7 +440,8 @@ function LeagueCardsGrid() {
     const matchesSearch =
       !normalizedQuery ||
       league.name.toLowerCase().includes(normalizedQuery) ||
-      league.flag === normalizedQuery;
+      league.flag === normalizedQuery ||
+      league.keywords?.some((kw) => kw.toLowerCase().includes(normalizedQuery));
     return matchesCategory && matchesSearch;
   });
 
