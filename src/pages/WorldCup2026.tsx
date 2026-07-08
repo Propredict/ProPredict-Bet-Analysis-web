@@ -18,7 +18,6 @@ import WCLiveNowSection from "@/components/world-cup/WCLiveNowSection";
 import WCLiveTickerBanner from "@/components/world-cup/WCLiveTickerBanner";
 import WCNotifyToggle from "@/components/world-cup/WCNotifyToggle";
 import WCTopPlayersTab from "@/components/world-cup/WCTopPlayersTab";
-import WCTournamentStatsTab from "@/components/world-cup/WCTournamentStatsTab";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
@@ -572,7 +571,6 @@ export default function WorldCup2026() {
               { value: "bracket", label: "Bracket", short: "Bracket", icon: GitFork },
               { value: "champion", label: "Predict Champion", short: "Champion", icon: Crown },
               { value: "top-players", label: "Top Players", short: "Players", icon: Award },
-              { value: "stats", label: "Stats", short: "Stats", icon: Activity },
             ].map(tab => (
               <TabsTrigger key={tab.value} value={tab.value} className="text-sm md:text-base font-bold px-2 sm:px-3 md:px-4 py-2.5 sm:py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md gap-1.5 sm:gap-2 whitespace-nowrap justify-center shrink-0">
                 <tab.icon className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
@@ -1676,9 +1674,7 @@ export default function WorldCup2026() {
         </TabsContent>
 
         {/* ==================== TOURNAMENT STATS ==================== */}
-        <TabsContent value="stats" className="mt-0 px-3">
-          <WCTournamentStatsTab />
-        </TabsContent>
+        {/* Stats tab removed to save API calls; team/group stats live in Overview and player stats in Top Players */}
       </Tabs>
 
       <div className="px-3 mt-6 mb-4">
