@@ -16,6 +16,10 @@ const topLeagues = [
   { id: "140", name: "La Liga", flag: "🇪🇸" },
   { id: "78", name: "Bundesliga", flag: "🇩🇪" },
   { id: "135", name: "Serie A", flag: "🇮🇹" },
+  { id: "61", name: "Ligue 1", flag: "🇫🇷" },
+  { id: "88", name: "Eredivisie", flag: "🇳🇱" },
+  { id: "94", name: "Primeira Liga", flag: "🇵🇹" },
+  { id: "203", name: "Süper Lig", flag: "🇹🇷" },
 ];
 
 function getFormColor(result: string) {
