@@ -233,9 +233,9 @@ export function useLeagueStandings(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "standings", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "standings", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -244,9 +244,9 @@ export function useLeagueScorers(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "scorers", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "scorers", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -255,9 +255,9 @@ export function useLeagueAssists(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "assists", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "assists", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -266,9 +266,9 @@ export function useLeagueFixtures(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "fixtures", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "fixtures", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -277,9 +277,9 @@ export function useLeagueRounds(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "rounds", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -288,9 +288,9 @@ export function useLeaguePlayers(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "players", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "players", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -299,9 +299,9 @@ export function useLeagueInjuries(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "injuries", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "injuries", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -310,9 +310,9 @@ export function useLeagueYellowCards(leagueId: string, season: string = "2025") 
     queryKey: ["league-stats", "yellowcards", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "yellowcards", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -321,9 +321,9 @@ export function useLeagueRedCards(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "redcards", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "redcards", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -332,8 +332,8 @@ export function useLeagueSquads(leagueId: string, season: string = "2025") {
     queryKey: ["league-stats", "squads", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "squads", season),
     enabled: !!leagueId && leagueId !== "all",
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
