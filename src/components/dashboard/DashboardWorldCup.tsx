@@ -142,7 +142,7 @@ export function DashboardWorldCup() {
           <p className="text-xs text-muted-foreground text-center">
             Tap to view full schedule, brackets and AI predictions.
           </p>
-          <div className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:text-primary/80 transition-colors">
+          <div className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-[0_0_15px_rgba(15,155,142,0.4)] group-hover:bg-primary/90 group-hover:shadow-[0_0_20px_rgba(15,155,142,0.6)] transition-all">
             VIEW ALL MATCHES
             <ChevronRight className="h-4 w-4" />
           </div>
