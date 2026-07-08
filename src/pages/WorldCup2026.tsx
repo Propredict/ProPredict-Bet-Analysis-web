@@ -1539,7 +1539,7 @@ export default function WorldCup2026() {
 
         {/* ==================== BRACKET ==================== */}
         <TabsContent value="bracket" className="mt-0">
-          <WorldCupBracket onGoToGroups={() => setActiveTab("standings")} />
+          <WorldCupBracket onGoToGroups={() => setActiveTab("overview")} />
         </TabsContent>
 
         {/* ==================== PREDICT CHAMPION ==================== */}
