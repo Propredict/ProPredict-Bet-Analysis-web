@@ -65,14 +65,11 @@ const allLeagues: LeagueInfo[] = [
   { id: "305", name: "UAE Pro League", flag: "🇦🇪", category: "asia", keywords: ["uae", "dubai", "pro league"] },
 ];
 
-type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia";
+type LeagueCategory = "all" | "top5" | "major";
 const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
   { value: "major", label: "Major" },
-  { value: "international", label: "International" },
-  { value: "americas", label: "Americas" },
-  { value: "asia", label: "Asia" },
 ];
 
 function getFormColor(result: string) {
