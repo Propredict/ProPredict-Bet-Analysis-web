@@ -26,7 +26,8 @@ interface ApiResponse {
   count: number;
 }
 
-const AUTO_REFRESH_MS = 30_000;
+const LIVE_REFRESH_MS = 30_000;      // 30s while a match is actually live
+const IDLE_REFRESH_MS = 3 * 60_000;  // 3min when no live match → protects API-Football quota
 const STALE_TIME_MS = 2 * 60 * 1000; // 2 minutes
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-fixtures`;
 
@@ -77,7 +78,11 @@ export function useLiveScores({
     queryFn: ({ signal }) => fetchFixtures(dateMode, signal),
     staleTime: STALE_TIME_MS,
     gcTime: 10 * 60 * 1000, // 10 min garbage collection
-    refetchInterval: AUTO_REFRESH_MS,
+    refetchInterval: (query) => {
+      const list = (query.state.data as Match[] | undefined) ?? [];
+      const hasLive = list.some((m) => m.status === "live" || m.status === "halftime");
+      return hasLive ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
+    },
     refetchOnWindowFocus: false,
   });
 
