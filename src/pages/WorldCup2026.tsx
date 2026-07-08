@@ -311,50 +311,6 @@ export default function WorldCup2026() {
   const { data: liveStandings } = useWCStandings();
   const { data: todayFixturesData, isLoading: todayFixturesLoading, isFetching: todayFixturesFetching } = useWCTodayFixtures();
 
-  // Featured Match: prefer live, then next upcoming today; skip finished.
-  // Falls back to hardcoded FEATURED_MATCH (opening match) when no live data.
-  const featured = (() => {
-    const fixtures = todayFixturesData?.fixtures ?? [];
-    const live = fixtures.find((f) => f.status === "live" || f.status === "halftime");
-    const upcoming = fixtures.find((f) => f.status === "upcoming");
-    const pick = live ?? upcoming;
-    if (!pick) {
-      return {
-        homeTeam: FEATURED_MATCH.homeTeam,
-        awayTeam: FEATURED_MATCH.awayTeam,
-        dateLabel: FEATURED_MATCH.date,
-        timeLabel: FEATURED_MATCH.time,
-        league: FEATURED_MATCH.league,
-        venue: FEATURED_MATCH.venue,
-        homeLogo: null as string | null,
-        awayLogo: null as string | null,
-        isLive: false,
-        statusShort: "NS",
-        minute: null as number | null,
-        homeScore: null as number | null,
-        awayScore: null as number | null,
-      };
-    }
-    const isLive = pick.status === "live" || pick.status === "halftime";
-    const dateLabel = pick.startTime
-      ? new Date(pick.startTime).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
-      : "";
-    return {
-      homeTeam: pick.homeTeam,
-      awayTeam: pick.awayTeam,
-      dateLabel,
-      timeLabel: formatMatchTime(pick.startTime),
-      league: `World Cup 2026${pick.round ? ` · ${pick.round}` : ""}`,
-      venue: pick.venue || "TBD",
-      homeLogo: pick.homeLogo,
-      awayLogo: pick.awayLogo,
-      isLive,
-      statusShort: pick.statusShort,
-      minute: pick.minute,
-      homeScore: pick.homeScore,
-      awayScore: pick.awayScore,
-    };
-  })();
   const getWcUnlockKey = () => `propredict_wc2026_unlocked_${getTodayBelgrade()}`;
   const [adUnlockedToday, setAdUnlockedToday] = useState(() => {
     try {
