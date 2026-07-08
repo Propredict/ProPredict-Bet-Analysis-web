@@ -27,6 +27,93 @@ async function notifyAdmin(plan: string, email: string, userId: string, source: 
   }
 }
 
+// Send "Thank you for your purchase" email to the customer — ONLY after
+// the subscription has been successfully written as active in Supabase.
+// Idempotent via user_subscriptions.purchase_email_sent_at.
+async function sendPurchaseEmailIfNeeded(
+  supabase: any,
+  userId: string,
+  email: string,
+  plan: string,
+  price: string
+) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey || !email) return;
+
+  try {
+    // Check flag atomically: only proceed if it's still NULL
+    const { data: existing } = await supabase
+      .from("user_subscriptions")
+      .select("purchase_email_sent_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing?.purchase_email_sent_at) {
+      console.log(`Purchase email already sent for user ${userId} — skipping`);
+      return;
+    }
+
+    const planLabel = plan === "premium" ? "Premium" : "Pro";
+    const orderId = `PP-${Date.now().toString(36).toUpperCase()}`;
+    const html = `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#ffffff;padding:32px 28px;max-width:560px;margin:0 auto;">
+        <h2 style="color:#0F9B8E;letter-spacing:0.5px;text-transform:uppercase;font-size:18px;margin:0 0 24px;">ProPredict</h2>
+        <h1 style="color:#0d1a15;font-size:24px;margin:0 0 16px;">Thank you for your purchase! 🎉</h1>
+        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 24px;">
+          Your <strong>${planLabel}</strong> subscription is now active. Enjoy AI predictions, live scores, and daily picks.
+        </p>
+        <table style="width:100%;background:#f0fdfa;border-radius:10px;padding:16px 20px;margin:0 0 24px;color:#0d1a15;font-size:14px;">
+          <tr><td><strong>Order:</strong></td><td style="text-align:right;">${orderId}</td></tr>
+          <tr><td><strong>Plan:</strong></td><td style="text-align:right;">${planLabel}</td></tr>
+          <tr><td><strong>Total:</strong></td><td style="text-align:right;">${price}</td></tr>
+        </table>
+        <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
+          Manage your subscription any time in Profile → Subscription.
+        </p>
+      </div>
+    `;
+
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendKey}` },
+      body: JSON.stringify({
+        from: "ProPredict <noreply@propredict.me>",
+        to: [email],
+        subject: `Thank you for your ProPredict ${planLabel} purchase`,
+        html,
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error(`Resend failed [${resp.status}]:`, await resp.text());
+      return;
+    }
+
+    // Mark as sent (idempotency)
+    await supabase
+      .from("user_subscriptions")
+      .update({ purchase_email_sent_at: new Date().toISOString() })
+      .eq("user_id", userId);
+
+    console.log(`Purchase email sent to ${email} for user ${userId}`);
+  } catch (e) {
+    console.error("sendPurchaseEmailIfNeeded failed:", e);
+  }
+}
+
+// Price map for the "Thank You" email — display only, not billing logic
+function getDisplayPrice(subscription: Stripe.Subscription, plan: string): string {
+  const item = subscription.items.data[0];
+  const priceObj = item?.price;
+  if (priceObj?.unit_amount && priceObj.currency) {
+    const amount = (priceObj.unit_amount / 100).toFixed(2);
+    const cur = priceObj.currency.toUpperCase();
+    const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
+    return `${symbol}${amount}`;
+  }
+  return plan === "premium" ? "€5.99" : "€3.99";
+}
+
 // Map price IDs to plans
 const PRICE_TO_PLAN: Record<string, string> = {
   "price_1SuCcpL8E849h6yxv6RvooUp": "basic",   // Pro monthly
@@ -270,6 +357,14 @@ serve(async (req) => {
       // Notify admin only if subscription is actually active (payment succeeded)
       if (ACTIVE_STRIPE_STATUSES.has(subscription.status)) {
         notifyAdmin(plan, customerEmail, user.id, "Stripe");
+        // Send purchase confirmation to the CUSTOMER — only after active upsert
+        await sendPurchaseEmailIfNeeded(
+          supabase,
+          user.id,
+          customerEmail,
+          plan,
+          getDisplayPrice(subscription, plan)
+        );
       } else {
         console.log(`Skipping admin notification: subscription status is ${subscription.status}`);
       }
