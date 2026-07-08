@@ -14,14 +14,21 @@ interface LeagueStatsStandingsTabProps {
 
 // Top leagues for grid view
 const topLeagues = [
-  { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-  { id: "140", name: "La Liga", flag: "🇪🇸" },
-  { id: "78", name: "Bundesliga", flag: "🇩🇪" },
-  { id: "135", name: "Serie A", flag: "🇮🇹" },
-  { id: "61", name: "Ligue 1", flag: "🇫🇷" },
-  { id: "88", name: "Eredivisie", flag: "🇳🇱" },
-  { id: "94", name: "Primeira Liga", flag: "🇵🇹" },
-  { id: "203", name: "Süper Lig", flag: "🇹🇷" },
+  { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "top5" as const },
+  { id: "140", name: "La Liga", flag: "🇪🇸", category: "top5" as const },
+  { id: "78", name: "Bundesliga", flag: "🇩🇪", category: "top5" as const },
+  { id: "135", name: "Serie A", flag: "🇮🇹", category: "top5" as const },
+  { id: "61", name: "Ligue 1", flag: "🇫🇷", category: "top5" as const },
+  { id: "88", name: "Eredivisie", flag: "🇳🇱", category: "major" as const },
+  { id: "94", name: "Primeira Liga", flag: "🇵🇹", category: "major" as const },
+  { id: "203", name: "Süper Lig", flag: "🇹🇷", category: "major" as const },
+];
+
+type LeagueCategory = "all" | "top5" | "major";
+const filters: { value: LeagueCategory; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "top5", label: "Top 5" },
+  { value: "major", label: "Major" },
 ];
 
 function getFormColor(result: string) {
