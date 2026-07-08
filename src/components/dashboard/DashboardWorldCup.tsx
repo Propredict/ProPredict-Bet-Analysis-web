@@ -136,6 +136,17 @@ export function DashboardWorldCup() {
             })
           ) : null}
         </div>
+
+        {/* Footer CTA */}
+        <div className="px-4 pb-4 pt-1 flex flex-col items-center gap-2">
+          <p className="text-xs text-muted-foreground text-center">
+            Tap to view full schedule, brackets and AI predictions.
+          </p>
+          <div className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:text-primary/80 transition-colors">
+            VIEW ALL MATCHES
+            <ChevronRight className="h-4 w-4" />
+          </div>
+        </div>
       </Link>
 
     </div>
