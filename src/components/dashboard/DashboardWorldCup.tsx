@@ -67,14 +67,24 @@ export function DashboardWorldCup() {
                 : "Live scores · brackets · AI predictions"}
             </p>
             {nextBracketMatch && (
-              <p className="text-sm sm:text-base font-bold text-primary drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]">
-                {nextBracketMatch.home.name || "TBD"} <span className="text-foreground/70">vs</span> {nextBracketMatch.away.name || "TBD"}
-                {nextBracketMatch.date && (
-                  <span className="block text-[11px] sm:text-xs font-semibold text-foreground/80 uppercase tracking-wider mt-0.5">
-                    {new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(nextBracketMatch.date)} CET
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-xl font-black text-foreground drop-shadow-[0_0_10px_rgba(15,155,142,0.6)]">
+                  <span className="flex items-center gap-1.5">
+                    {TEAMS[nextBracketMatch.home.name || ""] && <TeamFlag code={TEAMS[nextBracketMatch.home.name || ""].code} size="sm" />}
+                    {nextBracketMatch.home.name || "TBD"}
                   </span>
+                  <span className="text-primary">vs</span>
+                  <span className="flex items-center gap-1.5">
+                    {nextBracketMatch.away.name || "TBD"}
+                    {TEAMS[nextBracketMatch.away.name || ""] && <TeamFlag code={TEAMS[nextBracketMatch.away.name || ""].code} size="sm" />}
+                  </span>
+                </div>
+                {nextBracketMatch.date && (
+                  <p className="text-[11px] sm:text-xs font-semibold text-foreground/80 uppercase tracking-wider">
+                    {new Date(nextBracketMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(nextBracketMatch.date)} CET
+                  </p>
                 )}
-              </p>
+              </div>
             )}
           </div>
         </div>
