@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { useWCTodayFixtures } from "@/hooks/useWCTodayFixtures";
 import { useWorldCupBracket } from "@/hooks/useWorldCupBracket";
 import { formatMatchTime } from "@/utils/formatMatchTime";
+import TeamFlag from "@/components/world-cup/TeamFlag";
+import { TEAMS } from "@/data/worldCup2026";
 import heroImage from "@/assets/world-cup-hero.jpg";
 
 export function DashboardWorldCup() {
