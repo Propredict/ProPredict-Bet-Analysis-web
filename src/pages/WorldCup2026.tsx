@@ -588,6 +588,63 @@ export default function WorldCup2026() {
 
         {/* ==================== OVERVIEW ==================== */}
         <TabsContent value="overview" className="mt-0">
+          {/* Knockout Stage - current/upcoming round above the past group tables */}
+          <section className="px-3 mt-4">
+            <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+              <GitFork className="h-4 w-4 text-primary" /> Upcoming Quarter-finals
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {(() => {
+                const upcoming = (overviewBracket["Quarter-finals"] || [])
+                  .filter((m) => !isBracketFinished(m.status))
+                  .sort((a, b) => {
+                    const da = a.date ? new Date(a.date).getTime() : Infinity;
+                    const db = b.date ? new Date(b.date).getTime() : Infinity;
+                    return da - db;
+                  });
+
+                return upcoming.length > 0 ? (
+                  upcoming.map((m, i) => {
+                    const dt = m.date ? new Date(m.date) : null;
+                    const dateStr = dt
+                      ? dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })
+                      : "TBD";
+                    const timeStr = formatMatchTime(m.date);
+                    const homeName = m.home.name || "TBD";
+                    const awayName = m.away.name || "TBD";
+                    return (
+                      <Card key={i} className="bg-card border-border p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline" className="text-[9px]">Quarter-finals</Badge>
+                          <div className="text-[10px] text-muted-foreground">{dateStr} · {timeStr}</div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              {TEAMS[homeName] && <TeamFlag code={TEAMS[homeName].code} size="sm" />}
+                              <span className="text-xs font-semibold text-foreground">{homeName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              {TEAMS[awayName] && <TeamFlag code={TEAMS[awayName].code} size="sm" />}
+                              <span className="text-xs font-semibold text-foreground">{awayName}</span>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground text-right">
+                            <MapPin className="h-3 w-3 inline mr-1" />{m.venue || "TBD"}
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Card className="bg-card border-border p-4 col-span-full text-center">
+                    <p className="text-xs text-muted-foreground">Quarter-final fixtures will appear as soon as bracket data is updated.</p>
+                  </Card>
+                );
+              })()}
+            </div>
+          </section>
+
           {/* Groups */}
           <section className="px-3 mt-4">
             <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
