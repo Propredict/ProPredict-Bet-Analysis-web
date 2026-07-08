@@ -425,7 +425,7 @@ function StandingsRowMobile({
   );
 }
 
-// Grid of league cards (shown only after search) with search + filter
+// Grid of league cards with search + filter (default: 8 featured leagues)
 function LeagueCardsGrid() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<LeagueCategory>("all");
@@ -433,7 +433,11 @@ function LeagueCardsGrid() {
   const normalizedQuery = query.trim().toLowerCase();
   const hasQuery = normalizedQuery.length > 0;
 
-  const filteredLeagues = topLeagues.filter((league) => {
+  // Default view: show only featured top leagues
+  // Search view: search through the full extended list
+  const baseLeagues = hasQuery ? allLeagues : topLeagues;
+
+  const filteredLeagues = baseLeagues.filter((league) => {
     const matchesCategory = category === "all" || league.category === category;
     const matchesSearch =
       !normalizedQuery ||
@@ -461,7 +465,7 @@ function LeagueCardsGrid() {
           type="single"
           value={category}
           onValueChange={(value) => value && setCategory(value as LeagueCategory)}
-          className="bg-card border border-primary/20 p-1 rounded-lg"
+          className="bg-card border border-primary/20 p-1 rounded-lg flex-wrap justify-start sm:justify-end"
         >
           {filters.map((f) => (
             <ToggleGroupItem
@@ -477,12 +481,8 @@ function LeagueCardsGrid() {
         </ToggleGroup>
       </div>
 
-      {!hasQuery ? (
+      {filteredLeagues.length === 0 ? (
         <div className="text-center py-12 text-sm text-muted-foreground">
-          Type a league name above to see standings.
-        </div>
-      ) : filteredLeagues.length === 0 ? (
-        <div className="text-center py-8 text-sm text-muted-foreground">
           No leagues found.
         </div>
       ) : (
