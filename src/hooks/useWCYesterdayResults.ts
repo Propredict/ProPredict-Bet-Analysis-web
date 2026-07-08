@@ -26,6 +26,23 @@ export interface WCFinishedItem {
   resultReady: boolean;
 }
 
+function getPickKickoffMs(p: Pick<WCYesterdayAIPick, "match_date"> & { match_time?: string | null; match_timestamp?: string | null }): number | null {
+  const raw = p.match_timestamp
+    ? p.match_timestamp
+    : p.match_date && p.match_time
+      ? `${p.match_date}T${p.match_time.slice(0, 5)}:00Z`
+      : null;
+  if (!raw) return null;
+  const ms = new Date(raw).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function pickLikelyFinished(p: Pick<WCYesterdayAIPick, "match_date"> & { match_time?: string | null; match_timestamp?: string | null }, today: string): boolean {
+  const ko = getPickKickoffMs(p);
+  if (ko !== null) return Date.now() - ko >= 110 * 60_000;
+  return !!p.match_date && p.match_date < today;
+}
+
 function yyyymmddBelgrade(offsetDays: number): string {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
@@ -105,26 +122,64 @@ export function useWCYesterdayResults() {
       const today = yyyymmddBelgrade(0);
       const twoDaysAgo = yyyymmddBelgrade(-2);
 
-      const [fxTwo, fxYesterday, fxToday, predRes] = await Promise.all([
-        supabase.functions.invoke("get-wc-today", { body: { date: twoDaysAgo } }),
-        supabase.functions.invoke("get-wc-today", { body: { date: yesterday } }),
-        supabase.functions.invoke("get-wc-today", { body: { date: today } }),
-        supabase
-          .from("ai_predictions")
-          .select(
-            "match_id, home_team, away_team, match_date, home_win, draw, away_win, confidence, predicted_score, prediction, analysis",
-          )
-          .ilike("league", "%world cup%")
-          .in("match_date", [twoDaysAgo, yesterday, today])
-          .limit(64),
-      ]);
+      const datesToCheck = [twoDaysAgo, yesterday, today];
+      const predRes = await supabase
+        .from("ai_predictions")
+        .select(
+          "match_id, home_team, away_team, match_date, match_time, match_timestamp, home_win, draw, away_win, confidence, predicted_score, prediction, analysis",
+        )
+        .ilike("league", "%world cup%")
+        .in("match_date", datesToCheck)
+        .limit(64);
 
-      const allFx: WCTodayFixture[] = [
-        ...(fxTwo.data?.fixtures ?? []),
-        ...(fxYesterday.data?.fixtures ?? []),
-        ...(fxToday.data?.fixtures ?? []),
-      ];
-      const picks = (predRes.data ?? []) as WCYesterdayAIPick[];
+      const picks = (predRes.data ?? []) as Array<WCYesterdayAIPick & { match_time?: string | null; match_timestamp?: string | null }>;
+      let allFx: WCTodayFixture[] = [];
+
+      // Primary path when API-Football is over limit: use our stored prediction
+      // rows + match_scores_cache. This keeps Finished WIN cards visible without
+      // spending 3 API requests per user refresh.
+      if (picks.length > 0) {
+        const { data: scoreCache } = await supabase
+          .from("match_scores_cache")
+          .select("match_id, home_score, away_score")
+          .in("match_id", picks.map((p) => p.match_id));
+
+        allFx = picks.flatMap((p) => {
+          const c = (scoreCache ?? []).find((r) => r.match_id === p.match_id);
+          if (!c || c.home_score === null || c.away_score === null || !pickLikelyFinished(p, today)) return [];
+          const startTime = p.match_timestamp || (p.match_date && p.match_time ? `${p.match_date}T${p.match_time.slice(0, 5)}:00Z` : p.match_date);
+          return [{
+            id: p.match_id,
+            homeTeam: p.home_team,
+            awayTeam: p.away_team,
+            homeLogo: null,
+            awayLogo: null,
+            homeScore: c.home_score,
+            awayScore: c.away_score,
+            status: "finished",
+            statusShort: "FT",
+            minute: 90,
+            startTime,
+            venue: null,
+            round: null,
+          } as WCTodayFixture];
+        });
+      }
+
+      // Secondary path: try API only for dates still not represented in cache.
+      // If quota is exhausted the edge function returns empty/fallback data and
+      // the cached fixtures above still drive the UI.
+      const cachedDates = new Set(allFx.map((f) => f.startTime?.slice(0, 10)).filter(Boolean));
+      const apiDates = datesToCheck.filter((d) => !cachedDates.has(d));
+      if (apiDates.length > 0) {
+        const apiResults = await Promise.all(
+          apiDates.map((date) => supabase.functions.invoke("get-wc-today", { body: { date } })),
+        );
+        allFx = [
+          ...allFx,
+          ...apiResults.flatMap((r) => (r.data?.fixtures ?? []) as WCTodayFixture[]),
+        ];
+      }
 
       // Tolerant name normalizer — handles "Czechia" vs "Czech Republic",
       // "Türkiye" vs "Turkey", "Korea Republic" vs "South Korea", "USA" vs
@@ -227,20 +282,11 @@ export function useWCYesterdayResults() {
             .in("match_id", ids);
           for (const p of stillUnmatched) {
             const c = (cache ?? []).find((r) => r.match_id === p.match_id);
-            // Only treat the cached score as a final result if the pick's
-            // kickoff date is strictly before today (Europe/Belgrade) AND
-            // enough time has passed since kickoff that the match must be
-            // over (kickoff + 110 min). Without the time guard, a LIVE
-            // match (e.g. Canada vs Qatar 1-0 at 22') whose kickoff date
-            // is "yesterday" in Belgrade timezone would be rendered as
-            // FT WIN using its live score from match_scores_cache.
-            const isPastDate = !!p.match_date && p.match_date < today;
-            const ko = p.match_date ? new Date(p.match_date).getTime() : NaN;
-            const likelyEnded = isFinite(ko)
-              ? Date.now() - ko >= 110 * 60_000
-              : true;
+            // Only treat the cached score as final once kickoff+110min passed.
+            // Today's late-night matches must be included here too; otherwise
+            // 00:xx/02:xx FT wins disappear while API-Football is rate-limited.
+            const likelyEnded = pickLikelyFinished(p, today);
             if (
-              isPastDate &&
               likelyEnded &&
               c &&
               c.home_score !== null &&
