@@ -15,9 +15,6 @@ export function DashboardWorldCup() {
   const finished = fixtures.filter((f) => f.status === "finished");
   const preview = [...live, ...upcoming, ...finished].slice(0, 3);
 
-  // First upcoming match for "Our Tip"
-  const nextMatch = upcoming[0] ?? preview.find((f) => f.status !== "finished") ?? null;
-
   // Next upcoming knockout match across the whole bracket (not just today)
   const nextBracketMatch = (() => {
     const finishedStatuses = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
