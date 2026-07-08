@@ -12,7 +12,7 @@ interface LeagueStatsStandingsTabProps {
   leagueName: string;
 }
 
-// Top leagues for grid view
+// Top leagues shown by default
 const topLeagues = [
   { id: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "top5" as const },
   { id: "140", name: "La Liga", flag: "🇪🇸", category: "top5" as const },
@@ -24,11 +24,57 @@ const topLeagues = [
   { id: "203", name: "Süper Lig", flag: "🇹🇷", category: "major" as const },
 ];
 
-type LeagueCategory = "all" | "top5" | "major";
+// Extended searchable league list (available via search/filter)
+const allLeagues = [
+  ...topLeagues,
+  // Major European
+  { id: "144", name: "Belgian Pro League", flag: "🇧🇪", category: "major" as const },
+  { id: "179", name: "Scottish Premiership", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", category: "major" as const },
+  { id: "218", name: "Austrian Bundesliga", flag: "🇦🇹", category: "major" as const },
+  { id: "207", name: "Swiss Super League", flag: "🇨🇭", category: "major" as const },
+  { id: "113", name: "Allsvenskan", flag: "🇸🇪", category: "major" as const },
+  { id: "103", name: "Eliteserien", flag: "🇳🇴", category: "major" as const },
+  { id: "119", name: "Danish Superliga", flag: "🇩🇰", category: "major" as const },
+  { id: "106", name: "Ekstraklasa", flag: "🇵🇱", category: "major" as const },
+  { id: "235", name: "Russian Premier League", flag: "🇷🇺", category: "major" as const },
+  { id: "333", name: "Ukrainian Premier League", flag: "🇺🇦", category: "major" as const },
+  // International
+  { id: "2", name: "Champions League", flag: "🇪🇺", category: "international" as const },
+  { id: "3", name: "Europa League", flag: "🇪🇺", category: "international" as const },
+  { id: "848", name: "Conference League", flag: "🇪🇺", category: "international" as const },
+  { id: "1", name: "World Cup", flag: "🌍", category: "international" as const },
+  { id: "4", name: "Euro Championship", flag: "🇪🇺", category: "international" as const },
+  { id: "9", name: "Copa America", flag: "🌎", category: "international" as const },
+  // Americas
+  { id: "71", name: "Brasileirão", flag: "🇧🇷", category: "americas" as const },
+  { id: "253", name: "Major League Soccer", flag: "🇺🇸", category: "americas" as const },
+  { id: "262", name: "Liga MX", flag: "🇲🇽", category: "americas" as const },
+  { id: "128", name: "Primera División", flag: "🇦🇷", category: "americas" as const },
+  { id: "130", name: "Primera División", flag: "🇨🇱", category: "americas" as const },
+  // Asia
+  { id: "98", name: "J1 League", flag: "🇯🇵", category: "asia" as const },
+  { id: "292", name: "K League 1", flag: "🇰🇷", category: "asia" as const },
+  { id: "188", name: "A-League", flag: "🇦🇺", category: "asia" as const },
+  { id: "169", name: "Chinese Super League", flag: "🇨🇳", category: "asia" as const },
+  { id: "307", name: "Saudi Pro League", flag: "🇸🇦", category: "asia" as const },
+  { id: "305", name: "UAE Pro League", flag: "🇦🇪", category: "asia" as const },
+  // Domestic Cups
+  { id: "21", name: "FA Cup", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", category: "cups" as const },
+  { id: "143", name: "Copa del Rey", flag: "🇪🇸", category: "cups" as const },
+  { id: "81", name: "DFB-Pokal", flag: "🇩🇪", category: "cups" as const },
+  { id: "384", name: "Coppa Italia", flag: "🇮🇹", category: "cups" as const },
+  { id: "65", name: "Coupe de France", flag: "🇫🇷", category: "cups" as const },
+];
+
+type LeagueCategory = "all" | "top5" | "major" | "international" | "americas" | "asia" | "cups";
 const filters: { value: LeagueCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "top5", label: "Top 5" },
   { value: "major", label: "Major" },
+  { value: "international", label: "International" },
+  { value: "americas", label: "Americas" },
+  { value: "asia", label: "Asia" },
+  { value: "cups", label: "Cups" },
 ];
 
 function getFormColor(result: string) {
