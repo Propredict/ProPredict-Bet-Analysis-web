@@ -408,15 +408,6 @@ export default function WorldCup2026() {
 
   const filteredTeams = ALL_TEAMS.filter(t => t.team.toLowerCase().includes(teamsSearch.toLowerCase()));
 
-  // Split matches by matchday (8 matches each for 12 groups × 2 matches)
-  const matchesByDay = (() => {
-    return {
-      md1: GROUP_MATCHES.slice(0, 24),
-      md2: GROUP_MATCHES.slice(24, 48),
-      md3: GROUP_MATCHES.slice(48),
-    };
-  })();
-
   const { data: wcResults } = useWCScheduleResults();
   const {
     bracket: overviewBracket,
