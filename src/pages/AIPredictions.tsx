@@ -388,7 +388,11 @@ export default function AIPredictions() {
     const backendFlagged = predictions.find((p) => p.is_diamond === true);
     if (backendFlagged) return backendFlagged;
 
-    const candidates = [...globalRankingBase].filter((p) => {
+    // IMPORTANT: fallback must NOT depend on search / league / favorites /
+    // tier filters — Diamond Pick is one match per day, identical for every
+    // user and every filter state. Compute from the full `predictions` set.
+    const candidates = predictions.filter((p) => {
+      if ((p.confidence ?? 0) < 50) return false;
       if ((p.confidence ?? 0) < 80) return false;
       if ((p as any).variance_stable === false) return false;
       if ((p.risk_level ?? "").toLowerCase() === "high") return false;
