@@ -410,7 +410,7 @@ export default function AIPredictions() {
     if (candidates.length === 0) return null;
     candidates.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     return candidates[0];
-  }, [predictions, globalRankingBase]);
+  }, [predictions]);
 
   // Safe Pick of the Day: STRICT high-confidence (≥85%) + low-risk market + stable.
   // The name promises "safe" — we never relax the threshold below 85%.
