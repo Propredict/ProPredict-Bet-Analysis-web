@@ -6881,7 +6881,7 @@ async function assignTiers(
   };
 
   const diamondCandidate = (minXgDiff: number) => {
-    return premiumPicks.find((p: any) => {
+    const pool = premiumPicks.filter((p: any) => {
       if ((p.confidence ?? 0) < 82) return false;
       if (!isTierAllowed(p.league)) return false;
       const xg = parseXgTag(p.key_factors);
@@ -6894,6 +6894,21 @@ async function assignTiers(
       if (!lowRisk) return false;
       return true;
     });
+    if (pool.length === 0) return undefined;
+    // Diamond MUST be the single safest pick of the day.
+    // Rank by composite safety score:
+    //   confidence (primary) + xG dominance + low-risk market prob bonus.
+    const scored = pool.map((p: any) => {
+      const xg = parseXgTag(p.key_factors);
+      const lr = deriveLowRiskMarket(p);
+      const conf = p.confidence ?? 0;
+      const xgBonus = xg ? Math.min(10, Math.abs(xg.diff) * 5) : 0; // up to +10
+      const marketBonus = lr ? Math.max(0, (lr.prob - 0.85) * 100) : 0; // up to +15
+      const score = conf + xgBonus + marketBonus;
+      return { p, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].p;
   };
 
   let diamond: any = diamondCandidate(0.8);
