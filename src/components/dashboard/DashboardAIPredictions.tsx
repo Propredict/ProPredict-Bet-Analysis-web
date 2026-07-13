@@ -8,6 +8,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { assignTiers, type Tier } from "@/components/ai-predictions/utils/tierAssignment";
+import { getBestPickType } from "@/components/ai-predictions/utils/marketDerivation";
 
 type LockTier = "pro" | "premium" | null;
 
@@ -57,9 +58,34 @@ function PredictionCard({
   const maxProb = Math.max(prediction.home_win, prediction.draw, prediction.away_win);
   const favored = prediction.home_win === maxProb ? "1" : prediction.draw === maxProb ? "X" : "2";
   const confidence = prediction.confidence ?? 0;
+  // IMPORTANT: derive the displayed pick from the SAME market-derivation logic used on
+  // the AI Predictions detail page (Best Pick). Using the raw `prediction.prediction`
+  // column can conflict with the market tabs (e.g. dashboard says "BTTS Yes" while the
+  // BTTS tab shows NG 60%). Deriving here guarantees dashboard ↔ detail consistency.
+  const bestType = (() => {
+    try { return getBestPickType(prediction as any); } catch { return null; }
+  })();
+  const labelFromBestType = (() => {
+    switch (bestType) {
+      case "home_win": return `${prediction.home_team} Win`;
+      case "away_win": return `${prediction.away_team} Win`;
+      case "draw": return "Draw";
+      case "dc_1x": return `${prediction.home_team} or Draw`;
+      case "dc_x2": return `Draw or ${prediction.away_team}`;
+      case "dc_12": return `${prediction.home_team} or ${prediction.away_team}`;
+      case "over15": return "Over 1.5 Goals";
+      case "over25": return "Over 2.5 Goals";
+      case "over35": return "Over 3.5 Goals";
+      case "under25": return "Under 2.5 Goals";
+      case "under35": return "Under 3.5 Goals";
+      case "btts_yes": return "BTTS Yes";
+      case "btts_no": return "BTTS No";
+      default: return null;
+    }
+  })();
   const labelMap: Record<string, string> = { "1": "Home Win", X: "Draw", "2": "Away Win" };
   const rawPred = String(prediction.prediction ?? "").trim();
-  const displayPrediction = labelMap[rawPred] ?? rawPred;
+  const displayPrediction = labelFromBestType ?? labelMap[rawPred] ?? rawPred;
   const locked = lockTier !== null;
   const isPremiumLock = lockTier === "premium";
   const ctaLabel = isPremiumLock ? "Premium · Tap to unlock" : "Pro · Tap to unlock";
