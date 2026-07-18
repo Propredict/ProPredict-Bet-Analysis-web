@@ -445,14 +445,16 @@ export default function WorldCup2026() {
 
   const lastFinishedGroupMatch = (() => {
     if (!wcResults) return null;
-    for (let i = GROUP_MATCHES.length - 1; i >= 0; i--) {
-      const m = GROUP_MATCHES[i];
-      const result = lookupWCResult(wcResults, m.home, m.away);
-      if (result?.finished) {
-        return { match: m, result };
-      }
-    }
-    return null;
+    const finished = GROUP_MATCHES
+      .map((m) => {
+        const result = lookupWCResult(wcResults, m.home, m.away);
+        if (!result?.finished) return null;
+        const kickoffMs = parseWCKickoff(m.date, m.time) ?? 0;
+        return { match: m, result, kickoffMs };
+      })
+      .filter((x): x is { match: typeof GROUP_MATCHES[number]; result: WCScheduleResult; kickoffMs: number } => x !== null)
+      .sort((a, b) => b.kickoffMs - a.kickoffMs);
+    return finished[0] ?? null;
   })();
 
   const fallbackFinishedMatch = (() => {
