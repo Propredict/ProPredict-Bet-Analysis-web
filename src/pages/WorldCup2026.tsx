@@ -432,6 +432,65 @@ export default function WorldCup2026() {
     return { ...round, matches: matches.length, live, finished };
   });
 
+  // Fallback for the Finished section: if no WC AI pick wins from yesterday,
+  // show the latest finished knockout or group match so the section never looks empty.
+  const lastFinishedBracketMatch = (() => {
+    if (!overviewBracket) return null;
+    const all = Object.values(overviewBracket)
+      .flat()
+      .filter((m) => m.date && isBracketFinished(m.status))
+      .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
+    return all[0] ?? null;
+  })();
+
+  const lastFinishedGroupMatch = (() => {
+    if (!wcResults) return null;
+    for (let i = GROUP_MATCHES.length - 1; i >= 0; i--) {
+      const m = GROUP_MATCHES[i];
+      const result = lookupWCResult(wcResults, m.home, m.away);
+      if (result?.finished) {
+        return { match: m, result };
+      }
+    }
+    return null;
+  })();
+
+  const fallbackFinishedMatch = (() => {
+    const b = lastFinishedBracketMatch;
+    const g = lastFinishedGroupMatch;
+    const bMatch = b
+      ? {
+          type: "bracket" as const,
+          home: b.home.name || "TBD",
+          away: b.away.name || "TBD",
+          homeScore: b.home_score ?? 0,
+          awayScore: b.away_score ?? 0,
+          date: b.date,
+          winner: b.winner,
+        }
+      : null;
+    const gMatch = g
+      ? (() => {
+          const kickoffMs = parseWCKickoff(g.match.date, g.match.time);
+          return {
+            type: "group" as const,
+            home: g.match.home,
+            away: g.match.away,
+            homeScore: g.result.homeScore,
+            awayScore: g.result.awayScore,
+            date: kickoffMs ? new Date(kickoffMs).toISOString() : null,
+            winner: null as "home" | "away" | "draw" | null,
+          };
+        })()
+      : null;
+    if (!bMatch && !gMatch) return null;
+    if (!bMatch) return gMatch!;
+    if (!gMatch) return bMatch;
+    const bTime = new Date(bMatch.date!).getTime();
+    const gTime = new Date(gMatch.date!).getTime();
+    return bTime >= gTime ? bMatch : gMatch;
+  })();
+
   // Featured Match: prefer live/upcoming from TODAY's fixtures,
   // otherwise fall back to the NEXT upcoming knockout match from the bracket
   // (Quarter-finals → Semi-finals → Final). Only fall back to the hardcoded
