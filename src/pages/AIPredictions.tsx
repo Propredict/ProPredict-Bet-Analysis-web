@@ -121,7 +121,7 @@ export default function AIPredictions() {
   // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
   // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
   //   < 65 → Free, 65-84 → Pro, ≥ 85 → Premium
-  // STEP 9 caps applied: Premium max 10, Pro max 20, Free max 50.
+  // Tier caps applied: Premium max 10, Pro max 20, Free max 15.
   // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
   // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
   // generated today), promote up to 3 of the safest "below threshold" matches
@@ -135,7 +135,7 @@ export default function AIPredictions() {
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
     // Tier is determined purely by displayed confidence (Premium ≥85%, Pro ≥65%, Free <65%)
     // Returns null for predictions that exceed the tier caps — these are filtered out below
-    // so we never show 300+ Free predictions when FREE_CAP = 50.
+    // so we never show 300+ Free predictions when FREE_CAP = 15.
     return tierAssignment.get(prediction.id!) ?? null;
   };
 
@@ -266,7 +266,7 @@ export default function AIPredictions() {
       (p) => hasStarted(p) || (p.confidence != null ? p.confidence >= 50 : true)
     );
 
-    // Drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 50 = 80 max)
+    // Drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 15 = 45 max)
     // — but keep already-started matches even if they'd be cut by the cap.
     result = result.filter((p) => hasStarted(p) || getPredictionTier(p) !== null);
 
