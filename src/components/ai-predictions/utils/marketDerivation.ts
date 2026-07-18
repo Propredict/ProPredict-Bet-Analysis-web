@@ -529,6 +529,12 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
   const PRIMARY_BOOST = 8; // 1X2 headline boost
   const COMMON_PENALTY = 6; // suppress Over 1.5 / Under 3.5 unless they're really strong
+  // Under 2.5 was blanketing nearly every card (low-scoring leagues + default xG
+  // frequently push it into the 65–80% range). Require a strong signal and apply
+  // a meaningful penalty so it only wins Main when it's clearly the safest pick
+  // AND no primary 1X2 outcome is competitive.
+  const UNDER25_PENALTY = 14;
+  const UNDER25_MIN = 68; // must be at least this likely to be eligible
 
   // Double Chance probabilities
   const dc1x = hw + d;
@@ -551,7 +557,7 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "over25", prob: probs.over25 },
     // Over 3.5 — high-scoring matches only (≥60%)
     { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
-    { type: "under25", prob: probs.under25 },
+    { type: "under25", prob: probs.under25 >= UNDER25_MIN ? probs.under25 - UNDER25_PENALTY : 0 },
     { type: "btts_yes", prob: probs.bttsYes },
     { type: "btts_no", prob: probs.bttsNo },
     // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
