@@ -432,6 +432,65 @@ export default function WorldCup2026() {
     return { ...round, matches: matches.length, live, finished };
   });
 
+  // Fallback for the Finished section: if no WC AI pick wins from yesterday,
+  // show the latest finished knockout or group match so the section never looks empty.
+  const lastFinishedBracketMatch = (() => {
+    if (!overviewBracket) return null;
+    const all = Object.values(overviewBracket)
+      .flat()
+      .filter((m) => m.date && isBracketFinished(m.status))
+      .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
+    return all[0] ?? null;
+  })();
+
+  const lastFinishedGroupMatch = (() => {
+    if (!wcResults) return null;
+    for (let i = GROUP_MATCHES.length - 1; i >= 0; i--) {
+      const m = GROUP_MATCHES[i];
+      const result = lookupWCResult(wcResults, m.home, m.away);
+      if (result?.finished) {
+        return { match: m, result };
+      }
+    }
+    return null;
+  })();
+
+  const fallbackFinishedMatch = (() => {
+    const b = lastFinishedBracketMatch;
+    const g = lastFinishedGroupMatch;
+    const bMatch = b
+      ? {
+          type: "bracket" as const,
+          home: b.home.name || "TBD",
+          away: b.away.name || "TBD",
+          homeScore: b.home_score ?? 0,
+          awayScore: b.away_score ?? 0,
+          date: b.date,
+          winner: b.winner,
+        }
+      : null;
+    const gMatch = g
+      ? (() => {
+          const kickoffMs = parseWCKickoff(g.match.date, g.match.time);
+          return {
+            type: "group" as const,
+            home: g.match.home,
+            away: g.match.away,
+            homeScore: g.result.homeScore,
+            awayScore: g.result.awayScore,
+            date: kickoffMs ? new Date(kickoffMs).toISOString() : null,
+            winner: null as "home" | "away" | "draw" | null,
+          };
+        })()
+      : null;
+    if (!bMatch && !gMatch) return null;
+    if (!bMatch) return gMatch!;
+    if (!gMatch) return bMatch;
+    const bTime = new Date(bMatch.date!).getTime();
+    const gTime = new Date(gMatch.date!).getTime();
+    return bTime >= gTime ? bMatch : gMatch;
+  })();
+
   // Featured Match: prefer live/upcoming from TODAY's fixtures,
   // otherwise fall back to the NEXT upcoming knockout match from the bracket
   // (Quarter-finals → Semi-finals → Final). Only fall back to the hardcoded
@@ -1410,13 +1469,72 @@ export default function WorldCup2026() {
                   )}
                 </div>
                 {finishedWithPick.length === 0 && (
-                  <Card className="bg-card border-border p-3 text-center">
-                    <p className="text-[11px] text-muted-foreground">
-                      {isLoadingYesterday
-                        ? "Loading yesterday's results…"
-                        : "No finished World Cup picks from yesterday yet. New finished matches will appear here automatically."}
-                    </p>
-                  </Card>
+                  <>
+                    {fallbackFinishedMatch ? (
+                      <Card className="bg-card border-border overflow-hidden">
+                        <div className="px-4 pt-5 pb-4">
+                          <div className="flex items-center justify-center mb-3">
+                            <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5">
+                              Latest Result
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div className="mb-2">
+                                {TEAMS[fallbackFinishedMatch.home] && <TeamFlag code={TEAMS[fallbackFinishedMatch.home].code} size="md" />}
+                              </div>
+                              <span className="text-[11px] md:text-xs font-bold text-foreground uppercase tracking-wider truncate w-full text-center leading-tight">
+                                {fallbackFinishedMatch.home}
+                              </span>
+                              {(fallbackFinishedMatch.winner === "home" || fallbackFinishedMatch.homeScore > fallbackFinishedMatch.awayScore) && (
+                                <Badge variant="outline" className="mt-1.5 text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                  WINNER
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-center px-3 shrink-0">
+                              <Badge variant="outline" className="text-[9px] border-border/60 text-muted-foreground bg-muted/40 tabular-nums font-bold mb-1.5">
+                                FT
+                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl font-black text-foreground">{fallbackFinishedMatch.homeScore}</span>
+                                <span className="text-muted-foreground font-bold">-</span>
+                                <span className="text-2xl font-black text-foreground">{fallbackFinishedMatch.awayScore}</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-center flex-1 min-w-0">
+                              <div className="mb-2">
+                                {TEAMS[fallbackFinishedMatch.away] && <TeamFlag code={TEAMS[fallbackFinishedMatch.away].code} size="md" />}
+                              </div>
+                              <div className="flex flex-col items-center w-full">
+                                <span className="text-[11px] md:text-xs font-bold text-foreground uppercase tracking-wider truncate w-full text-center leading-tight">
+                                  {fallbackFinishedMatch.away}
+                                </span>
+                                {(fallbackFinishedMatch.winner === "away" || fallbackFinishedMatch.homeScore < fallbackFinishedMatch.awayScore) && (
+                                  <Badge variant="outline" className="mt-1.5 text-[9px] border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                    WINNER
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          {fallbackFinishedMatch.date && (
+                            <p className="text-center text-[10px] text-muted-foreground mt-3">
+                              {new Date(fallbackFinishedMatch.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })} · {formatMatchTime(fallbackFinishedMatch.date)} CET
+                            </p>
+                          )}
+                        </div>
+                      </Card>
+                    ) : (
+                      <Card className="bg-card border-border p-3 text-center">
+                        <p className="text-[11px] text-muted-foreground">
+                          {isLoadingYesterday
+                            ? "Loading yesterday's results…"
+                            : "No finished World Cup picks from yesterday yet. New finished matches will appear here automatically."}
+                        </p>
+                      </Card>
+                    )}
+                  </>
                 )}
                 <div className="space-y-3">
                   {finishedWithPick.map((r) => {
