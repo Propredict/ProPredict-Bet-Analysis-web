@@ -659,62 +659,102 @@ export default function WorldCup2026() {
 
         {/* ==================== OVERVIEW ==================== */}
         <TabsContent value="overview" className="mt-0">
-          {/* Knockout Stage - current/upcoming round above the past group tables */}
-          <section className="px-3 mt-4">
-            <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-              <GitFork className="h-4 w-4 text-primary" /> Upcoming Quarter-finals
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {(() => {
-                const upcoming = (overviewBracket["Quarter-finals"] || [])
-                  .filter((m) => !isBracketFinished(m.status))
-                  .sort((a, b) => {
-                    const da = a.date ? new Date(a.date).getTime() : Infinity;
-                    const db = b.date ? new Date(b.date).getTime() : Infinity;
-                    return da - db;
-                  });
+          {/* Knockout Stage - dynamic upcoming round + recent finished rounds */}
+          {(() => {
+            const roundOrder: BracketRound[] = [
+              "Round of 32",
+              "Round of 16",
+              "Quarter-finals",
+              "Semi-finals",
+              "3rd Place Final",
+              "Final",
+            ];
+            const upcomingRound = roundOrder.find((r) =>
+              (overviewBracket[r] || []).some((m) => !isBracketFinished(m.status))
+            );
+            const finishedRoundsDesc = [...roundOrder]
+              .reverse()
+              .filter((r) => (overviewBracket[r] || []).some((m) => isBracketFinished(m.status)));
+            const latestFinishedRound = finishedRoundsDesc[0];
 
-                return upcoming.length > 0 ? (
-                  upcoming.map((m, i) => {
-                    const dt = m.date ? new Date(m.date) : null;
-                    const dateStr = dt
-                      ? dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })
-                      : "TBD";
-                    const timeStr = formatMatchTime(m.date);
-                    const homeName = m.home.name || "TBD";
-                    const awayName = m.away.name || "TBD";
-                    return (
-                      <Card key={i} className="bg-card border-border p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="outline" className="text-[9px]">Quarter-finals</Badge>
-                          <div className="text-[10px] text-muted-foreground">{dateStr} · {timeStr}</div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-1.5">
-                              {TEAMS[homeName] && <TeamFlag code={TEAMS[homeName].code} size="sm" />}
-                              <span className="text-xs font-semibold text-foreground">{homeName}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {TEAMS[awayName] && <TeamFlag code={TEAMS[awayName].code} size="sm" />}
-                              <span className="text-xs font-semibold text-foreground">{awayName}</span>
-                            </div>
-                          </div>
-                          <div className="text-[10px] text-muted-foreground text-right">
-                            <MapPin className="h-3 w-3 inline mr-1" />{m.venue || "TBD"}
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })
-                ) : (
-                  <Card className="bg-card border-border p-4 col-span-full text-center">
-                    <p className="text-xs text-muted-foreground">Quarter-final fixtures will appear as soon as bracket data is updated.</p>
-                  </Card>
-                );
-              })()}
-            </div>
-          </section>
+            const renderMatchCard = (m: typeof overviewBracket[BracketRound][number], i: number, roundLabel: string, finished: boolean) => {
+              const dt = m.date ? new Date(m.date) : null;
+              const dateStr = dt
+                ? dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/Belgrade" })
+                : "TBD";
+              const timeStr = formatMatchTime(m.date);
+              const homeName = m.home.name || "TBD";
+              const awayName = m.away.name || "TBD";
+              const hs = m.home_score ?? 0;
+              const as = m.away_score ?? 0;
+              const homeWon = finished && (m.winner === "home" || hs > as);
+              const awayWon = finished && (m.winner === "away" || as > hs);
+              return (
+                <Card key={i} className="bg-card border-border p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant="outline" className="text-[9px]">{roundLabel}</Badge>
+                    <div className="text-[10px] text-muted-foreground">
+                      {finished ? "FT" : `${dateStr} · ${timeStr}`}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {TEAMS[homeName] && <TeamFlag code={TEAMS[homeName].code} size="sm" />}
+                        <span className={`text-xs font-semibold truncate ${homeWon ? "text-emerald-400" : "text-foreground"}`}>{homeName}</span>
+                      </div>
+                      {finished && <span className={`text-sm font-black tabular-nums ${homeWon ? "text-emerald-400" : "text-foreground"}`}>{hs}</span>}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {TEAMS[awayName] && <TeamFlag code={TEAMS[awayName].code} size="sm" />}
+                        <span className={`text-xs font-semibold truncate ${awayWon ? "text-emerald-400" : "text-foreground"}`}>{awayName}</span>
+                      </div>
+                      {finished && <span className={`text-sm font-black tabular-nums ${awayWon ? "text-emerald-400" : "text-foreground"}`}>{as}</span>}
+                    </div>
+                  </div>
+                </Card>
+              );
+            };
+
+            return (
+              <>
+                {upcomingRound && (
+                  <section className="px-3 mt-4">
+                    <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+                      <GitFork className="h-4 w-4 text-primary" /> Upcoming {upcomingRound}
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(overviewBracket[upcomingRound] || [])
+                        .filter((m) => !isBracketFinished(m.status))
+                        .sort((a, b) => (a.date ? new Date(a.date).getTime() : Infinity) - (b.date ? new Date(b.date).getTime() : Infinity))
+                        .map((m, i) => renderMatchCard(m, i, upcomingRound, false))}
+                    </div>
+                  </section>
+                )}
+
+                {latestFinishedRound && (
+                  <section className="px-3 mt-4">
+                    <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-emerald-400" /> {latestFinishedRound} — Results
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(overviewBracket[latestFinishedRound] || [])
+                        .filter((m) => isBracketFinished(m.status))
+                        .sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0))
+                        .map((m, i) => renderMatchCard(m, i, latestFinishedRound, true))}
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("bracket")}
+                      className="mt-2 w-full text-xs text-primary hover:underline text-center"
+                    >
+                      View full bracket →
+                    </button>
+                  </section>
+                )}
+              </>
+            );
+          })()}
 
           {/* Groups */}
           <section className="px-3 mt-4">
