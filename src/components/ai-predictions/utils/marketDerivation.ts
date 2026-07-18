@@ -535,8 +535,8 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   // they're clearly the safest pick AND no primary 1X2 outcome is competitive.
   // This preserves diversity: sometimes Under 2.5, sometimes BTTS No, sometimes
   // Over 2.5, sometimes BTTS Yes, sometimes 1X2 — whichever is genuinely strongest.
-  const DEFENSIVE_PENALTY = 12;
-  const DEFENSIVE_MIN = 66; // must be at least this likely to be eligible
+  const DEFENSIVE_PENALTY = 20;
+  const DEFENSIVE_MIN = 72; // must be at least this likely to be eligible
   // Small random-ish tiebreaker per prediction so two matches with identical
   // Under 2.5 = 72% and BTTS No = 72% don't both resolve to the same market.
   const tiebreakSeed = ((prediction.id ?? "").toString()
@@ -564,9 +564,16 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "over25", prob: probs.over25 },
     // Over 3.5 — high-scoring matches only (≥60%)
     { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
-    { type: "under25", prob: probs.under25 >= DEFENSIVE_MIN ? probs.under25 - DEFENSIVE_PENALTY + (tiebreakSeed % 2) : 0 },
-    { type: "btts_yes", prob: probs.bttsYes >= 62 ? probs.bttsYes - 4 : 0 },
-    { type: "btts_no", prob: probs.bttsNo >= DEFENSIVE_MIN ? probs.bttsNo - DEFENSIVE_PENALTY + ((tiebreakSeed + 1) % 2) : 0 },
+    // Under 2.5: extra penalty when a 1X2 favorite exists, so favorites win Main
+    { type: "under25",
+      prob: probs.under25 >= DEFENSIVE_MIN
+        ? probs.under25 - DEFENSIVE_PENALTY - (maxSingle >= 50 ? 6 : 0) + (tiebreakSeed % 3)
+        : 0 },
+    { type: "btts_yes", prob: probs.bttsYes >= 62 ? probs.bttsYes - 4 + ((tiebreakSeed + 2) % 3) : 0 },
+    { type: "btts_no",
+      prob: probs.bttsNo >= DEFENSIVE_MIN
+        ? probs.bttsNo - DEFENSIVE_PENALTY - (maxSingle >= 50 ? 4 : 0) + ((tiebreakSeed + 1) % 3)
+        : 0 },
     // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
   ];
 
