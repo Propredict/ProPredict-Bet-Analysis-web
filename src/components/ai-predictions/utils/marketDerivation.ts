@@ -72,20 +72,43 @@ function clampProb(n: number, min = 5, max = 95): number {
  * across all market derivations (goals, BTTS, correct scores, predicted score).
  */
 function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number } {
+  const directHomeXg = (prediction as any).xg_home;
+  const directAwayXg = (prediction as any).xg_away;
   const lastHomeGoals = (prediction as any).last_home_goals;
   const lastAwayGoals = (prediction as any).last_away_goals;
 
   let homeXg: number;
   let awayXg: number;
 
-  if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
+  if (
+    typeof directHomeXg === "number" && directHomeXg > 0 &&
+    typeof directAwayXg === "number" && directAwayXg > 0
+  ) {
+    // Prefer real backend xG when present. It is the cleanest source and avoids
+    // turning every 1-0 predicted score into an automatic Under 2.5 pick.
+    homeXg = Math.max(0.4, directHomeXg);
+    awayXg = Math.max(0.3, directAwayXg);
+  } else if (lastHomeGoals && lastHomeGoals > 0 && lastAwayGoals && lastAwayGoals > 0) {
     homeXg = Math.max(0.4, lastHomeGoals);
     awayXg = Math.max(0.3, lastAwayGoals);
   } else {
     const score = parseScore(prediction.predicted_score);
     if (score) {
-      homeXg = Math.max(0.4, score.home * 0.85 + 0.2);
-      awayXg = Math.max(0.3, score.away * 0.85 + 0.15);
+      // Fallback score-derived xG must be calibrated, not literal.
+      // Old logic mapped 1-0 to ~1.20 total xG, producing 85-90% Under 2.5
+      // across many cards. A predicted score is only the most likely scoreline,
+      // so keep a realistic attacking floor for both teams.
+      const hw = prediction.home_win ?? 40;
+      const aw = prediction.away_win ?? 30;
+      const dr = prediction.draw ?? 30;
+
+      homeXg = Math.max(0.65, score.home * 0.62 + 0.38);
+      awayXg = Math.max(0.55, score.away * 0.62 + 0.35);
+
+      // If a team is predicted to be kept scoreless but the 1X2 model still
+      // gives it/draw a realistic path, do not collapse its xG to near-zero.
+      if (score.away === 0 && aw + dr >= 45) awayXg = Math.max(awayXg, 0.75);
+      if (score.home === 0 && hw + dr >= 45) homeXg = Math.max(homeXg, 0.75);
     } else {
       const hw = prediction.home_win ?? 40;
       const aw = prediction.away_win ?? 30;
@@ -527,16 +550,18 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
   const probs = calculateGoalMarketProbs(prediction);
 
-  const PRIMARY_BOOST = 8; // 1X2 headline boost
-  const COMMON_PENALTY = 6; // suppress Over 1.5 / Under 3.5 unless they're really strong
+  const PRIMARY_BOOST = 12; // 1X2 headline boost when a side is genuinely favored
+  const PRIMARY_SOFT_BOOST = 6;
+  const COMMON_PENALTY = 18; // suppress generic Over 1.5 unless no sharper market exists
   // "Safe" defensive markets (Under 2.5, BTTS No) tend to blanket every card
   // because low-scoring matches naturally push both into the 65–80% range.
   // Apply symmetric penalties + minimum thresholds so they only win Main when
   // they're clearly the safest pick AND no primary 1X2 outcome is competitive.
   // This preserves diversity: sometimes Under 2.5, sometimes BTTS No, sometimes
   // Over 2.5, sometimes BTTS Yes, sometimes 1X2 — whichever is genuinely strongest.
-  const DEFENSIVE_PENALTY = 20;
-  const DEFENSIVE_MIN = 72; // must be at least this likely to be eligible
+  const DEFENSIVE_PENALTY = 30;
+  const UNDER25_MIN = 82; // Under 2.5 only when it is truly dominant
+  const BTTS_NO_MIN = 80; // BTTS No only when it is truly dominant
   // Small random-ish tiebreaker per prediction so two matches with identical
   // Under 2.5 = 72% and BTTS No = 72% don't both resolve to the same market.
   const tiebreakSeed = ((prediction.id ?? "").toString()
@@ -549,30 +574,31 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const dc12 = hw + aw;
   // DC is only attractive when no single outcome dominates AND combined ≥ 80%
   const maxSingle = Math.max(hw, aw, d);
-  const dcEligible = maxSingle < 60;
+  const dcEligible = maxSingle < 62;
 
   const candidates: MarketCandidate[] = [
-    { type: "home_win", prob: hw + PRIMARY_BOOST },
-    { type: "away_win", prob: aw + PRIMARY_BOOST },
-    { type: "draw", prob: d + PRIMARY_BOOST },
+    { type: "home_win", prob: hw + (hw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
+    { type: "away_win", prob: aw + (aw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
+    { type: "draw", prob: d >= 30 ? d + PRIMARY_SOFT_BOOST : 0 },
     // Double Chance — safe pick fallback for tight matches
-    { type: "dc_1x", prob: dcEligible && dc1x >= 80 ? dc1x - 4 : 0 },
-    { type: "dc_x2", prob: dcEligible && dcx2 >= 80 ? dcx2 - 4 : 0 },
-    { type: "dc_12", prob: dcEligible && dc12 >= 80 ? dc12 - 4 : 0 },
-    // High-probability "lock" market — eligible only when very strong
-    { type: "over15", prob: probs.over15 >= 80 ? probs.over15 - COMMON_PENALTY : 0 },
-    { type: "over25", prob: probs.over25 },
+    { type: "dc_1x", prob: dcEligible && dc1x >= 76 ? dc1x - 2 : 0 },
+    { type: "dc_x2", prob: dcEligible && dcx2 >= 76 ? dcx2 - 2 : 0 },
+    { type: "dc_12", prob: dcEligible && dc12 >= 78 ? dc12 - 3 : 0 },
+    // Over 1.5 is too generic to headline most cards; use it only when the
+    // sharper Over 2.5 signal is not strong enough.
+    { type: "over15", prob: probs.over15 >= 86 && probs.over25 < 58 ? probs.over15 - COMMON_PENALTY : 0 },
+    { type: "over25", prob: probs.over25 >= 56 ? probs.over25 + 4 : probs.over25 },
     // Over 3.5 — high-scoring matches only (≥60%)
     { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
-    // Under 2.5: extra penalty when a 1X2 favorite exists, so favorites win Main
+    // Under 2.5: extra penalty when a 1X2 favorite exists, so it cannot blanket Free/Pro lists
     { type: "under25",
-      prob: probs.under25 >= DEFENSIVE_MIN
-        ? probs.under25 - DEFENSIVE_PENALTY - (maxSingle >= 50 ? 6 : 0) + (tiebreakSeed % 3)
+      prob: probs.under25 >= UNDER25_MIN
+        ? probs.under25 - DEFENSIVE_PENALTY - (maxSingle >= 48 ? 8 : 0) + (tiebreakSeed % 2)
         : 0 },
-    { type: "btts_yes", prob: probs.bttsYes >= 62 ? probs.bttsYes - 4 + ((tiebreakSeed + 2) % 3) : 0 },
+    { type: "btts_yes", prob: probs.bttsYes >= 56 ? probs.bttsYes + (tiebreakSeed % 2) : 0 },
     { type: "btts_no",
-      prob: probs.bttsNo >= DEFENSIVE_MIN
-        ? probs.bttsNo - DEFENSIVE_PENALTY - (maxSingle >= 50 ? 4 : 0) + ((tiebreakSeed + 1) % 3)
+      prob: probs.bttsNo >= BTTS_NO_MIN
+        ? probs.bttsNo - 24 - (maxSingle >= 48 ? 6 : 0) + ((tiebreakSeed + 1) % 2)
         : 0 },
     // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
   ];
