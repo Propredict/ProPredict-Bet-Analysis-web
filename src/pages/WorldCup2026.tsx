@@ -486,11 +486,9 @@ export default function WorldCup2026() {
         })()
       : null;
     if (!bMatch && !gMatch) return null;
-    if (!bMatch) return gMatch!;
-    if (!gMatch) return bMatch;
-    const bTime = new Date(bMatch.date!).getTime();
-    const gTime = new Date(gMatch.date!).getTime();
-    return bTime >= gTime ? bMatch : gMatch;
+    // Always prefer the latest knockout (bracket) result when available —
+    // knockout stage is more relevant than a group-stage match.
+    return bMatch ?? gMatch;
   })();
 
   // Featured Match: prefer live/upcoming from TODAY's fixtures,
