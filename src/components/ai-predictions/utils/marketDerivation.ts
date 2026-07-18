@@ -529,12 +529,19 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
   const PRIMARY_BOOST = 8; // 1X2 headline boost
   const COMMON_PENALTY = 6; // suppress Over 1.5 / Under 3.5 unless they're really strong
-  // Under 2.5 was blanketing nearly every card (low-scoring leagues + default xG
-  // frequently push it into the 65–80% range). Require a strong signal and apply
-  // a meaningful penalty so it only wins Main when it's clearly the safest pick
-  // AND no primary 1X2 outcome is competitive.
-  const UNDER25_PENALTY = 14;
-  const UNDER25_MIN = 68; // must be at least this likely to be eligible
+  // "Safe" defensive markets (Under 2.5, BTTS No) tend to blanket every card
+  // because low-scoring matches naturally push both into the 65–80% range.
+  // Apply symmetric penalties + minimum thresholds so they only win Main when
+  // they're clearly the safest pick AND no primary 1X2 outcome is competitive.
+  // This preserves diversity: sometimes Under 2.5, sometimes BTTS No, sometimes
+  // Over 2.5, sometimes BTTS Yes, sometimes 1X2 — whichever is genuinely strongest.
+  const DEFENSIVE_PENALTY = 12;
+  const DEFENSIVE_MIN = 66; // must be at least this likely to be eligible
+  // Small random-ish tiebreaker per prediction so two matches with identical
+  // Under 2.5 = 72% and BTTS No = 72% don't both resolve to the same market.
+  const tiebreakSeed = ((prediction.id ?? "").toString()
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0)) % 5; // 0..4
 
   // Double Chance probabilities
   const dc1x = hw + d;
@@ -557,9 +564,9 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "over25", prob: probs.over25 },
     // Over 3.5 — high-scoring matches only (≥60%)
     { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
-    { type: "under25", prob: probs.under25 >= UNDER25_MIN ? probs.under25 - UNDER25_PENALTY : 0 },
-    { type: "btts_yes", prob: probs.bttsYes },
-    { type: "btts_no", prob: probs.bttsNo },
+    { type: "under25", prob: probs.under25 >= DEFENSIVE_MIN ? probs.under25 - DEFENSIVE_PENALTY + (tiebreakSeed % 2) : 0 },
+    { type: "btts_yes", prob: probs.bttsYes >= 62 ? probs.bttsYes - 4 : 0 },
+    { type: "btts_no", prob: probs.bttsNo >= DEFENSIVE_MIN ? probs.bttsNo - DEFENSIVE_PENALTY + ((tiebreakSeed + 1) % 2) : 0 },
     // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
   ];
 
