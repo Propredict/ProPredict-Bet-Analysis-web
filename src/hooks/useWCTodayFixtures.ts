@@ -72,9 +72,25 @@ export function useWCTodayFixtures() {
         writeCachedFixtures(fresh);
         return fresh;
       }
-      return cached ?? fresh;
+      // Server says no fixtures today — trust it. Do NOT fall back to a
+      // stale cache, otherwise finished/old matches keep showing as "LIVE".
+      try { window.localStorage.removeItem(WC_TODAY_FIXTURES_CACHE_KEY); } catch { /* ignore */ }
+      return fresh;
     },
-    initialData: readCachedFixtures,
+    // Use cached data for instant paint, but strip any live/halftime status
+    // so a stale cache can never render a match as currently LIVE.
+    initialData: () => {
+      const c = readCachedFixtures();
+      if (!c) return undefined;
+      return {
+        ...c,
+        fixtures: c.fixtures.map((f) =>
+          f.status === "live" || f.status === "halftime"
+            ? { ...f, status: "finished" as const }
+            : f,
+        ),
+      };
+    },
     // Keep 30s only while a WC match is actually live. Outside live windows,
     // polling every 5min protects the API-Football daily quota without hiding
     // current data because we keep the local/DB fallback cached.
