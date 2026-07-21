@@ -24,6 +24,12 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/ai-predictions"]
   },
   {
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    path: "/",
+    matchPaths: ["/"]
+  },
+  {
     label: "Premium",
     icon: Crown,
     path: "/get-premium",
