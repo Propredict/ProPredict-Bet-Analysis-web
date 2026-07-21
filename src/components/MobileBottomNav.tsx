@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Crown, Brain } from "lucide-react";
+import { Zap, Heart, Crown, Brain, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
