@@ -23,7 +23,6 @@ import {
   User,
   Target,
   Gem,
-  Trophy,
   FlaskConical,
   MessageCircle,
 } from "lucide-react";

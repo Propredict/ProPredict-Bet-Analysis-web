@@ -23,7 +23,6 @@ import {
   Bell,
   Goal,
   Lightbulb,
-  Trophy
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
