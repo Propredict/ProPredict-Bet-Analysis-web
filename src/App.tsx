@@ -62,7 +62,6 @@ const Players = lazy(() => import("./pages/Players"));
 const RiskOfTheDay = lazy(() => import("./pages/RiskOfTheDay"));
 const DiamondPick = lazy(() => import("./pages/DiamondPick"));
 const MultiRiskMatches = lazy(() => import("./pages/MultiRiskMatches"));
-const WorldCup2026 = lazy(() => import("./pages/WorldCup2026"));
 const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
 
 // Admin - lazy loaded
@@ -236,7 +235,6 @@ const App = () => {
                     <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
                     <Route path="/diamond-pick" element={<DiamondPick />} />
                     <Route path="/multi-risk-matches" element={<MultiRiskMatches />} />
-                    <Route path="/world-cup-2026" element={<WorldCup2026 />} />
 
                     {/* Protected */}
                     <Route
