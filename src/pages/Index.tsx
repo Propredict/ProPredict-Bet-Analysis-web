@@ -28,7 +28,6 @@ const BettingTickets = lazy(() => import("@/components/dashboard/BettingTickets"
 const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStandings").then(m => ({ default: m.LeagueStandings })));
 const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
-const DashboardWorldCup = lazy(() => import("@/components/dashboard/DashboardWorldCup").then(m => ({ default: m.DashboardWorldCup })));
 const DashboardHero = lazy(() => import("@/components/dashboard/DashboardHero").then(m => ({ default: m.DashboardHero })));
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
@@ -213,11 +212,6 @@ const Index = () => {
 
         {/* Daily Reward Widget */}
         <DailyRewardWidget />
-
-        {/* World Cup 2026 — quick overview + CTA to matches tab */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardWorldCup />
-        </Suspense>
 
         {/* Android: new focused sections */}
         {isAndroid ? (

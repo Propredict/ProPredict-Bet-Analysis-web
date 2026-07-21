@@ -35,10 +35,6 @@ const Settings = () => {
 
   const [goalEnabled, setGoalEnabled] = useState(() => localStorage.getItem("goal_enabled") === "true");
   const [tipsEnabled, setTipsEnabled] = useState(() => localStorage.getItem("tips_enabled") === "true");
-  // WC alerts default ON (opt-out model) — only disabled if user explicitly turned it off.
-  const [wcEnabled, setWcEnabled] = useState(
-    () => localStorage.getItem("wc_alerts_enabled") !== "false",
-  );
 
   // Show real native push status for banners — but DON'T override user preferences.
   // User toggles are the source of truth; native state is only used for info banners.
@@ -84,25 +80,6 @@ const Settings = () => {
       logPushPreferenceChange("tips_disabled", "settings");
     }
     setOneSignalTag("daily_tips", checked ? "true" : null);
-  };
-
-  const handleWcToggle = (checked: boolean) => {
-    setWcEnabled(checked);
-    if (checked) {
-      localStorage.setItem("wc_alerts_enabled", "true");
-      localStorage.removeItem("push_disabled_at");
-      if (pushState === "opted_out") {
-        enablePushViabridge();
-      } else {
-        window.Android?.requestPushPermission?.();
-      }
-      logPushPreferenceChange("wc_alerts_enabled", "settings");
-    } else {
-      localStorage.setItem("wc_alerts_enabled", "false");
-      logPushPreferenceChange("wc_alerts_disabled", "settings");
-    }
-    // Tag is "false" only when opted out — WC push functions filter out wc_alerts = "false".
-    setOneSignalTag("wc_alerts", checked ? "true" : "false");
   };
 
   const accountItems = [
@@ -282,20 +259,6 @@ const Settings = () => {
                   </div>
                 </div>
                 <Switch checked={tipsEnabled} onCheckedChange={handleTipsToggle} />
-              </div>
-
-              {/* World Cup 2026 Alerts */}
-              <div className="flex items-center justify-between p-2 rounded-md">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-full bg-muted/50">
-                    <Trophy className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-medium text-foreground">World Cup 2026 Alerts</p>
-                    <p className="text-[10px] text-muted-foreground">Daily match previews & kickoff reminders (June 11 – July 19)</p>
-                  </div>
-                </div>
-                <Switch checked={wcEnabled} onCheckedChange={handleWcToggle} />
               </div>
 
               {/* System permission denied — direct user to system settings */}
