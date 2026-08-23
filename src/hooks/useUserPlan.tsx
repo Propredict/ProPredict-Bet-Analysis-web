@@ -590,7 +590,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobileApp, unlockContent, fetchUserData, revenueCat, queryClient]);
+  }, [isMobileApp, unlockContent, fetchUserData, revenueCat, queryClient, refetchDailyUnlock]);
 
   /* =====================
      Provider
