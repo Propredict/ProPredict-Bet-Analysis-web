@@ -277,7 +277,6 @@ export default function MatchPreviews() {
             <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
           </ul>
           <div className="mt-3 space-y-1">
-            <p className="text-sm"><span className="text-amber-400 font-bold">● PRO</span> — 5 Match Previews daily</p>
             <p className="text-sm"><span className="text-fuchsia-400 font-bold">● PREMIUM</span> — Unlimited Match Previews</p>
           </div>
         </Card>
