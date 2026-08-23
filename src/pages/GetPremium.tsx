@@ -514,7 +514,8 @@ export default function GetPremium() {
       {isAndroidApp && !isStripeSubOnAndroid && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
-            Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
+          Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Premium</span> to continue.
+
           </p>
           {currentPlan !== "free" && (
             <Button
