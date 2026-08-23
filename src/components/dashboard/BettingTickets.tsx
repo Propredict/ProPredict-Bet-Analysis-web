@@ -209,35 +209,6 @@ export function BettingTickets() {
               renderTicket={renderTicket}
             />)}
 
-            {/* MULTI RISK MATCHES — standalone */}
-            {multiRiskTickets.length > 0 && (
-              <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-pink-500/5 to-transparent p-3 sm:p-4 space-y-3">
-                <div className="text-center space-y-1">
-                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-                    <Target className="h-5 w-5 sm:h-6 sm:w-6 text-rose-400" />
-                    Risk Ticket
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    High-risk combos · biggest payouts
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {multiRiskTickets.map(renderTicket)}
-                </div>
-
-                <div className="flex justify-center pt-1">
-                  <Button
-                    size="sm"
-                    className="px-5 group bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs border-0 rounded-full"
-                    onClick={() => navigate("/multi-risk-matches")}
-                  >
-                    <span>See Risk Ticket</span>
-                    <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {premiumTickets.length > 0 && (
             <TicketTierSection
