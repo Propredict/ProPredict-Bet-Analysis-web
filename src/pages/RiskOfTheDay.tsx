@@ -81,13 +81,13 @@ export default function RiskOfTheDay() {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-violet-500/10 to-transparent border border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
+        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
           <div className="flex items-center gap-1.5">
-            <div className="p-1.5 rounded-md bg-fuchsia-500/20">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
+            <div className="p-1.5 rounded-md bg-amber-500/20">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
             </div>
             <div>
-              <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
+              <h1 className="text-sm text-amber-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">
                 Unlock best pick for today with Premium
               </p>
@@ -96,7 +96,7 @@ export default function RiskOfTheDay() {
           <div className="flex items-center gap-1">
             {showUpgradeBanner ? (
               <Button
-                className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
+                className="bg-amber-500 hover:bg-amber-600 text-white font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
                 onClick={() => navigate("/get-premium")}
               >
                 Subscribe
@@ -108,8 +108,8 @@ export default function RiskOfTheDay() {
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
           <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            <div className="p-1 sm:p-1.5 rounded bg-amber-500/20">
+              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500" />
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{riskTips.length}</p>
@@ -117,8 +117,8 @@ export default function RiskOfTheDay() {
             </div>
           </Card>
           <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
-            <div className="p-1 sm:p-1.5 rounded bg-accent/20">
-              <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
+            <div className="p-1 sm:p-1.5 rounded bg-amber-500/20">
+              <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500" />
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">5x+</p>
@@ -126,8 +126,8 @@ export default function RiskOfTheDay() {
             </div>
           </Card>
           <Card className="flex items-center gap-1.5 p-1.5 sm:p-2 bg-card border-border rounded-md">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            <div className="p-1 sm:p-1.5 rounded bg-amber-500/20">
+              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500" />
             </div>
             <div>
               <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
@@ -189,6 +189,8 @@ export default function RiskOfTheDay() {
                       onUnlockClick={() => handleUnlock("tip", tip.id, accessTier)}
                       onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       isUnlocking={isUnlocking}
+                      lockedCTAText="See now"
+                      lockedCTABrand="pro"
                     />
                   </div>
                   {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < riskTips.length - 1 && (
