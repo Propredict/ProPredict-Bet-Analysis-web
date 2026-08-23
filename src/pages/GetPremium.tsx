@@ -69,26 +69,6 @@ const androidPlans = {
       ],
     },
     {
-      id: "basic",
-      name: "Pro",
-      price: "€3.99",
-      period: "/month",
-       description: "Access all predictions without watching ads",
-      buttonText: "Get Pro",
-      buttonVariant: "default" as const,
-      popular: true,
-      features: [
-        { text: "All Daily Predictions unlocked", included: true },
-        { text: "Pro Insights access", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "No ads for predictions", included: true },
-        { text: "5 Match Previews daily", included: true },
-        { text: "Premium Ticket", included: false },
-        { text: "VIP analysis", included: false },
-      ],
-    },
-    {
       id: "premium",
       name: "Premium",
       price: "€14.99",
@@ -128,27 +108,6 @@ const androidPlans = {
         { text: "Pro Insights", included: false },
         { text: "Premium Ticket", included: false },
         { text: "Ad-free experience", included: false },
-      ],
-    },
-    {
-      id: "basic",
-      name: "Pro",
-      price: "€39.99",
-      period: "/year",
-      savings: "€3.33/mo - Save 17%",
-      description: "Access all predictions without watching ads",
-      buttonText: "Get Pro",
-      buttonVariant: "default" as const,
-      popular: true,
-      features: [
-        { text: "All Daily Predictions unlocked", included: true },
-        { text: "Pro Insights access", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "No ads for predictions", included: true },
-        { text: "5 Match Previews daily", included: true },
-        { text: "Premium Ticket", included: false },
-        { text: "VIP analysis", included: false },
       ],
     },
     {
@@ -199,26 +158,6 @@ const webPlans = {
       ],
     },
     {
-      id: "basic",
-      name: "Pro",
-      price: "€3.99",
-      period: "/month",
-      description: "Full access to daily & exclusive content",
-      buttonText: "Get Pro",
-      buttonVariant: "default" as const,
-      popular: true,
-      features: [
-         { text: "Daily & Pro Predictions unlocked", included: true },
-        { text: "Basic & Pro AI predictions", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-         { text: "Ad-free predictions experience", included: true },
-        { text: "5 Match Previews daily", included: true },
-        { text: "Premium insights", included: false },
-        { text: "VIP analysis", included: false },
-      ],
-    },
-    {
       id: "premium",
       name: "Premium",
       price: "€14.99",
@@ -258,27 +197,6 @@ const webPlans = {
         { text: "Match Previews", included: false },
         { text: "Exclusive content", included: false },
         { text: "Premium content", included: false },
-      ],
-    },
-    {
-      id: "basic",
-      name: "Pro",
-      price: "€39.99",
-      period: "/year",
-      savings: "€3.33/mo - Save 17%",
-      description: "Full access to daily & exclusive content",
-      buttonText: "Get Pro",
-      buttonVariant: "default" as const,
-      popular: true,
-      features: [
-        { text: "Daily & Pro Predictions unlocked", included: true },
-        { text: "Basic & Pro AI predictions", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "Ad-free predictions experience", included: true },
-        { text: "5 Match Previews daily", included: true },
-        { text: "Premium insights", included: false },
-        { text: "VIP analysis", included: false },
       ],
     },
     {
@@ -596,7 +514,8 @@ export default function GetPremium() {
       {isAndroidApp && !isStripeSubOnAndroid && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
-            Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Pro</span> or <span className="font-medium text-foreground">Get Premium</span> to continue.
+          Subscriptions are processed via Google Play. Tap <span className="font-medium text-foreground">Get Premium</span> to continue.
+
           </p>
           {currentPlan !== "free" && (
             <Button
@@ -647,11 +566,10 @@ export default function GetPremium() {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentPlans.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
-          const isPopular = plan.popular;
           const isFree = plan.id === "free";
 
           return (
@@ -660,8 +578,6 @@ export default function GetPremium() {
               className={`relative p-4 transition-all ${
                 isPremium
                   ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
-                  : isPopular
-                  ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/30"
                   : isFree
                   ? "bg-gradient-to-b from-primary/15 via-card to-card border-primary/30"
                   : "bg-card border-border"
@@ -671,12 +587,6 @@ export default function GetPremium() {
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
                   <Crown className="h-2.5 w-2.5 mr-1" />
                   Best Value
-                </Badge>
-              )}
-              {isPopular && !isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-black border-0 text-[9px] px-2">
-                  <Sparkles className="h-2.5 w-2.5 mr-1" />
-                  Popular
                 </Badge>
               )}
 
@@ -696,8 +606,6 @@ export default function GetPremium() {
                 className={`w-full mt-4 h-8 text-xs ${
                   isPremium && !isCurrentPlan
                     ? "bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 hover:opacity-90 text-white border-0"
-                    : isPopular && !isCurrentPlan
-                    ? "bg-amber-500 hover:bg-amber-600 text-black font-semibold"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
