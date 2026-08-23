@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { FreeInAppPopup } from "@/components/FreeInAppPopup";
-import { Target, RefreshCw, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Target, RefreshCw, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
