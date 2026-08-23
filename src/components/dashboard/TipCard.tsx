@@ -37,6 +37,8 @@ interface TipCardProps {
   onUnlockClick: () => void;
   onSecondaryUnlock?: () => void;
   isUnlocking?: boolean;
+  lockedCTAText?: string;
+  lockedCTABrand?: "premium" | "pro";
 }
 
 // --- Tier accent helpers ---
@@ -71,18 +73,19 @@ function getSocialProofPct(id: string): number {
   return 72 + (Math.abs(hash) % 23);
 }
 
-function getLockedCTAText(unlockMethod: UnlockMethod): string {
+function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string {
   if (unlockMethod.type === "unlocked") return "";
+  if (override) return override;
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";
-  if (unlockMethod.type === "upgrade_premium") return "💎 Unlock full AI edge";
+  if (unlockMethod.type === "upgrade_premium") return "💎 See now";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium" }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
   const queryClient = useQueryClient();
@@ -145,7 +148,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "bg-primary hover:bg-primary/90 text-white border-0";
     if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
     if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_premium") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+    if (unlockMethod.type === "upgrade_premium") {
+      if (lockedCTABrand === "pro") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+    }
     return "";
   };
 
@@ -155,6 +161,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return Sparkles;
     if (unlockMethod.type === "android_premium_only") return Crown;
     if (unlockMethod.type === "upgrade_basic") return Star;
+    if (unlockMethod.type === "upgrade_premium") return lockedCTABrand === "pro" ? Star : Crown;
     return Crown;
   };
 
@@ -261,7 +268,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             ) : (
               <div className="flex flex-col gap-1.5">
                 <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
+                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod, lockedCTAText)}</>}
                 </Button>
                 {!getIsAndroidApp() && (unlockMethod.type === "upgrade_basic") && (
                   <button
