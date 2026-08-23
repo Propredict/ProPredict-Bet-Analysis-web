@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { getCurrentSeason } from "@/lib/season";
 
 export type LeagueStatsType = "standings" | "scorers" | "assists" | "fixtures" | "rounds" | "players" | "injuries" | "yellowcards" | "redcards" | "squads";
 
@@ -203,7 +204,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 async function fetchLeagueStats(
   leagueId: string,
   type: LeagueStatsType,
-  season: string = "2024"
+  season: string = getCurrentSeason()
 ): Promise<LeagueStatsResponse | null> {
   if (!leagueId || leagueId === "all") {
     return null;
@@ -228,7 +229,7 @@ async function fetchLeagueStats(
   return response.json();
 }
 
-export function useLeagueStandings(leagueId: string, season: string = "2025") {
+export function useLeagueStandings(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "standings", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "standings", season),
@@ -239,7 +240,7 @@ export function useLeagueStandings(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueScorers(leagueId: string, season: string = "2025") {
+export function useLeagueScorers(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "scorers", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "scorers", season),
@@ -250,7 +251,7 @@ export function useLeagueScorers(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueAssists(leagueId: string, season: string = "2025") {
+export function useLeagueAssists(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "assists", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "assists", season),
@@ -261,7 +262,7 @@ export function useLeagueAssists(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueFixtures(leagueId: string, season: string = "2025") {
+export function useLeagueFixtures(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "fixtures", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "fixtures", season),
@@ -272,7 +273,7 @@ export function useLeagueFixtures(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueRounds(leagueId: string, season: string = "2025") {
+export function useLeagueRounds(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "rounds", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
@@ -283,7 +284,7 @@ export function useLeagueRounds(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeaguePlayers(leagueId: string, season: string = "2025") {
+export function useLeaguePlayers(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "players", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "players", season),
@@ -294,7 +295,7 @@ export function useLeaguePlayers(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueInjuries(leagueId: string, season: string = "2025") {
+export function useLeagueInjuries(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "injuries", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "injuries", season),
@@ -305,7 +306,7 @@ export function useLeagueInjuries(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueYellowCards(leagueId: string, season: string = "2025") {
+export function useLeagueYellowCards(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "yellowcards", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "yellowcards", season),
@@ -316,7 +317,7 @@ export function useLeagueYellowCards(leagueId: string, season: string = "2025") 
   });
 }
 
-export function useLeagueRedCards(leagueId: string, season: string = "2025") {
+export function useLeagueRedCards(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "redcards", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "redcards", season),
@@ -327,7 +328,7 @@ export function useLeagueRedCards(leagueId: string, season: string = "2025") {
   });
 }
 
-export function useLeagueSquads(leagueId: string, season: string = "2025") {
+export function useLeagueSquads(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
     queryKey: ["league-stats", "squads", leagueId, season],
     queryFn: () => fetchLeagueStats(leagueId, "squads", season),
