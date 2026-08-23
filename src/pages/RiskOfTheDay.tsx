@@ -178,7 +178,7 @@ export default function RiskOfTheDay() {
             </Card>
           ) : (
             riskTips.map((tip, idx) => {
-              const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
+              const unlockMethod = getUnlockMethod(accessTier, "tip", tip.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const isUnlocking = unlockingId === tip.id;
               return (
@@ -205,7 +205,7 @@ export default function RiskOfTheDay() {
                       }}
                       isLocked={isLocked}
                       unlockMethod={unlockMethod}
-                      onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
+                      onUnlockClick={() => handleUnlock("tip", tip.id, accessTier)}
                       onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       isUnlocking={isUnlocking}
                     />
