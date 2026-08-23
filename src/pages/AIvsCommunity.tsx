@@ -300,10 +300,6 @@ export default function AIvsCommunity() {
                 <span className="font-bold text-foreground">FREE</span> — 3 Predictions daily
               </p>
               <p className="text-xs text-muted-foreground">
-                <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1.5 align-middle" />
-                <span className="font-bold text-yellow-500">PRO</span> — 5 Predictions daily
-              </p>
-              <p className="text-xs text-muted-foreground">
                 <span className="inline-block w-2 h-2 rounded-full bg-primary mr-1.5 align-middle" />
                 <span className="font-bold text-primary">PREMIUM</span> — 10 Predictions daily
               </p>
