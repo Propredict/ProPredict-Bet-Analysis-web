@@ -419,6 +419,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_ticket_unlocks: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          revenuecat_event_id: string | null
+          source: string
+          transaction_id: string | null
+          unlock_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          revenuecat_event_id?: string | null
+          source?: string
+          transaction_id?: string | null
+          unlock_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          revenuecat_event_id?: string | null
+          source?: string
+          transaction_id?: string | null
+          unlock_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_ab_sends: {
         Row: {
           clicked_at: string | null
