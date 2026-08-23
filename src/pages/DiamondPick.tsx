@@ -81,41 +81,29 @@ export default function DiamondPick() {
             </div>
             <div>
               <h1 className="text-sm text-cyan-400 font-semibold sm:text-lg">💎 Diamond Pick</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                {isAndroidApp ? "Premium exclusive • Upgrade to unlock" : "Hand-picked gems • Premium members only"}
-              </p>
+              {showUpgradeBanner ? (
+                <p className="text-[9px] sm:text-[10px] text-cyan-300">
+                  Unlock Diamond Picks with Premium
+                </p>
+              ) : (
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                  {isAndroidApp ? "Premium exclusive • Upgrade to unlock" : "Hand-picked gems • Premium members only"}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-[9px] px-1.5 py-0.5">
-              👑 Premium
-            </Badge>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="h-6 px-1.5 text-[9px]">
-              <RefreshCw className="h-2.5 w-2.5 mr-1" />
-              Refresh
-            </Button>
+            {showUpgradeBanner ? (
+              <Button
+                className="bg-cyan-500 hover:bg-cyan-600 text-black font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
+                onClick={() => navigate("/get-premium")}
+              >
+                Subscribe
+              </Button>
+            ) : null}
           </div>
         </div>
 
-        {/* Upgrade Banner */}
-        {showUpgradeBanner && (
-          <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-cyan-500/20 via-blue-500/10 to-transparent border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-cyan-500/20">
-                  <Crown className="h-4 w-4 text-cyan-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[10px] sm:text-xs text-cyan-400">💎 Unlock Diamond Picks with Premium</h3>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €14.99/month</p>
-                </div>
-              </div>
-              <Button className="bg-cyan-500 hover:bg-cyan-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
-                Get Premium
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
