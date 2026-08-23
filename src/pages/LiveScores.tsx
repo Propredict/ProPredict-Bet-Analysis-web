@@ -740,18 +740,32 @@ function MatchRow({
     <div 
       onClick={() => onSelect(m)} 
       className={cn(
-        "px-1.5 sm:px-2 py-1.5 sm:py-2 hover:bg-secondary/30 cursor-pointer transition-colors",
-        showGoalIndicator && "bg-success/10 border-l-2 border-success"
+        "relative px-2 sm:px-3 py-2.5 sm:py-3 cursor-pointer transition-all duration-200",
+        "hover:bg-secondary/40 active:scale-[0.995] active:bg-secondary/60",
+        isLive && "bg-primary/[0.04] hover:bg-primary/[0.08]",
+        showGoalIndicator && "bg-success/10"
       )}
     >
-      <div className="grid grid-cols-[68px_1fr_52px_1fr_72px] sm:grid-cols-[80px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
+      {/* Left status accent bar */}
+      <span
+        className={cn(
+          "absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full transition-colors",
+          showGoalIndicator
+            ? "bg-success shadow-[0_0_10px_hsl(var(--success)/0.7)]"
+            : isLive
+              ? "bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
+              : "bg-transparent"
+        )}
+      />
+
+      <div className="grid grid-cols-[68px_1fr_58px_1fr_72px] sm:grid-cols-[80px_1fr_78px_1fr_92px] items-center gap-1 sm:gap-2">
         {/* Actions */}
         <div className="flex items-center gap-0.5">
           <button 
             onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
             className={cn(
-              "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-md flex items-center justify-center transition-all", 
-              isFav ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80"
+              "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-lg flex items-center justify-center transition-all active:scale-90", 
+              isFav ? "bg-primary/20 ring-1 ring-primary/40" : "bg-secondary/70 hover:bg-secondary"
             )}
           >
             <Star className={cn("h-4 w-4 sm:h-[18px] sm:w-[18px]", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
@@ -763,26 +777,36 @@ function MatchRow({
         </div>
 
         {/* Home Team */}
-        <div className="flex items-center gap-0.5 sm:gap-1 justify-end min-w-0">
-          <span className={cn("text-[10px] sm:text-xs font-medium truncate text-right", showGoalIndicator && "text-success font-semibold")}>
+        <div className="flex items-center gap-1.5 justify-end min-w-0">
+          <span className={cn(
+            "text-[11px] sm:text-[13px] font-semibold truncate text-right tracking-tight",
+            isFinished && "text-muted-foreground",
+            showGoalIndicator && "text-success"
+          )}>
             {m.homeTeam}
           </span>
-          {m.homeLogo && <img src={m.homeLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
+          {m.homeLogo && (
+            <span className="flex h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={m.homeLogo} alt="" loading="lazy" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            </span>
+          )}
         </div>
 
         {/* Score */}
         <div className="flex justify-center">
           <div className={cn(
-            "px-1.5 py-0.5 rounded text-center min-w-[40px] sm:min-w-[52px]",
-            isLive && !showGoalIndicator && "bg-destructive/15 border border-destructive/30",
-            isLive && showGoalIndicator && "bg-success/15 border border-success/30",
-            isFinished && "bg-secondary border border-border",
-            isUpcoming && "bg-muted border border-border"
+            "px-2 py-1 rounded-lg text-center min-w-[52px] sm:min-w-[68px] border transition-colors",
+            isLive && !showGoalIndicator && "bg-primary/10 border-primary/35 shadow-[0_0_14px_hsl(var(--primary)/0.18)]",
+            isLive && showGoalIndicator && "bg-success/15 border-success/40 shadow-[0_0_16px_hsl(var(--success)/0.3)]",
+            isFinished && "bg-secondary/70 border-border",
+            isUpcoming && "bg-secondary/40 border-border/70"
           )}>
             <span className={cn(
-              "font-bold text-[10px] sm:text-xs",
-              isLive && !showGoalIndicator && "text-destructive",
-              isLive && showGoalIndicator && "text-success"
+              "font-extrabold tabular-nums tracking-tight",
+              isUpcoming ? "text-[11px] sm:text-xs text-muted-foreground" : "text-sm sm:text-lg leading-tight",
+              isLive && !showGoalIndicator && "text-primary",
+              isLive && showGoalIndicator && "text-success",
+              isFinished && "text-foreground"
             )}>
               {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
             </span>
@@ -790,9 +814,17 @@ function MatchRow({
         </div>
 
         {/* Away Team */}
-        <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-          {m.awayLogo && <img src={m.awayLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
-          <span className={cn("text-[10px] sm:text-xs font-medium truncate", showGoalIndicator && "text-success font-semibold")}>
+        <div className="flex items-center gap-1.5 min-w-0">
+          {m.awayLogo && (
+            <span className="flex h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={m.awayLogo} alt="" loading="lazy" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            </span>
+          )}
+          <span className={cn(
+            "text-[11px] sm:text-[13px] font-semibold truncate tracking-tight",
+            isFinished && "text-muted-foreground",
+            showGoalIndicator && "text-success"
+          )}>
             {m.awayTeam}
           </span>
         </div>
@@ -807,6 +839,7 @@ function MatchRow({
       </div>
     </div>
   );
+
 }
 
 /* -------------------- COUNTRY SECTION -------------------- */
