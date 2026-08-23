@@ -975,22 +975,25 @@ function LeagueSection({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* League Header */}
       <CollapsibleTrigger asChild>
-        <button className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1.5 hover:from-primary/25 hover:via-primary/15 transition-colors">
+        <button className="w-full px-3 py-2 sm:py-2.5 bg-secondary/30 border-b border-border/60 flex items-center gap-2 hover:bg-secondary/50 transition-colors">
           {isOpen ? (
-            <ChevronDown className="h-3 w-3 text-primary" />
+            <ChevronDown className="h-3.5 w-3.5 text-primary/80" />
           ) : (
-            <ChevronRight className="h-3 w-3 text-primary" />
+            <ChevronRight className="h-3.5 w-3.5 text-primary/80" />
           )}
           {leagueLogo ? (
-            <img src={leagueLogo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={leagueLogo} alt="" loading="lazy" className="h-3.5 w-3.5 sm:h-4 sm:w-4 object-contain" />
+            </span>
           ) : (
-            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <Trophy className="h-3.5 w-3.5 text-primary" />
           )}
-          <span className="font-semibold text-[10px] sm:text-xs text-foreground truncate">{league}</span>
-          <Badge variant="outline" className="ml-auto text-[8px] px-1 border-primary/30 text-primary bg-primary/10">
+          <span className="font-semibold text-[11px] sm:text-[13px] text-foreground/90 truncate tracking-tight">{league}</span>
+          <Badge variant="outline" className="ml-auto text-[9px] px-1.5 border-primary/30 text-primary bg-primary/10">
             {matches.length}
           </Badge>
         </button>
+
       </CollapsibleTrigger>
 
       <CollapsibleContent>
