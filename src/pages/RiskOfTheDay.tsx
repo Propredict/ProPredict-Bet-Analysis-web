@@ -112,12 +112,11 @@ export default function RiskOfTheDay() {
                   <Crown className="h-4 w-4 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Pro AI Predictions</h3>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                  <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Unlock with Premium Access</h3>
                 </div>
               </div>
               <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
-                Subscribe Now
+                Subscribe
               </Button>
             </div>
           </div>
