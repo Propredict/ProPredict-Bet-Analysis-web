@@ -244,6 +244,62 @@ serve(async (req) => {
 
     console.log(`RevenueCat webhook: Found user ${userData.user.id} (${userData.user.email})`);
 
+    // ---------------------------------------------------------------
+    // Daily "Sure Odds 2+" one-time consumable.
+    // Handled BEFORE any subscription branch so it can never reach the
+    // activate/deactivate logic and never grants basic/pro/premium.
+    // ---------------------------------------------------------------
+    if (productId === DAILY_TICKET_PRODUCT_ID) {
+      if (eventType !== "NON_RENEWING_PURCHASE") {
+        console.log(`RevenueCat webhook: Ignoring ${eventType} for daily ticket product`);
+        return new Response(
+          JSON.stringify({ received: true, ignored: eventType }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const unlockDate = belgradeDate(event.purchased_at_ms || event.event_timestamp_ms);
+      const eventId = event.id ? String(event.id) : null;
+      const transactionId = event.transaction_id ? String(event.transaction_id) : null;
+
+      const { error: unlockError } = await supabase
+        .from("daily_ticket_unlocks")
+        .upsert(
+          {
+            user_id: userId,
+            unlock_date: unlockDate,
+            product_id: productId,
+            transaction_id: transactionId,
+            revenuecat_event_id: eventId,
+            source: "google_play",
+          },
+          { onConflict: "user_id,unlock_date", ignoreDuplicates: true }
+        );
+
+      if (unlockError) {
+        // Unique violation on event/transaction id = duplicate delivery → OK
+        if ((unlockError as any).code === "23505") {
+          console.log(`RevenueCat webhook: Duplicate daily ticket event for user ${userId} on ${unlockDate}`);
+          return new Response(
+            JSON.stringify({ received: true, duplicate: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.error("RevenueCat webhook: Error creating daily ticket unlock:", unlockError);
+        return new Response(
+          JSON.stringify({ error: "Failed to create daily unlock" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`RevenueCat webhook: Daily Sure Odds 2+ unlock granted to ${userId} for ${unlockDate}`);
+      return new Response(
+        JSON.stringify({ received: true, daily_ticket: true, unlock_date: unlockDate }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+
     // Handle purchase/renewal events → activate subscription
     const activateEvents = [
       "INITIAL_PURCHASE",
