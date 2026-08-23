@@ -163,7 +163,7 @@ export default function PremiumTips() {
               </span>
             </div>
             <Button className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
-              Upgrade to Premium – €5.99/month
+              Upgrade to Premium – €14.99/month
             </Button>
           </div>
         </Card>}
