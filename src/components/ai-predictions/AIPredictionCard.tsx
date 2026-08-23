@@ -390,7 +390,7 @@ const AIPredictionCardInner = ({
                      </Badge>
                    </div>
                   <p className="text-[8px] md:text-[9px] text-muted-foreground/70">
-                    Pro from €3.99/mo · Premium from €5.99/mo
+                    Pro from €3.99/mo · Premium from €14.99/mo
                   </p>
                 </div>
                 <ChevronDown className="w-3 h-3 text-muted-foreground -rotate-90 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
