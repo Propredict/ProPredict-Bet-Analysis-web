@@ -148,34 +148,23 @@ export function BettingTickets() {
 
   // --- WEB: vertical sections ---
   if (!isAndroidApp) {
-    // Stable key to dedupe the same ticket across sections
-    const ticketKey = (t: any) => t.id;
-
-    // Reserve specialized tickets first (Risk Tickets take priority)
-    const multiRiskDb = todayDbTickets.filter((t: any) => t.category === "multi_risk");
-    const reserved = new Set<string>();
-    multiRiskDb.forEach((t: any) => reserved.add(ticketKey(t)));
-
-    const multiRiskTickets = multiRiskDb.map(mapDbTicket).slice(0, 2);
-
     const dailyTickets = todayDbTickets
-      .filter((t: any) => t.tier === "daily" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "daily")
       .map(mapDbTicket)
       .slice(0, 2);
     const proTickets = todayDbTickets
-      .filter((t: any) => t.tier === "exclusive" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "exclusive")
       .map(mapDbTicket)
       .slice(0, 2);
     const premiumTickets = todayDbTickets
-      .filter((t: any) => t.tier === "premium" && t.category !== "multi_risk" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "premium")
       .map(mapDbTicket)
       .slice(0, 2);
 
     const hasAnyWebTickets =
       dailyTickets.length > 0 ||
       proTickets.length > 0 ||
-      premiumTickets.length > 0 ||
-      multiRiskTickets.length > 0;
+      premiumTickets.length > 0;
 
     if (!isLoading && !hasAnyWebTickets) return null;
 
