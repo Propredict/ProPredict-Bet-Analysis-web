@@ -232,30 +232,53 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       <div className={cardShell}>
         {renderHeader()}
 
-        {/* Prediction area - locked with hooks */}
+        {/* Prediction area - locked hero */}
         <div className="px-3.5 sm:px-4 pb-2 pt-1">
-          <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Prediction</span>
+          <div className="rounded-xl bg-background/40 border border-border/40 overflow-hidden">
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-3 py-2.5">
+              <span className={cn("text-[11px] uppercase tracking-[0.16em] font-bold flex items-center gap-1.5", accent.text)}>
+                <Target className="h-3.5 w-3.5" />
+                Prediction
+              </span>
               {!isDaily && (
-                <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                <span className={cn("text-[11px] font-bold flex items-center gap-1", accent.text)}>
                   <Lock className="h-3 w-3" />
                   {isPremium ? "Premium Pick" : "Pro Pick"}
                 </span>
               )}
             </div>
+
+            <div className="h-px bg-border/40 mx-3" />
+
+            {/* Lock hero */}
+            <div className="flex flex-col items-center gap-2 py-5 px-3">
+              <div className="flex items-center justify-center gap-2 w-full">
+                <ChevronRight className={cn("h-6 w-6 opacity-20", accent.text)} />
+                <ChevronRight className={cn("h-7 w-7 opacity-40", accent.text)} />
+                <div className={cn("mx-1 flex h-14 w-14 items-center justify-center rounded-full border-2 bg-background/60", accent.ring, accent.halo)}>
+                  <Lock className={cn("h-6 w-6", accent.text)} />
+                </div>
+                <ChevronLeft className={cn("h-7 w-7 opacity-40", accent.text)} />
+                <ChevronLeft className={cn("h-6 w-6 opacity-20", accent.text)} />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This is a <span className={cn("font-bold", accent.text)}>{lockedLabel || (isPremium ? "PREMIUM" : isPro ? "PRO" : "DAILY")}</span> prediction
+              </p>
+            </div>
+
+            <div className="h-px bg-border/40 mx-3" />
+
+            {/* Social proof */}
+            <div className="flex items-center justify-center gap-1.5 py-2.5">
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">
+                👀 <span className={cn("font-bold", accent.text)}>{getSocialProofPct(tip.id)}%</span> of users unlocked this
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Social proof */}
-        <div className="px-3.5 sm:px-4 pb-1">
-          <div className="flex items-center justify-center gap-1.5 py-1.5">
-            <Eye className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground">
-              👀 {getSocialProofPct(tip.id)}% of users unlocked this
-            </span>
-          </div>
-        </div>
 
         {/* Unlock button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
