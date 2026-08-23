@@ -79,7 +79,7 @@ export default function PremiumTickets() {
     ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRiskTicket(ticket)
   );
   const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
-  const showUpgradeBanner = plan !== "premium";
+  
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
