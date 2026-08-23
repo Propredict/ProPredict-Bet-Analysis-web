@@ -41,8 +41,8 @@ const STRIPE_PRICES = {
     annual: "price_1SpZ5OL8E849h6yxLP3NB1pi",
   },
   premium: {
-    monthly: "price_1SpWSoL8E849h6yxK7hBWrRm",
-    annual: "price_1SpZ64L8E849h6yxd2Fnz1YP",
+    monthly: "price_1U7aifL8E849h6yxdv1QWtqC",
+    annual: "price_1U7ajzL8E849h6yxMwrads83",
   },
 };
 

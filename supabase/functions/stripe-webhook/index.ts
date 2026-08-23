@@ -118,8 +118,10 @@ function getDisplayPrice(subscription: Stripe.Subscription, plan: string): strin
 const PRICE_TO_PLAN: Record<string, string> = {
   "price_1SuCcpL8E849h6yxv6RvooUp": "basic",   // Pro monthly
   "price_1SpZ5OL8E849h6yxLP3NB1pi": "basic",   // Pro yearly
-  "price_1SpWSoL8E849h6yxK7hBWrRm": "premium", // Premium monthly
-  "price_1SpZ64L8E849h6yxd2Fnz1YP": "premium", // Premium yearly
+  "price_1SpWSoL8E849h6yxK7hBWrRm": "premium", // Premium monthly (legacy price for existing subscribers)
+  "price_1SpZ64L8E849h6yxd2Fnz1YP": "premium", // Premium yearly (legacy price for existing subscribers)
+  "price_1U7aifL8E849h6yxdv1QWtqC": "premium", // Premium monthly (new price for new subscribers)
+  "price_1U7ajzL8E849h6yxMwrads83": "premium", // Premium yearly (new price for new subscribers)
 };
 
 const ACTIVE_STRIPE_STATUSES = new Set(["active", "trialing"]);
