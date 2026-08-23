@@ -48,7 +48,6 @@ import {
 
 const tipsItems = [
   { title: "Daily Predictions", url: "/daily-analysis", icon: Lightbulb },
-  { title: "Pro Insights", url: "/pro-analysis", icon: Star },
   { title: "Premium Predictions", url: "/premium-analysis", icon: Crown },
   { title: "Risk of the Day", url: "/risk-of-the-day", icon: Target },
   { title: "Diamond Pick", url: "/diamond-pick", icon: Gem },
@@ -56,7 +55,7 @@ const tipsItems = [
 
 const ticketsItems = [
   { title: "Daily Ticket", url: "/daily-predictions", icon: Calendar },
-  { title: "Pro Ticket", url: "/pro-predictions", icon: Ticket },
+  { title: "Sure Odds 2+", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Ticket", url: "/premium-predictions", icon: Crown },
   { title: "Risk Ticket", url: "/multi-risk-matches", icon: Target },
 ];
