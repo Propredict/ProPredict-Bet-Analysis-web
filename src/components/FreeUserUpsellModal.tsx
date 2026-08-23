@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Lock, Flame, Clock } from "lucide-react";
+import { X, Lock, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,6 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { usePlatform } from "@/hooks/usePlatform";
+import { SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
+import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:upsell_shown_session";
