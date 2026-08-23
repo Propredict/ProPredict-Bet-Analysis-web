@@ -203,6 +203,7 @@ serve(async (req) => {
     const expirationAtMs = event.expiration_at_ms;
     const priceInPurchasedCurrency = event.price_in_purchased_currency;
     const currency = event.currency;
+    const productId: string = event.product_id || "";
 
     console.log(`RevenueCat webhook: type=${eventType}, app_user_id=${appUserId}, entitlements=${JSON.stringify(entitlementIds)}`);
 
