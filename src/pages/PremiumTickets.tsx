@@ -123,10 +123,10 @@ export default function PremiumTickets() {
         <div className="flex items-center gap-1 sm:gap-1.5">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-semibold border-0 gap-1.5 h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
             onClick={() => navigate("/get-premium")}
           >
-            <Sparkles className="h-3 w-3" />
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Subscribe
           </Button>
         </div>
