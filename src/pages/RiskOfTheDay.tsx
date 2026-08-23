@@ -57,8 +57,10 @@ export default function RiskOfTheDay() {
   }, [planRequired, plan]);
 
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  // Risk of the Day is a Premium feature. Legacy Pro (basic) subscribers keep access until expiry.
+  const accessTier = plan === "basic" ? "exclusive" : "premium";
   const riskTips = tips?.filter((t: any) => t.category === "risk_of_day" && t.tip_date === today) || [];
-  const unlockedCount = riskTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
+  const unlockedCount = riskTips.filter(tip => canAccess(accessTier, "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
