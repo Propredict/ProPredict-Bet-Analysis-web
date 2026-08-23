@@ -83,14 +83,29 @@ export default function ExclusiveTickets() {
       || (ticket.category as string) === "ai_pro"
     )
   );
-  const unlockedCount = exclusiveTickets.filter(ticket => canAccess("exclusive", "ticket", ticket.id)).length;
+  const hasTicketAccess = isAdmin || plan === "premium" || hasTodayUnlock;
+  const unlockedCount = hasTicketAccess ? exclusiveTickets.length : 0;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
+
+  const handleBuyDailyTicket = () => {
+    if (isAndroidApp && window.Android?.purchasePlan) {
+      window.Android.purchasePlan(SURE_ODDS_PRODUCT_ID);
+      toast.info("Opening purchase…");
+      setTimeout(() => refetchUnlock(), 4000);
+      setTimeout(() => refetchUnlock(), 10000);
+      return;
+    }
+    toast.info("Sure Odds 2+ daily ticket is available in the ProPredict app.");
+    navigate("/get-premium");
+  };
 
   const handleRefresh = () => {
     refetch();
     refetchPlan();
+    refetchUnlock();
     toast.success("Predictions refreshed");
   };
+
 
   return <>
     <Helmet>
