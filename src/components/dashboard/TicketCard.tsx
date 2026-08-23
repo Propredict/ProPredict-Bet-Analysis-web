@@ -113,6 +113,8 @@ function TicketCard({
   onSecondaryUnlock,
   onViewTicket,
   isUnlocking = false,
+  hideLockedMatches = false,
+  customLockedCTA,
 }: TicketCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
