@@ -131,6 +131,23 @@ async function sendPurchaseEmailIfNeeded(
  *   EXPIRATION, CANCELLATION → deactivate subscription
  */
 
+// One-time consumable product for the daily "Sure Odds 2+" ticket.
+// This product MUST NEVER grant basic/pro/premium — it only creates a
+// single-day unlock record in public.daily_ticket_unlocks.
+const DAILY_TICKET_PRODUCT_ID = "sure_odds_2plus_daily";
+
+// ProPredict uses Europe/Belgrade for all daily ticket dates.
+function belgradeDate(ms?: number): string {
+  const d = ms ? new Date(ms) : new Date();
+  // en-CA yields YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Belgrade",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 // Map RevenueCat entitlement identifiers to our plan names
 function getPlanFromEntitlement(entitlementId: string): string {
   const id = entitlementId.toLowerCase();
@@ -186,6 +203,7 @@ serve(async (req) => {
     const expirationAtMs = event.expiration_at_ms;
     const priceInPurchasedCurrency = event.price_in_purchased_currency;
     const currency = event.currency;
+    const productId: string = event.product_id || "";
 
     console.log(`RevenueCat webhook: type=${eventType}, app_user_id=${appUserId}, entitlements=${JSON.stringify(entitlementIds)}`);
 
@@ -225,6 +243,62 @@ serve(async (req) => {
     }
 
     console.log(`RevenueCat webhook: Found user ${userData.user.id} (${userData.user.email})`);
+
+    // ---------------------------------------------------------------
+    // Daily "Sure Odds 2+" one-time consumable.
+    // Handled BEFORE any subscription branch so it can never reach the
+    // activate/deactivate logic and never grants basic/pro/premium.
+    // ---------------------------------------------------------------
+    if (productId === DAILY_TICKET_PRODUCT_ID) {
+      if (eventType !== "NON_RENEWING_PURCHASE") {
+        console.log(`RevenueCat webhook: Ignoring ${eventType} for daily ticket product`);
+        return new Response(
+          JSON.stringify({ received: true, ignored: eventType }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const unlockDate = belgradeDate(event.purchased_at_ms || event.event_timestamp_ms);
+      const eventId = event.id ? String(event.id) : null;
+      const transactionId = event.transaction_id ? String(event.transaction_id) : null;
+
+      const { error: unlockError } = await supabase
+        .from("daily_ticket_unlocks")
+        .upsert(
+          {
+            user_id: userId,
+            unlock_date: unlockDate,
+            product_id: productId,
+            transaction_id: transactionId,
+            revenuecat_event_id: eventId,
+            source: "google_play",
+          },
+          { onConflict: "user_id,unlock_date", ignoreDuplicates: true }
+        );
+
+      if (unlockError) {
+        // Unique violation on event/transaction id = duplicate delivery → OK
+        if ((unlockError as any).code === "23505") {
+          console.log(`RevenueCat webhook: Duplicate daily ticket event for user ${userId} on ${unlockDate}`);
+          return new Response(
+            JSON.stringify({ received: true, duplicate: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.error("RevenueCat webhook: Error creating daily ticket unlock:", unlockError);
+        return new Response(
+          JSON.stringify({ error: "Failed to create daily unlock" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`RevenueCat webhook: Daily Sure Odds 2+ unlock granted to ${userId} for ${unlockDate}`);
+      return new Response(
+        JSON.stringify({ received: true, daily_ticket: true, unlock_date: unlockDate }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
 
     // Handle purchase/renewal events → activate subscription
     const activateEvents = [
