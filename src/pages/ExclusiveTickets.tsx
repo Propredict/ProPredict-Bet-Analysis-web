@@ -13,6 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
@@ -97,8 +98,9 @@ export default function ExclusiveTickets() {
       setTimeout(() => refetchUnlock(), 10000);
       return;
     }
-    toast.info("Sure Odds 2+ daily ticket is available in the ProPredict app.");
-    navigate("/get-premium");
+    // Web: one-time Stripe checkout for today's ticket
+    toast.info("Opening secure checkout…");
+    void startSureOddsWebCheckout();
   };
 
 
