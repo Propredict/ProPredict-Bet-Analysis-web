@@ -641,7 +641,7 @@ export default function GetPremium() {
             }`}
           >
             Annual
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 17%</Badge>
+            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33%</Badge>
           </button>
         </div>
       </div>
