@@ -268,7 +268,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             ) : (
               <div className="flex flex-col gap-1.5">
                 <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
+                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod, lockedCTAText)}</>}
                 </Button>
                 {!getIsAndroidApp() && (unlockMethod.type === "upgrade_basic") && (
                   <button
