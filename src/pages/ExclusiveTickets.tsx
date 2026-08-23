@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
+import { SureOddsPromoCard } from "@/components/dashboard/SureOddsPromoCard";
 import { PricingModal } from "@/components/PricingModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
