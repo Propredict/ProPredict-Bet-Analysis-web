@@ -277,7 +277,9 @@ function TicketCard({
         {/* Unlock button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
-            {unlockMethod.type === "android_watch_ad_or_pro" ? (
+            {customLockedCTA ? (
+              <div onClick={(e) => e.stopPropagation()}>{customLockedCTA}</div>
+            ) : unlockMethod.type === "android_watch_ad_or_pro" ? (
               <div className="flex flex-col gap-1.5">
                 <Button size="sm" className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0" disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); onUnlockClick(); }}>
                   {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <><Sparkles className="h-3.5 w-3.5" />{unlockMethod.primaryMessage}</>}
