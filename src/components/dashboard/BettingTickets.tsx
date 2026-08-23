@@ -52,7 +52,7 @@ export function BettingTickets() {
 
   // Dashboard shows ONLY today's tickets — older ones go to history pages
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate && t.category !== "multi_risk");
+  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate && t.category !== "multi_risk" && t.category !== "sure_odds");
   const filtered = todayDbTickets
     .filter((t: any) => t.tier === activeTab)
     .map(mapDbTicket);

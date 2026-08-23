@@ -28,7 +28,7 @@ export function TodaysTopTickets() {
   const todayTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
 
   // Exclude specialized categories from main 3 tiers
-  const mainTickets = todayTickets.filter((t: any) => t.category !== "multi_risk");
+  const mainTickets = todayTickets.filter((t: any) => t.category !== "multi_risk" && t.category !== "sure_odds");
 
   const freeTicket = mainTickets.find((t: any) => t.tier === "daily" || t.tier === "free");
   const proTicket = mainTickets.find((t: any) => t.tier === "exclusive");
