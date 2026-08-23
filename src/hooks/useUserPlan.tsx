@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
+import { useDailyTicketUnlock } from "@/hooks/useDailyTicketUnlock";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 import { toast } from "sonner";
 import { setOneSignalTag } from "@/components/AndroidPushModal";
+
 
 /* =====================
    Types
@@ -78,6 +80,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   
   // RevenueCat integration for Android - source of truth for mobile subscriptions
   const revenueCat = useRevenueCat(user?.id);
+
+  // Daily Sure Odds 2+ ticket unlock state (refreshed on successful purchase)
+  const { refetch: refetchDailyUnlock } = useDailyTicketUnlock();
+
 
   const [plan, setPlan] = useState<UserPlan>("free");
   const [subscriptionSource, setSubscriptionSource] = useState<SubscriptionSource>("free");
@@ -569,11 +575,22 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
         }, 1500);
       }
+
+      // Handle one-time Sure Odds 2+ daily ticket purchase success
+      if (type === "DAILY_TICKET_PURCHASE_SUCCESS") {
+        console.log("[UserPlan] Received DAILY_TICKET_PURCHASE_SUCCESS — refreshing daily unlock");
+        toast.success("Today's Sure Odds 2+ ticket unlocked!");
+        // Refresh daily_ticket_unlocks state immediately
+        refetchDailyUnlock();
+        // Also refresh tickets so the UI shows unmasked content
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      }
     };
+
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobileApp, unlockContent, fetchUserData, revenueCat, queryClient]);
+  }, [isMobileApp, unlockContent, fetchUserData, revenueCat, queryClient, refetchDailyUnlock]);
 
   /* =====================
      Provider

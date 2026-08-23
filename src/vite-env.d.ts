@@ -21,7 +21,10 @@ interface AndroidBridge {
   
   // RevenueCat — unified purchase method (sends package identifier e.g. "pro-monthly")
   purchasePlan?: (planId: string) => void;
+  // RevenueCat — one-time consumable purchase for daily Sure Odds 2+ ticket
+  purchaseDailyTicket?: () => void;
   requestEntitlements?: () => void;
+
   restorePurchases?: () => void;
   
   // User sync — sends Supabase UUID to native for RevenueCat login

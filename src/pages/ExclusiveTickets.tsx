@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
-import { useDailyTicketUnlock, SURE_ODDS_PRODUCT_ID, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
+import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 
 
 export default function ExclusiveTickets() {
@@ -92,8 +92,8 @@ export default function ExclusiveTickets() {
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
   const handleBuyDailyTicket = () => {
-    if (isAndroidApp && window.Android?.purchasePlan) {
-      window.Android.purchasePlan(SURE_ODDS_PRODUCT_ID);
+    if (isAndroidApp && window.Android?.purchaseDailyTicket) {
+      window.Android.purchaseDailyTicket();
       toast.info("Opening purchase…");
       setTimeout(() => refetchUnlock(), 4000);
       setTimeout(() => refetchUnlock(), 10000);
@@ -102,6 +102,7 @@ export default function ExclusiveTickets() {
     toast.info("Sure Odds 2+ daily ticket is available in the ProPredict app.");
     navigate("/get-premium");
   };
+
 
   const handleRefresh = () => {
     refetch();
