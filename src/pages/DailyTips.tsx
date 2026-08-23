@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
-import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Flame, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -138,36 +137,25 @@ export default function DailyTips() {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-        <div className="flex items-center gap-1.5">
-          <div className="p-1.5 rounded-md bg-primary/20">
-            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Predictions</h1>
-            {isAndroidApp && (
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">Watch ads to access predictions or go Premium for full access</p>
-            )}
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/20 via-primary/10 to-background shadow-[0_0_20px_rgba(15,155,142,0.12)] overflow-hidden">
+        <div className="p-3.5 sm:p-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-primary/20 shrink-0">
+              <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Predictions</h1>
+              <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed mt-1">
+                Carefully selected match predictions for today, based on form, statistics, and AI analysis. Updated daily for quick insights into the most promising matches.
+              </p>
+              {isAndroidApp && (
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1.5">Watch ads to access predictions or go Premium for full access</p>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px] px-1.5 py-0.5">
-            <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-            Free
-          </Badge>
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="h-6 px-1.5 text-[9px]">
-            <RefreshCw className="h-2.5 w-2.5 mr-1" />
-            Refresh
-          </Button>
-        </div>
+        <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
       </div>
-
-      {/* Description */}
-      <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
-        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Daily Predictions provide carefully selected match predictions for today, based on form, statistics, and AI analysis. These predictions are updated daily and are designed for quick insights into the most promising matches.
-        </p>
-      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
