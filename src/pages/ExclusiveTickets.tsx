@@ -161,23 +161,6 @@ export default function ExclusiveTickets() {
         </p>
       </Card>
 
-      {/* Upgrade Banner */}
-      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-violet-500/10 to-transparent border border-fuchsia-500/30">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-fuchsia-500/20">
-                <Crown className="h-4 w-4 text-fuchsia-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-fuchsia-300">Get Sure Odds 2+ every day</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Premium includes every daily ticket, no ads</p>
-              </div>
-            </div>
-            <Button className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold border-0 h-7 px-3 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
-              Subscribe
-            </Button>
-          </div>
-        </div>}
 
 
       {/* Stats Cards */}
