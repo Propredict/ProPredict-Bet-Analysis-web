@@ -48,7 +48,6 @@ function TestRouter({ initialPath }: { initialPath: string }) {
         <Route path="/daily-predictions" element={<Page name="Daily Ticket" />} />
         <Route path="/pro-predictions" element={<Page name="Pro Ticket" />} />
         <Route path="/premium-predictions" element={<Page name="Premium Ticket" />} />
-        <Route path="/multi-risk-matches" element={<Page name="Risk Ticket" />} />
 
         {/* Legacy aliases that must redirect to canonical, preserving ?query */}
         <Route
@@ -76,7 +75,6 @@ describe("Ticket deep-link routes", () => {
       ["/daily-predictions", "Daily Ticket"],
       ["/pro-predictions", "Pro Ticket"],
       ["/premium-predictions", "Premium Ticket"],
-      ["/multi-risk-matches", "Risk Ticket"],
     ])("%s renders %s", (path, heading) => {
       render(<TestRouter initialPath={path} />);
       expect(
@@ -139,7 +137,6 @@ describe("App.tsx route registration", () => {
       "/daily-predictions",
       "/pro-predictions",
       "/premium-predictions",
-      "/multi-risk-matches",
     ]) {
       expect(src, `Route path ${p} missing from App.tsx`).toContain(
         `path="${p}"`
