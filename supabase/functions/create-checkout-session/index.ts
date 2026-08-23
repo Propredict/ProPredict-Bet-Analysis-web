@@ -56,17 +56,27 @@ serve(async (req) => {
     }
 
     const sessionParams: any = {
-      mode: "subscription",
+      mode,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl || "https://propredictbet.lovable.app/profile?payment=success",
       cancel_url: cancelUrl || "https://propredictbet.lovable.app/get-premium",
       customer_email: customerEmail,
     };
 
-    // Pass user_id in both session and subscription metadata for webhook lookup
+    // Pass user_id in metadata for webhook lookup
     if (userId) {
       sessionParams.metadata = { user_id: userId };
-      sessionParams.subscription_data = { metadata: { user_id: userId } };
+      if (mode === "subscription") {
+        sessionParams.subscription_data = { metadata: { user_id: userId } };
+      }
+    }
+
+    // One-time purchases (e.g. Sure Odds 2+ daily ticket) tag the purchase type
+    if (mode === "payment" && purchaseType) {
+      sessionParams.metadata = { ...(sessionParams.metadata || {}), purchase_type: purchaseType };
+      sessionParams.payment_intent_data = {
+        metadata: { ...(userId ? { user_id: userId } : {}), purchase_type: purchaseType },
+      };
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
