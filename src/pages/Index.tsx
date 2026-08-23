@@ -217,6 +217,9 @@ const Index = () => {
         {isAndroid ? (
           <>
             <Suspense fallback={<LazyFallback />}>
+              <SureOddsDashboardSection />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
               <TodaysTopPicks />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
@@ -234,6 +237,9 @@ const Index = () => {
           </>
         ) : (
           <>
+            <Suspense fallback={<LazyFallback />}>
+              <SureOddsDashboardSection />
+            </Suspense>
             <Suspense fallback={<LazyFallback />}>
               <MatchPredictions />
             </Suspense>
