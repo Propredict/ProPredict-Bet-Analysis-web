@@ -22,12 +22,16 @@ const proFeatures = [
 ];
 
 const premiumFeatures = [
-  { icon: Check, label: "All Pro features included" },
-  { icon: Crown, label: "Premium match insights" },
-  { icon: BarChart3, label: "VIP multi-match analysis" },
-  { icon: Sparkles, label: "Full AI analysis" },
-  { icon: Bell, label: "Instant goal alerts" },
-  { icon: Ban, label: "Completely ad-free experience" },
+  { icon: Crown, label: "All Premium Features" },
+  { icon: Sparkles, label: "All Free & Premium Predictions" },
+  { icon: BarChart3, label: "Daily Free & Premium Tickets" },
+  { icon: Zap, label: "Live Scores & League Standings" },
+  { icon: Star, label: "All Free & Premium Tips" },
+  { icon: Crown, label: "VIP Match Analysis" },
+  { icon: Sparkles, label: "Full AI Analysis" },
+  { icon: Check, label: "Unlimited Match Previews" },
+  { icon: Bell, label: "Priority Support" },
+  { icon: Ban, label: "Ad-Free Experience" },
 ];
 
 export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
@@ -56,7 +60,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
 
   // Pricing per plan & period
   const pricing = isPremium
-    ? { monthly: "€5.99/mo", annual: "€59.99/yr", saveBadge: "Save 17%" }
+    ? { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" }
     : { monthly: "€3.99/mo", annual: "€39.99/yr", saveBadge: "Save 16%" };
   const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
