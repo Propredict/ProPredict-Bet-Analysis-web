@@ -294,8 +294,20 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
-                <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod, lockedCTAText)}</>}
+                <Button
+                  variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+                  size={unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic" ? "default" : "sm"}
+                  className={cn(
+                    "w-full gap-1.5 font-semibold",
+                    unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic"
+                      ? "h-11 text-sm animate-cta-blink"
+                      : "h-9 text-xs",
+                    getUnlockButtonStyle()
+                  )}
+                  disabled={isUnlocking}
+                  onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}
+                >
+                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className={cn("shrink-0", unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic" ? "h-4 w-4" : "h-3.5 w-3.5")} />}{getLockedCTAText(unlockMethod, lockedCTAText)}</>}
                 </Button>
                 {!getIsAndroidApp() && (unlockMethod.type === "upgrade_basic") && (
                   <button

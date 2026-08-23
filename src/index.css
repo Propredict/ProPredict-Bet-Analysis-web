@@ -380,6 +380,17 @@
   }
 }
 
+@keyframes ctaBlink {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 hsl(45 93% 47% / 0.45);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 22px 6px hsl(45 93% 47% / 0.35), 0 0 44px 12px hsl(45 93% 47% / 0.12);
+  }
+}
+
 .animate-pulse-glow {
   animation: pulseGlow 2.5s ease-in-out infinite;
 }
@@ -387,6 +398,11 @@
 .animate-pulse-glow-star {
   animation: pulseGlowStar 2.5s ease-in-out infinite;
 }
+
+.animate-cta-blink {
+  animation: ctaBlink 1.8s ease-in-out infinite;
+}
+
 
 @keyframes diamondShine {
   0% { background-position: -200% 0; }
