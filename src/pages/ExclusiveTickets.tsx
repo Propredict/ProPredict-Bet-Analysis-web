@@ -283,6 +283,5 @@ export default function ExclusiveTickets() {
 
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
-    <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
   </>;
 }
