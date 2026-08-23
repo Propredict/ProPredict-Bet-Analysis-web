@@ -358,20 +358,31 @@ export default function LiveScores() {
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - CENTERED TITLE */}
-        <div className="relative flex items-center justify-center p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+        <div className="relative overflow-hidden flex flex-col items-center justify-center gap-1 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-primary/20 via-primary/8 to-transparent border border-primary/30 shadow-[0_0_28px_-8px_hsl(var(--primary)/0.35)]">
+          <div className="pointer-events-none absolute -top-16 left-1/2 h-32 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+          <h1 className="relative text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
             Live Scores
           </h1>
-          <div className="absolute right-3 flex gap-1 items-center">
+          {liveCount > 0 && (
+            <span className="relative inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/35 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-70 animate-ping" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+              </span>
+              {liveCount} live now
+            </span>
+          )}
+          <div className="absolute right-3 top-3 flex gap-1 items-center">
             <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5 hidden sm:inline-flex">
               {format(currentTime, "HH:mm:ss")}
             </Badge>
-            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-5 sm:h-6 px-1 sm:px-1.5">
+            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-6 px-1.5">
               <RefreshCw className={cn("h-2.5 w-2.5", isLoading && "animate-spin")} />
               <span className="hidden sm:inline text-[9px]">Refresh</span>
             </Button>
           </div>
         </div>
+
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
         <AffiliateBanner1xBet />
