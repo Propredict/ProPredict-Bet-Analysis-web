@@ -227,40 +227,42 @@ function TicketCard({
       <div className={cardShell} onClick={handleCardClick}>
         {renderHeader()}
 
-        {/* Match list - show names, blur predictions & odds */}
-        <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
-          {displayedMatches.map((match, idx) => {
-            const parsed = parseMatchName(match.name);
-            return (
-              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
-                {parsed.league && (
-                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
-                )}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.homeTeam}
-                  </span>
-                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.awayTeam}
-                  </span>
+        {/* Match list - show names when not hidden, blur predictions & odds */}
+        {!hideLockedMatches && (
+          <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
+            {displayedMatches.map((match, idx) => {
+              const parsed = parseMatchName(match.name);
+              return (
+                <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                  {parsed.league && (
+                    <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                  )}
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                      {parsed.homeTeam}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                    <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                      {parsed.awayTeam}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-center gap-2">
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                      <Lock className="h-2.5 w-2.5" />
+                      Locked
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-1.5 flex items-center justify-center gap-2">
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Lock className="h-2.5 w-2.5" />
-                    Locked
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-          {remainingCount > 0 && (
-            <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
-              +{remainingCount} more matches
-              <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </p>
-          )}
-        </div>
+              );
+            })}
+            {remainingCount > 0 && (
+              <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
+                +{remainingCount} more matches
+                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Social proof */}
         <div className="px-3.5 sm:px-4 pb-1">
