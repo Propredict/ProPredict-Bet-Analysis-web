@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 function getCategoryRoute(category: string | null): string | null {
   if (category === "diamond_pick") return "/diamond-pick";
   if (category === "risk_of_the_day") return "/risk-of-the-day";
-  if (category === "multi_risk") return "/multi-risk-matches";
   return null;
 }
 
@@ -37,7 +36,6 @@ function getRoute(type: "tip" | "ticket", tier: string, category?: string | null
 function getCategoryLabel(category: string | null): string | null {
   if (category === "diamond_pick") return "💎 Diamond Pick Just Dropped!";
   if (category === "risk_of_the_day") return "🔥 Risk of the Day is LIVE!";
-  if (category === "multi_risk") return "🎯 Risk Ticket are LIVE!";
   return null;
 }
 
