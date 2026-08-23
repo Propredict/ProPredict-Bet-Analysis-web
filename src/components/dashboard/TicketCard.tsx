@@ -51,6 +51,8 @@ interface TicketCardProps {
   onSecondaryUnlock?: () => void;
   onViewTicket?: () => void;
   isUnlocking?: boolean;
+  hideLockedMatches?: boolean;
+  customLockedCTA?: React.ReactNode;
 }
 
 /* =======================
