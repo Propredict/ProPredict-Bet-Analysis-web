@@ -19,6 +19,7 @@ const LAST_SHOWN_KEY = "propredict:upsell_last_shown_date";
 export function FreeUserUpsellModal() {
   const { plan, isLoading } = useUserPlan();
   const navigate = useNavigate();
+  const { isAndroidApp } = usePlatform();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
