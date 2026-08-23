@@ -131,6 +131,23 @@ async function sendPurchaseEmailIfNeeded(
  *   EXPIRATION, CANCELLATION → deactivate subscription
  */
 
+// One-time consumable product for the daily "Sure Odds 2+" ticket.
+// This product MUST NEVER grant basic/pro/premium — it only creates a
+// single-day unlock record in public.daily_ticket_unlocks.
+const DAILY_TICKET_PRODUCT_ID = "sure_odds_2plus_daily";
+
+// ProPredict uses Europe/Belgrade for all daily ticket dates.
+function belgradeDate(ms?: number): string {
+  const d = ms ? new Date(ms) : new Date();
+  // en-CA yields YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Belgrade",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 // Map RevenueCat entitlement identifiers to our plan names
 function getPlanFromEntitlement(entitlementId: string): string {
   const id = entitlementId.toLowerCase();
