@@ -40,6 +40,7 @@ const DashboardDailyTips = lazy(() => import("@/components/dashboard/DashboardDa
 const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
 const DiamondPickSection = lazy(() => import("@/components/dashboard/DiamondPickSection").then(m => ({ default: m.DiamondPickSection })));
 const TodaysTopTickets = lazy(() => import("@/components/dashboard/TodaysTopTickets").then(m => ({ default: m.TodaysTopTickets })));
+const SureOddsDashboardSection = lazy(() => import("@/components/dashboard/SureOddsDashboardSection").then(m => ({ default: m.SureOddsDashboardSection })));
 
 import { PicksCategoryModal } from "@/components/dashboard/PicksCategoryModal";
 
@@ -216,6 +217,9 @@ const Index = () => {
         {isAndroid ? (
           <>
             <Suspense fallback={<LazyFallback />}>
+              <SureOddsDashboardSection />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
               <TodaysTopPicks />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
@@ -233,6 +237,9 @@ const Index = () => {
           </>
         ) : (
           <>
+            <Suspense fallback={<LazyFallback />}>
+              <SureOddsDashboardSection />
+            </Suspense>
             <Suspense fallback={<LazyFallback />}>
               <MatchPredictions />
             </Suspense>
