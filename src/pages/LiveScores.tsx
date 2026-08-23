@@ -358,20 +358,31 @@ export default function LiveScores() {
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - CENTERED TITLE */}
-        <div className="relative flex items-center justify-center p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+        <div className="relative overflow-hidden flex flex-col items-center justify-center gap-1 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-primary/20 via-primary/8 to-transparent border border-primary/30 shadow-[0_0_28px_-8px_hsl(var(--primary)/0.35)]">
+          <div className="pointer-events-none absolute -top-16 left-1/2 h-32 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+          <h1 className="relative text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
             Live Scores
           </h1>
-          <div className="absolute right-3 flex gap-1 items-center">
+          {liveCount > 0 && (
+            <span className="relative inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/35 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-70 animate-ping" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+              </span>
+              {liveCount} live now
+            </span>
+          )}
+          <div className="absolute right-3 top-3 flex gap-1 items-center">
             <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5 hidden sm:inline-flex">
               {format(currentTime, "HH:mm:ss")}
             </Badge>
-            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-5 sm:h-6 px-1 sm:px-1.5">
+            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-6 px-1.5">
               <RefreshCw className={cn("h-2.5 w-2.5", isLoading && "animate-spin")} />
               <span className="hidden sm:inline text-[9px]">Refresh</span>
             </Button>
           </div>
         </div>
+
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
         <AffiliateBanner1xBet />
@@ -559,15 +570,16 @@ export default function LiveScores() {
                 matchCounter += games.length;
                 
                 elements.push(
-                  <Card key={league} className="overflow-hidden bg-card border-border">
-                    <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1">
-                      <Trophy className="h-2.5 w-2.5 text-primary" />
-                      <span className="font-semibold text-[9px] sm:text-[10px] text-foreground truncate">{league}</span>
-                      <Badge variant="outline" className="ml-auto text-[8px] px-0.5 border-primary/30 text-primary">
+                  <Card key={league} className="overflow-hidden bg-card/80 border-border/70 rounded-xl shadow-[0_8px_24px_-16px_rgba(0,0,0,0.8)]">
+                    <div className="px-3 py-2 bg-gradient-to-r from-primary/18 via-primary/8 to-transparent border-b border-primary/25 flex items-center gap-2">
+                      <Trophy className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-bold text-[11px] sm:text-[13px] text-foreground truncate tracking-tight">{league}</span>
+                      <Badge variant="outline" className="ml-auto text-[9px] px-1.5 border-primary/30 text-primary bg-primary/10">
                         {games.length}
                       </Badge>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/60">
+
                       {games.map((m, idx) => (
                         <Fragment key={m.id}>
           <MatchRow 
@@ -683,29 +695,33 @@ function StatusBadge({
 }) {
   if (match.status === "live") {
     const minute = match.minute ?? 0;
-    return <div className="flex items-center gap-0.5">
-        <Badge className="bg-destructive/15 text-destructive border border-destructive/30 font-bold text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive animate-pulse mr-0.5 sm:mr-1" />
+    return <div className="flex items-center gap-1">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/40 px-1.5 sm:px-2 py-0.5 font-bold text-[9px] sm:text-[10px] text-primary shadow-[0_0_12px_hsl(var(--primary)/0.25)]">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-70 animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+          </span>
           {minute}'
-        </Badge>
-        <Badge className="hidden md:inline-flex bg-destructive/10 text-destructive border border-destructive/20 text-[10px]">
+        </span>
+        <span className="hidden md:inline-flex items-center rounded-full bg-primary/10 border border-primary/25 px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-primary">
           LIVE
-        </Badge>
+        </span>
       </div>;
   }
   if (match.status === "halftime") {
-    return <Badge className="bg-warning/15 text-warning border border-warning/30 font-bold text-[9px] sm:text-[10px] px-1.5 py-0.5">
+    return <span className="inline-flex items-center rounded-full bg-warning/15 text-warning border border-warning/30 font-bold text-[9px] sm:text-[10px] px-2 py-0.5 tracking-wide">
         HT
-      </Badge>;
+      </span>;
   }
   if (match.status === "finished") {
-    return <Badge className="bg-muted text-muted-foreground border border-border font-semibold text-[9px] sm:text-[10px] px-1.5 py-0.5">
+    return <span className="inline-flex items-center rounded-full bg-secondary/70 text-muted-foreground border border-border font-semibold text-[9px] sm:text-[10px] px-2 py-0.5 tracking-wide">
         FT
-      </Badge>;
+      </span>;
   }
   // Upcoming - show countdown
   return <KickoffCountdown startTime={match.startTime} />;
 }
+
 
 /* -------------------- MATCH ROW -------------------- */
 
@@ -736,18 +752,32 @@ function MatchRow({
     <div 
       onClick={() => onSelect(m)} 
       className={cn(
-        "px-1.5 sm:px-2 py-1.5 sm:py-2 hover:bg-secondary/30 cursor-pointer transition-colors",
-        showGoalIndicator && "bg-success/10 border-l-2 border-success"
+        "relative px-2 sm:px-3 py-2.5 sm:py-3 cursor-pointer transition-all duration-200",
+        "hover:bg-secondary/40 active:scale-[0.995] active:bg-secondary/60",
+        isLive && "bg-primary/[0.04] hover:bg-primary/[0.08]",
+        showGoalIndicator && "bg-success/10"
       )}
     >
-      <div className="grid grid-cols-[68px_1fr_52px_1fr_72px] sm:grid-cols-[80px_1fr_64px_1fr_88px] items-center gap-0.5 sm:gap-1.5">
+      {/* Left status accent bar */}
+      <span
+        className={cn(
+          "absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full transition-colors",
+          showGoalIndicator
+            ? "bg-success shadow-[0_0_10px_hsl(var(--success)/0.7)]"
+            : isLive
+              ? "bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
+              : "bg-transparent"
+        )}
+      />
+
+      <div className="grid grid-cols-[68px_1fr_58px_1fr_72px] sm:grid-cols-[80px_1fr_78px_1fr_92px] items-center gap-1 sm:gap-2">
         {/* Actions */}
         <div className="flex items-center gap-0.5">
           <button 
             onClick={e => { e.stopPropagation(); toggleFavorite(); }} 
             className={cn(
-              "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-md flex items-center justify-center transition-all", 
-              isFav ? "bg-primary/20" : "bg-secondary hover:bg-secondary/80"
+              "h-8 w-8 sm:h-9 sm:w-9 min-h-[32px] min-w-[32px] rounded-lg flex items-center justify-center transition-all active:scale-90", 
+              isFav ? "bg-primary/20 ring-1 ring-primary/40" : "bg-secondary/70 hover:bg-secondary"
             )}
           >
             <Star className={cn("h-4 w-4 sm:h-[18px] sm:w-[18px]", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
@@ -759,26 +789,36 @@ function MatchRow({
         </div>
 
         {/* Home Team */}
-        <div className="flex items-center gap-0.5 sm:gap-1 justify-end min-w-0">
-          <span className={cn("text-[10px] sm:text-xs font-medium truncate text-right", showGoalIndicator && "text-success font-semibold")}>
+        <div className="flex items-center gap-1.5 justify-end min-w-0">
+          <span className={cn(
+            "text-[11px] sm:text-[13px] font-semibold truncate text-right tracking-tight",
+            isFinished && "text-muted-foreground",
+            showGoalIndicator && "text-success"
+          )}>
             {m.homeTeam}
           </span>
-          {m.homeLogo && <img src={m.homeLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
+          {m.homeLogo && (
+            <span className="flex h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={m.homeLogo} alt="" loading="lazy" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            </span>
+          )}
         </div>
 
         {/* Score */}
         <div className="flex justify-center">
           <div className={cn(
-            "px-1.5 py-0.5 rounded text-center min-w-[40px] sm:min-w-[52px]",
-            isLive && !showGoalIndicator && "bg-destructive/15 border border-destructive/30",
-            isLive && showGoalIndicator && "bg-success/15 border border-success/30",
-            isFinished && "bg-secondary border border-border",
-            isUpcoming && "bg-muted border border-border"
+            "px-2 py-1 rounded-lg text-center min-w-[52px] sm:min-w-[68px] border transition-colors",
+            isLive && !showGoalIndicator && "bg-primary/10 border-primary/35 shadow-[0_0_14px_hsl(var(--primary)/0.18)]",
+            isLive && showGoalIndicator && "bg-success/15 border-success/40 shadow-[0_0_16px_hsl(var(--success)/0.3)]",
+            isFinished && "bg-secondary/70 border-border",
+            isUpcoming && "bg-secondary/40 border-border/70"
           )}>
             <span className={cn(
-              "font-bold text-[10px] sm:text-xs",
-              isLive && !showGoalIndicator && "text-destructive",
-              isLive && showGoalIndicator && "text-success"
+              "font-extrabold tabular-nums tracking-tight",
+              isUpcoming ? "text-[11px] sm:text-xs text-muted-foreground" : "text-sm sm:text-lg leading-tight",
+              isLive && !showGoalIndicator && "text-primary",
+              isLive && showGoalIndicator && "text-success",
+              isFinished && "text-foreground"
             )}>
               {isUpcoming ? m.startTime : `${m.homeScore ?? 0} - ${m.awayScore ?? 0}`}
             </span>
@@ -786,9 +826,17 @@ function MatchRow({
         </div>
 
         {/* Away Team */}
-        <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-          {m.awayLogo && <img src={m.awayLogo} alt="" className="h-3 w-3 sm:h-4 sm:w-4 object-contain flex-shrink-0" />}
-          <span className={cn("text-[10px] sm:text-xs font-medium truncate", showGoalIndicator && "text-success font-semibold")}>
+        <div className="flex items-center gap-1.5 min-w-0">
+          {m.awayLogo && (
+            <span className="flex h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={m.awayLogo} alt="" loading="lazy" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            </span>
+          )}
+          <span className={cn(
+            "text-[11px] sm:text-[13px] font-semibold truncate tracking-tight",
+            isFinished && "text-muted-foreground",
+            showGoalIndicator && "text-success"
+          )}>
             {m.awayTeam}
           </span>
         </div>
@@ -803,6 +851,7 @@ function MatchRow({
       </div>
     </div>
   );
+
 }
 
 /* -------------------- COUNTRY SECTION -------------------- */
@@ -859,27 +908,28 @@ function CountrySection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="overflow-hidden bg-card border-border">
+      <Card className="overflow-hidden bg-card/80 border-border/70 rounded-xl shadow-[0_1px_0_hsl(var(--border)),0_8px_24px_-16px_rgba(0,0,0,0.8)] backdrop-blur-sm">
         {/* Country Header */}
         <CollapsibleTrigger asChild>
-          <button className="w-full px-2 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-primary/25 via-primary/15 to-transparent border-b border-primary/30 flex items-center gap-2 hover:from-primary/30 hover:via-primary/20 transition-colors">
-            <span className="text-base sm:text-lg">{flag}</span>
-            <span className="font-bold text-xs sm:text-sm text-foreground">{country}</span>
+          <button className="w-full px-3 py-2.5 sm:py-3 bg-gradient-to-r from-primary/20 via-primary/8 to-transparent border-b border-primary/25 flex items-center gap-2.5 hover:from-primary/28 hover:via-primary/14 transition-colors">
+            <span className="text-lg sm:text-xl leading-none">{flag}</span>
+            <span className="font-extrabold text-[13px] sm:text-[15px] text-foreground tracking-tight">{country}</span>
             <div className="flex items-center gap-1.5 ml-auto">
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/10 border-primary/30 text-primary">
+              <Badge variant="outline" className="hidden sm:inline-flex text-[9px] px-1.5 bg-primary/10 border-primary/30 text-primary">
                 {leagueCount} league{leagueCount !== 1 ? "s" : ""}
               </Badge>
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/15 text-primary border-primary/40">
+              <Badge variant="outline" className="text-[9px] px-1.5 bg-primary/15 text-primary border-primary/40">
                 {matchCount} match{matchCount !== 1 ? "es" : ""}
               </Badge>
               {isOpen ? (
-                <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                <ChevronDown className="h-4 w-4 text-primary" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-primary" />
+                <ChevronRight className="h-4 w-4 text-primary" />
               )}
             </div>
           </button>
         </CollapsibleTrigger>
+
 
         <CollapsibleContent>
           <div className="divide-y divide-border/50">
@@ -937,22 +987,25 @@ function LeagueSection({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* League Header */}
       <CollapsibleTrigger asChild>
-        <button className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1.5 hover:from-primary/25 hover:via-primary/15 transition-colors">
+        <button className="w-full px-3 py-2 sm:py-2.5 bg-secondary/30 border-b border-border/60 flex items-center gap-2 hover:bg-secondary/50 transition-colors">
           {isOpen ? (
-            <ChevronDown className="h-3 w-3 text-primary" />
+            <ChevronDown className="h-3.5 w-3.5 text-primary/80" />
           ) : (
-            <ChevronRight className="h-3 w-3 text-primary" />
+            <ChevronRight className="h-3.5 w-3.5 text-primary/80" />
           )}
           {leagueLogo ? (
-            <img src={leagueLogo} alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
+            <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+              <img src={leagueLogo} alt="" loading="lazy" className="h-3.5 w-3.5 sm:h-4 sm:w-4 object-contain" />
+            </span>
           ) : (
-            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <Trophy className="h-3.5 w-3.5 text-primary" />
           )}
-          <span className="font-semibold text-[10px] sm:text-xs text-foreground truncate">{league}</span>
-          <Badge variant="outline" className="ml-auto text-[8px] px-1 border-primary/30 text-primary bg-primary/10">
+          <span className="font-semibold text-[11px] sm:text-[13px] text-foreground/90 truncate tracking-tight">{league}</span>
+          <Badge variant="outline" className="ml-auto text-[9px] px-1.5 border-primary/30 text-primary bg-primary/10">
             {matches.length}
           </Badge>
         </button>
+
       </CollapsibleTrigger>
 
       <CollapsibleContent>
