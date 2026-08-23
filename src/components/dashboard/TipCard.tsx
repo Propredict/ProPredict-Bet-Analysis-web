@@ -198,11 +198,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
           {/* Match name — always visible, even when locked */}
           <div className="flex items-center justify-center gap-2">
-            <span className="flex-1 text-right font-bold text-[15px] text-foreground leading-tight tracking-tight px-2.5 py-1 rounded-lg border border-border/50 bg-muted/20 truncate">
+            <span className="flex-1 text-right font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight px-2.5 py-1.5 rounded-lg border border-border/50 bg-muted/20 truncate">
               {tip.homeTeam}
             </span>
             <span className="shrink-0 text-muted-foreground font-normal text-xs">vs</span>
-            <span className="flex-1 text-left font-bold text-[15px] text-foreground leading-tight tracking-tight px-2.5 py-1 rounded-lg border border-border/50 bg-muted/20 truncate">
+            <span className="flex-1 text-left font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight px-2.5 py-1.5 rounded-lg border border-border/50 bg-muted/20 truncate">
               {tip.awayTeam}
             </span>
           </div>

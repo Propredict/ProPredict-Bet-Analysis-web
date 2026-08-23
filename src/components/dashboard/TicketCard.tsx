@@ -197,7 +197,7 @@ function TicketCard({
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className="font-bold text-[15px] text-foreground leading-tight tracking-tight text-center">
+          <h3 className="font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight text-center">
             {ticket.title}
           </h3>
           <div className="mt-1.5 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
@@ -238,11 +238,11 @@ function TicketCard({
                     <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
                   )}
                   <div className="flex items-center justify-center gap-2">
-                    <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                       {parsed.homeTeam}
                     </span>
                     <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                    <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                       {parsed.awayTeam}
                     </span>
                   </div>
@@ -330,11 +330,11 @@ function TicketCard({
                   <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                     {parsed.homeTeam}
                   </span>
                   <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
                     {parsed.awayTeam}
                   </span>
                 </div>
