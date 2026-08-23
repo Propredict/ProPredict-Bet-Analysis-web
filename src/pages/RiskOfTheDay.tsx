@@ -81,22 +81,22 @@ export default function RiskOfTheDay() {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-red-500/20 via-orange-500/10 to-transparent border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-violet-500/10 to-transparent border border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
           <div className="flex items-center gap-1.5">
-            <div className="p-1.5 rounded-md bg-red-500/20">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+            <div className="p-1.5 rounded-md bg-fuchsia-500/20">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
             </div>
             <div>
-              <h1 className="text-sm text-red-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
+              <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                High-risk, high-reward bold picks
+                Unlock best pick for today with Premium
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             {showUpgradeBanner ? (
               <Button
-                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
+                className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
                 onClick={() => navigate("/get-premium")}
               >
                 Subscribe
