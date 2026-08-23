@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight, Target } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,16 +52,16 @@ export function BettingTickets() {
 
   // Dashboard shows ONLY today's tickets — older ones go to history pages
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
+  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate && t.category !== "multi_risk");
   const filtered = todayDbTickets
-    .filter((t: any) => t.tier === activeTab && !(activeTab === "premium" && t.category === "multi_risk"))
+    .filter((t: any) => t.tier === activeTab)
     .map(mapDbTicket);
   const displayedTickets = filtered.slice(0, 3);
   const hasMoreTickets = filtered.length > 3;
 
-  // Count only today's tickets per tier (todayDate already defined above)
+  // Count only today's tickets per tier
   const todayTicketCountByTier = (tierId: string) =>
-    todayDbTickets.filter((t: any) => t.tier === tierId && !(tierId === "premium" && t.category === "multi_risk")).length;
+    todayDbTickets.filter((t: any) => t.tier === tierId).length;
 
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
@@ -148,34 +148,23 @@ export function BettingTickets() {
 
   // --- WEB: vertical sections ---
   if (!isAndroidApp) {
-    // Stable key to dedupe the same ticket across sections
-    const ticketKey = (t: any) => t.id;
-
-    // Reserve specialized tickets first (Risk Tickets take priority)
-    const multiRiskDb = todayDbTickets.filter((t: any) => t.category === "multi_risk");
-    const reserved = new Set<string>();
-    multiRiskDb.forEach((t: any) => reserved.add(ticketKey(t)));
-
-    const multiRiskTickets = multiRiskDb.map(mapDbTicket).slice(0, 2);
-
     const dailyTickets = todayDbTickets
-      .filter((t: any) => t.tier === "daily" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "daily")
       .map(mapDbTicket)
       .slice(0, 2);
     const proTickets = todayDbTickets
-      .filter((t: any) => t.tier === "exclusive" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "exclusive")
       .map(mapDbTicket)
       .slice(0, 2);
     const premiumTickets = todayDbTickets
-      .filter((t: any) => t.tier === "premium" && t.category !== "multi_risk" && !reserved.has(ticketKey(t)))
+      .filter((t: any) => t.tier === "premium")
       .map(mapDbTicket)
       .slice(0, 2);
 
     const hasAnyWebTickets =
       dailyTickets.length > 0 ||
       proTickets.length > 0 ||
-      premiumTickets.length > 0 ||
-      multiRiskTickets.length > 0;
+      premiumTickets.length > 0;
 
     if (!isLoading && !hasAnyWebTickets) return null;
 
@@ -220,35 +209,6 @@ export function BettingTickets() {
               renderTicket={renderTicket}
             />)}
 
-            {/* MULTI RISK MATCHES — standalone */}
-            {multiRiskTickets.length > 0 && (
-              <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-pink-500/5 to-transparent p-3 sm:p-4 space-y-3">
-                <div className="text-center space-y-1">
-                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-                    <Target className="h-5 w-5 sm:h-6 sm:w-6 text-rose-400" />
-                    Risk Ticket
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    High-risk combos · biggest payouts
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {multiRiskTickets.map(renderTicket)}
-                </div>
-
-                <div className="flex justify-center pt-1">
-                  <Button
-                    size="sm"
-                    className="px-5 group bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs border-0 rounded-full"
-                    onClick={() => navigate("/multi-risk-matches")}
-                  >
-                    <span>See Risk Ticket</span>
-                    <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {premiumTickets.length > 0 && (
             <TicketTierSection
