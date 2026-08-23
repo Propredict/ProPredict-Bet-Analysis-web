@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -67,14 +67,6 @@ function getTierBadge(tier: ContentTier) {
   }
 }
 
-// Deterministic pseudo-random unlock % per tip (72-94 range)
-function getSocialProofPct(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-  }
-  return 72 + (Math.abs(hash) % 23);
-}
 
 function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string {
   if (unlockMethod.type === "unlocked") return "";
@@ -269,13 +261,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
             <div className="h-px bg-border/40 mx-3" />
 
-            {/* Social proof */}
-            <div className="flex items-center justify-center gap-1.5 py-2.5">
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground">
-                👀 <span className={cn("font-bold", accent.text)}>{getSocialProofPct(tip.id)}%</span> of users unlocked this
-              </span>
-            </div>
+            {/* Unlock CTA spacer */}
+            <div className="py-2" />
           </div>
         </div>
 
