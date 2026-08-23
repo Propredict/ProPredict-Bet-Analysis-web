@@ -108,7 +108,7 @@ export default function DiamondPick() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-[10px] sm:text-xs text-cyan-400">💎 Unlock Diamond Picks with Premium</h3>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $5.99/month</p>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for €14.99/month</p>
                 </div>
               </div>
               <Button className="bg-cyan-500 hover:bg-cyan-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
