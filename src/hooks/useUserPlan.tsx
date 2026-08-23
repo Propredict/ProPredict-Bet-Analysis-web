@@ -580,11 +580,22 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       if (type === "DAILY_TICKET_PURCHASE_SUCCESS") {
         console.log("[UserPlan] Received DAILY_TICKET_PURCHASE_SUCCESS — refreshing daily unlock");
         toast.success("Today's Sure Odds 2+ ticket unlocked!");
-        // Refresh daily_ticket_unlocks state immediately
+        // Refresh immediately, then retry a few times while the RevenueCat webhook lands
         refetchDailyUnlock();
-        // Also refresh tickets so the UI shows unmasked content
+        [1500, 4000, 8000].forEach((delay) =>
+          setTimeout(() => {
+            refetchDailyUnlock();
+            queryClient.invalidateQueries({ queryKey: ["tickets"] });
+          }, delay)
+        );
         queryClient.invalidateQueries({ queryKey: ["tickets"] });
       }
+
+      if (type === "DAILY_TICKET_PURCHASE_FAILED") {
+        console.log("[UserPlan] DAILY_TICKET_PURCHASE_FAILED");
+        toast.error("Purchase was not completed. Please try again.");
+      }
+
     };
 
 
