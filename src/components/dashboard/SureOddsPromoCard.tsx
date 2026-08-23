@@ -223,39 +223,34 @@ export function SureOddsPromoCard({
           </div>
         </div>
 
-        {/* Locked match placeholders */}
+        {/* Locked match list — show names, hide predictions */}
         <div className="px-4 sm:px-5 space-y-2 mt-4">
           {matches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
               <div
                 key={idx}
-                className="bg-muted/30 border border-border/50 rounded-2xl p-3.5 flex items-center justify-between"
+                className="bg-muted/30 border border-border/50 rounded-2xl p-3.5"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-full bg-muted/80" />
-                  </div>
-                  <div className="h-2.5 w-16 sm:w-20 bg-muted/60 rounded-full blur-[2px]" />
+                {parsed.league && (
+                  <p className="text-[9px] text-muted-foreground truncate text-center mb-2 uppercase tracking-widest">
+                    {parsed.league}
+                  </p>
+                )}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.homeTeam}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    {parsed.awayTeam}
+                  </span>
                 </div>
-
-                <div className="flex flex-col items-center">
-                  {parsed.league && (
-                    <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest mb-1">
-                      {parsed.league}
-                    </span>
-                  )}
+                <div className="mt-2 flex items-center justify-center gap-1">
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
                     <Lock className="h-2.5 w-2.5 text-amber-400" />
                     <span className="text-[9px] text-amber-400 font-black uppercase">Locked</span>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-row-reverse">
-                  <div className="w-8 h-8 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-full bg-muted/80" />
-                  </div>
-                  <div className="h-2.5 w-16 sm:w-20 bg-muted/60 rounded-full blur-[2px]" />
                 </div>
               </div>
             );
