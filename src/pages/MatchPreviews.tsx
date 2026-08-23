@@ -282,13 +282,13 @@ export default function MatchPreviews() {
         </Card>
 
         {isFreeUser && (
-          <Card className="p-3 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border-red-500/30">
+          <Card className="p-3 bg-gradient-to-r from-fuchsia-500/10 via-fuchsia-500/5 to-transparent border-fuchsia-500/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-red-400" />
-                <span className="text-sm text-muted-foreground">Match previews require a Pro or Premium subscription</span>
+                <Lock className="h-4 w-4 text-fuchsia-400" />
+                <span className="text-sm text-muted-foreground">Match previews require a Premium subscription</span>
               </div>
-              <Badge variant="outline" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40 cursor-pointer" onClick={() => navigate("/get-premium")}>Upgrade</Badge>
+              <Badge variant="outline" className="text-[10px] bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40 cursor-pointer" onClick={() => navigate("/get-premium")}>Subscribe</Badge>
             </div>
           </Card>
         )}
