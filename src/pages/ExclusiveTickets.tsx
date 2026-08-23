@@ -81,8 +81,10 @@ export default function ExclusiveTickets() {
   const exclusiveTickets = tickets.filter(ticket =>
     ticket.ticket_date === todayBelgrade &&
     (
+      // Manually-curated Sure Odds 2+ tickets (any tier)
+      (ticket.category as string) === "sure_odds"
       // Manually-curated Pro/Exclusive tickets
-      (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
+      || (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
       // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
       || (ticket.category as string) === "ai_pro"
     )
