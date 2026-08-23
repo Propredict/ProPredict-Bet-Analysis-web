@@ -58,6 +58,17 @@ export default function ExclusiveTickets() {
     setTimeout(scrollToTicket, 400);
   }, [highlightId]);
 
+  // Returning from Stripe one-time checkout → poll for the webhook unlock
+  useEffect(() => {
+    if (searchParams.get("payment") !== "success") return;
+    toast.success("Payment received — unlocking today's ticket…");
+    const timers = [1500, 4000, 8000, 15000].map((ms) =>
+      setTimeout(() => refetchUnlock(), ms)
+    );
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   // Plan required upgrade modal from push notification
   useEffect(() => {
     if (!planRequired) return;
