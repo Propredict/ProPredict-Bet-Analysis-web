@@ -559,15 +559,16 @@ export default function LiveScores() {
                 matchCounter += games.length;
                 
                 elements.push(
-                  <Card key={league} className="overflow-hidden bg-card border-border">
-                    <div className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-b border-primary/20 flex items-center gap-1">
-                      <Trophy className="h-2.5 w-2.5 text-primary" />
-                      <span className="font-semibold text-[9px] sm:text-[10px] text-foreground truncate">{league}</span>
-                      <Badge variant="outline" className="ml-auto text-[8px] px-0.5 border-primary/30 text-primary">
+                  <Card key={league} className="overflow-hidden bg-card/80 border-border/70 rounded-xl shadow-[0_8px_24px_-16px_rgba(0,0,0,0.8)]">
+                    <div className="px-3 py-2 bg-gradient-to-r from-primary/18 via-primary/8 to-transparent border-b border-primary/25 flex items-center gap-2">
+                      <Trophy className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-bold text-[11px] sm:text-[13px] text-foreground truncate tracking-tight">{league}</span>
+                      <Badge variant="outline" className="ml-auto text-[9px] px-1.5 border-primary/30 text-primary bg-primary/10">
                         {games.length}
                       </Badge>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/60">
+
                       {games.map((m, idx) => (
                         <Fragment key={m.id}>
           <MatchRow 
