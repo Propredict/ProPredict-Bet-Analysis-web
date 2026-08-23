@@ -575,7 +575,18 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
           queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
         }, 1500);
       }
+
+      // Handle one-time Sure Odds 2+ daily ticket purchase success
+      if (type === "DAILY_TICKET_PURCHASE_SUCCESS") {
+        console.log("[UserPlan] Received DAILY_TICKET_PURCHASE_SUCCESS — refreshing daily unlock");
+        toast.success("Today's Sure Odds 2+ ticket unlocked!");
+        // Refresh daily_ticket_unlocks state immediately
+        refetchDailyUnlock();
+        // Also refresh tickets so the UI shows unmasked content
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      }
     };
+
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
