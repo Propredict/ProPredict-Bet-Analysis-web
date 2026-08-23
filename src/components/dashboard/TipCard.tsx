@@ -148,7 +148,10 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "bg-primary hover:bg-primary/90 text-white border-0";
     if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
     if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_premium") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+    if (unlockMethod.type === "upgrade_premium") {
+      if (lockedCTABrand === "pro") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+    }
     return "";
   };
 
@@ -158,6 +161,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return Sparkles;
     if (unlockMethod.type === "android_premium_only") return Crown;
     if (unlockMethod.type === "upgrade_basic") return Star;
+    if (unlockMethod.type === "upgrade_premium") return lockedCTABrand === "pro" ? Star : Crown;
     return Crown;
   };
 
