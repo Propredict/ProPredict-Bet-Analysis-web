@@ -429,6 +429,7 @@ export default function ManageTickets() {
                   <SelectContent>
                     <SelectItem value="standard">Standard</SelectItem>
                     <SelectItem value="multi_risk">🎯 Risk Ticket</SelectItem>
+                    <SelectItem value="sure_odds">🔒 Sure Odds 2+</SelectItem>
                   </SelectContent>
                 </Select>
 
