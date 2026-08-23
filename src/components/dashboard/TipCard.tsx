@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye, Trash2 } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -39,15 +39,18 @@ interface TipCardProps {
   isUnlocking?: boolean;
   lockedCTAText?: string;
   lockedCTABrand?: "premium" | "pro";
+  /** Label shown in the locked hero, e.g. "Risk of the Day". Defaults to the tier name. */
+  lockedLabel?: string;
 }
 
 // --- Tier accent helpers ---
 const TIER_ACCENT = {
-  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]" },
-  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]" },
+  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
+  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
+  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]", text: "text-amber-400", ring: "border-amber-400/70", halo: "shadow-[0_0_25px_rgba(245,158,11,0.4)]", btn: "bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-90 text-black border-0" },
+  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]", text: "text-fuchsia-400", ring: "border-fuchsia-400/70", halo: "shadow-[0_0_25px_rgba(217,70,239,0.4)]", btn: "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0" },
 } as const;
+
 
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
@@ -85,7 +88,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
   return "";
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium" }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
   const queryClient = useQueryClient();
@@ -146,14 +149,15 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "bg-primary hover:bg-primary/90 text-white border-0";
-    if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
+    if (unlockMethod.type === "android_premium_only") return TIER_ACCENT.premium.btn;
+    if (unlockMethod.type === "upgrade_basic") return TIER_ACCENT.exclusive.btn;
     if (unlockMethod.type === "upgrade_premium") {
-      if (lockedCTABrand === "pro") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
-      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+      if (lockedCTABrand === "pro") return TIER_ACCENT.exclusive.btn;
+      return accent.btn;
     }
     return "";
   };
+
 
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
@@ -228,30 +232,53 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
       <div className={cardShell}>
         {renderHeader()}
 
-        {/* Prediction area - locked with hooks */}
+        {/* Prediction area - locked hero */}
         <div className="px-3.5 sm:px-4 pb-2 pt-1">
-          <div className="rounded-lg bg-muted/20 border border-border/30 p-3 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Prediction</span>
+          <div className="rounded-xl bg-background/40 border border-border/40 overflow-hidden">
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-3 py-2.5">
+              <span className={cn("text-[11px] uppercase tracking-[0.16em] font-bold flex items-center gap-1.5", accent.text)}>
+                <Target className="h-3.5 w-3.5" />
+                Prediction
+              </span>
               {!isDaily && (
-                <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                <span className={cn("text-[11px] font-bold flex items-center gap-1", accent.text)}>
                   <Lock className="h-3 w-3" />
                   {isPremium ? "Premium Pick" : "Pro Pick"}
                 </span>
               )}
             </div>
+
+            <div className="h-px bg-border/40 mx-3" />
+
+            {/* Lock hero */}
+            <div className="flex flex-col items-center gap-2 py-5 px-3">
+              <div className="flex items-center justify-center gap-2 w-full">
+                <ChevronRight className={cn("h-6 w-6 opacity-20", accent.text)} />
+                <ChevronRight className={cn("h-7 w-7 opacity-40", accent.text)} />
+                <div className={cn("mx-1 flex h-14 w-14 items-center justify-center rounded-full border-2 bg-background/60", accent.ring, accent.halo)}>
+                  <Lock className={cn("h-6 w-6", accent.text)} />
+                </div>
+                <ChevronLeft className={cn("h-7 w-7 opacity-40", accent.text)} />
+                <ChevronLeft className={cn("h-6 w-6 opacity-20", accent.text)} />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This is a <span className={cn("font-bold", accent.text)}>{lockedLabel || (isPremium ? "PREMIUM" : isPro ? "PRO" : "DAILY")}</span> prediction
+              </p>
+            </div>
+
+            <div className="h-px bg-border/40 mx-3" />
+
+            {/* Social proof */}
+            <div className="flex items-center justify-center gap-1.5 py-2.5">
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">
+                👀 <span className={cn("font-bold", accent.text)}>{getSocialProofPct(tip.id)}%</span> of users unlocked this
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Social proof */}
-        <div className="px-3.5 sm:px-4 pb-1">
-          <div className="flex items-center justify-center gap-1.5 py-1.5">
-            <Eye className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground">
-              👀 {getSocialProofPct(tip.id)}% of users unlocked this
-            </span>
-          </div>
-        </div>
 
         {/* Unlock button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
