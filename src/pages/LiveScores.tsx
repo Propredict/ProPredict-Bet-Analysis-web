@@ -896,27 +896,28 @@ function CountrySection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="overflow-hidden bg-card border-border">
+      <Card className="overflow-hidden bg-card/80 border-border/70 rounded-xl shadow-[0_1px_0_hsl(var(--border)),0_8px_24px_-16px_rgba(0,0,0,0.8)] backdrop-blur-sm">
         {/* Country Header */}
         <CollapsibleTrigger asChild>
-          <button className="w-full px-2 sm:px-3 py-2 sm:py-2.5 bg-gradient-to-r from-primary/25 via-primary/15 to-transparent border-b border-primary/30 flex items-center gap-2 hover:from-primary/30 hover:via-primary/20 transition-colors">
-            <span className="text-base sm:text-lg">{flag}</span>
-            <span className="font-bold text-xs sm:text-sm text-foreground">{country}</span>
+          <button className="w-full px-3 py-2.5 sm:py-3 bg-gradient-to-r from-primary/20 via-primary/8 to-transparent border-b border-primary/25 flex items-center gap-2.5 hover:from-primary/28 hover:via-primary/14 transition-colors">
+            <span className="text-lg sm:text-xl leading-none">{flag}</span>
+            <span className="font-extrabold text-[13px] sm:text-[15px] text-foreground tracking-tight">{country}</span>
             <div className="flex items-center gap-1.5 ml-auto">
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/10 border-primary/30 text-primary">
+              <Badge variant="outline" className="hidden sm:inline-flex text-[9px] px-1.5 bg-primary/10 border-primary/30 text-primary">
                 {leagueCount} league{leagueCount !== 1 ? "s" : ""}
               </Badge>
-              <Badge variant="outline" className="text-[8px] sm:text-[9px] px-1.5 bg-primary/15 text-primary border-primary/40">
+              <Badge variant="outline" className="text-[9px] px-1.5 bg-primary/15 text-primary border-primary/40">
                 {matchCount} match{matchCount !== 1 ? "es" : ""}
               </Badge>
               {isOpen ? (
-                <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                <ChevronDown className="h-4 w-4 text-primary" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-primary" />
+                <ChevronRight className="h-4 w-4 text-primary" />
               )}
             </div>
           </button>
         </CollapsibleTrigger>
+
 
         <CollapsibleContent>
           <div className="divide-y divide-border/50">
