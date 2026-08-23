@@ -265,7 +265,7 @@ export default function ExclusiveTickets() {
                   }} 
                   isLocked={isLocked} 
                   unlockMethod={unlockMethod} 
-                  onUnlockClick={() => handleUnlock("ticket", ticket.id, "exclusive")}
+                  onUnlockClick={handleBuyDailyTicket}
                   onSecondaryUnlock={() => setFreeInAppOpen(true)}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
                   isUnlocking={isUnlocking} 
