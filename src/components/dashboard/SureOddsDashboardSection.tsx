@@ -116,7 +116,7 @@ export function SureOddsDashboardSection() {
           <SureOddsPromoCard
             ticket={ticket}
             isLocked={true}
-            unlockMethod={{ type: "upgrade_basic" }}
+            unlockMethod={{ type: "upgrade_basic", message: "Unlock today's ticket" }}
             onUnlockClick={handleBuyDailyTicket}
             isUnlocking={unlockingId === ticket.id}
             priceLabel={SURE_ODDS_PRICE_LABEL}
