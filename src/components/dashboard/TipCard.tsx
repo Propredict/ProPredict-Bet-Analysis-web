@@ -88,7 +88,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
   return "";
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium" }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
   const queryClient = useQueryClient();
