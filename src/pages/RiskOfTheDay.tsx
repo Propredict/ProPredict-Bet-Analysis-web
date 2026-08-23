@@ -59,7 +59,7 @@ export default function RiskOfTheDay() {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const riskTips = tips?.filter((t: any) => t.category === "risk_of_day" && t.tip_date === today) || [];
   const unlockedCount = riskTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
-  const showUpgradeBanner = !isAdmin && plan !== "premium";
+  const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
     refetch();
@@ -94,7 +94,7 @@ export default function RiskOfTheDay() {
           </div>
           <div className="flex items-center gap-1">
             <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[9px] px-1.5 py-0.5">
-              🔥 Pro
+              🔥 Premium
             </Badge>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="h-6 px-1.5 text-[9px]">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
@@ -112,12 +112,11 @@ export default function RiskOfTheDay() {
                   <Crown className="h-4 w-4 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Pro AI Predictions</h3>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                  <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Unlock with Premium Access</h3>
                 </div>
               </div>
               <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
-                Subscribe Now
+                Subscribe
               </Button>
             </div>
           </div>
