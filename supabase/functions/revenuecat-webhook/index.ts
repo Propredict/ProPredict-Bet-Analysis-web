@@ -34,7 +34,9 @@ async function sendPurchaseEmailIfNeeded(
   supabase: any,
   userId: string,
   email: string,
-  plan: string
+  plan: string,
+  priceAmount?: number,
+  currency?: string
 ) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey || !email) return;
@@ -52,7 +54,17 @@ async function sendPurchaseEmailIfNeeded(
     }
 
     const planLabel = plan === "premium" ? "Premium" : "Pro";
-    const price = plan === "premium" ? "€5.99" : "€3.99";
+
+    // Format price from the webhook payload if available; otherwise fallback to defaults
+    let priceText: string;
+    if (priceAmount !== undefined && priceAmount !== null && currency) {
+      const symbol = currency === "EUR" ? "€" : currency;
+      const formatted = priceAmount.toFixed(2);
+      priceText = `${symbol}${formatted}`;
+    } else {
+      priceText = plan === "premium" ? "€14.99" : "€3.99";
+    }
+
     const orderId = `PP-${Date.now().toString(36).toUpperCase()}`;
     const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#ffffff;padding:32px 28px;max-width:560px;margin:0 auto;">
@@ -64,13 +76,14 @@ async function sendPurchaseEmailIfNeeded(
         <table style="width:100%;background:#f0fdfa;border-radius:10px;padding:16px 20px;margin:0 0 24px;color:#0d1a15;font-size:14px;">
           <tr><td><strong>Order:</strong></td><td style="text-align:right;">${orderId}</td></tr>
           <tr><td><strong>Plan:</strong></td><td style="text-align:right;">${planLabel}</td></tr>
-          <tr><td><strong>Total:</strong></td><td style="text-align:right;">${price}</td></tr>
+          <tr><td><strong>Total:</strong></td><td style="text-align:right;">${priceText}</td></tr>
         </table>
         <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
           Manage your subscription any time in Profile → Subscription.
         </p>
       </div>
     `;
+
 
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
