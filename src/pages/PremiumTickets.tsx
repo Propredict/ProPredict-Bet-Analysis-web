@@ -117,7 +117,7 @@ export default function PremiumTickets() {
           </div>
           <div>
             <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Ticket</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Highest confidence predictions for subscribers</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium predictions</p>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
@@ -159,7 +159,7 @@ export default function PremiumTickets() {
             </div>
             <Button size="sm" className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2" onClick={() => navigate("/get-premium")}>
               <Sparkles className="h-3 w-3" />
-              Upgrade to Premium
+              Subscribe
             </Button>
           </div>
         </Card>
