@@ -230,7 +230,7 @@ export default function ExclusiveTickets() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No Pro Ticket available</p>
+              <p className="text-primary mb-1">No Sure Odds 2+ ticket available</p>
               <p className="text-sm">Check back later for new predictions</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -241,9 +241,10 @@ export default function ExclusiveTickets() {
         ) : (
           exclusiveTickets.map((ticket, idx) => {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
-            const isLocked = unlockMethod?.type !== "unlocked";
+            const isLocked = !hasTicketAccess;
             const isUnlocking = unlockingId === ticket.id;
             const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
+
             return (
               <React.Fragment key={ticket.id}>
                 <div id={`ticket-${ticket.id}`}>
