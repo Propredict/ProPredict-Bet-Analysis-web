@@ -51,6 +51,8 @@ interface TicketCardProps {
   onSecondaryUnlock?: () => void;
   onViewTicket?: () => void;
   isUnlocking?: boolean;
+  hideLockedMatches?: boolean;
+  customLockedCTA?: React.ReactNode;
 }
 
 /* =======================
@@ -111,6 +113,8 @@ function TicketCard({
   onSecondaryUnlock,
   onViewTicket,
   isUnlocking = false,
+  hideLockedMatches = false,
+  customLockedCTA,
 }: TicketCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -223,40 +227,42 @@ function TicketCard({
       <div className={cardShell} onClick={handleCardClick}>
         {renderHeader()}
 
-        {/* Match list - show names, blur predictions & odds */}
-        <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
-          {displayedMatches.map((match, idx) => {
-            const parsed = parseMatchName(match.name);
-            return (
-              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
-                {parsed.league && (
-                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
-                )}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.homeTeam}
-                  </span>
-                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.awayTeam}
-                  </span>
+        {/* Match list - show names when not hidden, blur predictions & odds */}
+        {!hideLockedMatches && (
+          <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
+            {displayedMatches.map((match, idx) => {
+              const parsed = parseMatchName(match.name);
+              return (
+                <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                  {parsed.league && (
+                    <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                  )}
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="flex-1 text-right text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                      {parsed.homeTeam}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
+                    <span className="flex-1 text-left text-[13px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                      {parsed.awayTeam}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-center gap-2">
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                      <Lock className="h-2.5 w-2.5" />
+                      Locked
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-1.5 flex items-center justify-center gap-2">
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Lock className="h-2.5 w-2.5" />
-                    Locked
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-          {remainingCount > 0 && (
-            <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
-              +{remainingCount} more matches
-              <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </p>
-          )}
-        </div>
+              );
+            })}
+            {remainingCount > 0 && (
+              <p className="text-center text-[10px] text-primary pt-2 flex items-center justify-center gap-0.5 group-hover:underline">
+                +{remainingCount} more matches
+                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Social proof */}
         <div className="px-3.5 sm:px-4 pb-1">
@@ -271,7 +277,9 @@ function TicketCard({
         {/* Unlock button */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="px-3.5 sm:px-4 pb-3.5 pt-1">
-            {unlockMethod.type === "android_watch_ad_or_pro" ? (
+            {customLockedCTA ? (
+              <div onClick={(e) => e.stopPropagation()}>{customLockedCTA}</div>
+            ) : unlockMethod.type === "android_watch_ad_or_pro" ? (
               <div className="flex flex-col gap-1.5">
                 <Button size="sm" className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0" disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); onUnlockClick(); }}>
                   {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <><Sparkles className="h-3.5 w-3.5" />{unlockMethod.primaryMessage}</>}

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,16 +26,13 @@ export default function ExclusiveTickets() {
     refetch
   } = useTickets(false);
   const {
-    canAccess,
     getUnlockMethod,
     plan,
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
   const {
-    unlockingId,
-    handleUnlock,
-    handleSecondaryUnlock
+    unlockingId
   } = useUnlockHandler();
   const { isAndroidApp } = usePlatform();
   const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
@@ -46,7 +42,6 @@ export default function ExclusiveTickets() {
   const planRequired = searchParams.get("plan_required");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
-  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   // Highlight scroll from push notification
   useEffect(() => {
@@ -229,7 +224,6 @@ export default function ExclusiveTickets() {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = !hasTicketAccess;
             const isUnlocking = unlockingId === ticket.id;
-            const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
 
             return (
               <React.Fragment key={ticket.id}>
@@ -242,7 +236,7 @@ export default function ExclusiveTickets() {
                     status: ticket.result ?? "pending",
                     totalOdds: ticket.total_odds ?? 0,
                     tier: ticket.tier,
-                    matches: matchesToShow.map(m => ({
+                    matches: (ticket.matches ?? []).map(m => ({
                       name: m.match_name,
                       prediction: m.prediction,
                       odds: m.odds
@@ -250,9 +244,21 @@ export default function ExclusiveTickets() {
                     createdAt: ticket.created_at_ts
                   }} 
                   isLocked={isLocked} 
+                  hideLockedMatches={isLocked}
+                  customLockedCTA={
+                    isLocked ? (
+                      <Button
+                        size="sm"
+                        className="w-full gap-1.5 h-9 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0"
+                        onClick={(e) => { e.stopPropagation(); handleBuyDailyTicket(); }}
+                      >
+                        <Ticket className="h-3.5 w-3.5" />
+                        Buy for {SURE_ODDS_PRICE_LABEL}
+                      </Button>
+                    ) : undefined
+                  }
                   unlockMethod={unlockMethod} 
                   onUnlockClick={handleBuyDailyTicket}
-                  onSecondaryUnlock={() => setFreeInAppOpen(true)}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
                   isUnlocking={isUnlocking} 
                 />
@@ -277,6 +283,5 @@ export default function ExclusiveTickets() {
 
     </div>
     <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
-    <FreeInAppPopup open={freeInAppOpen} onClose={() => setFreeInAppOpen(false)} onContinueWithPro={() => navigate("/get-premium")} />
   </>;
 }
