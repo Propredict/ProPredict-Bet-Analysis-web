@@ -269,13 +269,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
             <div className="h-px bg-border/40 mx-3" />
 
-            {/* Social proof */}
-            <div className="flex items-center justify-center gap-1.5 py-2.5">
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground">
-                👀 <span className={cn("font-bold", accent.text)}>{getSocialProofPct(tip.id)}%</span> of users unlocked this
-              </span>
-            </div>
+            {/* Unlock CTA spacer */}
+            <div className="py-2" />
           </div>
         </div>
 

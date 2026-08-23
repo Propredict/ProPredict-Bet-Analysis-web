@@ -116,11 +116,11 @@ export default function PremiumTips() {
         </div>
         <div className="flex items-center gap-1">
           <Button
-            size="sm"
-            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-semibold border-0 gap-1.5 h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+            size="default"
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-bold border-0 gap-1.5 h-10 sm:h-11 text-xs sm:text-sm px-4 sm:px-5 shadow-lg shadow-fuchsia-500/20"
             onClick={() => navigate("/get-premium")}
           >
-            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             Subscribe
           </Button>
         </div>

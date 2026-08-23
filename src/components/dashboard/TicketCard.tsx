@@ -264,14 +264,9 @@ function TicketCard({
           </div>
         )}
 
-        {/* Social proof */}
+        {/* Unlock CTA */}
         <div className="px-3.5 sm:px-4 pb-1">
-          <div className="flex items-center justify-center gap-1.5 py-1.5">
-            <Eye className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground">
-              👀 {getSocialProofPct(ticket.id)}% of users unlocked this
-            </span>
-          </div>
+          <div className="py-1.5" />
         </div>
 
         {/* Unlock button */}
