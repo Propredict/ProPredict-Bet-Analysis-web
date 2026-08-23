@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
+import { useDailyTicketUnlock } from "@/hooks/useDailyTicketUnlock";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
 import { toast } from "sonner";
 import { setOneSignalTag } from "@/components/AndroidPushModal";
+
 
 /* =====================
    Types
