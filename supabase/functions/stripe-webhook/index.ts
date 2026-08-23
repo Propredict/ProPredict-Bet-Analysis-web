@@ -111,7 +111,8 @@ function getDisplayPrice(subscription: Stripe.Subscription, plan: string): strin
     const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
     return `${symbol}${amount}`;
   }
-  return plan === "premium" ? "€5.99" : "€3.99";
+  return plan === "premium" ? "€14.99" : "€3.99";
+
 }
 
 // Map price IDs to plans
