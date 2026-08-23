@@ -44,6 +44,7 @@ function getSpecialHeadline(category: string | null): string | null {
   if (category === "diamond_pick") return "💎 Diamond Pick Just Dropped — AI Says This Is BIG. Tap Now 🚀";
   if (category === "risk_of_the_day") return "🔥 Risk of the Day is LIVE — High Risk. High Reward. Are You In? 🎯";
   if (category === "multi_risk") return "🎯 Multi Risk Matches Are LIVE — Multiple High-Risk Picks Ready!";
+  if (category === "sure_odds") return "🎫 New 2+ odds Ticket available!";
   return null;
 }
 
@@ -69,6 +70,12 @@ function getPublishBody(type: string, record: Record<string, unknown>): string {
     return type === "tip"
       ? "Multiple high-risk picks are live — tap to see the full list!"
       : "A high-risk combo is ready — open the app now!";
+  }
+  if (category === "sure_odds") {
+    const title = (record.title as string) ?? "";
+    return title
+      ? `${title} — Tap to unlock today's 2+ odds ticket!`
+      : "A new 2+ odds ticket is available — unlock it now!";
   }
 
   if (type === "tip") {
@@ -263,6 +270,7 @@ serve(async (req) => {
       diamond_pick: "/diamond-pick",
       risk_of_the_day: "/risk-of-the-day",
       multi_risk: type === "tip" ? "/risk-of-the-day" : "/multi-risk-matches",
+      sure_odds: "/pro-predictions",
     };
     const tierRouteMap: Record<string, string> = {
       premium: type === "tip" ? "premium-analysis" : "premium-predictions",
