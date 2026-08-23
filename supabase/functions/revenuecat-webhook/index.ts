@@ -184,8 +184,11 @@ serve(async (req) => {
     const appUserId = event.app_user_id;
     const entitlementIds: string[] = event.entitlement_ids || [];
     const expirationAtMs = event.expiration_at_ms;
+    const priceInPurchasedCurrency = event.price_in_purchased_currency;
+    const currency = event.currency;
 
     console.log(`RevenueCat webhook: type=${eventType}, app_user_id=${appUserId}, entitlements=${JSON.stringify(entitlementIds)}`);
+
 
     if (!appUserId) {
       console.error("RevenueCat webhook: Missing app_user_id");
