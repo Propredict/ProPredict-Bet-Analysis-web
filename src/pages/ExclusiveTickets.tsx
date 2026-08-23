@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,16 +26,13 @@ export default function ExclusiveTickets() {
     refetch
   } = useTickets(false);
   const {
-    canAccess,
     getUnlockMethod,
     plan,
     isAdmin,
     refetch: refetchPlan
   } = useUserPlan();
   const {
-    unlockingId,
-    handleUnlock,
-    handleSecondaryUnlock
+    unlockingId
   } = useUnlockHandler();
   const { isAndroidApp } = usePlatform();
   const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
@@ -46,7 +42,6 @@ export default function ExclusiveTickets() {
   const planRequired = searchParams.get("plan_required");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
-  const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   // Highlight scroll from push notification
   useEffect(() => {
