@@ -94,7 +94,7 @@ export default function RiskOfTheDay() {
           </div>
           <div className="flex items-center gap-1">
             <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[9px] px-1.5 py-0.5">
-              🔥 Pro
+              🔥 Premium
             </Badge>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="h-6 px-1.5 text-[9px]">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
