@@ -94,10 +94,10 @@ export default function ExclusiveTickets() {
 
   return <>
     <Helmet>
-      <title>Pro Ticket – ProPredict</title>
-      <meta name="description" content="Pro-level AI-powered match combinations with advanced analysis. For informational and entertainment purposes only." />
-      <meta property="og:title" content="Pro Ticket – ProPredict" />
-      <meta property="og:description" content="Pro-level AI-powered match combinations with advanced analysis." />
+      <title>Sure Odds 2+ – ProPredict</title>
+      <meta name="description" content="Sure Odds 2+ daily ticket with higher confidence AI selections. For informational and entertainment purposes only." />
+      <meta property="og:title" content="Sure Odds 2+ – ProPredict" />
+      <meta property="og:description" content="Daily ticket with higher confidence AI selections." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
       <meta property="og:url" content="https://propredict.me/pro-predictions" />
       <meta property="og:type" content="website" />
@@ -115,47 +115,51 @@ export default function ExclusiveTickets() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro Ticket</h1>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Sure Odds 2+</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "Advanced match combinations with higher confidence selections"}
+              Today's high-confidence ticket with 2.00+ total odds
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
-            <Star className="h-2.5 w-2.5 mr-0.5" />
-            Pro
+        {hasTicketAccess ? (
+          <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
+            Unlocked today
           </Badge>
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-0.5 h-6 sm:h-7 px-1.5">
-            <RefreshCw className="h-3 w-3" />
+        ) : (
+          <Button
+            className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
+            onClick={handleBuyDailyTicket}
+          >
+            Unlock Today's Ticket – {SURE_ODDS_PRICE_LABEL}
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Pro Ticket include advanced match combinations with higher confidence selections, designed using AI analysis and extended statistical evaluation.
+          Sure Odds 2+ is a one-time daily purchase. Unlock today's ticket for {SURE_ODDS_PRICE_LABEL} and it stays open until midnight (Europe/Belgrade). Premium members get it included at no extra cost.
         </p>
       </Card>
 
       {/* Upgrade Banner */}
-      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+      {showUpgradeBanner && <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-violet-500/10 to-transparent border border-fuchsia-500/30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-amber-500/20">
-                <Crown className="h-4 w-4 text-amber-400" />
+              <div className="p-1.5 rounded-md bg-fuchsia-500/20">
+                <Crown className="h-4 w-4 text-fuchsia-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Pro AI Predictions</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-fuchsia-300">Get Sure Odds 2+ every day</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Premium includes every daily ticket, no ads</p>
               </div>
             </div>
-            <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
-              Subscribe Now
+            <Button className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold border-0 h-7 px-3 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
+              Subscribe
             </Button>
           </div>
         </div>}
+
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
