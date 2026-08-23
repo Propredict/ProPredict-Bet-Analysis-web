@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight, Target } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,16 +52,16 @@ export function BettingTickets() {
 
   // Dashboard shows ONLY today's tickets — older ones go to history pages
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate);
+  const todayDbTickets = dbTickets.filter((t: any) => t.ticket_date === todayDate && t.category !== "multi_risk");
   const filtered = todayDbTickets
-    .filter((t: any) => t.tier === activeTab && !(activeTab === "premium" && t.category === "multi_risk"))
+    .filter((t: any) => t.tier === activeTab)
     .map(mapDbTicket);
   const displayedTickets = filtered.slice(0, 3);
   const hasMoreTickets = filtered.length > 3;
 
-  // Count only today's tickets per tier (todayDate already defined above)
+  // Count only today's tickets per tier
   const todayTicketCountByTier = (tierId: string) =>
-    todayDbTickets.filter((t: any) => t.tier === tierId && !(tierId === "premium" && t.category === "multi_risk")).length;
+    todayDbTickets.filter((t: any) => t.tier === tierId).length;
 
   const accuracy = accuracyData.find((a) => a.tier === activeTab)?.accuracy ?? 0;
 
