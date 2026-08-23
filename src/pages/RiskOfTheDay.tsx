@@ -90,7 +90,7 @@ export default function RiskOfTheDay() {
             <div>
               <h1 className="text-sm text-red-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                {isAndroidApp ? "Watch ads to access predictions or upgrade to Premium" : "High-risk, high-reward bold picks"}
+                High-risk, high-reward bold picks
               </p>
             </div>
           </div>
