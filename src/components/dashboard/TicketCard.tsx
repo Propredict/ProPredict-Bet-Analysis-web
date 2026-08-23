@@ -10,7 +10,6 @@ import {
   Sparkles,
   Gift,
   ChevronRight,
-  Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,14 +80,6 @@ function getTierBadge(tier: ContentTier) {
   }
 }
 
-// Deterministic pseudo-random unlock % per ticket (72-94 range)
-function getSocialProofPct(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-  }
-  return 72 + (Math.abs(hash) % 23);
-}
 
 function getLockedCTAText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
@@ -285,8 +276,20 @@ function TicketCard({
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
-                <Button variant={unlockMethod.type === "login_required" ? "outline" : "default"} size="sm" className={cn("w-full gap-1.5 h-9 text-xs font-semibold", getUnlockButtonStyle())} disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}>
-                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className="h-3.5 w-3.5" />}{getLockedCTAText(unlockMethod)}</>}
+                <Button
+                  variant={unlockMethod.type === "login_required" ? "outline" : "default"}
+                  size={unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic" ? "default" : "sm"}
+                  className={cn(
+                    "w-full gap-1.5 font-semibold",
+                    unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic"
+                      ? "h-11 text-sm animate-cta-blink"
+                      : "h-9 text-xs",
+                    getUnlockButtonStyle()
+                  )}
+                  disabled={isUnlocking}
+                  onClick={(e) => { e.stopPropagation(); handleUnlockClick(); }}
+                >
+                  {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <>{Icon && <Icon className={cn("shrink-0", unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic" ? "h-4 w-4" : "h-3.5 w-3.5")} />}{getLockedCTAText(unlockMethod)}</>}
                 </Button>
                 {!getIsAndroidApp() && (unlockMethod.type === "upgrade_basic") && (
                   <button

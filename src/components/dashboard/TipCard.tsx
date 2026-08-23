@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Eye, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -67,14 +67,6 @@ function getTierBadge(tier: ContentTier) {
   }
 }
 
-// Deterministic pseudo-random unlock % per tip (72-94 range)
-function getSocialProofPct(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
-  }
-  return 72 + (Math.abs(hash) % 23);
-}
 
 function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string {
   if (unlockMethod.type === "unlocked") return "";
