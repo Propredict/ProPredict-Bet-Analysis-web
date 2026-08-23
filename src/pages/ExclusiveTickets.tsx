@@ -199,29 +199,29 @@ export default function ExclusiveTickets() {
         </Card>
       </div>
 
-      {/* Tickets Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? (
-          <Card className="p-8 bg-card border-border">
-            <div className="flex flex-col items-center justify-center text-muted-foreground">
-              <Loader2 className="h-8 w-8 animate-spin mb-2" />
-              <p>Loading predictions...</p>
-            </div>
-          </Card>
-        ) : exclusiveTickets.length === 0 ? (
-          <Card className="p-8 bg-card border-border">
-            <div className="flex flex-col items-center justify-center text-muted-foreground">
-              <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">No Sure Odds 2+ ticket available</p>
-              <p className="text-sm">Check back later for new predictions</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          exclusiveTickets.map((ticket, idx) => {
+      {/* Tickets Area */}
+      {isLoading ? (
+        <Card className="p-8 bg-card border-border">
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mb-2" />
+            <p>Loading predictions...</p>
+          </div>
+        </Card>
+      ) : exclusiveTickets.length === 0 ? (
+        <Card className="p-8 bg-card border-border">
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <Ticket className="h-12 w-12 mb-4 opacity-50" />
+            <p className="text-primary mb-1">No Sure Odds 2+ ticket available</p>
+            <p className="text-sm">Check back later for new predictions</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:gap-4">
+          {exclusiveTickets.map((ticket, idx) => {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = !hasTicketAccess;
             const isUnlocking = unlockingId === ticket.id;
@@ -229,49 +229,61 @@ export default function ExclusiveTickets() {
             return (
               <React.Fragment key={ticket.id}>
                 <div id={`ticket-${ticket.id}`}>
-                <TicketCard 
-                  ticket={{
-                    id: ticket.id,
-                    title: ticket.title,
-                    matchCount: ticket.matches?.length ?? 0,
-                    status: ticket.result ?? "pending",
-                    totalOdds: ticket.total_odds ?? 0,
-                    tier: ticket.tier,
-                    matches: (ticket.matches ?? []).map(m => ({
-                      name: m.match_name,
-                      prediction: m.prediction,
-                      odds: m.odds
-                    })),
-                    createdAt: ticket.created_at_ts
-                  }} 
-                  isLocked={isLocked} 
-                  hideLockedMatches={isLocked}
-                  customLockedCTA={
-                    isLocked ? (
-                      <Button
-                        size="sm"
-                        className="w-full gap-1.5 h-9 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0"
-                        onClick={(e) => { e.stopPropagation(); handleBuyDailyTicket(); }}
-                      >
-                        <Ticket className="h-3.5 w-3.5" />
-                        Buy for {SURE_ODDS_PRICE_LABEL}
-                      </Button>
-                    ) : undefined
-                  }
-                  unlockMethod={unlockMethod} 
-                  onUnlockClick={handleBuyDailyTicket}
-                  onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
-                  isUnlocking={isUnlocking} 
-                />
+                  {isLocked ? (
+                    <SureOddsPromoCard
+                      ticket={{
+                        id: ticket.id,
+                        title: ticket.title,
+                        matchCount: ticket.matches?.length ?? 0,
+                        status: ticket.result ?? "pending",
+                        totalOdds: ticket.total_odds ?? 0,
+                        tier: ticket.tier,
+                        matches: (ticket.matches ?? []).map((m) => ({
+                          name: m.match_name,
+                          prediction: m.prediction,
+                          odds: m.odds,
+                        })),
+                        createdAt: ticket.created_at_ts,
+                      }}
+                      isLocked={true}
+                      unlockMethod={unlockMethod}
+                      onUnlockClick={handleBuyDailyTicket}
+                      isUnlocking={isUnlocking}
+                      priceLabel={SURE_ODDS_PRICE_LABEL}
+                      unlockedCount={unlockedCount}
+                    />
+                  ) : (
+                    <TicketCard
+                      ticket={{
+                        id: ticket.id,
+                        title: ticket.title,
+                        matchCount: ticket.matches?.length ?? 0,
+                        status: ticket.result ?? "pending",
+                        totalOdds: ticket.total_odds ?? 0,
+                        tier: ticket.tier,
+                        matches: (ticket.matches ?? []).map((m) => ({
+                          name: m.match_name,
+                          prediction: m.prediction,
+                          odds: m.odds,
+                        })),
+                        createdAt: ticket.created_at_ts,
+                      }}
+                      isLocked={false}
+                      unlockMethod={unlockMethod}
+                      onUnlockClick={handleBuyDailyTicket}
+                      onViewTicket={() => navigate(`/tickets/${ticket.id}`)}
+                      isUnlocking={isUnlocking}
+                    />
+                  )}
                 </div>
                 {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < exclusiveTickets.length - 1 && (
-                    <AdSlot className="col-span-full" />
+                  <AdSlot className="col-span-full" />
                 )}
               </React.Fragment>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* Compliance Disclaimer */}
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
