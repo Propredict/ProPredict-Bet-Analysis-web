@@ -8,6 +8,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
+import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
 
@@ -63,8 +64,9 @@ export function SureOddsDashboardSection() {
       setTimeout(() => refetchUnlock(), 10000);
       return;
     }
-    toast.info("Sure Odds 2+ daily ticket is available in the ProPredict app.");
-    navigate("/get-premium");
+    // Web: one-time Stripe checkout for today's ticket
+    toast.info("Opening secure checkout…");
+    void startSureOddsWebCheckout();
   };
 
   return (

@@ -306,8 +306,84 @@ serve(async (req) => {
     // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      
+
       const customerEmail = session.customer_email || session.customer_details?.email;
+
+      // -------------------------------------------------------------
+      // One-time "Sure Odds 2+" daily ticket (Stripe web purchase).
+      // Handled BEFORE any subscription logic — it must never change
+      // the user's plan, only grant a single-day unlock.
+      // -------------------------------------------------------------
+      const isDailyTicket =
+        session.mode === "payment" &&
+        (session.metadata?.purchase_type === "daily_ticket" ||
+          (session as any).payment_intent_data?.metadata?.purchase_type === "daily_ticket");
+
+      if (isDailyTicket) {
+        if (session.payment_status !== "paid") {
+          console.log(`Daily ticket session not paid (${session.payment_status}) — skipping`);
+          return new Response(
+            JSON.stringify({ received: true, skipped: "unpaid" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const dtUser = session.metadata?.user_id
+          ? { id: session.metadata.user_id }
+          : await findUserByEmail(customerEmail || "");
+
+        if (!dtUser) {
+          console.error("Daily ticket: no user found", customerEmail);
+          return new Response(
+            JSON.stringify({ error: "User not found" }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const unlockDate = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Europe/Belgrade",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date());
+
+        const baseRow: Record<string, unknown> = {
+          user_id: dtUser.id,
+          unlock_date: unlockDate,
+          product_id: "sure_odds_2plus_daily",
+          transaction_id: (session.payment_intent as string) || session.id,
+        };
+
+        let { error: unlockError } = await supabase
+          .from("daily_ticket_unlocks")
+          .upsert({ ...baseRow, source: "stripe" }, {
+            onConflict: "user_id,unlock_date",
+            ignoreDuplicates: true,
+          });
+
+        // If a check constraint rejects the "stripe" source, retry with the default
+        if (unlockError && ((unlockError as any).code === "23514" || (unlockError as any).code === "22P02")) {
+          console.warn("daily_ticket_unlocks rejected source=stripe, retrying without source");
+          ({ error: unlockError } = await supabase
+            .from("daily_ticket_unlocks")
+            .upsert(baseRow, { onConflict: "user_id,unlock_date", ignoreDuplicates: true }));
+        }
+
+        if (unlockError && (unlockError as any).code !== "23505") {
+          console.error("Daily ticket unlock failed:", unlockError);
+          return new Response(
+            JSON.stringify({ error: "Failed to create daily unlock" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        console.log(`Stripe daily Sure Odds 2+ unlock granted to ${dtUser.id} for ${unlockDate}`);
+        return new Response(
+          JSON.stringify({ received: true, daily_ticket: true, unlock_date: unlockDate }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       
       if (!customerEmail) {
         console.error("No customer email found in session");
