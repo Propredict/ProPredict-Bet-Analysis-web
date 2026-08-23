@@ -566,11 +566,10 @@ export default function GetPremium() {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentPlans.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
-          const isPopular = plan.popular;
           const isFree = plan.id === "free";
 
           return (
@@ -579,8 +578,6 @@ export default function GetPremium() {
               className={`relative p-4 transition-all ${
                 isPremium
                   ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
-                  : isPopular
-                  ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/30"
                   : isFree
                   ? "bg-gradient-to-b from-primary/15 via-card to-card border-primary/30"
                   : "bg-card border-border"
@@ -590,12 +587,6 @@ export default function GetPremium() {
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
                   <Crown className="h-2.5 w-2.5 mr-1" />
                   Best Value
-                </Badge>
-              )}
-              {isPopular && !isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-black border-0 text-[9px] px-2">
-                  <Sparkles className="h-2.5 w-2.5 mr-1" />
-                  Popular
                 </Badge>
               )}
 
@@ -615,8 +606,6 @@ export default function GetPremium() {
                 className={`w-full mt-4 h-8 text-xs ${
                   isPremium && !isCurrentPlan
                     ? "bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 hover:opacity-90 text-white border-0"
-                    : isPopular && !isCurrentPlan
-                    ? "bg-amber-500 hover:bg-amber-600 text-black font-semibold"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
