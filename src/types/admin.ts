@@ -10,7 +10,7 @@ export type TipCategory =
   | "ai_daily"
   | "ai_pro"
   | "ai_premium";
-export type TicketCategory = "standard" | "multi_risk" | "ai_daily" | "ai_pro" | "ai_premium";
+export type TicketCategory = "standard" | "multi_risk" | "sure_odds" | "ai_daily" | "ai_pro" | "ai_premium";
 
 export const TIP_CATEGORIES = [
   "standard",
@@ -20,7 +20,7 @@ export const TIP_CATEGORIES = [
   "ai_pro",
   "ai_premium",
 ] as const;
-export const TICKET_CATEGORIES = ["standard", "multi_risk", "ai_daily", "ai_pro", "ai_premium"] as const;
+export const TICKET_CATEGORIES = ["standard", "multi_risk", "sure_odds", "ai_daily", "ai_pro", "ai_premium"] as const;
 
 export function normalizeTipCategory(category?: string | null): TipCategory {
   const normalized = category === "risk" ? "risk_of_day" : category;
