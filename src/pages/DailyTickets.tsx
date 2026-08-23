@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Ticket, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import TicketCard from "@/components/dashboard/TicketCard";
@@ -140,35 +139,25 @@ export default function DailyTickets() {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="p-1.5 rounded-md bg-primary/20">
-            <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Ticket</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              {isAndroidApp ? "Watch ads to access combos or upgrade to Premium" : "AI-powered match combinations"}
-            </p>
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/20 via-primary/10 to-background shadow-[0_0_20px_rgba(15,155,142,0.12)] overflow-hidden">
+        <div className="p-3.5 sm:p-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-primary/20 shrink-0">
+              <Ticket className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-semibold text-primary">Daily Ticket</h1>
+              <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed mt-1">
+                AI-powered match combinations built from daily predictions, created for informational and analytical purposes only. Each combo is generated from AI analysis and match statistics.
+              </p>
+              {isAndroidApp && (
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1.5">Watch ads to access combos or upgrade to Premium</p>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
-            <Ticket className="h-2.5 w-2.5 mr-0.5" />
-            Free
-          </Badge>
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-0.5 h-6 sm:h-7 px-1.5">
-            <RefreshCw className="h-3 w-3" />
-          </Button>
-        </div>
+        <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
       </div>
-
-      {/* Description */}
-      <Card className="p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border-primary/20">
-        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Daily Ticket combine multiple daily predictions into structured multi-match combinations, created for informational and analytical purposes only. Each combo is generated based on AI analysis and match statistics.
-        </p>
-      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
