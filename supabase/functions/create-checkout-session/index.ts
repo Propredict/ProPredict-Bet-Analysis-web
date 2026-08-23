@@ -13,7 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, successUrl, cancelUrl } = await req.json();
+    const { priceId, successUrl, cancelUrl, mode: requestedMode, purchaseType } = await req.json();
+    const mode = requestedMode === "payment" ? "payment" : "subscription";
 
     if (!priceId) {
       return new Response(
