@@ -229,7 +229,6 @@ export default function ExclusiveTickets() {
             const unlockMethod = getUnlockMethod("exclusive", "ticket", ticket.id);
             const isLocked = !hasTicketAccess;
             const isUnlocking = unlockingId === ticket.id;
-            const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
 
             return (
               <React.Fragment key={ticket.id}>
@@ -242,7 +241,7 @@ export default function ExclusiveTickets() {
                     status: ticket.result ?? "pending",
                     totalOdds: ticket.total_odds ?? 0,
                     tier: ticket.tier,
-                    matches: matchesToShow.map(m => ({
+                    matches: (ticket.matches ?? []).map(m => ({
                       name: m.match_name,
                       prediction: m.prediction,
                       odds: m.odds
@@ -250,9 +249,21 @@ export default function ExclusiveTickets() {
                     createdAt: ticket.created_at_ts
                   }} 
                   isLocked={isLocked} 
+                  hideLockedMatches={isLocked}
+                  customLockedCTA={
+                    isLocked ? (
+                      <Button
+                        size="sm"
+                        className="w-full gap-1.5 h-9 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-black border-0"
+                        onClick={(e) => { e.stopPropagation(); handleBuyDailyTicket(); }}
+                      >
+                        <Ticket className="h-3.5 w-3.5" />
+                        Buy for {SURE_ODDS_PRICE_LABEL}
+                      </Button>
+                    ) : undefined
+                  }
                   unlockMethod={unlockMethod} 
                   onUnlockClick={handleBuyDailyTicket}
-                  onSecondaryUnlock={() => setFreeInAppOpen(true)}
                   onViewTicket={() => navigate(`/tickets/${ticket.id}`)} 
                   isUnlocking={isUnlocking} 
                 />
