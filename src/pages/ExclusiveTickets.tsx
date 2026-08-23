@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
+import { useDailyTicketUnlock, SURE_ODDS_PRODUCT_ID, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
+
 
 export default function ExclusiveTickets() {
   const navigate = useNavigate();
