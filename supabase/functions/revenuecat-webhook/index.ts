@@ -296,8 +296,11 @@ serve(async (req) => {
         supabase,
         userId,
         userData.user.email || "",
-        plan
+        plan,
+        priceInPurchasedCurrency,
+        currency
       );
+
     } else if (deactivateEvents.includes(eventType)) {
       console.log(`RevenueCat webhook: Expiring subscription for user ${userId}`);
 
