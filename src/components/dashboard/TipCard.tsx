@@ -37,6 +37,8 @@ interface TipCardProps {
   onUnlockClick: () => void;
   onSecondaryUnlock?: () => void;
   isUnlocking?: boolean;
+  lockedCTAText?: string;
+  lockedCTABrand?: "premium" | "pro";
 }
 
 // --- Tier accent helpers ---
@@ -71,18 +73,19 @@ function getSocialProofPct(id: string): number {
   return 72 + (Math.abs(hash) % 23);
 }
 
-function getLockedCTAText(unlockMethod: UnlockMethod): string {
+function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string {
   if (unlockMethod.type === "unlocked") return "";
+  if (override) return override;
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";
-  if (unlockMethod.type === "upgrade_premium") return "💎 Unlock full AI edge";
+  if (unlockMethod.type === "upgrade_premium") return "💎 See now";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
 }
 
-export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false }: TipCardProps) {
+export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium" }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
   const queryClient = useQueryClient();
