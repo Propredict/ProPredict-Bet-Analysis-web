@@ -5,7 +5,6 @@ import {
   Calendar,
   Lightbulb,
   Layers,
-  Star,
   Crown,
   Sparkles,
   Brain,
