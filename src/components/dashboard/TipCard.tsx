@@ -149,14 +149,15 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "bg-primary hover:bg-primary/90 text-white border-0";
-    if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
+    if (unlockMethod.type === "android_premium_only") return TIER_ACCENT.premium.btn;
+    if (unlockMethod.type === "upgrade_basic") return TIER_ACCENT.exclusive.btn;
     if (unlockMethod.type === "upgrade_premium") {
-      if (lockedCTABrand === "pro") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
-      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+      if (lockedCTABrand === "pro") return TIER_ACCENT.exclusive.btn;
+      return accent.btn;
     }
     return "";
   };
+
 
   const getUnlockButtonIcon = () => {
     if (!unlockMethod || unlockMethod.type === "unlocked") return null;
