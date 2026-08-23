@@ -74,7 +74,6 @@ export default function PremiumTips() {
   
   const premiumTips = tips.filter(tip => tip.tier === "premium" && tip.tip_date === todayBelgrade && (!tip.category || tip.category === "standard" || (tip.category as string) === "ai_premium"));
   const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
-  const showUpgradeBanner = plan !== "premium";
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
