@@ -39,15 +39,18 @@ interface TipCardProps {
   isUnlocking?: boolean;
   lockedCTAText?: string;
   lockedCTABrand?: "premium" | "pro";
+  /** Label shown in the locked hero, e.g. "Risk of the Day". Defaults to the tier name. */
+  lockedLabel?: string;
 }
 
 // --- Tier accent helpers ---
 const TIER_ACCENT = {
-  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]" },
-  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]" },
+  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
+  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
+  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]", text: "text-amber-400", ring: "border-amber-400/70", halo: "shadow-[0_0_25px_rgba(245,158,11,0.4)]", btn: "bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-90 text-black border-0" },
+  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]", text: "text-fuchsia-400", ring: "border-fuchsia-400/70", halo: "shadow-[0_0_25px_rgba(217,70,239,0.4)]", btn: "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0" },
 } as const;
+
 
 function getTierBadge(tier: ContentTier) {
   switch (tier) {
