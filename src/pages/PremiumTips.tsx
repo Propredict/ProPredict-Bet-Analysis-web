@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
@@ -74,7 +74,6 @@ export default function PremiumTips() {
   
   const premiumTips = tips.filter(tip => tip.tier === "premium" && tip.tip_date === todayBelgrade && (!tip.category || tip.category === "standard" || (tip.category as string) === "ai_premium"));
   const unlockedCount = premiumTips.filter(tip => canAccess("premium", "tip", tip.id)).length;
-  const showUpgradeBanner = plan !== "premium";
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -92,10 +91,10 @@ export default function PremiumTips() {
   return <>
     <FreeUserUpsellModal />
     <Helmet>
-      <title>Premium Predictions – ProPredict</title>
+      <title>Access Premium Predictions – ProPredict</title>
       <meta
         name="description"
-        content="Premium AI-powered sports predictions with highest confidence analysis. For entertainment and informational purposes only."
+        content="Premium predictions with highest confidence analysis. For entertainment and informational purposes only."
       />
     </Helmet>
     <div className="section-gap">
@@ -111,24 +110,18 @@ export default function PremiumTips() {
             <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
           </div>
           <div>
-            <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Premium Predictions</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Our highest-confidence AI predictions</p>
+            <h1 className="text-sm text-fuchsia-400 font-semibold sm:text-lg">Access Premium Predictions</h1>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium predictions</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[9px] px-1.5 py-0.5">
-            <Crown className="h-2.5 w-2.5 mr-0.5" />
-            Premium
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing || isLoading}
-            className="h-6 px-1.5 text-[9px]"
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
+            onClick={() => navigate("/get-premium")}
           >
-            <RefreshCw className={`h-2.5 w-2.5 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
-            {isRefreshing ? "..." : "Refresh"}
+            <Sparkles className="h-3 w-3" />
+            Subscribe
           </Button>
         </div>
       </div>
@@ -136,37 +129,9 @@ export default function PremiumTips() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Premium Predictions represent our highest-confidence predictions, combining AI models, in-depth match analysis, and expert insights. These predictions are limited and carefully selected for maximum quality.
+          Access Premium Predictions represent our highest-confidence predictions, combining advanced match analysis and expert insights. These predictions are limited and carefully selected for maximum quality.
         </p>
       </Card>
-
-      {/* Premium Upgrade Banner */}
-      {showUpgradeBanner && <Card className="p-3 sm:p-4 bg-gradient-to-r from-fuchsia-500/20 via-purple-500/15 to-fuchsia-500/10 border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.1)]">
-          <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
-            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-pink-500/30">
-              <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-fuchsia-400" />
-            </div>
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-foreground">Access Premium AI Predictions</h2>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">
-                Access our highest-confidence AI predictions
-              </p>
-            </div>
-            <div className="flex items-center gap-3 text-[9px] sm:text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-0.5">
-                <Sparkles className="h-3 w-3 text-fuchsia-400" />
-                Highest confidence
-              </span>
-              <span className="flex items-center gap-0.5">
-                <Sparkles className="h-3 w-3 text-fuchsia-400" />
-                No ads
-              </span>
-            </div>
-            <Button className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 h-7 px-4 text-[10px] sm:text-xs" onClick={() => navigate("/get-premium")}>
-              Upgrade to Premium – €14.99/month
-            </Button>
-          </div>
-        </Card>}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
