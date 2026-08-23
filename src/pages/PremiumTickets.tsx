@@ -121,18 +121,13 @@ export default function PremiumTickets() {
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
-            <Crown className="h-2.5 w-2.5 mr-0.5" />
-            Premium
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing || isLoading}
-            className="gap-0.5 h-6 sm:h-7 px-1.5"
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-medium border-0 gap-1 h-6 sm:h-7 text-[10px] sm:text-xs px-2"
+            onClick={() => navigate("/get-premium")}
           >
-            <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+            <Sparkles className="h-3 w-3" />
+            Subscribe
           </Button>
         </div>
       </div>
