@@ -57,8 +57,10 @@ export default function RiskOfTheDay() {
   }, [planRequired, plan]);
 
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  // Risk of the Day is a Premium feature. Legacy Pro (basic) subscribers keep access until expiry.
+  const accessTier = plan === "basic" ? "exclusive" : "premium";
   const riskTips = tips?.filter((t: any) => t.category === "risk_of_day" && t.tip_date === today) || [];
-  const unlockedCount = riskTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
+  const unlockedCount = riskTips.filter(tip => canAccess(accessTier, "tip", tip.id)).length;
   const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
@@ -88,7 +90,7 @@ export default function RiskOfTheDay() {
             <div>
               <h1 className="text-sm text-red-400 font-semibold sm:text-lg">🎯 Risk of the Day</h1>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                {isAndroidApp ? "Watch ads to access predictions or upgrade to Premium" : "High-risk, high-reward bold picks"}
+                High-risk, high-reward bold picks
               </p>
             </div>
           </div>
@@ -176,7 +178,7 @@ export default function RiskOfTheDay() {
             </Card>
           ) : (
             riskTips.map((tip, idx) => {
-              const unlockMethod = getUnlockMethod("exclusive", "tip", tip.id);
+              const unlockMethod = getUnlockMethod(accessTier, "tip", tip.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const isUnlocking = unlockingId === tip.id;
               return (
@@ -203,7 +205,7 @@ export default function RiskOfTheDay() {
                       }}
                       isLocked={isLocked}
                       unlockMethod={unlockMethod}
-                      onUnlockClick={() => handleUnlock("tip", tip.id, "exclusive")}
+                      onUnlockClick={() => handleUnlock("tip", tip.id, accessTier)}
                       onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       isUnlocking={isUnlocking}
                     />
