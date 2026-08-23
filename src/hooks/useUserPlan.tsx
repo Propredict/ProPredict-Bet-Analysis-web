@@ -81,6 +81,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
   // RevenueCat integration for Android - source of truth for mobile subscriptions
   const revenueCat = useRevenueCat(user?.id);
 
+  // Daily Sure Odds 2+ ticket unlock state (refreshed on successful purchase)
+  const { refetch: refetchDailyUnlock } = useDailyTicketUnlock();
+
+
   const [plan, setPlan] = useState<UserPlan>("free");
   const [subscriptionSource, setSubscriptionSource] = useState<SubscriptionSource>("free");
   const [isAdmin, setIsAdmin] = useState(false);
