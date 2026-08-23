@@ -69,6 +69,11 @@ export default function ExclusiveTickets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Hidden on Android until the store update is approved
+  useEffect(() => {
+    if (isAndroidApp) navigate("/", { replace: true });
+  }, [isAndroidApp, navigate]);
+
   // Plan required upgrade modal from push notification
   useEffect(() => {
     if (!planRequired) return;

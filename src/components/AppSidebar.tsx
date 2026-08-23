@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { 
   LayoutDashboard, 
   Ticket, 
@@ -201,7 +202,9 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {ticketsItems.map((item) => (
+              {ticketsItems
+                .filter((item) => !(getIsAndroidApp() && item.url === "/pro-predictions"))
+                .map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
