@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { FreeInAppPopup } from "@/components/FreeInAppPopup";
-import { Target, RefreshCw, BarChart3, TrendingUp, Crown, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Target, RefreshCw, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TipCard } from "@/components/dashboard/TipCard";
@@ -95,34 +94,16 @@ export default function RiskOfTheDay() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[9px] px-1.5 py-0.5">
-              🔥 Premium
-            </Badge>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="h-6 px-1.5 text-[9px]">
-              <RefreshCw className="h-2.5 w-2.5 mr-1" />
-              Refresh
-            </Button>
-          </div>
-        </div>
-
-        {/* Upgrade Banner */}
-        {showUpgradeBanner && (
-          <div className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-amber-500/20">
-                  <Crown className="h-4 w-4 text-amber-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Unlock with Premium Access</h3>
-                </div>
-              </div>
-              <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
+            {showUpgradeBanner ? (
+              <Button
+                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-7 sm:h-8 px-3 text-[10px] sm:text-xs"
+                onClick={() => navigate("/get-premium")}
+              >
                 Subscribe
               </Button>
-            </div>
+            ) : null}
           </div>
-        )}
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
