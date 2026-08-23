@@ -59,7 +59,7 @@ export default function RiskOfTheDay() {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const riskTips = tips?.filter((t: any) => t.category === "risk_of_day" && t.tip_date === today) || [];
   const unlockedCount = riskTips.filter(tip => canAccess("exclusive", "tip", tip.id)).length;
-  const showUpgradeBanner = !isAdmin && plan !== "premium";
+  const showUpgradeBanner = !isAdmin && plan !== "premium" && plan !== "basic";
 
   const handleRefresh = () => {
     refetch();
