@@ -39,6 +39,8 @@ export default function ExclusiveTickets() {
     handleSecondaryUnlock
   } = useUnlockHandler();
   const { isAndroidApp } = usePlatform();
+  const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
+
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get("highlight");
   const planRequired = searchParams.get("plan_required");
