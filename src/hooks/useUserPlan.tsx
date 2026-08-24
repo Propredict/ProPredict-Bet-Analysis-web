@@ -545,8 +545,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       // We re-fetch user data so the UI reflects the new plan immediately.
       if (
         type === "RESTORE_SUCCESS" ||
-        type === "PURCHASE_SUCCESS" ||
-        type === "REVENUECAT_PURCHASE_SUCCESS"
+        ((type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS") &&
+          data?.productId !== "sure_odds_2plus_daily" &&
+          data?.product_id !== "sure_odds_2plus_daily" &&
+          data?.productIdentifier !== "sure_odds_2plus_daily")
       ) {
         console.log("[UserPlan] Received", type, "— refreshing plan data");
         toast.success(

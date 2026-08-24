@@ -27,12 +27,13 @@ function attachNativeListener() {
   if (listenerAttached || typeof window === "undefined") return;
   listenerAttached = true;
 
-  window.addEventListener("message", (event: MessageEvent) => {
+  const handleNativeMessage = (event: Event) => {
+    const rawData = event instanceof CustomEvent ? event.detail : (event as MessageEvent).data;
     const data =
-      typeof event.data === "string"
+      typeof rawData === "string"
         ? (() => {
             try {
-              return JSON.parse(event.data);
+              return JSON.parse(rawData);
             } catch {
               return {};
             }
@@ -49,6 +50,10 @@ function attachNativeListener() {
       type === "PURCHASE_ERROR"
     ) {
       clearWatchdog();
+    }
+
+    if (type === "DAILY_TICKET_PURCHASE_FAILED" || type === "DAILY_TICKET_PURCHASE_CANCELLED" || type === "PURCHASE_ERROR") {
+      try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
     }
 
     if (type === "DAILY_TICKET_PURCHASE_SUCCESS" || type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS") {
@@ -79,7 +84,11 @@ function attachNativeListener() {
 
       toast.error(friendly[String(code)] ?? `Purchase failed (${code}): ${message}`);
     }
-  });
+  };
+
+  window.addEventListener("message", handleNativeMessage);
+  document.addEventListener("message", handleNativeMessage);
+  window.addEventListener("revenuecat-purchase-success", handleNativeMessage);
 }
 
 /**
@@ -109,6 +118,7 @@ export function startSureOddsPurchase(onPending?: () => void): void {
     console.log("[SureOdds][Android] Bridge methods available:", available);
 
     if (!android) {
+      try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
       console.error("[SureOdds][Android] window.Android bridge is missing");
       toast.error("Purchase unavailable: app bridge not detected.");
       return;
@@ -126,6 +136,7 @@ export function startSureOddsPurchase(onPending?: () => void): void {
         android.purchaseProduct(SURE_ODDS_RC_PRODUCT_ID);
         called = `purchaseProduct(${SURE_ODDS_RC_PRODUCT_ID})`;
       } else {
+        try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
         console.error(
           "[SureOdds][Android] No one-time purchase method on bridge. Available:",
           available
@@ -136,6 +147,7 @@ export function startSureOddsPurchase(onPending?: () => void): void {
         return;
       }
     } catch (err) {
+      try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
       console.error("[SureOdds][Android] Bridge call threw:", err);
       toast.error("Could not start the Google Play purchase.");
       return;

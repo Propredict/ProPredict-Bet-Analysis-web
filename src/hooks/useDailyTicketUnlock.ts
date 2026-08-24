@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,7 +45,11 @@ export function belgradeToday(): string {
 export function useDailyTicketUnlock() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = ["daily-ticket-unlock", user?.id, belgradeToday()] as const;
+  const today = belgradeToday();
+  const queryKey = useMemo(
+    () => ["daily-ticket-unlock", user?.id, today] as const,
+    [today, user?.id]
+  );
 
   const fetchUnlock = useCallback(async (): Promise<boolean> => {
     if (!user?.id) return false;
@@ -53,13 +57,13 @@ export function useDailyTicketUnlock() {
       .from("daily_ticket_unlocks")
       .select("id, product_id, transaction_id, source")
       .eq("user_id", user.id)
-      .eq("unlock_date", belgradeToday())
+      .eq("unlock_date", today)
       .maybeSingle();
 
     if (error) {
       console.error("[SureOdds][Unlock] Supabase check failed", {
         userId: user.id,
-        date: belgradeToday(),
+        date: today,
         error: error.message,
       });
       return false;
@@ -69,12 +73,12 @@ export function useDailyTicketUnlock() {
         productId: data.product_id,
         transactionId: data.transaction_id,
         source: data.source,
-        date: belgradeToday(),
+        date: today,
       });
       try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
     }
     return Boolean(data);
-  }, [user?.id]);
+  }, [today, user?.id]);
 
   const { data: hasTodayUnlock = false, isLoading, refetch: refetchQuery } = useQuery({
     queryKey,
