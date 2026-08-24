@@ -6,8 +6,6 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
-import { usePlatform } from "@/hooks/usePlatform";
-import { toast } from "sonner";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
@@ -34,7 +32,7 @@ export function SureOddsDashboardSection() {
   const { isAdmin, plan } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
   const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
-  const { isAndroidApp } = usePlatform();
+  
 
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const sureOddsTickets = dbTickets
