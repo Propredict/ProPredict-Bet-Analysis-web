@@ -97,8 +97,6 @@ export function FreeUserUpsellModal() {
     void startSureOddsWebCheckout();
   };
 
-  // Sure Odds 2+ promo hidden on Android until the store update is approved
-  if (isAndroidApp) return null;
 
   if (isLoading || plan !== "free") return null;
 
