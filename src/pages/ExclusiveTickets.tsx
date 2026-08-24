@@ -95,7 +95,7 @@ export default function ExclusiveTickets() {
         (ticket.category as string) === "sure_odds"
         // Manually-curated Pro/Exclusive tickets
         || (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
-        // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
+        // Auto-generated Sure Odds 2+ combos (only Sure Odds AI predictions, no Premium)
         || (ticket.category as string) === "ai_pro"
       )
     )
