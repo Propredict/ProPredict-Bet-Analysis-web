@@ -38,7 +38,7 @@ function attachNativeListener() {
               return {};
             }
           })()
-        : event.data;
+        : rawData;
 
     const type = data?.type;
     if (!type) return;
