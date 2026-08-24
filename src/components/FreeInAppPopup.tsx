@@ -65,7 +65,7 @@ export function FreeInAppPopup({ open, onClose, onContinueWithPro }: FreeInAppPo
             </div>
             <div className="flex items-center gap-2.5">
               <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-              <span className="text-[11px] text-foreground">Unlock all Pro picks daily for free</span>
+              <span className="text-[11px] text-foreground">Unlock all Sure Odds 2+ daily for free</span>
             </div>
             <div className="flex items-center gap-2.5">
               <Users className="h-4 w-4 text-primary shrink-0" />

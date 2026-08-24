@@ -242,7 +242,7 @@ const AIPredictionCardInner = ({
             {isProTier && !isPremiumTier && (
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
-                PRO
+                SURE 2+
               </Badge>
             )}
             {isDailyTier && isBigMatch(prediction.league, prediction.home_team, prediction.away_team) && (
@@ -382,9 +382,9 @@ const AIPredictionCardInner = ({
                      Upgrade for more predictions
                    </p>
                    <div className="flex flex-wrap gap-1">
-                     <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
-                       🎯 Pro Picks
-                     </Badge>
+                      <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
+                        🎯 Sure Odds 2+ Ticket
+                      </Badge>
                      <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                        👑 Premium Analysis
                      </Badge>
@@ -518,7 +518,7 @@ const AIPredictionCardInner = ({
                 ) : (
                   <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 )}
-                {unlockMethod.type === "upgrade_basic" ? "Pro Access Required" : "Premium Access Required"}
+                {unlockMethod.type === "upgrade_basic" ? "Sure Odds 2+ Ticket Access Required" : "Premium Access Required"}
               </Button>
             )}
           </div>

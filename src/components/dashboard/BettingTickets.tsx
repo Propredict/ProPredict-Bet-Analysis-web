@@ -79,7 +79,7 @@ export function BettingTickets() {
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
-    { id: "exclusive", label: "Pro", subtitle: "Higher Confidence", icon: Star },
+    { id: "exclusive", label: "Sure Odds 2+", subtitle: "Higher Confidence", icon: Star },
     { id: "premium", label: "Premium", subtitle: "Members Only", icon: Crown },
   ];
 
@@ -197,14 +197,14 @@ export function BettingTickets() {
 
             {proTickets.length > 0 && (
             <TicketTierSection
-              title="Pro Picks"
+              title="Sure Odds 2+ Ticket"
               subtitle="Higher confidence · curated edge"
               badgeIcon={Star}
-              badgeLabel="⭐ Pro"
+              badgeLabel="⭐ Sure Odds 2+"
               tone="pro"
-              ctaLabel="See all Pro Picks"
-              onCta={() => navigate("/pro-predictions")}
-              empty="No Pro AI Combos available"
+              ctaLabel="See all Sure Odds 2+"
+              onCta={() => navigate("/exclusive-tickets")}
+              empty="No Sure Odds 2+ Tickets available"
               tickets={proTickets}
               renderTicket={renderTicket}
             />)}

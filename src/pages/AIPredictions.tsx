@@ -1069,7 +1069,7 @@ export default function AIPredictions() {
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                         <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
                         <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
-                          Pro Picks
+                          Sure Odds 2+ Ticket
                         </h2>
                       </div>
                       <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
@@ -1113,7 +1113,7 @@ export default function AIPredictions() {
                             <CardContent className="p-0">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
                                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
-                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> PRO
+                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> SURE 2+
                                 </Badge>
                                 <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
@@ -1152,11 +1152,11 @@ export default function AIPredictions() {
                                   />
                                 </div>
                                 <Button
-                                  onClick={() => navigate("/get-premium")}
+                                  onClick={() => navigate("/exclusive-tickets")}
                                   className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                                 >
                                   <Star className="w-3 h-3 fill-current" />
-                                  ⭐ Unlock Pro Picks
+                                  ⭐ Unlock Sure Odds 2+ Ticket
                                 </Button>
                                 {!isAndroidApp && (
                                   <button
@@ -1175,7 +1175,7 @@ export default function AIPredictions() {
                   {/* Web only: show "+X more" and Premium hint */}
                   {!isAndroidApp && tierCounts.pro > 3 && (
                     <p className="text-center text-[10px] text-amber-400/70 mt-2">
-                      +{tierCounts.pro - 3} more Pro picks available
+                      +{tierCounts.pro - 3} more Sure Odds 2+ picks available
                     </p>
                   )}
                   {!isAndroidApp && (
@@ -1343,7 +1343,7 @@ export default function AIPredictions() {
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
                           <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
-                            Pro Picks ({tierCounts.pro})
+                            Sure Odds 2+ Ticket ({tierCounts.pro})
                           </h2>
                         </div>
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />

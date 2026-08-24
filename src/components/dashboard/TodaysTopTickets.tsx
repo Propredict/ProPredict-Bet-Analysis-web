@@ -50,9 +50,9 @@ export function TodaysTopTickets() {
       accent: "text-amber-400", border: "border-amber-500/40", glow: "shadow-[0_0_15px_rgba(245,158,11,0.25)]",
       bg: "bg-amber-500/10", badgeBg: "bg-amber-500/20 text-amber-400",
       locked: true,
-      seeAllLabel: "See all Pro Tickets",
+      seeAllLabel: "See all Sure Odds 2+",
       seeAllRoute: "/exclusive-tickets",
-      sectionTitle: "Pro Picks",
+      sectionTitle: "Sure Odds 2+ Ticket",
       ctaGradient: "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-[0_0_15px_rgba(245,158,11,0.4)]",
     },
     {
