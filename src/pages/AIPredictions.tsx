@@ -1113,7 +1113,7 @@ export default function AIPredictions() {
                             <CardContent className="p-0">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
                                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
-                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> PRO
+                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> SURE 2+
                                 </Badge>
                                 <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
@@ -1152,11 +1152,11 @@ export default function AIPredictions() {
                                   />
                                 </div>
                                 <Button
-                                  onClick={() => navigate("/get-premium")}
+                                  onClick={() => navigate("/exclusive-tickets")}
                                   className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                                 >
                                   <Star className="w-3 h-3 fill-current" />
-                                  ⭐ Unlock Pro Picks
+                                  ⭐ Unlock Sure Odds 2+ Ticket
                                 </Button>
                                 {!isAndroidApp && (
                                   <button
