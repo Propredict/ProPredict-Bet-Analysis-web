@@ -203,7 +203,6 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {ticketsItems
-                .filter((item) => !(getIsAndroidApp() && item.url === "/pro-predictions"))
                 .map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>

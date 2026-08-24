@@ -44,8 +44,6 @@ export function SureOddsDashboardSection() {
   const hasAccess = isAdmin || plan === "premium" || hasTodayUnlock;
   const ticket = sureOddsTickets[0];
 
-  // Hidden on Android until the store update is approved
-  if (isAndroidApp) return null;
 
   if (isLoading) {
     return (
