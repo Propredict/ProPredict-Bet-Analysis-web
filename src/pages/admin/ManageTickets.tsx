@@ -464,6 +464,25 @@ export default function ManageTickets() {
               {/* Publish Date */}
               <div>
                 <Label>Publish Date</Label>
+                <div className="flex gap-2 mb-2 mt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={ticketDate === getTodayBelgradeDate() ? "default" : "outline"}
+                    onClick={() => setTicketDate(getTodayBelgradeDate())}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={ticketDate === getTomorrowBelgradeDate() ? "default" : "outline"}
+                    onClick={() => setTicketDate(getTomorrowBelgradeDate())}
+                  >
+                    Tomorrow (auto 00:00)
+                  </Button>
+                </div>
+
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
