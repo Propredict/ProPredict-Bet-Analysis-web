@@ -45,6 +45,8 @@ function attachNativeListener() {
 
     if (
       type === "DAILY_TICKET_PURCHASE_SUCCESS" ||
+      type === "PURCHASE_SUCCESS" ||
+      type === "REVENUECAT_PURCHASE_SUCCESS" ||
       type === "DAILY_TICKET_PURCHASE_FAILED" ||
       type === "DAILY_TICKET_PURCHASE_CANCELLED" ||
       type === "PURCHASE_ERROR"
