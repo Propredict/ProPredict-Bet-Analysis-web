@@ -131,11 +131,11 @@ export function useUnlockHandler(options: UseUnlockHandlerOptions = {}) {
   );
 
   /**
-   * Secondary handler for Android "Get Pro" button (used in android_watch_ad_or_pro layout)
-   * Navigates to Get Premium paywall
+   * Secondary handler for Android "Get Sure Odds 2+" button (used in android_watch_ad_or_pro layout)
+   * Navigates to the Sure Odds 2+ ticket page so users can purchase/upgrade
    */
   const handleSecondaryUnlock = useCallback(() => {
-    // Navigate to Get Premium paywall for both Android and Web
+    // Navigate to Sure Odds 2+ ticket page for both Android and Web
     if (options.onUpgradeBasic) {
       options.onUpgradeBasic();
     } else {
