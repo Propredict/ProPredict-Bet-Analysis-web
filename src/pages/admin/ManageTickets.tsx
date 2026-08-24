@@ -66,6 +66,14 @@ function getTodayBelgradeDate() {
   });
 }
 
+function getTomorrowBelgradeDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+}
+
+
+
 /* =====================
    Types
 ===================== */
