@@ -231,7 +231,7 @@ export function AllTicketsCard({
         {/* Unlock Buttons - Android specific layout */}
         {unlockMethod && unlockMethod.type !== "unlocked" && (
           <div className="p-2.5 sm:p-3 border-t border-border">
-            {/* Android Daily tier: Watch Ad ONLY - no Get Pro option */}
+            {/* Android Daily tier: Watch Ad ONLY - no Get Sure Odds option */}
             {isAndroidDailyTier ? (
               <Button 
                 size="sm"
@@ -255,7 +255,7 @@ export function AllTicketsCard({
                 )}
               </Button>
             ) : isAndroidProTier ? (
-              /* Android Pro tier: Watch Ad + Get Pro option */
+              /* Android Exclusive/Pro tier: Watch Ad + Get Sure Odds 2+ option */
               <div className="space-y-2">
                 <Button 
                   size="sm"
