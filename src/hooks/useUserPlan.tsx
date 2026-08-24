@@ -545,8 +545,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
       // We re-fetch user data so the UI reflects the new plan immediately.
       if (
         type === "RESTORE_SUCCESS" ||
-        type === "PURCHASE_SUCCESS" ||
-        type === "REVENUECAT_PURCHASE_SUCCESS"
+        ((type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS") &&
+          data?.productId !== "sure_odds_2plus_daily" &&
+          data?.product_id !== "sure_odds_2plus_daily" &&
+          data?.productIdentifier !== "sure_odds_2plus_daily")
       ) {
         console.log("[UserPlan] Received", type, "— refreshing plan data");
         toast.success(
@@ -576,13 +578,25 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         }, 1500);
       }
 
-      // Handle one-time Sure Odds 2+ daily ticket purchase success
-      if (type === "DAILY_TICKET_PURCHASE_SUCCESS") {
-        console.log("[UserPlan] Received DAILY_TICKET_PURCHASE_SUCCESS — refreshing daily unlock");
+      // Handle one-time Sure Odds 2+ daily ticket purchase success. Some APK
+      // versions report the generic RevenueCat success type with a product id.
+      const nativeProductId = data?.productId ?? data?.product_id ?? data?.productIdentifier;
+      let hasPendingDailyPurchase = false;
+      try { hasPendingDailyPurchase = sessionStorage.getItem("propredict:sure-odds-purchase-pending") === "1"; } catch {}
+      const isDailyTicketSuccess =
+        type === "DAILY_TICKET_PURCHASE_SUCCESS" ||
+        ((type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS") &&
+          (nativeProductId === "sure_odds_2plus_daily" || hasPendingDailyPurchase));
+      if (isDailyTicketSuccess) {
+        console.log("[UserPlan] Sure Odds purchase success — refreshing persisted daily unlock", {
+          type,
+          productId: nativeProductId ?? "sure_odds_2plus_daily",
+          transactionId: data?.transactionId ?? data?.transaction_id ?? data?.purchaseToken ?? "not-provided",
+        });
         toast.success("Today's Sure Odds 2+ ticket unlocked!");
         // Refresh immediately, then retry a few times while the RevenueCat webhook lands
         refetchDailyUnlock();
-        [1500, 4000, 8000].forEach((delay) =>
+        [1500, 4000, 8000, 15000, 30000, 60000].forEach((delay) =>
           setTimeout(() => {
             refetchDailyUnlock();
             queryClient.invalidateQueries({ queryKey: ["tickets"] });
