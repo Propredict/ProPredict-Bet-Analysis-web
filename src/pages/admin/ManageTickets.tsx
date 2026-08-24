@@ -519,9 +519,10 @@ export default function ManageTickets() {
                   </PopoverContent>
                 </Popover>
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  A ticket is visible to users only on its publish date (Europe/Belgrade). Pick a future
-                  date to schedule it — it goes live automatically at 00:00 and the previous day's ticket
-                  disappears.
+                  A ticket is visible to users only on its publish date (Europe/Belgrade). Choose
+                  "Tomorrow" and leave status as "Draft" — the system publishes it automatically at
+                  00:00 Belgrade time. The previous day's ticket is replaced so users always see just
+                  one current offer.
                 </p>
               </div>
 
