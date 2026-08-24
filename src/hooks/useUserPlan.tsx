@@ -368,14 +368,14 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       /* =====================
          ANDROID APP LOGIC
-         FREE users:
-         - Daily: Watch Ad only
-         - Exclusive/Pro: Watch Ad (primary) + Get Pro (secondary)
-         - Premium: Get Premium only (NO ad option)
-         
-         PRO (basic) users:
-         - Daily + Exclusive: Full access (no ads needed)
-         - Premium: Get Premium only
+          FREE users:
+          - Daily: Watch Ad only
+          - Exclusive/Pro: Watch Ad (primary) + Get Sure Odds 2+ (secondary)
+          - Premium: Get Premium only (NO ad option)
+          
+          PRO (basic) users:
+          - Daily + Exclusive: Full access (no ads needed)
+          - Premium: Get Premium only
          
          PREMIUM users:
          - Full access to everything (no ads)
