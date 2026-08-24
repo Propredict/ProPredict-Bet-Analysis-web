@@ -60,7 +60,7 @@ function getTierBadge(tier: string) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Pro Access Required";
+  if (unlockMethod.type === "upgrade_basic") return "Sure Odds 2+ Ticket Required";
   if (unlockMethod.type === "upgrade_premium") return "Premium Access Required";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";
@@ -161,7 +161,7 @@ export function AllTicketsCard({
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "Sign in to Unlock";
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "Watch Ad to Unlock";
-    if (unlockMethod.type === "upgrade_basic") return "Pro Access Required";
+    if (unlockMethod.type === "upgrade_basic") return "Sure Odds 2+ Ticket Required";
     if (unlockMethod.type === "upgrade_premium") return "Premium Access Required";
     if (unlockMethod.type === "android_premium_only") return "Get Premium";
     return "";
@@ -286,7 +286,7 @@ export function AllTicketsCard({
                   }}
                 >
                   <Star className="h-3 w-3" />
-                  Get Pro – No Ads
+                  Get Sure Odds 2+ – No Ads
                 </button>
               </div>
             ) : isAndroidPremiumTier ? (

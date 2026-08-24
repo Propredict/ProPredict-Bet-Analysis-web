@@ -86,7 +86,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
-  if (unlockMethod.type === "upgrade_basic") return "Get Pro or Premium";
+  if (unlockMethod.type === "upgrade_basic") return "Get Sure Odds 2+ or Premium";
   if (unlockMethod.type === "upgrade_premium") return "Get Premium";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";

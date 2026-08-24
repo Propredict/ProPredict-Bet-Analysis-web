@@ -1175,7 +1175,7 @@ export default function AIPredictions() {
                   {/* Web only: show "+X more" and Premium hint */}
                   {!isAndroidApp && tierCounts.pro > 3 && (
                     <p className="text-center text-[10px] text-amber-400/70 mt-2">
-                      +{tierCounts.pro - 3} more Pro picks available
+                      +{tierCounts.pro - 3} more Sure Odds 2+ picks available
                     </p>
                   )}
                   {!isAndroidApp && (

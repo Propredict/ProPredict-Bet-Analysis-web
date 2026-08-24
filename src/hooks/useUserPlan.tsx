@@ -388,12 +388,12 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             return { type: "watch_ad", message: "Watch Ad to Unlock" };
           }
           
-          // Exclusive/Pro content: Watch Ad + Get Pro option
+          // Exclusive/Pro content: Watch Ad + Get Sure Odds 2+ option
           if (tier === "exclusive") {
             return { 
               type: "android_watch_ad_or_pro", 
               primaryMessage: "Watch Ad to Unlock",
-              secondaryMessage: "Get Pro or Premium"
+              secondaryMessage: "Get Sure Odds 2+ or Premium"
             };
           }
           
@@ -417,7 +417,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       // EXCLUSIVE (Pro) → upgrade to basic for FREE users
       if (tier === "exclusive" && plan === "free") {
-        return { type: "upgrade_basic", message: "Get Pro to unlock" };
+        return { type: "upgrade_basic", message: "Get Sure Odds 2+ Ticket" };
       }
 
       // PREMIUM → upgrade to premium for FREE & BASIC users
