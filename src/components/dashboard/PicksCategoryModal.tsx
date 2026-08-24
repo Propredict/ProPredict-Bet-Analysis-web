@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Star, Crown, Diamond, Target } from "lucide-react";
+import { Sparkles, Ticket, Crown, Diamond, Target } from "lucide-react";
 import {
   Dialog,
   DialogContent,
