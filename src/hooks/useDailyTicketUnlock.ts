@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { trackSureOddsUnlockOnce } from "@/lib/sureOddsAnalytics";
 
 export const SURE_ODDS_PRODUCT_ID = "sure_odds_2plus_daily";
 export const SURE_ODDS_PRICE_LABEL = "€3.99";
@@ -76,6 +77,7 @@ export function useDailyTicketUnlock() {
         date: today,
       });
       try { sessionStorage.removeItem(SURE_ODDS_PURCHASE_PENDING_KEY); } catch {}
+      trackSureOddsUnlockOnce(user.id, today, String(data.source ?? "unknown"));
     }
     return Boolean(data);
   }, [today, user?.id]);

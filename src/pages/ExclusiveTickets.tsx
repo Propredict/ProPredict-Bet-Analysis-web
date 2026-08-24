@@ -14,6 +14,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
+import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
@@ -108,10 +109,11 @@ export default function ExclusiveTickets() {
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
   const handleBuyDailyTicket = () => {
+    void trackSureOddsEvent("cta_click", "sure_odds_page");
     startSureOddsPurchase(() => {
       setTimeout(() => refetchUnlock(), 4000);
       setTimeout(() => refetchUnlock(), 10000);
-    });
+    }, "sure_odds_page");
   };
 
 

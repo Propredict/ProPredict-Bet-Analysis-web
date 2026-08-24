@@ -7,6 +7,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
+import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
 
@@ -56,10 +57,11 @@ export function SureOddsDashboardSection() {
   if (!ticket) return null;
 
   const handleBuyDailyTicket = () => {
+    void trackSureOddsEvent("cta_click", "dashboard_section");
     startSureOddsPurchase(() => {
       setTimeout(() => refetchUnlock(), 4000);
       setTimeout(() => refetchUnlock(), 10000);
-    });
+    }, "dashboard_section");
   };
 
   return (
