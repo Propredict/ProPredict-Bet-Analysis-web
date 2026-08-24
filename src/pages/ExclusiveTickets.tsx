@@ -256,7 +256,7 @@ export default function ExclusiveTickets() {
                           prediction: m.prediction,
                           odds: m.odds,
                         })),
-                        createdAt: ticket.created_at_ts,
+                        createdAt: ticket.ticket_date ?? ticket.created_at_ts,
                       }}
                       isLocked={true}
                       unlockMethod={unlockMethod}
@@ -279,7 +279,7 @@ export default function ExclusiveTickets() {
                           prediction: m.prediction,
                           odds: m.odds,
                         })),
-                        createdAt: ticket.created_at_ts,
+                        createdAt: ticket.ticket_date ?? ticket.created_at_ts,
                       }}
                       isLocked={false}
                       unlockMethod={unlockMethod}
