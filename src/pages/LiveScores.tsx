@@ -770,7 +770,68 @@ function MatchRow({
         )}
       />
 
-      <div className="grid grid-cols-[68px_1fr_58px_1fr_72px] sm:grid-cols-[80px_1fr_78px_1fr_92px] items-center gap-1 sm:gap-2">
+      {/* MOBILE LAYOUT — stacked rows, full team names visible */}
+      <div className="sm:hidden flex items-start gap-2">
+        {/* Actions */}
+        <div className="flex flex-col items-center gap-1 pt-0.5">
+          <button
+            onClick={e => { e.stopPropagation(); toggleFavorite(); }}
+            className={cn(
+              "h-7 w-7 rounded-lg flex items-center justify-center transition-all active:scale-90",
+              isFav ? "bg-primary/20 ring-1 ring-primary/40" : "bg-secondary/70"
+            )}
+          >
+            <Star className={cn("h-3.5 w-3.5", isFav ? "text-primary fill-primary" : "text-muted-foreground")} />
+          </button>
+          <MatchAlertButton
+            hasAlert={hasAlert}
+            onClick={e => { e.stopPropagation(); toggleMatchAlert(); }}
+          />
+        </div>
+
+        {/* Teams stacked */}
+        <div className="flex-1 min-w-0 space-y-1">
+          {[
+            { name: m.homeTeam, logo: m.homeLogo, score: m.homeScore },
+            { name: m.awayTeam, logo: m.awayLogo, score: m.awayScore },
+          ].map((team, i) => (
+            <div key={i} className="flex items-center gap-2 min-w-0">
+              <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+                {team.logo && <img src={team.logo} alt="" loading="lazy" className="h-3.5 w-3.5 object-contain" />}
+              </span>
+              <span className={cn(
+                "flex-1 min-w-0 truncate text-[12px] font-semibold tracking-tight leading-tight",
+                isFinished && "text-muted-foreground",
+                showGoalIndicator && "text-success"
+              )}>
+                {team.name}
+              </span>
+              {!isUpcoming && (
+                <span className={cn(
+                  "text-sm font-extrabold tabular-nums leading-none",
+                  isLive && !showGoalIndicator && "text-primary",
+                  showGoalIndicator && "text-success",
+                  isFinished && "text-foreground"
+                )}>
+                  {team.score ?? 0}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Status */}
+        <div className="flex flex-col items-end gap-1 pt-0.5 flex-shrink-0">
+          <StatusBadge match={m} />
+          {isUpcoming && (
+            <span className="text-[11px] font-bold tabular-nums text-muted-foreground">{m.startTime}</span>
+          )}
+          {soundActive && <Volume2 className="h-2.5 w-2.5 text-primary/60" />}
+        </div>
+      </div>
+
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden sm:grid grid-cols-[80px_1fr_78px_1fr_92px] items-center gap-2">
         {/* Actions */}
         <div className="flex items-center gap-0.5">
           <button 
