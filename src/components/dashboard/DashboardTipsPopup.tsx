@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Star, Crown, Diamond, Target, ChevronRight, X } from "lucide-react";
+import { Sparkles, Ticket, Crown, Diamond, Target, ChevronRight, X } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import {
   Dialog,
