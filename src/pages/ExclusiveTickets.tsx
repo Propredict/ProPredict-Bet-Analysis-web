@@ -13,7 +13,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
+import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
@@ -103,16 +103,10 @@ export default function ExclusiveTickets() {
   const showUpgradeBanner = !isAdmin && plan !== "premium";
 
   const handleBuyDailyTicket = () => {
-    if (isAndroidApp && window.Android?.purchaseDailyTicket) {
-      window.Android.purchaseDailyTicket();
-      toast.info("Opening purchase…");
+    startSureOddsPurchase(() => {
       setTimeout(() => refetchUnlock(), 4000);
       setTimeout(() => refetchUnlock(), 10000);
-      return;
-    }
-    // Web: one-time Stripe checkout for today's ticket
-    toast.info("Opening secure checkout…");
-    void startSureOddsWebCheckout();
+    });
   };
 
 
