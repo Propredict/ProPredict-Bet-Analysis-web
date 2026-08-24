@@ -10,7 +10,7 @@ import {
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
-import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
+import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:upsell_shown_session";
@@ -86,15 +86,7 @@ export function FreeUserUpsellModal() {
 
   const handleGetTicket = () => {
     setIsOpen(false);
-    if (isAndroidApp && window.Android?.purchaseDailyTicket) {
-      window.Android.purchaseDailyTicket();
-      return;
-    }
-    if (isAndroidApp) {
-      navigate("/pro-predictions");
-      return;
-    }
-    void startSureOddsWebCheckout();
+    startSureOddsPurchase();
   };
 
 

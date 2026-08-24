@@ -8,7 +8,7 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
-import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
+import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
 
@@ -58,16 +58,10 @@ export function SureOddsDashboardSection() {
   if (!ticket) return null;
 
   const handleBuyDailyTicket = () => {
-    if (isAndroidApp && window.Android?.purchaseDailyTicket) {
-      window.Android.purchaseDailyTicket();
-      toast.info("Opening purchase…");
+    startSureOddsPurchase(() => {
       setTimeout(() => refetchUnlock(), 4000);
       setTimeout(() => refetchUnlock(), 10000);
-      return;
-    }
-    // Web: one-time Stripe checkout for today's ticket
-    toast.info("Opening secure checkout…");
-    void startSureOddsWebCheckout();
+    });
   };
 
   return (
