@@ -2,42 +2,154 @@ import { toast } from "sonner";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
 
-/** Google Play / RevenueCat one-time product for the Sure Odds 2+ daily ticket */
+/** Google Play / RevenueCat one-time (INAPP) product for the Sure Odds 2+ daily ticket */
 export const SURE_ODDS_RC_PRODUCT_ID = "sure_odds_2plus_daily";
+
+/** How long we wait for ANY native response before telling the user something is wrong */
+const NATIVE_RESPONSE_TIMEOUT_MS = 12_000;
+
+let watchdog: ReturnType<typeof setTimeout> | null = null;
+let listenerAttached = false;
+
+function clearWatchdog() {
+  if (watchdog) {
+    clearTimeout(watchdog);
+    watchdog = null;
+  }
+}
+
+/**
+ * Listens for native purchase feedback so we can surface the REAL RevenueCat /
+ * Google Play error instead of leaving the user on "Opening Google Play purchase…".
+ */
+function attachNativeListener() {
+  if (listenerAttached || typeof window === "undefined") return;
+  listenerAttached = true;
+
+  window.addEventListener("message", (event: MessageEvent) => {
+    const data =
+      typeof event.data === "string"
+        ? (() => {
+            try {
+              return JSON.parse(event.data);
+            } catch {
+              return {};
+            }
+          })()
+        : event.data;
+
+    const type = data?.type;
+    if (!type) return;
+
+    if (
+      type === "DAILY_TICKET_PURCHASE_SUCCESS" ||
+      type === "DAILY_TICKET_PURCHASE_FAILED" ||
+      type === "DAILY_TICKET_PURCHASE_CANCELLED" ||
+      type === "PURCHASE_ERROR"
+    ) {
+      clearWatchdog();
+    }
+
+    if (type === "DAILY_TICKET_PURCHASE_FAILED" || type === "PURCHASE_ERROR") {
+      const code = data.code ?? data.errorCode ?? "UNKNOWN";
+      const message = data.message ?? data.error ?? "Purchase failed";
+      console.error("[SureOdds][Android] Purchase error from native:", { code, message, raw: data });
+
+      const friendly: Record<string, string> = {
+        ITEM_UNAVAILABLE:
+          "This product is not available on your Google Play account yet (closed testing / not rolled out).",
+        PRODUCT_NOT_AVAILABLE_FOR_PURCHASE:
+          "Google Play cannot find this product. Make sure it is active and in the current release track.",
+        DEVELOPER_ERROR: "Google Play configuration error (wrong product ID or signing key).",
+        STORE_PROBLEM: "Google Play store error. Please try again later.",
+        PURCHASE_NOT_ALLOWED: "Purchases are not allowed on this Google account/device.",
+        PURCHASE_CANCELLED: "Purchase cancelled.",
+      };
+
+      toast.error(friendly[String(code)] ?? `Purchase failed (${code}): ${message}`);
+    }
+  });
+}
 
 /**
  * Routes the Sure Odds 2+ daily ticket purchase to the correct store:
- * - Android app  -> Google Play one-time product via RevenueCat (native bridge)
+ * - Android app  -> Google Play one-time (INAPP) product via RevenueCat (native bridge)
  * - Web          -> Stripe one-time checkout (unchanged)
  *
  * Android NEVER falls back to Stripe (Play policy + wrong product).
  */
 export function startSureOddsPurchase(onPending?: () => void): void {
   if (getIsAndroidApp()) {
+    attachNativeListener();
+
     const android = window.Android as
       | (typeof window.Android & {
           purchaseProduct?: (productId: string) => void;
+          purchaseInAppProduct?: (productId: string) => void;
           purchasePlan?: (planId: string) => void;
         })
       | undefined;
 
-    if (android?.purchaseDailyTicket) {
-      android.purchaseDailyTicket();
-    } else if (typeof android?.purchaseProduct === "function") {
-      android.purchaseProduct(SURE_ODDS_RC_PRODUCT_ID);
-    } else if (typeof android?.purchasePlan === "function") {
-      android.purchasePlan(SURE_ODDS_RC_PRODUCT_ID);
-    } else {
-      toast.error("Purchase unavailable. Please update the app to the latest version.");
+    // Diagnostic: log which bridge methods this APK build actually exposes.
+    const available = android
+      ? Object.keys(android).filter((k) => typeof (android as any)[k] === "function")
+      : [];
+    console.log("[SureOdds][Android] Bridge methods available:", available);
+
+    if (!android) {
+      console.error("[SureOdds][Android] window.Android bridge is missing");
+      toast.error("Purchase unavailable: app bridge not detected.");
       return;
     }
 
+    let called: string | null = null;
+    try {
+      if (typeof android.purchaseDailyTicket === "function") {
+        android.purchaseDailyTicket();
+        called = "purchaseDailyTicket()";
+      } else if (typeof android.purchaseInAppProduct === "function") {
+        android.purchaseInAppProduct(SURE_ODDS_RC_PRODUCT_ID);
+        called = `purchaseInAppProduct(${SURE_ODDS_RC_PRODUCT_ID})`;
+      } else if (typeof android.purchaseProduct === "function") {
+        android.purchaseProduct(SURE_ODDS_RC_PRODUCT_ID);
+        called = `purchaseProduct(${SURE_ODDS_RC_PRODUCT_ID})`;
+      } else {
+        console.error(
+          "[SureOdds][Android] No one-time purchase method on bridge. Available:",
+          available
+        );
+        toast.error(
+          "This app version can't buy the daily ticket yet. Please update the app from Google Play."
+        );
+        return;
+      }
+    } catch (err) {
+      console.error("[SureOdds][Android] Bridge call threw:", err);
+      toast.error("Could not start the Google Play purchase.");
+      return;
+    }
+
+    console.log("[SureOdds][Android] Purchase call executed:", called);
     toast.info("Opening Google Play purchase…");
     onPending?.();
+
+    // Watchdog: if native never answers, the purchase sheet never opened.
+    clearWatchdog();
+    watchdog = setTimeout(() => {
+      console.error(
+        `[SureOdds][Android] No native response ${NATIVE_RESPONSE_TIMEOUT_MS}ms after ${called}. ` +
+          `Likely causes: RevenueCat has no StoreProduct for "${SURE_ODDS_RC_PRODUCT_ID}" ` +
+          `(ITEM_UNAVAILABLE), product not in the installed release track, or wrong RevenueCat Android SDK key.`
+      );
+      toast.error(
+        "Google Play didn't respond. The product may not be available for this app version/account yet."
+      );
+    }, NATIVE_RESPONSE_TIMEOUT_MS);
+
     return;
   }
 
-  // Web only: Stripe one-time checkout
+  // Web only: Stripe one-time checkout (unchanged)
   toast.info("Opening secure checkout…");
   void startSureOddsWebCheckout();
 }
