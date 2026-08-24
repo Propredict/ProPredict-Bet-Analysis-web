@@ -32,7 +32,7 @@ export function SureOddsDashboardSection() {
   const { isAdmin, plan } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
   const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
-  const { isAndroidApp } = usePlatform();
+  
 
   const todayDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const sureOddsTickets = dbTickets
