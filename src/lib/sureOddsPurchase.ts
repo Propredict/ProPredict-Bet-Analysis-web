@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
+import { SURE_ODDS_PURCHASE_PENDING_KEY } from "@/hooks/useDailyTicketUnlock";
 
 /** Google Play / RevenueCat one-time (INAPP) product for the Sure Odds 2+ daily ticket */
 export const SURE_ODDS_RC_PRODUCT_ID = "sure_odds_2plus_daily";
@@ -50,6 +51,16 @@ function attachNativeListener() {
       clearWatchdog();
     }
 
+    if (type === "DAILY_TICKET_PURCHASE_SUCCESS" || type === "PURCHASE_SUCCESS" || type === "REVENUECAT_PURCHASE_SUCCESS") {
+      const productId = data.productId ?? data.product_id ?? data.productIdentifier ?? SURE_ODDS_RC_PRODUCT_ID;
+      const transactionId = data.transactionId ?? data.transaction_id ?? data.purchaseToken ?? data.purchase_token;
+      console.log("[SureOdds][Android] RevenueCat purchase success callback", {
+        type,
+        productId,
+        transactionId: transactionId ?? "not-provided",
+      });
+    }
+
     if (type === "DAILY_TICKET_PURCHASE_FAILED" || type === "PURCHASE_ERROR") {
       const code = data.code ?? data.errorCode ?? "UNKNOWN";
       const message = data.message ?? data.error ?? "Purchase failed";
@@ -81,6 +92,7 @@ function attachNativeListener() {
 export function startSureOddsPurchase(onPending?: () => void): void {
   if (getIsAndroidApp()) {
     attachNativeListener();
+    try { sessionStorage.setItem(SURE_ODDS_PURCHASE_PENDING_KEY, "1"); } catch {}
 
     const android = window.Android as
       | (typeof window.Android & {
@@ -129,7 +141,11 @@ export function startSureOddsPurchase(onPending?: () => void): void {
       return;
     }
 
-    console.log("[SureOdds][Android] Purchase call executed:", called);
+    console.log("[SureOdds][Android] Purchase initiated", {
+      method: called,
+      productId: SURE_ODDS_RC_PRODUCT_ID,
+      category: "INAPP",
+    });
     toast.info("Opening Google Play purchase…");
     onPending?.();
 

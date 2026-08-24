@@ -205,7 +205,7 @@ serve(async (req) => {
     const currency = event.currency;
     const productId: string = event.product_id || "";
 
-    console.log(`RevenueCat webhook: type=${eventType}, app_user_id=${appUserId}, entitlements=${JSON.stringify(entitlementIds)}`);
+    console.log(`RevenueCat webhook: type=${eventType}, app_user_id=${appUserId}, product_id=${productId}, transaction_id=${event.transaction_id || "missing"}, entitlements=${JSON.stringify(entitlementIds)}`);
 
 
     if (!appUserId) {
@@ -249,8 +249,13 @@ serve(async (req) => {
     // Handled BEFORE any subscription branch so it can never reach the
     // activate/deactivate logic and never grants basic/pro/premium.
     // ---------------------------------------------------------------
-    if (productId === DAILY_TICKET_PRODUCT_ID) {
-      if (eventType !== "NON_RENEWING_PURCHASE") {
+    const normalizedProductId = productId.split(":")[0];
+    if (normalizedProductId === DAILY_TICKET_PRODUCT_ID) {
+      // RevenueCat normally emits NON_RENEWING_PURCHASE for INAPP products.
+      // INITIAL_PURCHASE is accepted as a compatibility fallback for older
+      // Android/RevenueCat configurations of this same exact product only.
+      const dailyPurchaseEvents = ["NON_RENEWING_PURCHASE", "INITIAL_PURCHASE"];
+      if (!dailyPurchaseEvents.includes(eventType)) {
         console.log(`RevenueCat webhook: Ignoring ${eventType} for daily ticket product`);
         return new Response(
           JSON.stringify({ received: true, ignored: eventType }),
@@ -268,7 +273,7 @@ serve(async (req) => {
           {
             user_id: userId,
             unlock_date: unlockDate,
-            product_id: productId,
+            product_id: DAILY_TICKET_PRODUCT_ID,
             transaction_id: transactionId,
             revenuecat_event_id: eventId,
             source: "google_play",
