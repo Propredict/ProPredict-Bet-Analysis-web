@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Star, Crown, Diamond, Target, ChevronRight, X } from "lucide-react";
+import { Sparkles, Ticket, Crown, Diamond, Target, ChevronRight, X } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import {
   Dialog,
@@ -13,7 +13,7 @@ const SESSION_KEY = "propredict:tips_popup_shown_v7";
 
 const categories = [
   { label: "🎯 Risk of the Day", sub: "🔥 High odds pick • Unlock instantly", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
-  { label: "Pro Picks", sub: "👀 Most unlocked today • Higher confidence", icon: Star, color: "text-amber-400", path: "/exclusive-tips" },
+  { label: "Sure Odds 2+ Ticket", sub: "🎫 Daily ticket • Higher confidence", icon: Ticket, color: "text-amber-400", path: "/exclusive-tickets" },
   { label: "💎 Diamond Pick", sub: "💎 Best value pick today • Top confidence", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
   { label: "Premium Picks", sub: "🔒 Exclusive picks • Members only", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
   { label: "Daily Picks", sub: "✅ Free picks available today", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
