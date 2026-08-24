@@ -79,7 +79,7 @@ export function BettingTickets() {
 
   const tabs = [
     { id: "daily", label: "Daily", subtitle: "Free", icon: Sparkles },
-    { id: "exclusive", label: "Pro", subtitle: "Higher Confidence", icon: Star },
+    { id: "exclusive", label: "Sure Odds 2+", subtitle: "Higher Confidence", icon: Star },
     { id: "premium", label: "Premium", subtitle: "Members Only", icon: Crown },
   ];
 

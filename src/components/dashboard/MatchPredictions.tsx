@@ -225,7 +225,7 @@ export function MatchPredictions() {
               <div className="text-center space-y-1">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
                   <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
-                  Pro Picks
+                  Sure Odds 2+ Ticket
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
                   Higher confidence · sharper edge
@@ -240,9 +240,9 @@ export function MatchPredictions() {
                 <Button
                   size="sm"
                   className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
-                  onClick={() => navigate("/pro-analysis")}
+                  onClick={() => navigate("/exclusive-tickets")}
                 >
-                  <span>See all Pro Tips</span>
+                  <span>See all Sure Odds 2+</span>
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>
