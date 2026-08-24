@@ -66,6 +66,14 @@ function getTodayBelgradeDate() {
   });
 }
 
+function getTomorrowBelgradeDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+}
+
+
+
 /* =====================
    Types
 ===================== */
@@ -464,6 +472,25 @@ export default function ManageTickets() {
               {/* Publish Date */}
               <div>
                 <Label>Publish Date</Label>
+                <div className="flex gap-2 mb-2 mt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={ticketDate === getTodayBelgradeDate() ? "default" : "outline"}
+                    onClick={() => setTicketDate(getTodayBelgradeDate())}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={ticketDate === getTomorrowBelgradeDate() ? "default" : "outline"}
+                    onClick={() => setTicketDate(getTomorrowBelgradeDate())}
+                  >
+                    Tomorrow (auto 00:00)
+                  </Button>
+                </div>
+
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -491,7 +518,13 @@ export default function ManageTickets() {
                     />
                   </PopoverContent>
                 </Popover>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  A ticket is visible to users only on its publish date (Europe/Belgrade). Pick a future
+                  date to schedule it — it goes live automatically at 00:00 and the previous day's ticket
+                  disappears.
+                </p>
               </div>
+
             </Card>
 
             {/* MATCHES */}
