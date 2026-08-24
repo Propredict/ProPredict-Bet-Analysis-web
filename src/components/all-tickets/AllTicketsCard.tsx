@@ -124,10 +124,10 @@ export function AllTicketsCard({
     navigate(`/tickets/${ticket.id}`);
   };
 
-  // Android-specific: Daily tier = watch ad ONLY (no Get Pro option)
+  // Android-specific: Daily tier = watch ad ONLY (no Get Sure Odds option)
   const isAndroidDailyTier = isAndroid && unlockMethod?.type === "watch_ad";
   
-  // Android-specific: Pro tier = watch ad + Get Pro option
+  // Android-specific: Exclusive/Pro tier = watch ad + Get Sure Odds 2+ option
   const isAndroidProTier = isAndroid && unlockMethod?.type === "android_watch_ad_or_pro";
   
   // Android-specific: Premium tier = Get Premium only
