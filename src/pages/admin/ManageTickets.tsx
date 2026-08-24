@@ -518,7 +518,13 @@ export default function ManageTickets() {
                     />
                   </PopoverContent>
                 </Popover>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  A ticket is visible to users only on its publish date (Europe/Belgrade). Pick a future
+                  date to schedule it — it goes live automatically at 00:00 and the previous day's ticket
+                  disappears.
+                </p>
               </div>
+
             </Card>
 
             {/* MATCHES */}
