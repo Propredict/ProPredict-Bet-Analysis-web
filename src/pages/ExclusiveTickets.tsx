@@ -87,17 +87,22 @@ export default function ExclusiveTickets() {
     timeZone: "Europe/Belgrade",
   });
   
-  const exclusiveTickets = tickets.filter(ticket =>
-    ticket.ticket_date === todayBelgrade &&
-    (
-      // Manually-curated Sure Odds 2+ tickets (any tier)
-      (ticket.category as string) === "sure_odds"
-      // Manually-curated Pro/Exclusive tickets
-      || (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
-      // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
-      || (ticket.category as string) === "ai_pro"
+  const exclusiveTickets = tickets
+    .filter(ticket =>
+      ticket.ticket_date === todayBelgrade &&
+      (
+        // Manually-curated Sure Odds 2+ tickets (any tier)
+        (ticket.category as string) === "sure_odds"
+        // Manually-curated Pro/Exclusive tickets
+        || (ticket.tier === "exclusive" && (!ticket.category || ticket.category === "standard"))
+        // Auto-generated AI Pro combos (only Pro AI predictions, no Premium)
+        || (ticket.category as string) === "ai_pro"
+      )
     )
-  );
+    // Only one Sure Odds ticket is on offer per day (newest one)
+    .sort((a, b) => new Date(b.created_at_ts).getTime() - new Date(a.created_at_ts).getTime())
+    .slice(0, 1);
+
   const hasTicketAccess = isAdmin || plan === "premium" || hasTodayUnlock;
   const unlockedCount = hasTicketAccess ? exclusiveTickets.length : 0;
   const showUpgradeBanner = !isAdmin && plan !== "premium";
