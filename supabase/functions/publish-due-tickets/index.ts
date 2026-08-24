@@ -48,8 +48,8 @@ serve(async (req) => {
       .from("tickets")
       .update({ status: "published", updated_at: new Date().toISOString() })
       .eq("status", "draft")
-      .not("ticket_date", "is", null)
-      .lte("ticket_date", today)
+      .eq("category", "sure_odds")
+      .eq("ticket_date", today)
       .select("id, title, ticket_date, category");
 
     if (error) {
