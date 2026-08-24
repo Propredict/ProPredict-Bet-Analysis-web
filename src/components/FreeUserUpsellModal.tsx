@@ -11,6 +11,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
+import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:upsell_shown_session";
@@ -86,7 +87,8 @@ export function FreeUserUpsellModal() {
 
   const handleGetTicket = () => {
     setIsOpen(false);
-    startSureOddsPurchase();
+    void trackSureOddsEvent("cta_click", "upsell_modal");
+    startSureOddsPurchase(undefined, "upsell_modal");
   };
 
 

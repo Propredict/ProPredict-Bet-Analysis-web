@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { startSureOddsWebCheckout } from "@/lib/sureOddsCheckout";
 import { SURE_ODDS_PURCHASE_PENDING_KEY } from "@/hooks/useDailyTicketUnlock";
+import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 
 /** Google Play / RevenueCat one-time (INAPP) product for the Sure Odds 2+ daily ticket */
 export const SURE_ODDS_RC_PRODUCT_ID = "sure_odds_2plus_daily";
@@ -100,7 +101,9 @@ function attachNativeListener() {
  *
  * Android NEVER falls back to Stripe (Play policy + wrong product).
  */
-export function startSureOddsPurchase(onPending?: () => void): void {
+export function startSureOddsPurchase(onPending?: () => void, source = "unknown"): void {
+  void trackSureOddsEvent("checkout_started", source);
+
   if (getIsAndroidApp()) {
     attachNativeListener();
     try { sessionStorage.setItem(SURE_ODDS_PURCHASE_PENDING_KEY, "1"); } catch {}
