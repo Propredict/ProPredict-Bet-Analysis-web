@@ -328,7 +328,7 @@ export default function AIvsCommunity() {
                 { icon: "🎯", text: "Pick your prediction before kickoff" },
                 { icon: "🤖", text: "Compare your pick against the AI" },
                 { icon: "✅", text: "Earn points for each correct prediction" },
-                { icon: "🏆", text: "Reach 1000 points → unlock free Pro month" },
+                { icon: "🏆", text: "Reach 1000 points → unlock free Premium month" },
               ].map((step, i) => (
                 <div key={i} className="flex items-center gap-2 p-1.5 rounded-md bg-muted/20">
                   <span className="text-sm">{step.icon}</span>
