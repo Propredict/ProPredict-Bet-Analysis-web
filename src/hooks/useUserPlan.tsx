@@ -415,9 +415,10 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
          WEB LOGIC (unchanged - no Watch Ad on web)
       ===================== */
 
-      // EXCLUSIVE (Pro) → upgrade to basic for FREE users
+      // EXCLUSIVE (legacy Pro tier) → Pro plan is no longer sold, so FREE users
+      // must buy Premium to unlock it. Existing "basic" (Pro) users keep access.
       if (tier === "exclusive" && plan === "free") {
-        return { type: "upgrade_basic", message: "Get Full Access" };
+        return { type: "upgrade_premium", message: "Get Full Access" };
       }
 
       // PREMIUM → upgrade to premium for FREE & BASIC users
