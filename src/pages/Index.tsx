@@ -130,6 +130,7 @@ const Index = () => {
 
         {/* Telegram banner — 3D glossy bubble, high-impact CTA */}
         <a
+
           href="https://t.me/propredictxx"
           target="_blank"
           rel="noopener noreferrer"
