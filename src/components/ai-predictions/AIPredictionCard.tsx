@@ -242,7 +242,7 @@ const AIPredictionCardInner = ({
             {isProTier && !isPremiumTier && (
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
-                SURE 2+
+                TOP PICK
               </Badge>
             )}
             {isDailyTier && isBigMatch(prediction.league, prediction.home_team, prediction.away_team) && (

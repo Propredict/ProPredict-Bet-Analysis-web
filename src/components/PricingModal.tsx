@@ -174,7 +174,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                 ? "bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400"
                 : "bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400"
             )}>
-              {isPremium ? "Unlock Premium Access" : "Unlock Sure Odds 2+ Ticket"}
+              {isPremium ? "Unlock Premium Access" : "Get Full Access"}
             </h2>
             <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
               {isPremium

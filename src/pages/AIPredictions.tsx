@@ -1113,7 +1113,7 @@ export default function AIPredictions() {
                             <CardContent className="p-0">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-amber-500/10">
                                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0.5 rounded">
-                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> SURE 2+
+                                  <Star className="w-2.5 h-2.5 mr-0.5 fill-current" /> TOP PICK
                                 </Badge>
                                 <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
