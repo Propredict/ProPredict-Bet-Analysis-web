@@ -480,18 +480,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           })}
       </div>
 
-      {/* ===== Locked Score Teaser — Free tier ===== */}
-      {hasAccess && displayTier === "free" && (
-        <div className="pt-1">
-          <div className="flex items-center gap-1.5 py-2 px-3 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/15">
-            <Lock className="w-3 h-3 text-fuchsia-400" />
-            <span className="text-[9px] md:text-[10px] text-muted-foreground">
-              🔒 <span className="text-fuchsia-400 font-semibold">Stronger picks available in Premium</span>
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* ===== Top Correct Scores — Premium only ===== */}
       {displayTier === "premium" && topScores.length > 0 && (
         <div className="pt-1">

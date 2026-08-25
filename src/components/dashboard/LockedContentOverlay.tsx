@@ -84,11 +84,8 @@ export function LockedContentOverlay({
   // Conversion-focused headline shown above the unlock button.
   // Replaces the generic "Content Locked" with a value-oriented message.
   const getHeadline = (): string => {
-    if (unlockMethod.type === "upgrade_premium" || unlockMethod.type === "android_premium_only") {
-      return "Stronger picks available in Premium";
-    }
-    if (unlockMethod.type === "upgrade_basic") {
-      return "Stronger picks available in Pro";
+    if (unlockMethod.type === "upgrade_premium" || unlockMethod.type === "upgrade_basic" || unlockMethod.type === "android_premium_only") {
+      return "Premium picks available";
     }
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") {
       return "Unlock this pick instantly";
