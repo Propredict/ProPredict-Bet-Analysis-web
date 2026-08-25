@@ -461,8 +461,8 @@ const Profile = () => {
                 {arenaStats.points < 1000 && (
                   <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1 pt-1 border-t border-border/50">
                     <p className="font-medium text-foreground text-[9px] mb-1">Rewards at 1,000 points:</p>
-                    <p>🆓 Free → <span className="text-primary font-semibold">1 month Pro free</span></p>
-                    <p>⭐ Pro → <span className="text-primary font-semibold">+1 month Pro extended</span></p>
+                    <p>🆓 Free → <span className="text-primary font-semibold">1 month Premium free</span></p>
+                    <p>⭐ Legacy Pro → <span className="text-primary font-semibold">+1 month Premium extended</span></p>
                     <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
                   </div>
                 )}
@@ -474,11 +474,11 @@ const Profile = () => {
                 )}
                 {arenaStats.rewardGranted && (
                   <div className="p-2 rounded bg-success/10 border border-success/30 text-center">
-                    <p className="text-[10px] text-success font-medium">✅ Free Pro month granted!</p>
+                    <p className="text-[10px] text-success font-medium">✅ Free Premium month granted!</p>
                   </div>
                 )}
                 <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-                  🎯 Collect 1000 points to unlock 1 free month of Pro access. Points reset to 0 after reaching 1000.
+                  🎯 Collect 1000 points to unlock 1 free month of Premium access. Points reset to 0 after reaching 1000.
                 </p>
               </div>
 

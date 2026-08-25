@@ -163,16 +163,16 @@ export default function HowAIvsMembersWorks() {
           </p>
         </Section>
 
-        {/* Free Pro Month */}
-        <Section icon={Gift} iconColor="bg-violet-500/20 text-violet-500" title="Free Pro Month Reward (1000 Points)">
+        {/* Free Premium Month */}
+        <Section icon={Gift} iconColor="bg-violet-500/20 text-violet-500" title="Free Premium Month Reward (1000 Points)">
           <p className="text-[10px] md:text-xs text-muted-foreground mb-2">
             When a user reaches <span className="text-primary font-semibold">1000 Arena Points</span>:
           </p>
           <div className="p-2.5 rounded-md bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 mb-2.5">
-            <p className="text-[10px] md:text-xs text-amber-500 font-semibold mb-1.5">🎉 A Free Pro Month reward is granted automatically!</p>
+            <p className="text-[10px] md:text-xs text-amber-500 font-semibold mb-1.5">🎉 A Free Premium Month reward is granted automatically!</p>
             <ul className="space-y-1">
-              <BulletItem>Free users → get Pro access for 30 days</BulletItem>
-              <BulletItem>Pro users → Pro subscription extended by 30 days</BulletItem>
+              <BulletItem>Free users → get Premium access for 30 days</BulletItem>
+              <BulletItem>Legacy Pro users → subscription upgraded to Premium for 30 days</BulletItem>
               <BulletItem>Premium users → Premium extended by 30 days</BulletItem>
             </ul>
           </div>
