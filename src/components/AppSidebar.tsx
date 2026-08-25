@@ -55,7 +55,6 @@ const tipsItems = [
 
 const ticketsItems = [
   { title: "Daily Ticket", url: "/daily-predictions", icon: Calendar },
-  { title: "Sure Odds 2+", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Ticket", url: "/premium-predictions", icon: Crown },
 ];
 
