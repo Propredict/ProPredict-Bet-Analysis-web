@@ -70,7 +70,7 @@ function getTierBadge(tier: ContentTier) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Sure Odds 2+ Ticket Required";
+  if (unlockMethod.type === "upgrade_basic") return "Get Full Access";
   if (unlockMethod.type === "upgrade_premium") return "Premium Access Required";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock";
   return "";

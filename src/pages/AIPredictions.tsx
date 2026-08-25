@@ -1156,7 +1156,7 @@ export default function AIPredictions() {
                                   className="w-full h-7 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                                 >
                                   <Star className="w-3 h-3 fill-current" />
-                                  ⭐ Unlock Sure Odds 2+ Ticket
+                                  👑 Get Full Access
                                 </Button>
                                 {!isAndroidApp && (
                                   <button
@@ -1175,7 +1175,7 @@ export default function AIPredictions() {
                   {/* Web only: show "+X more" and Premium hint */}
                   {!isAndroidApp && tierCounts.pro > 3 && (
                     <p className="text-center text-[10px] text-amber-400/70 mt-2">
-                      +{tierCounts.pro - 3} more Sure Odds 2+ picks available
+                      +{tierCounts.pro - 3} more premium picks available
                     </p>
                   )}
                   {!isAndroidApp && (
@@ -1343,7 +1343,7 @@ export default function AIPredictions() {
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
                           <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
-                            Sure Odds 2+ Ticket ({tierCounts.pro})
+                            Premium Picks ({tierCounts.pro})
                           </h2>
                         </div>
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
