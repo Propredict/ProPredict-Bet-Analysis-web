@@ -102,8 +102,8 @@ function WebRewardWidget() {
         </div>
 
         {/* CTA */}
-        <a
-          href={PLAY_STORE_URL}
+        <Link
+          to={PLAY_STORE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="group flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-amber-500/90 to-amber-600/90 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 hover:opacity-95 transition-opacity"
@@ -111,7 +111,8 @@ function WebRewardWidget() {
           <Smartphone className="h-4 w-4" />
           <span>Unlock Rewards in App</span>
           <TrendingUp className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-        </a>
+        </Link>
+
       </div>
     </Card>
   );
