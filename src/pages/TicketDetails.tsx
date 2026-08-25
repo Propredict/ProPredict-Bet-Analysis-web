@@ -186,7 +186,7 @@ export default function TicketDetails() {
       case "premium":
         return { label: "Premium Ticket", path: "/premium-predictions" };
       case "exclusive":
-        return { label: "Sure Odds 2+ Ticket", path: "/pro-predictions" };
+        return { label: "Sure Odds 2+ Ticket", path: "/sure-odds" };
       case "daily":
       default:
         return { label: "Daily Ticket", path: "/daily-predictions" };

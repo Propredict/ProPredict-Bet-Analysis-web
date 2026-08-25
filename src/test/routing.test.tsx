@@ -46,7 +46,7 @@ function TestRouter({ initialPath }: { initialPath: string }) {
       <Routes>
         {/* Canonical (new) routes */}
         <Route path="/daily-predictions" element={<Page name="Daily Ticket" />} />
-        <Route path="/pro-predictions" element={<Page name="Pro Ticket" />} />
+        <Route path="/sure-odds" element={<Page name="Pro Ticket" />} />
         <Route path="/premium-predictions" element={<Page name="Premium Ticket" />} />
 
         {/* Legacy aliases that must redirect to canonical, preserving ?query */}
@@ -56,7 +56,7 @@ function TestRouter({ initialPath }: { initialPath: string }) {
         />
         <Route
           path="/exclusive-tickets"
-          element={<NavigateWithSearch to="/pro-predictions" />}
+          element={<NavigateWithSearch to="/sure-odds" />}
         />
         <Route
           path="/premium-tickets"
@@ -73,7 +73,7 @@ describe("Ticket deep-link routes", () => {
   describe("canonical (new) URLs render the right page", () => {
     it.each([
       ["/daily-predictions", "Daily Ticket"],
-      ["/pro-predictions", "Pro Ticket"],
+      ["/sure-odds", "Pro Ticket"],
       ["/premium-predictions", "Premium Ticket"],
     ])("%s renders %s", (path, heading) => {
       render(<TestRouter initialPath={path} />);
@@ -87,7 +87,7 @@ describe("Ticket deep-link routes", () => {
   describe("legacy URLs redirect to canonical and preserve query params", () => {
     it.each([
       ["/daily-tickets", "/daily-predictions", "Daily Ticket"],
-      ["/exclusive-tickets", "/pro-predictions", "Pro Ticket"],
+      ["/exclusive-tickets", "/sure-odds", "Pro Ticket"],
       ["/premium-tickets", "/premium-predictions", "Premium Ticket"],
     ])("%s -> %s", (legacy, canonical, heading) => {
       render(<TestRouter initialPath={legacy} />);
@@ -101,7 +101,7 @@ describe("Ticket deep-link routes", () => {
       ["/daily-tickets?utm_source=push", "/daily-predictions?utm_source=push"],
       [
         "/exclusive-tickets?ref=email&id=123",
-        "/pro-predictions?ref=email&id=123",
+        "/sure-odds?ref=email&id=123",
       ],
       [
         "/premium-tickets?utm_campaign=launch",
@@ -135,7 +135,7 @@ describe("App.tsx route registration", () => {
     );
     for (const p of [
       "/daily-predictions",
-      "/pro-predictions",
+      "/sure-odds",
       "/premium-predictions",
     ]) {
       expect(src, `Route path ${p} missing from App.tsx`).toContain(
