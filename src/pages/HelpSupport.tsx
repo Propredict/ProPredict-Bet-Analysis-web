@@ -23,7 +23,8 @@ import {
   Lock,
   Clock,
   ArrowLeft,
-  Gift
+  Gift,
+  Ticket
 } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useState, useEffect, useRef } from "react";
@@ -105,6 +106,33 @@ const HelpSupport = () => {
       ],
     },
     {
+      title: "Sure Odds 2+ Ticket",
+      icon: Ticket,
+      color: "text-amber-400",
+      questions: [
+        {
+          q: "What is the Sure Odds 2+ Ticket?",
+          a: "Sure Odds 2+ is a single daily ticket that unlocks one carefully selected high-confidence pick for the current day. It is designed for users who want one strong, low-risk selection without committing to a full subscription."
+        },
+        {
+          q: "How do I buy a Sure Odds 2+ Ticket?",
+          a: "On the web, go to the Sure Odds 2+ section and click 'Buy for €3.99'. You will complete the payment through Stripe. In the Android app, tap the same button and confirm the purchase through Google Play. The ticket unlocks immediately after a successful payment."
+        },
+        {
+          q: "Is Sure Odds 2+ included in Premium?",
+          a: "Yes. Premium users can view the Sure Odds 2+ ticket every day at no extra charge. Free users need to purchase the daily ticket separately to unlock it."
+        },
+        {
+          q: "When does my ticket expire?",
+          a: "Each Sure Odds 2+ Ticket is valid for the current day only and is tied to the published ticket for that date. A new ticket is published at midnight Belgrade time (UTC+2). If you want access the next day, you need to purchase or unlock the new ticket."
+        },
+        {
+          q: "What happens if I buy the ticket but do not see the pick?",
+          a: "First, make sure you are signed in with the same account used for the purchase. If you paid on the web, the ticket unlocks as soon as Stripe confirms the payment. If you paid in the Android app, the unlock is confirmed once Google Play and RevenueCat validate the purchase. If the pick is still locked, pull down to refresh or close and reopen the app. Contact support if it remains locked longer than a few minutes."
+        },
+      ],
+    },
+    {
       title: "AI Predictions",
       icon: Sparkles,
       color: "text-accent",
@@ -115,7 +143,7 @@ const HelpSupport = () => {
         },
         {
           q: "How do I access predictions?",
-          a: "Free users can access Daily Predictions. To access Premium Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
+          a: "Free users can access Daily Predictions. To access Premium Insights and Premium Predictions, upgrade your subscription plan. Premium unlocks the most detailed analysis and highest-confidence predictions."
         },
         {
           q: "When are new predictions posted?",
@@ -221,7 +249,7 @@ const HelpSupport = () => {
         },
         {
           q: "How many predictions can I make per day?",
-          a: "Daily limits depend on your plan: Free users get 4 predictions per day and Premium users get 6. Legacy Pro users get 5. Predictions are available for priority league matches only."
+          a: "Daily limits depend on your plan: Free users get 4 predictions per day and Premium users get 6. Predictions are available for priority league matches only."
         },
         {
           q: "When are Arena predictions resolved?",
@@ -248,7 +276,7 @@ const HelpSupport = () => {
         },
         {
           q: "What happens when I reach 1,000 points?",
-          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward! Free users get 1 month of Premium, Premium users get +1 month Premium extension, and legacy Pro users get +1 month Premium extension. Points reset after the reward is applied."
+          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward. Free users get 1 month of Premium, and Premium users get +1 month Premium extension. Points reset after the reward is applied."
         },
         {
           q: "Where can I see my points and rewards?",
