@@ -164,7 +164,7 @@ const Index = () => {
           <div className="absolute bottom-4 right-24 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
           <div className="absolute top-5 left-1/2 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
 
-          <div className="relative flex items-center justify-between px-4 sm:px-8 py-5 sm:py-6">
+          <div className="relative flex items-center justify-between px-4 sm:px-8 py-5 sm:py-6 h-full">
             <div className="flex items-center gap-4 sm:gap-5">
               {/* 3D Telegram logo bubble */}
               <div className="relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.25),inset_0_-4px_0_0_rgba(0,0,0,0.08)] shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
