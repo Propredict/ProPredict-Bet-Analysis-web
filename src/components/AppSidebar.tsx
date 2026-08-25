@@ -23,7 +23,6 @@ import {
   User,
   Target,
   Gem,
-  FlaskConical,
   MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
