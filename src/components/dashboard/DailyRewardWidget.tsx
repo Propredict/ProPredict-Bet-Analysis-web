@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Gift, Flame, Lock, Trophy, Zap, Check, Loader2, Smartphone, Calendar, Target, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,7 @@ import { useArenaStats } from "@/hooks/useArenaStats";
 import { DailyRewardClaimPopup } from "./DailyRewardClaimPopup";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import rewardChest from "@/assets/reward-treasure-chest.jpg";
+
 
 
 const STREAK_POINTS = [0, 3, 6, 9, 12, 13, 14, 15];
