@@ -108,9 +108,9 @@ export function AllTicketsCard({
   };
 
   const handleSecondaryClick = () => {
-    // Android: Unlock Tip → purchase Premium package
+    // Android: Unlock Tip → go to the Premium paywall page
     if (isAndroid) {
-      purchaseSubscription("premium", "monthly", plan);
+      navigate("/get-premium");
       return;
     }
 
