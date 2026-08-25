@@ -193,10 +193,11 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const isLowConfBigMatch = pick.conf < 55 && isBigMatchInsight(prediction.league, prediction.home_team, prediction.away_team);
   const aiInsight = isLowConfBigMatch ? buildAIInsight(prediction, allProbs) : null;
   const topScores = displayTier === "premium"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
     : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, marketType: pick.type }, 1)
+    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type }, 1)
     : [];
+
 
   return (
     <div className="space-y-3 md:space-y-4">
