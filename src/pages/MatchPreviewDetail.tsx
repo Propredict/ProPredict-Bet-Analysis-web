@@ -401,7 +401,7 @@ export default function MatchPreviewDetail() {
         )}
 
         {/* ============ PREDICTED SCORE ============ */}
-        {unlocked && prediction.predicted_score && (
+        {unlocked && consistentScore && (
           <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-cyan-600 to-blue-600">
@@ -411,7 +411,7 @@ export default function MatchPreviewDetail() {
             </div>
             <div className="p-5">
               {(() => {
-                const parts = (prediction.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                const parts = consistentScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                 const hGoals = parts ? parseInt(parts[1]) : 0;
                 const aGoals = parts ? parseInt(parts[2]) : 0;
                 return (
