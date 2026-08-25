@@ -393,7 +393,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
             return { 
               type: "android_watch_ad_or_pro", 
               primaryMessage: "Watch Ad to Unlock",
-              secondaryMessage: "Get Full Access"
+              secondaryMessage: "Unlock Tip"
             };
           }
           
