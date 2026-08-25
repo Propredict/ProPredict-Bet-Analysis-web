@@ -777,25 +777,26 @@ export default function AIPredictions() {
 
           {/* Search & Controls Row - Above Tier Filter */}
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-            <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
-              <div className="relative flex items-center bg-card rounded-lg">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <div className="relative flex-1 min-w-[140px] md:min-w-[280px] max-w-sm">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg md:rounded-2xl opacity-75" />
+              <div className="relative flex items-center bg-card rounded-lg md:rounded-2xl">
+                <Search className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-muted-foreground" />
                 <Input
                   placeholder="Search teams..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 md:h-9 text-xs bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70"
+                  className="pl-8 md:pl-12 h-8 md:h-12 text-xs md:text-base bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg md:rounded-2xl placeholder:text-muted-foreground/70"
                 />
               </div>
             </div>
           </div>
 
           {/* Tier Filter Tabs - In Gradient Card */}
-          <Card className="p-3 md:p-4 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20">
-            <p className="text-xs md:text-sm text-muted-foreground mb-2.5 md:mb-3 text-center">
+          <Card className="p-3 md:p-5 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20 rounded-2xl">
+            <p className="text-xs md:text-lg text-muted-foreground mb-2.5 md:mb-4 text-center">
               Choose your prediction tier below
             </p>
+
             {/* Mobile: 2x2 Grid | Desktop: Row */}
             <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-2.5 md:justify-center">
               <Button
