@@ -696,14 +696,14 @@ function StatusBadge({
   if (match.status === "live") {
     const minute = match.minute ?? 0;
     return <div className="flex items-center gap-1">
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/40 px-1.5 sm:px-2 py-0.5 font-bold text-[9px] sm:text-[10px] text-primary shadow-[0_0_12px_hsl(var(--primary)/0.25)]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 border border-destructive/40 px-1.5 sm:px-2 py-0.5 font-bold text-[9px] sm:text-[10px] text-destructive shadow-[0_0_12px_hsl(var(--destructive)/0.25)]">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-70 animate-ping" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-destructive opacity-70 animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-destructive" />
           </span>
           {minute}'
         </span>
-        <span className="hidden md:inline-flex items-center rounded-full bg-primary/10 border border-primary/25 px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-primary">
+        <span className="hidden md:inline-flex items-center rounded-full bg-destructive/10 border border-destructive/25 px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-destructive">
           LIVE
         </span>
       </div>;
