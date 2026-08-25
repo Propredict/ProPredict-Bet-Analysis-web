@@ -798,12 +798,12 @@ export default function AIPredictions() {
             </p>
 
             {/* Mobile: 2x2 Grid | Desktop: Row */}
-            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-2.5 md:justify-center">
+            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-4 md:justify-center">
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 md:h-9 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center",
+                  "h-9 md:h-14 px-3 md:px-8 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-1.5 justify-center",
                   tierFilter === "all"
                     ? "bg-primary/30 text-primary border border-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]"
                     : "bg-primary/15 text-primary border border-primary/40 hover:bg-primary/25 hover:border-primary"
@@ -816,7 +816,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "free"
                     ? "bg-emerald-500/30 text-emerald-400 border border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                     : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/25 hover:border-emerald-500"
@@ -824,10 +824,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("free")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Gift className="w-3.5 h-3.5" />
+                  <Gift className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Free ({tierCounts.free})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-emerald-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-emerald-300/90 leading-none">
                   {Math.max(tierStats.free.accuracy, 50)}%
                 </span>
               </Button>
@@ -835,7 +835,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "pro"
                     ? "bg-amber-500/30 text-amber-400 border border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
                     : "bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25 hover:border-amber-500"
@@ -843,10 +843,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("pro")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5" />
+                  <Star className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Pro ({tierCounts.pro})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-amber-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-amber-300/90 leading-none">
                   {Math.max(tierStats.pro.accuracy, 75)}%
                 </span>
               </Button>
@@ -854,7 +854,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "premium"
                     ? "bg-fuchsia-500/30 text-fuchsia-400 border border-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.4)]"
                     : "bg-fuchsia-500/15 text-fuchsia-400 border border-fuchsia-500/40 hover:bg-fuchsia-500/25 hover:border-fuchsia-500"
@@ -862,10 +862,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("premium")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5" />
+                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Premium ({tierCounts.premium})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-fuchsia-300/90 leading-none">
                   {Math.max(tierStats.premium.accuracy, 87)}%
                 </span>
               </Button>
@@ -875,23 +875,23 @@ export default function AIPredictions() {
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
           {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
           {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
-            <div className="relative overflow-hidden rounded-xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-4 md:py-3 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
+            <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-6 md:py-6 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
               <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl" />
               <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
               <div className="relative flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
-                  <Flame className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                <div className="p-1.5 md:p-4 rounded-lg md:rounded-2xl bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
+                  <Flame className="w-3.5 h-3.5 md:w-8 md:h-8 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
+                  <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
                     🔥 AI Elite Picks
                   </h2>
-                  <p className="text-[10px] md:text-[11px] text-muted-foreground leading-tight">
+                  <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
                     Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
                   </p>
                 </div>
-                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 shadow shrink-0">
-                  <Sparkles className="w-2.5 h-2.5 mr-1" />
+                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-base px-2 md:px-5 py-0.5 md:py-2 rounded-full shadow shrink-0">
+                  <Sparkles className="w-2.5 h-2.5 md:w-4 md:h-4 mr-1 md:mr-2" />
                   Curated
                 </Badge>
               </div>
@@ -1088,7 +1088,7 @@ export default function AIPredictions() {
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                         <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
-                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                        <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
                           Top Picks
                         </h2>
                       </div>
@@ -1362,7 +1362,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
-                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                          <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
                             Top Picks ({tierCounts.pro})
                           </h2>
                         </div>
