@@ -92,17 +92,41 @@ serve(async (req) => {
       "x-rapidapi-key": apiKey,
     };
 
-    const fetchOne = async (qs: URLSearchParams) => {
-      const u = `${apiUrl}?${qs.toString()}`;
-      console.log("Fetching from API-Football:", u);
-      const r = await fetch(u, { headers });
-      if (!r.ok) throw new Error(`API-Football responded with status ${r.status}`);
-      const j = await r.json();
-      if (j.errors && Object.keys(j.errors).length > 0 && !Array.isArray(j.errors)) {
-        console.error("API-Football errors:", j.errors);
-      }
-      return j.response || [];
+    const fetchOne = async (qs: URLSearchParams): Promise<any[]> => {
+      const key = qs.toString();
+      const cached = cache.get(key);
+      const now = Date.now();
+      if (cached && now - cached.at < CACHE_TTL_MS) return cached.data;
+
+      const existing = inflight.get(key);
+      if (existing) return existing;
+
+      const p = (async () => {
+        const u = `${apiUrl}?${key}`;
+        console.log("Fetching from API-Football:", u);
+        const r = await fetch(u, { headers });
+        if (!r.ok) throw new Error(`API-Football responded with status ${r.status}`);
+        const j = await r.json();
+        const errs = j?.errors;
+        const hasErr = errs && (Array.isArray(errs) ? errs.length > 0 : Object.keys(errs).length > 0);
+        if (hasErr) throw new Error(`API-Football error: ${JSON.stringify(errs)}`);
+        const data = j.response || [];
+        cache.set(key, { at: Date.now(), data });
+        return data;
+      })().catch((e) => {
+        // Serve stale data instead of failing the whole request
+        const stale = cache.get(key);
+        if (stale && Date.now() - stale.at < STALE_MAX_MS) {
+          console.warn(`Serving stale cache for ${key}: ${e.message}`);
+          return stale.data;
+        }
+        throw e;
+      }).finally(() => inflight.delete(key));
+
+      inflight.set(key, p);
+      return p;
     };
+
 
     let rawItems: any[] = [];
     let belgradeWindow: { startMs: number; endMs: number } | null = null;
