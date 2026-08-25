@@ -1,7 +1,9 @@
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Star, Quote, Users, Target, BarChart3, Crown } from "lucide-react";
+import { Star, Quote, Users, Target, BarChart3, Crown, Smartphone, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
 
 const testimonials = [
   { name: "Luka87", badge: "Analyst", rating: 5, comment: "The AI predictions are incredibly accurate. I've been using ProPredict for 3 months and the insights have been game-changing." },
