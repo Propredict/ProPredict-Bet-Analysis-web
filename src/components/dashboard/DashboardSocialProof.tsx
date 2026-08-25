@@ -58,23 +58,18 @@ export function DashboardSocialProof() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
-          const isAmber = stat.color === "amber";
           return (
             <Card
               key={index}
-              className={`relative overflow-hidden p-3 sm:p-4 bg-card/80 border-border/60 hover:border-primary/30 transition-colors group`}
+              className="relative overflow-hidden p-3 sm:p-4 bg-card/80 border-border/60 hover:border-primary/30 transition-colors group"
             >
               <div className="flex items-center gap-3">
-                <div className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border ${
-                  isAmber
-                    ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                    : "bg-primary/10 border-primary/30 text-primary"
-                }`}>
+                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border bg-primary/10 border-primary/30 text-primary">
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className={`text-lg sm:text-2xl font-bold ${isAmber ? "text-amber-400" : "text-primary"}`}>
+                    <span className="text-lg sm:text-2xl font-bold text-primary">
                       {stat.value}
                     </span>
                     {stat.isStar && <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />}
@@ -83,12 +78,8 @@ export function DashboardSocialProof() {
                 </div>
               </div>
               <div className="mt-2.5">
-                <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                  isAmber
-                    ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                    : "bg-primary/10 border-primary/30 text-primary"
-                }`}>
-                  {isAmber ? <Star className="h-3 w-3 fill-current" /> : <Crown className="h-3 w-3" />}
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-muted/40 border-border/60 text-muted-foreground">
+                  <Crown className="h-3 w-3" />
                   {stat.sub}
                 </span>
               </div>
@@ -96,6 +87,7 @@ export function DashboardSocialProof() {
           );
         })}
       </div>
+
 
       {/* Testimonial Slider */}
       <Card className="p-4 sm:p-5 bg-card/80 border-border/60 relative overflow-hidden">
