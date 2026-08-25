@@ -2,7 +2,7 @@ import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
+import { type ContentTier, type UnlockMethod, useUserPlan } from "@/hooks/useUserPlan";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { purchaseSubscription } from "@/hooks/useRevenueCat";
 
 export type TipResult = "pending" | "won" | "lost";
 
