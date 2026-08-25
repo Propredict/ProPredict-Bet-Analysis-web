@@ -59,6 +59,16 @@ export default function AIPredictions() {
 
   const { predictions, loading, refetch } = useAIPredictions(day);
 
+  // Team crests for the featured (Diamond) match — mapped from fixtures by match id
+  const { matches: fixturesForLogos } = useFixtures(day);
+  const logoByMatchId = useMemo(() => {
+    const map = new Map<string, { home?: string | null; away?: string | null }>();
+    (fixturesForLogos || []).forEach((m) => {
+      map.set(String(m.id), { home: m.homeLogo, away: m.awayLogo });
+    });
+    return map;
+  }, [fixturesForLogos]);
+
   // Fetch yesterday's predictions for social proof
   const yesterdayQuery = useQuery({
     queryKey: ["ai-predictions-yesterday-stats"],
