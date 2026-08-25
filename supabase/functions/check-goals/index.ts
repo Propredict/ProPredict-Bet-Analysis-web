@@ -196,14 +196,10 @@ serve(async (req) => {
 
       if (androidIds.length === 0 && webIds.length === 0) {
         console.log(`[check-goals] No push tokens for match ${matchId} users`);
-        await supabase.from("match_scores_cache").upsert({
-          match_id: matchId,
-          home_score: homeScore,
-          away_score: awayScore,
-          updated_at: new Date().toISOString(),
-        });
+        queueCacheUpdate(matchId, homeScore, awayScore);
         continue;
       }
+
 
       // ================= SEND NOTIFICATIONS =================
       const scorerTeams = eventsToSend.map((e) => e.team).join(", ");
