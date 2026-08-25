@@ -39,10 +39,11 @@ export function DashboardSocialProof() {
 
   const t = testimonials[current];
   const badgeColor = t.badge === "Premium"
-    ? "bg-violet-500/15 text-violet-400 border-violet-500/30"
+    ? "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30"
     : t.badge === "Expert"
     ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
     : "bg-primary/15 text-primary border-primary/30";
+
 
   return (
     <section className="space-y-4">
