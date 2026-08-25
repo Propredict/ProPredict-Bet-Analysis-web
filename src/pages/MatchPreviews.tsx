@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
 const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
