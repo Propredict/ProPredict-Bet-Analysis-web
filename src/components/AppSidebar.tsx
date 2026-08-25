@@ -55,7 +55,6 @@ const tipsItems = [
 
 const ticketsItems = [
   { title: "Daily Ticket", url: "/daily-predictions", icon: Calendar },
-  { title: "Sure Odds 2+", url: "/pro-predictions", icon: Ticket },
   { title: "Premium Ticket", url: "/premium-predictions", icon: Crown },
 ];
 
@@ -141,6 +140,18 @@ export function AppSidebar() {
                 >
                   <Home className="h-4 w-4 text-primary" />
                   {!collapsed && <span>Dashboard</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/pro-predictions" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Ticket className="h-4 w-4" />
+                  {!collapsed && <span>Sure Odds 2+</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
