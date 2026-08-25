@@ -207,11 +207,14 @@ interface RankedCorrectScore extends CorrectScorePrediction {
 
 export interface ScoreConstraintOptions {
   marketType?: MarketType;
+  /** Additional markets the scoreline must satisfy (e.g. 1X2 direction + best pick). */
+  extraMarketTypes?: (MarketType | undefined)[];
   safeCombo?: string | null;
   minTotalGoals?: number;
   maxTotalGoals?: number;
   requireBothTeamsToScore?: boolean | null;
 }
+
 
 function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
   const { homeXg, awayXg } = getXgValues(prediction);
