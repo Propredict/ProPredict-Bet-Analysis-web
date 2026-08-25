@@ -194,10 +194,6 @@ const Index = () => {
             <span className="sm:hidden text-3xl font-black drop-shadow-md group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </a>
-
-        {/* Sponsored: 1xBet affiliate banner – web only */}
-        <div className="w-full max-w-5xl mx-auto">
-          <AffiliateBanner1xBet />
         </div>
 
 
