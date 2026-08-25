@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getDerivedPredictedScore, getRecommendedScoreConstraints } from "@/components/ai-predictions/utils/marketDerivation";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
