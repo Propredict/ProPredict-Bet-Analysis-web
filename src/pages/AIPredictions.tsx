@@ -26,9 +26,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
@@ -711,10 +709,6 @@ export default function AIPredictions() {
           {/* Neon AI hero banner */}
           <AIHeroBanner />
 
-          {/* Sponsored: 1xBet affiliate banner – web only */}
-          <AffiliateBanner1xBet />
-
-
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
             <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
@@ -996,13 +990,6 @@ export default function AIPredictions() {
             unlockingId={unlockingId}
             getPredictionTier={getPredictionTier}
           />
-
-          {/* Melbet affiliate banner above Safe Pick */}
-          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
-            <div className="mb-3 md:mb-4">
-              <AffiliateBannerMelbet />
-            </div>
-          )}
 
           {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
           {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
