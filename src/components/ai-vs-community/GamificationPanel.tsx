@@ -65,7 +65,7 @@ export function GamificationPanel() {
                   <Info className="h-2.5 w-2.5 text-amber-400/50 cursor-help" />
                 </TooltipTrigger>
                  <TooltipContent side="top" className="max-w-[220px] text-[10px]">
-                   <p>Points reset to 0 after reaching 1000. Each correct prediction earns 1 point. Reach 1000 to unlock 1 free Pro month.</p>
+                   <p>Points reset to 0 after reaching 1000. Each correct prediction earns 1 point. Reach 1000 to unlock 1 free Premium month.</p>
                 </TooltipContent>
               </Tooltip>
             </div>
