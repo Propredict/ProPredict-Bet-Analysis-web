@@ -80,6 +80,41 @@ serve(async (req) => {
     let totalGoals = 0;
     let totalNotifications = 0;
 
+    // ===== Load all cached scores in ONE query (was 1 query per fixture) =====
+    const matchIds = fixtures.map((f: any) => String(f.fixture?.id));
+    const { data: cachedRows } = await supabase
+      .from("match_scores_cache")
+      .select("match_id, home_score, away_score")
+      .in("match_id", matchIds);
+
+    const cacheMap = new Map<string, { home: number; away: number }>();
+    for (const r of cachedRows ?? []) {
+      cacheMap.set(String(r.match_id), {
+        home: r.home_score ?? 0,
+        away: r.away_score ?? 0,
+      });
+    }
+
+    // Only rows whose score actually CHANGED get written (batched at the end)
+    const pendingUpserts: Array<{
+      match_id: string;
+      home_score: number;
+      away_score: number;
+      updated_at: string;
+    }> = [];
+
+    const queueCacheUpdate = (matchId: string, homeScore: number, awayScore: number) => {
+      const prev = cacheMap.get(matchId);
+      if (prev && prev.home === homeScore && prev.away === awayScore) return; // no-op write avoided
+      pendingUpserts.push({
+        match_id: matchId,
+        home_score: homeScore,
+        away_score: awayScore,
+        updated_at: new Date().toISOString(),
+      });
+      cacheMap.set(matchId, { home: homeScore, away: awayScore });
+    };
+
     for (const fixture of fixtures) {
       const matchId = String(fixture.fixture?.id);
       const homeTeam = fixture.teams?.home?.name ?? "Home";
@@ -89,25 +124,15 @@ serve(async (req) => {
       const elapsed = fixture.fixture?.status?.elapsed ?? 0;
 
       // ================= CHECK PREVIOUS SCORE =================
-      const { data: cached } = await supabase
-        .from("match_scores_cache")
-        .select("home_score, away_score")
-        .eq("match_id", matchId)
-        .maybeSingle();
-
-      const prevHome = cached?.home_score ?? 0;
-      const prevAway = cached?.away_score ?? 0;
+      const cached = cacheMap.get(matchId);
+      const prevHome = cached?.home ?? 0;
+      const prevAway = cached?.away ?? 0;
 
       const newHomeGoals = homeScore - prevHome;
       const newAwayGoals = awayScore - prevAway;
 
       if (newHomeGoals <= 0 && newAwayGoals <= 0) {
-        await supabase.from("match_scores_cache").upsert({
-          match_id: matchId,
-          home_score: homeScore,
-          away_score: awayScore,
-          updated_at: new Date().toISOString(),
-        });
+        queueCacheUpdate(matchId, homeScore, awayScore);
         continue;
       }
 
@@ -116,8 +141,7 @@ serve(async (req) => {
       if (newHomeGoals > 0) goalEvents.push({ team: homeTeam, type: "goal_home" });
       if (newAwayGoals > 0) goalEvents.push({ team: awayTeam, type: "goal_away" });
 
-      const eventsToSend: typeof goalEvents = [];
-
+      const eventsToSend: Array<{ team: string; type: string }> = [];
       for (const ge of goalEvents) {
         const { data: existing } = await supabase
           .from("match_alert_events")
@@ -140,14 +164,10 @@ serve(async (req) => {
       }
 
       if (eventsToSend.length === 0) {
-        await supabase.from("match_scores_cache").upsert({
-          match_id: matchId,
-          home_score: homeScore,
-          away_score: awayScore,
-          updated_at: new Date().toISOString(),
-        });
+        queueCacheUpdate(matchId, homeScore, awayScore);
         continue;
       }
+
 
       totalGoals += eventsToSend.length;
 
