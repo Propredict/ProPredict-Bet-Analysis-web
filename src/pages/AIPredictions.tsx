@@ -1034,7 +1034,7 @@ export default function AIPredictions() {
                       </Button>
 
                       {/* Social proof */}
-                      <div className="flex items-center justify-between mt-3 md:mt-4">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 mt-3 md:mt-4">
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-2">
                             {["bg-cyan-500", "bg-blue-500", "bg-fuchsia-500", "bg-rose-500"].map((bg, i) => (
@@ -1046,11 +1046,11 @@ export default function AIPredictions() {
                               1K+
                             </div>
                           </div>
-                          <span className="text-[10px] md:text-xs text-muted-foreground font-medium">
+                          <span className="text-[10px] md:text-xs text-muted-foreground font-medium whitespace-nowrap">
                             1,200+ users unlocked this pick
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] md:text-xs font-bold">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] md:text-xs font-bold whitespace-nowrap">
                           <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
                           Last 10 Diamond Picks: 9W / 1L (90%)
                         </div>
