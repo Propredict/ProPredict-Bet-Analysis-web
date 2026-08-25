@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { UnlockMethod } from "@/hooks/useUserPlan";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseMatchName } from "@/types/admin";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { purchaseSubscription } from "@/hooks/useRevenueCat";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
