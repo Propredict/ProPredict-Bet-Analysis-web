@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs, getDerivedPredictedScore, getRecommendedScoreConstraints } from "@/components/ai-predictions/utils/marketDerivation";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -62,8 +62,8 @@ function getPredictionEmoji(prediction: string | null) {
   return "📊";
 }
 
-function deriveStatsGrid(pred: any) {
-  const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+function deriveStatsGrid(pred: any, consistentScore?: string | null) {
+  const scoreParts = (consistentScore ?? pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
   const homeGoals = scoreParts ? parseInt(scoreParts[1]) : (pred.last_home_goals ?? 1);
   const awayGoals = scoreParts ? parseInt(scoreParts[2]) : (pred.last_away_goals ?? 1);
   const totalGoalsAvg = homeGoals + awayGoals;
@@ -198,7 +198,15 @@ export default function MatchPreviewDetail() {
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
   const heroPick = prediction ? getTopMatchPreviewPick(prediction as AIPrediction) : null;
   const aiPicks = prediction && unlocked ? deriveMatchPreviewAIPicks(prediction as AIPrediction) : [];
-  const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction) : [];
+  // Predicted score must respect the same Over/Under + BTTS signals shown in AI Picks,
+  // so we never display e.g. "1-2" next to an "Under 2.5 / BTTS No" recommendation.
+  const consistentScore = useMemo(() => {
+    if (!prediction) return null;
+    const pred = prediction as AIPrediction;
+    return getDerivedPredictedScore(pred, getRecommendedScoreConstraints(pred));
+  }, [prediction]);
+  const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction, consistentScore) : [];
+
 
   if (loading) {
     return (
@@ -393,7 +401,7 @@ export default function MatchPreviewDetail() {
         )}
 
         {/* ============ PREDICTED SCORE ============ */}
-        {unlocked && prediction.predicted_score && (
+        {unlocked && consistentScore && (
           <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-cyan-600 to-blue-600">
@@ -403,7 +411,7 @@ export default function MatchPreviewDetail() {
             </div>
             <div className="p-5">
               {(() => {
-                const parts = (prediction.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                const parts = consistentScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
                 const hGoals = parts ? parseInt(parts[1]) : 0;
                 const aGoals = parts ? parseInt(parts[2]) : 0;
                 return (

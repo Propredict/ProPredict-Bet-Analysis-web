@@ -246,7 +246,8 @@ export function getRecommendedScoreConstraints(
   if (goalProbs.over15 >= 55) minTotalGoals = Math.max(minTotalGoals ?? 0, 2);
   if (goalProbs.over25 >= 50) minTotalGoals = Math.max(minTotalGoals ?? 0, 3);
   if (goalProbs.over35 >= 45) minTotalGoals = Math.max(minTotalGoals ?? 0, 4);
-  if (goalProbs.under25 >= 55) maxTotalGoals = Math.min(maxTotalGoals ?? Number.POSITIVE_INFINITY, 2);
+  // Under 2.5 is the displayed pick whenever it beats Over 2.5, so the score must respect it
+  if (goalProbs.under25 > goalProbs.over25) maxTotalGoals = Math.min(maxTotalGoals ?? Number.POSITIVE_INFINITY, 2);
 
   if (goalProbs.bttsYes > goalProbs.bttsNo && goalProbs.bttsYes >= 50) {
     requireBothTeamsToScore = true;
