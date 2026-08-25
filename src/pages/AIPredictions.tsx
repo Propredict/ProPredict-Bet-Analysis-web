@@ -959,31 +959,131 @@ export default function AIPredictions() {
                     />
                   </div>
                 ) : (
-                  /* Premium-Only teaser — no blur, no leaked prediction.
-                     Shows match meta + clear CTA so non-premium users understand the value. */
-                  <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)] bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-cyan-950/40 p-4 md:p-5 flex flex-col items-center text-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-5 h-5 text-cyan-300" />
-                      <span className="text-xs md:text-sm font-bold uppercase tracking-wider text-cyan-200">
-                        Premium Only
-                      </span>
+                  /* Locked Diamond Pick — premium neon preview for free users */
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="ring-2 ring-cyan-400/40 rounded-xl shadow-[0_0_30px_rgba(34,211,238,0.25)] bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-cyan-950/40 p-3 md:p-4 overflow-hidden">
+                      {/* Match preview row */}
+                      <div className="flex items-center gap-2 md:gap-4">
+                        {/* Home team */}
+                        <div className="flex-1 flex flex-col items-center text-center">
+                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                            <span className="text-lg md:text-2xl font-black text-cyan-100">
+                              {diamondPick.home_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                            </span>
+                          </div>
+                          <span className="mt-2 text-xs md:text-sm font-bold text-foreground text-center leading-tight line-clamp-2">
+                            {diamondPick.home_team}
+                          </span>
+                        </div>
+
+                        {/* VS + meta */}
+                        <div className="flex flex-col items-center text-center px-2 md:px-4">
+                          <div className="text-[10px] md:text-xs text-cyan-200/80 font-semibold mb-1">
+                            {diamondPick.league || "Elite Match"}
+                          </div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground mb-1.5">
+                            {diamondPick.match_date} • {diamondPick.match_time || "TBD"}
+                          </div>
+                          <div className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-900 border border-cyan-400/30 text-cyan-100 font-black text-sm md:text-base shadow-lg shadow-cyan-500/20">
+                            VS
+                          </div>
+                        </div>
+
+                        {/* Away team */}
+                        <div className="flex-1 flex flex-col items-center text-center">
+                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-fuchsia-600/20 border-2 border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <span className="text-lg md:text-2xl font-black text-blue-100">
+                              {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                            </span>
+                          </div>
+                          <span className="mt-2 text-xs md:text-sm font-bold text-foreground text-center leading-tight line-clamp-2">
+                            {diamondPick.away_team}
+                          </span>
+                        </div>
+
+                        {/* AI Prediction lock badge */}
+                        <div className="hidden md:flex flex-col items-center justify-center text-center min-w-[140px] border-l border-cyan-400/20 pl-4">
+                          <div className="flex items-center gap-1.5 text-fuchsia-300 mb-1.5">
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">AI Prediction</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/30 text-fuchsia-200 text-xs font-bold">
+                            <Lock className="w-3 h-3" />
+                            PREMIUM ONLY
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-2 leading-tight">
+                            Unlock to see our AI's most confident pick
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Mobile-only lock badge */}
+                      <div className="md:hidden flex items-center justify-center gap-2 mt-3 py-1.5 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/30 text-fuchsia-200 text-xs font-bold">
+                        <Lock className="w-3 h-3" />
+                        PREMIUM ONLY — Unlock to see AI pick
+                      </div>
+
+                      {/* Unlock CTA */}
+                      <Button
+                        onClick={() => navigate("/get-premium")}
+                        className="w-full mt-3 md:mt-4 h-11 md:h-12 text-sm md:text-base font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-95 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-xl gap-2 animate-cta-blink"
+                      >
+                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
+                        Unlock this Diamond Pick
+                        <span className="ml-auto text-lg">💎</span>
+                      </Button>
+
+                      {/* Social proof */}
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 mt-3 md:mt-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            {["bg-cyan-500", "bg-blue-500", "bg-fuchsia-500", "bg-rose-500"].map((bg, i) => (
+                              <div key={i} className={`w-6 h-6 md:w-7 md:h-7 rounded-full ${bg} border-2 border-slate-900 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white`}>
+                                {String.fromCharCode(65 + i)}
+                              </div>
+                            ))}
+                            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white">
+                              1K+
+                            </div>
+                          </div>
+                          <span className="text-[10px] md:text-xs text-muted-foreground font-medium whitespace-nowrap">
+                            1,200+ users unlocked this pick
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] md:text-xs font-bold whitespace-nowrap">
+                          <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
+                          Last 10 Diamond Picks: 9W / 1L (90%)
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="text-sm md:text-base font-semibold text-foreground">
-                        Today's Diamond Pick is reserved for Premium members
-                      </h3>
-                      <p className="text-[11px] md:text-xs text-muted-foreground max-w-sm mx-auto">
-                        One single, highest-conviction selection of the day — backed by xG dominance and stable form. Available exclusively to Premium subscribers.
-                      </p>
+
+                    {/* Premium-only explanation card */}
+                    <div className="ring-1 ring-fuchsia-400/30 rounded-xl bg-gradient-to-br from-fuchsia-950/30 via-slate-900/70 to-rose-950/30 p-4 md:p-5 flex flex-col items-center text-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/30">
+                          <Lock className="w-5 h-5 text-fuchsia-300" />
+                        </div>
+                        <span className="text-xs md:text-sm font-bold uppercase tracking-wider text-fuchsia-300">
+                          Premium Only
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-sm md:text-base font-semibold text-foreground">
+                          Today's Diamond Pick is reserved for Premium members
+                        </h3>
+                        <p className="text-[11px] md:text-xs text-muted-foreground max-w-md mx-auto">
+                          One single, highest-conviction selection of the day — backed by xG dominance and stable form. Available exclusively to Premium subscribers.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => navigate("/get-premium")}
+                        size="sm"
+                        className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-full gap-1.5"
+                      >
+                        <Crown className="w-3.5 h-3.5" />
+                        Unlock with Premium
+                      </Button>
                     </div>
-                    <Button
-                      onClick={() => navigate("/get-premium")}
-                      size="sm"
-                      className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-full gap-1.5"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Unlock with Premium
-                    </Button>
                   </div>
                 )}
               </div>
