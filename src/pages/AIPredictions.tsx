@@ -1011,10 +1011,19 @@ export default function AIPredictions() {
 
                         {/* Away team */}
                         <div className="flex-1 flex flex-col items-center text-center">
-                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-fuchsia-600/20 border-2 border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <span className="text-lg md:text-2xl font-black text-blue-100">
-                              {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
-                            </span>
+                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-fuchsia-600/20 border-2 border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20 overflow-hidden">
+                            {logoByMatchId.get(String(diamondPick.match_id))?.away ? (
+                              <img
+                                src={logoByMatchId.get(String(diamondPick.match_id))!.away!}
+                                alt={`${diamondPick.away_team} logo`}
+                                loading="lazy"
+                                className="w-9 h-9 md:w-14 md:h-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-lg md:text-2xl font-black text-blue-100">
+                                {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                              </span>
+                            )}
                           </div>
                           <span className="mt-2 text-xs md:text-sm font-bold text-foreground text-center leading-tight line-clamp-2">
                             {diamondPick.away_team}
