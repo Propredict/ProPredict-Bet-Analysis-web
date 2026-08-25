@@ -128,8 +128,16 @@ const Index = () => {
         </div>
         </div>
 
+        {/* Banners row: 1xBet + Telegram side by side on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch w-full max-w-6xl mx-auto">
+        {/* Sponsored: 1xBet affiliate banner – web only */}
+        <div className="w-full">
+          <AffiliateBanner1xBet />
+        </div>
+
         {/* Telegram banner — 3D glossy bubble, high-impact CTA */}
         <a
+
 
           href="https://t.me/propredictxx"
           target="_blank"
@@ -142,7 +150,7 @@ const Index = () => {
               w.Android.openExternal("https://t.me/propredictxx");
             }
           }}
-          className="group relative block w-full max-w-5xl mx-auto overflow-hidden rounded-3xl border-b-4 border-[#006699] bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/50 transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(34,158,217,0.55)] active:translate-y-0.5 active:border-b-2 active:shadow-lg"
+          className="group relative flex items-center w-full h-full overflow-hidden rounded-3xl border-b-4 border-[#006699] bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/50 transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(34,158,217,0.55)] active:translate-y-0.5 active:border-b-2 active:shadow-lg"
           aria-label="FREE PREMIUM TIPS — Join us on Telegram"
         >
           {/* base gradient */}
@@ -156,7 +164,7 @@ const Index = () => {
           <div className="absolute bottom-4 right-24 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
           <div className="absolute top-5 left-1/2 w-2 h-2 rounded-full bg-white/30 blur-[1px]" />
 
-          <div className="relative flex items-center justify-between px-4 sm:px-8 py-5 sm:py-6">
+          <div className="relative flex items-center justify-between px-4 sm:px-8 py-5 sm:py-6 h-full">
             <div className="flex items-center gap-4 sm:gap-5">
               {/* 3D Telegram logo bubble */}
               <div className="relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.25),inset_0_-4px_0_0_rgba(0,0,0,0.08)] shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
@@ -186,10 +194,6 @@ const Index = () => {
             <span className="sm:hidden text-3xl font-black drop-shadow-md group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </a>
-
-        {/* Sponsored: 1xBet affiliate banner – web only */}
-        <div className="w-full max-w-5xl mx-auto">
-          <AffiliateBanner1xBet />
         </div>
 
 
