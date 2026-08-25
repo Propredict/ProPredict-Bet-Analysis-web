@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
@@ -711,85 +711,99 @@ export default function AIPredictions() {
 
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
-            <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full blur-2xl pointer-events-none" />
-              <div className="relative space-y-2.5">
+            <Card className="p-4 md:p-6 bg-gradient-to-br from-[#0b0f14] via-card to-[#0b0f14] border-emerald-500/20 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative space-y-4 md:space-y-5">
                 <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs md:text-sm font-bold text-foreground">
+                  <Flame className="w-4 h-4 md:w-5 md:h-5 text-amber-400 shrink-0" />
+                  <span className="text-sm md:text-xl font-bold text-foreground">
                     {highValueCount > 0 ? (
-                      <>🔥 Today: <span className="text-amber-400">{highValueCount} high confidence picks</span> found</>
+                      <>Today: <span className="text-amber-400">{highValueCount} high confidence picks</span> found</>
                     ) : (
-                      <>🔥 Premium picks unlock the strongest analysis</>
+                      <>Premium picks unlock the strongest analysis</>
                     )}
                   </span>
-                  <span className="text-[9px] text-muted-foreground ml-auto">🔒 Most available in Premium</span>
+                  <span className="text-[9px] md:text-sm text-muted-foreground ml-auto flex items-center gap-1.5 shrink-0">
+                    🔒 <span className="hidden sm:inline">Most available in Premium</span>
+                  </span>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-1.5">
-                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                    <Gift className="w-3 h-3 text-emerald-400" />
-                    <div>
-                      <p className="text-[9px] text-emerald-400 font-semibold">Free</p>
-                      <p className="text-xs font-bold text-emerald-400">{tierCounts.free}</p>
+
+                <div className="grid grid-cols-3 gap-2 md:gap-4">
+                  <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-emerald-500/[0.07] border border-emerald-500/30">
+                    <Gift className="w-3.5 h-3.5 md:w-7 md:h-7 text-emerald-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] md:text-base text-emerald-400 font-semibold leading-tight">Free</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-emerald-400 leading-tight">{tierCounts.free}</p>
                     </div>
+                    <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-emerald-500/30 text-xs text-emerald-100/80 whitespace-nowrap">
+                      Safe picks
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-amber-500/10 border border-amber-500/20">
-                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                    <div>
-                      <p className="text-[9px] text-amber-400 font-semibold">Pro</p>
-                      <p className="text-xs font-bold text-amber-400">{tierCounts.pro}</p>
+                  <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-amber-500/[0.07] border border-amber-500/40">
+                    <Star className="w-3.5 h-3.5 md:w-7 md:h-7 text-amber-400 fill-amber-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] md:text-base text-amber-400 font-semibold leading-tight">Pro</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-amber-400 leading-tight">{tierCounts.pro}</p>
                     </div>
+                    <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-amber-500/30 text-xs text-amber-100/80 whitespace-nowrap">
+                      High confidence
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/10 border border-fuchsia-500/20">
-                    <Crown className="w-3 h-3 text-fuchsia-400" />
-                    <div>
-                      <p className="text-[9px] text-fuchsia-400 font-semibold">Premium</p>
-                      <p className="text-xs font-bold text-fuchsia-400">🔒 {tierCounts.premium}</p>
+                  <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-fuchsia-500/[0.07] border border-fuchsia-500/30">
+                    <Crown className="w-3.5 h-3.5 md:w-7 md:h-7 text-fuchsia-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] md:text-base text-fuchsia-400 font-semibold leading-tight">Premium</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-fuchsia-400 leading-tight">🔒 {tierCounts.premium}</p>
                     </div>
+                    <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-fuchsia-500/30 text-xs text-fuchsia-100/80 whitespace-nowrap">
+                      Top accuracy
+                    </span>
                   </div>
                 </div>
 
                 <Button
                   onClick={() => navigate("/get-premium")}
-                  size="sm"
-                  className="w-full h-8 text-[10px] md:text-xs font-semibold bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-full gap-1.5"
+                  className="w-full h-10 md:h-14 text-xs md:text-lg font-bold bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(217,70,239,0.35)] relative"
                 >
-                  <Crown className="w-3 h-3 fill-current" />
+                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current" />
                   Upgrade to unlock stronger predictions
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5 absolute right-4 opacity-80" />
                 </Button>
               </div>
             </Card>
           )}
 
+
           {/* Search & Controls Row - Above Tier Filter */}
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-            <div className="relative flex-1 min-w-[140px] md:min-w-[200px] max-w-sm">
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg opacity-75" />
-              <div className="relative flex items-center bg-card rounded-lg">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <div className="relative flex-1 min-w-[140px] md:min-w-[280px] max-w-sm">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/50 via-accent/30 to-primary/50 rounded-lg md:rounded-2xl opacity-75" />
+              <div className="relative flex items-center bg-card rounded-lg md:rounded-2xl">
+                <Search className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-muted-foreground" />
                 <Input
                   placeholder="Search teams..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 md:h-9 text-xs bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg placeholder:text-muted-foreground/70"
+                  className="pl-8 md:pl-12 h-8 md:h-12 text-xs md:text-base bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg md:rounded-2xl placeholder:text-muted-foreground/70"
                 />
               </div>
             </div>
           </div>
 
           {/* Tier Filter Tabs - In Gradient Card */}
-          <Card className="p-3 md:p-4 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20">
-            <p className="text-xs md:text-sm text-muted-foreground mb-2.5 md:mb-3 text-center">
+          <Card className="p-3 md:p-5 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20 rounded-2xl">
+            <p className="text-xs md:text-lg text-muted-foreground mb-2.5 md:mb-4 text-center">
               Choose your prediction tier below
             </p>
+
             {/* Mobile: 2x2 Grid | Desktop: Row */}
-            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-2.5 md:justify-center">
+            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-4 md:justify-center">
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 md:h-9 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center",
+                  "h-9 md:h-14 px-3 md:px-8 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-1.5 justify-center",
                   tierFilter === "all"
                     ? "bg-primary/30 text-primary border border-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]"
                     : "bg-primary/15 text-primary border border-primary/40 hover:bg-primary/25 hover:border-primary"
@@ -802,7 +816,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "free"
                     ? "bg-emerald-500/30 text-emerald-400 border border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                     : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/25 hover:border-emerald-500"
@@ -810,10 +824,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("free")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Gift className="w-3.5 h-3.5" />
+                  <Gift className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Free ({tierCounts.free})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-emerald-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-emerald-300/90 leading-none">
                   {Math.max(tierStats.free.accuracy, 50)}%
                 </span>
               </Button>
@@ -821,7 +835,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "pro"
                     ? "bg-amber-500/30 text-amber-400 border border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
                     : "bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25 hover:border-amber-500"
@@ -829,10 +843,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("pro")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5" />
+                  <Star className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Pro ({tierCounts.pro})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-amber-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-amber-300/90 leading-none">
                   {Math.max(tierStats.pro.accuracy, 75)}%
                 </span>
               </Button>
@@ -840,7 +854,7 @@ export default function AIPredictions() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-auto md:h-auto py-1.5 px-3 md:px-4 text-xs md:text-xs font-semibold rounded-lg md:rounded-full transition-all duration-300 gap-1.5 justify-center flex-col",
+                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "premium"
                     ? "bg-fuchsia-500/30 text-fuchsia-400 border border-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.4)]"
                     : "bg-fuchsia-500/15 text-fuchsia-400 border border-fuchsia-500/40 hover:bg-fuchsia-500/25 hover:border-fuchsia-500"
@@ -848,10 +862,10 @@ export default function AIPredictions() {
                 onClick={() => setTierFilter("premium")}
               >
                 <span className="flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5" />
+                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Premium ({tierCounts.premium})
                 </span>
-                <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-fuchsia-300/90 leading-none">
                   {Math.max(tierStats.premium.accuracy, 87)}%
                 </span>
               </Button>
@@ -861,23 +875,23 @@ export default function AIPredictions() {
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
           {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
           {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
-            <div className="relative overflow-hidden rounded-xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-4 md:py-3 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
+            <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-cyan-500/10 px-3 py-2.5 md:px-6 md:py-6 shadow-[0_0_25px_rgba(245,158,11,0.12)]">
               <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl" />
               <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
               <div className="relative flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
-                  <Flame className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                <div className="p-1.5 md:p-4 rounded-lg md:rounded-2xl bg-gradient-to-br from-amber-400 via-fuchsia-500 to-cyan-500 shadow-md ring-1 ring-amber-300/40">
+                  <Flame className="w-3.5 h-3.5 md:w-8 md:h-8 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
+                  <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
                     🔥 AI Elite Picks
                   </h2>
-                  <p className="text-[10px] md:text-[11px] text-muted-foreground leading-tight">
+                  <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
                     Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
                   </p>
                 </div>
-                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-[10px] px-2 py-0.5 shadow shrink-0">
-                  <Sparkles className="w-2.5 h-2.5 mr-1" />
+                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white border-0 text-[9px] md:text-base px-2 md:px-5 py-0.5 md:py-2 rounded-full shadow shrink-0">
+                  <Sparkles className="w-2.5 h-2.5 md:w-4 md:h-4 mr-1 md:mr-2" />
                   Curated
                 </Badge>
               </div>
@@ -1074,7 +1088,7 @@ export default function AIPredictions() {
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                         <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
-                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                        <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
                           Top Picks
                         </h2>
                       </div>
@@ -1348,7 +1362,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 shadow-sm shadow-amber-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
-                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
+                          <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent whitespace-nowrap">
                             Top Picks ({tierCounts.pro})
                           </h2>
                         </div>
