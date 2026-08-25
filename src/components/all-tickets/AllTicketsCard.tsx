@@ -286,7 +286,7 @@ export function AllTicketsCard({
                   }}
                 >
                   <Star className="h-3 w-3" />
-                  Get Sure Odds 2+ – No Ads
+                  Unlock Tip
                 </button>
               </div>
             ) : isAndroidPremiumTier ? (
