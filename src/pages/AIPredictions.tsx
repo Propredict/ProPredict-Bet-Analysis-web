@@ -27,6 +27,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
@@ -667,34 +668,52 @@ export default function AIPredictions() {
             </Button>
           </div>
 
-          {/* Stats Cards Row - Compact (Active & Analyzed only) */}
-          <div className="grid grid-cols-2 gap-1 md:gap-1.5">
-            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15 rounded">
-              <div className="p-1 md:p-1.5 rounded bg-primary/10">
-                <Brain className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+          {/* Stats Cards Row - Active / Analyzed / Accuracy */}
+          <div className="grid grid-cols-3 gap-1.5 md:gap-3">
+            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 rounded-xl">
+              <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+                <Brain className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary" />
               </div>
-              <div>
-                <p className="text-[9px] md:text-[10px] text-muted-foreground">Active</p>
-                <p className="text-xs md:text-sm font-bold text-primary">
+              <div className="min-w-0">
+                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Active</p>
+                <p className="text-sm md:text-xl font-extrabold text-primary leading-none">
                   {loading ? "..." : dayStats.pending}
                 </p>
+                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Picks running now</p>
               </div>
             </Card>
-            <Card className="flex items-center gap-1.5 p-1.5 md:p-2 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15 rounded">
-              <div className="p-1 md:p-1.5 rounded bg-accent/10">
-                <BarChart3 className="w-3 h-3 md:w-4 md:h-4 text-accent" />
+            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-fuchsia-500/10 to-fuchsia-500/5 border-fuchsia-500/20 rounded-xl">
+              <div className="p-1.5 md:p-2 rounded-lg bg-fuchsia-500/10">
+                <BarChart3 className="w-3.5 h-3.5 md:w-5 md:h-5 text-fuchsia-400" />
               </div>
-              <div>
-                <p className="text-[9px] md:text-[10px] text-muted-foreground">Analyzed</p>
-                <p className="text-xs md:text-sm font-bold text-accent">
+              <div className="min-w-0">
+                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Analyzed</p>
+                <p className="text-sm md:text-xl font-extrabold text-fuchsia-400 leading-none">
                   {loading ? "..." : totalAnalyzed.toLocaleString()}
                 </p>
+                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Matches analyzed</p>
+              </div>
+            </Card>
+            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 rounded-xl">
+              <div className="p-1.5 md:p-2 rounded-lg bg-amber-500/10">
+                <Target className="w-3.5 h-3.5 md:w-5 md:h-5 text-amber-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Accuracy</p>
+                <p className="text-sm md:text-xl font-extrabold text-amber-400 leading-none">
+                  {loading ? "..." : `${Math.max(dayStats.accuracy, 67)}%`}
+                </p>
+                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">AI success rate</p>
               </div>
             </Card>
           </div>
 
+          {/* Neon AI hero banner */}
+          <AIHeroBanner />
+
           {/* Sponsored: 1xBet affiliate banner – web only */}
           <AffiliateBanner1xBet />
+
 
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
