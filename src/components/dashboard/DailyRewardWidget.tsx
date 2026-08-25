@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Gift, Flame, Lock, Trophy, Zap, Check, Loader2, Smartphone, Calendar, Target, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -6,8 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useArenaStats } from "@/hooks/useArenaStats";
 import { DailyRewardClaimPopup } from "./DailyRewardClaimPopup";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { useNavigate } from "react-router-dom";
 import rewardChest from "@/assets/reward-treasure-chest.jpg";
+
 
 const STREAK_POINTS = [0, 3, 6, 9, 12, 13, 14, 15];
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.propredict.app";
