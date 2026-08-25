@@ -294,7 +294,7 @@ export default function MatchPreviews() {
                   <Check className="h-4 w-4 text-violet-400" />
                 </div>
                 <p className="text-sm text-foreground/90">
-                  Our AI selects only the safest matches (<span className="text-violet-400 font-bold">65%+ confidence</span>) from today's fixtures.
+                  Our AI selects only the safest matches (<span className="text-violet-400 font-bold">75%+ confidence</span>) from today's fixtures.
                 </p>
               </div>
               <div className="flex items-start gap-3">
