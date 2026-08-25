@@ -250,20 +250,33 @@ export default function MatchPreviews() {
     <>
       <Helmet>
         <title>Top 30 AI Picks – Safest Football Predictions | ProPredict</title>
-        <meta name="description" content="The Top 30 AI Picks of the day — AI-curated safest football matches with 65%+ confidence." />
+        <meta name="description" content="The Top 30 AI Picks of the day — AI-curated safest football matches with 75%+ confidence." />
       </Helmet>
 
       <div className="page-content space-y-4">
-        <div className="page-header">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30">
-              <Trophy className="h-5 w-5 text-violet-400" />
+        {/* Premium Page Header */}
+        <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-background/80 to-background p-6 sm:p-8">
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 border border-violet-400/50 shadow-lg shadow-violet-500/20">
+                <Trophy className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Top 30 AI Picks</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Only the safest AI picks — <span className="text-violet-400 font-bold">75%+ confidence</span>
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold">Top 30 AI Picks</h1>
-              <p className="text-xs text-muted-foreground">
-                Only the safest AI picks — 65%+ confidence
-              </p>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20">
+              <Sparkles className="h-4 w-4 text-violet-400" />
+              <span className="text-xs font-black text-violet-400 uppercase tracking-widest">AI Curated</span>
             </div>
           </div>
         </div>
