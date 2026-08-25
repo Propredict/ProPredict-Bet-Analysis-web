@@ -198,7 +198,15 @@ export default function MatchPreviewDetail() {
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
   const heroPick = prediction ? getTopMatchPreviewPick(prediction as AIPrediction) : null;
   const aiPicks = prediction && unlocked ? deriveMatchPreviewAIPicks(prediction as AIPrediction) : [];
-  const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction) : [];
+  // Predicted score must respect the same Over/Under + BTTS signals shown in AI Picks,
+  // so we never display e.g. "1-2" next to an "Under 2.5 / BTTS No" recommendation.
+  const consistentScore = useMemo(() => {
+    if (!prediction) return null;
+    const pred = prediction as AIPrediction;
+    return getDerivedPredictedScore(pred, getRecommendedScoreConstraints(pred));
+  }, [prediction]);
+  const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction, consistentScore) : [];
+
 
   if (loading) {
     return (
