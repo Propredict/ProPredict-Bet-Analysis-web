@@ -37,11 +37,22 @@ function mapStatus(shortStatus: string): "live" | "upcoming" | "finished" | "hal
   return "upcoming";
 }
 
+// ---------------------------------------------------------------
+// In-memory cache (per edge instance) to avoid hammering API-Football.
+// Each unique query is fetched at most once per TTL; on rate-limit or
+// failure we serve the last known good payload instead of throwing 500.
+// ---------------------------------------------------------------
+const CACHE_TTL_MS = 30_000; // live-ish freshness
+const STALE_MAX_MS = 10 * 60_000;
+const cache = new Map<string, { at: number; data: any[] }>();
+const inflight = new Map<string, Promise<any[]>>();
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
 
   try {
     const url = new URL(req.url);
