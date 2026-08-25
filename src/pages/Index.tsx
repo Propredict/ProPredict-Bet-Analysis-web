@@ -11,7 +11,6 @@ import { DashboardTipsPopup } from "@/components/dashboard/DashboardTipsPopup";
 import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { AppDownloadPopup } from "@/components/AppDownloadPopup";
-import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { TelegramPromoPopup } from "@/components/TelegramPromoPopup";
 import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
@@ -322,7 +321,6 @@ const Index = () => {
       </div>
       <GuestSignInModal />
       <AppDownloadPopup />
-      <ExitIntentPopup />
       <DailyRewardPopup />
       <DailyRewardStickyBar />
       <TelegramPromoPopup />
