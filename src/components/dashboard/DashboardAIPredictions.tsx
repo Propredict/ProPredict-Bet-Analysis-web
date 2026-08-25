@@ -296,14 +296,14 @@ export function DashboardAIPredictions() {
 
             {/* SECTION 2: PRO */}
             <TierSection
-              title="Sure Odds 2+ Ticket"
+              title="Top Picks"
               subtitle="Higher confidence · curated edge"
               badgeIcon={Star}
-              badgeLabel="⭐ Sure Odds 2+"
+              badgeLabel="⭐ Top Picks"
               tone="pro"
-              ctaLabel="See all Sure Odds 2+"
-              onCta={() => navigate("/exclusive-tickets")}
-              empty="No Sure Odds 2+ picks available today"
+              ctaLabel="See all Top Picks"
+              onCta={() => navigate("/ai-predictions?tier=pro")}
+              empty="No top picks available today"
               picks={proPicks}
               renderCard={(p) => renderCard(p)}
             />
