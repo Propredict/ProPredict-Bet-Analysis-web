@@ -115,7 +115,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   };
 
   const handleSecondaryClick = () => {
-    if (getIsAndroidApp()) { navigate("/get-premium"); return; }
+    // Android: Unlock Tip → purchase Premium package
+    if (getIsAndroidApp()) {
+      purchaseSubscription("premium", "monthly", plan);
+      return;
+    }
     if (onSecondaryUnlock) { onSecondaryUnlock(); } else { navigate("/get-premium"); }
   };
 
