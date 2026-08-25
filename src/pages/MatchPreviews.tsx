@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy } from "lucide-react";
+import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy, Check, Crown, ShieldCheck, Users, Diamond } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -270,25 +270,63 @@ export default function MatchPreviews() {
         {/* Sponsored: 1xBet affiliate banner – web only */}
         <AffiliateBanner1xBet />
 
-        <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent border-violet-500/20">
-          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Our AI selects only the safest matches (65%+ confidence) from today's fixtures.</li>
-            <li>Click any match to unlock full AI-powered analysis, predictions, and key factors.</li>
-            <li className="text-xs text-muted-foreground/70 italic">For informational and entertainment purposes only.</li>
-          </ul>
-          <div className="mt-3 space-y-1">
-            <p className="text-sm"><span className="text-fuchsia-400 font-bold">● PREMIUM</span> — Unlimited Match Previews</p>
+        {/* Premium Info Card */}
+        <Card className="relative overflow-hidden border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-background/80 to-background p-5">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1 rounded-md bg-violet-500/20 border border-violet-500/40">
+                  <Check className="h-4 w-4 text-violet-400" />
+                </div>
+                <p className="text-sm text-foreground/90">
+                  Our AI selects only the safest matches (<span className="text-violet-400 font-bold">65%+ confidence</span>) from today's fixtures.
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1 rounded-md bg-violet-500/20 border border-violet-500/40">
+                  <Check className="h-4 w-4 text-violet-400" />
+                </div>
+                <p className="text-sm text-foreground/90">
+                  Click any match to unlock full AI-powered analysis, predictions, and key factors.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-violet-500/10 border border-violet-500/20 w-fit">
+                <Diamond className="h-3.5 w-3.5 text-fuchsia-400" />
+                <span className="text-fuchsia-400 font-black tracking-widest uppercase text-[10px]">Premium</span>
+                <span className="h-1 w-1 rounded-full bg-violet-400" />
+                <span className="text-muted-foreground text-[10px] font-semibold">Unlimited Match Previews</span>
+              </div>
+            </div>
+            <div className="hidden md:flex justify-end items-center">
+              <div className="w-24 h-24 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+                <Sparkles className="h-10 w-10 text-violet-400/70" />
+              </div>
+            </div>
           </div>
         </Card>
 
         {isFreeUser && (
-          <Card className="p-3 bg-gradient-to-r from-fuchsia-500/10 via-fuchsia-500/5 to-transparent border-fuchsia-500/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-fuchsia-400" />
-                <span className="text-sm text-muted-foreground">Match previews require a Premium subscription</span>
+          <Card className="relative overflow-hidden p-5 border-fuchsia-500/20 bg-gradient-to-r from-fuchsia-500/10 via-violet-500/5 to-transparent">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-500/10 via-transparent to-transparent pointer-events-none" />
+            <div className="relative flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-600 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-foreground">Match previews require a Premium subscription</h4>
+                  <p className="text-sm text-muted-foreground">Upgrade to unlock all AI match previews and predictions.</p>
+                </div>
               </div>
-              <Badge variant="outline" className="text-[10px] bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40 cursor-pointer" onClick={() => navigate("/get-premium")}>Subscribe</Badge>
+              <Button
+                variant="outline"
+                className="rounded-full border-fuchsia-500/50 text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white hover:border-fuchsia-500 px-6 shadow-[0_0_20px_rgba(232,121,249,0.15)]"
+                onClick={() => navigate("/get-premium")}
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                Subscribe
+              </Button>
             </div>
           </Card>
         )}
@@ -319,17 +357,29 @@ export default function MatchPreviews() {
                 <Card
                   key={match.id}
                   className={cn(
-                    "overflow-hidden transition-all bg-card border shadow-sm cursor-pointer hover:shadow-lg hover:shadow-violet-500/10",
+                    "relative overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10",
                     isTop3
                       ? "border-violet-400/40"
                       : "border-border/60"
                   )}
                   onClick={() => handleCardClick(match)}
                 >
-                  <div className="p-5 space-y-4">
-                    {/* Rank badge + League centered */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-2">
+                  {/* Stadium background */}
+                  <div className="absolute inset-0 z-0">
+                    <div className={cn(
+                      "absolute inset-0 opacity-40",
+                      "bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-transparent",
+                      "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent"
+                    )} />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+                  </div>
+
+                  <div className="relative z-10 p-5 sm:p-6">
+                    {/* League Header */}
+                    <div className="flex flex-col items-center gap-2 mb-6">
+                      <div className="flex items-center gap-1.5">
                         <div className={cn(
                           "w-7 h-7 rounded-full flex items-center justify-center text-xs font-black",
                           rank <= 3 ? rankStyle.bg : "bg-muted",
@@ -337,134 +387,144 @@ export default function MatchPreviews() {
                         )}>
                           {rank}
                         </div>
-                        {isTop3 && <span className="text-sm">{rankStyle.label}</span>}
+                        {isTop3 && (
+                          <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xs">
+                            <Trophy className="h-3 w-3" />
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest text-center">
+                      <span className="text-[11px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-[0.3em] text-center">
                         {match.league || "Unknown"}
                       </span>
                     </div>
 
-                    {/* Teams with big circle logos */}
-                    <div className="flex items-start justify-between gap-2">
+                    {/* Teams */}
+                    <div className="flex items-center justify-between max-w-2xl mx-auto">
                       {/* Home team */}
-                      <div className="flex flex-col items-center flex-1 min-w-0 gap-2">
-                        <div className={cn(
-                          "w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2 bg-muted/30",
-                          isTop3 ? "border-violet-400/50" : "border-border/50"
-                        )}>
-                          {homeLogo ? (
-                            <img src={homeLogo} alt={match.home_team} className="w-10 h-10 object-contain" />
-                          ) : (
-                            <span className="text-sm font-bold text-violet-600 dark:text-violet-300">{getTeamInitials(match.home_team)}</span>
-                          )}
+                      <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
+                        <div className="relative p-1 rounded-full bg-gradient-to-br from-violet-500/20 to-transparent">
+                          <div className={cn(
+                            "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
+                            isTop3 ? "border-violet-400/50" : "border-border/50"
+                          )}>
+                            {homeLogo ? (
+                              <img src={homeLogo} alt={match.home_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+                            ) : (
+                              <span className="text-sm sm:text-lg font-bold text-violet-400">{getTeamInitials(match.home_team)}</span>
+                            )}
+                          </div>
+                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
                         </div>
-                        <span className="text-xs font-bold text-foreground text-center leading-tight max-w-[100px]">{match.home_team}</span>
+                        <span className="text-sm sm:text-base font-black text-foreground text-center leading-tight max-w-[120px]">{match.home_team}</span>
                       </div>
 
-                      {/* VS + date/time center */}
-                      <div className="flex flex-col items-center justify-center pt-2 gap-0.5 flex-shrink-0">
-                        <span className="text-[10px] text-muted-foreground">{match.match_date || ""}</span>
-                        <span className="text-lg font-black text-muted-foreground">VS</span>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-muted-foreground/60" />
-                          <span className="text-[11px] text-muted-foreground">
+                      {/* VS center */}
+                      <div className="flex flex-col items-center px-3 sm:px-8">
+                        <span className="text-[10px] font-bold text-muted-foreground mb-1 tracking-widest uppercase">{match.match_date || ""}</span>
+                        <div className="text-4xl sm:text-5xl font-black italic text-foreground/80 tracking-tighter">VS</div>
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/80 border border-border/50 mt-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] font-black text-muted-foreground">
                             {formatMatchTime((match as any).match_timestamp, match.match_time, match.match_date)}
                           </span>
                         </div>
                       </div>
 
                       {/* Away team */}
-                      <div className="flex flex-col items-center flex-1 min-w-0 gap-2">
-                        <div className={cn(
-                          "w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2 bg-muted/30",
-                          isTop3 ? "border-violet-400/50" : "border-border/50"
-                        )}>
-                          {awayLogo ? (
-                            <img src={awayLogo} alt={match.away_team} className="w-10 h-10 object-contain" />
-                          ) : (
-                            <span className="text-sm font-bold text-primary/70">{getTeamInitials(match.away_team)}</span>
-                          )}
+                      <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
+                        <div className="relative p-1 rounded-full bg-gradient-to-br from-violet-500/20 to-transparent">
+                          <div className={cn(
+                            "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
+                            isTop3 ? "border-violet-400/50" : "border-border/50"
+                          )}>
+                            {awayLogo ? (
+                              <img src={awayLogo} alt={match.away_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+                            ) : (
+                              <span className="text-sm sm:text-lg font-bold text-violet-400">{getTeamInitials(match.away_team)}</span>
+                            )}
+                          </div>
+                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
                         </div>
-                        <span className="text-xs font-bold text-foreground text-center leading-tight max-w-[100px]">{match.away_team}</span>
+                        <span className="text-sm sm:text-base font-black text-foreground text-center leading-tight max-w-[120px]">{match.away_team}</span>
                       </div>
                     </div>
 
                     {/* Confidence + Risk */}
-                    <div className="flex items-center justify-center gap-4 pt-1">
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-violet-500 dark:text-primary" />
-                        <span className="text-xs text-muted-foreground">Confidence</span>
-                        <span className="text-sm font-extrabold text-foreground">{match.bestPick?.pct ?? match.confidence}%</span>
+                    <div className="flex items-center justify-center gap-3 sm:gap-5 mt-8">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 backdrop-blur-md">
+                        <ShieldCheck className="h-4 w-4 text-violet-400" />
+                        <span className="text-xs font-bold text-muted-foreground">Confidence <span className="text-foreground ml-1">{match.bestPick?.pct ?? match.confidence}%</span></span>
                       </div>
-                      <span className="text-muted-foreground/30">·</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className={cn("w-2 h-2 rounded-full", risk.dot)} />
-                        <span className={cn("text-xs font-semibold", risk.color)}>{risk.label}</span>
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
+                        <span className={cn("w-2 h-2 rounded-full animate-pulse", risk.dot)} />
+                        <span className={cn("text-xs font-black uppercase tracking-wide", risk.color)}>{risk.label}</span>
                       </div>
                     </div>
 
-                    {/* Best Market Pick — locked for free */}
-                    {match.bestPick && (
-                      <div className="flex justify-center">
-                        {isFreeUser ? (
-                          <Badge className="text-xs px-3 py-1 bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold gap-1.5">
-                            <Lock className="h-3 w-3" /> AI Top Pick Locked
-                          </Badge>
-                        ) : (
-                          <Badge className="text-sm px-4 py-1.5 bg-emerald-500/20 text-white border border-emerald-500/40 font-extrabold tracking-wide">
-                            {match.bestPick.emoji} {match.bestPick.label} — {match.bestPick.pct}%
-                          </Badge>
-                        )}
+                    {/* Locked badge */}
+                    {isFreeUser && match.bestPick && (
+                      <div className="flex justify-center mt-5">
+                        <div className="px-4 py-2 rounded-full border border-amber-500/40 bg-amber-500/5 text-amber-500 text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2">
+                          <Lock className="h-3.5 w-3.5" />
+                          AI Top Pick Locked
+                        </div>
                       </div>
                     )}
 
-                    {/* Analysis preview — locked for free */}
-                    {isFreeUser ? (
-                      <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <span className="mt-0.5">🔒</span>
-                          <p className="text-xs text-muted-foreground">Multiple AI picks available</p>
+                    {/* Features grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-0.5 mt-6 bg-border/30 rounded-3xl overflow-hidden border border-border/40 backdrop-blur-md">
+                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                          <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
-                        <div className="flex items-start gap-2">
-                          <span className="mt-0.5">🔒</span>
-                          <p className="text-xs text-muted-foreground">Correct score predicted — unlock to view</p>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-black text-foreground">Multiple AI picks</div>
+                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">Unlock all variations</div>
                         </div>
                       </div>
-                    ) : snippets.length > 0 ? (
-                      <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-                        {snippets.map((snippet, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="mt-0.5">{snippet.icon}</span>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                              {snippet.text}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
 
-                    {/* Social proof */}
-                    <div className="flex justify-end">
-                      <span className="text-[11px] text-muted-foreground">
-                        🔥 {getUnlockPercentage(match.match_id)}% of users unlocked this pick
-                      </span>
+                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3 border-l-0 sm:border-l border-border/30">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                          <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-black text-foreground">Correct score</div>
+                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">See exact results</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3 border-l-0 sm:border-l border-border/30">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                          <Users className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-black text-foreground">{getUnlockPercentage(match.match_id)}% of users</div>
+                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">unlocked this pick</div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* CTA */}
                     <Button
-                      size="sm"
                       className={cn(
-                        "w-full text-xs font-bold h-10 shadow-sm",
+                        "w-full mt-5 h-auto py-4 sm:py-5 rounded-2xl font-black text-sm sm:text-base uppercase tracking-tight transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_20px_40px_-10px_rgba(139,92,246,0.4)]",
                         isFreeUser
-                          ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 animate-pulse"
-                          : "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600"
+                          ? "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:from-violet-700 hover:via-fuchsia-600 hover:to-pink-600 animate-pulse"
+                          : "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:from-violet-700 hover:via-fuchsia-600 hover:to-pink-600"
                       )}
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
                       {isFreeUser ? (
-                        <><Sparkles className="h-3.5 w-3.5 mr-1.5" />💎 Get This Winning Pick</>
+                        <>
+                          <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                          💎 Get This Winning Pick
+                        </>
                       ) : (
-                        <><Eye className="h-3.5 w-3.5 mr-1.5" />View Full Analysis & More Predictions<ChevronRight className="h-3.5 w-3.5 ml-1" /></>
+                        <>
+                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                          View Full Analysis & More Predictions
+                          <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+                        </>
                       )}
                     </Button>
                   </div>
