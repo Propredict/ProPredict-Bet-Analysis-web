@@ -11,6 +11,7 @@ import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsS
 import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
 import { selectTopPicks, leagueTier } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
+import { useFixtures } from "@/hooks/useFixtures";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
@@ -58,6 +59,16 @@ export default function AIPredictions() {
   const [freeInAppOpen, setFreeInAppOpen] = useState(false);
 
   const { predictions, loading, refetch } = useAIPredictions(day);
+
+  // Team crests for the featured (Diamond) match — mapped from fixtures by match id
+  const { matches: fixturesForLogos } = useFixtures(day);
+  const logoByMatchId = useMemo(() => {
+    const map = new Map<string, { home?: string | null; away?: string | null }>();
+    (fixturesForLogos || []).forEach((m) => {
+      map.set(String(m.id), { home: m.homeLogo, away: m.awayLogo });
+    });
+    return map;
+  }, [fixturesForLogos]);
 
   // Fetch yesterday's predictions for social proof
   const yesterdayQuery = useQuery({
@@ -966,10 +977,19 @@ export default function AIPredictions() {
                       <div className="flex items-center gap-2 md:gap-4">
                         {/* Home team */}
                         <div className="flex-1 flex flex-col items-center text-center">
-                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                            <span className="text-lg md:text-2xl font-black text-cyan-100">
-                              {diamondPick.home_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
-                            </span>
+                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20 overflow-hidden">
+                            {logoByMatchId.get(String(diamondPick.match_id))?.home ? (
+                              <img
+                                src={logoByMatchId.get(String(diamondPick.match_id))!.home!}
+                                alt={`${diamondPick.home_team} logo`}
+                                loading="lazy"
+                                className="w-9 h-9 md:w-14 md:h-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-lg md:text-2xl font-black text-cyan-100">
+                                {diamondPick.home_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                              </span>
+                            )}
                           </div>
                           <span className="mt-2 text-xs md:text-sm font-bold text-foreground text-center leading-tight line-clamp-2">
                             {diamondPick.home_team}
@@ -991,10 +1011,19 @@ export default function AIPredictions() {
 
                         {/* Away team */}
                         <div className="flex-1 flex flex-col items-center text-center">
-                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-fuchsia-600/20 border-2 border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <span className="text-lg md:text-2xl font-black text-blue-100">
-                              {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
-                            </span>
+                          <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-fuchsia-600/20 border-2 border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20 overflow-hidden">
+                            {logoByMatchId.get(String(diamondPick.match_id))?.away ? (
+                              <img
+                                src={logoByMatchId.get(String(diamondPick.match_id))!.away!}
+                                alt={`${diamondPick.away_team} logo`}
+                                loading="lazy"
+                                className="w-9 h-9 md:w-14 md:h-14 object-contain"
+                              />
+                            ) : (
+                              <span className="text-lg md:text-2xl font-black text-blue-100">
+                                {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                              </span>
+                            )}
                           </div>
                           <span className="mt-2 text-xs md:text-sm font-bold text-foreground text-center leading-tight line-clamp-2">
                             {diamondPick.away_team}
